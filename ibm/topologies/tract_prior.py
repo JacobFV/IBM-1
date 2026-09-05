@@ -89,6 +89,59 @@ the number that makes this worth carrying: at tier 1 the prior's spread is a
 factor of 3.9 and at tier 3 it is whatever `weak()` says, which is a factor of
 10.  presenting the third as though it were the first is how a geometric prior
 comes to be quoted as anatomy.
+
+tier 2, and what it actually costs
+----------------------------------
+the middle tier had no data when this module was written, and its widening was a
+declared judgement -- `extra = log(1.5)` -- with a comment saying so.  it is now
+measured, by `scripts/measure_group_connectome.py` against TractoInferno's 284
+subjects, and the judgement was wrong by a factor of five in log units:
+
+    P(two people share an edge)     0.32   0.39 given the bundle was segmented
+    strength spread, subject-subject  x6.7  where the phantom's pipelines gave x3.9
+    a group connectome explains        28%  of a held-out subject's edge strengths
+    what it leaves                    x7.4  one sigma, per edge
+    the scanner adds                  x1.7  8% of the variance against the person's 92%
+    26 subjects are worth              7.9  and the ceiling is 11, at any cohort size
+
+the second line is the one that reorders the tiers.  the ISMRM phantom measures
+how much two ALGORITHMS disagree about ONE brain; it cannot measure how much two
+BRAINS differ, and the answer is that two brains differ more than two algorithms
+do.  a group connectome does not merely inherit tier 1's error and add a little --
+it is dominated by a term tier 1 does not have.
+
+the third and fourth lines are what a materialization must report.  a group
+connectome predicts *which* edges a subject has quite well (AUC 0.82) and *how
+strong* they are badly (R^2 0.28, two thirds of a subject's edge-strength
+variance is theirs alone).  so a tier-2 result may be reported as "a connectivity
+this population has" and never as "this subject's connectivity", and the number
+that says so is 0.28.
+
+the fifth is the good news, and the only good news here: a different scanner is
+NOT as different as a different person.  predicting a held-out subject from
+subjects who share their acquisition block does no better than predicting them
+from the other blocks -- R^2 0.189 against 0.190 -- so a group connectome
+transfers across sites about as well as it transfers at all, which is to say
+poorly and evenly.  it is a LOWER bound: TractoInferno's site labels are not in
+the release and the blocks were recovered from the field-of-view signature, so one
+of the four still mixes cohorts.  `scripts/measure_group_connectome.py` sets out
+exactly how far that recovery goes and where it stops.
+
+the sixth is why the widening does not shrink.  a published connectome over a
+thousand subjects is worth about eleven, because subjects' deviations from the
+group are not independent -- and that 11 is itself an overestimate, since it was
+measured against the subjects' own consensus, which absorbs any error all of them
+make.  the phantom's three effective pipelines still sit underneath it.
+
+what tier 2 does NOT get
+------------------------
+an `existence_probability` in the tier-1 sense.  that is a likelihood ratio and it
+needs a false-positive rate, which needs an answer to be wrong about, which real
+tissue does not have.  what a subject frequency supports instead is a shrunk
+frequency -- the fraction of subjects carrying the edge, pulled toward the base
+rate by the EFFECTIVE subject count -- and `GroupUncertainty.existence_probability`
+returns that and says so in its docstring.  the two are not interchangeable and
+the tier field is what keeps them apart.
 """
 
 from __future__ import annotations
@@ -105,6 +158,8 @@ from ibm.vocabulary import Prior, Provenance, Tying, lognormal
 
 _EVIDENCE = ("data/sources/ismrm2015-submissions/evidence/tract_uncertainty@1/"
              "measured.json")
+_GROUP_EVIDENCE = ("data/sources/tractoinferno/evidence/group_connectome@1/"
+                   "measured.json")
 
 
 class Tier(str, Enum):
@@ -279,6 +334,197 @@ class TractUncertainty:
 MEASURED = TractUncertainty.load()
 
 
+@dataclass(frozen=True)
+class GroupUncertainty:
+    """what a group connectome costs, measured on 284 real subjects.
+
+    the tier-1 companion to `TractUncertainty` and deliberately a separate type,
+    because the two answer different questions and mixing them is the mistake this
+    module exists to prevent.  `TractUncertainty` is about ALGORITHMS disagreeing
+    over one brain; this is about BRAINS differing, plus what a scanner adds on
+    top.  a group connectome carries both errors and only one of them shrinks when
+    more tractography is thrown at it.
+
+    every default is reproduced by `scripts/measure_group_connectome.py` and
+    recorded with its provenance in
+    `data/sources/tractoinferno/evidence/group_connectome@1/`.  read them as they
+    are rather than as bounds in a known direction -- the registration is a
+    7-parameter normalization and the parcellation is 20 mm boxes, both of which
+    push the measured spread UP by blurring anatomy, while the bundle set is
+    curated and covers less than a whole-brain tractogram would, which pushes it
+    DOWN.  the two are not known to cancel.
+    """
+
+    #: fraction of subjects carrying an edge, averaged over edges any subject has.
+    #: the direct answer to "how often do two people share a connection".
+    edge_reproducibility: float = 0.3188
+    #: the same, conditioned on the subject having the bundle that carries the
+    #: edge.  the gap between these two is segmentation failure and not anatomy.
+    edge_reproducibility_given_bundle: float = 0.3903
+    #: fraction of subjects in whom rbx-flow delivered a given named bundle.  no
+    #: bundle reaches 1.0 in TractoInferno; the best is 0.94 and IFOF is 0.57.
+    bundle_availability: float = 0.7359
+    #: natural-log sd, across SUBJECTS, of an edge's streamline count normalized by
+    #: the subject's own total.  exp of it is a factor of 6.7 -- larger than the
+    #: phantom's cross-pipeline 3.9, which is the finding that reorders the tiers.
+    strength_log_sd: float = 1.9019
+    #: between-acquisition-block log sd.  a LOWER bound on the between-site term:
+    #: the release ships no site labels, and the blocks recovered from the
+    #: field-of-view signature still mix cohorts.  see the measurement script.
+    between_site_log_sd: float = 0.5315
+    #: within-block log sd, for comparison with the line above.  the ratio is what
+    #: answers "is a different scanner as different as a different person".
+    within_site_log_sd: float = 1.8208
+    #: between-block share of the total log variance.
+    site_icc: float = 0.0785
+    #: fraction of a subject's disagreement with the group that is shared with the
+    #: other subjects.  a LOWER bound, because the reference is the group's own
+    #: consensus and an error every subject makes is invisible to it.
+    correlated_fraction: float = 0.0915
+    error_rank: int = 1
+    #: R^2 of a held-out subject's log edge strengths predicted from the group.
+    #: this is the number a materialization should record when it falls back here.
+    group_explains_r2: float = 0.2797
+    #: AUC of the group's edge frequency as a score for a held-out subject's edges.
+    #: existence transfers; strength does not, and reporting only one is misleading.
+    existence_auc: float = 0.8153
+    #: log sd of what the group leaves on a held-out subject.  this, not a declared
+    #: 1.5, is the widening a tier-2 prior deserves.
+    residual_log_sd: float = 2.0046
+    n_subjects: int = 26
+    n_sites: int = 4
+    source: str = ("TractoInferno (openneuro ds003900 v1.1.1), 284 subjects for the "
+                   "cohort table, 26 full-coverage subjects for the connectome")
+    measured_at: str = "2026-09-04"
+    from_evidence: bool = False
+
+    @classmethod
+    def load(cls, root: Path | None = None) -> "GroupUncertainty":
+        """read the measurement if it is on disk, else use the compiled-in copy.
+
+        same contract as `TractUncertainty.load` and for the same reason: the
+        defaults ARE the file's contents, so a checkout without the evidence
+        directory behaves identically and `from_evidence` is what tells a
+        provenance report which of the two happened.
+        """
+        try:
+            from ibm.forge.bind import repo_root
+            base = root or repo_root(Path(__file__))
+            data = json.loads((base / _GROUP_EVIDENCE).read_text())
+        except Exception:
+            return cls()
+        try:
+            bs, gc = data["between_subject"], data["group_cost"]
+            bb = data.get("between_block") or {}
+            ec = bs["error_correlation"]
+            return cls(
+                edge_reproducibility=float(bs["mean_existence_probability"]),
+                edge_reproducibility_given_bundle=float(
+                    bs["mean_existence_probability_given_bundle"]),
+                bundle_availability=float(bs["mean_bundle_availability"]),
+                strength_log_sd=float(bs["strength"]["half"]["log_sd_mean"]),
+                between_site_log_sd=float(bb.get("between_block_log_sd") or 0.0),
+                within_site_log_sd=float(bb.get("within_block_log_sd") or 0.0),
+                site_icc=float(bb.get("icc_block") or 0.0),
+                correlated_fraction=float(ec["rho_disagreement_with_group_consensus"]),
+                group_explains_r2=float(gc["log_strength_r2"]),
+                existence_auc=float(gc["existence_auc"]),
+                residual_log_sd=float(gc["residual_log_sd"]),
+                n_subjects=int(data["parcellation"]["n_subjects"]),
+                n_sites=len(bb.get("blocks") or {}) or 1,
+                source=str(data.get("sources", ["tractoinferno"])[0]),
+                measured_at=str(data.get("measured_at", "")),
+                from_evidence=True,
+            )
+        except (KeyError, TypeError, ValueError):
+            return cls()
+
+    def effective_subjects(self, n: int) -> float:
+        """`n` subjects whose deviations share a fraction rho are worth how many.
+
+        the same call into `ibm.runtime.fuse` that `effective_pipelines` makes, on
+        a different rho, and the reason it is a separate method rather than a
+        shared one is that the two rhos are not the same kind of number and a
+        caller that could pass either would eventually pass the wrong one.
+
+        the ceiling is 1/rho, which at the measured value is about eleven.  a group
+        connectome built from a thousand subjects is not a thousand times better
+        determined than one built from twenty, and the widening below does not
+        shrink past that however large the published cohort was.
+        """
+        if n <= 0:
+            return 0.0
+        rho = min(max(self.correlated_fraction, 0.0), 1.0 - 1e-9)
+        try:
+            import numpy as np
+
+            from ibm.runtime.fuse import TeacherPrecision
+            tp = TeacherPrecision(r2=0.0, correlated_fraction=rho,
+                                  error_rank=max(self.error_rank, 1), source=self.source)
+            ev = tp.evidence("structural.axonal_density", np.zeros(n), np.ones(n))
+            return float(ev.effective_constraints())
+        except Exception:
+            return n / ((1.0 - rho) + n * rho)
+
+    def existence_probability(self, found: Any, n_subjects: int, np=None) -> Any:
+        """P(the edge is in this population) from `found` of `n_subjects` carrying it.
+
+        **not the same object as `TractUncertainty.existence_probability`, and the
+        difference is not a refinement.**  that one is a bayes update with a
+        measured false-positive rate, which exists because the phantom has an
+        answer to be wrong about.  real tissue has none: nothing in TractoInferno
+        says an edge two subjects lack is absent rather than missed, so no
+        false-positive rate can be measured and a likelihood ratio built on a
+        guessed one would be a fabrication wearing the shape of a measurement.
+
+        what is left is honest and weaker -- the observed frequency, shrunk toward
+        the base rate by a beta prior of unit weight, with the counts scaled to
+        EFFECTIVE subjects first.  the shrinkage is what stops an edge one subject
+        of twenty carries from being reported as p = 0.05 with the confidence of
+        twenty observations when the twenty are worth about eight.
+        """
+        np = np or B._numpy("tract_prior")
+        n = max(int(n_subjects), 1)
+        k = np.asarray(found, dtype=float)
+        scale = self.effective_subjects(n) / n
+        k_eff, n_eff = k * scale, n * scale
+        base = min(max(self.edge_reproducibility, 1e-6), 1.0 - 1e-6)
+        return (k_eff + base) / (n_eff + 1.0)
+
+    def extra_log_sd(self, *, same_site: bool = False) -> float:
+        """the widening a tier-2 prior deserves, in natural-log units.
+
+        it is the residual a group connectome leaves on a subject it was not
+        measured on -- `residual_log_sd`, measured by holding subjects out -- and
+        not a fraction of the cross-pipeline spread, because the two errors are
+        additive and the between-subject one is the larger.
+
+        `same_site=True` is available and should almost never be true.  the whole
+        reason a materialization reaches tier 2 is that the subject has no
+        diffusion imaging, and a subject with no diffusion imaging was not scanned
+        at the site the published connectome came from.  claiming otherwise removes
+        a term that is a lower bound to begin with.
+        """
+        v = self.residual_log_sd ** 2
+        if not same_site:
+            v += self.between_site_log_sd ** 2
+        return math.sqrt(v)
+
+    def describe(self) -> str:
+        return (f"group connectome cost [{self.source}, {self.measured_at}, "
+                f"{'from evidence' if self.from_evidence else 'compiled in'}]: "
+                f"P(two subjects share an edge) {self.edge_reproducibility:.3f}, "
+                f"subject-subject strength spread x"
+                f"{math.exp(self.strength_log_sd):.2f}, the group explains "
+                f"{self.group_explains_r2:.0%} of a held-out subject's strengths "
+                f"(existence AUC {self.existence_auc:.2f}) and leaves x"
+                f"{math.exp(self.residual_log_sd):.2f}; between-site term x"
+                f"{math.exp(self.between_site_log_sd):.2f} (lower bound)")
+
+
+GROUP = GroupUncertainty.load()
+
+
 # ---------------------------------------------------------------------------
 # support
 # ---------------------------------------------------------------------------
@@ -394,11 +640,119 @@ def tractometric_consensus(sites, *, support: str = "tissue", tractograms=None,
               + f"tier {Tier.SUBJECT_TRACTOGRAM.value}"))
 
 
+def group_connectome(sites, *, matrix=None, lengths_mm=None,
+                     subject_frequency=None, n_subjects: int | None = None,
+                     support: str = "tissue", system: str = "cortical_areas",
+                     parcels=None, min_subject_fraction: float = 0.0,
+                     velocity_m_s: float | None = None,
+                     uncertainty: GroupUncertainty | None = None) -> B.EdgeSet:
+    """a published parcel connectome, unioned permissively and scored per edge.
+
+    the tier-2 counterpart of `tractometric_consensus`, and it makes exactly the
+    same trade for exactly the same reason.  the support is generous -- the
+    threshold is zero, an edge is carried if the connectome has any streamlines at
+    all for that parcel pair -- because `T(i, j) = 0` is permanent and
+    `theta_ij = 0` is not, and the measurement says a group connectome is far more
+    wrong about strength than about existence: a held-out subject's edges are
+    predicted at AUC 0.82 and their strengths at R^2 0.28.  so existence is what
+    the support should follow and strength is what the prior should doubt.
+
+    `subject_frequency` is the (k, k) fraction of the publishing cohort's subjects
+    that carried each parcel pair, when the publisher reports it.  it is the input
+    that makes this tier honest, because it is what `existence_prob` is computed
+    from and it is a real property of the cohort rather than an assumption about
+    it.  most published connectomes do NOT report it -- they report a mean matrix
+    that has already had a consistency threshold applied and not recorded -- and
+    when it is absent every edge is given the population-average reproducibility,
+    which the note says out loud.  a matrix that has already been thresholded and a
+    matrix that has not are indistinguishable here, and that is the publisher's
+    doing rather than something this function can repair.
+
+    `min_subject_fraction` above zero is a *support* decision with permanent
+    consequences and is recorded in the note, the same way `min_pipelines` is at
+    tier 1.  the default is zero, and raising it to clean up sparse edges is the
+    error this module was written about: at the measured reproducibility of 0.32,
+    a 0.5 cutoff discards most of the connectivity any individual actually has.
+    """
+    np = B._numpy("group_connectome")
+    unc = uncertainty or GROUP
+    if matrix is None or lengths_mm is None:
+        raise B.MissingInput(
+            "group_connectome", "matrix and lengths_mm",
+            "a (k, k) parcel-by-parcel structural connectome over somebody else's "
+            "subjects, with the (k, k) mean streamline lengths in mm that go with it "
+            "-- and `subject_frequency`, the fraction of that cohort carrying each "
+            "pair, if the publisher reported it",
+            "the corpus carries several: braingraph-hcp-connectomes and "
+            "enigma-hcp-structural-connectome are the published matrices, "
+            "hansen-lausanne-sc and netneuro-lausanne-sc the parcel-level ones.  if "
+            "the subject has their OWN tractogram, this is the wrong tier -- pass it "
+            "to `edge_support` as `streamlines` and get tier 1")
+
+    from ibm.topologies.tract import tractometric_matrix
+
+    A = np.asarray(matrix, dtype=float)
+    freq = None if subject_frequency is None else np.asarray(subject_frequency, float)
+    if freq is not None and min_subject_fraction > 0.0:
+        A = np.where(freq >= min_subject_fraction, A, 0.0)
+
+    edges = tractometric_matrix(sites, support=support, matrix=A, lengths_mm=lengths_mm,
+                                system=system, parcels=parcels, threshold=0.0,
+                                velocity_m_s=velocity_m_s)
+    if edges.n_edges == 0:
+        return edges
+
+    # place each expanded edge back on its parcel pair, so that a per-parcel
+    # frequency becomes a per-edge one.  the expansion is many sites per parcel and
+    # the frequency is a property of the parcel pair, so every site pair inside one
+    # parcel pair gets the same number -- which is exactly what the input says and
+    # no more.  inventing within-parcel variation here would be the same fabrication
+    # `tractometric_matrix` refuses when it declines to interpolate lengths.
+    t = B.as_sites(sites).require(support, "group_connectome", "tissue site positions")
+    lab = parcels if parcels is not None else t.partitions.get(system)
+    lab = np.asarray(lab)
+    if lab.ndim == 2:
+        lab = np.argmax(lab, axis=1)
+    lab = lab.astype(np.int64)
+    pa = lab[np.asarray(edges.src, np.int64) - t.offset]
+    pb = lab[np.asarray(edges.dst, np.int64) - t.offset]
+
+    n = int(n_subjects or 0)
+    feats = dict(edges.features)
+    if freq is not None and n > 0:
+        f = np.clip(freq[pa, pb], 0.0, 1.0)
+        feats["subjects_found"] = f * n
+        feats["existence_prob"] = unc.existence_probability(f * n, n, np)
+        how = (f"per-edge subject frequency over {n} subjects, {unc.effective_subjects(n):.1f} "
+               f"effective")
+    else:
+        f = np.full(edges.n_edges, unc.edge_reproducibility)
+        feats["subjects_found"] = f * max(n, 1)
+        feats["existence_prob"] = f
+        how = ("NO per-edge subject frequency was supplied, so every edge carries the "
+               "population-average reproducibility 0.32 -- the publisher's own "
+               "thresholding is invisible here and cannot be undone")
+
+    return B.EdgeSet(
+        "tractometric", edges.src, edges.dst, edges.n_sites, feats,
+        directed=edges.directed,
+        note=(f"GROUP CONNECTOME over {A.shape[0]} parcels of {system}, expanded to "
+              f"{edges.n_edges} site edges at threshold 0 and "
+              f"min_subject_fraction={min_subject_fraction:g}.  {how}.  this is somebody "
+              f"else's anatomy: it explains {unc.group_explains_r2:.0%} of a held-out "
+              f"subject's edge strengths and leaves a factor of "
+              f"x{math.exp(unc.residual_log_sd):.1f}, so a prediction resting on it is "
+              f"reportable as a population's connectivity and not as this subject's.  "
+              f"tier {Tier.GROUP_CONNECTOME.value}"))
+
+
 def edge_support(sites, *, tier: Tier | str = Tier.SUBJECT_TRACTOGRAM,
                  tractograms: Mapping[str, Any] | None = None,
                  streamlines=None, matrix=None, lengths_mm=None,
+                 subject_frequency=None, n_subjects: int | None = None,
                  support: str = "tissue", min_pipelines: int = 1,
                  uncertainty: TractUncertainty | None = None,
+                 group: GroupUncertainty | None = None,
                  **kw) -> tuple[B.EdgeSet, Tier]:
     """the tractometric support, built at whichever tier the inputs allow.
 
@@ -417,6 +771,12 @@ def edge_support(sites, *, tier: Tier | str = Tier.SUBJECT_TRACTOGRAM,
     a tractogram warped from a template subject is the case that matters: it
     arrives as streamlines and is not this subject's anatomy, and nothing in the
     file would say so.
+
+    `subject_frequency` and `n_subjects` are tier 2's version of `n_pipelines`:
+    the fraction of the publishing cohort carrying each parcel pair, and how many
+    subjects that was.  they are optional because most published connectomes do
+    not report them, and passing them is the difference between a per-edge
+    existence probability and a population average applied to every edge alike.
 
     the third tier is not implemented here and that is deliberate: it is
     `cortical_association`, it already exists, and it lives on the cortical
@@ -440,13 +800,14 @@ def edge_support(sites, *, tier: Tier | str = Tier.SUBJECT_TRACTOGRAM,
             min_pipelines=1, uncertainty=unc, **kw),
             tier.demoted_to(Tier.SUBJECT_TRACTOGRAM))
     if matrix is not None and lengths_mm is not None:
-        from ibm.topologies.tract import tractometric_matrix
-        edges = tractometric_matrix(sites, support=support, matrix=matrix,
-                                    lengths_mm=lengths_mm, **kw)
-        # threshold 0 on purpose, and the note says so: a group connectome that
-        # has already been thresholded by its publisher has had this decision
-        # taken for it once, and taking it a second time here compounds two
-        # unrecorded cutoffs into one number nobody can reconstruct.
+        # threshold 0 on purpose, and `group_connectome`'s note says so: a group
+        # connectome that has already been thresholded by its publisher has had
+        # this decision taken for it once, and taking it a second time here
+        # compounds two unrecorded cutoffs into one number nobody can reconstruct.
+        edges = group_connectome(sites, matrix=matrix, lengths_mm=lengths_mm,
+                                 subject_frequency=subject_frequency,
+                                 n_subjects=n_subjects, support=support,
+                                 uncertainty=group, **kw)
         return edges, tier.demoted_to(Tier.GROUP_CONNECTOME)
 
     raise B.MissingInput(
@@ -506,7 +867,8 @@ def theta_prior(edges: B.EdgeSet, *, tier: Tier | str = Tier.SUBJECT_TRACTOGRAM,
                 tying: Tying = Tying.PER_SITE,
                 groups: Any = None,
                 median_strength: float = 1.0,
-                uncertainty: TractUncertainty | None = None) -> TractPriorSet:
+                uncertainty: TractUncertainty | None = None,
+                group: GroupUncertainty | None = None) -> TractPriorSet:
     """a lognormal prior on coupling strength per edge, widened by the measurement.
 
     lognormal because the parameter is positive and known to within a
@@ -539,6 +901,17 @@ def theta_prior(edges: B.EdgeSet, *, tier: Tier | str = Tier.SUBJECT_TRACTOGRAM,
     connectome five times more certain than the data supports, and would do it
     more confidently the more pipelines it was given.
 
+    **at tier 2 the spread is dominated by a term no number of pipelines touches.**
+    `extra` is `GroupUncertainty.extra_log_sd()` -- what a group connectome
+    measurably leaves on a subject it was not measured on, plus the between-site
+    term -- and it is added in quadrature outside the sqrt(n_eff) reduction because
+    it is not a pipeline error and does not average away.  in practice it swamps
+    the first term: the pipeline part of a tier-2 spread is at most 1.36 in log
+    units and the group part is 2.0, so a tier-2 prior is wide however good the
+    tractography behind the published matrix was.  that is the correct shape.  the
+    thing being approximated is not this subject's connectome measured badly, it is
+    somebody else's connectome measured well.
+
     `strengths`, when supplied, is a per-edge consensus strength in whatever units
     the process's parameter is in; the default of 1.0 with the existence
     probability doing the work is the right choice when the process has no scale
@@ -550,6 +923,7 @@ def theta_prior(edges: B.EdgeSet, *, tier: Tier | str = Tier.SUBJECT_TRACTOGRAM,
     """
     np = B._numpy("tract_prior")
     unc = uncertainty or MEASURED
+    grp = group or GROUP
     tier = Tier(tier)
     m = edges.n_edges
 
@@ -568,12 +942,17 @@ def theta_prior(edges: B.EdgeSet, *, tier: Tier | str = Tier.SUBJECT_TRACTOGRAM,
     if tier is Tier.GROUP_CONNECTOME:
         # a group matrix has already averaged over subjects, so its edges carry
         # BETWEEN-SUBJECT variance on top of the pipeline error -- and it is not
-        # this subject's anatomy at all.  the widening is a declared judgement,
-        # not a measurement, and it is small on purpose: the honest response to an
-        # unmeasured extra error is to say it is unmeasured, and the alternative
-        # (leaving it out) would rank a group connectome equal to the subject's
-        # own scan.
-        extra = math.log(1.5)
+        # this subject's anatomy at all.  this used to be a declared judgement of
+        # log(1.5), chosen small because the extra error was unmeasured.  it is
+        # measured now, on TractoInferno, by holding subjects out of a group
+        # connectome and predicting them: what it leaves is a factor of 7.4, which
+        # is log(7.4) = 2.0 and not log(1.5) = 0.4.  the old figure understated the
+        # cost of falling to tier 2 by a factor of five in log units, which is the
+        # difference between a group connectome ranking just below a subject's own
+        # scan and ranking where it belongs.  `same_site` is not offered here: a
+        # subject who reaches tier 2 has no diffusion imaging and was therefore not
+        # scanned wherever the published connectome came from.
+        extra = grp.extra_log_sd()
     elif tier is Tier.DISTANCE_PRIOR:
         extra = math.log(3.0)
     else:
@@ -600,6 +979,18 @@ def theta_prior(edges: B.EdgeSet, *, tier: Tier | str = Tier.SUBJECT_TRACTOGRAM,
             f"{n_eff:.1f} effective); spread x{spread:.2f} from a measured "
             f"cross-pipeline log sd of {unc.strength_log_sd:.3f} reduced by "
             f"sqrt(n_eff) and NOT by sqrt(n)")
+    if tier is Tier.GROUP_CONNECTOME:
+        # the tier-1 sentence above is true and beside the point here: the
+        # pipeline term is 1.36/sqrt(n_eff) and the group term is 2.07, so saying
+        # only the first would attribute a spread of x12 to tractography when
+        # tractography contributes a tenth of its variance.
+        note += (f"; PLUS a measured group term of {extra:.3f} in quadrature -- what a "
+                 f"group connectome leaves on a held-out subject "
+                 f"(x{math.exp(grp.residual_log_sd):.1f}) and the between-site lower "
+                 f"bound (x{math.exp(grp.between_site_log_sd):.2f}).  the group term "
+                 f"dominates and does not shrink with more pipelines or more subjects")
+    elif tier is Tier.DISTANCE_PRIOR:
+        note += f"; PLUS a declared distance-prior term of {extra:.3f} in quadrature"
 
     if tying is Tying.PER_SITE or groups is None:
         priors = tuple(lognormal(float(x), spread, units="dimensionless",
@@ -622,9 +1013,16 @@ def theta_prior(edges: B.EdgeSet, *, tier: Tier | str = Tier.SUBJECT_TRACTOGRAM,
 
 
 def describe() -> str:
-    """one line a provenance report can print without importing anything else."""
-    return MEASURED.describe()
+    """two lines a provenance report can print without importing anything else.
+
+    both, always, and never one.  the tier-1 line alone reads as though the error
+    of a connectome were the error of tractography, which is the belief the tier-2
+    measurement exists to correct: brains differ from each other more than
+    algorithms differ about one brain.
+    """
+    return MEASURED.describe() + "\n" + GROUP.describe()
 
 
-__all__ = ["Tier", "TractUncertainty", "TractPriorSet", "MEASURED",
-           "tractometric_consensus", "edge_support", "theta_prior", "describe"]
+__all__ = ["Tier", "TractUncertainty", "GroupUncertainty", "TractPriorSet",
+           "MEASURED", "GROUP", "tractometric_consensus", "group_connectome",
+           "edge_support", "theta_prior", "describe"]

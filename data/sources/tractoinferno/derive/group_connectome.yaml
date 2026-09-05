@@ -1,0 +1,98 @@
+# a recipe, not a run.  its output lives under evidence/<recipe>@<version>/.
+name: group_connectome
+version: 1
+doc: >-
+  measure what a GROUP connectome costs when it is applied to a subject it was
+  not measured on.  `tract_uncertainty` measured how much tractography
+  ALGORITHMS disagree about one brain; this measures how much BRAINS differ,
+  which is the error tier 2 of ibm/topologies/tract_prior.py actually carries
+  and which had never been measured -- the tier-2 widening was a declared
+  log(1.5) with a comment admitting it was a judgement.  it is 2.0, and the
+  finding that matters is that two brains differ MORE than two algorithms do.
+inputs:
+- source: tractoinferno
+  path: derivatives/*/sub-*/tractography/*.trk
+  what: expert-curated bundle tractograms, 30 subjects held locally, read in full
+- source: tractoinferno
+  path: derivatives/*/sub-*/mask/sub-*__mask_{wm,gm}.nii.gz
+  what: the white and grey masks whose first two moments define the shared frame
+- source: tractoinferno
+  path: .openneuro-manifest-1.1.1.json
+  what: >-
+    the dataset's own file list with per-file s3 urls, used two ways: 1000-byte
+    range requests over all 6901 tractograms of all 284 subjects, which gives
+    bundle availability and streamline counts cohort-wide for a few megabytes;
+    and a 5.1 GiB partial mirror of 36 further subjects (8 bundles each) from
+    acquisition blocks B, C and D, which the local root does not hold.  the
+    mirror lands in --cache and NOT in the acquired root, whose .location.yaml
+    records complete subjects
+tool:
+  name: scripts/measure_group_connectome.py
+  runtime: python 3.12, numpy, scipy, nibabel, pyyaml
+  reads_streamlines_with: scripts/measure_tract_uncertainty.py's trk walker, imported
+    rather than copied -- two points per streamline out of 8.8 GiB of bundles, and one
+    home for a binary-format reader
+parameters:
+  bin_mm: 20.0
+  min_bin_points: 200
+  keep_frac: 0.75
+  min_z: 114
+  per_block: 12
+  parcellation: >-
+    CUBIC SPATIAL BINNING in a normalized frame, not an atlas.  ibm.anatomy.systems
+    has nothing in register with a tractoinferno subject and the release ships no
+    freesurfer surface and no MNI warp, so an atlas here would be a fabricated
+    registration.  an edge is 'these two 20 mm boxes are connected'.
+  registration: >-
+    7 parameters: the centroid and the per-axis standard deviation of the subject's
+    own white+grey mask, matched to the cohort median.  no rotation and NO FITTED
+    WARP -- a fitted warp would let two subjects be deformed into agreement and the
+    between-subject spread would come out however good the registration was.  the
+    residual is measured, not assumed: bundle endpoint centroids scatter 3.6-11.0 mm
+    across subjects, median 7.3, which is why the bins are 20 mm and not smaller.
+  site_labels: >-
+    NOT DISTRIBUTED, and not invented here.  ds003900 v1.1.1 ships 10884 files and
+    no participants.tsv; the gradient tables are harmonised to one 64-direction
+    b=1000 scheme for every subject and every volume is resampled to 1 mm, so the
+    scanner signature is processed away by design.  what survives is the field of
+    view, which the pipeline crops to the brain but cannot extend, and over the 284
+    subjects the cropped z extent is sharply multimodal with an EMPTY GAP between
+    120 and 130.  the groups it induces are exactly contiguous in subject id --
+    A 1000-1096 (97), B 1097-1158 (62), C 1159-1197 (39), D 1198-1283 (86) -- and
+    two of them match the paper's per-site counts exactly (BIL&GIN 39, Stockholm
+    86) with a third within two (Bilingualism 64 vs 62).  that is enough to say the
+    id ordering follows the source cohorts and that these are site boundaries; it is
+    NOT enough to name a site or to split block A, which by subtraction still holds
+    three of them.  every between-block number is therefore a LOWER bound on the
+    between-site spread and no block is given a name.
+  bundle_subset_for_the_site_arm: >-
+    AF_L/R, ILF_L/R, SLF_L/R, CC_Oc, CC_Fr_1 -- the eight highest-availability
+    bundles that also spread over the lobes.  a site comparison restricted to one
+    lobe would measure the lobe.  5.1 GiB is enough to answer the question; 40 is
+    not a better answer.
+what_it_cannot_measure:
+  rho_against_a_ground_truth: >-
+    the phantom's 0.317 has no counterpart here and none is offered.  computing the
+    fraction of error that pipelines share needs an answer to be wrong about, and
+    real tissue has none.  what IS computed is the correlation of subjects'
+    disagreement with the group's own consensus, which is a different and
+    systematically smaller number because any error every subject makes is absorbed
+    into the consensus.  it is reported as a lower bound, and the phantom's figure
+    still governs the shared part -- with the aggravation that all 284 subjects went
+    through ONE pipeline where the phantom's 0.317 spanned twenty.
+  false_positive_rate: >-
+    same reason.  no ground truth, so no measured false-positive rate, so tier 2
+    gets a shrunk frequency rather than a likelihood ratio, and GroupUncertainty
+    says so in the docstring of the method that returns it.
+  whole_brain_connectivity: >-
+    the release ships 32 curated bundles per subject and no whole-brain tractogram,
+    so the edge universe is the union of those bundles' terminations.  no bundle is
+    present in all 284 subjects: the best is 0.94 and IFOF is 0.57.
+outputs:
+- path: evidence/group_connectome@1/measured.json
+  what: between-subject edge existence and strength spread, the between-block
+    contrast with its permutation null, the effective independent subject count,
+    the leave-one-subject-out cost of a group connectome, the cohort-wide bundle
+    availability table over all 284 subjects, and the measured registration residual
+consumed_by:
+- ibm/topologies/tract_prior.py

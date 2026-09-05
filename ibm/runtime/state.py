@@ -68,12 +68,28 @@ def _attr(obj: Any, *names: str, default: Any = None) -> Any:
 
 @dataclass(frozen=True)
 class Block:
-    """one component over its materialized sites.
+    """one component over its materialized sites *on one support*.
 
     `basis` is present only for banded forms.  a scalar block has no window
     structure to speak of -- its belief is one number and one variance over the
     whole window -- and giving it a basis anyway would invite code that quietly
     assumes every block has a spectrum.
+
+    the identity of a block is `(component, support)` and not the component
+    alone.  a support is a *sampling* of a domain, not a different quantity
+    (`Component.alt_supports`), and a component admissible on two of them can be
+    instantiated on both at once so long as they cover disjoint positions:
+    cortical population state indexed by column nodes on the folded sheet,
+    subcortical population state indexed by parenchyma voxels, one component and
+    two blocks.  the alternative -- one block per component -- forced a
+    materialization to choose, and choosing the sheet is what left the thalamus,
+    the brainstem and the cerebellum with no state at all.
+
+    what is *not* permitted is two blocks over the same positions.  that is the
+    same quantity entered twice, and it is checked geometrically in
+    `ibm.materialize.build._overlap_check` rather than assumed here, because
+    whether two samplings actually cover the same millimetres is a fact about one
+    subject's anatomy and not about the declaration.
     """
 
     component: str
@@ -84,6 +100,15 @@ class Block:
     sites: np.ndarray | None = None          # ids into the model's site table
     support: str = ""
     spacing_mm: float = float("nan")
+
+    @property
+    def key(self) -> tuple[str, str]:
+        """what a block is identified by: one component on one support."""
+        return (self.component, self.support)
+
+    @property
+    def label(self) -> str:
+        return f"{self.component}@{self.support}" if self.support else self.component
 
     @property
     def k(self) -> int:
@@ -114,6 +139,22 @@ class Layout:
     materialization (see `ibm.vocabulary.Region`), so the only thing that can
     turn `Anat("cortical_layers", "iv")` into weights over sites is the model
     that built the site table.
+
+    blocks are keyed by `(component, support)` rather than by component.  the
+    two are the same thing for almost every materialization, and differ exactly
+    where one has to: a component admissible on several supports may be
+    instantiated on more than one of them at once, cortex on the sheet and
+    subcortex in the volume, and the allocation plan has to be able to say so.
+    what the plan may *not* contain is the same component on the same support
+    twice -- that is one block written by two processes, which is a bookkeeping
+    error rather than a modelling decision, and it is still refused here.
+
+    blocks of one component are contiguous and in a stable order, so the
+    component's sites are the concatenation of its blocks' sites in that order.
+    that is what lets the rest of the runtime keep holding one belief per
+    component: the split is a fact about where the positions came from, and a
+    process reading `neural.exc.activity` is reading one physical quantity
+    whether its positions were sampled off a sheet or out of a volume.
     """
 
     blocks: tuple[Block, ...]
@@ -121,12 +162,23 @@ class Layout:
     region_weights: Any = None               # (component, Region) -> weights in [0,1]
 
     def __post_init__(self) -> None:
-        seen: set[str] = set()
+        seen: set[tuple[str, str]] = set()
+        order: list[str] = []
         for b in self.blocks:
-            if b.component in seen:
-                raise ValueError(f"component {b.component!r} allocated twice; a materialized "
-                                 "model holds one block per component, not one per process")
-            seen.add(b.component)
+            if b.key in seen:
+                raise ValueError(
+                    f"component {b.component!r} allocated twice on support {b.support!r}; a "
+                    "materialized model holds one block per (component, support), not one per "
+                    "process.  two samplings of one domain are a legitimate split and get two "
+                    "blocks; the same sampling twice is a double count")
+            if b.component in order and order[-1] != b.component:
+                raise ValueError(
+                    f"the blocks of {b.component!r} are not contiguous in this layout.  a "
+                    "component's sites are the concatenation of its blocks' sites in layout "
+                    "order, so interleaving them would make that concatenation mean nothing")
+            if b.component not in order or order[-1] != b.component:
+                order.append(b.component)
+            seen.add(b.key)
 
     # -- construction ----------------------------------------------------
 
@@ -178,25 +230,83 @@ class Layout:
     def __contains__(self, cid: str) -> bool:
         return any(b.component == cid for b in self.blocks)
 
-    def __getitem__(self, cid: str) -> Block:
-        for b in self.blocks:
-            if b.component == cid:
-                return b
-        raise KeyError(f"component {cid!r} is not materialized in this model; either the "
-                       "request did not reach it or a process names state the trace missed")
+    def __getitem__(self, key: str | tuple[str, str]) -> Block:
+        """one block by `(component, support)`, or a component's blocks merged.
+
+        indexing by a bare component id is the common path and returns exactly
+        the block when there is one.  where a component was split across two
+        supports it returns the *merged* block -- same form, same band, same
+        basis, sites concatenated in layout order -- because that is what the
+        rest of the runtime is holding a belief about: one physical quantity over
+        every position at which it was instantiated.  the merged block reports no
+        support and no spacing, deliberately, so that nothing downstream can read
+        a single support or a single r(q) off a component that has two.
+
+        index by the pair to reach one half of a split.
+        """
+        if isinstance(key, tuple):
+            cid, support = key
+            for b in self.blocks:
+                if b.key == (cid, support):
+                    return b
+            raise KeyError(
+                f"component {cid!r} is not materialized on support {support!r}; this model has "
+                f"it on {', '.join(self.supports_of(cid)) or 'no support at all'}")
+        parts = self.blocks_of(key)
+        if not parts:
+            raise KeyError(f"component {key!r} is not materialized in this model; either the "
+                           "request did not reach it or a process names state the trace missed")
+        if len(parts) == 1:
+            return parts[0]
+        return self._merged(parts)
+
+    @staticmethod
+    def _merged(parts: Sequence[Block]) -> Block:
+        first = parts[0]
+        sites = None
+        if all(p.sites is not None for p in parts):
+            sites = np.concatenate([np.asarray(p.sites) for p in parts])
+        return Block(first.component, first.uncertainty, sum(p.n_sites for p in parts),
+                     first.band, first.basis, sites, "", float("nan"))
+
+    def blocks_of(self, cid: str) -> tuple[Block, ...]:
+        """every block of one component, in layout order.  usually one."""
+        return tuple(b for b in self.blocks if b.component == cid)
+
+    def supports_of(self, cid: str) -> tuple[str, ...]:
+        return tuple(b.support for b in self.blocks_of(cid))
+
+    def is_split(self, cid: str) -> bool:
+        """was this component instantiated on more than one support at once?"""
+        return len(self.blocks_of(cid)) > 1
 
     @property
     def components(self) -> tuple[str, ...]:
-        return tuple(b.component for b in self.blocks)
+        """the distinct components, in layout order.  shorter than `blocks`."""
+        out: list[str] = []
+        for b in self.blocks:
+            if not out or out[-1] != b.component:
+                out.append(b.component)
+        return tuple(out)
+
+    @property
+    def split(self) -> tuple[str, ...]:
+        return tuple(c for c in self.components if self.is_split(c))
 
     def weights(self, component: str, region: Region) -> np.ndarray:
-        """soft membership of each site of a block in a region.
+        """soft membership of each site of a component in a region.
 
         a partition boundary is a gradient, not a wall (ARCHITECTURE.md §2), so
         this returns weights in [0,1] and callers multiply by them rather than
-        thresholding.  with no resolver the whole block is selected, which is the
-        honest reading of `Everywhere` and the only safe default for a model that
-        has not built an atlas.
+        thresholding.  with no resolver the whole component is selected, which is
+        the honest reading of `Everywhere` and the only safe default for a model
+        that has not built an atlas.
+
+        for a split component the answer spans both supports, concatenated in
+        layout order.  that is the one shape a process can use: a region is a set
+        of positions and does not know which sampling produced them, so
+        `Anat("thalamic_nuclei", "vpl")` selects the parenchyma half and none of
+        the sheet half without either side having to be named.
         """
         b = self[component]
         if isinstance(region, Everywhere) or self.region_weights is None:
@@ -207,20 +317,29 @@ class Layout:
                              f"expected {(b.n_sites,)}")
         return np.clip(w, 0.0, 1.0)
 
-    def cost(self) -> dict[str, int]:
-        return {b.component: b.cost for b in self.blocks}
+    def cost(self) -> dict[tuple[str, str], int]:
+        """numbers stored per block.  keyed by (component, support), like the plan."""
+        return {b.key: b.cost for b in self.blocks}
+
+    def cost_by_component(self) -> dict[str, int]:
+        out: dict[str, int] = {}
+        for b in self.blocks:
+            out[b.component] = out.get(b.component, 0) + b.cost
+        return out
 
     def describe(self) -> str:
-        rows = [(b.component, b.uncertainty, str(b.n_sites), str(b.k),
+        rows = [(b.component, b.support or "-", b.uncertainty, str(b.n_sites), str(b.k),
                  f"{b.band.lo_hz:g}-{b.band.hi_hz:g}", f"{b.cost:,}") for b in self.blocks]
-        head = ("component", "form", "sites", "k", "band Hz", "numbers")
+        head = ("component", "support", "form", "sites", "k", "band Hz", "numbers")
         w = [max(len(h), *(len(r[i]) for r in rows)) if rows else len(h)
              for i, h in enumerate(head)]
         out = ["  ".join(h.ljust(x) for h, x in zip(head, w)),
                "  ".join("-" * x for x in w)]
         out += ["  ".join(c.ljust(x) for c, x in zip(r, w)) for r in rows]
-        out.append(f"total {sum(b.cost for b in self.blocks):,} numbers "
-                   f"over {len(self.blocks)} blocks")
+        n_split = len(self.split)
+        out.append(f"total {sum(b.cost for b in self.blocks):,} numbers over "
+                   f"{len(self.blocks)} blocks / {len(self.components)} components"
+                   + (f", {n_split} of them split across supports" if n_split else ""))
         return "\n".join(out)
 
 
@@ -290,7 +409,7 @@ class State:
 
     @classmethod
     def zeros(cls, layout: Layout) -> "State":
-        return cls(layout, {b.component: b.zero() for b in layout})
+        return cls(layout, {c: layout[c].zero() for c in layout.components})
 
     @classmethod
     def prior(cls, layout: Layout, sd: float = 1.0, beta: float = 1.0) -> "State":
@@ -302,13 +421,14 @@ class State:
         power asserts something much stronger than ignorance.
         """
         out: dict[str, Any] = {}
-        for b in layout:
+        for c in layout.components:
+            b = layout[c]
             if b.uncertainty == "spectral" and b.basis is not None:
                 f = np.maximum(b.basis.freqs_hz, b.basis.freqs_hz[1] if b.basis.k > 1 else 1.0)
                 psd = (sd * sd) * f ** (-beta)
-                out[b.component] = SpectralGaussian.from_psd(b.basis, psd, shape=(b.n_sites,))
+                out[c] = SpectralGaussian.from_psd(b.basis, psd, shape=(b.n_sites,))
             else:
-                out[b.component] = ScalarGaussian.prior((b.n_sites,), 0.0, sd)
+                out[c] = ScalarGaussian.prior((b.n_sites,), 0.0, sd)
         return cls(layout, out)
 
     def copy(self) -> "State":
@@ -467,8 +587,14 @@ class State:
         return out
 
     def _selected(self, components: Sequence[str] | None) -> list[Block]:
+        """one entry per component -- merged, where a component was split.
+
+        the packing is over beliefs and there is one belief per component, so
+        iterating `self.layout` here would visit a split component once per
+        support and pack it twice.
+        """
         if components is None:
-            return [b for b in self.layout if b.component in self.beliefs]
+            return [self.layout[c] for c in self.layout.components if c in self.beliefs]
         return [self.layout[c] for c in components if c in self.beliefs]
 
     # -- reporting -------------------------------------------------------
@@ -491,20 +617,22 @@ class State:
 
     def describe(self) -> str:
         rows = []
-        for b in self.layout:
-            if b.component not in self.beliefs:
+        for cid in self.layout.components:
+            if cid not in self.beliefs:
                 continue
-            belief = self.beliefs[b.component]
+            b = self.layout[cid]
+            belief = self.beliefs[cid]
             if b.uncertainty == "spectral":
                 sd = float(np.sqrt(belief.total_psd().sum(-1).mean()))
                 extra = f"phase {float(belief.phase_concentration().mean()):.2f}"
             else:
                 sd = float(np.sqrt(np.mean(belief.var)))
                 extra = "-"
-            rows.append((b.component, b.uncertainty, str(b.n_sites),
+            rows.append((cid, "+".join(self.layout.supports_of(cid)) or "-", b.uncertainty,
+                         str(b.n_sites),
                          f"{float(np.mean(np.abs(belief.mean))):.3g}", f"{sd:.3g}", extra,
-                         ";".join(self.provenance.get(b.component, []))[:48] or "-"))
-        head = ("component", "form", "sites", "|mean|", "sd", "note", "provenance")
+                         ";".join(self.provenance.get(cid, []))[:48] or "-"))
+        head = ("component", "support", "form", "sites", "|mean|", "sd", "note", "provenance")
         w = [max(len(h), *(len(r[i]) for r in rows)) if rows else len(h)
              for i, h in enumerate(head)]
         out = ["  ".join(h.ljust(x) for h, x in zip(head, w)),

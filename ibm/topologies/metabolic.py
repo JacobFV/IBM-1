@@ -133,7 +133,12 @@ METABOLIC_EXCHANGE = REGISTRY.topology(Topology(
     "the Krogh geometry, because the molecule has left the tree and the endothelium is the "
     "first barrier.  the edge carries the exchange surface rather than a count, since flux "
     "is permeability times area and capillary surface density is one of the few directly "
-    "measured quantities in this part of the ontology",
+    "measured quantities in this part of the ontology.  the tissue side is declared over the "
+    "parenchyma volume and is left there deliberately: the metric is radial distance from a "
+    "vessel wall, which is euclidean on any support -- the molecule has left the tree and is "
+    "crossing an endothelium, not travelling within a sheet -- so nothing about it is "
+    "support-relative in the way `local` is.  what a cortical materialization would need is "
+    "the `tissue_support` argument pointed at the sheet, which the builder already takes",
     on=("vascular_tree", "tissue"),
     edge_features=("distance_mm", "contact_area_mm2"),
     directed=False,

@@ -49,102 +49,6 @@ from ibm.registry import REGISTRY, Topology
 from ibm.topologies import builders as B
 from ibm.vocabulary import Provenance
 
-_FACES_WHAT = (
-    "an (m, 3) integer array of triangles indexing this table's rows -- the "
-    "triangulation of the materialized surface sites.  a set of surface positions "
-    "without its faces is a point cloud, and a point cloud has no geodesic metric: "
-    "reconstructing one by nearest-neighbour linking is exactly the step that "
-    "reintroduces the across-the-sulcus edges this topology exists to exclude")
-_FACES_WHERE = (
-    "FreeSurfer ?h.midthickness / ?h.white surfaces, or the HCP fs_LR 32k "
-    "midthickness GIFTI, read with nibabel; connectome-workbench "
-    "-surface-create-sphere and -metric-resample if the materialized sites are a "
-    "decimation of the full mesh (data/sources: freesurfer, nibabel, "
-    "connectome-workbench, templateflow)")
-
-
-def _mesh_edges(np, xyz, faces, builder: str):
-    """unique undirected mesh edges and their euclidean lengths."""
-    f = np.asarray(faces, dtype=np.int64)
-    if f.ndim != 2 or f.shape[1] != 3:
-        raise B.MissingInput(builder, "faces", _FACES_WHAT + f" (got shape {f.shape})",
-                             _FACES_WHERE)
-    if f.size and (f.min() < 0 or f.max() >= len(xyz)):
-        raise B.MissingInput(
-            builder, "faces",
-            "triangles indexing this table's rows; the given faces index vertices "
-            f"outside [0, {len(xyz)}), so they belong to a different (probably "
-            "undecimated) mesh than the materialized sites", _FACES_WHERE)
-    e = np.concatenate([f[:, [0, 1]], f[:, [1, 2]], f[:, [2, 0]]], axis=0)
-    e = np.unique(np.sort(e, axis=1), axis=0)
-    w = np.linalg.norm(xyz[e[:, 0]] - xyz[e[:, 1]], axis=1)
-    return e, w
-
-
-def _geodesic_scipy(np, n, e, w, radius, k, chunk):
-    from scipy.sparse import csr_matrix
-    from scipy.sparse.csgraph import dijkstra
-
-    rows = np.concatenate([e[:, 0], e[:, 1]])
-    cols = np.concatenate([e[:, 1], e[:, 0]])
-    A = csr_matrix((np.concatenate([w, w]), (rows, cols)), shape=(n, n))
-
-    src, dst, geo = [], [], []
-    lim = radius if radius is not None else np.inf
-    for a in range(0, n, chunk):
-        idx = np.arange(a, min(a + chunk, n))
-        D = dijkstra(A, directed=False, indices=idx, limit=lim)
-        if k is not None:
-            kk = int(min(k + 1, D.shape[1]))
-            part = np.argpartition(np.where(np.isfinite(D), D, np.inf), kk - 1, axis=1)
-            keep = np.zeros(D.shape, dtype=bool)
-            np.put_along_axis(keep, part[:, :kk], True, axis=1)
-            D = np.where(keep, D, np.inf)
-        r, c = np.nonzero(np.isfinite(D) & (D > 0.0))
-        src.append(idx[r]); dst.append(c); geo.append(D[r, c])
-    return (np.concatenate(src) if src else np.zeros(0, dtype=np.int64),
-            np.concatenate(dst) if dst else np.zeros(0, dtype=np.int64),
-            np.concatenate(geo) if geo else np.zeros(0, dtype=float))
-
-
-def _geodesic_python(np, n, e, w, radius, k):
-    """dijkstra per source with a heap.
-
-    the fallback when scipy is absent.  it is the same algorithm, an order of
-    magnitude slower, and it exists so that the ontology's central metric is not
-    conditional on an optional dependency.
-    """
-    import heapq
-
-    adj: list[list[tuple[int, float]]] = [[] for _ in range(n)]
-    for (a, b), ww in zip(e.tolist(), w.tolist()):
-        adj[a].append((b, ww)); adj[b].append((a, ww))
-    lim = float(radius) if radius is not None else float("inf")
-    kk = int(k) if k is not None else None
-
-    src, dst, geo = [], [], []
-    for s in range(n):
-        dist = {s: 0.0}
-        heap = [(0.0, s)]
-        out: list[tuple[float, int]] = []
-        while heap:
-            d, v = heapq.heappop(heap)
-            if d > dist.get(v, float("inf")):
-                continue
-            if v != s:
-                out.append((d, v))
-                if kk is not None and len(out) >= kk:
-                    break
-            for u, ww in adj[v]:
-                nd = d + ww
-                if nd <= lim and nd < dist.get(u, float("inf")):
-                    dist[u] = nd
-                    heapq.heappush(heap, (nd, u))
-        for d, v in out:
-            src.append(s); dst.append(v); geo.append(d)
-    return (np.asarray(src, dtype=np.int64), np.asarray(dst, dtype=np.int64),
-            np.asarray(geo, dtype=float))
-
 
 @B.builder(
     "cortical_geodesic",
@@ -169,6 +73,11 @@ def cortical_geodesic(sites, *, support: str = "cortical_surface", faces=None,
     to cap a physical neighbourhood's degree.  neither given means k = 6, the
     degree of a regular triangulation, which is the smallest graph on which a
     surface laplacian is defined at all.
+
+    the metric itself lives in `ibm.topologies.builders.geodesic_pairs_within`,
+    beside the euclidean `pairs_within`, because it belongs to the *support* and
+    not to this topology: more than one relation is measured with the sheet's own
+    distance, and `local` on the sheet is the other one.
     """
     np = B._numpy("cortical_geodesic")
     t = sites.require(support, "cortical_geodesic",
@@ -177,34 +86,14 @@ def cortical_geodesic(sites, *, support: str = "cortical_surface", faces=None,
     f = faces if faces is not None else t.opt("faces")
     if f is None:
         raise B.MissingInput("cortical_geodesic", f"{support}.columns['faces']",
-                             _FACES_WHAT, _FACES_WHERE)
+                             B.FACES_WHAT, B.FACES_WHERE)
     if radius_mm is None and k is None:
         k = 6
 
-    e, w = _mesh_edges(np, xyz, f, "cortical_geodesic")
-    n = t.n
-    if n < 2 or len(e) == 0:
+    i, j, gmin = B.geodesic_pairs_within(xyz, f, "cortical_geodesic",
+                                         radius_mm=radius_mm, k=k, chunk=int(chunk))
+    if not len(i):
         return B.empty("cortical_surface", sites.n_total, ("geodesic_mm", "distance_mm"))
-
-    if B._kdtree() is not None:      # scipy present, so csgraph is too
-        s, d, g = _geodesic_scipy(np, n, e, w, radius_mm, k, int(chunk))
-    else:                                                     # pragma: no cover
-        s, d, g = _geodesic_python(np, n, e, w, radius_mm, k)
-
-    # one fact per pair.  a k-nearest sweep is not symmetric, so the union is
-    # taken and the shorter of the two paths kept -- they differ only by the
-    # tie-breaking inside dijkstra, and keeping both copies would let them drift.
-    lo = np.minimum(s, d); hi = np.maximum(s, d)
-    key = lo * np.int64(n) + hi
-    order = np.argsort(key, kind="stable")
-    key, g = key[order], g[order]
-    lo, hi = lo[order], hi[order]
-    first = np.ones(len(key), dtype=bool)
-    if len(key) > 1:
-        first[1:] = key[1:] != key[:-1]
-    keep = np.nonzero(first)[0]
-    gmin = np.minimum.reduceat(g, keep) if len(keep) else g
-    i, j = lo[keep], hi[keep]
 
     chord = np.linalg.norm(xyz[i] - xyz[j], axis=1)
     return B.EdgeSet(

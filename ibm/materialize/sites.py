@@ -295,6 +295,37 @@ def template_volume(support: str, frame: str = "subject_t1",
 # ---------------------------------------------------------------------------
 
 
+def _min_distance(xyz: np.ndarray, pts: np.ndarray) -> np.ndarray:
+    """distance from each position to the nearest of a set of anchor points.
+
+    a kd-tree where scipy has one, and the dense pairwise sweep otherwise.  the
+    dense form was adequate while the only anchors were device contacts -- sixty
+    electrodes against ten thousand sites is a 6e5 matrix -- and stops being
+    adequate the moment an anchor set is anatomical rather than instrumental.
+    `Near` is declared over "device *or landmark* positions", and the landmark
+    that matters here is the cortical sheet itself: a few hundred thousand
+    surface vertices against a whole-brain octree is a 1e10 matrix that no
+    machine will allocate, and the region it defines -- parenchyma more than d mm
+    from the sheet -- is exactly how a materialization says "the subcortex", so
+    the slow path is not an acceptable one.
+    """
+    xyz = np.asarray(xyz, float).reshape(-1, 3)
+    pts = np.asarray(pts, float).reshape(-1, 3)
+    if not len(xyz) or not len(pts):
+        return np.full(len(xyz), np.inf)
+    try:
+        from scipy.spatial import cKDTree
+    except ImportError:                                            # pragma: no cover
+        out = np.empty(len(xyz))
+        step = max(1, int(4e6 // max(len(pts), 1)))
+        for a in range(0, len(xyz), step):
+            b = min(a + step, len(xyz))
+            out[a:b] = np.min(np.linalg.norm(xyz[a:b, None, :] - pts[None, :, :], axis=-1),
+                              axis=1)
+        return out
+    return np.asarray(cKDTree(pts).query(xyz, k=1)[0], float)
+
+
 @dataclass
 class RegionResolver:
     """turns a symbolic `Region` into soft membership over positions.
@@ -410,7 +441,7 @@ class RegionResolver:
                     "pass geodesic=... to RegionResolver, backed by the surface mesh")
             d = np.min(np.asarray(self.geodesic(support, pts, xyz), float), axis=0)
         else:
-            d = np.min(np.linalg.norm(xyz[None, :, :] - pts[:, None, :], axis=-1), axis=0)
+            d = _min_distance(xyz, pts)
         return (d <= region.radius_mm).astype(float)
 
     def _anat(self, region: Anat, xyz: np.ndarray) -> np.ndarray:
@@ -1048,6 +1079,13 @@ class SiteLayout:
     the ordering is component-major.  a process reads one component over many
     sites far more often than one site over many components, so component-major
     keeps every such read contiguous.
+
+    a component appears once per support it was instantiated on.  that is almost
+    always once; where a materialization split a component across two samplings
+    of one domain -- cortex indexed on the sheet, the rest of the parenchyma
+    indexed by volume -- it appears twice, and the two entries are adjacent, so
+    the component's flat span is still contiguous and `index(component)` still
+    returns every one of its state variables in one range.
     """
 
     entries: tuple[tuple[str, str, int, int], ...] = ()   # component, support, offset, n
@@ -1066,39 +1104,80 @@ class SiteLayout:
     def __contains__(self, component: str) -> bool:
         return any(e[0] == component for e in self.entries)
 
-    def _entry(self, component: str) -> tuple[str, str, int, int]:
-        for e in self.entries:
-            if e[0] == component:
-                return e
-        raise KeyError(
-            f"component {component!r} is not materialized: this layout holds "
-            f"{len(self.entries)} components and the trace did not reach that one.  either the "
-            "request does not target anything downstream of it or a process names state the "
-            "trace missed")
+    def _entries(self, component: str) -> tuple[tuple[str, str, int, int], ...]:
+        got = tuple(e for e in self.entries if e[0] == component)
+        if not got:
+            raise KeyError(
+                f"component {component!r} is not materialized: this layout holds "
+                f"{len(self.entries)} blocks over {len(set(e[0] for e in self.entries))} "
+                "components and the trace did not reach that one.  either the request does not "
+                "target anything downstream of it or a process names state the trace missed")
+        return got
 
-    def index(self, component: str, site: Any = None) -> Any:
-        """flat index of one state variable, or of every site of a component."""
-        _, _, off, n = self._entry(component)
+    def _entry(self, component: str) -> tuple[str, str, int, int]:
+        """the single block of a component, refusing to guess for a split one."""
+        got = self._entries(component)
+        if len(got) > 1:
+            raise KeyError(
+                f"component {component!r} is materialized on {len(got)} supports "
+                f"({', '.join(e[1] for e in got)}), so there is no single block to return.  "
+                "ask for `supports_of` and index the pair, or use the whole-component form -- "
+                "`index`, `span` and `n_sites` already span every support it lives on")
+        return got[0]
+
+    def index(self, component: str, site: Any = None, support: str = "") -> Any:
+        """flat index of one state variable, or of every site of a component.
+
+        with no `support` the range covers the component's whole materialization,
+        which for a split component means both halves: they are contiguous, in
+        layout order, and a process reading the component reads all of it.
+        """
+        sp = self.span(component, support)
+        n = sp.stop - sp.start
         if site is None:
-            return np.arange(off, off + n)
+            return np.arange(sp.start, sp.stop)
         s = np.asarray(site, np.int64)
         if np.any((s < 0) | (s >= n)):
             raise IndexError(f"{component!r} has {n} sites; asked for {s.max()}")
-        return off + s
+        return sp.start + s
 
-    def span(self, component: str) -> slice:
-        _, _, off, n = self._entry(component)
-        return slice(off, off + n)
+    def span(self, component: str, support: str = "") -> slice:
+        got = self._entries(component)
+        if support:
+            got = tuple(e for e in got if e[1] == support)
+            if not got:
+                raise KeyError(f"{component!r} is not materialized on {support!r}")
+        return slice(got[0][2], got[-1][2] + got[-1][3])
 
     def support_of(self, component: str) -> str:
+        """the one support a component lives on.  raises if it lives on two."""
         return self._entry(component)[1]
 
-    def n_sites(self, component: str) -> int:
-        return self._entry(component)[3]
+    def supports_of(self, component: str) -> tuple[str, ...]:
+        """every support a component was instantiated on, in layout order."""
+        return tuple(e[1] for e in self._entries(component))
+
+    def is_split(self, component: str) -> bool:
+        return len(self._entries(component)) > 1
+
+    def n_sites(self, component: str, support: str = "") -> int:
+        got = self._entries(component)
+        if support:
+            got = tuple(e for e in got if e[1] == support)
+        return sum(e[3] for e in got)
 
     @property
     def components(self) -> tuple[str, ...]:
-        return tuple(e[0] for e in self.entries)
+        out: list[str] = []
+        for e in self.entries:
+            if not out or out[-1] != e[0]:
+                out.append(e[0])
+        return tuple(out)
+
+    @property
+    def split(self) -> tuple[str, ...]:
+        """the components this materialization instantiated on more than one support."""
+        return tuple(c for c in self.components if self.is_split(c))
 
     @property
     def n_state_variables(self) -> int:
@@ -1119,8 +1198,10 @@ class SiteLayout:
         out = ["  ".join(h.ljust(x) for h, x in zip(head, w)),
                "  ".join("-" * x for x in w)]
         out += ["  ".join(c.ljust(x) for c, x in zip(r, w)) for r in rows]
+        n_split = len(self.split)
         out.append(f"{self.n_state_variables:,} state variables over "
-                   f"{len(self.entries)} components")
+                   f"{len(self.entries)} blocks / {len(self.components)} components"
+                   + (f", {n_split} of them split across supports" if n_split else ""))
         return "\n".join(out)
 
 

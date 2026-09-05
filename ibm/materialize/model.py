@@ -24,7 +24,7 @@ is site-bound is fixed by coarsening r(q) somewhere, and `earns_its_cost` in
 from __future__ import annotations
 
 from dataclasses import dataclass, field as _field, replace
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 import numpy as np
 
@@ -59,21 +59,35 @@ class RegionWeights:
     reason that delegation exists: a region is symbolic until materialization, so
     the only thing that can turn `Anat("cortical_layers", "iv")` into numbers is
     the model that built the site table.
+
+    `support_of` maps a component to *every* support it was instantiated on, in
+    the layout's own block order, because a component may be split across two
+    samplings of one domain.  the answer for such a component is the
+    concatenation, in that order, and it has to be: a region is a set of
+    positions and knows nothing about how they were sampled, so
+    `Anat("thalamic_nuclei", "vpl")` has to be able to select the parenchyma half
+    of a neural component and none of its sheet half without either half being
+    named in the expression.
     """
 
     __slots__ = ("sites", "resolver", "support_of", "_cache")
 
     def __init__(self, sites: Sites, resolver: RegionResolver,
-                 support_of: Mapping[str, str]) -> None:
+                 support_of: Mapping[str, str | Sequence[str]]) -> None:
         self.sites = sites
         self.resolver = resolver
-        self.support_of = dict(support_of)
+        self.support_of = {c: (s,) if isinstance(s, str) else tuple(s)
+                           for c, s in support_of.items()}
         self._cache: dict[tuple[str, Any], np.ndarray] = {}
 
     def __call__(self, component: str, region: Region) -> np.ndarray:
-        support = self.support_of.get(component)
-        if support is None:
+        supports = self.support_of.get(component)
+        if supports is None:
             raise KeyError(f"component {component!r} is not materialized in this model")
+        return np.concatenate([self._one(s, region) for s in supports]) if supports \
+            else np.zeros(0)
+
+    def _one(self, support: str, region: Region) -> np.ndarray:
         table = self.sites[support]
         if isinstance(region, Everywhere):
             return np.ones(table.n)
@@ -123,8 +137,20 @@ class Cost:
     edges: int = 0
     state_bytes: int = 0
     edge_bytes: int = 0
+    #: numbers stored per component, summed over every support it was
+    #: instantiated on.  the question "what does this quantity cost" has one
+    #: answer even when the quantity is carried in two indexings.
     per_component: Mapping[str, int] = _field(default_factory=dict)
+    #: the same, per allocated block: keyed by `(component, support)`, which is
+    #: what the layout is actually keyed by.  the two differ only for a split
+    #: component, and where they differ is precisely what a reader wants to see --
+    #: how much of a field went to the sheet and how much to the volume.
+    per_block: Mapping[tuple[str, str], int] = _field(default_factory=dict)
     per_support: Mapping[str, int] = _field(default_factory=dict)
+    #: state variables per support, from the layout rather than the site table:
+    #: `per_support` counts positions, this counts one component at one position,
+    #: and for a support carrying twenty-five components they differ by 25x.
+    variables_per_support: Mapping[str, int] = _field(default_factory=dict)
 
     @property
     def n_bytes(self) -> int:
@@ -151,7 +177,8 @@ class Cost:
                             n_bytes=self.n_bytes, edges=self.edges)
 
     def describe(self) -> str:
-        top = sorted(self.per_component.items(), key=lambda kv: -kv[1])[:6]
+        top = [(f"{c}@{s}" if s else c, v)
+               for (c, s), v in sorted(self.per_block.items(), key=lambda kv: -kv[1])[:6]]
         lines = [f"  state variables       {self.state_variables:>15,}   (sites x components)",
                  f"  spectral coefficients {self.spectral_coefficients:>15,}   "
                  f"({self.mean_bandwidth:.1f} per variable)",
@@ -164,6 +191,10 @@ class Cost:
         if self.per_support:
             lines.append("  sites per support:    "
                          + ", ".join(f"{k} {v:,}" for k, v in sorted(self.per_support.items())))
+        if self.variables_per_support:
+            lines.append("  variables per support:"
+                         + " " + ", ".join(f"{k} {v:,}" for k, v in
+                                           sorted(self.variables_per_support.items())))
         if top:
             lines.append("  costliest blocks:     "
                          + ", ".join(f"{k} {v:,}" for k, v in top))
@@ -182,8 +213,12 @@ def account(layout: Layout, sites: Sites,
     n_vars = sum(b.n_sites for b in layout)
     n_coeff = sum(b.n_sites * max(b.k, 1) for b in layout if b.uncertainty != "scalar")
     numbers = sum(b.cost for b in layout)
-    per_component = {b.component: b.cost for b in layout}
+    per_block = {b.key: b.cost for b in layout}
+    per_component = layout.cost_by_component()
     per_support = {s: t.n for s, t in sites.tables.items()}
+    variables_per_support: dict[str, int] = {}
+    for b in layout:
+        variables_per_support[b.support] = variables_per_support.get(b.support, 0) + b.n_sites
 
     n_edges, edge_bytes = 0, 0
     for e in (edges or {}).values():
@@ -194,7 +229,8 @@ def account(layout: Layout, sites: Sites,
             edge_bytes += int(a.size * a.dtype.itemsize) if a.dtype.kind in "fiub" else 0
     return Cost(state_variables=n_vars, spectral_coefficients=n_coeff, numbers=numbers,
                 edges=n_edges, state_bytes=numbers * _BYTES_PER_NUMBER, edge_bytes=edge_bytes,
-                per_component=per_component, per_support=per_support)
+                per_component=per_component, per_block=per_block,
+                per_support=per_support, variables_per_support=variables_per_support)
 
 
 # ---------------------------------------------------------------------------
@@ -283,8 +319,16 @@ class MaterializedModel:
         return self.region_weights(component, region)
 
     def positions(self, component: str) -> np.ndarray:
-        """the positions of one component's state variables, in the model's frame."""
-        return np.asarray(self.table(self.site_layout.support_of(component)).xyz)
+        """the positions of one component's state variables, in the model's frame.
+
+        concatenated over every support the component was instantiated on, in
+        layout order, so the i-th row is the i-th state variable of the block the
+        runtime holds a belief over.  a component split between the sheet and the
+        volume returns both, which is the only answer that lines up with its
+        belief.
+        """
+        return np.concatenate([np.asarray(self.table(s).xyz, float).reshape(-1, 3)
+                               for s in self.site_layout.supports_of(component)])
 
     def volumes(self, component: str) -> np.ndarray:
         """per-site measure: mm^3 on a volume or tree support, mm^2 on a surface.
@@ -294,14 +338,18 @@ class MaterializedModel:
         process that sums a per-unit-volume rate over sites without this is wrong
         by exactly the local refinement factor, everywhere it refined.
         """
-        t = self.table(self.site_layout.support_of(component))
-        v = t.columns.get("volume_mm3")
-        a = t.columns.get("area_mm2")
-        if v is not None and np.isfinite(np.asarray(v, float)).any():
-            return np.asarray(v, float)
-        if a is not None:
-            return np.asarray(a, float)
-        return np.full(t.n, np.nan)
+        out = []
+        for s in self.site_layout.supports_of(component):
+            t = self.table(s)
+            v = t.columns.get("volume_mm3")
+            a = t.columns.get("area_mm2")
+            if v is not None and np.isfinite(np.asarray(v, float)).any():
+                out.append(np.asarray(v, float))
+            elif a is not None:
+                out.append(np.asarray(a, float))
+            else:
+                out.append(np.full(t.n, np.nan))
+        return np.concatenate(out) if out else np.zeros(0)
 
     # -- the §7 question -------------------------------------------------
 

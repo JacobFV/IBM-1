@@ -84,7 +84,12 @@ streams:
     exactly the double-count the card''s `forbidden` list already refuses.  here it is doubly true: `systematic_bias`
     on this stream already records that these bundles are EXPERT-CURATED TRACTOGRAPHY OUTPUT and that a method
     matching them has matched a convention.  they supply the tractometric support a materialization is built
-    over, and `scripts/measure_tract_uncertainty.py` is what says how much that support should be believed.'
+    over, and `scripts/measure_tract_uncertainty.py` is what says how much that support should be believed.
+    what THESE bundles were then used for is the other half of that question, and it is in
+    `derive/group_connectome.yaml`: not how wrong one tractogram is -- the phantom answers that -- but how
+    much two SUBJECTS differ, which is the error a group connectome carries to a subject who has no diffusion
+    imaging at all.  they differ MORE than two algorithms do -- a strength spread of 6.7 against the
+    phantom''s 3.9 -- and a group connectome explains 28% of a held-out subject''s edge strengths.'
 - name: cross_site_generalisation
   kind: context
   via: null
@@ -96,7 +101,11 @@ streams:
   constrains: []
   notes: 'context: this is a property of the DESIGN -- a site-held-out arm exists -- not a recorded quantity.  it
     tells a fit how to split, which is what `split.group_by` carries, and it constrains no state.  a stream
-    that names no component because none is right is bound; this is that case.'
+    that names no component because none is right is bound; this is that case.  ONE CORRECTION, from having
+    tried it: the arm is a property of the design and NOT of the distributed bytes.  ds003900 v1.1.1 carries
+    no site column, so `split.group_by: site` cannot actually be honoured from this release as acquired --
+    see `site_metadata` for how far the grouping can be recovered from the acquisition geometry and where
+    that recovery stops.'
 - name: t1w
   kind: context
   via: null
@@ -139,7 +148,14 @@ streams:
   constrains: []
   notes: 'context: scanner, vendor and protocol per subject.  it is the grouping variable the multi-site design
     exists for, and it constrains no ibm component -- but it is not a gap.  without it the six sites are unidentifiable
-    and `split.group_by: site` cannot be honoured.'
+    and `split.group_by: site` cannot be honoured.  AND IT IS NOT IN THE RELEASE: ds003900 v1.1.1 ships 10884
+    files and no participants.tsv, the gradient tables are harmonised to one 64-direction b=1000 scheme for
+    every subject and every volume is resampled to 1 mm, so the scanner signature is processed away by
+    design.  `derive/group_connectome.yaml` records how far it can be recovered -- the cropped field of view
+    is sharply bimodal with an empty gap between 120 and 130 slices, and the four blocks it induces are
+    exactly contiguous in subject id with two of them matching the paper''s per-site counts exactly -- and
+    where that recovery stops, which is short of naming a site or splitting the block that still holds three
+    cohorts.'
 absent:
 - ex_vivo_ground_truth
 - directionality

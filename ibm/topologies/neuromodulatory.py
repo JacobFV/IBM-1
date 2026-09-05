@@ -201,7 +201,13 @@ NEUROMODULATORY_PROJECTION = REGISTRY.topology(Topology(
     "cause.  it is separate from the tractometric topology above all because these "
     "projections write parameters rather than state -- they set gain, adaptation and "
     "plasticity rate -- so their targets are selected by receptor availability rather than "
-    "by axonal density",
+    "by axonal density.  it stays declared over the parenchyma volume alone, and that is not "
+    "the oversight `local` was: its sources are named brainstem and basal-forebrain nuclei, "
+    "found through an anatomical partitioning system, and no cortical sheet contains them.  "
+    "a materialization that indexes cortex on the sheet needs this projection to run from "
+    "`tissue` sources to targets on BOTH supports, which is a cross-support extension of the "
+    "builder rather than a metric dispatch -- the metric here is euclidean-times-a-route-"
+    "factor either way, and is declared as the weakest in the inventory",
     on=("tissue",),
     edge_features=("distance_mm", "tract_length_mm", "conduction_delay_s"),
     directed=True,

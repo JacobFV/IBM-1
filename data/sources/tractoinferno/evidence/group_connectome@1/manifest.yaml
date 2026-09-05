@@ -1,0 +1,80 @@
+# what this recipe produced, from which raw source.  committed.
+recipe: group_connectome
+version: 1
+produced_at: '2026-09-04'
+from_raw:
+  tractoinferno: >-
+    284 subjects and 6901 bundle tractograms for the cohort table (trk headers only,
+    read by http range request against the urls in the dataset's own
+    .openneuro-manifest-1.1.1.json); 30 subjects with all 605 of their bundles read in
+    full from the local root, of which 26 have full head coverage and carry every
+    between-subject number; 48 subjects (12 per acquisition block, 8 bundles each) for
+    the site arm, 36 of them mirrored into the cache from the same urls
+checksums: deferred -- the raw root records its own
+outputs:
+- measured.json
+headline:
+  n_subjects_connectome: 26
+  n_subjects_cohort_table: 284
+  parcels: 126
+  possible_pairs: 7875
+  edges_asserted_by_someone: 4118
+  edges_found_by_all_26: 18
+  edges_found_by_exactly_one: 770
+  mean_edge_reproducibility: 0.3188
+  mean_edge_reproducibility_given_the_bundle: 0.3903
+  mean_bundle_availability: 0.7359
+  between_subject_strength_log_sd: 1.9019
+  between_subject_strength_as_a_factor: 6.699
+  rho_disagreement_with_group_consensus: 0.0915
+  effective_independent_subjects_of_26: 7.91
+  effective_independent_subjects_ceiling: 10.93
+  group_predicts_held_out_existence_auc: 0.8153
+  group_predicts_held_out_strength_r2: 0.2797
+  group_leaves_a_factor_of: 7.423
+  individual_share_of_log_variance: 0.6592
+  between_block_log_sd: 0.5315
+  within_block_log_sd: 1.8208
+  block_icc: 0.0785
+  block_permutation_p: 0.0
+  loso_r2_from_own_block: 0.1894
+  loso_r2_from_other_blocks: 0.1899
+  registration_residual_median_mm: 7.33
+read_it_as: >-
+  four things, in order of how much they change what this repository does.
+
+  ONE: two brains differ more than two algorithms do.  the ISMRM phantom put the
+  cross-pipeline strength spread at a factor of 3.9; the cross-SUBJECT spread here is
+  6.7.  a group connectome does not inherit tier 1's error and add a little, it is
+  dominated by a term tier 1 does not have, and the tier-2 widening in
+  ibm/topologies/tract_prior.py was log(1.5) where the measurement says log(7.4).
+
+  TWO: a group connectome predicts WHICH edges a subject has (AUC 0.82) and not how
+  strong they are (R^2 0.28).  two thirds of a subject's edge-strength variance is
+  theirs alone.  a tier-2 result may be reported as a population's connectivity and
+  never as this subject's, and 0.28 is the number that says so.
+
+  THREE: a different scanner is NOT as different as a different person.  the
+  acquisition block accounts for 8% of the log-strength variance against the
+  subject's 92%, and predicting a held-out subject from their own block does no
+  better than from the other blocks (R^2 0.189 against 0.190).  the block effect is
+  real -- 0.2825 against a permutation null of 0.133 +- 0.028 -- and it is small.
+  this is the good news for tier 2 and it is a LOWER bound, because the blocks are
+  recovered from the field-of-view signature rather than read off site labels the
+  release does not ship, and block A still mixes three cohorts.
+
+  FOUR: 26 subjects are worth 7.9 independent ones and the ceiling is 11 however many
+  arrive.  that rho is a LOWER bound for the opposite reason to everything else here:
+  the reference is the subjects' own consensus, so an error every subject makes is
+  invisible to it -- and all 284 went through ONE pipeline, where the phantom's 0.317
+  spanned twenty.  a published connectome over a thousand subjects is worth about
+  eleven subjects and about three pipelines, and neither number improves with the
+  cohort size.
+notes: >-
+  see derive/group_connectome.yaml for the recipe and
+  scripts/measure_group_connectome.py for why each choice was made -- in particular
+  why the site labels are recovered rather than read, why the parcellation is 20 mm
+  boxes rather than an atlas, why the registration is 7 parameters rather than a
+  fitted warp, and why the phantom's cross-pipeline rho has no counterpart on real
+  tissue.  ibm/topologies/tract_prior.py reads measured.json and falls back to these
+  figures compiled in when it is absent.

@@ -15,7 +15,7 @@ depends on the last being honest:
 4. **regions** -- symbolic regions become per-site weights against anatomy
 5. **edges** -- topologies applied to the materialized state graph
 6. **f** -- one implementation per process, by policy, with the rejects recorded
-7. **layout** -- one block per component, in that component's form of uncertainty
+7. **layout** -- one block per (component, support), in its form of uncertainty
 8. **provenance** -- what all of the above is resting on
 
 frames come third and not later because steps 4 and 5 are both statements about
@@ -361,7 +361,7 @@ def earns_its_cost(model: MaterializedModel, *, factor: float = 2.0,
         if not len(spacing):
             continue
         k = max((model.layout[c].k for c in model.layout.components
-                 if model.site_layout.support_of(c) == support), default=1)
+                 if support in model.site_layout.supports_of(c)), default=1)
         for name, mm in clauses:
             sel = spacing <= mm * 1.001
             n_fine = int(sel.sum())
@@ -392,7 +392,7 @@ def _processes_on(model: MaterializedModel, support: str) -> list[str]:
         if p is None:
             continue
         for s in p.outputs:
-            if any(model.site_layout.support_of(v) == support
+            if any(support in model.site_layout.supports_of(v)
                    for v in s.vars if v in model.site_layout):
                 out.append(pid)
                 break
@@ -448,6 +448,7 @@ def build(request: MaterializationRequest, *,
           anatomy: Callable[[str, str, Any, str], Any] | None = None,
           warp: Callable[[Any, str, str], Any] | None = None,
           geodesic: Callable[[str, Any, Any], Any] | None = None,
+          anchors: Mapping[str, Any] | None = None,
           topology_inputs: Mapping[str, Mapping[str, Any]] | None = None,
           implementation_override: Mapping[str, str] | None = None,
           moved_parameters: Mapping[str, Iterable[str]] | None = None,
@@ -462,6 +463,16 @@ def build(request: MaterializationRequest, *,
     tractogram makes the tract topology raise with the file named, and an absent
     subject surface makes the surface sampler raise rather than sampling a
     template and reporting subject coordinates.
+
+    `anchors` supplies the positions a `Near(...)` region names, over and above
+    the ones the request's devices already carry.  `Near` is declared over
+    "device *or landmark* positions" and only the device half was ever wired: a
+    landmark is external geometry exactly as an atlas is, so R names it and the
+    caller supplies it here.  the landmark this exists for is the cortical sheet
+    -- `Difference(OnSupport("tissue"), Near("cortex", d))` is how a request says
+    "the parenchyma that is not cortical ribbon", which is what makes a
+    simultaneous sheet/volume placement of the neural field a partition rather
+    than a double count.
 
     `strict=False` builds anyway and records every gap in provenance.  it exists
     for cost estimation and for the coarsening argument, where the question is how
@@ -479,7 +490,10 @@ def build(request: MaterializationRequest, *,
     # 2. sites -----------------------------------------------------------
     geom = geometry if isinstance(geometry, GeometrySet) else GeometrySet(
         dict(geometry or {}), request.subject.id)
-    resolver = RegionResolver(frame=request.frame, anchors=request.anchors(),
+    all_anchors = dict(request.anchors())
+    all_anchors.update({k: np.asarray(v, float).reshape(-1, 3)
+                        for k, v in (anchors or {}).items()})
+    resolver = RegionResolver(frame=request.frame, anchors=all_anchors,
                               anchor_frames={d.name: d.frame for d in request.devices},
                               anatomy=anatomy, warp=warp, geodesic=geodesic)
     support_of, place_notes, place_problems = _place_components(request, tr)
@@ -502,13 +516,18 @@ def build(request: MaterializationRequest, *,
     notes.extend(overlap_notes)
     problems.extend(overlap_problems)
 
-    unplaced = sorted({c for c, s in support_of.items()
-                       if s not in sites.tables and s not in excluded})
+    unplaced = sorted({c for c, ss in support_of.items()
+                       for s in ss if s not in sites.tables and s not in excluded})
     if unplaced:
+        placed_nowhere = [c for c in unplaced
+                          if not (set(support_of[c]) & set(sites.tables))]
         problems.append(
-            f"{len(unplaced)} traced component(s) live on a support with no site table: "
-            + ", ".join(f"{c} on {support_of[c]!r}" for c in unplaced[:6]))
-    dropped = sorted({c for c, s in support_of.items() if s in excluded})
+            f"{len(unplaced)} traced component(s) name a support with no site table: "
+            + ", ".join(f"{c} on {'/'.join(support_of[c])!r}" for c in unplaced[:6])
+            + (f"; {len(placed_nowhere)} of them have no site table on any of their supports"
+               if placed_nowhere else ""))
+    dropped = sorted({c for c, ss in support_of.items()
+                      if ss and set(ss) <= set(excluded)})
     if dropped:
         notes.append(
             f"{len(dropped)} traced component(s) are not materialized because their support is "
@@ -529,7 +548,11 @@ def build(request: MaterializationRequest, *,
         notes.extend(frame_problems)
 
     # 4. regions ---------------------------------------------------------
-    weights = RegionWeights(sites, resolver, support_of)
+    # only the supports that actually got a site table, in block order, because
+    # `RegionWeights` concatenates a split component's weights in exactly the
+    # order the layout concatenates its blocks.
+    placed = {c: tuple(s for s in ss if s in sites.tables) for c, ss in support_of.items()}
+    weights = RegionWeights(sites, resolver, placed)
 
     # 5. edges -----------------------------------------------------------
     edges, edge_problems, edge_notes = _build_edges(tr, sites, topology_inputs or {},
@@ -572,16 +595,20 @@ def build(request: MaterializationRequest, *,
     blocks: list[Block] = []
     pairs: list[tuple[str, str, int]] = []
     for cid in tr.components:
-        support = support_of[cid]
-        table = sites.get(support)
-        if table is None:
-            continue
         comp = REGISTRY.components[cid]
         band = tr.bands.get(cid, comp.band) & comp.band
         b = basis.truncated(band) if comp.uncertainty != "scalar" else None
-        blocks.append(Block(cid, comp.uncertainty, table.n, band, b, None, support,
-                            spacing[support][1]))
-        pairs.append((cid, support, table.n))
+        # one block per (component, support).  a component instantiated on two
+        # samplings of one domain gets two, adjacent, so its state variables stay
+        # one contiguous span; `_overlap_check` has already established that the
+        # two cover disjoint positions.
+        for support in placed[cid]:
+            table = sites.get(support)
+            if table is None:
+                continue
+            blocks.append(Block(cid, comp.uncertainty, table.n, band, b, None, support,
+                                spacing[support][1]))
+            pairs.append((cid, support, table.n))
     layout = Layout(tuple(blocks), basis, weights)
     site_layout = SiteLayout.of(pairs)
 
@@ -640,8 +667,8 @@ def _support_of(cid: str) -> str:
 
 
 def _place_components(request: MaterializationRequest, tr: Trace
-                      ) -> tuple[dict[str, str], list[str], list[str]]:
-    """decide, per traced component, which support it is indexed on.
+                      ) -> tuple[dict[str, tuple[str, ...]], list[str], list[str]]:
+    """decide, per traced component, which support(s) it is indexed on.
 
     a support is a *sampling* of a domain and not a different place.  cortical
     population activity is the same physical quantity whether it is indexed by a
@@ -660,14 +687,26 @@ def _place_components(request: MaterializationRequest, tr: Trace
     cortical process is declared -- built zero edges while the build reported
     success.  nothing was inconsistent; there was simply nothing to relate.
 
-    **the non-overlap rule.**  a materialization must place each position on
-    exactly one support.  the sheet and the parenchyma volume describe the same
-    cortex, so instantiating cortical neural state on both is not a finer
-    description of it -- it is two copies of the same state, and every process
-    reading it double-counts.  the rule is enforced in two halves: here, by
-    giving each component exactly one support; and in `_overlap_check`, by
-    refusing a *split* placement, where one component of a field went to the
-    sheet and another to the voxels covering the same tissue.
+    **a placement is a partition, not a choice.**  this returns a *tuple* of
+    supports per component, and where R names more than one of a component's
+    admissible supports it returns all of them.  that is not a relaxation of the
+    non-overlap rule, it is the rule read correctly: the rule is about
+    *positions*, not about components.  the sheet and the parenchyma volume are
+    two samplings of one domain, and instantiating a field on both is
+    double-counting exactly when the two cover the same millimetres -- which is
+    a fact about the subject's anatomy and about what R kept, not about the
+    declaration.  when R restricts the volume to the parenchyma the sheet does
+    not describe, the two blocks partition the field: cortical population state
+    on column nodes, subcortical and cerebellar population state on voxels, one
+    component, two blocks, no position counted twice.
+
+    the earlier behaviour -- one support per component, and a *problem* raised
+    when R named two -- had a cost that this exists to pay off.  a request that
+    named the sheet moved the entire neural field onto it, and the thalamus, the
+    brainstem and the cerebellum then had no state at all; a forward operator
+    with no dynamics behind it.  the tie-break the old code refused to invent is
+    still not invented, because there is no longer a tie to break: both are
+    materialized, and `_overlap_check` measures whether that was allowed.
 
     only the supports R *names* count, and `_named_supports` is deliberately
     narrower than `_scope_admits`.  a `Ball`, an `Anat` label or a device
@@ -676,36 +715,29 @@ def _place_components(request: MaterializationRequest, tr: Trace
     argument for the primary support would make every request with an atlas
     region ambiguous, which is both false and useless.  `OnSupport` is the one
     region form that answers by name, so it is the one that decides.
-
-    when R names two of a component's supports the request itself has declared
-    two samplings of the same domain, and that is reported as a problem rather
-    than resolved by preference: a tie-break invented here would be a modelling
-    decision made by the builder.  the placement still falls back to the primary
-    support so the model can be priced, and `strict=True` refuses it.
     """
     named = _named_supports(request.scope)
-    positional = _has_positional_region(request.scope)
-    placement: dict[str, str] = {}
+    placement: dict[str, tuple[str, ...]] = {}
     notes: list[str] = []
     problems: list[str] = []
     moved: dict[str, list[str]] = {}
-    ambiguous: dict[tuple[str, ...], list[str]] = {}
+    split: dict[tuple[str, ...], list[str]] = {}
 
     for cid in tr.components:
         cands = REGISTRY.supports_of(cid)
         if not cands:
-            placement[cid] = ""
+            placement[cid] = ()
             continue
         primary = cands[0]
         hit = tuple(s for s in cands if s in named)
         if len(cands) == 1 or len(hit) == 0:
-            placement[cid] = primary
+            placement[cid] = (primary,)
             continue
-        placement[cid] = hit[0]
+        placement[cid] = hit
         if len(hit) > 1:
-            ambiguous.setdefault(hit, []).append(cid)
-        if placement[cid] != primary:
-            moved.setdefault(f"{primary} -> {placement[cid]}", []).append(cid)
+            split.setdefault(hit, []).append(cid)
+        elif hit[0] != primary:
+            moved.setdefault(f"{primary} -> {hit[0]}", []).append(cid)
 
     for how, cs in sorted(moved.items()):
         src, dst = how.split(" -> ")
@@ -713,25 +745,19 @@ def _place_components(request: MaterializationRequest, tr: Trace
             f"{len(cs)} component(s) moved from their primary support {src!r} to {dst!r}, "
             f"because R names {dst!r} and not {src!r} and the component declares both "
             f"admissible: {', '.join(sorted(cs)[:6])}"
-            + (f" (+{len(cs) - 6} more)" if len(cs) > 6 else ""))
-        if positional:
-            notes.append(
-                f"R also carries position-valued regions (an atlas label, a ball, a device "
-                f"neighbourhood) that would have selected these {len(cs)} component(s) on "
-                f"{src!r}.  a component gets one block on one support, so whatever those "
-                f"regions cover that {dst!r} does not -- subcortex and brainstem, where the "
-                f"primary support is a volume and the alternative is the cortical sheet -- is "
-                "outside this materialization.  naming that territory's support in R is what "
-                "would bring it back, and would then have to say which support carries the "
-                "part they share")
-    for supports, cs in sorted(ambiguous.items()):
-        problems.append(
-            f"R names {len(supports)} supports for {len(cs)} component(s) that declare all of "
-            f"them ({', '.join(supports)}), so the request has declared two samplings of one "
-            f"domain and not said which it wants: {', '.join(sorted(cs)[:6])}.  they were "
-            f"placed on {supports[0]!r} so the model can still be priced, but the two supports "
-            "cover the same tissue and choosing between them is a modelling decision, not a "
-            "default -- name one of them in R")
+            + (f" (+{len(cs) - 6} more)" if len(cs) > 6 else "")
+            + f".  whatever {dst!r} does not cover is outside this materialization; naming "
+            f"{src!r} in R as well is what would bring it back, and the two placements would "
+            "then have to cover disjoint positions")
+    for supports, cs in sorted(split.items()):
+        notes.append(
+            f"{len(cs)} component(s) are instantiated on {len(supports)} supports at once "
+            f"({', '.join(supports)}), because R names all of them and the component declares "
+            f"all of them admissible: {', '.join(sorted(cs)[:6])}"
+            + (f" (+{len(cs) - 6} more)" if len(cs) > 6 else "")
+            + ".  each gets one block per support, and the split is a partition of the field "
+            "only if those supports cover disjoint positions -- which is measured, not "
+            "assumed, in the overlap check below")
     return placement, notes, problems
 
 
@@ -756,38 +782,35 @@ def _named_supports(region: Region) -> frozenset[str]:
     return frozenset()
 
 
-def _has_positional_region(region: Region) -> bool:
-    """does R contain anything that selects by coordinate rather than by support?"""
-    if isinstance(region, OnSupport):
-        return False
-    if isinstance(region, (Union, Intersect)):
-        return any(_has_positional_region(p) for p in region.parts)
-    if isinstance(region, Difference):
-        return (_has_positional_region(region.left)
-                or _has_positional_region(region.right))
-    if isinstance(region, Everywhere):
-        return False
-    return True
-
-
-def _overlap_check(support_of: Mapping[str, str], tr: Trace, sites: Sites
+def _overlap_check(support_of: Mapping[str, tuple[str, ...]], tr: Trace, sites: Sites
                    ) -> tuple[list[str], list[str]]:
     """the non-overlap rule, verified against the positions that were actually built.
 
-    two supports that can carry the same component are two samplings of one
-    domain, so their sites describe the same tissue twice over.  that is
-    harmless as long as the field lives entirely on one of them, and is
-    double-counting the moment it does not: state on 3 mm column nodes plus
-    state on the 10 mm voxels containing those nodes is the same cortical
-    activity entered twice, and every process reading it -- a lead field most of
-    all, since it sums sources linearly -- gets a systematically inflated answer
-    with no symptom other than being wrong.
+    the rule is about positions, not about components.  two supports that can
+    carry the same component are two samplings of one domain, so their sites may
+    describe the same tissue twice over -- and a field instantiated on both is
+    double-counting exactly to the extent that they do.  state on 3 mm column
+    nodes plus state on the 8 mm voxels containing those nodes is the same
+    cortical activity entered twice, and every process reading it -- a lead field
+    most of all, since it sums sources linearly -- gets a systematically inflated
+    answer with no symptom other than being wrong.
 
-    the overlap is *measured* rather than assumed.  two supports may both be
-    declared over the brain and still not intersect in one subject, and the
-    fraction reported here is the fraction of one table's sites that fall inside
-    a cell of the other -- which is the number that says whether the two really
-    are describing the same millimetres.
+    so a split placement is not the violation; a shared *position* is.  the
+    overlap is therefore measured rather than assumed, in both directions, and
+    the fraction reported is the fraction of one table's sites that fall inside a
+    cell of the other -- which is the number that says whether the two really are
+    describing the same millimetres.  a request that restricts the volume to the
+    parenchyma the sheet does not cover gets zero, and its two blocks are a
+    partition; a request that names both supports and restricts neither gets a
+    half and is refused.
+
+    two shapes of trouble are reported separately because they have different
+    remedies.  a *split component* over overlapping supports is one quantity
+    entered twice, fixed by restricting R.  a *split field* -- some components of
+    it on one support and some on the other, over the same tissue -- is not a
+    double count of any one quantity, but it does mean two halves of one circuit
+    are indexed in two incompatible ways with no topology joining them, and the
+    remedy is to place them together.
     """
     problems: list[str] = []
     notes: list[str] = []
@@ -798,24 +821,47 @@ def _overlap_check(support_of: Mapping[str, str], tr: Trace, sites: Sites
                             if {a, b} <= set(REGISTRY.supports_of(c)))
             if not shared:
                 continue
-            frac, med = _support_overlap(sites[a], sites[b])
-            where = {support_of.get(c) for c in shared} & {a, b}
-            how = (f"{len(shared)} component(s) are admissible on both {a!r} and {b!r}, whose "
-                   f"sites overlap: {frac:.0%} of the {a!r} sites fall inside a {b!r} cell "
-                   f"(median nearest-neighbour separation {med:.2f} mm)")
-            if len(where) > 1:
-                split = {s: [c for c in shared if support_of.get(c) == s] for s in sorted(where)}
+            frac_ab, med = _support_overlap(sites[a], sites[b])
+            frac_ba, _ = _support_overlap(sites[b], sites[a])
+            frac = max(frac_ab, frac_ba)
+            geometry = (f"{frac_ab:.1%} of the {sites[a].n:,} {a!r} sites fall inside a {b!r} "
+                        f"cell and {frac_ba:.1%} of the {sites[b].n:,} {b!r} sites inside an "
+                        f"{a!r} cell (median nearest-neighbour separation {med:.2f} mm)")
+            both = [c for c in shared if {a, b} <= set(support_of.get(c, ()))]
+            where = {s for c in shared for s in support_of.get(c, ())} & {a, b}
+
+            if both:
+                if frac > 0.0:
+                    problems.append(
+                        f"{len(both)} component(s) are instantiated on both {a!r} and {b!r}, "
+                        f"and those supports overlap: {geometry}.  that is the same quantity "
+                        f"entered twice over the millimetres they share "
+                        f"({', '.join(sorted(both)[:4])}"
+                        + (f" +{len(both) - 4} more" if len(both) > 4 else "")
+                        + ") -- a split placement is only a partition of the field if the two "
+                        "supports cover disjoint positions.  restrict R on one of them, most "
+                        "usefully by excluding from the volume whatever the surface already "
+                        "indexes")
+                else:
+                    notes.append(
+                        f"{len(both)} component(s) are instantiated on both {a!r} and {b!r} and "
+                        f"the two are disjoint: {geometry}.  the split is a partition of the "
+                        "field, not a second copy of it -- no position carries the same "
+                        "quantity twice")
+            elif len(where) > 1 and frac > 0.0:
+                split = {s: [c for c in shared if s in support_of.get(c, ())]
+                         for s in sorted(where)}
                 problems.append(
-                    how + ".  this build put " + "; ".join(
+                    f"{len(shared)} component(s) are admissible on both {a!r} and {b!r}, whose "
+                    f"sites overlap: {geometry}.  this build put " + "; ".join(
                         f"{len(v)} of them on {k!r} ({', '.join(sorted(v)[:4])})"
                         for k, v in split.items())
-                    + " -- the same field is instantiated twice over the same tissue in two "
-                    "indexings, which is double-counting and not a refinement.  place the whole "
-                    "field on one support, or restrict R so the two do not cover the same "
-                    "positions")
-            else:
-                notes.append(how + f", and all {len(shared)} were placed on "
-                             f"{sorted(where)[0]!r}: no position carries the same quantity twice")
+                    + " -- different components of one field indexed two incompatible ways over "
+                    "the same tissue, with no topology able to relate them.  place them on one "
+                    "support, or restrict R so the two do not cover the same positions")
+            elif where:
+                notes.append(f"{len(shared)} component(s) are admissible on both {a!r} and "
+                             f"{b!r}, and all were placed on {sorted(where)[0]!r}: {geometry}")
     return problems, notes
 
 
@@ -893,7 +939,7 @@ def _scope_admits(region: Region, support: str) -> bool:
 
 
 def _supports_to_materialize(request: MaterializationRequest, tr: Trace,
-                             support_of: Mapping[str, str]
+                             support_of: Mapping[str, tuple[str, ...]]
                              ) -> tuple[tuple[str, ...], dict[str, str]]:
     """which supports actually get sampled, and why the others do not.
 
@@ -919,7 +965,7 @@ def _supports_to_materialize(request: MaterializationRequest, tr: Trace,
     instrument, and a materialization that dropped half a montage because the
     region was cortical would be describing a different device.
     """
-    carriers = {s for s in support_of.values() if s}
+    carriers = {s for ss in support_of.values() for s in ss if s}
     device_supports = {d.support for d in request.devices}
     scope = request.scope
     keep: set[str] = set(device_supports)
@@ -1083,7 +1129,7 @@ def _build_edges(tr: Trace, sites: Sites, inputs: Mapping[str, Mapping[str, Any]
     return out, problems, notes
 
 
-def _process_scale(proc: Process, support_of: Mapping[str, str], sites: Sites,
+def _process_scale(proc: Process, support_of: Mapping[str, tuple[str, ...]], sites: Sites,
                    spacing: Mapping[str, tuple[float, float, float]]
                    ) -> tuple[str, int, float]:
     """the support, site count and median spacing a process is being run at.
@@ -1092,13 +1138,30 @@ def _process_scale(proc: Process, support_of: Mapping[str, str], sites: Sites,
     form produces.  a coupling that reads a whole-brain field and writes a cortical
     one is being asked to be meaningful at the cortical spacing, not at the coarse
     one it happens to read.
+
+    where an output is split across supports the process really is running at two
+    spacings at once, and the one reported is the *coarsest* -- validity ceilings
+    are upper bounds on spacing, so the coarsest half is the half that breaches
+    them, and reporting the finer one would let a breach on the volume hide behind
+    a well-resolved sheet.  the site count is the sum, because that is how many
+    state variables the form is actually being asked to produce.
     """
-    for s in proc.outputs:
-        for v in s.vars:
-            sup = support_of.get(v)
-            t = sites.get(sup) if sup else None
-            if t is not None:
-                return sup, t.n, spacing.get(sup, (float("nan"),) * 3)[1]
+    for sel in proc.outputs:
+        here: dict[str, tuple[int, float]] = {}
+        for v in sel.vars:
+            for sup in support_of.get(v, ()):
+                t = sites.get(sup)
+                if t is not None:
+                    here[sup] = (t.n, spacing.get(sup, (float("nan"),) * 3)[1])
+        if not here:
+            continue
+        # distinct supports, so a selector naming four components on one support
+        # does not report four times its sites.
+        n_total = sum(n for n, _ in here.values())
+        worst = max(here.items(),
+                    key=lambda kv: (np.isfinite(kv[1][1]), kv[1][1] if
+                                    np.isfinite(kv[1][1]) else 0.0))
+        return worst[0], n_total, worst[1][1]
     return "", 0, float("nan")
 
 
