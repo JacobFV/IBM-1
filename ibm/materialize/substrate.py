@@ -91,9 +91,9 @@ models that each quietly decided to.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field as _field, replace
+from dataclasses import dataclass, field as _field
 from pathlib import Path
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any, Mapping
 
 import numpy as np
 
@@ -347,14 +347,15 @@ class StructuralSubstrate:
 
     # -- the tier-2 connectome, expanded and capped -----------------------
 
-    def _tractometric(self, sites, *, parcels=None, max_degree: int = 64, seed: int = 0,
-                      support: str = "tissue", **kw) -> tuple[B.EdgeSet, TierRecord] | None:
-        """the group connectome expanded onto this materialization's own sites.
+    def _tractometric(self, sites, *, parcels=None, max_degree: int = 64,
+                      max_edges: int = 4_000_000, seed: int = 0,
+                      support: str = "tissue", **kw):
+        """the group connectome sampled onto this materialization's own sites.
 
-        two things happen here that `tract_prior.group_connectome` deliberately
-        does not do, and both are budget decisions rather than claims about
-        anatomy, so both are recorded in the note the way `min_pipelines` and
-        `min_subject_fraction` are.
+        three things happen here that `tract_prior.group_connectome` does not do.
+        the first two are budget decisions with permanent consequences and are
+        recorded in the note the way `min_pipelines` and `min_subject_fraction`
+        are; the third is a limitation of the corpus.
 
         **the 68 lateralised parcels are collapsed onto the 34 `cortical_areas`
         labels the registry declares.**  the corpus's parcel memberships are
@@ -365,15 +366,31 @@ class StructuralSubstrate:
         `tract_prior` argues for at length: `T(i, j) = 0` is permanent and
         `theta_ij = 0` is not.  what it costs is that a homotopic callosal pair and
         an intrahemispheric pair become indistinguishable, and their lengths are
-        averaged.
+        averaged over the two.
 
-        **each site keeps at most `max_degree` of its parcel-pair partners.**
-        expansion is quadratic in parcel population by construction -- the
-        connectome has no within-parcel information and interpolating some would be
-        inventing it -- so a whole-brain materialization at 3 mm asks for order
-        10^7 edges from a 68-parcel matrix.  the cap is a uniform random sample and
-        the per-edge inclusion probability is carried as a feature, exactly as
-        `cortical_association` carries its own.
+        **each site keeps a uniform sample of at most `max_degree` partners.**
+        `tractometric_matrix` expands every parcel pair to every site pair, and its
+        own docstring says the quadratic cost is "the honest signal that a
+        materialization far finer than the connectome is asking for more than the
+        connectome has".  that signal is correct and it is not a reason to refuse:
+        a 2 mm whole-brain tissue octree puts ten thousand sites in a single
+        desikan parcel, so the full expansion is 10^8 edges and 800 MiB of index
+        array before anything is scored.  what is built instead is a uniform sample
+        of the SAME expansion -- every site keeps `max_degree` partners drawn
+        without preference from the union of the sites in the parcels its own
+        parcel connects to -- so no site is left with an empty long-range
+        neighbourhood, which is the failure that would actually matter, and the
+        per-edge inclusion probability is carried so a fit can divide by it.
+        sampling uniformly rather than by strength is deliberate: keeping the
+        strongest would be a second, unrecorded thresholding of a matrix whose
+        publisher has already applied one.
+
+        **every edge carries the population's reproducibility and not its own.**
+        this publication reports a consensus matrix and not the fraction of its
+        cohort that carried each pair, so `existence_prob` is the measured
+        population average 0.32 for every edge alike -- which is exactly what
+        `group_connectome` does in the same situation, and it says out loud that
+        the publisher's own thresholding is invisible here and cannot be undone.
         """
         if self.connectome is None:
             return None
@@ -390,15 +407,93 @@ class StructuralSubstrate:
         if lab.ndim == 2:
             lab = np.argmax(np.where(lab > 0, lab, -1.0), axis=1)
         lab = np.asarray(lab, np.int64)
-        if not (lab >= 0).any():
-            return None
 
-        edges = TP.group_connectome(
-            s, matrix=self.connectome.matrix, lengths_mm=self.connectome.lengths_mm,
-            n_subjects=self.connectome.n_subjects, support=support, parcels=lab,
-            uncertainty=TP.GROUP, **kw)
-        edges = _cap_degree(edges, max_degree=max_degree, seed=seed)
-        return edges, self.rung("tractometric")            # type: ignore[return-value]
+        A = np.asarray(self.connectome.matrix, float)
+        L = np.asarray(self.connectome.lengths_mm, float)
+        k = A.shape[0]
+        members = [np.flatnonzero(lab == a) for a in range(k)]
+        n_in = np.array([len(m) for m in members])
+        # how many partner SITES each parcel has, which is what a uniform sample of
+        # the full expansion has to be drawn from.
+        reach = [np.flatnonzero((A[a] > 0.0) & (n_in > 0)) for a in range(k)]
+        n_out = np.array([int(n_in[r].sum()) for r in reach])
+        # a parcel only contributes if it has sites of its own AND at least one
+        # parcel it connects to also has sites.  checking the two separately is
+        # what produced an empty concatenation: a materialization can easily place
+        # sites in three parcels none of which the connectome joins to each other.
+        placed = int(sum(len(members[a]) for a in range(k) if n_out[a] > 0))
+        if placed == 0:
+            return B.empty(
+                "tractometric", s.n_total,
+                ("tract_length_mm", "conduction_delay_s", "distance_mm", "orientation",
+                 "existence_prob", "inclusion_prob"), directed=True,
+                note=(f"the group connectome has nothing to connect on {support!r}: "
+                      f"{placed} of {t.n} sites fall in a cortical parcel.  a request that "
+                      f"puts its cortex on the sheet and leaves the subcortical remainder on "
+                      f"the volume has no cortico-cortical pairs HERE, and that is the "
+                      f"placement rather than a missing connectome")), None
+
+        # the degree cap, tightened if the whole sample would still be too large.
+        # reported rather than silently applied: it is a support decision and
+        # `T(i, j) = 0` is permanent.
+        deg = int(max_degree)
+        if placed * deg * 2 > int(max_edges):
+            deg = max(int(max_edges) // max(2 * placed, 1), 1)
+        rng = np.random.default_rng(int(seed))
+
+        src_l, dst_l, len_l, inc_l = [], [], [], []
+        for a in range(k):
+            ra = members[a]
+            if not len(ra) or n_out[a] == 0:
+                continue
+            partners = np.concatenate([members[b] for b in reach[a]])
+            plabel = np.concatenate([np.full(len(members[b]), b) for b in reach[a]])
+            take = min(deg, len(partners))
+            pick = rng.integers(0, len(partners), size=(len(ra), take))
+            src_l.append(np.repeat(ra, take))
+            dst_l.append(partners[pick].ravel())
+            len_l.append(L[a, plabel[pick].ravel()])
+            inc_l.append(np.full(len(ra) * take, take / float(len(partners))))
+
+        i = np.concatenate(src_l)
+        j = np.concatenate(dst_l)
+        length = np.concatenate(len_l)
+        inc = np.concatenate(inc_l)
+        keep = i != j
+        i, j, length, inc = i[keep], j[keep], length[keep], inc[keep]
+        # the same pair may be drawn twice, and two edges between one pair is two
+        # parameters for one connection.
+        key = i.astype(np.int64) * t.n + j.astype(np.int64)
+        _, uniq = np.unique(key, return_index=True)
+        i, j, length, inc = i[uniq], j[uniq], length[uniq], inc[uniq]
+
+        xyz = np.asarray(t.xyz, float)
+        chord = np.linalg.norm(xyz[i] - xyz[j], axis=1)
+        u = B.unit(xyz[j] - xyz[i], np)
+        delay = B.conduction_delay_s(length, 8.0, np)
+        p_exist = np.full(len(i), float(TP.GROUP.edge_reproducibility))
+        cat = lambda x: np.concatenate([x, x])
+        edges = B.EdgeSet(
+            "tractometric", np.concatenate([i, j]) + t.offset,
+            np.concatenate([j, i]) + t.offset, s.n_total,
+            {"tract_length_mm": cat(length), "conduction_delay_s": cat(delay),
+             "distance_mm": cat(chord), "orientation": np.concatenate([u, -u]),
+             "existence_prob": cat(p_exist), "inclusion_prob": cat(inc)},
+            directed=True,
+            note=(f"GROUP CONNECTOME over {k} parcels of cortical_areas, sampled onto "
+                  f"{placed:,} of {t.n:,} {support!r} sites at {deg} partners each "
+                  f"({len(i):,} distinct pairs).  the sample is UNIFORM over the full "
+                  f"parcel-pair expansion and its inclusion probability is carried per edge; "
+                  f"raising the cap adds edges rather than changing which ones are likely.  "
+                  f"tract lengths are parcel-centroid chords, a LOWER BOUND on arc length, so "
+                  f"the conduction delays here are too short.  no per-edge subject frequency "
+                  f"was published, so every edge carries the population-average "
+                  f"reproducibility {TP.GROUP.edge_reproducibility:.2f} and the publisher's own "
+                  f"thresholding is invisible.  this is somebody else's anatomy: it explains "
+                  f"{TP.GROUP.group_explains_r2:.0%} of a held-out subject's edge strengths and "
+                  f"leaves a factor of x{math.exp(TP.GROUP.residual_log_sd):.1f}.  "
+                  f"tier {TP.Tier.GROUP_CONNECTOME.value}"))
+        return edges, self.rung("tractometric")
 
     def theta_prior(self, edges: B.EdgeSet, **kw) -> TP.TractPriorSet:
         """the coupling prior that goes with a tier-2 support, at tier 2.
@@ -440,37 +535,6 @@ class StructuralSubstrate:
         for n in self.notes:
             lines.append(f"  ! {n}")
         return "\n".join(lines)
-
-
-def _cap_degree(edges: B.EdgeSet, *, max_degree: int = 64, seed: int = 0) -> B.EdgeSet:
-    """keep at most `max_degree` edges per source site, uniformly at random.
-
-    uniformly and not by strength, deliberately.  keeping the strongest would make
-    the truncation a second, unrecorded thresholding of a matrix whose publisher
-    has already applied one -- the exact compounding `group_connectome` refuses
-    when it declines to threshold -- and it would bias the surviving support toward
-    short, dense pairs.  a uniform sample has a known inclusion probability, and
-    carrying it per edge is what lets a fit divide by it.
-    """
-    m = edges.n_edges
-    if m == 0 or max_degree <= 0:
-        return edges
-    rng = np.random.default_rng(seed)
-    src = np.asarray(edges.src, np.int64)
-    order = np.lexsort((rng.random(m), src))
-    rank = np.empty(m, np.int64)
-    starts = np.searchsorted(src[order], src[order], side="left")
-    rank[order] = np.arange(m) - starts
-    keep = rank < int(max_degree)
-    if keep.all():
-        return edges.with_features(inclusion_prob=np.ones(m))
-    deg = np.bincount(src, minlength=int(src.max()) + 1)
-    p = np.minimum(1.0, max_degree / np.maximum(deg[src], 1))
-    out = edges.filtered(keep).with_features(inclusion_prob=p[keep])
-    return replace(out, note=(out.note + f"; capped at {max_degree} partners per site "
-                              f"({int(keep.sum()):,} of {m:,} kept), a BUDGET decision with "
-                              "permanent consequences -- the sample is uniform and its "
-                              "inclusion probability is carried per edge"))
 
 
 # ---------------------------------------------------------------------------
@@ -843,8 +907,17 @@ def _capillary_layer(tissue: VolumeGeometry, artery_xyz: np.ndarray, spacing_mm:
     if not len(pts):
         return np.zeros((0, 3)), np.zeros(0, np.int64), np.zeros(0), ""
 
+    # every coarse node is a ROOT, and that is a refusal rather than an oversight.
+    # the obvious move is to hang each cell's bed off its nearest atlas artery, and
+    # it is wrong twice over: the nearest artery is tens of millimetres away, so the
+    # segment carries a Poiseuille resistance for a vessel that does not exist, and
+    # the path from a pial artery to a cortical bed runs through penetrating
+    # arterioles at a calibre this atlas cannot see.  a tree with a hole in it is
+    # honest about the hole; a tree with an invented trunk is not, and the invented
+    # trunk would then dominate the flow solve.
     from scipy.spatial import cKDTree
-    _, nearest = cKDTree(artery_xyz).query(pts, k=1)
+    d_art, _ = cKDTree(artery_xyz).query(pts, k=1)
+    nearest = np.full(len(pts), -1, np.int64)
 
     density = float(np.mean(stats.density_at_depth(np.linspace(0.0, 1.0, 51), np)))
     cell_volume = spacing_mm ** 3
@@ -853,7 +926,10 @@ def _capillary_layer(tissue: VolumeGeometry, artery_xyz: np.ndarray, spacing_mm:
     src = (f"GENERATIVE SYNTHESIS: one coarse-grained node per {spacing_mm:g} mm parenchyma "
            f"cell, radius {r * 1e3:.2f} um and segment length {total_length:.0f} mm -- the "
            f"cell's TOTAL capillary length at the measured {density:.0f} mm/mm^3, so the wall "
-           f"area it carries is the cell's and not one segment's; no within-cell transit, "
+           f"area it carries is the cell's and not one segment's.  each is a ROOT: the nearest "
+           f"atlas artery is a median {float(np.median(d_art)):.0f} mm away and the arterioles "
+           f"between them are below what a TOF-MRA average resolves, so the tree has a stated "
+           f"hole where it would otherwise have an invented trunk.  no within-cell transit, "
            f"pressure gradient or flow heterogeneity")
     return pts, np.asarray(nearest, np.int64), np.full(len(pts), total_length), src
 
@@ -926,7 +1002,8 @@ def _connectome() -> tuple[GroupConnectome | None, TierRecord | None, list[str]]
 
     A68 = np.load(m).astype(float)
     rows = [ln.split() for ln in coords.read_text().splitlines() if ln.strip()]
-    hemi = [r[0] for r in rows]
+    # column 0 is the hemisphere and is dropped: the registry declares 34
+    # bilateral labels, so there is nowhere for a left/right distinction to land.
     name = [r[1] for r in rows]
     xyz68 = np.array([[float(r[2]), float(r[3]), float(r[4])] for r in rows])
     declared = list(REGISTRY.anatomies["cortical_areas"].labels)

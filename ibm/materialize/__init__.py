@@ -52,14 +52,19 @@ from ibm.materialize.provenance import (
     ParameterFate,
     Provenance,
     Selection,
+    TierRecord,
     ValidityBreach,
 )
 from ibm.materialize.request import (
+    ANY_TIER,
+    POPULATION_OK,
+    SUBJECT_ONLY,
     Budget,
     BudgetExceeded,
     DeviceSpec,
     MaterializationRequest,
     SubjectSpec,
+    TierCeilingExceeded,
     Window,
     graded,
     graded_around,
@@ -76,12 +81,14 @@ from ibm.materialize.sites import (
     VolumeGeometry,
     build_sites,
 )
+from ibm.materialize.substrate import StructuralSubstrate, build_substrate
 from ibm.materialize.trace import CoreClique, Grounding, Trace, core_clique, trace
 
 __all__ = [
     # the request
     "MaterializationRequest", "Budget", "BudgetExceeded", "Window", "SubjectSpec",
     "DeviceSpec", "uniform", "graded", "graded_around",
+    "TierCeilingExceeded", "SUBJECT_ONLY", "POPULATION_OK", "ANY_TIER",
     # tracing
     "trace", "Trace", "Grounding", "core_clique", "CoreClique",
     # geometry and sites
@@ -95,7 +102,9 @@ __all__ = [
     "MaterializedModel", "Cost", "RegionWeights", "account",
     # provenance
     "Provenance", "Basis", "Selection", "ParameterFate", "ConversionRecord",
-    "ValidityBreach", "FrameRecord", "GeometryRecord",
+    "ValidityBreach", "FrameRecord", "GeometryRecord", "TierRecord",
+    # the shared structural substrate
+    "StructuralSubstrate", "build_substrate",
     # caching
     "Cache", "spec_hash",
 ]

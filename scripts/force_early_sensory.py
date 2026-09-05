@@ -122,10 +122,19 @@ N_PLACES = 28
 #: overall figure would hand the delta band's precision to the beta band.
 CAL_BANDS = (Band(0.5, 4.0), Band(4.0, 8.0), Band(8.0, 13.0), Band(13.0, 30.0))
 
-#: held out entirely from every fit.  one whole story and four whole participants,
-#: chosen by name before anything was fitted rather than by which split looked
-#: best afterwards.
-HELD_OUT_STORY = "the_black_willow"
+#: the four stories, and what each is for.  every split here is by whole story
+#: and by whole participant, for the reason `naturalistic_stream` gives: a cut
+#: inside a stream leaks a speaker, a topic and a spectral envelope.
+#:
+#: `easy_money` is the test material and is touched by no fit anywhere.
+#: `cable_spool_fort` selects the chain's time constants and the ridge, on
+#: training participants only.  `lw1` and `the_black_willow` are what the lead
+#: fields are fitted on.  the roles were assigned by story length -- the largest
+#: two train, the second-smallest validates, the middle one tests -- before any
+#: number was computed, rather than by which assignment looked best.
+TEST_STORY = "easy_money"
+VAL_STORY = "cable_spool_fort"
+TRAIN_STORIES = ("lw1", "the_black_willow")
 HELD_OUT_SUBJECTS = ("sub-08", "sub-09", "sub-10", "sub-11")
 
 CACHE = Path(os.environ.get(
@@ -163,9 +172,16 @@ def _sound_events(path: Path) -> list[tuple[float, str, str]]:
 
     the `trial_type` column is a python dict literal rather than a label, and its
     `sound` field carries a filename with a float index -- `lw1_0.0.wav` for a
-    file called `lw1_0.wav`.  fixing that here rather than at read time is the
-    difference between silently pairing MEG with the wrong story and failing
-    loudly, since a missing file raises and a wrong one does not.
+    file called `lw1_0.wav`.
+
+    it also carries a *case* that does not match the deposit.  the events name
+    `The_Black_Willow_3.wav`; the file on disk is `the_black_willow_3.wav`.  that
+    one detail silently removed the largest story in the corpus -- twelve of the
+    thirty segments per recording, about half the data -- from an earlier run of
+    this script, because the lookup returned nothing and the loop moved on.  the
+    fix is to fold the case here, and the real fix is that `load_segments` now
+    counts what it could not pair and refuses rather than continuing, since a
+    quietly halved corpus is far worse than a crash.
     """
     import pandas as pd
 
@@ -182,7 +198,8 @@ def _sound_events(path: Path) -> list[tuple[float, str, str]]:
         stem = name[:-4] if name.endswith(".wav") else name
         if stem.endswith(".0"):
             stem = stem[:-2]
-        out.append((float(row["onset"]), str(d.get("story", "")), stem + ".wav"))
+        out.append((float(row["onset"]), str(d.get("story", "")).lower(),
+                    stem.lower() + ".wav"))
     return out
 
 
@@ -314,6 +331,20 @@ class Segment:
     c: np.ndarray            # (T, n_places) forced hair-cell state
     loc: np.ndarray          # (n_ch, 3) sensor positions, device frame
 
+    @property
+    def recording(self) -> str:
+        """the unit a lead field belongs to: one person, one time in the dewar.
+
+        not the participant.  a MEG participant is repositioned in the helmet
+        between sessions, so the map from cortical current to channel is a
+        property of (person, session) and not of the person; a lead field fitted
+        in one session and applied to the next is applying a rotated montage.
+        measured here on sub-02: a kernel fitted on session 0 scores +0.0013 mean
+        r^2 on a held-out story of the *same* session and -0.0010 on the same
+        story in session 1, which is the sign of a montage that has moved.
+        """
+        return f"{self.subject}/{self.session}"
+
 
 def load_segments(cache: Path, cochs: dict[str, np.ndarray],
                   subjects: tuple[str, ...] | None = None,
@@ -328,6 +359,7 @@ def load_segments(cache: Path, cochs: dict[str, np.ndarray],
     so invisibly because it would improve every model's r^2 at once.
     """
     segs: list[Segment] = []
+    unpaired: set[str] = set()
     for f in sorted(cache.glob("sub-*.npz")):
         parts = f.stem.split("_")
         sub, ses, task = parts[0], parts[1], parts[2]
@@ -336,13 +368,14 @@ def load_segments(cache: Path, cochs: dict[str, np.ndarray],
         d = np.load(f, allow_pickle=False)
         x, starts = d["data"], d["starts"]
         for i, i0 in enumerate(starts):
-            story, wav = str(d["stories"][i]), str(d["wavs"][i])
+            story, wav = str(d["stories"][i]).lower(), str(d["wavs"][i]).lower()
             if stories is not None and story not in stories:
                 continue
             if story in exclude_stories:
                 continue
             c = cochs.get(wav)
             if c is None:
+                unpaired.add(wav)
                 continue
             n = min(c.shape[1], x.shape[1] - int(i0))
             if n < int(20 * FS):
@@ -351,6 +384,13 @@ def load_segments(cache: Path, cochs: dict[str, np.ndarray],
                                 x[:, int(i0): int(i0) + n].T.astype(np.float32).copy(),
                                 c[:, :n].T.astype(np.float32).copy(),
                                 d["loc"]))
+    if unpaired:
+        raise SystemExit(
+            f"{len(unpaired)} stimulus file(s) named in the events could not be paired with "
+            f"a cochleagram: {sorted(unpaired)[:6]}.  this is refused rather than skipped "
+            "because skipping it is what silently removed the largest story in this corpus "
+            "from an earlier run, and a quietly halved training set produces a quietly wrong "
+            "answer.")
     return segs
 
 
@@ -514,7 +554,7 @@ def fitted_r2(stats: dict, w: np.ndarray, proj: np.ndarray | None = None) -> np.
     return 1.0 - resid / np.maximum(yty, 1e-30)
 
 
-def accumulate_by_subject(segs: list[Segment], n_lags: int = N_LAGS) -> dict[str, dict]:
+def accumulate_by_recording(segs: list[Segment], n_lags: int = N_LAGS) -> dict[str, dict]:
     """the same statistics, kept per participant rather than pooled.
 
     the correction that makes this experiment mean anything, and it was found the
@@ -536,8 +576,8 @@ def accumulate_by_subject(segs: list[Segment], n_lags: int = N_LAGS) -> dict[str
     could.
     """
     out: dict[str, dict] = {}
-    for sub in sorted({s.subject for s in segs}):
-        out[sub] = accumulate([s for s in segs if s.subject == sub], n_lags)
+    for key in sorted({s.recording for s in segs}):
+        out[key] = accumulate([s for s in segs if s.recording == key], n_lags)
     return out
 
 
@@ -574,7 +614,7 @@ def predict_r2(segs: list[Segment], w: np.ndarray | dict[str, np.ndarray],
     num = None
     den = None
     for s in segs:
-        wi = w[s.subject] if isinstance(w, dict) else w
+        wi = w[s.recording] if isinstance(w, dict) else w
         if wi is None:
             continue
         c = s.c - s.c.mean(0, keepdims=True)
@@ -602,7 +642,7 @@ def band_r2(segs: list[Segment], w: np.ndarray | dict[str, np.ndarray], band: Ba
     num = den = 0.0
     n = 0
     for s in segs:
-        wi = w[s.subject] if isinstance(w, dict) else w
+        wi = w[s.recording] if isinstance(w, dict) else w
         if wi is None:
             continue
         c = s.c - s.c.mean(0, keepdims=True)
@@ -767,29 +807,29 @@ def stage_fit() -> None:
                               - set(HELD_OUT_SUBJECTS)))
     print(f"\ntrain participants: {', '.join(train_subj)}")
     print(f"held-out participants: {', '.join(HELD_OUT_SUBJECTS)}")
-    print(f"held-out story: {HELD_OUT_STORY}")
+    print(f"stories: fit on {', '.join(TRAIN_STORIES)}; select on {VAL_STORY}; "
+          f"test on {TEST_STORY}")
 
-    segs = load_segments(meg, cochs, subjects=train_subj,
-                         exclude_stories=(HELD_OUT_STORY,))
-    #: the validation split is by *session*, not by time: session 1 of every
-    #: training participant is held out of the statistics the chain is fitted
-    #: from, and is what the chain, the ridge and the calibration r^2 are chosen
-    #: against.  a split by time inside a story would leak, for the reason
-    #: `naturalistic_stream` gives.
-    fit_segs = [s for s in segs if s.session != "ses-1"]
-    val_segs = [s for s in segs if s.session == "ses-1"]
+    #: the split is by story and the lead field is per *recording* -- one person,
+    #: one time in the dewar.  both choices were forced by measurement rather than
+    #: chosen: a lead field shared across people scores nothing at all, and one
+    #: shared across a participant's two sessions loses most of what it had,
+    #: because the participant is repositioned in the helmet between them.
+    fit_segs = load_segments(meg, cochs, subjects=train_subj, stories=TRAIN_STORIES)
+    val_segs = load_segments(meg, cochs, subjects=train_subj, stories=(VAL_STORY,))
     print(f"\n{len(fit_segs)} fitting segments, {len(val_segs)} validation segments, "
           f"{sum(s.y.shape[0] for s in fit_segs) / FS / 60:.1f} min of fitting data")
 
-    train = accumulate_by_subject(fit_segs)
-    val = accumulate_by_subject(val_segs)
+    train = accumulate_by_recording(fit_segs)
+    val = accumulate_by_recording(val_segs)
     print(f"accumulated {sum(t['n'] for t in train.values()):,} training samples over "
-          f"{len(train)} participants x {next(iter(train.values()))['n_ch']} channels, "
+          f"{len(train)} recordings x {next(iter(train.values()))['n_ch']} channels, "
           f"design dimension {next(iter(train.values()))['xtx'].shape[0]}")
 
     theta, r_val, lam = search_chain(train, val)
-    print("\nchain parameters after forging against the validation sessions.  the chain "
-          "is ONE object across all seven participants; only the lead field is per person.")
+    print(f"\nchain parameters after forging against {VAL_STORY} in the training "
+          "participants.  the chain is ONE object across every recording; only the lead "
+          "field is per recording.")
     for k in sorted(THETA0):
         mark = "  <- moved" if theta[k] != THETA0[k] else ""
         print(f"  {k:16s} {THETA0[k]:8.4f} -> {theta[k]:8.4f}{mark}")
@@ -800,21 +840,21 @@ def stage_fit() -> None:
     proj = _projection(tap_basis(theta), N_PLACES)
     w_driven = fit_lead_fields(train, lam, proj)
 
-    # the calibration used *during* fitting: measured on the validation sessions,
-    # which are held out of the statistics above.  the figure quoted as the
+    # the calibration used *during* fitting: measured on the validation story,
+    # which is held out of the statistics above.  the figure quoted as the
     # forcing's accuracy is the stricter one computed in `eval`, on participants
     # and material that were both unseen.
     fits = []
-    print("\ncalibration r2, per band, on the validation sessions:")
+    print(f"\ncalibration r2, per band, on {VAL_STORY} in the training participants:")
     for b in CAL_BANDS:
         r, n = band_r2(val_segs, w_driven, b, proj)
         fits.append(BandFit(b, float(r), n_targets=next(iter(train.values()))["n_ch"],
                             n_samples=int(n),
-                            held_out="validation sessions of training participants"))
+                            held_out=f"{VAL_STORY}, training participants"))
         print(f"  {fits[-1]}")
     cal = ForcingCalibration(
         component="transduction.hair_cell", bands=tuple(fits),
-        measured_on="meg-masc, 7 participants, held-out sessions",
+        measured_on=f"meg-masc, 7 participants, held-out story {VAL_STORY}",
         front_end="gammatone_cochleagram",
         note="the r2 is measured on MEG, several processes and one unknown lead field "
              "downstream of the component being written; it bounds rather than states the "
@@ -842,18 +882,18 @@ def _fit_and_test(fit_segs: list[Segment], test_segs: list[Segment], proj: np.nd
     if minutes is not None:
         cut, kept, used = minutes * 60.0 * FS, [], {}
         for s in fit_segs:
-            have = used.get(s.subject, 0.0)
+            have = used.get(s.recording, 0.0)
             if have >= cut:
                 continue
             take = int(min(s.y.shape[0], cut - have))
-            used[s.subject] = have + take
+            used[s.recording] = have + take
             kept.append(Segment(s.subject, s.session, s.task, s.story, s.wav,
                                 s.y[:take], s.c[:take], s.loc))
         fit_segs = kept
-    st = accumulate_by_subject(fit_segs)
+    st = accumulate_by_recording(fit_segs)
     w_dr = fit_lead_fields(st, lam, proj)
     w_te = fit_lead_fields(st, lam_d, None)
-    for s in {x.subject for x in test_segs}:
+    for s in {x.recording for x in test_segs}:
         w_dr.setdefault(s, None)
         w_te.setdefault(s, None)
     minutes_used = sum(x.y.shape[0] for x in fit_segs) / FS / 60.0 / max(len(st), 1)
@@ -873,7 +913,7 @@ def stage_eval() -> None:
     cal = ForcingCalibration(
         component="transduction.hair_cell",
         bands=tuple(BandFit(Band(lo, hi), r2, n_samples=int(n)) for lo, hi, r2, n in cal_rows),
-        measured_on="meg-masc, 7 participants, held-out sessions",
+        measured_on=f"meg-masc, 7 participants, held-out story {VAL_STORY}",
         front_end="gammatone_cochleagram")
 
     all_subj = sorted({p.stem.split("_")[0] for p in meg.glob("sub-*.npz")})
@@ -897,14 +937,14 @@ def stage_eval() -> None:
     per_channel = {}
     rows = [
         ("seen participants, held-out story",
-         dict(subjects=train_subj, exclude_stories=(HELD_OUT_STORY,)),
-         dict(subjects=train_subj, stories=(HELD_OUT_STORY,))),
-        ("held-out participants, seen stories",
-         dict(subjects=HELD_OUT_SUBJECTS, exclude_stories=("lw1", HELD_OUT_STORY)),
-         dict(subjects=HELD_OUT_SUBJECTS, stories=("lw1",))),
+         dict(subjects=train_subj, stories=TRAIN_STORIES),
+         dict(subjects=train_subj, stories=(TEST_STORY,))),
+        ("held-out participants, chain-selection story",
+         dict(subjects=HELD_OUT_SUBJECTS, stories=TRAIN_STORIES),
+         dict(subjects=HELD_OUT_SUBJECTS, stories=(VAL_STORY,))),
         ("held-out participants x held-out story",
-         dict(subjects=HELD_OUT_SUBJECTS, exclude_stories=(HELD_OUT_STORY,)),
-         dict(subjects=HELD_OUT_SUBJECTS, stories=(HELD_OUT_STORY,))),
+         dict(subjects=HELD_OUT_SUBJECTS, stories=TRAIN_STORIES + (VAL_STORY,)),
+         dict(subjects=HELD_OUT_SUBJECTS, stories=(TEST_STORY,))),
     ]
     for name, fit_kw, test_kw in rows:
         fit_segs = load_segments(meg, cochs, **fit_kw)
@@ -935,9 +975,9 @@ def stage_eval() -> None:
     print(f"{'minutes of the new person':>26s} {'driven':>9s} {'teacher':>9s} "
           f"{'driven/teacher':>15s}")
     fit_segs = load_segments(meg, cochs, subjects=HELD_OUT_SUBJECTS,
-                             exclude_stories=(HELD_OUT_STORY,))
+                             stories=TRAIN_STORIES + (VAL_STORY,))
     test_segs = load_segments(meg, cochs, subjects=HELD_OUT_SUBJECTS,
-                              stories=(HELD_OUT_STORY,))
+                              stories=(TEST_STORY,))
     curve = []
     for minutes in (2.0, 5.0, 10.0, 20.0, 40.0, None):
         r_dr, r_te, used = _fit_and_test(fit_segs, test_segs, proj, lam, lam_d, minutes)
@@ -952,9 +992,8 @@ def stage_eval() -> None:
     # participants only -- the sensors whose own direct kernel explains the least
     # -- and applied unchanged to held-out participants, so the definition cannot
     # have been tuned on the answer.
-    tr_fit = load_segments(meg, cochs, subjects=train_subj,
-                           exclude_stories=(HELD_OUT_STORY,))
-    tr_test = load_segments(meg, cochs, subjects=train_subj, stories=(HELD_OUT_STORY,))
+    tr_fit = load_segments(meg, cochs, subjects=train_subj, stories=TRAIN_STORIES)
+    tr_test = load_segments(meg, cochs, subjects=train_subj, stories=(TEST_STORY,))
     _, r_train, _ = _fit_and_test(tr_fit, tr_test, proj, lam, lam_d)
     order = np.argsort(r_train)
     downstream = order[: int(0.6 * len(order))]
@@ -977,10 +1016,10 @@ def stage_eval() -> None:
 
     # the calibration the forcing actually earns, on the strictest split available.
     strict_fit = load_segments(meg, cochs, subjects=HELD_OUT_SUBJECTS,
-                               exclude_stories=(HELD_OUT_STORY,))
+                               stories=TRAIN_STORIES + (VAL_STORY,))
     strict_test = load_segments(meg, cochs, subjects=HELD_OUT_SUBJECTS,
-                                stories=(HELD_OUT_STORY,))
-    w_strict = fit_lead_fields(accumulate_by_subject(strict_fit), lam, proj)
+                                stories=(TEST_STORY,))
+    w_strict = fit_lead_fields(accumulate_by_recording(strict_fit), lam, proj)
     fits = []
     for band in CAL_BANDS:
         r, n = band_r2(strict_test, w_strict, band, proj)

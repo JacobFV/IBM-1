@@ -30,6 +30,7 @@ from __future__ import annotations
 
 from ibm.materialize.library import NamedModel, anat, register, res, rule, subcortex
 from ibm.materialize.request import (
+    SUBJECT_ONLY,
     Budget,
     DeviceSpec,
     MaterializationRequest,
@@ -144,7 +145,18 @@ SEIZURE_PROPAGATION = register(NamedModel(
         bands=(("neural", ICTAL), ("electromagnetic", ICTAL),
                ("extracellular", ULTRASLOW), ("metabolic", HEMODYNAMIC)),
         budget=Budget(max_state_variables=1_000_000,
-                      max_spectral_coefficients=500_000_000),),
+                      max_spectral_coefficients=500_000_000),
+        # the one ceiling in the library, and the model that most needs it.  a
+        # seizure spreads along THIS patient's white matter; a group connectome
+        # predicts a held-out subject's edges at AUC 0.82 and their strengths at
+        # R^2 0.28, which is nowhere near enough to say which contact goes next.
+        # the failure would be silent -- a propagation map over somebody else's
+        # fascicles looks exactly like a propagation map -- and this is a
+        # pre-surgical model, so the cost of it being silently wrong is a
+        # resection in the wrong place.  falling through here must therefore raise
+        # rather than be recorded, and the fix is a tractogram, which any patient
+        # being worked up for surgery has already had.
+        tier_ceilings=(("tractometric", SUBJECT_ONLY),),),
     fit_sources=("swec-ethz-ieeg", "clinical-ieeg-archives", "epilepsy-ecosystem",
                  "task-ieeg-propagation-fields", "mni-open-ieeg-atlas"),
     eval_sources=("swec-ethz-ieeg", "epilepsy-ecosystem", "ram-intracranial",

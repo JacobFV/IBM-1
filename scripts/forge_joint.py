@@ -1333,7 +1333,7 @@ def main() -> int:
                                   max_iter=args.max_iter)
             gain = rep.log_posterior - rep.log_posterior0
             th = th_new
-            if rep.converged or gain < 1e-3:
+            if gain < 1e-3:                 # a restart that bought nothing; stop
                 break
         print(f"\n--- {label} ---")
         print(rep)
@@ -1482,9 +1482,10 @@ def main() -> int:
     with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
         sd_joint, ok_joint = laplace_sd(space, tasks_joint, theta_joint)
     if not ok_joint:
-        print("  the joint hessian is not positive definite; the widths below are the\n"
-              "  CONDITIONAL diagonal fallback, which is narrower than the marginal and so\n"
-              "  OVERSTATES every shift and every conflict.  read them as upper bounds.")
+        print("  the joint hessian is NOT positive definite at the joint mode, so `laplace_sd`\n"
+              "  floored its eigenvalues: the flat directions come back very wide, which makes\n"
+              "  every shift below smaller than it would otherwise look.  the error is in the\n"
+              "  conservative direction and the restart column is what calibrates it.")
     u_joint = space.to_unconstrained(theta_joint)
     u_restart = [space.to_unconstrained(t) for t in restarts]
     influence = {}
@@ -1547,8 +1548,9 @@ def main() -> int:
         sd_n2, ok_n2 = laplace_sd(space, [n2_ds.task(space)], theta_n2)
     for k in datasets:
         if not hess_ok[k]:
-            print(f"  NOTE: {k}'s hessian is not positive definite at its own mode; its "
-                  "widths are the\n        conditional fallback and OVERSTATE conflict.")
+            print(f"  NOTE: {k}'s hessian is not positive definite at its own mode.  its flat\n"
+                  "        directions were floored to a wide width, so its share of every z "
+                  "below is\n        UNDER-stated rather than over-stated.")
 
     def conflicts(pairs_in, tag: str):
         rows = []
@@ -1676,6 +1678,13 @@ def main() -> int:
                  and lodo_res[k]["lodo_vs_prior"]["p"] < 0.05)
     print(f"(d) lodo       three sources beat the prior on {n_lodo} of {len(datasets)} "
           "left-out modalities")
+    noise = max(abs(influence[k]["restart_noise"]) for k in influence)
+    biggest = max(max(abs(influence[k][d]) for d in datasets) for k in influence)
+    print(f"    NOTE       restarting the joint fit from a prior draw moves the posterior by "
+          f"up to\n               {noise:.0f} sd, against {biggest:.0f} sd for deleting a "
+          "whole dataset.  the joint objective is\n               multimodal, so a posterior "
+          "shift is not by itself evidence that a source spoke;\n               the swept "
+          "nats are.")
 
     out = args.out or (Path(__file__).resolve().parents[1] / "data" / "joint" /
                        "forge_joint@v1" / "posterior.json")

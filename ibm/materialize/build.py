@@ -202,7 +202,13 @@ class _Tiers:
             return None
         edges, rec = got
         if rec is None:
-            return None
+            # the substrate had the structure and it connected nothing here -- a
+            # cortico-cortical connectome over a request whose cortex lives on the
+            # sheet, say.  the empty edge set is the right answer and NO rung is
+            # recorded for it: reporting that a model rests on a population
+            # connectome that contributed no edges would be the mirror image of
+            # the error this whole ledger exists to prevent.
+            return edges
         if not self.admits(topology, rec.rank):
             self.refuse(topology, rec, strict)
             return None

@@ -87,8 +87,15 @@ from ibm.vocabulary import Resolution, ResolutionRule
 #: field integrates over and the conductor is a partial-volume conductivity that
 #: 8 mm carries as well as 1.5 mm.  so the volume supports are coarsened alone
 #: until they run out of room, and only then is everything coarsened together.
-VOLUME_COARSENINGS = (2.0, 4.0, 8.0, 16.0)
-COARSENINGS = (2.0, 4.0, 8.0)
+#: the ladder reaches further than it used to, and the reason is the substrate.
+#: a support that had no geometry contributed no sites, so a model declaring 0.1 mm
+#: over the whole interstitial volume fitted its budget trivially by materializing
+#: nothing there.  now that those supports exist, the declared r(q) is priced for
+#: the first time -- `glymphatic` asks for 0.1 mm over 1.3 litres of parenchyma,
+#: which is 10^9 sites -- and the honest answer is the one §1 gives: coarsen until
+#: it fits and report the rung, rather than call the model unbuildable.
+VOLUME_COARSENINGS = (2.0, 4.0, 8.0, 16.0, 32.0, 64.0)
+COARSENINGS = (2.0, 4.0, 8.0, 16.0, 32.0)
 
 #: markers that identify a problem as *external data this subject does not
 #: have*, rather than as something wrong with the request or the code.  every
@@ -459,7 +466,13 @@ def coarsen_volumes(request, factor: float):
     the default clause is coarsened, because the default is what every support
     with no rule of its own falls through to, and those are volumes here.
     """
-    vols = frozenset(n for n, s in REGISTRY.supports.items() if s.kind == "volume")
+    # trees count as volumes here.  the argument for exempting a support from this
+    # is the sheet's -- a lead field integrates over the cortical surface and
+    # coarsening it costs accuracy directly -- and a vascular tree is not that: its
+    # site count grows linearly in 1/r and its 0.02 mm rules were written for an
+    # electrode neighbourhood, not for the whole cerebral circulation.
+    vols = frozenset(n for n, s in REGISTRY.supports.items()
+                     if s.kind in ("volume", "tree"))
     r = request.resolution
     rules = []
     for x in r.rules:

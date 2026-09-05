@@ -187,12 +187,43 @@ from `run_eeg_forward.py` section 7 (drive advanced, the meaningful case):
     window 2   limited_by=continuity, residual 9.26e-02, joint gap 1.754e+02
     joint gap / state rms  0.0702, 0.0678
 
-so the continuity floor sits at ~9% of the initial residual and the joint gap at
-~7% of the state's own rms. **if that is resolution-independent it says the floor
-is set by the hop against the graph's memory rather than by anything spatial** —
-which would mean a covariance-carrying `Carry` (4.1d) buys the same thing at any
-r(q), and is therefore worth doing once rather than per-materialization. the
-full-resolution pair is pending and will settle it.
+**ANSWERED, and it is a clean negative: the floor is NOT set by the hop against
+the graph's memory.** r(q) held fixed at coarse (4,318 sites on the merged neural
+block, longest memory 600 ms, 2048 ms window), hop varied — the only other thing
+the floor could depend on:
+
+    overlap  hop_ms  hop/memory  gap/rms  resid/init  limited_by
+      0.586     848        1.41   0.0690      0.0925  continuity
+      0.700     614        1.02   0.0615      0.0939  continuity
+      0.800     410        0.68   0.0582      0.0987  continuity
+
+the 0.586 row reproduces the `run_eeg_forward` baseline exactly, so the harness
+agrees with itself. **halving the hop — from 1.4x the graph's longest memory to
+0.68x it — buys 16% on the joint gap and makes the residual floor MONOTONICALLY
+WORSE.**
+
+**the floor is structural, not a tradeoff.** a driven cyclic window has a unique
+solution, and the carried tail is a second condition it cannot satisfy. the size
+of the mismatch is set by how much the dynamics DISAGREE with the tail, not by
+how much of the window is pinned — so widening the overlap pins more of a window
+whose own dynamics already determined it, adding constraint without adding
+agreement. that is why the gap falls while the residual rises. it is the
+alternating projection onto two non-intersecting sets that
+`WindowPlan.match_weight`'s docstring already describes, now with a number on it.
+
+so a covariance-carrying `Carry` (4.1d) is a **once-and-for-all** fix, not an
+r(q)-dependent one: the hop is the only temporal knob and the floor does not
+respond to it, which leaves the disagreement between the dynamics and the imposed
+tail — a property of the transfer functions and `match_weight`, neither of which
+is r(q). the r(q) axis is formally open (only the hop was varied) with a strong
+prior that it does not matter.
+
+**side finding: `WindowPlan.for_memory` gives advice that does not do what a
+reader will assume.** it exists to widen the overlap until a plan is causally
+legal, and it is correct about that — it is what makes the run legal at all. but
+"widen the overlap" reads as also buying a better stitch, and it does not: 0.80
+overlap costs **2.5x the time per window** (287 s vs 114 s for the same three
+windows) for 16% better gap and 7% worse residual. the docstring should say so.
 
 #### 4.1f do not recover central moments from raw sums at scale
 `reproject_nonlinear` was briefly changed to stream members by accumulating RAW
