@@ -5,7 +5,17 @@ sources/*/raw/**
 !sources/*/raw/.location.yaml
 !sources/*/raw/checksums.txt
 sources/*/evidence/**
+# a directory excluded by `**` cannot have a file inside it re-included, so the
+# recipe directories have to be un-excluded before the manifest can be.  without
+# these two lines the negation below silently does nothing and every manifest is
+# dropped -- which is the opposite of what the paragraph above says this file is for.
+!sources/*/evidence/*/
 !sources/*/evidence/*/manifest.yaml
+# and `measured.json` beside it: a few tens of kB of numbers a recipe produced,
+# which is the same kind of thing as a manifest and not the same kind of thing as
+# the arrays.  ibm/topologies/tract_prior.py reads one at import, so leaving it
+# out would mean a fresh checkout silently ran on compiled-in constants.
+!sources/*/evidence/*/measured.json
 index/**/*.jsonl
 !index/neuro2/candidates.jsonl
 index/**/*.json.gz

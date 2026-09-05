@@ -1,0 +1,30 @@
+# what this recipe produced, from which raw source.  committed.
+recipe: tract_uncertainty
+version: 1
+produced_at: '2026-09-04'
+from_raw:
+  ismrm2015-tractography-challenge: extracted/FilesForSimulation/Fibers.fib (200433 streamlines)
+  ismrm2015-submissions: 96 tractograms, 91 used, 20 teams
+checksums: deferred -- the raw roots record their own
+outputs:
+- measured.json
+headline:
+  mean_recovery_of_true_edges: 0.4562
+  median_per_pipeline_false_discovery_rate: 0.725
+  per_pipeline_false_positive_rate: 0.1639
+  strength_log_sd_across_pipelines: 1.3586
+  strength_spread_as_a_factor: 3.891
+  correlated_fraction: 0.3171
+  between_team_correlated_fraction: 0.2907
+  effective_independent_pipelines: 3.08
+  effective_independent_teams: 3.066
+read_it_as: 'a LOWER bound.  the phantom is simulated and simpler than tissue, 20 mm bins merge nearby
+  endpoints, and the 5 submissions whose coordinate convention could not be identified are the sparsest
+  ones -- every one of those pushes the measured error DOWN.  the numbers that matter are the last four:
+  pipelines disagree about an edge''s strength by a factor of about four, and 91 tractograms of one
+  brain carry about three tractograms'' worth of independent information about whether an edge exists.  20
+  teams also carry about three, so the redundancy is between algorithms and not merely between one team''s
+  settings.'
+notes: see derive/tract_uncertainty.yaml for the recipe and scripts/measure_tract_uncertainty.py for
+  why each choice was made.  ibm/topologies/tract_prior.py reads measured.json and falls back to these
+  figures compiled in when it is absent.

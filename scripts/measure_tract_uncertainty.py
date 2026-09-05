@@ -61,8 +61,9 @@ translation read off the bounding boxes, and taking whichever maximizes the dice
 overlap of its 4 mm occupancy with the ground truth's.  that is the whole search
 space -- no rotation, no fitted affine -- because a real transform fit would let
 a tractogram that is simply wrong be rotated into agreement and the error rate
-would come out however good the optimizer was.  33 of the 96 turn out to be
-written with x and y negated about the scanner origin.  the chosen convention and
+would come out however good the optimizer was.  34 of the 96 turn out to be
+written with coordinates negative throughout, and 55 of the 91 whose convention
+can be identified need x and y negated to reach the ground truth's frame.  the chosen convention and
 the residual dice are reported per submission, and a submission whose convention
 cannot be identified is *excluded and named* rather than quietly contributing
 noise.  identification is a margin over the runner-up convention rather than a

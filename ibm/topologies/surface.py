@@ -11,12 +11,24 @@ radius graph in the volume produces edges that jump the sulcus, and those edges
 are not weak connections to be down-weighted, they are connections that do not
 exist.
 
-the practical size of the error is worth stating: the ratio of geodesic to
-euclidean distance across a sulcal bank routinely exceeds five, and in the insula
-and the calcarine it is worse.  no monotone reweighting of euclidean distance can
-recover it, because the map is not monotone -- the same euclidean distance
-corresponds to a tenth of a millimetre or to eight centimetres depending on which
-side of a fold each point is on.
+the practical size of the error is worth stating, and it is smaller in the median
+than the argument sounds.  measured on the mne `sample` white surface (202,437
+mm^2, 312,273 vertices), the geodesic/chord ratio over the pairs a euclidean
+radius graph would connect has median 1.04 at 2 mm, 1.13 at 5 mm and 1.41 at
+10 mm.  the median is not where the damage is.  the p90 reaches 3.5 and the
+maximum 11, and at 10 mm spacing 20.4% of the pairs a volume graph connects lie
+more than 20 mm apart along the cortex.
+
+no monotone reweighting of euclidean distance recovers it, because the map is not
+monotone -- the same chord corresponds to a tenth of a millimetre or to several
+centimetres depending on which side of a fold each point is on, and a single
+number cannot tell those apart.  that, rather than the median distortion, is the
+argument for carrying the sheet's own metric.
+
+(an earlier version of this docstring claimed the ratio "routinely exceeds five".
+it did not: that figure came from a geodesic graph assembled from half-edges,
+where scipy's duplicate-summing doubled every interior edge weight and so doubled
+every path length.  the numbers above are from the deduplicated graph.)
 
 geodesic distance also has to be computed on a mesh that follows the cortex rather
 than a smoothed one.  it is measured along the midthickness surface here for a

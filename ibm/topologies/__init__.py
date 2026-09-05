@@ -50,6 +50,12 @@ from ibm.topologies import (          # noqa: F401  (imported for registration)
     em, mechanical, metabolic, afferent, efferent, device, neuromodulatory,
 )
 
+# tract_prior is imported after `tract` because it wraps that module's builder.
+# it registers no topology of its own -- it is a calibrated prior OVER
+# `tractometric`, and a second topology claiming to be the same anatomy is
+# exactly what §3's "there is no universal interaction graph" does not license.
+from ibm.topologies import tract_prior  # noqa: F401
+
 from ibm.topologies.afferent import AFFERENT_PATHWAY
 from ibm.topologies.csf import CSF
 from ibm.topologies.device import DEVICE_COUPLING
@@ -72,5 +78,5 @@ __all__ = [
     "LOCAL", "CORTICAL_SURFACE", "LAMINAR", "MICROCIRCUIT", "TRACTOMETRIC",
     "VASCULAR", "CSF", "INTERSTITIAL", "ELECTROMAGNETIC", "MECHANICAL",
     "METABOLIC_EXCHANGE", "AFFERENT_PATHWAY", "EFFERENT_PATHWAY", "DEVICE_COUPLING",
-    "NEUROMODULATORY_PROJECTION",
+    "NEUROMODULATORY_PROJECTION", "tract_prior",
 ]

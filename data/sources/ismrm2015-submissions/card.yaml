@@ -49,8 +49,12 @@ streams:
     here.  the card''s own `forbidden` list already refuses observation-role likelihoods from it, and `use`
     is control / evaluate / surrogate.  these are the 96 files themselves, .trk/.tck/.vtk in the phantom frame.  MEASURED
     FROM THESE BYTES by `scripts/measure_tract_uncertainty.py`: the submissions do not share a coordinate convention
-    -- 33 of 96 are written with x and y negated about the scanner origin -- which is the `absent` entry `coordinate_convention_per_submission`
-    turning out to be load-bearing rather than pedantic.'
+    -- 34 of the 96 are written with coordinates negative throughout, and 55 of the 91 whose convention could
+    be identified need x and y negated to reach the ground truth''s frame -- which is the `absent` entry `coordinate_convention_per_submission`
+    turning out to be load-bearing rather than pedantic.  the worse half of that finding is that x ALONE is
+    not recoverable from this phantom at all: it is left-right symmetric to within 3% of any occupancy overlap,
+    so the sign is settled by y, which is recoverable, on the ground that RAS and LPS negate the two together.  all
+    42 .trk files agree with their own voxel_order field on that reading.'
 - name: cross_pipeline_disagreement
   kind: context
   via: null

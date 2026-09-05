@@ -98,7 +98,7 @@ import math
 from dataclasses import dataclass, field as _field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Mapping
 
 from ibm.topologies import builders as B
 from ibm.vocabulary import Prior, Provenance, Tying, lognormal
@@ -118,6 +118,22 @@ class Tier(str, Enum):
     SUBJECT_TRACTOGRAM = "subject_tractogram"
     GROUP_CONNECTOME = "group_connectome"
     DISTANCE_PRIOR = "distance_prior"
+
+    @property
+    def rank(self) -> int:
+        return {"subject_tractogram": 0, "group_connectome": 1,
+                "distance_prior": 2}[self.value]
+
+    def demoted_to(self, other: "Tier") -> "Tier":
+        """the weaker of two tiers.  weakness wins, always.
+
+        used to combine what a caller declared with what the inputs actually
+        are.  the asymmetry is the point: a caller may cap a tier downward -- a
+        tractogram warped from a template subject is not this subject's anatomy
+        however it was computed -- and may never raise one, because an intention
+        is not evidence about where the data came from.
+        """
+        return self if self.rank >= other.rank else other
 
 
 @dataclass(frozen=True)
@@ -392,10 +408,15 @@ def edge_support(sites, *, tier: Tier | str = Tier.SUBJECT_TRACTOGRAM,
     how a distance prior ends up quoted as anatomy: the edges are what gets
     passed around, the provenance is what gets dropped.
 
-    the tier is *demoted* to what the inputs actually support rather than trusted
-    as given.  asking for `SUBJECT_TRACTOGRAM` with only a group matrix in hand
-    returns `GROUP_CONNECTOME` and says so, because a caller's intention is not
-    evidence about where the data came from.
+    `tier` is a CEILING and not a declaration.  the returned tier is the weaker of
+    what the caller asked for and what the inputs actually are, so asking for
+    `SUBJECT_TRACTOGRAM` with only a group matrix in hand returns
+    `GROUP_CONNECTOME` -- an intention is not evidence about where data came from
+    -- while asking for `GROUP_CONNECTOME` with a subject tractogram in hand
+    honours the cap, because a caller may know something the inputs do not show.
+    a tractogram warped from a template subject is the case that matters: it
+    arrives as streamlines and is not this subject's anatomy, and nothing in the
+    file would say so.
 
     the third tier is not implemented here and that is deliberate: it is
     `cortical_association`, it already exists, and it lives on the cortical
@@ -409,13 +430,15 @@ def edge_support(sites, *, tier: Tier | str = Tier.SUBJECT_TRACTOGRAM,
     tier = Tier(tier)
 
     if tractograms:
-        return tractometric_consensus(
+        return (tractometric_consensus(
             sites, support=support, tractograms=tractograms,
-            min_pipelines=min_pipelines, uncertainty=unc, **kw), Tier.SUBJECT_TRACTOGRAM
+            min_pipelines=min_pipelines, uncertainty=unc, **kw),
+            tier.demoted_to(Tier.SUBJECT_TRACTOGRAM))
     if streamlines is not None:
-        return tractometric_consensus(
+        return (tractometric_consensus(
             sites, support=support, tractograms={"only": streamlines},
-            min_pipelines=1, uncertainty=unc, **kw), Tier.SUBJECT_TRACTOGRAM
+            min_pipelines=1, uncertainty=unc, **kw),
+            tier.demoted_to(Tier.SUBJECT_TRACTOGRAM))
     if matrix is not None and lengths_mm is not None:
         from ibm.topologies.tract import tractometric_matrix
         edges = tractometric_matrix(sites, support=support, matrix=matrix,
@@ -424,7 +447,7 @@ def edge_support(sites, *, tier: Tier | str = Tier.SUBJECT_TRACTOGRAM,
         # has already been thresholded by its publisher has had this decision
         # taken for it once, and taking it a second time here compounds two
         # unrecorded cutoffs into one number nobody can reconstruct.
-        return edges, Tier.GROUP_CONNECTOME
+        return edges, tier.demoted_to(Tier.GROUP_CONNECTOME)
 
     raise B.MissingInput(
         "edge_support", "tractograms, streamlines, or matrix + lengths_mm",
