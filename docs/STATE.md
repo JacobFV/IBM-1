@@ -178,6 +178,37 @@ SCALAR and `_advance_scalar` already carries the exact push-forward for that
 form; it has never run, because no assembled coupling in any script writes a
 scalar block.
 
+#### 4.1e the continuity floor, measured (coarse; full-resolution pending)
+
+from `run_eeg_forward.py` section 7 (drive advanced, the meaningful case):
+
+    window 0   converged, residual 3.9e-09 of initial, joint gap 0
+    window 1   limited_by=continuity, residual 9.23e-02, joint gap 1.818e+02
+    window 2   limited_by=continuity, residual 9.26e-02, joint gap 1.754e+02
+    joint gap / state rms  0.0702, 0.0678
+
+so the continuity floor sits at ~9% of the initial residual and the joint gap at
+~7% of the state's own rms. **if that is resolution-independent it says the floor
+is set by the hop against the graph's memory rather than by anything spatial** —
+which would mean a covariance-carrying `Carry` (4.1d) buys the same thing at any
+r(q), and is therefore worth doing once rather than per-materialization. the
+full-resolution pair is pending and will settle it.
+
+#### 4.1f do not recover central moments from raw sums at scale
+`reproject_nonlinear` was briefly changed to stream members by accumulating RAW
+moments and recovering central ones at the end. on a diverged ensemble — the
+wilson-cowan run drives members to 1e30 — `E[x^4] - 4 mu E[x^3] + ...` cancels
+away every digit: it reported skew 8e83 and excess kurtosis -4e120 where the
+two-pass code gave +0.00 and -0.68. replaced with Pebay online recurrences
+(running mean, M2, M3, M4, every term a deviation from the running mean) plus a
+complex Welford for the width.
+
+**audited the rest of the repo for the same pattern: none found.**
+`ensemble._diagnose` standardizes first (`d = x - mu`, `z = d/sd`) and is
+two-pass; `SpectralGaussian.moment_match` centres before squaring;
+`ScalarGaussian.moment_match` uses `np.var(ddof=1)`. the bug existed only in the
+streaming path and only while it was raw.
+
 #### 4.1b what still does not propagate
 cross-component covariance (independent composition across distinct inputs — a
 component reading two inputs with a common ancestor gets a width that is too

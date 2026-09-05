@@ -1990,8 +1990,13 @@ def run_nonlinear(model, lead_data, basis, rng) -> str:
         note = f"{type(exc).__name__}: {exc}"
         print(f"  the nonlinear run raised: {note}")
     print()
-    print("  this is the only place in the whole run where a belief's WIDTH moves at all.")
-    print("  everything in sections 6 to 12 is LTI, and `solve_window` propagates means.")
+    print("  this used to be the only place in the whole run where a belief's WIDTH moved")
+    print("  at all -- everything in sections 6 to 12 is LTI, and `solve_window` propagates")
+    print("  means.  `ibm/runtime/propagate.py` now applies the exact LTI push-forward to")
+    print("  all of it, so what is particular about this section is not that a width moves")
+    print("  but that it moves by SAMPLING: the ensemble is the only mechanism available")
+    print("  once f stops being linear, and the skew and excess kurtosis above are the")
+    print("  measure of what the gaussian projection threw away to get there.")
     return note
 
 
