@@ -11,7 +11,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -19,27 +19,51 @@ frames:
 - MNI152
 streams:
 - name: dissection_derived_tract_geometry
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'Direct observation of fibre pathways, in few specimens, post-mortem, with method-specific
     artifacts: blunt dissection follows the plane of least resistance and can create tracts that are not
     there, while polarised light imaging is limited to sectioned tissue. Their value is as an INDEPENDENT
     CHECK on tractography -- a source of truth that is not more tractography.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: fibre pathway geometry from post-mortem blunt dissection, myelin staining or polarised
     light imaging -- methods that see fibres directly rather than inferring them from water diffusion
+  constrains: []
+  notes: 'context, and this is the case the schema singles out.  a connectome matrix is a TOPOLOGY ASSERTION
+    -- which supports are taken to interact -- produced by somebody''s reconstruction pipeline.  ARCHITECTURE.md
+    §3 makes interaction topologies a separate primitive from state, and binding a matrix as `measured`
+    would let one pipeline''s tractography contribute a likelihood about tissue.  and the method-specific
+    artifacts are the reason to keep it context even though it sees fibres directly: blunt dissection
+    follows the plane of least resistance and can CREATE tracts that are not there.  a tract is a pathway
+    assertion, which is topology.'
 - name: fibre_orientation_ground_truth
   kind: measured
-  via: null
+  via:
+  - tract_propagation
   systematic_bias: polarised light imaging gives measured fibre orientation at micron scale, which is
     the quantity diffusion MRI estimates indirectly -- the comparison is the validation diffusion tractography
     otherwise lacks
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains:
+  - structural.fiber_orientation
+  notes: 'MEASURED, and it is the one stream in the atlas group that genuinely is: polarised light imaging
+    returns fibre orientation at micron scale directly, which is the quantity diffusion MRI estimates
+    indirectly, and that comparison is the validation tractography otherwise lacks.  TWO CAVEATS ON THE
+    BINDING.  the via chain follows the corpus convention set by tractoinferno, ds000117 and aomic-id1000
+    -- `plasticity` is named because it is the process that writes the structural field -- but `plasticity`''s
+    declared outputs are synaptic, dendritic and axonal density plus myelination and NOT `structural.fiber_orientation`,
+    so no registered process writes this component and the chain is a convention rather than a derivation.  and
+    PLI is post-mortem in few specimens with its own artifacts, so it is a strong constraint on few brains
+    rather than a population one.  fiber orientation is exogenous -- no process derives it, dMRI measures
+    it -- so the chain names the process that CONSUMES it.  the previous chain routed it through plasticity,
+    which neither reads nor writes it: a route that does not exist, copied across the whole dMRI corpus
+    before the binder checked direction.'
+  frame: specimen_native
 absent:
 - population
 - in_vivo_correspondence

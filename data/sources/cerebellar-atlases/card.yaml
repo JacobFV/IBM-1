@@ -26,7 +26,7 @@ licence:
     is evidence about the acquisition rather than an opinion about the deposit''s policy. It says nothing
     about the LICENCE terms, which are recorded separately and still govern distribution; a non-commercial
     work with no DUA is an ordinary combination.'
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -35,7 +35,7 @@ frames:
 - SUIT
 streams:
 - name: probabilistic_lobule_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'Diedrichsen (2009) atl-Anatom is a genuinely PROBABILISTIC atlas -- 34 compartments
     hand-traced on 20 participants for the lobules and a different 23 for the deep nuclei, so p(compartment
@@ -44,18 +44,22 @@ streams:
     release), and the deep nuclei rest on a different and smaller cohort than the lobules, so their probabilities
     are not commensurable with the lobular ones. The lobular anatomy itself follows Schmahmann et al.
     (2000), which is one individual cerebellum.'
-  notes: Cerebellar cortex has laminae -- molecular, Purkinje, granular -- and they are not the isocortical
-    six. bwin.geometry.subcortical.layer_probability_at REFUSES for exactly this reason, and these volumes
-    carry no laminar coordinate that would discharge it.
+  notes: 'context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set
+    is a COVER over a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value
+    any ibm component takes at them.  no registered component is a region label, and inventing one would
+    make a naming convention into biology.  it reaches a materialization as a support index and as a `prior`,
+    never as a likelihood.  p(compartment | voxel) is a fraction of TRACERS, not a fraction of tissue,
+    and the maps overlap.  a probability of a name is not a value of a component.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy plus static task contrasts
   spatial_support: cerebellum-cropped volumes on a 153x103x84 lattice at 1 mm (MNI152NLin6AsymC), with
     matched crops in MNI152NLin2009cSymC and SUIT space; plus surface projections of the same maps onto
     the flattened cerebellar sheet
+  constrains: []
 - name: functional_cerebellar_parcellations
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'Buckner 2011, Ji 2019, Xue 2021, King 2019 (MDTB) and Nettekoven 2024 are FUNCTIONAL
     parcellations: cerebellar voxels labelled by which cerebral network or task domain they correlate
@@ -64,19 +68,32 @@ streams:
     of the posterior fossa. These are covers to be held beside the anatomical one, never merged into it,
     and their disagreement with atl-Anatom is the measurement.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set
+    is a COVER over a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value
+    any ibm component takes at them.  no registered component is a region label, and inventing one would
+    make a naming convention into biology.  it reaches a materialization as a support index and as a `prior`,
+    never as a likelihood.  these are cerebellar voxels labelled by which cerebral network their BOLD
+    correlates with.  a correlation-derived label is a cover, and the underlying correlation belongs to
+    whichever fMRI source produced it, not to this collection.'
 - name: task_contrast_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: The 47 MDTB condition contrasts are each relative to the mean activity across all tasks
     in 24 participants, so a value is a difference from an arbitrary baseline that the battery itself
     defined. They are useful for asking whether two supports behave alike and useless as absolute activity.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a contrast value here is a difference from the mean over the MDTB battery, so it has
+    no absolute scale and no unit that any registered component carries.  it answers 'do these two supports
+    behave alike', which is a question about a cover, and it would be a false likelihood about `blood.*`
+    or `electromagnetic.bfield` if bound as measured.
 - name: template_transforms
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'tpl-*_from-*_xfm.nii are displacement fields between the three cerebellar template
     crops. They are the collection''s own registration, with no residual reported, so a transform taken
@@ -85,8 +102,13 @@ streams:
     MNI and MNISym releases of atl-Anatom, which is a lower bound on what moving between these frames
     costs.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  a
+    displacement field between two template crops is frame-graph machinery; it carries an unmeasured registration
+    residual and no state at all.'
 absent:
 - individual_geometry
 - laminar_coordinate

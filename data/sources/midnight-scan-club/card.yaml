@@ -11,7 +11,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: OpenNeuro-hosted; per-dataset terms unresolved pending inspection of the dataset_description.json.
-binding: unbound
+binding: bound
 population:
   n: 10
   hierarchy:
@@ -29,7 +29,8 @@ frames:
 streams:
 - name: bold_rest
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
     concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
     voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
@@ -43,43 +44,88 @@ streams:
   - scanner drift
   systematic_bias: 'The individual-specific network topography here is direct evidence for §5: individual
     network boundaries do not respect any group parcellation.'
-  notes: TR 2.2 s aliases cardiac and respiratory fluctuation; that is a modelled state here, not noise
+  notes: 'TR 2.2 s, 4 mm, TEN SESSIONS PER PARTICIPANT on consecutive nights -- dense individual mapping,
+    which is what makes individual network topography estimable at all.  ceiling is the TR nyquist at
+    0.227 Hz, and that TR ALIASES cardiac and respiratory fluctuation into the band, which is modelled
+    state here rather than noise.  BOLD IS NOT NEURAL ACTIVITY, and the four-step chain is what says so:
+    neurovascular coupling, then flow, then tissue exchange, then the susceptibility change deoxyhaemoglobin
+    makes -- which is why the component is `electromagnetic.bfield` and not a neural one.  the vascular
+    stages are modelled state, not nuisance to be regressed away.  em_generation is what produces the
+    magnetic field from source currents; the previous chain named vascular_flow, which is unrelated.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.227
   temporal_support: TR 2.2 s; 10 sessions per participant on consecutive nights
   spatial_support: 4 mm isotropic BOLD; high-quality individual surfaces from averaged structurals
+  constrains:
+  - electromagnetic.bfield
+  rate_hz: 0.4545
+  frame: subject_native
 - name: individual_network_topography
-  kind: measured
+  kind: context
   via: null
   systematic_bias: a mechanism that only reproduces group-average topography has failed this test
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  what is shipped is a FITTED OR AGGREGATED MAP -- an inverse solution, a GLM contrast,
+    a clustering, a meta-analytic summary -- rather than a measurement.  binding it would let one pipeline''s
+    answer contribute a likelihood about tissue, which is the same argument that makes a tractogram context.  and
+    it is the card''s own claim: individual network boundaries do not respect any group parcellation,
+    and a mechanism that only reproduces group-average topography has failed this test.  a network assignment
+    is still a COVER derived from the correlations of the BOLD above, so binding it would count that acquisition
+    twice and attribute a clustering to tissue.'
 - name: bold_task
   kind: measured
-  via: null
+  via:
+  - em_generation
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.227
+  constrains:
+  - electromagnetic.bfield
+  notes: 'separate runs from the resting sessions, same clock.  BOLD IS NOT NEURAL ACTIVITY, and the four-step
+    chain is what says so: neurovascular coupling, then flow, then tissue exchange, then the susceptibility
+    change deoxyhaemoglobin makes -- which is why the component is `electromagnetic.bfield` and not a
+    neural one.  the vascular stages are modelled state, not nuisance to be regressed away.  em_generation
+    is what produces the magnetic field from source currents; the previous chain named vascular_flow,
+    which is unrelated.'
+  rate_hz: 0.4545
+  frame: subject_native
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.  high-quality individual surfaces
+    from AVERAGED structurals, which is part of why the individual topography here is trustworthy.'
 - name: t2w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.'
 - name: field_maps
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  what
+    makes the EPI distortion correctable.'
 absent:
 - eeg
 - meg
@@ -100,7 +146,11 @@ use:
 - fit
 - prior
 forbidden:
-- midnight-scan-club/* -> population covariance priors
+- midnight-scan-club/* -> a population claim (n=10, dense not broad)
+- midnight-scan-club/individual_network_topography -> a second likelihood about the BOLD (it is a clustering
+  of bold_rest and is already counted there)
+- midnight-scan-club/bold_rest -> a band above 0.227 Hz (TR 2.2 s aliases cardiac and respiratory fluctuation
+  into everything below it)
 split:
   group_by:
   - participant

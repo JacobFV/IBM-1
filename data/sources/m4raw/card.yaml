@@ -18,7 +18,7 @@ licence:
     it without an access request. That is evidence about the acquisition rather than an opinion about
     the deposit''s policy. It says nothing about the LICENCE terms, which are recorded separately and
     still govern distribution; a non-commercial work with no DUA is an ordinary combination.'
-binding: unbound
+binding: bound
 population:
   n: 183
   hierarchy:
@@ -34,7 +34,7 @@ frames:
 - subject_native
 streams:
 - name: repeated_low_field_kspace
-  kind: measured
+  kind: context
   via: null
   observation_chain: transverse magnetisation at 0.3 T -> coil-weighted signal -> complex k-space samples,
     repeated two or three times per contrast on the same anatomy in the same session
@@ -47,8 +47,8 @@ streams:
     the measured floor a reconstruction method must be quoted against. Almost every other k-space dataset
     has one acquisition per contrast and can only estimate that floor from a model.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: MULTIPLE REPETITIONS OF THE SAME CONTRAST IN THE SAME SESSION -- T1w and T2w three
     times each, FLAIR twice. Repeated acquisitions of the same anatomy make the noise distribution measurable
     rather than modelled, which is what turns a denoising claim into a measurable one
@@ -56,44 +56,103 @@ streams:
     THE LOW FIELD IS THE POINT: SNR, contrast behaviour and artefact structure at 0.3 T are qualitatively
     different from 3 T, and a reconstruction or physics model that only ever sees 3 T has been fitted
     to one corner of the parameter space'
+  constrains: []
+  notes: 'context, and this is the T1w decision applied to the acquisition domain.  raw k-space is not
+    an image and an anatomical image is not evidence about any ibm component: it supplies the geometry
+    the supports are indexed over.  going further would need `material.conductivity`, `material.mass_density`
+    and the rest, and ds004024''s card already records why that is refused until a head model exists to
+    put the values into -- here it is refused twice over, because without the acquisition object (scanner
+    frame, sequence timeline, sampling trajectory, coil sensitivities, reconstruction provenance) these
+    samples cannot be placed in space at all.  0.3 T, 1.2 mm in plane and 5 mm through plane.  WHAT MAKES
+    IT WORTH HOLDING: T1w and T2w acquired three times each and FLAIR twice, on the same anatomy in the
+    same session, so the noise distribution per voxel is MEASURABLE rather than modelled.  that is the
+    empirical floor a reconstruction method must be quoted against, and almost every other k-space dataset
+    can only estimate it.'
 - name: identified_motion_corrupted_volumes
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 200 motion-corrupted volumes identified and set aside rather than deleted is a censoring
     mechanism made explicit, and it doubles as a real test set for motion robustness.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  200 motion-corrupted volumes were identified and SET ASIDE rather than deleted, which
+    is a censoring mechanism made explicit -- unusual enough to be the second reason to hold this.  a
+    censoring record is provenance about which bytes are in which split; it constrains no state.  it also
+    doubles as a real test set for motion robustness.
 - name: raw_kspace_t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and this is the T1w decision applied to the acquisition domain.  raw k-space is not
+    an image and an anatomical image is not evidence about any ibm component: it supplies the geometry
+    the supports are indexed over.  going further would need `material.conductivity`, `material.mass_density`
+    and the rest, and ds004024''s card already records why that is refused until a head model exists to
+    put the values into -- here it is refused twice over, because without the acquisition object (scanner
+    frame, sequence timeline, sampling trajectory, coil sensitivities, reconstruction provenance) these
+    samples cannot be placed in space at all.  0.3 T, 1.2 mm in plane and 5 mm through plane.  three repetitions
+    per subject.'
 - name: raw_kspace_t2w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and this is the T1w decision applied to the acquisition domain.  raw k-space is not
+    an image and an anatomical image is not evidence about any ibm component: it supplies the geometry
+    the supports are indexed over.  going further would need `material.conductivity`, `material.mass_density`
+    and the rest, and ds004024''s card already records why that is refused until a head model exists to
+    put the values into -- here it is refused twice over, because without the acquisition object (scanner
+    frame, sequence timeline, sampling trajectory, coil sensitivities, reconstruction provenance) these
+    samples cannot be placed in space at all.  0.3 T, 1.2 mm in plane and 5 mm through plane.  three repetitions
+    per subject.'
 - name: raw_kspace_flair
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and this is the T1w decision applied to the acquisition domain.  raw k-space is not
+    an image and an anatomical image is not evidence about any ibm component: it supplies the geometry
+    the supports are indexed over.  going further would need `material.conductivity`, `material.mass_density`
+    and the rest, and ds004024''s card already records why that is refused until a head model exists to
+    put the values into -- here it is refused twice over, because without the acquisition object (scanner
+    frame, sequence timeline, sampling trajectory, coil sensitivities, reconstruction provenance) these
+    samples cannot be placed in space at all.  0.3 T, 1.2 mm in plane and 5 mm through plane.  two repetitions
+    per subject.'
 - name: raw_kspace_gre
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and this is the T1w decision applied to the acquisition domain.  raw k-space is not
+    an image and an anatomical image is not evidence about any ibm component: it supplies the geometry
+    the supports are indexed over.  going further would need `material.conductivity`, `material.mass_density`
+    and the rest, and ds004024''s card already records why that is refused until a head model exists to
+    put the values into -- here it is refused twice over, because without the acquisition object (scanner
+    frame, sequence timeline, sampling trajectory, coil sensitivities, reconstruction provenance) these
+    samples cannot be placed in space at all.  0.3 T, 1.2 mm in plane and 5 mm through plane.'
 - name: reconstructed_volumes
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a PIPELINE OUTPUT, not a measurement: it is what one algorithm returned when
+    it was run on the bytes above.  ARCHITECTURE.md''s rule that a derived quantity carries its algorithm
+    forever applies -- binding it as measured would let one reconstruction contribute a likelihood about
+    tissue, which is the same argument that makes a tractogram context.  the vendor reconstruction of
+    the k-space above.  it is the same measurement seen through one reconstruction, so binding it would
+    both count the acquisition twice and attribute a pipeline''s choices to the anatomy.'
 absent:
 - high_field_comparison
 - same_subjects_at_3t
@@ -110,7 +169,11 @@ use:
 - calibrate
 - fit
 forbidden:
-- m4raw/* -> a 3 T contrast or relaxation claim from 0.3 T data
+- m4raw/* -> tissue material properties (no acquisition object and no head model exist; see ds004024 for
+  the same refusal on a T1)
+- m4raw/reconstructed_volumes -> independent evidence from the raw k-space streams (it is one reconstruction
+  of those same samples)
+- m4raw/* -> a 3 T noise or contrast model (the whole point is that 0.3 T behaves differently)
 split:
   group_by:
   - participant

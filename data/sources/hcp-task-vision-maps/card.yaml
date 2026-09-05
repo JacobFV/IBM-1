@@ -12,7 +12,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: HCP Open Access Data Use Terms.
-binding: unbound
+binding: bound
 population:
   n: 1200
   hierarchy:
@@ -27,35 +27,56 @@ frames:
 - MNI152
 streams:
 - name: task_contrast_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'A contrast map is a GLM output under a canonical HRF, not a state observation. §38:
     this is a FUNCTIONAL association and may never be substituted for structural or effective connectivity.'
-  notes: the canonical HRF and linear-additivity assumptions are the model discrepancy and they are exactly
-    what §17 says must become a modelled stage
+  notes: context.  what is shipped is a FITTED OR AGGREGATED MAP -- an inverse solution, a GLM contrast,
+    a meta-analytic summary -- rather than a measurement.  binding it would let one pipeline's answer
+    contribute a likelihood about tissue, which is the same argument that makes a tractogram context.  a
+    contrast map is a GLM OUTPUT under a canonical haemodynamic response and a linear-additivity assumption,
+    which is exactly the model discrepancy the architecture says must become a modelled stage rather than
+    an assumption.  it is a FUNCTIONAL association and may never be substituted for a structural or effective
+    one.  TR 0.72 s underlies it and the maps themselves have no time axis at all.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: TR 0.72 s underlying; the contrast maps themselves have no time axis
   spatial_support: grayordinate CIFTI over the 32k fs_LR mesh
+  constrains: []
 - name: category_contrasts
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `task_contrast_maps`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 - name: individual_glm_outputs
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  what is shipped is a FITTED OR AGGREGATED MAP -- an inverse solution, a GLM contrast,
+    a meta-analytic summary -- rather than a measurement.  binding it would let one pipeline's answer
+    contribute a likelihood about tissue, which is the same argument that makes a tractogram context.  per-subject
+    rather than group, and therefore the same object with less averaging, not a different kind of object.
 - name: task_paradigms
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.  the
+    stimulus timings and condition labels of the HCP task battery.  the pixels are not in this product,
+    so nothing here clamps a display.'
 absent:
 - raw_timeseries_in_the_map_products
 - uncertainty_per_vertex

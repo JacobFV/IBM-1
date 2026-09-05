@@ -23,7 +23,7 @@ licence:
     license for derivative works''. No registration or DUA is mentioned; accepting the licence is the
     only condition of download. This was very nearly recorded as commercial_use prohibited from memory,
     which would have WRONGLY BLOCKED a legitimate release.'
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -33,20 +33,23 @@ frames:
 - subject_native_surface
 streams:
 - name: surface
-  kind: measured
+  kind: context
   via: null
   systematic_bias: A subdivided average surface. Every vertex is an average over 40 people's folding,
     so a feature narrower than intersubject folding variability is smoothed away before anything is computed
     on it. At ico6 the vertex spacing is roughly 1.4 mm, which is coarser than the cortical features some
     queries will ask about.
-  notes: resampling between ico6 and ico7 is an interpolation with its own error, and a result computed
-    on one and reported on the other carries that error silently unless the cover mapping records it
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  an
+    ico6 subdivision of the same 40-subject average surface; every vertex is an average over 40 people''s
+    folding.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: 'the fsaverage average surface subdivided to ico6: 40,962 vertices per hemisphere against
     fsaverage''s ico7 163,842. Same subject-average geometry, one-quarter the sampling.'
+  constrains: []
 absent:
 - individual_folding
 - registration_residual_distribution

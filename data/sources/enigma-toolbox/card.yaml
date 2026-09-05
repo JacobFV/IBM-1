@@ -14,7 +14,7 @@ licence:
   notes: Read from data/assets/MANIFEST.json. BSD-3 covers the TOOLBOX. The summary statistics it ships
     are ENIGMA working-group products with their own publication and citation expectations, and this card
     does not resolve those.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -24,22 +24,32 @@ frames:
 - fsaverage
 streams:
 - name: bundled_summary_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: convenience access to ENIGMA summaries; inherits every limitation of the enigma card
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series
   spatial_support: Desikan, Glasser and Schaefer parcellations
+  constrains: []
+  notes: context.  these are published GROUP SUMMARY statistics -- case-control effect sizes per parcel
+    -- not values of any component in any brain.  an effect size has no units the registry carries, and
+    a summary over a cohort cannot contribute a likelihood about the state of a subject being fitted.
 - name: parcellation_crosswalks
-  kind: measured
+  kind: context
   via: null
   systematic_bias: crosswalks here are label-to-label lookups; §11 requires probabilistic mappings rendered
     from underlying evidence, so these are a starting point and not the answer
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set
+    is a COVER over a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value
+    any ibm component takes at them.  no registered component is a region label, and inventing one would
+    make a naming convention into biology.  it reaches a materialization as a support index and as a `prior`,
+    never as a likelihood.  a label-to-label lookup between covers.'
 absent:
 - raw_data
 - uncertainty_on_bundled_maps

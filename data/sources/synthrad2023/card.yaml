@@ -21,7 +21,7 @@ licence:
     reading, loading, computing with, fitting to and training on these bytes is internal private research
     and is never gated; the one refusal is win.licences.release_gate at the point of outward publication.
     A derived skull model published from these bytes inherits NC and cannot be released commercially.'
-binding: unbound
+binding: bound
 population:
   n: 180
   hierarchy:
@@ -44,7 +44,8 @@ frames:
 streams:
 - name: skull_acoustic_properties_for_tfus
   kind: measured
-  via: null
+  via:
+  - mechanical_propagation
   observation_chain: 'X-ray attenuation through the head -> filtered back-projection or iterative reconstruction
     -> Hounsfield units referenced to water and air, which is a calibrated scale -> `skull_from_hounsfield`''s
     published empirical mapping to speed of sound, density and acoustic attenuation, carrying CT_ACOUSTIC_MAPPING_UNCERTAINTY
@@ -77,12 +78,19 @@ streams:
     that matters less than it would for a functional one -- a skull's speed of sound does not know why
     its owner was scanned -- but it does mean the age and pathology distribution is an oncology distribution,
     and diploe porosity varies with age.
-  notes: the imaging-to-acoustic-property mapping is empirical and its scatter propagates directly into
-    predicted focal position and pressure; the deposit's own resampling adds a second, subject-dependent
-    discrepancy that is 0 for the 155 subjects acquired at 1 mm and largest for the 4 acquired at 3 mm
+  notes: 'THE STREAM THIS CARD EXISTS FOR, and the binding needs its chain read carefully.  a planning
+    CT is calibrated: Hounsfield units are referenced to water and air, and the published empirical mapping
+    from HU takes them to speed of sound, DENSITY and acoustic attenuation.  `material.mass_density` is
+    the registered component that mapping lands on, and `mechanical_propagation` is the process that READS
+    it -- material properties are exogenous parameters that no registered process writes, so a card constraining
+    one names the process that consumes it, exactly as an imposed display luminance names `transduction`.  static
+    band because a density is a tissue property.  THE UNCERTAINTY IS NOT SMALL: the HU-to-acoustic mapping
+    carries roughly 280 m/s of between-published-fit spread plus 90 m/s between subjects, and the deposit''s
+    own resampling adds a subject-dependent term that is zero for the 155 subjects acquired at 1 mm slices
+    and largest for the 4 acquired at 3 mm.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: none -- this is static anatomy, one CT and one MRI per person, with no time series
     anywhere in the deposit
   spatial_support: cranial radiotherapy planning CT and a co-registered 3D T1-weighted MRI per person,
@@ -90,8 +98,11 @@ streams:
     512x512 in-plane at 0.66-0.86 mm pixel spacing with SliceThickness 1 mm for 155 of 180 subjects, 2
     mm for 21 and 3 mm for 4 -- read per subject from the deposit's own overview workbook, which carries
     KVP, exposure, CTDIvol, filter, reconstruction diameter, manufacturer and model for every subject.
+  constrains:
+  - material.mass_density
+  frame: subject_native
 - name: paired_ct_and_t1_mri_in_the_same_person
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'THIS IS THE STREAM THAT MAKES A CT-VERSUS-MRI SKULL COMPARISON POSSIBLE AT ALL, and
     it is also the stream most easily over-read. The MRI here is T1-weighted, NOT ZTE or UTE. Cortical
@@ -101,14 +112,18 @@ streams:
     things and must never be silently substituted for one another. What this pairing supports is the discrepancy
     between a CT-derived skull and any MRI-derived skull proxy, in the same head, on the same grid, in
     180 people.'
-  notes: MR and CT were rigidly registered by the depositors and the residual registration error is not
-    published per subject, so any voxelwise CT-versus-MR skull discrepancy contains a registration term
-    that is not separately measured here
+  notes: 'context: what this names is a RELATION between two volumes of one person, not a third measurement.  it
+    is also the stream most easily over-read.  the MRI here is T1-weighted, NOT ZTE or UTE; cortical bone
+    is signal-void on T1, so the pairing measures how much of a skull a conventional structural scan CANNOT
+    see.  that is a real and useful quantity and it is NOT the radiation-free substitute a tFUS planning
+    pipeline wants.  the two were rigidly registered by the depositors and the residual is not published
+    per subject, so any voxelwise CT-versus-MR discrepancy contains a registration term nothing here separates.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
 - name: between_person_skull_variation
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 180 people is the point of this card. One skull is a template by another name, and
     CT_ACOUSTIC_MAPPING_UNCERTAINTY's 90 m/s between-subject term is currently a literature number that
@@ -116,26 +131,50 @@ streams:
     that could. It is a PRIOR and not an observation because a spread measured over one oncology cohort
     at three Dutch centres is not a spread over people.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and deliberately a PRIOR rather than an observation.  180 people is the point of this
+    card -- one skull is a template by another name -- and this deposit is the first thing held that could
+    measure the 90 m/s between-subject term that has so far been a literature number.  but a spread measured
+    over one oncology cohort at three Dutch centres is a prior over skulls, not a likelihood about any
+    particular head, and the per-subject density field is already bound above.  binding the spread as
+    well would count the same 180 CTs twice, once individually and once as their variance.
 - name: ct
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `skull_acoustic_properties_for_tfus`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.  the CT volume is the bytes; the acoustic
+    property field derived from it is where the likelihood is written, and binding both to `material.mass_density`
+    would count one scan twice.'
 - name: mr_t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.  180 T1w volumes, rigidly co-registered
+    to the CTs by the depositors.'
 - name: body_mask
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  a
+    binary mask of what is inside the patient outline.  it bounds where the other volumes mean anything
+    and constrains no material property itself.'
 absent:
 - zte_or_ute_mri
 - measured_acoustic_properties
@@ -151,28 +190,30 @@ requires:
 - geometry: device-geometry
   for_streams:
   - skull_acoustic_properties_for_tfus
-  severity: blocking
-  without_it: the skull's acoustic property field can be built per subject and its between-person spread
-    measured, but NO focal position and NO delivered pressure can be predicted, because there is no transducer
-    pose for a field to be solved against. `predict_tfus` already raises rather than defaulting, so the
-    failure is loud; what this deposit changes is that the skull argument stops being population_derived,
-    not that a field becomes predictable.
-  substitute: 'none, and deliberately none: there is no population transducer pose anywhere in this path,
-    and inventing one would put a fitted-looking number on an unchosen geometry.'
+  severity: degrading
+  without_it: 'Re-graded from blocking 2026-09-05, and the evidence is the entry''s own previous text:
+    it already recorded that ''the skull''s acoustic property field can be built per subject and its between-person
+    spread measured, but NO focal position and NO delivered pressure can be predicted, because there is
+    no transducer pose''. That is a statement that the stream''s own constraint -- `material.mass_density`
+    on the head volume -- IS constructible from these bytes; what needs the transducer is everything downstream
+    of it. So the requirement degrades the source''s use rather than blocking its binding: with no transducer
+    pose, no winding and no drive record anywhere in the deposit, nothing here may produce a focal position,
+    a delivered pressure or a `device.transducer_drive` value.'
+  substitute: None for the pose. A nominal transducer placement would invent the one quantity the acoustic
+    field is most sensitive to, and the resulting focus would be a fact about the assumption rather than
+    about the skull.
 use:
 - calibrate
 - fit
 - prior
 forbidden:
-- 'synthrad2023/* -> any neural state channel, at all: this deposit contains no functional measurement
-  of any kind and a T1 and a CT constrain anatomy'
-- synthrad2023/* -> a Hounsfield-to-acoustic-property claim without CT_ACOUSTIC_MAPPING_UNCERTAINTY attached
-- 'synthrad2023/* -> a skull property labelled `measured` at native resolution: the held volumes are the
-  depositors'' 1 mm isotropic derived view and carry that class forever'
-- 'synthrad2023/* -> a ZTE/UTE skull claim: the MRI here is T1-weighted and rule 6 forbids the substitution'
-- synthrad2023/* -> a between-person skull spread quoted as a population spread without naming the cohort
-  as brain-radiotherapy patients at three Dutch centres
-- synthrad2023/* -> any re-identification attempt
+- synthrad2023/* -> focal position or delivered pressure (no transducer pose, winding or drive is recorded
+  anywhere in the deposit)
+- synthrad2023/ct -> a second likelihood about material.mass_density (already carried by synthrad2023/skull_acoustic_properties_for_tfus)
+- synthrad2023/paired_ct_and_t1_mri_in_the_same_person -> a radiation-free CT substitute (the MRI is T1w,
+  on which cortical bone is signal-void)
+- synthrad2023/* -> a healthy-population skull prior (the cohort is brain-radiotherapy patients, post-surgical
+  skulls included)
 split:
   group_by:
   - participant

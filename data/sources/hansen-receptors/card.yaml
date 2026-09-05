@@ -15,7 +15,7 @@ licence:
     anything this source contributes to carries both forward. The manifest''s own note singles it out.
     The underlying PET data have their own terms per tracer -- see Table S3 of Hansen et al. (2022) --
     and this card does not resolve those.'
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -25,27 +25,38 @@ frames:
 - Schaefer2018
 streams:
 - name: receptor_density_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Aggregated from SEPARATE PET studies with different tracers, scanners, quantification
     methods and participants. The units are not commensurable across systems -- a value in one map and
     a value in another are not the same kind of number, and normalising them to a common scale hides that
     rather than fixing it.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: cortical maps of 19 receptors and transporters across 9 neurotransmitter systems, aggregated
     from PET studies in over 1,200 healthy participants
+  constrains: []
+  notes: 'context, and the reason is an ONTOLOGY GAP that this card is the clearest instance of.  receptor
+    and transporter density is a composition parameter of tissue; the registry has no component for it.  the
+    nearest names are wrong in kind: `extracellular.*` are neurotransmitter concentrations (nM/uM of a
+    molecule in the interstitium), not counts of binding sites per unit tissue, and `structural.synaptic_density`
+    is synapses, not receptors.  the maps are also aggregated from separate PET studies whose units are
+    not commensurable across systems.  so it constrains nothing and enters as a `prior` on WHICH local
+    dynamics are plausible where, which is what the card''s `use` already says.'
 - name: receptor_gradients
-  kind: measured
+  kind: context
   via: null
   systematic_bias: receptor composition is one of the few available constraints on WHAT KIND of local
     dynamics is plausible where -- directly relevant to §9's local cortical state and to §37's model-class
     uncertainty
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, same gap as the density maps it is derived from.  the gradient is the more faithful
+    object and it is still a spatial pattern of an unregistered quantity.
 absent:
 - individual_variation
 - subcortical_coverage_for_all_tracers

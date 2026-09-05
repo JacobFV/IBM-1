@@ -14,28 +14,34 @@ licence:
   notes: Distributed for academic use from the GIN site; the shipped archive carries a user guide PDF
     and no SPDX licence file, so the terms are unresolved rather than assumed. Governs DISTRIBUTION only
     -- reading, loading and computing with it is internal research and is not gated.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
 - mni152
 streams:
 - name: parcellation
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'A single-subject anatomical labelling propagated to a template, not a population probability
     map. Its boundaries are one brain''s sulci, so a region''s extent carries no uncertainty and reads
     as if it had none. The architecture''s rule applies with full force here: this is a COVER, one of
     several retained side by side, and never an element of the brain''s ontology.'
-  notes: region indices are not comparable across AAL, AAL2 and AAL3 -- the same integer names different
-    tissue -- so a mapping between them is a lookup that must be carried, not assumed
+  notes: 'context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set
+    is a COVER over a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value
+    any ibm component takes at them.  no registered component is a region label, and inventing one would
+    make a naming convention into biology.  it reaches a materialization as a support index and as a `prior`,
+    never as a likelihood.  specifically: AAL3v2 is one anatomist''s labelling of ONE brain propagated
+    to a template, so its boundaries carry no uncertainty at all and must never be read as a probability
+    of tissue.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: none -- a static parcellation
   spatial_support: a volumetric parcellation on the MNI single-subject template, shipped at 1 mm and at
     2 mm. Version 3 subdivides the orbitofrontal cortex and ADDS thalamic nuclei and the nucleus accumbens,
     so its region count differs from AAL and AAL2 and the three are not interchangeable label sets.
+  constrains: []
 absent:
 - probability_map
 - intersubject_variability

@@ -302,7 +302,7 @@ def reproject_nonlinear(state: State, couplings: Iterable[Any], basis: TemporalB
             continue
         for i in range(m):
             member = {cid: xs[cid][i] for cid in (c.reads or ()) if cid in xs}
-            y = c.fn(member, **c.theta) if c.theta else c.fn(member)
+            y = c.fn(member, c.theta)      # fn(x, theta), per ibm.processes.base
             y = y[c.writes] if isinstance(y, dict) else y
             acc[c.writes][i] += np.atleast_2d(np.asarray(y, float))
 

@@ -14,7 +14,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -22,20 +22,26 @@ frames:
 - SUIT
 streams:
 - name: cerebellar_network_labels
-  kind: measured
+  kind: context
   via: null
   systematic_bias: A WINNER-TAKE-ALL assignment of cerebellar voxels to cerebral networks based on resting
     BOLD correlation. It is a functional association map twice over -- the cerebral networks are themselves
     a clustering -- and cerebellar BOLD is contaminated by the nearby transverse sinus and by respiratory
     motion.
-  notes: the winner-take-all step discards the fact that cerebellar voxels correlate substantially with
-    several networks
+  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
+    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
+    takes at them.  no registered component is a region label.  it reaches a materialization as a support
+    index and as a `prior`, never as a likelihood.  and it is a functional association map TWICE OVER:
+    cerebellar voxels are assigned to cerebral networks by resting BOLD correlation, and the cerebral
+    networks are themselves a clustering.  the winner-take-all step also discards the fact that most cerebellar
+    voxels correlate substantially with several networks.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: cerebellar voxels assigned to the cerebral cortical network with which they correlate
     most strongly at rest, in 1,000 participants
+  constrains: []
 absent:
 - anatomical_ground_truth
 - individual_variation

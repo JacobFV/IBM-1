@@ -12,7 +12,7 @@ licence:
   commercial: unresolved
   notes: HCP Open Access Data Use Terms are a click-through agreement; restricted-access elements require
     a separate application. SPDX identifier and redistribution class unresolved.
-binding: unbound
+binding: bound
 population:
   n: 1200
   hierarchy:
@@ -31,7 +31,7 @@ frames:
 - grayordinates
 streams:
 - name: t1w_t2w
-  kind: measured
+  kind: context
   via: null
   observation_chain: tissue proton density and T1 -> sequence-specific contrast -> k-space acquisition
     -> reconstruction -> voxel intensity; intensity is not a tissue parameter until an explicit relaxometry
@@ -43,14 +43,24 @@ streams:
   - motion between the volumes that enter one fit
   systematic_bias: 3T single-vendor acquisition; intensity is not a tissue parameter
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: TR 0.72 s multiband BOLD; diffusion and structural are not time series
   spatial_support: 0.7 mm structural, 1.25 mm diffusion, 2 mm BOLD; native subject surfaces and the grayordinate
     CIFTI representation
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `t1w`
+    and `t2w`, which is where the likelihood is written.  kept so the card still describes the archive
+    it came from, bound to nothing so one measurement is not counted twice.  it is also the stream that
+    names the ratio image; see `myelin_maps` for why that is context too.'
 - name: dwi
   kind: measured
-  via: null
+  via:
+    structural.fiber_orientation:
+    - tract_propagation
+    structural.axonal_density: &id001
+    - plasticity
+    structural.myelination: *id001
   observation_chain: water displacement over the diffusion time within and around axons and cells -> gradient-direction-dependent
     signal attenuation -> reconstructed q-space or orientation distribution; ORIENTATION EVIDENCE, not
     an observation of a tract
@@ -61,13 +71,28 @@ streams:
   - the fitting model itself (DTI vs. CSD vs. NODDI) is a choice with its own bias
   systematic_bias: Tractography from this is DERIVED evidence about pathway geometry, never a measured
     connection.
-  notes: the orientation model and the tracking algorithm are both model choices with discrepancy
+  notes: '1.25 mm isotropic, three shells, at 3 T.  ORIENTATION EVIDENCE, and the distinction is the whole
+    binding.  what a diffusion volume measures is direction-dependent attenuation of water displacement,
+    which constrains LOCAL microstructure -- fibre orientation, axonal density, myelination -- and does
+    NOT observe a tract: a tractogram is a reconstruction laid over this field and is context wherever
+    it appears in this corpus.  static band because microstructure is a tissue parameter.  the via chain
+    follows the corpus convention set by tractoinferno, ds000117 and aomic-id1000: `plasticity` is named
+    because it is the process that writes the structural field, though its declared outputs cover density
+    and myelination and NOT `structural.fiber_orientation`, which no registered process writes.  per-component
+    chains: this acquisition makes more than one claim and the routes differ.  one chain for all of them
+    would let the component whose route is wrong borrow the route of the ones that are right.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains:
+  - structural.fiber_orientation
+  - structural.axonal_density
+  - structural.myelination
+  frame: subject_native
 - name: bold_rest
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
     concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
     voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
@@ -82,65 +107,134 @@ streams:
   systematic_bias: Resting functional connectivity is a FUNCTIONAL claim only; §38 forbids substituting
     it for structural or effective connectivity.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.5
+  constrains:
+  - electromagnetic.bfield
+  notes: 'TR 0.72 s multiband, 2 mm, on the grayordinate mesh.  the TR nyquist is 0.694 Hz but the ceiling
+    is 0.5 Hz, which is where `bold_formation` writes `electromagnetic.bfield` and where the haemodynamic
+    response has anything left; a fast TR above that buys aliased physiology rather than signal.  BOLD
+    IS NOT NEURAL ACTIVITY, and the four-step chain is what says so: neurovascular coupling, then flow,
+    then tissue exchange, then the susceptibility change deoxyhaemoglobin makes -- which is why the component
+    is `electromagnetic.bfield` and not a neural one.  the vascular stages are modelled state, not nuisance
+    to be regressed away.  resting connectivity computed from this is a FUNCTIONAL claim only and may
+    never be substituted for a structural or effective one.  em_generation is what produces the magnetic
+    field from source currents; the previous chain named vascular_flow, which is unrelated.'
+  rate_hz: 1.3889
+  frame: subject_native
 - name: myelin_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: the T1w/T2w ratio is a myelin PROXY, sensitive to iron and to receive-coil bias
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  the T1w/T2w ratio is a MYELIN PROXY, not a myelination measurement: it is sensitive
+    to iron and to receive-coil bias, it has no units, and binding it to `structural.myelination` would
+    smuggle a contrast ratio in as a tissue parameter.  the same call glasser2016''s areal-feature gradients
+    get.'
 - name: surfaces
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  native
+    subject surfaces plus the grayordinate CIFTI mesh.'
 - name: family_structure
-  kind: measured
+  kind: context
   via: null
   systematic_bias: declared so that grouped splits can use it; undeclared relatedness is the classic silent
     inflation
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  a phenotype, a demographic field, a questionnaire score or a genotype is a property
+    of a PERSON rather than a value of any state variable at any time.  the registry has no component
+    for any of them and should not acquire one; they belong in `split` and in covariates, not in a likelihood.  and
+    it is declared for a specific reason worth keeping: S1200 contains twins and siblings, and UNDECLARED
+    RELATEDNESS is the classic silent inflation of any cross-validated result.  it belongs in `split.group_by`,
+    which is where it now is.'
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.  0.7 mm.'
 - name: t2w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.  0.7 mm; T2w exists here because
+    the ratio image needs it.'
 - name: bold_task
   kind: measured
-  via: null
+  via:
+  - em_generation
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.5
+  constrains:
+  - electromagnetic.bfield
+  notes: 'separate runs from `bold_rest` -- seven task batteries rather than the same bytes described
+    twice -- so both are measured, which is the eegmmidb `eeg_64ch` / `baseline_runs` case.  same TR 0.72
+    s clock and same ceiling.  BOLD IS NOT NEURAL ACTIVITY, and the four-step chain is what says so: neurovascular
+    coupling, then flow, then tissue exchange, then the susceptibility change deoxyhaemoglobin makes --
+    which is why the component is `electromagnetic.bfield` and not a neural one.  the vascular stages
+    are modelled state, not nuisance to be regressed away.  em_generation is what produces the magnetic
+    field from source currents; the previous chain named vascular_flow, which is unrelated.'
+  rate_hz: 1.3889
+  frame: subject_native
 - name: meg_subset
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 200.0
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `the
+    hcp-meg card''s `meg_rest` and `meg_task``, which is where the likelihood is written.  kept so the
+    card still describes the archive it came from, bound to nothing so one measurement is not counted
+    twice.  the 95-participant MEG subset is carded separately as hcp-meg, which is where its 2034.5 Hz
+    clock, its 248-channel magnetometer geometry and its blocking device-geometry requirement live.  bound
+    to nothing here so the same recordings are not counted under two card ids.'
 - name: behaviour
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a phenotype, a demographic field, a questionnaire score or a genotype is a property
+    of a PERSON rather than a value of any state variable at any time.  the registry has no component
+    for any of them and should not acquire one; they belong in `split` and in covariates, not in a likelihood.
 - name: genetics
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a phenotype, a demographic field, a questionnaire score or a genotype is a property
+    of a PERSON rather than a value of any state variable at any time.  the registry has no component
+    for any of them and should not acquire one; they belong in `split` and in covariates, not in a likelihood.  genotype
+    is also the mechanism behind the family structure above, and the two must be used together or not
+    at all.
 absent:
 - vascular_angiography
 - metabolic_pet
@@ -152,16 +246,21 @@ use:
 - fit
 - prior
 forbidden:
-- hcp-young-adult/* -> vascular geometry state
-- hcp-young-adult/* -> intervention response parameters
-- hcp-young-adult/bold_rest -> effective connectivity parameters
+- hcp-young-adult/bold_rest -> structural or effective connectivity (resting correlation is a functional
+  claim)
+- hcp-young-adult/dwi -> a measured connection (tractography from it is derived pathway geometry)
+- hcp-young-adult/myelin_maps -> structural.myelination (the T1w/T2w ratio is a proxy with no units, sensitive
+  to iron and to coil bias)
+- hcp-young-adult/meg_subset -> independent evidence from the hcp-meg card (same recordings)
+- hcp-young-adult/* -> a cross-validated result split without grouping by family
 split:
   group_by:
   - family
   - participant
-  - site
-  notes: Family FIRST. The twin/sibling design means a participant-level split leaks heritable anatomy
-    across the boundary.
+  - session
+  - run
+  notes: 'family FIRST: S1200 contains twins and siblings, and a split that groups by participant but
+    not by family leaks between relatives.'
 provenance:
   imported_from: win-registry
   card: hcp-young-adult

@@ -12,7 +12,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: GigaDB datasets carry per-dataset terms; not read.
-binding: unbound
+binding: bound
 population:
   n: 54
   hierarchy:
@@ -27,7 +27,10 @@ frames:
 streams:
 - name: three_paradigm_eeg
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: post-synaptic currents in spatially aligned pyramidal populations -> volume conduction
     through brain, CSF, skull and scalp -> potential difference between a scalp electrode and a reference
     -> amplifier gain, filtering and group delay -> sampled integer
@@ -46,47 +49,92 @@ streams:
     no usable signal. That is a real and quantified variance component across people, and it is the control
     most single-paradigm EEG results lack.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 100.0
   temporal_support: 1000 Hz acquisition; a downsampled version is distributed alongside and is a derived
     view
   spatial_support: 62-channel scalp montage
+  constrains:
+  - device.contact_potential
+  notes: '1000 Hz acquisition on a 62-channel scalp montage, 54 participants, THREE PARADIGMS (motor imagery,
+    ERP speller, SSVEP) in the same people with the same hardware.  the ceiling is 100 Hz rather than
+    the 500 Hz nyquist, the same judgement erp-core and things-eeg2 carry.  a downsampled version is distributed
+    alongside and is a derived view of these same bytes.  WHAT MAKES IT UNUSUAL: the paper''s own subject
+    is BCI ILLITERACY -- a large fraction of participants produce no usable signal -- which is a real,
+    quantified between-person variance component and the control most single-paradigm EEG results lack.'
+  rate_hz: 1000.0
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: between_session_replication
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.  two
+    sessions per participant, which is what turns a within-session result into a replication and is the
+    axis most EEG datasets cannot test at all.'
 - name: eeg
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 100.0
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `three_paradigm_eeg`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 - name: emg
   kind: measured
-  via: null
+  via:
+  - effector_activation
   band_hz:
-  - null
-  - null
+  - 10.0
+  - 100.0
+  constrains:
+  - effector.activation
+  notes: 'surface EMG recorded alongside, bound as in sleep-edfx: muscle activation through `effector_activation`,
+    with a 10 Hz floor because below it a surface EMG is movement artifact rather than motor-unit activity,
+    and a 100 Hz ceiling because that is where `effector.activation` is declared meaningful.  IT MATTERS
+    MORE HERE THAN USUAL: in a motor-imagery paradigm the EMG is what distinguishes imagined movement
+    from executed movement, which is the compliance check eegmmidb''s imagery runs lack.'
 - name: task_labels_motor_imagery
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.'
 - name: task_labels_erp
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.'
 - name: task_labels_ssvep
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.  note
+    that an SSVEP condition label is NOT the flicker: the flickering stimulus would be `device.display_luminance`
+    and the deposit''s own description does not carry it as a separate stream, so the physical drive is
+    unrepresented here rather than absent.'
 absent:
 - mri
 - digitised_electrode_positions
@@ -113,7 +161,10 @@ use:
 - evaluate
 - fit
 forbidden:
-- openbmi-lee2019/* -> lead field construction from nominal positions
+- openbmi-lee2019/eeg -> independent evidence from three_paradigm_eeg (same recordings)
+- openbmi-lee2019/* -> a decoding accuracy quoted without the BCI-illiteracy distribution (a large fraction
+  of participants produce no usable signal)
+- openbmi-lee2019/task_labels_motor_imagery -> verified covert motor state without checking openbmi-lee2019/emg
 split:
   group_by:
   - participant

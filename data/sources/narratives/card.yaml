@@ -12,7 +12,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: OpenNeuro-hosted; per-dataset terms unresolved. Story recordings have independent provenance.
-binding: unbound
+binding: bound
 population:
   n: 345
   hierarchy:
@@ -31,7 +31,8 @@ frames:
 streams:
 - name: bold_story_listening
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
     concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
     voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
@@ -48,37 +49,76 @@ streams:
   systematic_bias: The largest naturalistic language fMRI collection. Its aggregate nature is its main
     systematic bias and is not visible in the merged BIDS tree.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.1667
   temporal_support: TR differs by study (1-3 s); stories run 3-56 minutes
   spatial_support: voxel resolutions and coverage differ BY CONSTITUENT STUDY; there is no single native
     support and asserting one would be false
+  constrains:
+  - electromagnetic.bfield
+  notes: 'THE LARGEST NATURALISTIC LANGUAGE fMRI COLLECTION, and its aggregate nature is its main systematic
+    bias and is invisible in the merged BIDS tree: TR DIFFERS BY CONSTITUENT STUDY from 1 to 3 s, and
+    voxel resolution and coverage differ too, so THERE IS NO SINGLE NATIVE SUPPORT and asserting one would
+    be false.  the band declared here is the SLOWEST study''s nyquist (TR 3 s), because a band that every
+    constituent can support is the only honest one for a merged tree; a run from a 1 s study reaches 0.5
+    Hz and a fit that uses it must carry that run''s own band rather than this floor.  BOLD IS NOT NEURAL
+    ACTIVITY, and the four-step chain is what says so: neurovascular coupling, then flow, then tissue
+    exchange, then the susceptibility change deoxyhaemoglobin makes -- which is why the component is `electromagnetic.bfield`
+    and not a neural one.  the vascular stages are modelled state, not nuisance to be regressed away.  em_generation
+    is what produces the magnetic field from source currents; the previous chain named vascular_flow,
+    which is unrelated.'
+  frame: scanner
 - name: time_aligned_transcripts
-  kind: imposed
+  kind: context
   via: null
   systematic_bias: alignments are forced-aligned then manually checked to differing degrees per story
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context, and a CORRECTION: the migration marked it `imposed`.  a forced alignment is an algorithm''s
+    estimate of when a word occurred, MANUALLY CHECKED TO DIFFERING DEGREES PER STORY, so its error is
+    both systematic and heterogeneous across the collection.  the thing the experimenter set is the waveform,
+    which is `audio_stimuli`.'
 - name: comprehension_scores
-  kind: imposed
+  kind: context
   via: null
   systematic_bias: post-hoc comprehension questions are outcomes, not state observations
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  a behavioural score, rating or questionnaire response is a report ABOUT a state, produced
+    by a person rather than by a process the model represents, and often minutes later.  no registered
+    component is a score, and treating one as a measurement would let a self-report update tissue state
+    directly.  A CORRECTION: marked `imposed` by the migration, and a post-hoc comprehension question
+    is an outcome rather than a manipulation.'
 - name: audio_stimuli
-  kind: measured
-  via: null
+  kind: imposed
+  via:
+  - transduction
   band_hz:
-  - null
-  - null
+  - 20.0
+  - 8000.0
+  constrains:
+  - device.speaker_pressure
+  notes: 'imposed, and a CORRECTION: marked `measured` by the migration, but a spoken story played to
+    a participant is state the experimenter clamped.  stories run 3 to 56 minutes.  the ceiling is a conservative
+    speech bandwidth rather than a file nyquist, because the audio sampling rates differ across constituent
+    studies and the bytes are not held.'
+  frame: display
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.  resolution differs by constituent
+    study.'
 absent:
 - eeg
 - meg
@@ -95,8 +135,11 @@ requires:
 use:
 - fit
 forbidden:
-- narratives/* -> millisecond cortical dynamics
-- narratives/comprehension_scores -> instantaneous cortical state
+- narratives/* -> a single native support or a single band (TR runs 1-3 s and voxel resolution and coverage
+  differ by constituent study; the merged BIDS tree hides this)
+- narratives/time_aligned_transcripts -> measured word onsets (forced alignment, manually checked to differing
+  degrees per story)
+- narratives/* -> a between-site claim without modelling the constituent-study structure
 split:
   group_by:
   - site

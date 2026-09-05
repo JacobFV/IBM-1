@@ -27,7 +27,7 @@ down somewhere.
 
 from __future__ import annotations
 
-from ibm.materialize.library import NamedModel, register, res, rule
+from ibm.materialize.library import NamedModel, anat, register, res, rule, subcortex
 from ibm.materialize.request import (
     Budget,
     DeviceSpec,
@@ -35,7 +35,6 @@ from ibm.materialize.request import (
     SubjectSpec,
     Window,)
 from ibm.vocabulary import (
-    Anat,
     Band,
     OnSupport,
     sel,)
@@ -49,6 +48,15 @@ MASS = Band(0.5, 100.0)
 #: an encoding model predicts a bold or eeg response to a stimulus; the bold arm
 #: is the narrow one.
 ENCODING = Band(0.0, 0.25)
+
+#: early sensory cortex in the labels `cortical_areas` declares.  `encoding_model`
+#: argued for 2 mm in "v1" and "heschl", neither of which is a label of the
+#: declared desikan-killiany system, so the refinement never happened.
+V1 = anat("cortical_areas", "pericalcarine")
+HESCHL = anat("cortical_areas", "transversetemporal")
+OCCIPITAL = anat("cortical_areas", "lateraloccipital", "cuneus", "lingual",
+                 "pericalcarine")
+
 
 
 MACRO_SURROGATE = register(NamedModel(
@@ -64,6 +72,29 @@ MACRO_SURROGATE = register(NamedModel(
     estimated at 1-2 mm and parcellated anyway.  materializing at 2 mm would give
     a fine grid whose edges were all copied from a parcel-level matrix, which is
     resolution with no information behind it.
+
+    **and why, being the coarsest model in the library, it is the one that most
+    needs the cortical sheet.**  the two facts are the same fact.  the cost of
+    indexing cortex by volume position is that a euclidean neighbourhood joins
+    the two banks of a sulcus, and that cost grows with the spacing: on the order
+    of a tenth of a percent of cortical pairs at 2 mm, and 58% at 10 mm
+    (`Component.alt_supports`).  a 2 mm haemodynamic model can afford the volume
+    indexing precisely because it is fine; at 8-10 mm a volume cortical graph is
+    mostly wrong, and `lateral_cortical_propagation` -- one of this model's two
+    structural couplings, and the one that gives it any spatial organisation
+    at all below the tract level -- would be running over connections that do not
+    exist.  §1 puts it as "a topology whose edges do not survive coarsening", and
+    this is that case: it is not the *state* that fails to coarse-grain here, it
+    is the adjacency.
+
+    so cortical population state is on column nodes at 8 mm, and the thalamus,
+    basal ganglia, cerebellum and brainstem -- which have no sheet, and which the
+    `thalamic_nuclei`, `bg_territories` and `cerebellar_lobules` systems in this
+    model's anatomy list exist to partition -- are in the volume at 10 mm.  the
+    volume is carved with `subcortex()` so that the two are a partition: a
+    surrogate whose cortical nodes were each counted twice, once on the sheet and
+    once in the voxel containing it, would have twice the excitatory drive and a
+    fitted global coupling that absorbed the error.
 
     **why coarse in band.**  0.01-0.25 Hz for the bold arm.  a neural mass at
     parcel scale has no meaningful structure above that once it has been passed
@@ -87,7 +118,7 @@ MACRO_SURROGATE = register(NamedModel(
         targets=(sel("neural.exc.activity", "neural.inh.activity", band=MACRO),
                  sel("blood.deoxyhemoglobin", band=MACRO)),
         regions=(("cortex", OnSupport("cortical_surface")),
-                 ("subcortex", OnSupport("tissue"))),
+                 ("subcortex", subcortex())),
         resolution=res(
             rule(OnSupport("cortical_surface"), 8.0, MACRO),
             rule(OnSupport("tissue"), 10.0, MACRO),
@@ -106,8 +137,13 @@ MACRO_SURROGATE = register(NamedModel(
                                  "nowhere else: the parcellation is the resolution"),
         window=Window(n=512, dt=1.0),
         bands=(("neural", MACRO), ("blood", MACRO)),
-        budget=Budget(max_state_variables=20_000,
-                      max_spectral_coefficients=1_000_000,
+        # the unit here is the architecture's own: one component of one field at
+        # one position, not one position.  a parcel-scale materialization of this
+        # subject is ~4,800 sites and ~20 traced components each, so "one state
+        # variable per parcel" is 9.3e4 variables and not 2e4 -- the old ceiling
+        # counted sites and was never reachable at the 8 mm this model argues for.
+        budget=Budget(max_state_variables=150_000,
+                      max_spectral_coefficients=12_000_000,
                       max_bytes=1 << 30),),
     fit_sources=("hcp-functional-connectivity", "braingraph-hcp-connectomes",
                  "netneuro-lausanne-sc", "hansen-many-networks", "hcp-meg-maps",
@@ -163,6 +199,27 @@ CONNECTOME_GNN = register(NamedModel(
     one to fit the same data, the extra resolution is absorbing model error, not
     representing biology.
 
+    **the cortex is on the sheet because the sheet is what the edges attach to.**
+    this model is nothing but a graph, and every claim it makes is a claim about
+    which positions are adjacent.  two of its three sources of adjacency are
+    surface objects: a streamline terminates at the grey/white interface, which is
+    the sheet by construction, and lateral cortical coupling runs under the
+    sheet's geodesic metric.  index the cortex by 8 mm voxels instead and a
+    majority of cortical pairs acquire a short euclidean neighbour across a sulcus
+    that no horizontal axon connects -- and short spurious edges are exactly the
+    failure mode `ismrm2015-submissions` is here to detect, so introducing a fresh
+    batch of them in the *materialization* would make the negative control
+    unreadable.  the model would then be measuring its own octree and reporting
+    it as connectivity.
+
+    the volume half carries what has no sheet -- thalamus, striatum, cerebellum,
+    brainstem, and the white matter where `structural.axonal_density` and
+    `structural.fiber_orientation` live, those being the only support those
+    components have.  it is carved with `subcortex()` so the two are a partition:
+    the same cortical node present both as a column and as the voxel containing
+    it would give a graph network two copies of every cortical feature and let it
+    fit the duplication.
+
     **its relation to the rest of the library.**  it is a surrogate, not a teacher.
     what it produces may be compared against a materialization and may be used to
     propose parameters; it may not supply a likelihood, because its residuals are
@@ -173,7 +230,7 @@ CONNECTOME_GNN = register(NamedModel(
                  sel("structural.axonal_density", "structural.fiber_orientation",
                      band=Band(0.0, 0.001))),
         regions=(("cortex", OnSupport("cortical_surface")),
-                 ("subcortex", OnSupport("tissue"))),
+                 ("subcortex", subcortex())),
         resolution=res(
             rule(OnSupport("cortical_surface"), 8.0, MACRO),
             rule(OnSupport("tissue"), 10.0, MACRO),
@@ -190,8 +247,13 @@ CONNECTOME_GNN = register(NamedModel(
         window=Window(n=512, dt=1.0),
         bands=(("neural", MACRO), ("structural", Band(0.0, 0.001)),
                ("blood", MACRO)),
-        budget=Budget(max_state_variables=20_000,
-                      max_spectral_coefficients=1_000_000,
+        # the unit here is the architecture's own: one component of one field at
+        # one position, not one position.  a parcel-scale materialization of this
+        # subject is ~4,800 sites and ~20 traced components each, so "one state
+        # variable per parcel" is 9.3e4 variables and not 2e4 -- the old ceiling
+        # counted sites and was never reachable at the 8 mm this model argues for.
+        budget=Budget(max_state_variables=150_000,
+                      max_spectral_coefficients=12_000_000,
                       max_bytes=1 << 30),),
     fit_sources=("braingraph-hcp-connectomes", "enigma-hcp-structural-connectome",
                  "hansen-lausanne-sc", "hansen-schaefer-sc", "netneuro-lausanne-sc",
@@ -263,13 +325,13 @@ ENCODING_MODEL = register(NamedModel(
                  # `speech_envelope`; carrying it here would be aliasing it.
                  sel("transduction.photoreceptor", "transduction.hair_cell",
                      band=ENCODING)),
-        regions=(("early_visual", Anat("cortical_areas", "v1")),
-                 ("early_auditory", Anat("cortical_areas", "heschl")),
+        regions=(("early_visual", V1),
+                 ("early_auditory", HESCHL),
                  ("association", OnSupport("cortical_surface"))),
         resolution=res(
-            rule(Anat("cortical_areas", "v1"), 2.0, ENCODING),
-            rule(Anat("cortical_areas", "heschl"), 2.0, ENCODING),
-            rule(Anat("cortical_areas", "occipital"), 3.0, ENCODING),
+            rule(V1, 2.0, ENCODING),
+            rule(HESCHL, 2.0, ENCODING),
+            rule(OCCIPITAL, 3.0, ENCODING),
             rule(OnSupport("cortical_surface"), 6.0, ENCODING),
             default_mm=8.0, default_band=ENCODING),
         fields=("neural", "blood", "transduction", "device"),

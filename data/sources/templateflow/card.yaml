@@ -13,7 +13,7 @@ licence:
   commercial: unresolved
   notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
     licence frequently differ and must be resolved separately.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -24,29 +24,39 @@ frames:
 - MNIInfant
 streams:
 - name: versioned_template_identity
-  kind: measured
+  kind: context
   via: null
   systematic_bias: '''MNI SPACE'' IS NOT ONE SPACE. MNI152NLin2009cAsym and MNI152NLin6Asym differ by
     millimetres, and coordinates reported in one and interpreted in the other are silently wrong -- which
     is exactly the failure the distal-lead-dbs card warns about for stereotactic targeting. §55 asks for
     explicitly versioned templates for this reason, and TemplateFlow is the mechanism.'
-  notes: the transforms BETWEEN template variants exist and are themselves registrations with unreported
-    residuals
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  and
+    the point of the card is the VERSIONING: ''MNI space'' is not one space -- MNI152NLin2009cAsym and
+    MNI152NLin6Asym differ by millimetres, and coordinates reported in one and read in the other are silently
+    wrong.  what this supplies is frame identity, which is machinery for the frame graph and not a value
+    of anything.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: static
   spatial_support: templates and their associated tissue priors, surfaces and atlases, addressed by an
     EXPLICIT IDENTIFIER AND VERSION -- so 'MNI space' resolves to a specific object rather than to a family
     of incompatible ones
+  constrains: []
 - name: multi_species_and_lifespan_templates
-  kind: measured
+  kind: context
   via: null
   systematic_bias: infant and non-human templates matter because adult templates are actively wrong for
     the hbcd and cross-species cards
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  infant
+    and non-human templates matter because an adult template is actively wrong for those cohorts, not
+    merely imprecise.  still geometry.'
 absent:
 - registration_residuals_between_variants
 - individual_geometry

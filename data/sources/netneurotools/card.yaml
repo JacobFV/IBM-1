@@ -45,7 +45,7 @@ licence:
     AT ALL -- atl-cammoun2012 (6 files, the Cammoun 2012 Lausanne parcellation), ds-famous_gmat (72 files)
     and ds-vazquez_rodriguez2019 (1 file). Their edges cannot be declared, so this lineage is INCOMPLETE
     BY 79 FILES and says so; carding those three discharges it.'
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -54,30 +54,40 @@ frames:
 - Desikan2006
 streams:
 - name: graph_metrics
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Graph metrics computed on a thresholded, parcellated, undirected tractography matrix
     inherit every one of those choices. The metric is exact; what it is a metric OF is the question.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series
   spatial_support: operates on connectivity matrices in whatever parcellation they arrive in
+  constrains: []
+  notes: 'context.  this is SOFTWARE, not a dataset: it computes statistics of a matrix somebody else
+    supplied.  a metric constrains no state, and the metric''s meaning is inherited from the thresholding,
+    parcellation and directedness choices of whatever matrix it was run on.'
 - name: network_null_models
-  kind: measured
+  kind: context
   via: null
   systematic_bias: degree-preserving and spatially-constrained null models are the floor a network claim
     must clear, and §46 requires exactly that. Most reported graph statistics are largely explained by
     degree and distance alone
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  degree-preserving and spatially-constrained rewirings are the FLOOR a network claim
+    must clear.  a null model is machinery for `control`, and a control that could have failed is not
+    a measurement of anything.
 - name: parcellation_utilities
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: cover-handling machinery, no state.'
 absent:
 - ground_truth
 - directionality

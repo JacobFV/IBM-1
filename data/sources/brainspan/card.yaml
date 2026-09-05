@@ -18,7 +18,7 @@ licence:
     purposes; you may not redistribute the Content or Improvements for commercial purposes without written
     permission. NON-COMMERCIAL IS ESTABLISHED. No registration for the open web resource. A CONTROLLED-ACCESS
     counterpart exists at EGA and dbGaP (phs000755) whose terms were not verified.'
-binding: unbound
+binding: bound
 population:
   n: null
   hierarchy:
@@ -35,85 +35,146 @@ frames:
 - developmental_reference_atlas
 streams:
 - name: developmental_regional_transcriptome
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Regional and developmental expression constrains which molecular machinery -- and therefore
     which interaction classes -- is available where and when. With roughly a dozen donors, between-donor
     variance is essentially unestimable and any regional difference is confounded with donor. Post-mortem
     interval, agonal state and RNA integrity vary and all affect measured expression.
-  notes: bulk tissue expression is a mixture over cell types, and a regional difference in a bulk sample
-    is frequently a difference in cellular composition rather than in per-cell expression
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: 'DEVELOPMENTAL STAGE IS THE ONLY TIME AXIS and it is cross-sectional: each donor contributes
     one point, so a developmental trajectory here is assembled from different individuals'
   spatial_support: structure-level sampling by laser microdissection and by dissection, plus in situ hybridisation
     images, MRI and DTI, and 3D fibre-tract annotations. THE SAMPLING UNIT IS A DISSECTED STRUCTURE, so
     expression is an average over whatever tissue the dissection captured
+  constrains: []
 - name: developmental_fibre_tract_annotations
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Hand-annotated tract geometry at eight developmental stages is a rare constraint on
     when a pathway exists at all. It is DERIVED GEOMETRY from a handful of specimens and is labelled derived
     forever.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and this is the case the schema singles out.  a connectome matrix is a TOPOLOGY ASSERTION
+    -- which supports are taken to interact -- produced by somebody's reconstruction pipeline.  ARCHITECTURE.md
+    §3 makes interaction topologies a separate primitive from state, and binding a matrix as `measured`
+    would let one pipeline's tractography contribute a likelihood about tissue.  hand-annotated tract
+    geometry at eight developmental stages is a rare constraint on WHEN a pathway exists at all, and it
+    is derived geometry from a handful of specimens.
 - name: rna_seq
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.'
 - name: exon_microarray
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.'
 - name: lmd_microarray
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.'
 - name: in_situ_hybridisation
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.'
 - name: mri
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.  developmental specimens.'
 - name: dti
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and NOT the DWI binding the held cards use.  what is distributed here is the atlas's
+    own tract annotation and a small number of developmental specimens' diffusion volumes as illustration,
+    not a per-subject orientation field with its acquisition recorded.  binding it to `structural.fiber_orientation`
+    would attribute an unstated reconstruction to tissue in a dozen fetal and infant brains.
 - name: dna_methylation
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.'
 - name: microrna
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.'
 - name: fibre_tract_annotations
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `developmental_fibre_tract_annotations`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 absent:
 - function
 - in_vivo_data

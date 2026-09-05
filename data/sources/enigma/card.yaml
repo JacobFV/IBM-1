@@ -13,7 +13,7 @@ licence:
   commercial: unresolved
   notes: Summary statistics and toolbox contents have per-working-group terms. Individual participant
     data is NOT distributed. Unresolved.
-binding: unbound
+binding: bound
 population:
   n: null
   hierarchy:
@@ -29,41 +29,61 @@ frames:
 - MNI152
 streams:
 - name: case_control_effect_size_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: A meta-analytic effect size is a statement about a literature and a set of pipelines,
     not about any participant's cortex at time t.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: 'no time axis: these are cross-sectional summaries'
   spatial_support: region-wise summaries over standard parcellations (Desikan, Schaefer, Lausanne)
+  constrains: []
+  notes: context.  A META-ANALYTIC EFFECT SIZE IS A STATEMENT ABOUT A LITERATURE AND A SET OF PIPELINES,
+    not about any participant's cortex at time t.  no registered component is an effect size, and a summary
+    over cohorts cannot contribute a likelihood about a subject being fitted.
 - name: structural_connectomes
-  kind: measured
+  kind: context
   via: null
   systematic_bias: ENIGMA-HCP SC is one processing pipeline's answer; §52.8 requires the parent DWI, software
     version, seeding and thresholds to travel with it, and here they do not.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and this is the case the schema singles out.  a connectome matrix is a TOPOLOGY ASSERTION
+    -- which supports are taken to interact -- produced by somebody's reconstruction pipeline.  ARCHITECTURE.md
+    §3 makes interaction topologies a separate primitive from state, and binding a matrix as `measured`
+    would let one pipeline's tractography contribute a likelihood about tissue.  and ENIGMA-HCP SC is
+    one pipeline's answer whose parent DWI, software version, seeding and thresholds do not travel with
+    it.
 - name: disorder_maps
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, same as the effect-size maps above: a per-region summary over a clinical literature,
+    not a state.'
 - name: cortical_thickness_summaries
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a per-parcel cortical thickness is anatomy of the SUPPORT -- a geometric property of
+    a cover -- and the registry declares no thickness component; here it is also a cohort mean rather
+    than any individual's.
 - name: surface_area_summaries
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, same reading as the thickness summaries.
 absent:
 - raw_imaging
 - time_series

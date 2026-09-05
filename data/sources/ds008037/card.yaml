@@ -23,14 +23,14 @@ licence:
     is evidence about the acquisition rather than an opinion about the deposit''s policy. It says nothing
     about the LICENCE terms, which are recorded separately and still govern distribution; a non-commercial
     work with no DUA is an ordinary combination.'
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
 - scalp montage
 streams:
 - name: tms_eeg_four_sites
-  kind: measured
+  kind: context
   via: null
   observation_chain: A TMS pulse induces an E-field in cortex; the evoked current flow produces a scalp
     potential through the head's volume conductor, measured differentially against a reference by the
@@ -44,12 +44,18 @@ streams:
   - amplifier saturation and recovery artifact
   - eye movement and blink
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 500.0
   temporal_support: continuous EEG with TMS pulse events
   spatial_support: scalp EEG electrodes; TMS delivered at four sites
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `eeg`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.  what this entry adds is the DESIGN: four
+    stimulation sites -- prefrontal, premotor, parietal and a shoulder control -- carried as acq- labels
+    on the same recording.'
 - name: shoulder_control_condition
-  kind: measured
+  kind: context
   via: null
   observation_chain: The same EEG measurement with the coil discharging over the SHOULDER rather than
     the head, so the click and a somatosensory input are delivered while no E-field reaches cortex. What
@@ -59,23 +65,59 @@ streams:
   - differences in click loudness or scalp contact between the control and the cortical sites
   - subject knowledge of which condition is running
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 500.0
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.  and
+    it is the best kind of design factor: with the coil discharging over the SHOULDER, the click and the
+    somatosensory input are delivered while no E-field reaches cortex, so the acq-control runs record
+    the peripheral responses ALONE.  that is a control that could fail, which is why the card''s `use`
+    includes `control`.  it names a subset of the runs already bound by `eeg` rather than separate bytes,
+    so binding it as measured would count those runs twice.'
 - name: eeg
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 500.0
+  constrains:
+  - device.contact_potential
+  notes: 'MEASURED FROM THE HELD SIDECARS: SamplingFrequency 1000 Hz, SoftwareFilters n/a, HardwareFilters
+    n/a, 62 EEG channels against FCz on an EasyCap BC-TMS-64-58, four acq- runs per participant.  full
+    nyquist and DC-coupled.  WHAT IS IN THE WAVEFORM is the reason this needs a co-stimulation model rather
+    than a cleaning step: the recorded response is the neural response SUMMED WITH the amplifier''s recovery
+    from the pulse artifact, cranial muscle activation, and the evoked response to the click and the scalp
+    sensation.  a TEP that is largely auditory and somatosensory is a real measurement of the wrong thing.'
+  rate_hz: 1000.0
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: tms
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 500.0
+  constrains: []
+  notes: 'context, and this is the ds004024 rule applied unchanged.  CHECKED ON THE HELD BYTES 2026-09-05:
+    the events files carry onset, sample, a site label and an `is_tms_pulse` flag, and nothing else --
+    no coil pose, no winding, no intensity per pulse, no neuronavigation record, and there are zero _electrodes.tsv
+    in the deposit either.  the trigger times mark a real intervention, so `imposed` is the obvious reading,
+    but an imposed stream is CONDITIONED ON and what a materialization would condition on is the delivered
+    field, which this deposit does not record.  binding these marks to `device.coil_current` would hand
+    the model a waveform and an amplitude nobody measured, dressed as a boundary condition.  the times
+    are an index into the recording and nothing more until the coil pose and winding exist.'
 absent:
-- delivered_field
 - coil_pose
+- electrode_digitisation
+- pulse_intensity
+- mep
+- sham_coil
 use:
 - control
 - fit
@@ -89,3 +131,29 @@ provenance:
   card: ds008037
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'Two device geometries are needed and neither is here, checked on disk 2026-09-05: zero
+    _electrodes.tsv, so the 62-channel montage has no positions; and no neuronavigation record, so the
+    coil has no pose and no winding. Without the coil geometry the pulse is a machine setting rather than
+    a field, which is why `tms` is bound as context rather than imposed -- the same call ds004024 makes,
+    and the reason is written on that stream. It is left unscoped (no `for_streams`) for the reason every
+    other card in this corpus leaves it unscoped: no stream here makes an attribution claim that this
+    product would have to discharge. `eeg` binds to `device.contact_potential` on `sensor_array`, which
+    a nominal montage addresses, and `tms` binds to nothing at all. What is blocked is the step from cap
+    to cortex and from machine setting to induced field, and neither of those is a stream in this card.'
+  substitute: A nominal 10-20 montage for the recording, and for the coil nothing at all -- there is no
+    defensible default pose, and assuming one would invent the causal claim the dataset exists to make.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever montage the provider happened to ship.
+forbidden:
+- ds008037/* -> delivered-field parameters (no coil pose, winding or intensity is held)
+- ds008037/eeg -> a purely transcranial evoked response (the click and the scalp sensation are in every
+  waveform; the shoulder-control runs are what measures them)
+- ds008037/tms_eeg_four_sites -> independent evidence from ds008037/eeg (same recording)
+- ds008037/shoulder_control_condition -> independent evidence from ds008037/eeg (the acq-control runs
+  are part of the same recording and are already bound there)

@@ -13,7 +13,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: Two separate providers with separate terms; neither read.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -21,44 +21,74 @@ frames:
 - histological_section
 streams:
 - name: tracer_versus_tractography_in_one_species
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'CROSS-SPECIES. Its use is the same as markov2014''s: a species-general statement about
     how tractography relates to tracer-verified connectivity, never an assertion about a human edge. The
     marmoset''s lissencephalic cortex removes the gyral bias that dominates human tractography error,
     which makes it a WEAKER model of the human failure mode, not a stronger one.'
-  notes: anterograde tracer measures projections from an injection site; it does not measure synaptic
-    weight and it is directed where tractography is not
+  notes: context, and this is the case the schema singles out.  a connectome matrix is a TOPOLOGY ASSERTION
+    -- which supports are taken to interact -- produced by somebody's reconstruction pipeline.  ARCHITECTURE.md
+    §3 makes interaction topologies a separate primitive from state, and binding a matrix as `measured`
+    would let one pipeline's tractography contribute a likelihood about tissue.  CROSS-SPECIES, and its
+    use is a species-general statement about how tractography relates to tracer-verified connectivity,
+    never an assertion about a human edge.  the marmoset's lissencephalic cortex is also a different geometry
+    from a human's, which changes what tractography can and cannot resolve.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: none -- static anatomy and static tracer maps
   spatial_support: ex-vivo ultra-high-resolution MRI and histology-derived parcellation, plus anterograde
     tracer injections registered to that space
+  constrains: []
 - name: ex_vivo_mri
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.  ex-vivo ultra-high-resolution,
+    a different species.'
 - name: dwi_tractography
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and this is the case the schema singles out.  a connectome matrix is a TOPOLOGY ASSERTION
+    -- which supports are taken to interact -- produced by somebody's reconstruction pipeline.  ARCHITECTURE.md
+    §3 makes interaction topologies a separate primitive from state, and binding a matrix as `measured`
+    would let one pipeline's tractography contribute a likelihood about tissue.  a tractogram is a topology
+    assertion produced by a reconstruction, which is the schema's own example of why this must be context.
 - name: anterograde_tracer_connectivity
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and this is the case the schema singles out.  a connectome matrix is a TOPOLOGY ASSERTION
+    -- which supports are taken to interact -- produced by somebody's reconstruction pipeline.  ARCHITECTURE.md
+    §3 makes interaction topologies a separate primitive from state, and binding a matrix as `measured`
+    would let one pipeline's tractography contribute a likelihood about tissue.  anterograde tracer measures
+    PROJECTIONS FROM an injection site; it does not measure synaptic weight, and it is directed where
+    tractography is not.
 - name: cytoarchitectonic_parcellation
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
+    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
+    takes at them.  no registered component is a region label.  it reaches a materialization as a support
+    index and as a `prior`, never as a likelihood.  and a non-human one.'
 absent:
 - human_data
 - in_vivo_function

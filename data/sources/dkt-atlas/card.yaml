@@ -26,14 +26,14 @@ licence:
     FreeSurfer project and its authors'' own terms may be broader or narrower. That matters only for a
     copy obtained from the originating project; the copy we hold came through FreeSurfer and carries FreeSurfer''s
     terms.'
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
 - subject_surface_ras
 streams:
 - name: surface_parcellation
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'A DELIBERATE REVISION of desikan2006 rather than an independent parcellation: boundaries
     that Desikan''s protocol left to the rater were given explicit rules and some regions were removed.
@@ -41,11 +41,18 @@ streams:
     about a boundary. Where they DISAGREE is the informative part, and it is concentrated exactly at the
     boundaries the revision was written to fix.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- static anatomy
   spatial_support: 31 gyral regions per hemisphere on an individual subject's surface -- a REVISION of
     Desikan-Killiany with more consistent boundary rules and several regions dropped
+  constrains: []
+  notes: 'context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set
+    is a COVER over a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value
+    any ibm component takes at them.  no registered component is a region label, and inventing one would
+    make a naming convention into biology.  it reaches a materialization as a support index and as a `prior`,
+    never as a likelihood.  and it is a REVISION of desikan2006 rather than an independent one, so the
+    two are never independent evidence about a boundary.'
 absent:
 - per_vertex_confidence
 - subcortex

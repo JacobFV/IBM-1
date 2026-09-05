@@ -11,7 +11,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -19,26 +19,38 @@ frames:
 - vascular_tree_graph
 streams:
 - name: arterial_territory_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: An arterial territory atlas is a COVER over the brain organised by blood supply rather
     than by cytoarchitecture or function -- a genuinely different partition from every atlas in §52.6,
     and §11's multi-cover argument applies to it identically. Territory boundaries also depend on the
     individual's Circle of Willis variant, which a population atlas cannot represent.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: population probability maps of arterial and venous anatomy, including ARTERIAL TERRITORY
     atlases that label which major artery supplies each voxel
+  constrains: []
+  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
+    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
+    takes at them.  no registered component is a region label.  it reaches a materialization as a support
+    index and as a `prior`, never as a likelihood.  organised by BLOOD SUPPLY rather than by cytoarchitecture
+    or function, which makes it a genuinely different partition from every cortical atlas here -- and
+    still a partition.'
 - name: population_vessel_probability
-  kind: measured
+  kind: context
   via: null
   systematic_bias: vessel position varies far more between people than cortical position does, so a population
     vessel probability map is diffuse where it matters most
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and the same gap the cerebral-artery-atlas card records: the registry has no component
+    for vessel presence, calibre or topology.  `blood.volume` is the blood in a tissue element of one
+    brain and a population probability of a lumen is not that.  vessel position also varies far more between
+    people than cortical position does, so the map is diffuse exactly where it matters.'
 absent:
 - individual_geometry
 - capillary_scale

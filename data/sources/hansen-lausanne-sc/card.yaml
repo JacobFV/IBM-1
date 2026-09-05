@@ -14,7 +14,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -22,17 +22,25 @@ frames:
 - fsaverage
 streams:
 - name: consensus_connectome
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'The SAME underlying diffusion data as hansen-schaefer-sc, expressed in a DIFFERENT
     parcellation. Holding both is worth more than holding either: the difference between them is a direct
     measurement of how much a connectome result is a property of the parcellation rather than of the brain,
     which is §11''s argument made numerical.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: a group consensus structural connectome on the multi-scale Lausanne parcellation
+  constrains: []
+  notes: 'context, and this is the case the schema singles out.  a connectome matrix is a TOPOLOGY ASSERTION
+    -- which supports are taken to interact -- produced by somebody''s reconstruction pipeline.  ARCHITECTURE.md
+    §3 makes interaction topologies a separate primitive from state, and binding a matrix as `measured`
+    would let one pipeline''s tractography contribute a likelihood about tissue.  held BESIDE hansen-schaefer-sc
+    deliberately: the two express the SAME underlying diffusion data in different parcellations, so the
+    difference between them measures how much of a connectome is the parcellation rather than the brain.  that
+    is a comparison between two covers and neither side of it is a likelihood.'
 absent:
 - provenance
 - path_geometry

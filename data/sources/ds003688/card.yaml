@@ -17,7 +17,7 @@ licence:
     a licence governs DISTRIBUTION only and must never stand between us and a dataset. CC0-1.0 is a public-domain
     dedication, so nothing this source contributes inherits a redistribution, attribution or share-alike
     constraint. Consent scope is a separate question the file does not answer.'
-binding: unbound
+binding: bound
 population:
   n: 63
   hierarchy:
@@ -40,7 +40,10 @@ frames:
 streams:
 - name: ieeg
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: current sources within millimetres of the contact -> local volume conduction over
     a short path -> contact surface area, impedance and referencing scheme -> sampled voltage; spatial
     support is the contact neighbourhood, not a parcel
@@ -51,25 +54,45 @@ streams:
   - epileptiform activity contaminating putative task responses
   systematic_bias: '§51.1 item 7: this supplies SPATIALLY LOCAL electrical evidence that scalp EEG cannot.
     Coverage is dictated by clinical need and is therefore non-random over the cortex.'
-  notes: contact coverage is a clinically-chosen, spatially biased sample; treating it as a random sample
-    of cortex overstates what it constrains
+  notes: 'MEASURED FROM THE HELD SIDECARS: Micromed, SamplingFrequency 512 Hz on the runs read, SoftwareFilters
+    n/a, 88 ECoG channels in the file inspected; the release documents runs up to 2 kHz, so 256 Hz is
+    the nyquist of the SLOWEST held rate and is the conservative ceiling for the deposit as a whole.  the
+    support is `implanted_array`, not `sensor_array`: a contact sees current sources within millimetres
+    over a short conduction path, which is spatially local evidence scalp EEG cannot supply.  coverage
+    is clinically chosen and therefore non-random over the cortex; treating it as a random sample overstates
+    what it constrains.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 256.0
   temporal_support: iEEG at 512 Hz-2 kHz; BOLD at TR ~2 s; the 6.5-minute film as the world clock
   spatial_support: subdural grids/strips and depth electrodes with individually localised contacts; 3
     mm BOLD
+  constrains:
+  - device.contact_potential
+  rate_hz: 512.0
+  frame: electrode_native
+  support: implanted_array
+  units: V
 - name: electrode_localisation
-  kind: measured
+  kind: context
   via: null
   systematic_bias: post-implant brain shift means the CT-derived contact position and the pre-op surface
     disagree by millimetres; the correction applied is a modelling choice
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  54
+    _electrodes.tsv with per-contact coordinates and matching _coordsystem.json are held; that is the
+    device geometry the iEEG stream needs, not a second measurement of the brain.  post-implant brain
+    shift means the CT-derived position and the pre-operative surface disagree by millimetres and the
+    correction applied is a modelling choice, which is uncertainty on a support rather than evidence about
+    a component.'
 - name: bold_movie
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
     concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
     voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
@@ -82,20 +105,43 @@ streams:
   - susceptibility dropout and geometric distortion
   - scanner drift
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.5
+  constrains:
+  - electromagnetic.bfield
+  notes: 'MEASURED FROM THE HELD SIDECAR: RepetitionTime 0.608 s, EchoTime 31.2 ms.  the TR nyquist is
+    0.82 Hz but the ceiling is set at 0.5 Hz, which is where `bold_formation` writes `electromagnetic.bfield`
+    and where the haemodynamic response has anything left; above it a fast TR buys aliased physiology
+    rather than signal.  em_generation is what produces the magnetic field from source currents; the previous
+    chain named vascular_flow, which is unrelated.'
+  rate_hz: 1.6447
+  frame: scanner
 - name: film_stimulus
   kind: imposed
-  via: null
+  via:
+  - transduction
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 25.0
+  constrains:
+  - device.display_luminance
+  notes: 'imposed: a 6.5-minute film shown to every participant, clamped on the display support and conditioned
+    on, never sampled.  the band ceiling is the frame rate -- a display is a sampled stimulus and the
+    refresh is a real property of it.  ONE THING THIS DOES NOT CARRY: the film has a soundtrack, and no
+    stream here binds `device.speaker_pressure`, so the auditory half of the stimulus is unrepresented
+    rather than absent.'
+  frame: film_timeline
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.'
 absent:
 - eeg_scalp
 - meg
@@ -107,10 +153,16 @@ requires:
   for_streams:
   - ieeg
   - electrode_localisation
-  severity: blocking
-  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
-    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
-    channel is an index and nothing measured here can be attached to a cortical location.
+  severity: degrading
+  without_it: 'Re-graded from blocking 2026-09-05 ON FILE EVIDENCE: 54 sub-*_ses-iemu_acq-clinical_electrodes.tsv
+    are held, each with per-contact coordinates, alongside 54 matching _coordsystem.json. A contact''s
+    position IS its spatial support and that position is present, so the iEEG is addressable. It stays
+    degrading rather than satisfied because a contact''s EXTENT and its tissue interface are not in a
+    tsv: a coordinate triple is a point where the physics has a surface area and an impedance, and the
+    post-implant brain shift correction is a modelling choice whose residual nothing here reports.'
+  substitute: The contact coordinates as points, with an assumed contact area from the manufacturer's
+    specification. That assumption sets the spatial low-pass of every source estimate and must be carried,
+    not defaulted.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
@@ -119,18 +171,23 @@ requires:
     to ship.
 - geometry: retinal-world-geometry
   for_streams:
-  - bold_movie
   - film_stimulus
-  severity: blocking
-  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
-    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
-    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
-    path.
+  severity: degrading
+  without_it: 'Re-graded from blocking 2026-09-05, and the scope narrowed. It no longer names `bold_movie`:
+    a BOLD volume constrains `electromagnetic.bfield` through the haemodynamic chain and that attribution
+    does not pass through a retina at all, so the retinal product was never what stood between that stream
+    and its component -- the cortical support bank is. For `film_stimulus` it is degrading rather than
+    blocking because the film is clamped as `device.display_luminance` on the DISPLAY support, which is
+    defined without any screen-to-retina map. What is unavailable is everything after the screen: nothing
+    may be attributed to `transduction.photoreceptor`, to an eccentricity, or to a retinotopic support,
+    and no gaze was recorded, so an encoding model that reads the frames as retinal input is reading a
+    monitor.'
 use:
 - fit
 forbidden:
-- ds003688/ieeg -> healthy population priors without pathology conditioning
-- ds003688/* -> any joint iEEG-fMRI likelihood treating them as one session
+- ds003688/* -> retinal or retinotopic state (no display geometry and no gaze are held)
+- ds003688/ieeg -> a random sample of cortex (coverage is clinically chosen)
+- ds003688/film_stimulus -> the auditory stimulus (no speaker pressure is recorded)
 split:
   group_by:
   - participant

@@ -13,7 +13,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -22,25 +22,37 @@ frames:
 - fsaverage
 streams:
 - name: parcellation_labels
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Multi-modal boundary definition is a stronger basis than any single modality, and the
     boundaries were then applied by a trained CLASSIFIER to individuals -- so an individual Glasser parcellation
     is a classifier output, not a measurement of that person's areas.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: 180 areas per hemisphere on the fs_LR 32k surface, defined by gradients in myelin,
     thickness, function and connectivity together
+  constrains: []
+  notes: 'context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set
+    is a COVER over a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value
+    any ibm component takes at them.  no registered component is a region label, and inventing one would
+    make a naming convention into biology.  it reaches a materialization as a support index and as a `prior`,
+    never as a likelihood.  multi-modal boundary definition is a stronger basis than any single modality,
+    but an individual''s Glasser parcellation is a CLASSIFIER OUTPUT.'
 - name: areal_feature_gradients
-  kind: measured
+  kind: context
   via: null
   systematic_bias: the underlying gradient maps are more informative than the thresholded areas and are
     the part §11 wants rendered
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  the myelin, thickness, function and connectivity gradients behind the boundaries are
+    more informative than the thresholded areas, and they are still GROUP-AVERAGE surface maps of heterogeneous
+    quantities -- a T1w/T2w ratio is not `structural.myelination` in any unit the registry declares, and
+    treating it as one would smuggle a contrast ratio in as a measured tissue property.
 absent:
 - individual_boundary_uncertainty
 - subcortex

@@ -30,7 +30,7 @@ in band, and refining it would be materializing noise.
 
 from __future__ import annotations
 
-from ibm.materialize.library import NamedModel, register, res, rule
+from ibm.materialize.library import NamedModel, anat, register, res, rule, subcortex
 from ibm.materialize.request import (
     Budget,
     DeviceSpec,
@@ -38,7 +38,6 @@ from ibm.materialize.request import (
     SubjectSpec,
     Window,)
 from ibm.vocabulary import (
-    Anat,
     Band,
     DC,
     HEMODYNAMIC,
@@ -62,6 +61,14 @@ OPTICAL = Band(0.0, 2.0)
 #: rather than one compromise.
 DRIVE = Band(0.0, 0.5)
 
+#: the arterial watershed zones, in the labels `vascular_territories` declares.
+#: this is where transit delay and reactivity vary fastest and where a single
+#: coarse cell is most likely to average two territories, so it is the one place
+#: in a hemodynamic model that a finer volume earns its cost.
+WATERSHED = anat("vascular_territories", "watershed_aca_mca", "watershed_mca_pca",
+                 "watershed_deep")
+
+
 
 BOLD_FORWARD = register(NamedModel(
     id="bold_forward",
@@ -70,15 +77,38 @@ BOLD_FORWARD = register(NamedModel(
 
     the canonical spatially-fine, temporally-narrow materialization.
 
-    **why 1 mm on the cortical sheet.**  three separate commutation failures stack
-    there.  the sheet is folded, so a 2 mm cell contains both banks of a sulcus
-    whose activity is often anticorrelated.  the vascular tree is a tree: adjacent
-    cells drain into different pial veins and the `vascular` topology's edges are
-    destroyed by coarsening.  and the bold nonlinearity -- the balloon model's
-    volume-to-signal relation -- is convex, so the signal from a cell containing one
-    active half and one silent half is not the signal of the average.  1 mm is where
-    those effects become small; laminar structure would need 0.5 mm and is not
-    materialized here because no fit source in this list resolves it.
+    **why the whole thing is in the volume, and the cortical sheet is not named.**
+    the sheet buys exactly one thing that the parenchyma volume cannot supply: a
+    metric in which two points across a sulcus are far apart.  that metric is
+    worth its cost wherever something *propagates* laterally, because a euclidean
+    neighbourhood then invents an axon that does not exist.  nothing in this
+    model propagates laterally.  every process here --
+    `neurovascular_coupling`, `vascular_flow`, `bold_formation`, `metabolism`,
+    `tissue_exchange` -- turns the state of one tissue element into the state of
+    that same element or of the vessel feeding it, and the only long-range
+    transport is along the vascular tree, whose own topology is volumetric.  so
+    re-indexing the cortex by column node rather than by voxel destroys no edge
+    and changes no answer, which is §1's condition for the finer object being
+    waste.  the sheet is dropped from R for that reason and not to save money.
+
+    **what does fail to commute here is volumetric, and 2 mm is the answer to it.**
+    a 4 mm cell contains both banks of a sulcus whose activity is often
+    anticorrelated, adjacent cells drain into different pial veins so the
+    `vascular` topology's edges do not survive coarsening, and the balloon
+    model's volume-to-signal relation is convex, so the signal from a cell with
+    one active half and one silent half is not the signal of the average.  all
+    three are statements about the size of a *voxel*, and the remedy to all three
+    is a finer voxel rather than a different support.  2 mm is where they become
+    small; laminar structure would need 0.5 mm and is not materialized here
+    because no fit source in this list resolves it.
+
+    the price of the choice is stated rather than hidden: a 2 mm volume graph
+    mis-connects on the order of a tenth of a percent of cortical pairs across a
+    sulcus (`Component.alt_supports`), and since no process in this model uses
+    that graph to propagate anything, a tenth of a percent of nothing is what it
+    costs.  a materialization that *does* need lateral spread --
+    `resting_state_fc`, `macro_surrogate`, `virtual_lesion` -- names the sheet,
+    and pays for it.
 
     **why the band collapses to 0.25 Hz.**  the hrf is a low-pass filter with a
     several-second impulse response and the measurement is sampled at 1.4 Hz.  the
@@ -88,6 +118,17 @@ BOLD_FORWARD = register(NamedModel(
     has, because this window cannot represent it and materializing an aliased band
     is worse than not materializing it: that band belongs to `eeg_forward`, and a
     joint materialization declares two windows rather than one compromise.
+
+    **what 2 mm whole-brain actually costs, said out loud.**  a parenchyma octree
+    at 2 mm over a real head is ~6e5 leaves, and the trace puts ~25 components on
+    `tissue`: 1.5e7 state variables at ~48 retained coefficients each, which is
+    22 GiB of state.  the budget below is not a modelling preference -- §1 is
+    explicit that `max_bytes` is the one ceiling that is a hardware fact -- so
+    this model as declared does not fit on a machine that has 8 GiB to give it,
+    and a build coarsens onto 4 mm and says by how much.  that is the
+    `coarsened()` argument working rather than failing: the question it forces is
+    whether the sulcal-bank and vein effects above are worth 8x the memory, and
+    the answer is an empirical one this model is set up to give.
 
     **the vein problem is the honest limit.**  gradient-echo bold weights draining
     veins heavily, and a vein sits millimetres downstream of the tissue that
@@ -99,17 +140,15 @@ BOLD_FORWARD = register(NamedModel(
         targets=(sel("blood.deoxyhemoglobin", "blood.volume", "blood.flow",
                      "blood.oxygenation", band=BOLD),
                  sel("metabolic.consumption", "metabolic.oxygen", band=BOLD)),
-        regions=(("cortex", OnSupport("cortical_surface")),
-                 ("vasculature", OnSupport("vascular_tree")),
+        regions=(("vasculature", OnSupport("vascular_tree")),
                  ("brain", OnSupport("tissue"))),
         resolution=res(
-            rule(OnSupport("cortical_surface"), 1.0, BOLD),
             rule(OnSupport("vascular_tree"), 0.5, BOLD),
             rule(OnSupport("tissue"), 2.0, BOLD),
             default_mm=4.0, default_band=BOLD),
         fields=("neural", "blood", "metabolic", "extracellular"),
         anatomy=("cortical_areas", "vascular_territories"),
-        topologies=("vascular", "metabolic_exchange", "local", "cortical_surface"),
+        topologies=("vascular", "metabolic_exchange", "local"),
         processes=("neurovascular_coupling", "vascular_flow", "bold_formation",
                    "metabolism", "tissue_exchange"),
         observations=("bold",),
@@ -164,6 +203,27 @@ FMRI_INFILL = register(NamedModel(
     **B.**  0.01-0.25 Hz.  the low edge is not zero because scanner drift below
     0.01 Hz is a nuisance the model would otherwise try to explain as brain state.
 
+    **why this one names the sheet when `bold_forward` and `hrf` do not.**  the
+    three models sit in the same group and split on one question: does anything
+    here *propagate along the cortex*.  in `bold_forward` and `hrf` nothing does
+    -- the chain is local plus vascular transport -- so a voxel indexing of the
+    cortex destroys no edge and the sheet is not named.  here the two declared
+    couplings are `lateral_cortical_propagation`, which runs under the sheet's
+    own geodesic metric, and `tract_propagation`, whose endpoints are on the
+    grey/white interface; and the modes this model exists to infill are the
+    principal gradient and the canonical networks, which are objects on the sheet
+    and not in the volume.  a euclidean neighbourhood joins the two banks of a
+    sulcus that no horizontal axon connects, and the resulting short-range
+    correlation is indistinguishable from the structure being infilled.  so R
+    names both supports, and the volume half is carved with `subcortex()` so that
+    the two are a partition: cortical population state on column nodes,
+    subcortical, cerebellar and brainstem state on parenchyma voxels.
+
+    the volume half is not decoration.  the thalamus and the cerebellum carry a
+    large share of resting bold variance and `cerebellar_lobules` is in this
+    model's anatomy list; a sheet-only placement would have given them no state
+    at all and left the infill predicting cortex from cortex.
+
     **this is the most teacher-heavy model in the library and it is dangerous.**
     `brainlm`, `brain-jepa`, `brain-harmony`, `tribe`, `tribe-v2` and `neuroworld`
     all do masked or autoregressive infill of exactly this signal, and several of
@@ -177,7 +237,7 @@ FMRI_INFILL = register(NamedModel(
         targets=(sel("blood.deoxyhemoglobin", "blood.flow", band=BOLD),
                  sel("neural.exc.activity", band=BOLD)),
         regions=(("cortex", OnSupport("cortical_surface")),
-                 ("brain", OnSupport("tissue"))),
+                 ("subcortex", subcortex())),
         resolution=res(
             rule(OnSupport("cortical_surface"), 3.0, BOLD),
             rule(OnSupport("tissue"), 4.0, BOLD),
@@ -192,8 +252,13 @@ FMRI_INFILL = register(NamedModel(
         subject=SubjectSpec(),
         window=Window(n=1024, dt=1.0),
         bands=(("blood", BOLD), ("neural", BOLD)),
-        budget=Budget(max_state_variables=300_000,
-                      max_spectral_coefficients=20_000_000),),
+        # 3 mm on the sheet is ~1.6e4 column nodes and 4 mm in the
+        # ribbon-excluded parenchyma another ~1.5e4, and the split neural field
+        # puts 13 components on each: 5.9e5 variables at a ~180-coefficient
+        # window.  the old 3e5 / 2e7 pair was written for a sheet-only placement
+        # and refused this model's own r(q) by a factor of two.
+        budget=Budget(max_state_variables=800_000,
+                      max_spectral_coefficients=150_000_000),),
     fit_sources=("hcp-young-adult", "narratives", "courtois-neuromod",
                  "naturalistic-neuroimaging-database", "aomic-id1000"),
     eval_sources=("algonauts-2025", "sherlock-merlin-princeton",
@@ -235,10 +300,32 @@ HRF = register(NamedModel(
     organised by the vasculature: tissue near a large draining vein responds later
     and larger, and the arterial transit time differs by hundreds of milliseconds
     between vascular territories.  so 1 mm near mapped veins (which is what
-    `7t-qsm-venograms` provides) and 2 mm within a vascular territory, but 4 mm
+    `7t-qsm-venograms` provides), 2 mm in the watershed zones between arterial
+    territories -- where transit time and reactivity vary fastest, and where the
+    declared `vascular_territories` system actually has labels for it -- but 4 mm
     across the rest of the parenchyma where the variation is smooth.  the
     refinement follows the *cause* of the heterogeneity rather than following the
     voxel grid, which is the §1 instruction taken literally.
+
+    **and why the cortical sheet is not named at all.**  the same instruction,
+    applied to the choice of support rather than to the spacing.  the sheet is
+    the right indexing for a quantity organised by cortical topology; an hrf is
+    not one.  it is organised by the arterial supply and the venous drainage,
+    which cross sulci freely -- a single pial vein drains both banks, and a
+    watershed boundary runs through the middle of a gyrus -- so column nodes
+    would impose a geometry that the heterogeneity does not follow, at the price
+    of splitting a whole-brain vascular model in two.  every process here
+    (`neurovascular_coupling`, `vascular_flow`, `bold_formation`,
+    `tissue_exchange`, `metabolism`) couples a tissue element to itself or to the
+    vessel serving it, so nothing propagates along the sheet and no edge is lost
+    by indexing the cortex volumetrically.  the state that matters is in the
+    volume and on the vascular tree, and R names exactly those two.
+
+    that also keeps this model usable for what it is *for*: it is the correction
+    the other hemodynamic models apply, and every one of them -- `bold_forward`,
+    `asl_perfusion`, `quantitative_bold`, `fnirs_forward` -- wants that correction
+    voxelwise, over the whole brain including the structures no cortical sheet
+    covers.
 
     **B.**  0-0.5 Hz for blood, but with a long window: an hrf is a five-to-twenty
     second object and a 30 second window resolves no finer than 0.033 Hz, which is
@@ -253,12 +340,12 @@ HRF = register(NamedModel(
         name="hrf",
         targets=(sel("blood.flow", "blood.volume", "blood.deoxyhemoglobin",
                      band=HEMODYNAMIC),),
-        regions=(("veins", Anat("vascular_territories", "venous")),
-                 ("cortex", OnSupport("cortical_surface")),
+        regions=(("vasculature", OnSupport("vascular_tree")),
+                 ("watershed", WATERSHED),
                  ("brain", OnSupport("tissue"))),
         resolution=res(
             rule(OnSupport("vascular_tree"), 1.0, HEMODYNAMIC),
-            rule(OnSupport("cortical_surface"), 2.0, HEMODYNAMIC),
+            rule(WATERSHED, 2.0, HEMODYNAMIC),
             rule(OnSupport("tissue"), 4.0, HEMODYNAMIC),
             default_mm=6.0, default_band=HEMODYNAMIC),
         fields=("blood", "metabolic", "neural", "material"),
@@ -400,9 +487,9 @@ ASL_PERFUSION = register(NamedModel(
         targets=(sel("blood.flow", "blood.volume", band=Band(0.0, 0.05)),
                  sel("metabolic.oxygen", band=DC)),
         regions=(("territories", OnSupport("tissue")),
-                 ("watershed", Anat("vascular_territories", "watershed"))),
+                 ("watershed", WATERSHED)),
         resolution=res(
-            rule(Anat("vascular_territories", "watershed"), 2.0, Band(0.0, 0.05)),
+            rule(WATERSHED, 2.0, Band(0.0, 0.05)),
             rule(OnSupport("tissue"), 4.0, Band(0.0, 0.05)),
             default_mm=6.0, default_band=Band(0.0, 0.05)),
         fields=("blood", "metabolic", "material"),

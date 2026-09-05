@@ -13,7 +13,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -21,24 +21,37 @@ frames:
 - organ_common_coordinate_framework
 streams:
 - name: organ_common_coordinate_framework
-  kind: measured
+  kind: context
   via: null
   systematic_bias: HuBMAP's per-organ common coordinate frameworks are a worked example of registering
     heterogeneous tissue samples into a shared addressable space -- the same problem §3 and §56 solve
     for the brain, solved for other organs, and worth reading rather than reinventing
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: SPATIALLY RESOLVED molecular maps of human tissues with a common coordinate framework
     per organ -- the spatial framework is the part that generalises
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  a
+    worked example of registering heterogeneous tissue samples into a shared addressable space -- the
+    same problem the support bank solves for the brain, solved for other organs.  the framework is the
+    transferable part and it is machinery, not evidence.'
 - name: spatial_molecular_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: peripheral tissue; brain coverage is limited
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.  peripheral tissue;
+    brain coverage is limited.'
 absent:
 - brain_coverage
 - dynamics

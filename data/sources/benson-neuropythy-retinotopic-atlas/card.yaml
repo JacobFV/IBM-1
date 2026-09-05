@@ -12,7 +12,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: Code and atlas data may differ; unresolved pending review.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -21,27 +21,35 @@ frames:
 - visual_field_polar
 streams:
 - name: predicted_retinotopy
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'This PREDICTS retinotopy from anatomy. It is a prior, never an observation: applying
     it to a subject and then treating the result as that subject''s measured map is precisely the derived-is-not-measured
     violation. Its error against measured pRFs is published and must travel with it.'
-  notes: prediction error against measured pRF is largest exactly where individual variation is largest,
-    i.e. at the V2/V3 boundaries that matter most
+  notes: 'context, and emphatically: THIS PREDICTS RETINOTOPY FROM ANATOMY.  it is a prior, never an observation,
+    and applying it to a subject and then treating the result as that subject''s measured map is exactly
+    the derived-is-not-measured violation.  its error against measured pRF is largest where individual
+    variation is largest, i.e. at the V2/V3 boundaries that matter most.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series
   spatial_support: fsaverage surface vertices; a template prediction transferable to any subject with
     a FreeSurfer surface
+  constrains: []
 - name: visual_area_labels
-  kind: measured
+  kind: context
   via: null
   systematic_bias: hard categorical labels; §5 requires these to enter as one COVER among several, mapped
     probabilistically, not as the brain's own partition
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
+    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
+    takes at them.  no registered component is a region label.  it reaches a materialization as a support
+    index and as a `prior`, never as a likelihood.  hard categorical labels predicted from folding.'
 absent:
 - measured_subject_retinotopy
 - peripheral_field

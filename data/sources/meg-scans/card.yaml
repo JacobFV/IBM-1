@@ -9,7 +9,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: Unresolved; release details not verified.
-binding: unbound
+binding: partial
 population:
   n: null
   hierarchy:
@@ -25,7 +25,8 @@ frames:
 streams:
 - name: meg
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
     plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
     SQUID flux -> sampled channel
@@ -37,25 +38,47 @@ streams:
   - SQUID jumps and sensor drift
   systematic_bias: Authority medium pending verification of the release.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 200.0
   temporal_support: MEG at kHz sampling; graded stimulus conditions as blocks
   spatial_support: whole-head MEG; details unresolved
+  constrains:
+  - electromagnetic.bfield
+  notes: 'whole-head MEG at kHz sampling; ARRAY DETAILS ARE UNRESOLVED IN THE RECORD and the bytes are
+    not held, so the 200 Hz ceiling is the conservative one this corpus uses for MEG rather than a nyquist
+    read from a sidecar, and the vendor, channel count and gradiometer configuration must all be read
+    from the release before this source is fitted.  `em_generation` alone: a pickup coil has no contact
+    interface.  em_generation is what produces the magnetic field from source currents; the previous chain
+    named vascular_flow, which is unrelated.'
+  frame: meg_device
+  units: T
 - name: graded_audio_conditions
   kind: imposed
-  via: null
+  via:
+  - transduction
   systematic_bias: 'A graded acoustic/linguistic ladder is the audio analogue of BBBD''s attention manipulation:
     it varies interaction strength by design (§26), which is what makes a forcing-precision parameter
     identifiable rather than merely fitted'
   band_hz:
-  - null
-  - null
+  - 20.0
+  - 8000.0
+  constrains:
+  - device.speaker_pressure
+  notes: 'imposed, and the reason to hold the card: a GRADED acoustic and linguistic ladder is the audio
+    analogue of bbbd''s attention manipulation -- it varies interaction strength BY DESIGN, which is what
+    makes a forcing-precision parameter identifiable rather than merely fitted.  clamped on the display
+    support.  the ceiling is a conservative speech bandwidth because the stimulus sampling rate is not
+    in the record.'
+  frame: display
 - name: transcripts
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context: a written record of the spoken material, which indexes the stimulus rather than being
+    it.'
 absent:
 - fmri
 - eeg
@@ -67,9 +90,13 @@ requires:
   for_streams:
   - meg
   severity: blocking
-  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
-    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
-    be attributed to any cortical location.
+  without_it: 'The MEG forward model is dominated by sensor pose relative to the head. KEPT BLOCKING,
+    and here the reason is stronger than ''the bytes are not held'': the card''s own spatial_support reads
+    ''whole-head MEG; details unresolved'', so the ARRAY ITSELF is not identified -- vendor, channel count
+    and gradiometer configuration are all unknown, and those determine the lead field before any head
+    position does. This is the one MEG card in the corpus where re-grading would be a guess about which
+    instrument was used.'
+  substitute: None. The instrument is not identified.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
@@ -79,7 +106,7 @@ requires:
 use:
 - fit
 forbidden:
-- meg-scans/* -> vascular or metabolic state
+- meg-scans/* -> any source-space or anatomically located claim (the array is not identified in the record)
 split:
   group_by:
   - participant

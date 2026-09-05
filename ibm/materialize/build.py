@@ -503,14 +503,25 @@ def build(request: MaterializationRequest, *,
     if excluded:
         notes.append(f"{len(excluded)} traced support(s) are outside this view and require no "
                      "geometry: " + "; ".join(f"{s} ({why})" for s, why in sorted(excluded.items())))
+    raw, site_problems = _sample_sites(request, materialize, geom, resolver, cache, strict)
+    problems.extend(site_problems)
     try:
-        raw = build_sites(request, materialize, geom, resolver=resolver, cache=cache)
+        sites = _restrict_to_scope(raw, request, resolver, notes)
     except (MissingData, MissingInput) as exc:
+        # R could not be evaluated: an atlas it names is absent, or a `Near(...)`
+        # landmark has no positions.  under strict=False that is a gap like any
+        # other, and aborting here would throw away every site table that was
+        # sampled successfully in order to report one missing file -- the same
+        # all-or-nothing failure `_sample_sites` exists to avoid, one step later.
+        # the sites are kept unrestricted and the build says so, because a
+        # materialization that is wider than R is a *cost* error and a legible
+        # one, where an empty one is neither.
         if strict:
             raise
         problems.append(str(exc))
-        raw = Sites({})
-    sites = _restrict_to_scope(raw, request, resolver, notes)
+        notes.append("R was not applied: the region expression could not be evaluated, so the "
+                     "site tables below are what r(q) sampled and not what R asked for")
+        sites = raw
 
     overlap_problems, overlap_notes = _overlap_check(support_of, tr, sites)
     notes.extend(overlap_notes)
@@ -759,6 +770,48 @@ def _place_components(request: MaterializationRequest, tr: Trace
             "only if those supports cover disjoint positions -- which is measured, not "
             "assumed, in the overlap check below")
     return placement, notes, problems
+
+
+def _sample_sites(request: MaterializationRequest, supports: Sequence[str],
+                  geom: GeometrySet, resolver: RegionResolver, cache: Any, strict: bool
+                  ) -> tuple[Sites, list[str]]:
+    """grid(R, r) per support, one support at a time.
+
+    the loop is the point.  `build_sites` walks the supports in sorted order and
+    raises on the first one whose geometry is absent, so a build that asked for
+    a subject's retina in order to trace an afferent pathway lost its cortex and
+    its parenchyma too -- every support alphabetically after the missing one was
+    never sampled, and the model came back with no sites at all while reporting
+    exactly one gap.  under `strict=False` that is the wrong shape of answer: the
+    flag exists so a missing dataset is a recorded gap rather than an abort, and
+    an abort dressed as an empty site table is worse than either, because the
+    cost accounting, the overlap check and the edge builders all then run over
+    nothing and report success.
+
+    so each support is sampled independently and a failure removes that support
+    and nothing else.  offsets are still assigned in sorted order over the
+    supports that survived, which is what `ibm.topologies.builders` requires --
+    edge sets index globally, and the order has to be a function of the built
+    set rather than of the requested one.
+
+    `strict=True` is unchanged, deliberately including *which* gap it reports:
+    the loop visits supports in the same sorted order `build_sites` did, so the
+    first failure is the same first failure.
+    """
+    tables: dict[str, SiteTable] = {}
+    problems: list[str] = []
+    offset = 0
+    for s in sorted(set(supports)):
+        try:
+            t = build_sites(request, (s,), geom, resolver=resolver, cache=cache).tables[s]
+        except (MissingData, MissingInput) as exc:
+            if strict:
+                raise
+            problems.append(str(exc))
+            continue
+        tables[s] = replace(t, offset=offset)
+        offset += t.n
+    return Sites(tables), problems
 
 
 def _named_supports(region: Region) -> frozenset[str]:
@@ -1255,7 +1308,19 @@ def _resolve_frames(sites: Sites, request: MaterializationRequest,
                 "any topology built across this support and another is not geometry")
             out[s] = t
             continue
-        xyz = np.asarray(warp(np.asarray(t.xyz, float), t.frame, dst), float).reshape(-1, 3)
+        try:
+            xyz = np.asarray(warp(np.asarray(t.xyz, float), t.frame, dst), float).reshape(-1, 3)
+        except (MissingData, MissingInput) as exc:
+            # the caller supplied *a* transform and it does not relate this pair.
+            # that is the same situation as `warp is None`, one support at a time
+            # -- a subject with an eeg coregistration and no electrode-grid
+            # registration -- and it is reported the same way rather than ending
+            # the build, so the supports that do have a chain keep their
+            # positions.  `strict=True` still refuses the build, because a model
+            # whose supports are in unrelated frames is not a model.
+            problems.append(str(exc))
+            out[s] = t
+            continue
         out[s] = replace(t, xyz=xyz, frame=dst)
     return records, Sites(out), problems
 

@@ -14,7 +14,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -23,25 +23,38 @@ frames:
 - thalamus_native
 streams:
 - name: thalamic_nucleus_labels
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Requires a WMn-MPRAGE acquisition that most datasets do not have. Applying THOMAS to
     conventional T1 is possible but is a different and weaker inference, and which input was used must
     be recorded per subject.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: twelve thalamic nuclei per side, segmented from WHITE-MATTER-NULLED MPRAGE -- a sequence
     chosen specifically because it makes intrathalamic lamellae visible, which conventional T1 does not
+  constrains: []
+  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
+    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
+    takes at them.  no registered component is a region label.  it reaches a materialization as a support
+    index and as a `prior`, never as a likelihood.  twelve nuclei per side from WHITE-MATTER-NULLED MPRAGE,
+    a sequence chosen because it makes intrathalamic lamellae visible.  applying the method to a conventional
+    T1 is a different and weaker inference and which input was used must be recorded.'
 - name: multi_atlas_segmentation_procedure
-  kind: measured
+  kind: context
   via: null
   systematic_bias: multi-atlas label fusion produces a label per voxel and a fusion confidence; the confidence
     is the part that should survive downstream and usually does not
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  what is shipped is a FITTED OR AGGREGATED MAP -- an inverse solution, a GLM contrast,
+    a meta-analytic summary -- rather than a measurement.  binding it would let one pipeline's answer
+    contribute a likelihood about tissue, which is the same argument that makes a tractogram context.  multi-atlas
+    label fusion yields a label AND a fusion confidence per voxel; the confidence is the part that should
+    survive downstream and usually does not.
 absent:
 - conventional_t1_applicability
 - histological_validation

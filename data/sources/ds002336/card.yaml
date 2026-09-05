@@ -14,7 +14,7 @@ licence:
   notes: 'Read from the held dataset_description.json, which states "License": "CC0". CC0-1.0 is a public-domain
     dedication: nothing this source contributes inherits a redistribution, attribution or share-alike
     constraint. Consent scope is a separate question the file does not answer.'
-binding: unbound
+binding: bound
 population:
   n: 10
   hierarchy:
@@ -33,7 +33,10 @@ frames:
 streams:
 - name: eeg_64ch
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
     brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
     filtered, sampled voltage
@@ -50,11 +53,15 @@ streams:
   - increased participant motion in the bore
   systematic_bias: Simultaneous EEG-fMRI in ten people with individual anatomy, held locally. One of the
     few sources where fast and slow observations of the same episode are genuinely concurrent.
-  notes: gradient and ballistocardiogram subtraction residuals are correlated with the BOLD acquisition
-    itself
+  notes: 'MEASURED FROM THE HELD SIDECARS: SamplingFrequency 5000 Hz, SoftwareFilters n/a, EEGReference
+    FCz.  the ceiling is 250 Hz and NOT the 2500 Hz nyquist, and that is the one number here that is a
+    judgement rather than a reading: the recording is made inside the bore at 5 kHz so that the gradient
+    artifact can be subtracted at all, and above the imaging band what survives subtraction is residual
+    rather than signal.  a fit must not read precision up there.  the floor is DC because nothing is high-passed
+    in the deposit.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 250.0
   temporal_support: EEG at 5 kHz (for gradient-artifact subtraction); BOLD at TR 2.0 s exactly -- MEASURED
     from all 61 held bold sidecars, which agree; the card previously said 'TR ~1 s' and was wrong by a
     factor of two. Every run states SliceTiming over 32 slices, and the stated spacings run 62.5-65.0
@@ -63,9 +70,16 @@ streams:
   spatial_support: 64-channel MR-compatible EEG inside the bore; BOLD at 1.98 x 1.98 x 4.0 mm -- ANISOTROPIC,
     and the card previously said '2 mm BOLD', which was right in plane and silently wrong through plane
     by a factor of two; 32 slices; individual T1
+  constrains:
+  - device.contact_potential
+  rate_hz: 5000.0
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: bold
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
     concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
     voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
@@ -78,36 +92,69 @@ streams:
   - susceptibility dropout and geometric distortion
   - scanner drift
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.25
+  constrains:
+  - electromagnetic.bfield
+  notes: 'TR 2.0 s exactly, read from all 61 held bold sidecars, so the ceiling is the TR nyquist at 0.25
+    Hz.  BOLD is not neural activity: the chain is the whole reason it constrains `electromagnetic.bfield`
+    -- a susceptibility change produced by deoxyhaemoglobin -- and the vascular stages are modelled state
+    rather than nuisance to be regressed away.  em_generation is what produces the magnetic field from
+    source currents; the previous chain named vascular_flow, which is unrelated.'
+  rate_hz: 0.5
+  frame: scanner
 - name: neurofeedback_signal
   kind: imposed
-  via: null
+  via:
+  - transduction
   systematic_bias: 'THE FEEDBACK CLOSES THE LOOP: the displayed signal is a function of the participant''s
     own brain state, so stimulus and response are not independent. Every standard encoding-model assumption
     fails here, and that is what makes it interesting rather than what makes it unusable'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 1.0
+  constrains:
+  - device.display_luminance
+  notes: 'imposed: it is literally what was on the screen, clamped on the display support and conditioned
+    on rather than sampled.  BUT THE LOOP IS CLOSED, which is unusual enough to say twice -- the displayed
+    gauge is a function of the participant''s own EEG, so it is not exogenous of brain state the way a
+    face photograph is.  conditioning on it is valid as a statement about the display; using it in an
+    encoding model as an independent regressor is not, and `forbidden` now refuses that path.'
+  frame: display
 - name: motor_imagery_task
-  kind: imposed
+  kind: context
   via: null
   systematic_bias: imagery compliance is unverified; no EMG
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 1.0
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.  imagery
+    compliance is unverified and there is no EMG, so the label names an instruction rather than a verified
+    covert motor state.'
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.'
 - name: task_events
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 1.0
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.'
 absent:
 - emg
 - meg
@@ -120,12 +167,15 @@ requires:
   for_streams:
   - eeg_64ch
   severity: degrading
-  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
-    positions carried as a device-geometry object there is no lead field for this montage, so nothing
-    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
-  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
-    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
-    than random, and it must be carried as uncertainty in every number derived from it.
+  without_it: 'A scalp voltage is a function of where the electrode sat. CHECKED ON THE HELD BYTES 2026-09-05:
+    there are ZERO _electrodes.tsv and zero EEG _coordsystem.json anywhere under this root, so no per-participant
+    electrode geometry exists here and no lead field can be built for this montage from the deposit. Degrading
+    rather than blocking because the individual T1 IS held and a nominal 10-10 template montage can be
+    co-registered to it, which is the eegmmidb substitute; the resulting source estimate then carries
+    a systematic, spatially correlated displacement rather than noise.'
+  substitute: A nominal 10-20/10-10 template montage co-registered to the held individual T1. It displaces
+    every electrode in a head-size-dependent, spatially correlated way, so the error is structured and
+    must be carried as uncertainty in every number derived from it.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
@@ -133,17 +183,23 @@ requires:
     to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
     to ship.
 - geometry: retinal-world-geometry
-  severity: blocking
-  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
-    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
-    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
-    path.
+  severity: degrading
+  without_it: 'Re-graded from blocking 2026-09-05, and on an argument rather than on files. The feedback
+    gauge is clamped as `device.display_luminance` on the DISPLAY support, and that support is defined
+    whether or not the screen-to-retina map is: an imposed stream naming what was on the monitor is well
+    posed without it. What is unavailable is everything downstream of the screen -- nothing here may be
+    attributed to `transduction.photoreceptor`, to an eccentricity, or to a retinotopic cortical support
+    -- and no gaze was recorded, so even the pointing direction is unknown.'
+  for_streams:
+  - neurofeedback_signal
 use:
 - fit
 forbidden:
-- ds002336/* -> open-loop encoding-model assumptions
-- ds002336/* -> vascular geometry
-- ds002336/*_eeg_pp.dat -> measured EEG (it is a preprocessed derived view whose pipeline is not held)
+- ds002336/* -> subject-specific head geometry (no electrode digitisation is held)
+- ds002336/neurofeedback_signal -> an exogenous regressor (the displayed value is a function of the participant's
+  own state; the loop is closed)
+- ds002336/motor_imagery_task -> verified covert motor state (no EMG, no compliance report)
+- ds002336/* -> retinal or retinotopic state (no display geometry and no gaze are held)
 split:
   group_by:
   - participant

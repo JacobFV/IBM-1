@@ -61,7 +61,7 @@ licence:
     no card is an error rather than an absent constraint, so those edges are left undeclared and named
     here instead. The lineage is therefore INCOMPLETE BY SIX FILES and says so, which is the honest state;
     carding those two discharges it.'
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -71,35 +71,47 @@ frames:
 - civet
 streams:
 - name: map_collection
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'A collection of maps from many studies, each with its own population, modality and
     processing. §52.9''s rule applies: each association source must retain modality, task, preprocessing,
     frequency, lag and population, and a curated collection makes it unusually easy to forget that they
     differ.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: a curated collection of published brain maps PLUS a transformation system between MNI152,
     fsaverage, fs_LR and CIVET spaces. The transformations are the durable contribution
+  constrains: []
+  notes: 'context.  a curated collection of published maps, each with its own population, modality and
+    preprocessing.  a collection is not a source: each map''s provenance is what decides whether it could
+    bind at all, and pooling them under one id would erase exactly that.'
 - name: space_transformations
-  kind: measured
+  kind: context
   via: null
   systematic_bias: the volume-to-surface and surface-to-surface transforms are reusable machinery and
     are the part worth internalising
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  the
+    MNI152/fsaverage/fs_LR/CIVET transforms are frame graph edges and are the durable contribution here.'
 - name: spatial_null_models
-  kind: measured
+  kind: context
   via: null
   systematic_bias: neuromaps ships spatial autocorrelation-preserving null models. §46 demands a control
     that could have failed, and for any map-to-map correlation claim THIS is that control -- brain maps
     are smooth, so naive correlations between any two are inflated
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  spatial-autocorrelation-preserving nulls are the control any map-to-map correlation
+    claim must clear -- brain maps are smooth, so a naive correlation between any two is inflated.  machinery
+    for `control`, never evidence.
 absent:
 - raw_data_behind_the_maps
 - per_map_uncertainty

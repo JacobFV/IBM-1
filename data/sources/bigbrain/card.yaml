@@ -14,7 +14,7 @@ licence:
   notes: 'A non-commercial share-alike licence, if the stated terms hold, is one of the strongest lineage
     constraints in the registry: anything BigBrain contributes to inherits share-alike. obj-licence-lineage
     must compute this per artifact, not over the whole pile.'
-binding: unbound
+binding: bound
 population:
   n: 1
   hierarchy:
@@ -28,7 +28,7 @@ frames:
 - bigbrain_surfaces
 streams:
 - name: histological_volume
-  kind: measured
+  kind: context
   via: null
   observation_chain: fixed tissue -> sectioning -> staining -> imaging -> a 2D section whose 3D geometry
     must be reconstructed; shrinkage, tearing and section loss are systematic and not noise
@@ -40,43 +40,65 @@ streams:
   systematic_bias: 'A DIRECT measurement of cellular density at a resolution nothing else approaches,
     in one brain, after fixation. §4a''s distinction applies inside this source: the sections are measured,
     the 3D volume is reconstructed.'
-  notes: the reconstructed volume is derived geometry with a real distortion field; treating it as measured
-    3D anatomy is the error §4a names
+  notes: 'context, and the distinction inside this source is the whole point.  the SECTIONS are measured
+    -- a direct observation of cellular density at 20 micron in plane, at a resolution nothing else approaches
+    -- and the 3D VOLUME is RECONSTRUCTED, with a real distortion field and a through-plane resolution
+    that is the section thickness plus the alignment error.  it constrains no registered component either
+    way: cell density per unit volume is not `structural.dendritic_density` or `structural.synaptic_density`,
+    which are densities of different objects.  ONTOLOGY GAP, and it is the same one von-economo''s laminar
+    tables hit.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series
   spatial_support: 20 micron isotropic reconstructed volume; 7,404 coronal sections. The 20 micron figure
     is the IN-PLANE resolution; through-plane it is the section thickness plus the reconstruction's alignment
     error, and the two are not the same number
+  constrains: []
 - name: cortical_layer_surfaces
-  kind: measured
+  kind: context
   via: null
   systematic_bias: probabilistic laminar supports built from these are population priors informed by n=1,
     and that is what §56.1 asks for -- a prior, with its parent recorded
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  probabilistic
+    laminar supports built from these are population priors informed by n=1, and their parent must travel
+    with them.'
 - name: cell_density_profiles
-  kind: measured
+  kind: context
   via: null
   systematic_bias: laminar cell-density profiles constrain what mesoscopic state composition is plausible;
     they do not observe any state
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, same gap: a laminar cell-density profile constrains WHAT mesoscopic composition is
+    plausible, which is a prior over model class, and observes no state.  there is no registered cell-density
+    component and one should not be created from an atlas.'
 - name: cortical_surfaces
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.'
 - name: registration_transforms
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  frame
+    graph edges with a real, largely unreported residual.'
 absent:
 - population
 - in_vivo_geometry

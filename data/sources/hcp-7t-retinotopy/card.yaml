@@ -12,7 +12,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: HCP Open Access Data Use Terms. SPDX and redistribution unresolved.
-binding: unbound
+binding: bound
 population:
   n: 181
   hierarchy:
@@ -30,7 +30,8 @@ frames:
 streams:
 - name: bold_retinotopy
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
     concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
     voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
@@ -47,47 +48,82 @@ streams:
   systematic_bias: The stimulus is defined in visual-field coordinates, so this is the one source that
     directly observes the retina-to-cortex map rather than assuming it.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.5
   temporal_support: TR 1 s; six retinotopic mapping runs of bar, wedge and ring apertures
   spatial_support: 1.6 mm 7T BOLD on individual cortical surfaces; the pRF parameters live on vertices,
     not in a volume
+  constrains:
+  - electromagnetic.bfield
+  notes: 'TR 1 s, 1.6 mm at 7 T, six runs of bar, wedge and ring apertures.  the TR nyquist is 0.5 Hz,
+    which coincides with where `bold_formation` writes, so the ceiling is both.  BOLD IS NOT NEURAL ACTIVITY,
+    and the four-step chain is what says so: neurovascular coupling, then flow, then tissue exchange,
+    then the susceptibility change deoxyhaemoglobin makes -- which is why the component is `electromagnetic.bfield`
+    and not a neural one.  the vascular stages are modelled state, not nuisance to be regressed away.  WHY
+    THIS SOURCE IS UNUSUAL: the stimulus is defined in VISUAL-FIELD coordinates, so with 181 participants
+    this is the one source that directly observes the retina-to-cortex map instead of assuming it.  em_generation
+    is what produces the magnetic field from source currents; the previous chain named vascular_flow,
+    which is unrelated.'
+  rate_hz: 1.0
+  frame: subject_native
 - name: prf_parameters
-  kind: measured
+  kind: context
   via: null
   systematic_bias: pRF parameters are MODEL FITS assuming an isotropic gaussian receptive field; a different
     pRF model gives different numbers from the same BOLD. Derived, not measured.
-  notes: the gaussian pRF model is one of several; the fit's variance-explained map is the honest weighting
-    and travels with the parameters
+  notes: context, and it is the tractogram argument again.  a pRF parameter is what an ISOTROPIC GAUSSIAN
+    receptive-field model returned when it was fitted to the BOLD above; a different pRF model gives different
+    numbers from the same data.  it is derived, not measured, and binding it would let one model form
+    contribute a likelihood about cortical state.  the fit's variance-explained map is the honest weighting
+    and must travel with it.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
 - name: individual_boundary_variation
-  kind: measured
+  kind: context
   via: null
   systematic_bias: '§51.1 item 5: build PROBABILISTIC retinal-coordinate-to-cortical-support mappings
     from this, not an atlas label lookup'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  what this names is the spread of visual-area boundaries ACROSS the 181 participants,
+    which is what makes a PROBABILISTIC retinal-coordinate-to-cortical-support mapping estimable rather
+    than an atlas label lookup.  a between-subject spread is an uncertainty budget on a cover, not a state.
 - name: individual_surfaces
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.'
 - name: stimulus_apertures
-  kind: measured
-  via: null
+  kind: imposed
+  via:
+  - transduction
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.5
+  constrains:
+  - device.display_luminance
+  notes: 'imposed: the bar, wedge and ring apertures ARE what the display showed, and they are shipped,
+    so the forward stimulus timeline is recoverable rather than inferred.  the band is the aperture sequence''s
+    own sampling -- one mask per TR -- and NOT the monitor''s refresh, which is not recorded here.'
+  frame: visual_field_polar
 - name: variance_explained
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a per-vertex variance-explained map is a goodness-of-fit statistic of the pRF model,
+    so it describes the fit rather than the brain.  it is the weighting any use of `prf_parameters` must
+    carry, which is why it is held rather than discarded.
 absent:
 - eeg
 - meg

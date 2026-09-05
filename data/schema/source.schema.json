@@ -149,10 +149,19 @@
                 "type": "string"
               },
               {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
                 "type": "null"
               }
             ],
-            "description": "Registered process ids forming the chain from brain state to the observed variable, in order. ARCHITECTURE.md \u00a76 describes an observation as evidence about state that an ordinary process CHAIN produces -- scalp EEG is em_generation then em_coupling then device_coupling -- so this is a list, not one id. A bare string is accepted as a one-element chain. Null while unbound."
+            "description": "Registered process ids relating this stream's component(s) to the rest of the model, in order. THE DIRECTION DEPENDS ON `kind`, because the two cases are not the same claim. For a `measured` stream the chain runs FROM brain state TO the observed variable and must END in a process that WRITES the component -- scalp EEG is em_generation -> em_coupling -> device_coupling, and device_coupling writes device.contact_potential. For an `imposed` stream, or a `measured` one whose component is exogenous, nothing writes it by construction (an experimenter set it), so the chain runs FROM the imposed variable INTO the model and must BEGIN with a process that READS the component -- a screen's luminance is consumed by transduction. A chain that neither writes nor reads its component is an error: it names a route that does not exist, and the binder refuses it. A bare string is read as a one-element chain; null while unbound.  A stream that constrains several components with DIFFERENT routes may give an OBJECT mapping component id -> chain instead of one chain for all: a dMRI acquisition constrains fibre orientation (exogenous, consumed by tract_propagation) and microstructure (written by plasticity), and those are two claims with two routes, not one claim about three components.  Splitting them keeps both checkable rather than letting the looser one borrow the tighter one's route."
           },
           "observation_chain": {
             "type": "string",

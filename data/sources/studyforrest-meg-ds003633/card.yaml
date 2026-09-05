@@ -11,7 +11,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: Unresolved. Film stimulus third-party copyright.
-binding: unbound
+binding: bound
 population:
   n: null
   hierarchy:
@@ -26,7 +26,8 @@ frames:
 streams:
 - name: meg
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
     plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
     SQUID flux -> sampled channel
@@ -39,23 +40,46 @@ streams:
   systematic_bias: Millisecond-scale evidence on the SAME world trajectory that ds000113 samples at TR
     2 s. This pairing is the value; simultaneity is not available and is not claimed.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 200.0
   temporal_support: MEG at its acquisition rate (kHz-scale); the audio-movie timeline as the world clock
   spatial_support: whole-head MEG array; head position measured by HPI coils
+  constrains:
+  - electromagnetic.bfield
+  notes: 'whole-head MEG at kHz-scale with HEAD POSITION MEASURED BY HPI COILS, over the audio-movie timeline.  the
+    exact rate is not in the record and the bytes are not held, so 200 Hz is the corpus''s conservative
+    MEG ceiling and must be re-read from the deposit.  THE VALUE IS THE PAIRING: millisecond-scale evidence
+    on the SAME world trajectory that studyforrest-ds000113 samples at TR 2 s.  SIMULTANEITY IS NOT AVAILABLE
+    AND IS NOT CLAIMED -- these are different sessions and different people, so the film is a shared stimulus
+    timeline and not a shared episode.  em_generation is what produces the magnetic field from source
+    currents; the previous chain named vascular_flow, which is unrelated.'
+  frame: meg_device
+  units: T
 - name: audio_movie_stimulus
   kind: imposed
-  via: null
+  via:
+  - transduction
   systematic_bias: 'audio-description track: the linguistic content differs from the audio-visual arm''s'
   band_hz:
-  - null
-  - null
+  - 20.0
+  - 8000.0
+  constrains:
+  - device.speaker_pressure
+  notes: 'imposed: the audio-description track of Forrest Gump, clamped on the display support.  NOTE
+    THE LINGUISTIC CONTENT DIFFERS from the audio-visual arm''s -- the description narrates what the visual
+    arm shows -- so the two arms share a timeline and not a stimulus.  conservative audio ceiling; the
+    file rate is not in the record.'
+  frame: display
 - name: head_position
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  HPI
+    coil measurements locating the head in the dewar, which is what makes the lead field computable.'
 absent:
 - fmri
 - eeg
@@ -65,10 +89,16 @@ requires:
 - geometry: device-geometry
   for_streams:
   - meg
-  severity: blocking
-  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
-    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
-    be attributed to any cortical location.
+  severity: degrading
+  without_it: 'The MEG forward model is dominated by sensor pose relative to the head. Re-graded to degrading
+    2026-09-05 on the card''s own record rather than on disk (the bytes are not held): the release states
+    head position measured by HPI COILS, and `head_position` is that measurement, so the pose is available
+    and a lead field is computable. Degrading rather than satisfied because no individual anatomy is recorded
+    on this card, so the conductor the field propagates through is a template even though its pose is
+    measured -- and because coil integration-point geometry is a property of the unnamed vendor''s sensor
+    model rather than of this deposit. Verify both against the sidecars when the bytes arrive.'
+  substitute: A template head scaled to the HPI positions. The pose is then measured and the conductor
+    is not, which is bias, not noise.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
@@ -78,8 +108,10 @@ requires:
 use:
 - fit
 forbidden:
-- studyforrest-meg-ds003633/* -> vascular or metabolic state
-- studyforrest-meg-ds003633/* -> any claim of simultaneity with ds000113
+- studyforrest-meg-ds003633/* -> a simultaneous episode with studyforrest-ds000113 (different sessions,
+  different people; the film is a shared timeline, not a shared episode)
+- studyforrest-meg-ds003633/audio_movie_stimulus -> the audio-visual arm's linguistic content (the description
+  narrates what the other arm shows)
 split:
   group_by:
   - participant

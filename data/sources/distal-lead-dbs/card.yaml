@@ -15,7 +15,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -24,35 +24,54 @@ frames:
 - patient_native
 streams:
 - name: subcortical_nucleus_definitions
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Built for DBS targeting in a specific MNI variant (2009b NLIN ASYM). Using it in a
     different MNI variant without the correct transform is a common and silent error, because the volumes
     still overlay approximately.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: subcortical nuclei defined by combining multimodal 7T MRI, histology and structural
     connectivity, ASSEMBLED FOR STEREOTACTIC TARGETING -- so its accuracy criterion is 'does the electrode
     land where the surgeon intended', which is a different criterion from anatomical fidelity
+  constrains: []
+  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
+    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
+    takes at them.  no registered component is a region label.  it reaches a materialization as a support
+    index and as a `prior`, never as a likelihood.  assembled FOR STEREOTACTIC TARGETING, so its accuracy
+    criterion is whether an electrode lands where a surgeon intended rather than whether a boundary is
+    where a cytoarchitectonic one is.  it is built in MNI152NLin2009bAsym specifically and using it in
+    a different MNI variant without the transform is a common, silent error because the volumes still
+    overlay approximately.'
 - name: dbs_electrode_geometry
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Lead-DBS ships MANUFACTURER ELECTRODE GEOMETRIES -- contact sizes, spacings and insulation
     -- which is precisely what §56.4 asks B-WIN to construct for stimulation devices. Nominal geometry
     from a datasheet, not a measured implant.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  manufacturer
+    contact sizes, spacings and insulation -- NOMINAL geometry from a datasheet, not a measurement of
+    any implanted lead, and the difference matters because the delivered field is most sensitive to exactly
+    these numbers.'
 - name: volume_of_tissue_activated_models
-  kind: measured
+  kind: context
   via: null
   systematic_bias: a VTA is a THRESHOLDED field model, and §52.13's separation of requested settings from
     delivered field says a VTA is neither -- it is a model output standing between them
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  a VTA is a THRESHOLDED FIELD MODEL: it is neither the requested stimulator settings
+    nor the delivered field, but a model output standing between them, and the threshold is a free parameter.  binding
+    it would assert an `electromagnetic.efield` nobody measured.'
 absent:
 - measured_delivered_field
 - individual_nucleus_geometry

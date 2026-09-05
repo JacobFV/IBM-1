@@ -17,7 +17,7 @@ licence:
     or otherwise infringe the privacy or confidentiality rights of individuals. SHARE-ALIKE PROPAGATES.
     No registration was observed. This is one of very few openly-licensed human intracranial corpora in
     this registry.
-binding: unbound
+binding: bound
 population:
   n: 34
   hierarchy:
@@ -33,7 +33,10 @@ frames:
 streams:
 - name: task_ecog_with_localisation
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: local post-synaptic and spiking activity within a few millimetres of a contact ->
     extracellular potential -> potential difference against a reference contact whose own activity is
     in every number -> amplifier and filter -> sampled microvolts. NO SKULL AND NO INVERSE PROBLEM, which
@@ -55,44 +58,80 @@ streams:
     34 people with abnormal brains and clinically dictated coverage, and no amount of experimental variety
     fixes that.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 200.0
   temporal_support: task-structured runs on a single amplifier configuration across every experiment and
     every patient
   spatial_support: subdural electrode grids with POSITIONS REGISTERED TO BRAIN ANATOMY -- the combination
     that SWEC lacks and that makes an anatomically located claim possible at all
+  constrains:
+  - device.contact_potential
+  notes: 'subdural grids with POSITIONS REGISTERED TO BRAIN ANATOMY on a SINGLE AMPLIFIER CONFIGURATION
+    across every experiment and every patient -- the combination SWEC lacks, and what makes an anatomically
+    located claim possible at all.  sixteen behavioural experiments with published, commented analysis
+    code makes this the most reusable human intracranial resource in this corpus.  the acquisition rate
+    is not stated in the record and the bytes are not held, so the 200 Hz ceiling is conservative and
+    must be re-read from the deposit.  the support is `implanted_array`, not `sensor_array`: a contact
+    sees current sources within millimetres over a short conduction path, with NO SKULL AND NO SCALP in
+    the way, which is the spatially local electrical evidence scalp EEG cannot supply.  the reference
+    contact''s own activity is in every number.  and COVERAGE IS CLINICALLY DICTATED and differs completely
+    between patients, so treating it as a random sample of cortex overstates what it constrains and a
+    group-level map from it is an aggregation over incompatible supports.  34 people with ABNORMAL BRAINS,
+    and no amount of reuse changes that.'
+  frame: electrode_native
+  support: implanted_array
+  units: V
 - name: published_analyses_as_baselines
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Fully commented analysis scripts shipped with the data mean the published result is
     reproducible and therefore a real baseline to beat, rather than a number in a paper.
   band_hz:
   - null
   - null
+  constrains: []
+  notes: context.  fully commented analysis scripts shipped with the data mean the published result is
+    reproducible and therefore A REAL BASELINE TO BEAT rather than a number in a paper.  a baseline is
+    evaluation machinery, not evidence.
 - name: ecog
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 200.0
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `task_ecog_with_localisation`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 - name: electrode_positions
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  registered
+    to each patient''s own anatomy; the geometry the ECoG stream needs.'
 - name: task_events
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.  sixteen
+    experiments'' condition and timing codes.'
 - name: analysis_scripts
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context: SOFTWARE shipped with the data.  provenance and a reproducibility target; no state.'
 absent:
 - healthy_controls
 - whole_brain_coverage
@@ -103,10 +142,14 @@ requires:
 - geometry: device-geometry
   for_streams:
   - task_ecog_with_localisation
-  severity: blocking
-  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
-    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
-    channel is an index and nothing measured here can be attached to a cortical location.
+  severity: degrading
+  without_it: 'A contact''s position IS its spatial support. Re-graded to degrading 2026-09-05 on the
+    card''s own record rather than on disk (the bytes are not held): the release''s defining property
+    is that electrode positions ARE registered to brain anatomy, and `electrode_positions` is that registration.
+    Degrading rather than satisfied for the ds003688 reasons -- contact extent and tissue interface are
+    not in a coordinate list, and the brain-shift correction is a modelling choice. Verify against the
+    deposit when the bytes arrive.'
+  substitute: The contact coordinates as points with a datasheet contact area.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
@@ -117,9 +160,9 @@ use:
 - evaluate
 - fit
 forbidden:
-- kai-miller-ecog-library/* -> an artifact that does not carry the share-alike term
-- kai-miller-ecog-library/* -> any re-identification attempt
-- kai-miller-ecog-library/* -> a whole-brain claim from grid coverage
+- kai-miller-ecog-library/ecog -> independent evidence from task_ecog_with_localisation
+- kai-miller-ecog-library/* -> a healthy-population claim (34 people with abnormal brains and clinically
+  dictated coverage)
 split:
   group_by:
   - participant

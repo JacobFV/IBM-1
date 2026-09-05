@@ -27,14 +27,14 @@ licence:
     FreeSurfer project and its authors'' own terms may be broader or narrower. That matters only for a
     copy obtained from the originating project; the copy we hold came through FreeSurfer and carries FreeSurfer''s
     terms.'
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
 - fsaverage
 streams:
 - name: network_labels
-  kind: measured
+  kind: context
   via: null
   systematic_bias: FUNCTIONAL clustering of resting-state connectivity in 1,000 young healthy adults,
     thresholded into a hard per-vertex assignment. Two things follow. It is not anatomy and does not respect
@@ -42,25 +42,35 @@ streams:
     published product is a hard label whose underlying quantity was continuous, so the confidence a vertex
     had in its network is gone from the file and cannot be recovered from it.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series. It is a clustering of resting-state functional connectivity, so
     it is a summary OVER time and carries none
   spatial_support: per-vertex annotation on the 163,842-vertex fsaverage surface, per hemisphere, in two
     granularities -- 7 networks and 17 -- plus an explicit FreeSurfer_Defined_Medial_Wall entry
+  constrains: []
+  notes: 'context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set
+    is a COVER over a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value
+    any ibm component takes at them.  no registered component is a region label, and inventing one would
+    make a naming convention into biology.  it reaches a materialization as a support index and as a `prior`,
+    never as a likelihood.  a hard per-vertex assignment thresholded from a continuous clustering of resting-state
+    connectivity in 1,000 adults; the confidence each vertex had is not in the published product.'
 - name: volumetric_network_labels
-  kind: measured
+  kind: context
   via: null
   systematic_bias: The MNI152 VOLUME of the same networks, which is not the same object as the surface
     annotation and must not be treated as a redundant copy. The parcellation was estimated on the surface
     and projected to the volume, so the volumetric boundaries carry the projection's error on top of the
     estimation's -- and a voxel near a sulcal bank can be assigned to a network whose surface patch it
     does not touch.
-  notes: surface-annot and MNI152-volume labellings of the same subject disagree at every boundary; which
-    one a query used is a fact about the answer, not an implementation detail
+  notes: 'context, and NOT a redundant copy of the surface annotation: the parcellation was estimated
+    on the surface and projected to the volume, so the volumetric boundaries carry the projection''s error
+    on top of the estimation''s.  the two disagree at every boundary and which one a query used is a fact
+    about the answer.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
 absent:
 - per_vertex_confidence
 - individual_networks

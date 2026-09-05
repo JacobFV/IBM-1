@@ -28,7 +28,7 @@ would quietly encode the claim that unmeasured things do not happen.
 
 from __future__ import annotations
 
-from ibm.materialize.library import NamedModel, register, res, rule
+from ibm.materialize.library import NamedModel, anat, register, res, rule
 from ibm.materialize.request import (
     Budget,
     DeviceSpec,
@@ -36,7 +36,6 @@ from ibm.materialize.request import (
     SubjectSpec,
     Window,)
 from ibm.vocabulary import (
-    Anat,
     Band,
     DC,
     HEMODYNAMIC,
@@ -246,9 +245,41 @@ PLASTICITY_LEARNING = register(NamedModel(
     cortical thickness, diffusion metrics and functional-connectivity change at
     2-3 mm, repeated weeks apart, with registration error of a millimetre or so
     between sessions.  a materialization finer than the registration error is
-    materializing misalignment.  4 mm on the sheet, 6 mm elsewhere, and the honest
-    statement is that the *estimand* is a parcel-level change and the grid exists
-    to carry the topology.
+    materializing misalignment.  6 mm through the parenchyma, 2 mm in the
+    hippocampal subfields where the structure is thinner than the error
+    everywhere else, and the honest statement is that the *estimand* is a
+    parcel-level change and the grid exists to carry the topology.
+
+    **all of it in the volume, and the cortical sheet is not named.**  every
+    target of this model -- `structural.synaptic_density`,
+    `structural.dendritic_density`, `structural.myelination`,
+    `structural.axonal_density` -- has the parenchyma volume as its only support,
+    because myelination and axonal density are properties of white matter and
+    there is no sheet under them.  the neural field enters only as a *drive* to
+    `plasticity`, and over a window of sixty daily samples that drive is a
+    time-averaged rate: the average of a week of activity over a 6 mm cell is
+    exactly the quantity the learning rule reads, so coarse-graining it commutes
+    and the geodesic metric buys nothing.  the model materializes `local` and
+    `microcircuit`, both of which are declared over the volume as well as the
+    sheet and build a euclidean neighbourhood there, which is the right relation
+    for the diffusive and metabolic couplings they carry.
+
+    naming the sheet as well would have split the neural drive across two
+    indexings and, worse, would have put cortical structural state on column
+    nodes whose positions come from a surface reconstruction with its own
+    millimetre-scale error -- registering a longitudinal structural change
+    against a reconstruction rather than against the image it was measured in.
+    the note on registration drift below is the same argument: a model whose
+    whole difficulty is that its signal is the size of its misalignment should
+    not add a coordinate transform it does not need.
+
+    the one refinement that is not volumetric-by-default is the 2 mm rule in
+    `hippocampal_subfields`, and it is a hard dependency rather than a nicety:
+    the subfields are the structure this literature reports changing, they are
+    1-2 mm across, and a materialization that cannot place them is materializing
+    "hippocampus" as one number.  it means the model needs a subfield
+    segmentation -- `recon-all`'s optional module or an equivalent -- and says
+    so by refusing to sample rather than by silently falling through to 6 mm.
 
     **the window is the unusual part of the request.**  n=64 samples at one day
     each: a two-month trajectory.  §1's insistence that a state variable is a
@@ -267,17 +298,15 @@ PLASTICITY_LEARNING = register(NamedModel(
         targets=(sel("structural.synaptic_density", "structural.dendritic_density",
                      "structural.myelination", "structural.axonal_density",
                      band=SLOW_STRUCTURAL),),
-        regions=(("cortex", OnSupport("cortical_surface")),
-                 ("white_matter", OnSupport("tissue")),
-                 ("hippocampus", Anat("hippocampal_subfields", "ca1"))),
+        regions=(("parenchyma", OnSupport("tissue")),
+                 ("hippocampus", anat("hippocampal_subfields", "ca1"))),
         resolution=res(
-            rule(Anat("hippocampal_subfields", "ca1"), 2.0, SLOW_STRUCTURAL),
-            rule(OnSupport("cortical_surface"), 4.0, SLOW_STRUCTURAL),
+            rule(anat("hippocampal_subfields", "ca1"), 2.0, SLOW_STRUCTURAL),
             rule(OnSupport("tissue"), 6.0, SLOW_STRUCTURAL),
             default_mm=8.0, default_band=SLOW_STRUCTURAL),
         fields=("structural", "neural", "metabolic", "extracellular"),
         anatomy=("cortical_areas", "hippocampal_subfields", "cortical_layers"),
-        topologies=("cortical_surface", "tractometric", "local", "microcircuit"),
+        topologies=("tractometric", "local", "microcircuit"),
         processes=("plasticity", "local_excitation", "local_inhibition",
                    "neuromodulation", "metabolism"),
         observations=("structural_mri", "dwi_microstructure", "bold",

@@ -34,7 +34,11 @@ streams:
 - name: dwi
   kind: measured
   via:
-  - plasticity
+    structural.fiber_orientation:
+    - tract_propagation
+    structural.axonal_density: &id001
+    - plasticity
+    structural.myelination: *id001
   observation_chain: water displacement over the diffusion time within and around axons and cells -> gradient-direction-dependent
     signal attenuation -> reconstructed q-space or orientation distribution; ORIENTATION EVIDENCE, not
     an observation of a tract
@@ -57,14 +61,17 @@ streams:
   - structural.myelination
   frame: subject_native
   support: tissue
-  notes: 'the only stream here that is evidence about tissue.  `via: plasticity` is not a claim that this scan
-    measured learning -- it is the chain the registry itself declares for `dwi_microstructure` (ibm/processes/observation.py),
-    because `plasticity` is the only registered process that WRITES structural state, and §6 asks for the process
-    that produced the state being observed rather than for the imaging physics.  ibm-1 registers no diffusion-encoding
-    process, so the gradient-attenuation step is outside the ontology and the chain is one link long; that gap
-    is real and is recorded here rather than papered over with a plausible-looking id.  the band is 0-0.001
-    Hz because the structural components are declared meaningful only there: a single session says nothing about
-    how fibre orientation changes, and a multi-site cross-sectional design cannot either.'
+  notes: 'the only stream here that is evidence about tissue.  `via: plasticity` is not a claim that this
+    scan measured learning -- it is the chain the registry itself declares for `dwi_microstructure` (ibm/processes/observation.py),
+    because `plasticity` is the only registered process that WRITES structural state, and §6 asks for
+    the process that produced the state being observed rather than for the imaging physics.  ibm-1 registers
+    no diffusion-encoding process, so the gradient-attenuation step is outside the ontology and the chain
+    is one link long; that gap is real and is recorded here rather than papered over with a plausible-looking
+    id.  the band is 0-0.001 Hz because the structural components are declared meaningful only there:
+    a single session says nothing about how fibre orientation changes, and a multi-site cross-sectional
+    design cannot either.  per-component chains: this acquisition makes more than one claim and the routes
+    differ.  one chain for all of them would let the component whose route is wrong borrow the route of
+    the ones that are right.'
 - name: reference_tractograms
   kind: context
   via: null
@@ -75,21 +82,22 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: 'context, and the decision is the point.  a set of streamlines or a parcel-by-parcel matrix is an INTERACTION
-    TOPOLOGY -- a statement about which state variables may interact (ARCHITECTURE.md §3) -- and a topology
-    is a support for interaction, not a measurement of any component.  there is no ibm component whose value
-    this stream reports: `structural.fiber_orientation` is what the underlying diffusion volume constrains,
-    and the tractogram is an ALGORITHM''S ANSWER computed from it, not a second measurement of it.  binding
-    it as `measured` would let one pipeline''s reconstruction contribute a likelihood about tissue, which is
-    exactly the double-count the card''s `forbidden` list already refuses.  here it is doubly true: `systematic_bias`
-    on this stream already records that these bundles are EXPERT-CURATED TRACTOGRAPHY OUTPUT and that a method
-    matching them has matched a convention.  they supply the tractometric support a materialization is built
-    over, and `scripts/measure_tract_uncertainty.py` is what says how much that support should be believed.
-    what THESE bundles were then used for is the other half of that question, and it is in
-    `derive/group_connectome.yaml`: not how wrong one tractogram is -- the phantom answers that -- but how
-    much two SUBJECTS differ, which is the error a group connectome carries to a subject who has no diffusion
-    imaging at all.  they differ MORE than two algorithms do -- a strength spread of 6.7 against the
-    phantom''s 3.9 -- and a group connectome explains 28% of a held-out subject''s edge strengths.'
+  notes: 'context, and the decision is the point.  a set of streamlines or a parcel-by-parcel matrix is
+    an INTERACTION TOPOLOGY -- a statement about which state variables may interact (ARCHITECTURE.md §3)
+    -- and a topology is a support for interaction, not a measurement of any component.  there is no ibm
+    component whose value this stream reports: `structural.fiber_orientation` is what the underlying diffusion
+    volume constrains, and the tractogram is an ALGORITHM''S ANSWER computed from it, not a second measurement
+    of it.  binding it as `measured` would let one pipeline''s reconstruction contribute a likelihood
+    about tissue, which is exactly the double-count the card''s `forbidden` list already refuses.  here
+    it is doubly true: `systematic_bias` on this stream already records that these bundles are EXPERT-CURATED
+    TRACTOGRAPHY OUTPUT and that a method matching them has matched a convention.  they supply the tractometric
+    support a materialization is built over, and `scripts/measure_tract_uncertainty.py` is what says how
+    much that support should be believed. what THESE bundles were then used for is the other half of that
+    question, and it is in `derive/group_connectome.yaml`: not how wrong one tractogram is -- the phantom
+    answers that -- but how much two SUBJECTS differ, which is the error a group connectome carries to
+    a subject who has no diffusion imaging at all.  they differ MORE than two algorithms do -- a strength
+    spread of 6.7 against the phantom''s 3.9 -- and a group connectome explains 28% of a held-out subject''s
+    edge strengths.'
 - name: cross_site_generalisation
   kind: context
   via: null
@@ -103,9 +111,9 @@ streams:
     tells a fit how to split, which is what `split.group_by` carries, and it constrains no state.  a stream
     that names no component because none is right is bound; this is that case.  ONE CORRECTION, from having
     tried it: the arm is a property of the design and NOT of the distributed bytes.  ds003900 v1.1.1 carries
-    no site column, so `split.group_by: site` cannot actually be honoured from this release as acquired --
-    see `site_metadata` for how far the grouping can be recovered from the acquisition geometry and where
-    that recovery stops.'
+    no site column, so `split.group_by: site` cannot actually be honoured from this release as acquired
+    -- see `site_metadata` for how far the grouping can be recovered from the acquisition geometry and
+    where that recovery stops.'
 - name: t1w
   kind: context
   via: null
@@ -113,11 +121,11 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: 'context: geometry, not evidence.  the registry''s `structural_mri` observation does bind a T1 to `material.conductivity`
-    and `material.mass_density`, and that reading is right where the scan feeds a lead field.  it does not here:
-    this source has no electromagnetic modality at all, so nothing downstream would ever read those material
-    values, and the T1''s actual job is to index the supports the diffusion data is expressed on.  same decision
-    as mne-sample/t1w, for the same reason.'
+  notes: 'context: geometry, not evidence.  the registry''s `structural_mri` observation does bind a T1
+    to `material.conductivity` and `material.mass_density`, and that reading is right where the scan feeds
+    a lead field.  it does not here: this source has no electromagnetic modality at all, so nothing downstream
+    would ever read those material values, and the T1''s actual job is to index the supports the diffusion
+    data is expressed on.  same decision as mne-sample/t1w, for the same reason.'
 - name: preprocessed_derivatives
   kind: context
   via: null
@@ -127,8 +135,8 @@ streams:
   constrains: []
   notes: context, to stop a double count.  these are the `dwi` bytes after one pipeline's denoising, distortion
     correction and model fit; binding them as measured would let the same acquisition contribute a likelihood
-    twice, once raw and once cooked, and the cooked copy would silently carry the pipeline's choices as though
-    they were the scanner's.
+    twice, once raw and once cooked, and the cooked copy would silently carry the pipeline's choices as
+    though they were the scanner's.
 - name: bundle_segmentations
   kind: context
   via: null
@@ -137,8 +145,8 @@ streams:
   - 0.001
   constrains: []
   notes: 'context: a labelling of streamlines into named bundles is a COVER over the tractometric topology,
-    not a measurement.  it decides which edges are grouped for parameter tying, which is a materialization decision,
-    and it constrains no component.'
+    not a measurement.  it decides which edges are grouped for parameter tying, which is a materialization
+    decision, and it constrains no component.'
 - name: site_metadata
   kind: context
   via: null
@@ -146,16 +154,16 @@ streams:
   - null
   - null
   constrains: []
-  notes: 'context: scanner, vendor and protocol per subject.  it is the grouping variable the multi-site design
-    exists for, and it constrains no ibm component -- but it is not a gap.  without it the six sites are unidentifiable
-    and `split.group_by: site` cannot be honoured.  AND IT IS NOT IN THE RELEASE: ds003900 v1.1.1 ships 10884
-    files and no participants.tsv, the gradient tables are harmonised to one 64-direction b=1000 scheme for
-    every subject and every volume is resampled to 1 mm, so the scanner signature is processed away by
-    design.  `derive/group_connectome.yaml` records how far it can be recovered -- the cropped field of view
-    is sharply bimodal with an empty gap between 120 and 130 slices, and the four blocks it induces are
-    exactly contiguous in subject id with two of them matching the paper''s per-site counts exactly -- and
-    where that recovery stops, which is short of naming a site or splitting the block that still holds three
-    cohorts.'
+  notes: 'context: scanner, vendor and protocol per subject.  it is the grouping variable the multi-site
+    design exists for, and it constrains no ibm component -- but it is not a gap.  without it the six
+    sites are unidentifiable and `split.group_by: site` cannot be honoured.  AND IT IS NOT IN THE RELEASE:
+    ds003900 v1.1.1 ships 10884 files and no participants.tsv, the gradient tables are harmonised to one
+    64-direction b=1000 scheme for every subject and every volume is resampled to 1 mm, so the scanner
+    signature is processed away by design.  `derive/group_connectome.yaml` records how far it can be recovered
+    -- the cropped field of view is sharply bimodal with an empty gap between 120 and 130 slices, and
+    the four blocks it induces are exactly contiguous in subject id with two of them matching the paper''s
+    per-site counts exactly -- and where that recovery stops, which is short of naming a site or splitting
+    the block that still holds three cohorts.'
 absent:
 - ex_vivo_ground_truth
 - directionality

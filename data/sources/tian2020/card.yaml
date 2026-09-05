@@ -15,32 +15,42 @@ licence:
     the atlas without restriction, subject to the SINGLE condition that any publication using it cites
     Tian Y. et al. (2020) Nat Neurosci 23:1421-1432. Attribution required and nothing else; it is not
     an SPDX identifier.'
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
 - MNI152
 streams:
 - name: hierarchical_parcellation
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'FUNCTIONALLY derived from BOLD in subcortical structures, where BOLD is noisiest:
     small structures, strong physiological pulsatility from adjacent vessels and CSF, and susceptibility
     gradients near air spaces. A functional subcortical boundary is a weaker claim than a cytoarchitectonic
     or histological one, and Tian should be one cover in the stack rather than the reference.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: a four-scale hierarchical subcortical parcellation in MNI space derived from resting-state
     functional connectivity GRADIENTS, with parcel boundaries placed at gradient reversals
+  constrains: []
+  notes: 'context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set
+    is a COVER over a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value
+    any ibm component takes at them.  no registered component is a region label, and inventing one would
+    make a naming convention into biology.  it reaches a materialization as a support index and as a `prior`,
+    never as a likelihood.  derived from subcortical BOLD gradients, where BOLD is noisiest; a functional
+    subcortical boundary is a weaker claim than a histological one.'
 - name: gradient_coordinates
-  kind: measured
+  kind: context
   via: null
   systematic_bias: the underlying continuous gradients are more faithful to §5 than the derived parcels
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  the continuous connectivity gradient is more faithful than the derived parcels and
+    is still a coordinate on a cover, not a value of a component.
 absent:
 - histological_validation
 - individual_geometry

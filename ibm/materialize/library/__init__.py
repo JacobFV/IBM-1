@@ -79,6 +79,12 @@ import re
 from dataclasses import dataclass, field as _field
 
 from ibm.materialize.request import MaterializationRequest
+from ibm.registry import REGISTRY
+# imported for its side effect: the partitioning systems must be registered
+# before `anat()` can check a label against them, and a library module that
+# named a label no system declares is the same class of error as a dangling
+# selector -- it should fail at import, not evaluate to an empty region.
+from ibm import anatomy as _anatomy  # noqa: F401
 from ibm.vocabulary import (
     ALPHA,
     Anat,
@@ -87,6 +93,7 @@ from ibm.vocabulary import (
     Band,
     DC,
     DELTA,
+    Difference,
     Everywhere,
     FULL,
     GAMMA,
@@ -102,6 +109,7 @@ from ibm.vocabulary import (
     Sel,
     THETA,
     ULTRASLOW,
+    Union,
     sel,
     validate_id,
     within,)
@@ -212,6 +220,88 @@ def res(*rules: ResolutionRule, default_mm: float = 10.0,
                       default_band=default_band)
 
 
+def anat(system: str, *labels: str):
+    """one or more labels of one partitioning system, checked at import time.
+
+    this exists because a mistyped label is invisible.  §8 refuses a process
+    whose selector names an unregistered component -- "a typo here is a
+    declaration error, not a silently empty materialization" -- and a region is
+    the same object one level down: `anat("cortical_areas", "pericalcarine")` looks
+    perfectly reasonable and selects nothing at all, because the declared system
+    is a desikan-killiany parcellation whose occipital labels are
+    `pericalcarine`, `cuneus`, `lingual` and `lateraloccipital`.  a model written
+    that way materializes at its *default* spacing everywhere and reports
+    success; the refinement it argued for in its docstring never happened.
+
+    several labels union, because an anatomical region a model reasons about is
+    usually more than one parcel of whatever atlas is available -- "inferior
+    frontal" is `parsopercularis` and `parstriangularis`, and writing the union
+    out is more honest than picking one and pretending the other is elsewhere.
+    """
+    a = REGISTRY.anatomies.get(system)
+    if a is None:
+        raise ValueError(
+            f"no registered partitioning system {system!r}; known: "
+            f"{', '.join(sorted(REGISTRY.anatomies))}")
+    if not labels:
+        raise ValueError(f"anat({system!r}) names no label")
+    bad = [l for l in labels if l not in a.labels]
+    if bad:
+        raise ValueError(
+            f"{system!r} declares no label(s) {bad}.  a region naming a label the system does "
+            f"not have selects nothing and refines nothing, silently.  {system!r} declares: "
+            f"{', '.join(a.labels)}")
+    parts = tuple(Anat(system, l) for l in labels)
+    return parts[0] if len(parts) == 1 else Union(parts)
+
+
+#: how far from the subject's white surface a parenchyma voxel has to be before
+#: the volume is allowed to carry state at it.  two constraints, and the binding
+#: one is the second.
+#:
+#: - anatomy: the cortical ribbon runs outward from the white surface, 2-3 mm
+#:   thick with a 95th percentile near 4 mm, so 6 mm clears it everywhere.
+#: - the disjointness rule: `build._support_overlap` counts a column node as
+#:   inside a `tissue` cell when it is within half that cell's width, so an
+#:   exclusion smaller than half the volume spacing is an overlap by
+#:   construction, however thin the ribbon happens to be.  every model that uses
+#:   `subcortex()` samples the volume at 4-10 mm, and 6 mm clears half of all of
+#:   them.
+#:
+#: it stops short of the deep grey it is not supposed to remove: the putamen and
+#: the thalamus sit 8-20 mm inside the white surface, so a 6 mm shell takes the
+#: ribbon and the immediately subjacent white matter and leaves the structures
+#: the volume block exists to carry.
+RIBBON_MM = 6.0
+
+
+def subcortex(exclusion_mm: float = RIBBON_MM):
+    """the parenchyma the cortical sheet does not already index.
+
+    the region every model in this library uses to make a two-support placement
+    of the neural field a *partition* rather than a second copy of it.  the sheet
+    and the parenchyma volume are two samplings of one domain, so naming both in
+    R instantiates each neural component twice -- once on column nodes, once on
+    voxels -- and the two blocks are a partition only if they cover disjoint
+    positions.  carving the ribbon out of the volume is how R says "the volume
+    carries what the sheet does not", and `build._overlap_check` then measures
+    that rather than taking it on trust.
+
+    `Near("cortex", ...)` is an ordinary landmark region -- `Near` is declared
+    over device *or landmark* positions -- and the landmark is external geometry
+    exactly as an atlas is: a caller hands the subject's own white-surface
+    vertices to `build(anchors={"cortex": ...})`.  a build that does not supply
+    them gets a `MissingData` naming the landmark, which is the correct answer:
+    without the sheet's own vertices there is no way to say which millimetres it
+    already covers, and a volume that guessed would double-count.
+
+    it is a region and not a filtered geometry on purpose.  R is the part of a
+    request that decides *where*, and "the parenchyma the sheet does not index"
+    is a statement about where rather than a different notion of what tissue is.
+    """
+    return Difference(OnSupport("tissue"), Near("cortex", exclusion_mm))
+
+
 def cards_used() -> tuple[str, ...]:
     """every source card the library binds to, for diffing against
     `ls data/sources`.  a dangling card id here is the same class of error as a
@@ -237,8 +327,11 @@ from ibm.materialize.library import (  # noqa: E402,F401
 __all__ = [
     "MODELS",
     "NamedModel",
+    "RIBBON_MM",
+    "anat",
     "cards_used",
     "register",
     "res",
     "rule",
+    "subcortex",
 ]

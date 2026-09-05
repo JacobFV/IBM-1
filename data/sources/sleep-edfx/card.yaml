@@ -149,6 +149,8 @@ streams:
   constrains:
   - blood.oxygenation
   frame: body
+  notes: tissue_exchange is what actually writes blood oxygenation; vascular_flow moves blood between
+    vascular sites and does not set its oxygen content.
 - name: body_temperature
   kind: measured
   via:

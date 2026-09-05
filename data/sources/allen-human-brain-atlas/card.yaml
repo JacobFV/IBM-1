@@ -12,7 +12,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: Allen Institute terms of use; citation required, commercial terms unresolved.
-binding: unbound
+binding: bound
 population:
   n: 6
   hierarchy:
@@ -26,7 +26,7 @@ frames:
 - fsaverage
 streams:
 - name: microarray_expression
-  kind: measured
+  kind: context
   via: null
   observation_chain: dissected tissue block -> RNA extraction -> microarray hybridisation -> normalised
     intensity per probe. The measurement is of a BULK TISSUE SAMPLE, so it mixes every cell type in the
@@ -38,48 +38,82 @@ streams:
   - cell-type composition varying between samples, which drives much of the apparent regional expression
     difference
   systematic_bias: Six donors, scattered samples, bulk tissue. It is real measurement and it is thin.
-  notes: bulk expression is a composition-weighted mixture; deconvolving it requires the cell-type references
-    in allen-brain-cell-atlas and bican, and the deconvolution is a model
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.  SIX DONORS, roughly
+    3,700 scattered tissue samples of a few cubic millimetres each at recorded MRI coordinates.  the native
+    support is a POINT CLOUD, not a volume, and bulk expression is a composition-weighted mixture whose
+    deconvolution is itself a model.  it is real measurement and it is thin.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series
   spatial_support: roughly 3,700 spatially distinct tissue SAMPLES across the six brains, each a few cubic
     millimetres of dissected tissue at a recorded MRI coordinate. The native support is a scattered point
     cloud, NOT a volume -- every published 'expression map' is an interpolation
+  constrains: []
 - name: sample_coordinates
-  kind: measured
+  kind: context
   via: null
   systematic_bias: §52.6 asks for the raw spatial samples; the coordinates are what make them usable as
     a scattered support rather than as a parcel average
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  the
+    coordinates are what make the samples usable as a scattered support rather than as a parcel average,
+    which is the part worth keeping.'
 - name: regional_expression_prior
-  kind: measured
+  kind: context
   via: null
   systematic_bias: n=6; interpolation across unsampled territory is the dominant uncertainty
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.  n=6, and interpolation
+    across unsampled territory is the dominant uncertainty.'
 - name: rnaseq_subset
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.'
 - name: donor_mri
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.  six donor brains.'
 - name: histology
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  sections
+    registered to the donor MRI; provenance for where each sample came from.'
 absent:
 - population
 - cell_type_resolution

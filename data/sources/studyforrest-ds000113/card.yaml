@@ -25,7 +25,7 @@ licence:
     norm, not required as a term). No DUA; held here from an anonymous OpenNeuro fetch. NOTE the site''s
     own CC-BY-SA applies to the WEBSITE TEXT and not to the data -- two different licences on one page,
     and taking the more visible one would have been wrong.'
-binding: unbound
+binding: bound
 population:
   n: 4
   hierarchy:
@@ -47,7 +47,7 @@ frames:
 - MNI152
 streams:
 - name: bold_movie
-  kind: measured
+  kind: context
   via: null
   observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
     concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
@@ -63,23 +63,42 @@ streams:
   systematic_bias: 7T at 1.4 mm reaches laminar-adjacent scales in some regions; the draining-vein bias
     is correspondingly more, not less, important.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.25
   temporal_support: TR 2 s BOLD; film at 25 fps; audio at 44.1 kHz; eight run segments with known overlaps
     -- the segment boundaries are a real discontinuity in the world clock
   spatial_support: 1.4 mm 7T BOLD in the audio-movie arm; 3T for the audio-visual arm; individual surfaces;
     documented display and projector geometry
+  constrains: []
+  notes: 'context, and the reason is that THE BYTES ARE NOT HERE.  CHECKED ON THE HELD BYTES 2026-09-05
+    and this is the most important finding on the card: ses-movie/func carries a bold.json, an events.tsv,
+    a recording-eyegaze_physio.tsv.gz and a defacemask.nii.gz for every one of the eight runs, and NO
+    *_bold.nii.gz at all -- 24 defacemasks and zero functional volumes across the held subjects.  ses-auditoryperception
+    carries only events and physio.  the ONLY BOLD volumes under this root belong to ses-localizer: task-movielocalizer
+    and the four task-retmap* runs in four subjects.  so the movie fMRI this card exists for is NOT HELD,
+    and `access: held` with `use: [fit]` overstates what a fit can draw on here.  same decision as ds004024''s
+    `fmri` and `dwi` entries: the stream is kept so the absence is visible in the stream list and not
+    only in `absent`, and it constrains nothing because there is nothing here to constrain with.'
 - name: film_stimulus
-  kind: imposed
+  kind: context
   via: null
   systematic_bias: '§51.1 item 3: use the same film as a cross-instrument WORLD TRAJECTORY. It does NOT
     follow that the fMRI and MEG recordings are simultaneous -- they are not, and treating them as one
     episode is the error this note exists to prevent.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 25.0
+  constrains: []
+  notes: 'context, and it is a CORRECTION rather than a downgrade of an imposed stream.  CHECKED ON DISK
+    2026-09-05: stimuli/ holds annotations/, generate/ and a psychopy/ directory with forrest_gump.psyexp,
+    buttons.csv and segment_cfg.csv -- the presentation script and the segment timeline, NOT THE FILM.  with
+    no frames there is no luminance to clamp, so there is nothing for `device.display_luminance` to take
+    a value of.  the psyexp also settles the display question: its window units are ''norm'' and its monitor
+    is psychopy''s default ''testMonitor'', so no screen size and no viewing distance are recorded anywhere
+    in the deposit either.  what IS held is the segment timeline in events.tsv, which indexes the stimulus
+    without being it.'
 - name: stimulus_narration_transcript
-  kind: imposed
+  kind: context
   via: null
   systematic_bias: 'HELD and read: stimuli/annotations/german_audio_description.csv, 573 timed segments,
     6414 words, spanning 1.3-7084.3 s of the film. Three facts a consumer needs and no publication states.
@@ -92,8 +111,15 @@ streams:
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context, and a CORRECTION: the migration marked it `imposed`, but a transcript is a description
+    of an audio track rather than the pressure waveform that was played.  HELD AND READ: stimuli/annotations/german_audio_description.csv,
+    573 timed segments, 6,414 words, spanning 1.3-7084.3 s of the film.  IT COVERS 27.5 PER CENT OF THE
+    TIMELINE and the other 72.5 per cent is UN-NARRATED FILM, which is neither silence nor the absence
+    of language -- it is the absence of an annotation, and a query over it must return MISSING rather
+    than zero.'
 - name: stimulus_scene_annotation
-  kind: imposed
+  kind: context
   via: null
   systematic_bias: 'HELD and read: stimuli/annotations/scenes.csv, 198 scene onsets from 17.0 to 6944.0
     s with location, time-of-day and interior/exterior. Onsets only -- a scene''s extent is the next onset,
@@ -101,8 +127,13 @@ streams:
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context, same reading as the narration: an annotation of the stimulus, not the stimulus.  HELD
+    AND READ: stimuli/annotations/scenes.csv, 198 scene onsets from 17.0 to 6944.0 s with location, time-of-day
+    and interior/exterior.  ONSETS ONLY -- a scene''s extent is the next onset, which leaves the final
+    scene''s end unstated rather than equal to the film''s.'
 - name: angiography
-  kind: measured
+  kind: context
   via: null
   observation_chain: flow-related enhancement (TOF) or contrast bolus -> vessel-lumen intensity -> reconstruction
     -> angiographic volume; slow and in-plane flow are systematically under-represented
@@ -112,63 +143,129 @@ streams:
   systematic_bias: 'An underused stream: StudyForrest published angiography alongside the functional data,
     which makes it one of the few naturalistic datasets with any vessel geometry at all.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and this is the vessel-lumen argument.  HELD: 20 angio.nii.gz plus 20 acq-mag_veno
+    and 20 acq-pha_veno volumes at 7 T (TR 24 ms, TE 3.84 ms, TFE) -- one of the few naturalistic datasets
+    with any vessel imaging at all, which is why it is worth naming.  an angiographic volume is an image
+    of a LUMEN, not a vessel: it carries no radius, no topology and no territory, and the registry has
+    no component for vessel geometry in any case (`blood.volume` is the blood in a tissue element, which
+    is a different quantity).  time-of-flight also systematically under-represents slow and in-plane flow,
+    so what is bright is a function of the sequence as much as of the tree.'
 - name: physiology
   kind: measured
-  via: null
+  via:
+  - vascular_flow
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.5
+  constrains:
+  - blood.volume
+  notes: 'MEASURED FROM THE HELD SIDECAR 2026-09-05: recording-cardresp_physio at 500 Hz with columns
+    trigger, cardiac and respiratory -- a pulse oximeter and a respiration belt, recorded with the localizer
+    runs.  the PULSE OXIMETER is what is bound, to `blood.volume` through `vascular_flow`, capped at the
+    0.5 Hz where that component is declared meaningful; a peripheral plethysmograph constrains the systemic
+    volume pulse, not a cortical one, which is why this is the aomic-id1000 binding and carries aomic''s
+    caveat.  the respiration channel rides in the same file and is NOT separately bound here, because
+    binding one stream twice through two processes is not something `via` can express.'
+  rate_hz: 500.0
 - name: eye_tracking
-  kind: imposed
+  kind: context
   via: null
   systematic_bias: the eye-gaze extension is a separate release with its own participants -- see studyforrest-eyegaze
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 500.0
+  constrains: []
+  notes: 'context, and it is a decision.  a gaze trace is a measurement -- of the eye''s pose -- and the
+    registry has no oculomotor component: `effector.*` is motor-unit drive, force and fatigue on `motor_units`,
+    not an eye''s direction in a head, and `transduction.photoreceptor` is what light does to a retina,
+    not where the retina was pointing.  ONTOLOGY GAP, recorded here so it is visible.  it is also the
+    stream the `retinal-world-geometry` requirement exists for: until that product exists a gaze trace
+    cannot be turned into retinal input either.  A CORRECTION: the migration marked this `imposed`, which
+    cannot be right.  AND IT IS HELD, contrary to the card''s own note that the eye-gaze arm is a separate
+    release: recording-eyegaze_physio.tsv.gz sits in every ses-movie run directory at 1000 Hz with columns
+    x, y, pupil_dil and movieframe_idx.  the coordinates are NORMALISED TO THE MOVIE FRAME, not to visual
+    angle, and with units ''norm'' and an uncalibrated testMonitor in the psyexp there is nothing in the
+    deposit that converts them -- so unlike bbbd this gaze cannot be turned into visual angle from the
+    held bytes alone.'
 - name: bold_audio_movie
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.25
+  constrains: []
+  notes: 'context, and the reason is that THE BYTES ARE NOT HERE.  the 7 T audio-movie arm is not under
+    this root: ses-auditoryperception/func holds events and physio only, with no functional volumes at
+    all.  same decision as ds004024''s `fmri` and `dwi` entries: the stream is kept so the absence is
+    visible in the stream list and not only in `absent`, and it constrains nothing because there is nothing
+    here to constrain with.'
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.  four T1w volumes are held.'
 - name: t2w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.  four T2w volumes are held.'
 - name: dwi
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and the reason is that THE BYTES ARE NOT HERE.  a root-level dwi.json is present (spin-echo
+    EPI, TR 9.545 s, TE 80 ms at 3 T) and there is not a single dwi.nii.gz under this root -- a sidecar
+    without its data.  same decision as ds004024''s `fmri` and `dwi` entries: the stream is kept so the
+    absence is visible in the stream list and not only in `absent`, and it constrains nothing because
+    there is nothing here to constrain with.'
 - name: susceptibility
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  the
+    acq-mag_veno and acq-pha_veno pairs are held.  a susceptibility-weighted phase image is a contrast,
+    not a component: it is dominated by venous deoxyhaemoglobin and by tissue iron together and the deposit
+    separates neither, so binding it to `blood.deoxyhemoglobin` would attribute a mixed contrast to one
+    of its causes.'
 - name: stimulus_annotations
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `stimulus_scene_annotation`
+    and `stimulus_narration_transcript`, which is where the likelihood is written.  kept so the card still
+    describes the archive it came from, bound to nothing so one measurement is not counted twice.  a third
+    entry naming the same annotations/ directory.'
 absent:
-- eeg
-- ieeg
-- intervention
-- pet
-- respiration
+- movie_bold_volumes
+- audio_movie_bold_volumes
+- dwi_volumes
+- film_stimulus
+- display_geometry
 requires:
 - geometry: cortical-support-bank
   severity: blocking
@@ -177,36 +274,49 @@ requires:
     to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
     to ship.
 - geometry: retinal-world-geometry
-  for_streams:
-  - bold_movie
-  - film_stimulus
-  - eye_tracking
+  for_streams: []
   severity: blocking
-  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
-    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
-    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+  without_it: 'Kept BLOCKING and scoped to no streams, which is how every card in this corpus carries
+    a requirement that nothing currently claims against (see `cortical-support-bank`). It formerly named
+    `bold_movie`, `film_stimulus` and `eye_tracking`. None of the three makes an attribution claim any
+    more: the movie BOLD and the film itself are NOT HELD (see their notes), and `eye_tracking` is bound
+    as context because the registry has no oculomotor component for it. THE EVIDENCE THAT KEEPS IT BLOCKING
+    RATHER THAN DEGRADING, checked on disk 2026-09-05: the gaze is normalised to the movie frame, the
+    psychopy window units are ''norm'' and the monitor is psychopy''s uncalibrated default ''testMonitor'',
+    so no screen size and no viewing distance exist anywhere in the deposit and the trace cannot even
+    be converted to visual angle from these bytes. That is the opposite of bbbd, where the depositor shipped
+    visual angle, and it is why this source may never contribute anything retinal.'
+  substitute: The published projector geometry from the StudyForrest papers, which is not in the deposit.
+    Taking it from a paper rather than from the files means the number is unverifiable against what was
+    actually run, and it must be recorded as literature-derived if it is used at all.
 - geometry: vascular-products
-  for_streams:
-  - angiography
+  for_streams: []
   severity: blocking
   without_it: An angiographic volume is an image of a lumen, not a vessel. Without the vascular product
     -- a resolved graph carrying radius, topology and territory -- there is no vessel for this evidence
-    to constrain and no way to say which cortical support any of it supplies.
+    to constrain. Scope narrowed to no streams 2026-09-05 because `angiography` is now bound as `context`
+    and makes no attribution claim, so there is nothing left for the missing product to block; the entry
+    is kept unscoped, as `cortical-support-bank` is everywhere in this corpus, to record that any future
+    stream attributing vessel-level state is blocked until it exists.
 - geometry: tract-path-products
   severity: blocking
   without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
     exists there is no engineered claim of the form 'this tract transmits between these two supports',
     so this source can constrain local microstructure but no interaction between supports.
 use:
-- fit
+- evaluate
+- prior
 forbidden:
-- studyforrest-ds000113/* -> millisecond cortical dynamics
-- studyforrest-ds000113/film_stimulus -> retinal input without a gaze model
-- studyforrest-ds000113/* -> white-matter microstructure or tract geometry (no diffusion volumes are held)
-- studyforrest-ds000113/* -> any claim about the acoustic or visual stimulus (the film is not held)
-- studyforrest-ds000113/angiography -> venous geometry, and studyforrest-ds000113/susceptibility_venography
-  -> arterial geometry (TOF is inflow-enhanced and venography is susceptibility-weighted; each is blind
-  to the other's vessels by construction, so neither may stand in for it)
+- studyforrest-ds000113/* -> any claim from the movie fMRI (no *_bold.nii.gz is held for ses-movie or
+  ses-auditoryperception; only ses-localizer carries functional volumes)
+- studyforrest-ds000113/* -> retinal or retinotopic state (the deposit records no screen size or viewing
+  distance; window units are 'norm' on an uncalibrated testMonitor)
+- studyforrest-ds000113/film_stimulus -> device.display_luminance (the film itself is not in the deposit;
+  only the presentation script and the segment timeline are)
+- studyforrest-ds000113/susceptibility -> blood.deoxyhemoglobin (a phase image mixes venous deoxyhaemoglobin
+  with tissue iron and the deposit separates neither)
+- studyforrest-ds000113/stimulus_narration_transcript -> the absence of language (it annotates 27.5% of
+  the timeline; the rest is un-narrated film, which is MISSING)
 split:
   group_by:
   - participant

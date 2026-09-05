@@ -17,7 +17,7 @@ licence:
     checked PER FILE rather than assumed for the collection. A code licence applied to data is a strong
     signal that the licence field was filled in without thought, and the safe reading is that the terms
     are not established.
-binding: unbound
+binding: bound
 population:
   n: 3
   hierarchy:
@@ -31,7 +31,10 @@ frames:
 streams:
 - name: high_density_ecog_during_syllable_production
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: local post-synaptic and spiking activity within a few millimetres of a contact ->
     extracellular potential -> potential difference against a reference contact whose own activity is
     in every number -> amplifier and filter -> sampled microvolts. No skull and no inverse problem. High-density
@@ -54,37 +57,74 @@ streams:
     rests on hand marks. That is a censoring decision with a stated reason, and it is exactly the kind
     of absence that must not be read as ''the acoustics were not informative''.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 200.0
   temporal_support: 'one file per continuous recording block, with hand-marked syllable onset, consonant-vowel
     transition and offset. THE ANNOTATION IS THE ONLY TIMEBASE FOR THE SPEECH: there is no acoustic signal
     to align against'
   spatial_support: 256-channel HIGH-DENSITY subdural grids over sensorimotor cortex -- the electrode pitch
     that resolves articulator somatotopy, which a standard clinical grid does not
+  constrains:
+  - device.contact_potential
+  notes: '256-channel HIGH-DENSITY subdural grids over sensorimotor cortex -- the electrode pitch that
+    resolves articulator somatotopy, which a standard clinical grid does not.  the acquisition rate is
+    not stated in the record and the bytes are not held, so 200 Hz is a conservative ceiling to be re-read
+    from the deposit.  the support is `implanted_array`, not `sensor_array`: a contact sees current sources
+    within millimetres over a short conduction path, with NO SKULL AND NO SCALP in the way, which is the
+    spatially local electrical evidence scalp EEG cannot supply.  the reference contact''s own activity
+    is in every number.  and COVERAGE IS CLINICALLY DICTATED and differs completely between patients,
+    so treating it as a random sample of cortex overstates what it constrains and a group-level map from
+    it is an aggregation over incompatible supports.  THE DECISIVE ABSENCE: THE MICROPHONE SIGNAL WAS
+    REMOVED FOR PRIVACY COMPLIANCE, so there is no acoustic ground truth at all -- the boundary variable
+    that would close the production loop is gone, and every alignment rests on hand marks.  that is a
+    censoring decision with a stated reason, which is better than a silent one, and it is still the thing
+    that limits what this source can support.'
+  frame: electrode_native
+  support: implanted_array
+  units: V
 - name: ecog_256_channel
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 200.0
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `high_density_ecog_during_syllable_production`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 - name: syllable_annotations
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context, and here it is forced rather than chosen: hand-marked syllable onset, consonant-vowel
+    transition and offset ARE THE ONLY TIMEBASE FOR THE SPEECH, because the acoustic signal was removed.  a
+    hand mark is a human annotation with an unmeasured residual, and there is nothing left to check it
+    against.  it would be `imposed` if the experimenter had set it and `measured` if a microphone had
+    recorded it; it is neither.'
 - name: rest_baseline
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 200.0
+  constrains:
+  - device.contact_potential
+  notes: separate baseline blocks from the production runs, so measured rather than a second count of
+    them -- the eegmmidb `eeg_64ch` / `baseline_runs` case.  it is the floor any production claim must
+    clear.
+  frame: electrode_native
+  support: implanted_array
+  units: V
 absent:
 - audio
-- articulatory_kinematics
-- electrode_localisation_verified
-- continuous_speech
-- healthy_controls
+- acoustic_ground_truth
+- individual_anatomy
 requires:
 - geometry: device-geometry
   severity: blocking
@@ -100,8 +140,10 @@ requires:
 use:
 - fit
 forbidden:
-- chang-lab-ecog-cv-syllables/* -> an acoustic claim (there is no audio)
-- chang-lab-ecog-cv-syllables/* -> an artifact, before the per-file licence is verified
+- chang-lab-ecog-cv-syllables/* -> any acoustic claim or acoustic alignment (the microphone signal was
+  removed for privacy compliance)
+- chang-lab-ecog-cv-syllables/ecog_256_channel -> independent evidence from high_density_ecog_during_syllable_production
+- chang-lab-ecog-cv-syllables/* -> a population claim (n=3)
 split:
   group_by:
   - participant

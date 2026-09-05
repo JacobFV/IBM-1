@@ -18,35 +18,42 @@ licence:
     beyond the Apache text; those govern generated content and conduct, not redistribution of the weights,
     so they do not move any field above. LICENSE.txt itself will be confirmed against this when the download
     completes.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
 - image_plane
 streams:
 - name: video_prediction
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'A generative video prior is trained to produce plausible continuations, not correct
     ones. Its notion of what happens next is the internet''s, and the failure it invites is exactly obj-visual-world-model''s:
     a model that predicts the frame well is not thereby a model of the cortex that saw it.'
-  notes: diffusion sampling is stochastic, so two runs from one conditioning disagree; the disagreement
-    is a usable spread and is never zero
+  notes: 'context.  generated video frames are a WORLD, not a measurement of one: they stand in no relation
+    to any head, retina or cortical support, and a generative prior is trained to produce plausible continuations
+    rather than correct ones.  it may enter as a `distil` target for a visual world model and never as
+    evidence about a component.  note that it is not even `imposed`: an imposed stream is state an experimenter
+    clamped in a real recording, and nothing here was ever shown to anybody.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: 24 fps generated clips of a few seconds
   spatial_support: generated video frames at up to 720p; a high-compression VAE latent underneath. No
     relation to any head, retina or cortical support -- the pixels are a world, not a measurement of one.
+  constrains: []
 - name: video_latents
-  kind: measured
+  kind: context
   via: null
   systematic_bias: The VAE latent is a compression basis chosen for reconstruction, not a representation
     with any claim on cortical coding. Treating latent axes as feature dimensions with meaning is the
     channel-identity error in a different modality.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  the VAE latent is a compression basis chosen for reconstruction; treating its axes
+    as feature dimensions with meaning is the channel-identity error in another modality.
 absent:
 - retinal_geometry
 - cortical_support

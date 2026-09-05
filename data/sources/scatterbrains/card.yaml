@@ -14,7 +14,7 @@ licence:
   notes: 'BSD-2 is the most permissive licence in this registry, which makes this source unusually good
     as a first held artifact: nothing it contributes to inherits a redistribution or share-alike constraint.
     The licence file and its sha256 are vendored alongside the data.'
-binding: unbound
+binding: bound
 population:
   n: 16
   hierarchy:
@@ -26,7 +26,7 @@ frames:
 - scatterbrains_subject_native
 streams:
 - name: outer_scalp_surface
-  kind: measured
+  kind: context
   via: null
   observation_chain: T1-weighted MRI -> tissue segmentation -> volume mesh -> outer surface extraction.
     The scalp boundary is where a segmentation put it, not where a ruler did.
@@ -37,28 +37,37 @@ streams:
   systematic_bias: A reconstructed surface, not a measured one. Every subject went through one segmentation
     pipeline, so its error is shared across all sixteen and does NOT average away over subjects -- which
     is exactly the case where a population mean looks more precise than it is.
-  notes: Head geometry constrains where a sensor or coil sits and how far it is from tissue. It says nothing
-    about what is under the scalp.
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  a
+    scalp boundary constrains WHERE a sensor or coil can sit and how far it is from tissue.  it says nothing
+    about what is under the scalp, and no registered component is a surface.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- one static surface per subject
   spatial_support: triangulated outer scalp surface per subject; 9,959-15,415 vertices and 19,918-30,828
     triangles, median 11,179 and 22,354
+  constrains: []
 - name: outer_scalp_surface
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Sixteen is enough to fit a low-order shape basis and not enough to claim population
     coverage. A basis fitted here is a prior over head shape, with n=16 written on it.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and a DUPLICATE stream name carried over from the migration: the same sixteen outer
+    scalp surfaces, described a second time for the shape-basis use.  kept so the card still describes
+    the archive it came from, bound to nothing so one object is not counted twice.'
 - name: head_surface_mesh
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and a third description of the same sixteen meshes.  bound to nothing for the same reason.
 absent:
 - cortical_surface
 - skull

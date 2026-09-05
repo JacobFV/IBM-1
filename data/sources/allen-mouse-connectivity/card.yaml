@@ -13,33 +13,46 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
 - allen_mouse_ccf
 streams:
 - name: directed_projection_matrix
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'DIRECTED and measured by tracer transport, which is what diffusion tractography can
     never be. §52.8 lists it as a cross-species operator prior for exactly that reason: it tells us what
     a directed mesoscale connectome looks like statistically, so that human tractography''s undirected
     estimates can be judged against a known-directed reference.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: anterograde viral tracer injections in over a thousand mice, imaged and registered
     to a common mouse reference space, giving DIRECTED projection strength between regions
+  constrains: []
+  notes: 'context, and this is the case the schema singles out.  a connectome matrix is a TOPOLOGY ASSERTION
+    -- which supports are taken to interact -- produced by somebody''s reconstruction pipeline.  ARCHITECTURE.md
+    §3 makes interaction topologies a separate primitive from state, and binding a matrix as `measured`
+    would let one pipeline''s tractography contribute a likelihood about tissue.  with two properties
+    nothing else here has: it is DIRECTED and it is measured by tracer transport rather than inferred
+    from water diffusion.  it is still a cross-SPECIES topology assertion, so its use is a prior on what
+    a directed mesoscale connectome looks like, never an assertion about a human edge.'
 - name: injection_site_geometry
-  kind: measured
+  kind: context
   via: null
   systematic_bias: each injection has a spatial extent that is not a region; the region-level matrix is
     an aggregation over injection sites that do not respect region boundaries
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  each
+    injection has a spatial extent that is not a region, so the region-level matrix is an aggregation
+    over sites that do not respect region boundaries.'
 absent:
 - human_correspondence
 - individual_variation

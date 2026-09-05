@@ -27,7 +27,7 @@ licence:
     drawn from ImageNet and carry their own separate terms, which are not the response data''s terms and
     which neither declaration covers; ImageFeatures.h5 is CNN activations COMPUTED FROM those images and
     its standing is unresolved. Rule 7 gates distribution only and none of this gated the fetch.'
-binding: unbound
+binding: bound
 population:
   n: 5
   hierarchy:
@@ -50,7 +50,8 @@ frames:
 streams:
 - name: bold_perception
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
     concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
     voxel intensity time course -> AND THEN, BEFORE DEPOSIT, motion correction, coregistration, detrending,
@@ -80,11 +81,19 @@ streams:
     V1 1,004 / V2 1,018 / V3 759 / V4 740 / LOC 540 / FFA 568 / PPA 356 / LVC 2,281 / HVC 2,049 inside
     its 4,466. A whole-brain claim cannot be made from that file; the fMRIPrep files, at 66,525-89,211
     voxels, are the whole-brain view.'
-  notes: trial-wise averaging over 3 volumes assumes a fixed haemodynamic delay of one TR; that assumption
-    is baked into the deposited values and cannot be varied from these bytes
+  notes: 'TR 3000 ms, TE 30 ms, 3x3x3 mm, 50 slices.  BUT THE HELD RELEASE IS NOT A TIME SERIES: both
+    deposited pipelines end in TRIAL-WISE AVERAGING -- 3 volumes per image-presentation block -- so what
+    is on this disk is ONE PATTERN PER TRIAL.  the band ceiling reflects that and nothing else: a 9 s
+    presentation block gives one sample per 9 s at best, so 0.05 Hz is the most anything here can bear
+    on, and any claim needing a haemodynamic time constant, a delay or a temporal filter has to go back
+    to the raw deposit, which this card does not hold.  the averaging also BAKES IN a fixed one-TR haemodynamic
+    delay that cannot be varied from these bytes.  1,320 training and 1,925 test blocks per participant,
+    and the many repeated presentations give a real per-voxel noise ceiling, which is the floor any decoding
+    number must be quoted against.  em_generation is what produces the magnetic field from source currents;
+    the previous chain named vascular_flow, which is unrelated.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.05
   temporal_support: 'TR 3000 ms, TE 30 ms, 3x3x3 mm, 50 slices, whole brain. THE HELD RELEASE IS NOT A
     TIME SERIES: both pipelines end in TRIAL-WISE AVERAGING -- 3 volumes per image-presentation block
     and 5 per imagery block -- so what is on this disk is one pattern per trial, not a sampled BOLD course.
@@ -97,9 +106,14 @@ streams:
     participants and a template-space claim cannot be made from these bytes. A per-subject space-defining
     template image ships alongside each pipeline (Subject[1-5]_SpaceTemplate.nii for SPM5, Subject[1-5]_fMRIPrepSpaceTemplate.nii
     for fMRIPrep) and is what any voxel index has to be read against.
+  constrains:
+  - electromagnetic.bfield
+  rate_hz: null
+  frame: subject_native_t1w
 - name: bold_mental_imagery
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: as bold_perception, and DURING IMAGERY THERE IS NO INPUT. The only evidence that
     the participant imagined anything, let alone the cued thing, is their own vividness rating -- a behavioural
     report, which is a different kind of object from a measurement of the imagined content.
@@ -117,10 +131,22 @@ streams:
     rendered. 500 imagery blocks per participant, 15 s each, 2,500 in all, each carrying a 1-5 vividness
     rating -- measured 2026-08-18 from the raw deposit''s event tables.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.033
+  constrains:
+  - electromagnetic.bfield
+  notes: 'same acquisition and same trial-wise averaging, over DIFFERENT RUNS -- 500 imagery blocks per
+    participant at 15 s each, 5 volumes averaged per block -- so this is separate bytes and not a second
+    count of `bold_perception`.  the ceiling is that block''s own rate.  DURING IMAGERY THERE IS NO INPUT:
+    the only evidence that the participant imagined anything, let alone the cued thing, is a 1-5 vividness
+    rating, which is a behavioural report and a different kind of object from a measurement.  a decoder
+    that succeeds here has shown that something category-specific happened, not that an image was internally
+    rendered.  em_generation is what produces the magnetic field from source currents; the previous chain
+    named vascular_flow, which is unrelated.'
+  rate_hz: null
+  frame: subject_native_t1w
 - name: cross_condition_generalisation
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'Training a decoder on PERCEPTION and testing it on IMAGERY is the control that could
     fail and is the only test that distinguishes a shared representation from two separately learnable
@@ -129,10 +155,15 @@ streams:
     and imagery are in different SESSIONS, so a generalisation failure is a failure across condition AND
     across day AND across scanner state at once.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  training a decoder on perception and testing it on imagery is a PROTOCOL -- and the
+    control that could fail, which is why it is worth naming -- not a measurement.  its published performance
+    is far below the within-perception ceiling and that gap is the result rather than a shortcoming.  what
+    it does not separate is perception from imagery as PROCESSES; it separates two decodable patterns.
 - name: stimulus_image_features
-  kind: imposed
+  kind: context
   via: null
   systematic_bias: 'ImageFeatures.h5 and .mat are CNN (AlexNet CNN1-8), HMAX 1-3, GIST and SIFT+BoF activations
     COMPUTED from the stimulus images by the depositors. They are a DERIVED description of the stimulus,
@@ -140,10 +171,18 @@ streams:
     quantity carries its algorithm forever. Reading them as ''the stimulus'' would substitute one network''s
     representation for the pixels.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and a CORRECTION of kind: the migration marked it `imposed`, but these are not the
+    stimulus.  ImageFeatures.h5/.mat hold AlexNet CNN1-8, HMAX 1-3, GIST and SIFT+BoF activations COMPUTED
+    FROM the images by the depositors, and the images themselves are in neither distribution.  an imposed
+    stream is state the experimenter clamped; a network''s activation is a derived description that carries
+    its algorithm forever, and conditioning on it would substitute one network''s representation for what
+    was on the screen.  the consequence for this card is stark: THERE IS NO IMPOSED STREAM HERE, because
+    the pixels that were shown are not held.'
 - name: pipeline_disagreement
-  kind: measured
+  kind: context
   via: null
   systematic_bias: The same acquisition is deposited twice, through SPM5 and through fMRIPrep 1.2.1, into
     the same per-subject native space. That is two preprocessing pipelines over one set of scans, which
@@ -152,50 +191,75 @@ streams:
     by construction) and both end in the same lab post-processing family. It is not two independent end-to-end
     pipelines and must not be reported as one.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  the same acquisition is deposited twice, through SPM5 and through fMRIPrep 1.2.1 into
+    the same per-subject native space.  that disagreement is a measurement of PREPROCESSING variance and
+    it is a LOWER BOUND twice over -- both start from the same raw DICOMs, so reconstruction variance
+    is exactly zero by construction.  a variance between two pipelines is not a value of any component;
+    it is an uncertainty budget.
 - name: bold_seen_images
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.05
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `bold_perception`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 - name: bold_imagined_categories
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.033
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `bold_mental_imagery`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 - name: behavioural_vividness_ratings
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a behavioural score, rating or questionnaire response is a report ABOUT a state, produced
+    by a person rather than by a process the model represents, and often minutes later.  no registered
+    component is a score, and treating one as a measurement would let a self-report update tissue state
+    directly.  2,500 ratings in all, one per imagery block.  it is the ONLY evidence of compliance anywhere
+    in this deposit, which is why it is held and why authority for any imagery claim must start low.
 - name: space_template
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  NO
+    SPATIAL NORMALISATION WAS APPLIED in either pipeline, so there is no common space across the five
+    participants and a template-space claim cannot be made from these bytes.  what is held is a per-subject
+    space-defining volume, which is five frames rather than one.'
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.'
 absent:
-- raw_unpreprocessed_bold
-- bold_time_series
 - stimulus_images
-- retinotopy_and_category_localiser_RUNS
-- participants_table
-- eyetracking
-- eeg
-- meg
-- physiology
-- intervention
-- population_sample
+- raw_bold_timeseries
+- population
+- eye_tracking
+- common_template_space
 requires:
 - geometry: cortical-support-bank
   severity: blocking
@@ -214,13 +278,17 @@ use:
 - evaluate
 - fit
 forbidden:
-- kamitani-perception-and-imagery-fmri/* -> a population-level claim
-- kamitani-perception-and-imagery-fmri/* -> an imagery label treated as a measurement of imagined content
-- kamitani-perception-and-imagery-fmri/* -> redistribution of the ImageNet-derived stimuli
-- kamitani-perception-and-imagery-fmri/* -> a motion, drift or physiological floor, all of which the deposit
-  already removed
-- kamitani-perception-and-imagery-fmri/* -> a claim about the RAW deposit, which is not held
-- kamitani-perception-and-imagery-fmri/stimulus_image_features -> the stimulus itself
+- kamitani-perception-and-imagery-fmri/* -> a population claim (n=5, deep not wide)
+- kamitani-perception-and-imagery-fmri/* -> a template-space or group result (no spatial normalisation
+  was applied in either pipeline)
+- kamitani-perception-and-imagery-fmri/* -> a haemodynamic time constant, delay or temporal filter (the
+  held release is trial-averaged, with a one-TR delay baked in)
+- kamitani-perception-and-imagery-fmri/stimulus_image_features -> the stimulus (they are CNN/HMAX/GIST
+  activations computed from images that are not distributed)
+- kamitani-perception-and-imagery-fmri/bold_mental_imagery -> internally rendered image content (the label
+  is a cue and the only compliance evidence is a self-report)
+- kamitani-perception-and-imagery-fmri/bold_seen_images -> independent evidence from bold_perception (the
+  same bytes, described twice by the migration)
 split:
   group_by:
   - participant

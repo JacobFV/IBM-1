@@ -16,7 +16,7 @@ licence:
     ships in the held tree. Discharged by obtaining terms from the FIL, not by reading a page that does
     not carry them. Licence gates distribution only, so nothing about our use of it changes; an artifact
     derived from it cannot pass release_gate.'
-binding: unbound
+binding: bound
 population:
   n: 1
   hierarchy:
@@ -29,41 +29,78 @@ frames:
 - subject_native
 streams:
 - name: ctf_sensor_geometry
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'CTF axial gradiometers with synthetic higher-order gradient compensation: a genuinely
     different forward-model configuration from Neuromag planar gradiometers. A lead-field implementation
     that only works on one vendor''s geometry is not validated, and this fixture is how that gets caught'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: MEG at 1200 Hz; face and scrambled-face events
   spatial_support: CTF 275-channel MEG -- a DIFFERENT sensor topology from the Neuromag systems in mne-sample
     and mne-somato, which is precisely its value as a fixture
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  MEASURED
+    ON DISK 2026-09-05: the .ds carries a .res4 sensor description, a .hc head-coil file and a MarkerFile.mrk,
+    and SPM_dig_montage.fif and a raw-trans.fif sit beside it.  THIS IS THE POINT OF THE FIXTURE: CTF
+    axial gradiometers with synthetic higher-order gradient compensation are a genuinely different forward-model
+    configuration from the Neuromag planar gradiometers in mne-sample and mne-somato, and a lead-field
+    implementation that only works on one vendor''s geometry is not validated.  a sensor topology is a
+    support definition and constrains no state.'
 - name: face_evoked_response
   kind: measured
-  via: null
+  via:
+  - em_generation
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 240.0
+  constrains:
+  - electromagnetic.bfield
+  notes: 'MEASURED FROM THE HELD .ds 2026-09-05: sfreq 480.0 Hz, highpass 0.0, lowpass 240.0, 303 MEG
+    channels including references.  THE CARD SAID 1200 Hz AND WAS WRONG: what is held is the SPM tutorial
+    copy, already downsampled to 480 Hz, and the band above is that file''s own passband.  n=1 tutorial
+    data: it validates an implementation and establishes nothing about people.  em_generation is what
+    produces the magnetic field from source currents; the previous chain named vascular_flow, which is
+    unrelated.'
+  rate_hz: 480.0
+  frame: meg_device_ctf
+  units: T
 - name: meg_ctf
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 240.0
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `face_evoked_response`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.'
 - name: stimulus_events
-  kind: measured
-  via: null
+  kind: imposed
+  via:
+  - transduction
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 2.0
+  constrains:
+  - device.display_luminance
+  notes: 'imposed: faces and scrambled faces shown on a screen, clamped on the display support.  the band
+    covers a short presentation and its onset; no display refresh, size or distance is recorded in this
+    deposit, so nothing faster and nothing retinal is claimed.'
+  frame: display
 absent:
 - population
 - eeg
@@ -72,10 +109,13 @@ requires:
 - geometry: device-geometry
   for_streams:
   - ctf_sensor_geometry
-  severity: blocking
-  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
-    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
-    be attributed to any cortical location.
+  severity: degrading
+  without_it: 'Re-graded from blocking 2026-09-05 ON FILE EVIDENCE: the held .ds carries its .res4 sensor
+    geometry, its .hc head-coil positions and a MarkerFile.mrk, SPM_dig_montage.fif and SPM_CTF_MEG_example_faces1_3D_raw-trans.fif
+    sit beside it, and dev_head_t reads present from the file. So the sensor pose relative to the head
+    is available and a lead field is computable. It stays degrading because only three digitisation points
+    are stored -- the fiducials, with no head-shape cloud -- so the head is located by three landmarks
+    whose placement error is a few millimetres and is not reported anywhere.'
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.

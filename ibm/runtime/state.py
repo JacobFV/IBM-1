@@ -412,17 +412,36 @@ class State:
         return cls(layout, {c: layout[c].zero() for c in layout.components})
 
     @classmethod
-    def prior(cls, layout: Layout, sd: float = 1.0, beta: float = 1.0) -> "State":
+    def prior(cls, layout: Layout, sd: float = 1.0, beta: float = 1.0,
+              declared: bool = True) -> "State":
         """allocate at the ontology's prior rather than at zero.
 
-        for a spectral block the natural prior is aperiodic background: the
-        laplacian spectrum *is* the power spectrum, so `1/f^beta` is a one-line
-        prior rather than a generative model, and starting a neural block at zero
-        power asserts something much stronger than ignorance.
+        "the ontology's prior" means the one the component actually declares.
+        every component carries a `prior` naming a registered builder in
+        `ibm.fields.priors` -- `neural_population` is 1/f with theta, alpha and
+        beta bumps on it, `device_broadband` is a johnson floor plus mains, and
+        the numbers in each are cited -- and allocating a generic `1/f^beta`
+        instead threw all of that away at the last possible moment.  a resting
+        cortical block and a resting electrode block are not the same belief, and
+        a run initialised as though they were cannot show an alpha peak it was
+        never given.
+
+        `declared=False` falls back to the flat `sd`/`beta` shape, which is what
+        a caller wants when it is testing the solver rather than the ontology.
         """
+        from ibm.fields import priors as _priors
+
         out: dict[str, Any] = {}
         for c in layout.components:
             b = layout[c]
+            comp = REGISTRY.components.get(c)
+            builder = (_priors.PRIORS.get(comp.prior)
+                       if declared and comp is not None and comp.prior else None)
+            if builder is not None and builder.form == b.uncertainty:
+                out[c] = (builder(b.basis, shape=(b.n_sites,))
+                          if b.uncertainty == "spectral" and b.basis is not None
+                          else builder(shape=(b.n_sites,)))
+                continue
             if b.uncertainty == "spectral" and b.basis is not None:
                 f = np.maximum(b.basis.freqs_hz, b.basis.freqs_hz[1] if b.basis.k > 1 else 1.0)
                 psd = (sd * sd) * f ** (-beta)

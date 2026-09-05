@@ -22,30 +22,40 @@ licence:
     University Innovation (fsl@innovation.ox.ac.uk, project 9564). No DUA or registration to download.
     NOTE the direction: FreeSurfer permits commercial use and FSL forbids it, so a single ''neuroimaging
     atlas'' intuition gets one of the two wrong whichever way it leans.'
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
 - MNI152
 streams:
 - name: probabilistic_structure_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Probabilistic over 37 manually labelled brains, which is a small sample; the commonly-used
     thresholded versions discard the probability entirely. Its subcortical coverage is coarse compared
     to CIT168, THOMAS or Tian and should not be preferred where those exist.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: probabilistic maps in MNI152 space from 37 manually segmented T1 volumes, cortical
     and subcortical
+  constrains: []
+  notes: 'context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set
+    is a COVER over a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value
+    any ibm component takes at them.  no registered component is a region label, and inventing one would
+    make a naming convention into biology.  it reaches a materialization as a support index and as a `prior`,
+    never as a likelihood.  probabilistic over 37 manually labelled brains: p(structure | voxel) is a
+    fraction of RATERS'' brains, not of tissue.'
 - name: manual_segmentation_protocol
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a written labelling protocol is provenance for the maps above.  it constrains nothing
+    and is kept so the cover's construction is visible.
 absent:
 - individual_geometry
 - fine_subcortical_structure

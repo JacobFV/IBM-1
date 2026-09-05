@@ -56,7 +56,11 @@ streams:
 - name: dwi_raw
   kind: measured
   via:
-  - plasticity
+    structural.fiber_orientation:
+    - tract_propagation
+    structural.axonal_density: &id001
+    - plasticity
+    structural.myelination: *id001
   observation_chain: 'water displacement over the diffusion time within and around axons and cells ->
     gradient-direction-dependent signal attenuation -> spin-echo EPI readout -> reconstructed volume per
     b-vector. ORIENTATION EVIDENCE, not an observation of a tract. THIS IS THE RAW FORM: dataset_description.json
@@ -98,15 +102,21 @@ streams:
   - structural.myelination
   frame: subject_native
   support: tissue
-  notes: 'raw, which is what makes it usable: 32 directions on one b=1000 shell is a thin angular basis, so
-    the orientation constraint is real and the axonal-density and myelination constraints are model-dependent
-    to the point of being nearly prior.  `dwi_microstructure` in the registry says the same thing in its own
-    docstring and lists all three anyway; the unevenness lives in the precision, not in the binding.  `via:
-    plasticity` for the reason given on tractoinferno/dwi.'
+  notes: 'raw, which is what makes it usable: 32 directions on one b=1000 shell is a thin angular basis,
+    so the orientation constraint is real and the axonal-density and myelination constraints are model-dependent
+    to the point of being nearly prior.  `dwi_microstructure` in the registry says the same thing in its
+    own docstring and lists all three anyway; the unevenness lives in the precision, not in the binding.  `via:
+    plasticity` for the reason given on tractoinferno/dwi.  per-component chains: this acquisition makes
+    more than one claim and the routes differ.  one chain for all of them would let the component whose
+    route is wrong borrow the route of the ones that are right.'
 - name: dwi_repeat_acquisitions
   kind: measured
   via:
-  - plasticity
+    structural.fiber_orientation:
+    - tract_propagation
+    structural.axonal_density: &id002
+    - plasticity
+    structural.myelination: *id002
   observation_chain: 'Three DWI runs per person in one session. MEASURED OVER THE HELD BYTES, not sampled:
     all 2,745 .bval files hash to ONE content (1 x b=0 and 32 x b=1000, 33 volumes) and the .bvec files
     are byte-identical across runs for 919 of the 925 subjects with DWI. So for those 919 run-2 and run-3
@@ -136,10 +146,12 @@ streams:
   - structural.myelination
   frame: subject_native
   support: tissue
-  notes: 'the same components as `dwi_raw` and deliberately a separate stream: three re-acquisitions of one
-    scheme on one brain in one session give a REPEAT FLOOR for pipeline disagreement, which is the only thing
-    here that could calibrate how much of a tractography difference is method rather than noise.  six of 925
-    subjects were re-angulated between runs and are not a repeat; see `confounds`.'
+  notes: 'the same components as `dwi_raw` and deliberately a separate stream: three re-acquisitions of
+    one scheme on one brain in one session give a REPEAT FLOOR for pipeline disagreement, which is the
+    only thing here that could calibrate how much of a tractography difference is method rather than noise.  six
+    of 925 subjects were re-angulated between runs and are not a repeat; see `confounds`.  per-component
+    chains: this acquisition makes more than one claim and the routes differ.  one chain for all of them
+    would let the component whose route is wrong borrow the route of the ones that are right.'
 - name: t1w
   kind: context
   via: null
@@ -162,13 +174,12 @@ streams:
   - 0.001
   constrains: []
   notes: 'context: geometry.  no electromagnetic modality in this deposit reads a head model, so the `structural_mri`
-    binding to material state would constrain values nothing downstream would ever use.  its real job is to
-    index the supports the diffusion and functional data live on.'
+    binding to material state would constrain values nothing downstream would ever use.  its real job
+    is to index the supports the diffusion and functional data live on.'
 - name: bold_with_concurrent_physiology
   kind: measured
   via:
-  - neurovascular_coupling
-  - vascular_flow
+  - em_generation
   observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
     concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
     voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
@@ -191,10 +202,12 @@ streams:
   constrains:
   - electromagnetic.bfield
   support: tissue
-  notes: 'bound to `electromagnetic.bfield` and not to anything neural, which is the registry''s `bold` observation
-    being taken literally: BOLD is a field perturbation produced by deoxyhaemoglobin, and the vascular stage
-    is modelled state rather than a nuisance.  the band stops at 0.25 Hz because a TR-sampled series can constrain
-    nothing above it -- that is the bandwidth axis doing its job, not a filter setting.'
+  notes: 'bound to `electromagnetic.bfield` and not to anything neural, which is the registry''s `bold`
+    observation being taken literally: BOLD is a field perturbation produced by deoxyhaemoglobin, and
+    the vascular stage is modelled state rather than a nuisance.  the band stops at 0.25 Hz because a
+    TR-sampled series can constrain nothing above it -- that is the bandwidth axis doing its job, not
+    a filter setting.  em_generation is what produces the magnetic field from source currents; the previous
+    chain named vascular_flow, which is unrelated.'
 - name: population_representative_sample
   kind: context
   via: null
@@ -207,8 +220,9 @@ streams:
   - null
   - null
   constrains: []
-  notes: 'context: a property of the SAMPLING, not a recorded quantity.  it is the reason this accession was
-    taken over PIOP1/PIOP2 and the reason `forbidden` refuses pooling with them; it constrains no component.'
+  notes: 'context: a property of the SAMPLING, not a recorded quantity.  it is the reason this accession
+    was taken over PIOP1/PIOP2 and the reason `forbidden` refuses pooling with them; it constrains no
+    component.'
 - name: stimulus_video
   kind: imposed
   via:
@@ -236,11 +250,11 @@ streams:
   constrains:
   - device.display_luminance
   frame: display
-  notes: 'imposed: the film was chosen by the experimenters and never drawn from any participant''s joint distribution,
-    so it is conditioned on and contributes no likelihood.  the band ceiling is the frame rate''s nyquist, 24.9994
-    fps / 2, measured from the container.  the deposit records no display geometry, viewing distance or luminance
-    calibration, so `device.display_luminance` is bound in ARBITRARY UNITS -- the stimulus is identified, its
-    physical magnitude is not.'
+  notes: 'imposed: the film was chosen by the experimenters and never drawn from any participant''s joint
+    distribution, so it is conditioned on and contributes no likelihood.  the band ceiling is the frame
+    rate''s nyquist, 24.9994 fps / 2, measured from the container.  the deposit records no display geometry,
+    viewing distance or luminance calibration, so `device.display_luminance` is bound in ARBITRARY UNITS
+    -- the stimulus is identified, its physical magnitude is not.'
 - name: stimulus_events
   kind: context
   via: null
@@ -260,10 +274,10 @@ streams:
   - 0.0
   - 1.0
   constrains: []
-  notes: 'context: two rows, `onset_movie` and `end_movie`.  it INDEXES the imposed stimulus rather than specifying
-    it -- the stimulus itself is `stimulus_video` -- which is the same decision eegmmidb makes for its event
-    codes.  it also disagrees with the container by 22.016 s, so it cannot be used to time anything without
-    resolving which end that sits at.'
+  notes: 'context: two rows, `onset_movie` and `end_movie`.  it INDEXES the imposed stimulus rather than
+    specifying it -- the stimulus itself is `stimulus_video` -- which is the same decision eegmmidb makes
+    for its event codes.  it also disagrees with the container by 22.016 s, so it cannot be used to time
+    anything without resolving which end that sits at.'
 - name: bold_task
   kind: context
   via: null
@@ -271,27 +285,33 @@ streams:
   - 0.0
   - 0.25
   constrains: []
-  notes: duplicate of `bold_with_concurrent_physiology` carried over from the migration.  there is one moviewatching
-    run and it is bound once; binding it twice would double the precision a single acquisition contributes.
+  notes: duplicate of `bold_with_concurrent_physiology` carried over from the migration.  there is one
+    moviewatching run and it is bound once; binding it twice would double the precision a single acquisition
+    contributes.
 - name: cardiac
   kind: measured
   via:
-  - vascular_flow
+    blood.volume:
+    - vascular_flow
+    blood.oxygenation:
+    - tissue_exchange
   band_hz:
   - 0.0
   - 0.5
   constrains:
   - blood.volume
   - blood.oxygenation
-  notes: 'a pulse-oximeter trace, bound the way the registry''s `ppg` observation binds one -- to blood volume
-    and oxygenation at the finger, via `vascular_flow`.  THE BAND CEILING IS 0.5 Hz AND THE DEVICE SAMPLES FAR
-    FASTER THAN THAT, which is the bandwidth axis doing something useful rather than a filter setting being
-    copied down: `blood.volume` and `blood.oxygenation` are declared meaningful only below 0.5 Hz, so the pulse
-    waveform itself -- the 1 Hz beat and its harmonics -- is above everything the model represents.  what this
-    stream contributes is the slow envelope, and declaring the raw rate here would let cardiac aliasing be fused
-    as evidence about blood volume.  it is evidence about the CARDIOVASCULAR state that also drives BOLD, which
-    is why holding it beats regressing it out: a missing physiological trace is not a flat one, and 91 of the
-    881 people with BOLD have none.'
+  notes: 'a pulse-oximeter trace, bound the way the registry''s `ppg` observation binds one -- to blood
+    volume and oxygenation at the finger, via `vascular_flow`.  THE BAND CEILING IS 0.5 Hz AND THE DEVICE
+    SAMPLES FAR FASTER THAN THAT, which is the bandwidth axis doing something useful rather than a filter
+    setting being copied down: `blood.volume` and `blood.oxygenation` are declared meaningful only below
+    0.5 Hz, so the pulse waveform itself -- the 1 Hz beat and its harmonics -- is above everything the
+    model represents.  what this stream contributes is the slow envelope, and declaring the raw rate here
+    would let cardiac aliasing be fused as evidence about blood volume.  it is evidence about the CARDIOVASCULAR
+    state that also drives BOLD, which is why holding it beats regressing it out: a missing physiological
+    trace is not a flat one, and 91 of the 881 people with BOLD have none.  per-component chains: this
+    acquisition makes more than one claim and the routes differ.  one chain for all of them would let
+    the component whose route is wrong borrow the route of the ones that are right.'
 - name: demographics
   kind: context
   via: null
@@ -299,9 +319,9 @@ streams:
   - null
   - null
   constrains: []
-  notes: 'context: age, sex, handedness, BMI, education, SES.  these are facts about people and not about ibm
-    state -- there is no component whose value ''age'' is -- and treating them as evidence would be a covariate
-    model smuggled in as a measurement.'
+  notes: 'context: age, sex, handedness, BMI, education, SES.  these are facts about people and not about
+    ibm state -- there is no component whose value ''age'' is -- and treating them as evidence would be
+    a covariate model smuggled in as a measurement.'
 - name: dwi
   kind: context
   via: null
@@ -309,7 +329,8 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: duplicate of `dwi_raw` carried over from the migration.  bound to nothing for the same reason as `bold_task`.
+  notes: duplicate of `dwi_raw` carried over from the migration.  bound to nothing for the same reason
+    as `bold_task`.
 - name: psychometrics
   kind: context
   via: null
@@ -318,8 +339,8 @@ streams:
   - null
   constrains: []
   notes: 'context: IST, NEO-FFI, BIS/BAS, STAI-T scores.  a questionnaire is a human annotation of a person,
-    in the same sense a hypnogram is a human annotation of a night; no ibm component holds a personality score,
-    and inventing one would put a construct in the ontology.'
+    in the same sense a hypnogram is a human annotation of a night; no ibm component holds a personality
+    score, and inventing one would put a construct in the ontology.'
 - name: respiration
   kind: measured
   via:

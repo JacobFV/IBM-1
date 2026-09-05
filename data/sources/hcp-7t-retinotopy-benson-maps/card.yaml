@@ -21,7 +21,7 @@ licence:
     under the same terms (share-alike in effect) and a mandated acknowledgement -- and requires an account
     plus explicit agreement. The underlying 7T time series are on ConnectomeDB under a further set of
     terms, with a separate Restricted tier. The article's CC-BY is the article's and does not transfer.
-binding: unbound
+binding: bound
 population:
   n: 181
   hierarchy:
@@ -36,51 +36,84 @@ frames:
 - visual_field_polar
 streams:
 - name: population_prf_solutions
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 181 individual retinotopic solutions is the largest such sample available and is what
     makes a PROBABILISTIC visual-field-to-cortex mapping estimable rather than assumed. It is DERIVED
     GEOMETRY and never loses that status.
-  notes: the pRF model is a compressive-nonlinearity Gaussian; a different model form yields different
-    parameters from the same data
+  notes: context.  what is shipped is a FITTED OR AGGREGATED MAP -- an inverse solution, a GLM contrast,
+    a meta-analytic summary -- rather than a measurement.  binding it would let one pipeline's answer
+    contribute a likelihood about tissue, which is the same argument that makes a tractogram context.  181
+    individual pRF solutions is the largest such sample available and it is what makes a PROBABILISTIC
+    visual-field-to-cortex mapping estimable rather than assumed -- but a pRF parameter is what one compressive-nonlinearity
+    Gaussian model returned, and a different model form yields different parameters from the same data.  note
+    the underlying acquisition was six 300 s runs at TR 1 s and THAT CLOCK IS NOT IN THIS PRODUCT, so
+    there is no band here to constrain anything over.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: none -- these are fitted parameters, not a time series. The underlying acquisition
     was six 300-second runs at TR 1 s, and that clock is not in this product
   spatial_support: per-surface-location pRF parameters on fsaverage plus an MNI subcortical volume, with
     visual-area atlases and the stimulus apertures. The retinotopic map is a coordinate system in the
     VISUAL FIELD attached to cortical locations
+  constrains: []
 - name: cross_dataset_reference
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context.  this names the COMPARISON with the NYU 3T retinotopy release (ds003787): two independent
+    estimates of the same quantity in different people on different scanners, which is the only way to
+    separate estimation error from individual variation.  a comparison protocol is not a measurement.'
 - name: prf_parameters
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `population_prf_solutions`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 - name: visual_area_atlases
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
+    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
+    takes at them.  no registered component is a region label.  it reaches a materialization as a support
+    index and as a `prior`, never as a likelihood.'
 - name: stimulus_apertures
-  kind: measured
-  via: null
+  kind: imposed
+  via:
+  - transduction
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 1.0
+  constrains:
+  - device.display_luminance
+  notes: 'imposed, and the only clamped physical variable in this product: the aperture sequence IS what
+    the display showed, shipped alongside the fits, so the forward stimulus timeline is recoverable rather
+    than inferred.  the band is the aperture sequence''s own sampling and NOT the monitor''s refresh --
+    one mask per volume is what is held.'
+  frame: visual_field_polar
 - name: behaviour
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a behavioural score, rating or questionnaire response is a report ABOUT a state, produced
+    by a person rather than by a process the model represents, and often minutes later.  no registered
+    component is a score, and treating one as a measurement would let a self-report update tissue state
+    directly.
 absent:
 - raw_time_series_on_the_open_mirror
 - confidence_intervals
@@ -93,13 +126,18 @@ requires:
     the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
     the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
 - geometry: retinal-world-geometry
-  for_streams:
-  - population_prf_solutions
+  for_streams: []
   severity: blocking
-  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
-    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
-    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
-    path.
+  without_it: 'Scoped to no streams 2026-09-05, which is how this corpus carries a requirement nothing
+    currently claims against (see `cortical-support-bank` everywhere). It formerly named `population_prf_solutions`,
+    and that stream is now bound as `context`: a pRF parameter is what one compressive-nonlinearity Gaussian
+    model returned when it was fitted to a BOLD time course, so it is an inverse solution and makes no
+    attribution claim that a retinal product would have to discharge. The one stream that IS bound here,
+    `stimulus_apertures`, is clamped as `device.display_luminance` on the DISPLAY support, which is defined
+    without any screen-to-retina map. The entry is kept because the product this card exists to feed --
+    a probabilistic visual-field-to-cortex mapping -- cannot be built into a retinal claim until the eye''s
+    optics and sampling lattice exist; nothing here may be attributed to `transduction.photoreceptor`
+    or to an eccentricity on a retina.'
 use:
 - calibrate
 - prior

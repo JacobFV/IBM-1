@@ -14,7 +14,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -22,26 +22,41 @@ frames:
 - brainstem_native
 streams:
 - name: brainstem_nucleus_probabilities
-  kind: measured
+  kind: context
   via: null
   systematic_bias: '7T-derived, small samples, and brainstem nuclei are millimetre-scale structures adjacent
     to large pulsatile arteries and CSF spaces. §51.3 item 26 puts it plainly: B-WIN should not leave
     every noncortical structure as one two-node family, and this is the source that makes the arousal
     and autonomic nuclei addressable at all.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: probabilistic labels for dozens of brainstem nuclei from 7T multi-contrast MRI -- arousal,
     autonomic and motor nuclei that whole-brain atlases leave as undifferentiated brainstem
+  constrains: []
+  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
+    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
+    takes at them.  no registered component is a region label.  it reaches a materialization as a support
+    index and as a `prior`, never as a likelihood.  7T-derived from small samples, and brainstem nuclei
+    are millimetre-scale structures sitting beside large pulsatile arteries and CSF spaces, so the probability
+    is over both anatomy and registration.'
 - name: arousal_system_nuclei
-  kind: measured
+  kind: context
   via: null
   systematic_bias: locus coeruleus, raphe and related nuclei are the anatomical substrate of the neuromodulatory
     terms that would otherwise be a global scalar
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
+    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
+    takes at them.  no registered component is a region label.  it reaches a materialization as a support
+    index and as a `prior`, never as a likelihood.  locus coeruleus, raphe and related nuclei are the
+    ANATOMICAL SUBSTRATE of the neuromodulatory terms that would otherwise be a global scalar.  a substrate
+    is a support; the neuromodulator concentration on it would be `extracellular.noradrenaline` and this
+    atlas measures none.'
 absent:
 - individual_geometry
 - histological_validation_for_all_nuclei

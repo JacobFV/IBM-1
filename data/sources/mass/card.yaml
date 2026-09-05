@@ -12,7 +12,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: Registration and data use agreement. Unresolved.
-binding: unbound
+binding: bound
 population:
   n: 200
   hierarchy:
@@ -27,7 +27,10 @@ frames:
 streams:
 - name: high_density_eeg
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
     brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
     filtered, sampled voltage
@@ -43,16 +46,26 @@ streams:
   systematic_bias: Whole nights of multi-channel EEG through the full range of cortical states -- from
     waking through slow-wave sleep to REM -- which is the widest excursion of cortical dynamics obtainable
     without pharmacology.
-  notes: no individual anatomy, so source-space interpretation uses a template head
+  notes: 'EEG at 256 Hz over WHOLE NIGHTS, up to 20 channels in a standard montage -- an order of magnitude
+    more spatial information than sleep-edfx''s two channels, though still far from source-localisable.  the
+    ceiling is the 128 Hz nyquist reduced to 100 Hz because a polysomnography montage carries EMG above
+    that; the floor is the standard clinical EEG high pass.  WHY IT MATTERS: whole nights through waking,
+    slow-wave sleep and REM is the WIDEST EXCURSION OF CORTICAL DYNAMICS obtainable without pharmacology.'
   band_hz:
-  - null
-  - null
+  - 0.3
+  - 100.0
   temporal_support: EEG at 256 Hz over whole nights; stages per epoch; spindles and K-complexes as discrete
     annotated events with millisecond onsets
   spatial_support: up to 20 EEG channels in a standard montage -- an order of magnitude more spatial information
     than Sleep-EDFx's two channels, though still far from source-localisable
+  constrains:
+  - device.contact_potential
+  rate_hz: 256.0
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: spindle_annotations
-  kind: measured
+  kind: context
   via: null
   observation_chain: thalamocortical spindle oscillation -> volume conduction -> scalp EEG -> expert visual
     detection against published criteria
@@ -66,37 +79,72 @@ streams:
   band_hz:
   - null
   - null
+  constrains: []
+  notes: context, and it is a close call worth stating.  a spindle is a THALAMOCORTICAL event with a known
+    generator mechanism, annotated at millisecond resolution, which makes it one of the very few named,
+    mechanistically understood events in scalp EEG -- and the annotation is still a HUMAN EXPERT'S DETECTION
+    against published criteria, not a measurement of `neural.exc.activity` in a thalamic nucleus.  the
+    voltage the expert looked at is already bound in `high_density_eeg`; the label is an interpretation
+    of it, so binding it would both double-count and promote an interpretation to evidence.  the sleep-edfx
+    hypnogram gets the same reading.
 - name: expert_sleep_staging
-  kind: measured
+  kind: context
   via: null
   systematic_bias: scoring is a rulebook applied by a human; agreement between scorers is the ceiling
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.005
+  constrains: []
+  notes: 'context, exactly as sleep-edfx''s `expert_hypnograms`: a HUMAN ANNOTATION OF BRAIN STATE, a
+    rulebook applied by a scorer, whose between-scorer agreement is the ceiling.  it is not a measurement
+    of any component.'
 - name: polysomnography
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.3
+  - 100.0
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `high_density_eeg`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.  the montage name for the whole recording,
+    EEG channels included; the non-EEG channels of it are `respiration` and `ecg` below.'
 - name: k_complex_annotations
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context, same reading as the spindle annotations: an expert detection of an event in a voltage
+    that is already bound.'
 - name: respiration
   kind: measured
-  via: null
+  via:
+  - mechanical_propagation
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 2.0
+  constrains:
+  - mechanical.displacement
+  notes: 'the respiratory belt channels of the polysomnogram, bound as in aomic-id1000 and bbbd: thoracic
+    circumference constrains `mechanical.displacement` through `mechanical_propagation`.  note sleep-edfx
+    binds ITS respiration stream to `blood.oxygenation` instead, and the divergence is deliberate: that
+    one is an oro-nasal airflow and saturation channel and this one is a belt, which are different sensors
+    measuring different quantities.'
 - name: ecg
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and the reason is an ONTOLOGY GAP rather than an undecided stream.  an ECG trace IS
+    a contact potential, but `device.contact_potential` is written by `device_coupling` out of the field
+    that `em_generation` makes from NEURAL transmembrane current, and the generator here is cardiac muscle,
+    which the registry does not represent at all.  binding it would let the heart contribute a likelihood
+    about cortical current -- precisely the mis-attribution the `via` chain exists to make visible.  held
+    and usable as a regressor and as an artifact template; it constrains nothing.
 absent:
 - any_imaging
 - individual_anatomy
@@ -123,9 +171,12 @@ use:
 - evaluate
 - fit
 forbidden:
-- mass/* -> cortical state without an explicit carded interaction
-- mass/* -> world-model forcing parameters
-- mass/expert_sleep_staging -> a ground-truth state label
+- mass/spindle_annotations -> a measurement of thalamocortical state (it is an expert detection in a voltage
+  already bound by mass/high_density_eeg)
+- mass/expert_sleep_staging -> a measured brain state (it is a rulebook applied by a scorer)
+- mass/polysomnography -> independent evidence from mass/high_density_eeg
+- mass/* -> subject-specific head geometry (no individual anatomy is held; source-space work here uses
+  a template head)
 split:
   group_by:
   - participant

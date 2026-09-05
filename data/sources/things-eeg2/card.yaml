@@ -14,7 +14,7 @@ licence:
   notes: 'EXPLICITLY UNRESOLVED. §51.1 item 4: the predecessor correctly left this unresolved rather than
     inferring permission from the open-access paper, and that judgement is preserved here. Resolving this
     licence is a precondition for ingestion, not a formality.'
-binding: unbound
+binding: bound
 population:
   n: 10
   hierarchy:
@@ -29,7 +29,10 @@ frames:
 streams:
 - name: eeg_64ch
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
     brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
     filtered, sampled voltage
@@ -45,29 +48,58 @@ streams:
     world-model interaction explains nothing here that a static encoder does not, the naturalistic claim
     is weaker than it looks.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 100.0
   temporal_support: EEG at 1000 Hz; 100 ms image presentation at 10 Hz RSVP
   spatial_support: 64-channel scalp EEG
+  constrains:
+  - device.contact_potential
+  notes: 'EEG at 1000 Hz on a 64-channel scalp montage, with 100 ms image presentations in a 10 Hz RSVP
+    stream.  the ceiling is 100 Hz rather than the 500 Hz nyquist, the same judgement erp-core carries:
+    the visual evoked response this exists for lives well below it and the band above is dominated by
+    muscle in a scalp montage.  WHAT IT IS FOR: this is the STATIC-IMAGE CONTROL for any naturalistic
+    claim -- if a naturalistic world-model interaction explains nothing here that a static encoder does
+    not, the naturalistic claim is weaker than it looks.'
+  rate_hz: 1000.0
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: test_set_repetitions
-  kind: measured
+  kind: context
   via: null
   systematic_bias: the noise ceiling from repetitions is the floor every number here must be quoted against
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 100.0
+  constrains: []
+  notes: context.  the repeated presentations of the test images give a per-channel NOISE CEILING, which
+    is the floor every number here must be quoted against.  a reliability estimate is an uncertainty budget
+    computed from `eeg_64ch`, so binding it would count those repetitions twice.
 - name: stimulus_images
   kind: imposed
-  via: null
+  via:
+  - transduction
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 10.0
+  constrains:
+  - device.display_luminance
+  notes: 'imposed: THINGS object photographs at 100 ms each in a 10 Hz RSVP stream, clamped on the display
+    support.  the ceiling is the presentation rate, which is the fastest thing the stimulus timeline records;
+    the monitor''s own refresh is not recorded here.'
+  frame: display
 - name: behaviour
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a behavioural score, rating or questionnaire response is a report ABOUT a state, produced
+    by a person rather than by a process the model represents, and often minutes later.  no registered
+    component is a score, and treating one as a measurement would let a self-report update tissue state
+    directly.  the orthogonal target-detection task is also the only compliance evidence that the participant
+    was looking.
 absent:
 - fmri
 - meg
@@ -95,18 +127,21 @@ requires:
 - geometry: retinal-world-geometry
   for_streams:
   - stimulus_images
-  severity: blocking
-  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
-    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
-    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
-    path.
+  severity: degrading
+  without_it: 'Re-graded from blocking 2026-09-05, on the argument this corpus now applies uniformly.
+    The photograph is clamped as `device.display_luminance` on the DISPLAY support, which is defined whether
+    or not the screen-to-retina map is -- an imposed stream naming what was on the monitor is well posed
+    without it. What remains unavailable is everything after the screen: nothing here may be attributed
+    to `transduction.photoreceptor`, to an eccentricity, or to a retinotopic support. No gaze was recorded,
+    and at 10 Hz RSVP with central fixation the assumption that the image fell on the fovea is usually
+    right and is still an assumption.'
 use:
 - evaluate
 - fit
 forbidden:
-- things-eeg2/* -> vascular or metabolic state
-- things-eeg2/* -> subject-specific head geometry
-- things-eeg2/* -> anything at all until the licence is resolved
+- things-eeg2/stimulus_images -> retinal input (no display geometry and no gaze are recorded; central
+  fixation is assumed, not measured)
+- things-eeg2/* -> a decoding number quoted without the repetition noise ceiling
 split:
   group_by:
   - participant

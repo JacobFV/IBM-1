@@ -19,7 +19,7 @@ licence:
     says ''License'': ''CC0''. Rule 7 is why the unresolved value never gated anything -- it governs distribution
     only, and reading, loading, fitting and training were never in question. What it did gate is release,
     and that is now open.'
-binding: unbound
+binding: bound
 population:
   n: 19
   hierarchy:
@@ -38,23 +38,37 @@ frames:
 streams:
 - name: montage_sweep
   kind: measured
-  via: null
+  via:
+  - device_coupling
   systematic_bias: '§51.4 item 28: useful for EXTERNAL ELECTRIC-FIELD AND MONTAGE-RESPONSE CALIBRATION.
     Nine montages in the same participants is a designed sweep over current paths, which constrains a
     head conduction model far more than any single montage can -- the same forward problem that governs
     EEG, driven rather than observed. That reciprocity is the reason this dataset matters beyond stimulation
     research.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: EEG at kHz; stimulation over minutes at DC or at a specified frequency; three waveform
     types
   spatial_support: scalp electrode pairs or arrays; the delivered quantity is a CURRENT DENSITY FIELD
     throughout the head, determined by electrode geometry and tissue conductivity -- not a spot under
     an electrode
+  constrains:
+  - material.conductivity
+  notes: 'THE STREAM THAT MAKES THIS CARD WORTH HOLDING.  nine montages and three waveforms in the same
+    nineteen heads is a designed sweep over CURRENT PATHS, and what a sweep over current paths constrains
+    is the conductor: `material.conductivity` of the head volume, through `device_coupling`, which is
+    the process that turns a stimulator current into an electric field GIVEN the tissue conductivities
+    between the electrodes.  the same forward problem that governs EEG, driven rather than observed, which
+    is why this is a field-calibration source and not a stimulation experiment.  static band because a
+    conductivity is a tissue property and not a time series.'
+  frame: head
 - name: eeg
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
     brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
     filtered, sampled voltage
@@ -70,49 +84,103 @@ streams:
   - cutaneous sensation, which is itself a stimulus with its own evoked response
   systematic_bias: EEG recorded during tES is dominated by the stimulation artifact; what survives removal
     is a modelling question, not a measurement.
-  notes: artifact removal at the stimulation frequency also removes any genuine entrainment at that frequency,
-    which is usually the effect being sought
+  notes: 'MEASURED FROM THE HELD SIDECAR: SamplingFrequency 2000 Hz, SoftwareFilters n/a, 32 EEG channels
+    against CPz on an ANT Neuro eego.  full nyquist and DC-coupled because nothing was filtered before
+    deposit.  what a fit may READ up there is a different question: EEG during tES is dominated by the
+    stimulation artifact, and removing it at the stimulation frequency also removes any genuine entrainment
+    at that frequency, which is usually the effect being sought.  that is model discrepancy, not a band
+    limit, so it belongs in `confounds` rather than in `band_hz`.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 1000.0
+  constrains:
+  - device.contact_potential
+  rate_hz: 2000.0
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: impedance_records
   kind: measured
-  via: null
+  via:
+  - device_coupling
   systematic_bias: §52.13 lists electrode impedance and contact models explicitly; measured impedance
     constrains the contact term that otherwise has to be assumed
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains:
+  - device.impedance
+  notes: 'a measured electrode-tissue impedance constrains the contact term that otherwise has to be assumed,
+    and `device_coupling` is the process that writes it.  static band: an impedance record is one value
+    per electrode per session, not a time series.  the component is declared on the implanted support,
+    where the encapsulation story is; these are scalp contacts, so the quantity is right and the support
+    is a stretch the support bank will have to resolve.'
 - name: ecg
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and the reason is an ONTOLOGY GAP rather than an undecided stream.  an ECG trace IS
+    a contact potential, but `device.contact_potential` is written by `device_coupling` out of the field
+    that `em_generation` makes from NEURAL transmembrane current, and the generator here is cardiac muscle,
+    which the registry does not represent at all.  binding it would let the heart contribute a likelihood
+    about cortical current -- precisely the mis-attribution the `via` chain exists to make visible.  held
+    and usable as a regressor and as an artifact template; it constrains nothing.
 - name: eog
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, for the ECG reason and one more.  the generator is the corneo-retinal standing dipole
+    rotating with the eye, which no registered process writes; and the same physical event is already
+    present in the scalp recording as an artifact, so binding both to `device.contact_potential` over
+    one band would count one event twice.  this DIVERGES from sleep-edfx, which binds its EOG as measured;
+    the divergence is deliberate and the reason is written here rather than left silent.
 - name: stimulation_parameters
-  kind: measured
-  via: null
+  kind: imposed
+  via:
+  - device_coupling
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 100.0
+  constrains:
+  - device.coil_current
+  notes: 'imposed, and it CLEARS the bar ds004024 sets.  that card refuses to bind its TMS pulse marks
+    because the deposit records times and nothing else -- no coil pose, no winding, no waveform -- so
+    binding them would hand the model an amplitude nobody measured, dressed as a boundary condition.  here
+    the delivered quantity IS recorded: the eeg sidecar carries the montage name and the stimulation amplitude
+    in mA per session, the events file marks Stimulation Start (16) and Stop (32) to the sample, the waveform
+    is one of three named types, and 62 _electrodes.tsv give the positions.  `device.coil_current` is
+    explicitly the tES or DBS source current as well as a coil''s.  the band to 100 Hz covers DC and the
+    specified stimulation frequencies; the pulse EDGES are not resolved here and no claim is made above
+    it.'
+  frame: scalp
 - name: montage_definitions
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  nine
+    named electrode pairs and arrays, plus 62 held _electrodes.tsv carrying per-session positions.  this
+    is the geometry `montage_sweep` is a sweep OVER; it defines a support and constrains no state itself.'
 - name: behaviour
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a behavioural score, rating or questionnaire response is a report ABOUT a state, produced
+    by a person rather than by a process the model represents, and often minutes later.  no registered
+    component is a score, and treating one as a measurement would let a self-report update tissue state
+    directly.
 absent:
 - t1w
 - delivered_field_measurement
@@ -122,11 +190,17 @@ absent:
 - measured_electrode_positions
 requires:
 - geometry: device-geometry
-  severity: blocking
-  without_it: Transcranial electrical stimulation delivers a current-density field throughout the head,
-    determined by electrode geometry, contact area and the tissue conductivities between them -- not a
-    spot under an electrode. Without the device product a montage is a pair of labels and the delivered
-    dose is unknown.
+  severity: degrading
+  without_it: 'Re-graded from blocking 2026-09-05 ON FILE EVIDENCE: 62 sub-*_ses-*_task-GXtESCTT_electrodes.tsv
+    are held, each carrying named x/y/z positions for the whole cap, with a matching _coordsystem.json.
+    The electrode geometry is present and the montage is addressable. What is still missing, and is why
+    this is degrading rather than satisfied: the contact AREA and the gel footprint are not recorded,
+    and the tissue conductivities between the electrodes are the very thing `montage_sweep` is held to
+    constrain rather than something the deposit supplies. So a delivered current-density field can be
+    predicted only up to a head model whose conductivities are being fitted, and that uncertainty must
+    be carried rather than defaulted away.'
+  substitute: A template head with literature conductivities. That is a prior, and this card exists to
+    replace it with a measurement, so using it and then fitting against this source would be circular.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.

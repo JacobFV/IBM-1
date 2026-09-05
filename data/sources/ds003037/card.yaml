@@ -11,7 +11,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: OpenNeuro-hosted; terms unresolved pending inspection.
-binding: unbound
+binding: bound
 population:
   n: null
   hierarchy:
@@ -28,7 +28,10 @@ frames:
 streams:
 - name: tms_eeg
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
     brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
     filtered, sampled voltage
@@ -47,17 +50,27 @@ streams:
     CANDIDATE NEURAL RESPONSE are four different things. Collapsing them is how a coil position becomes
     a claim about cortex. Without a sham arm, the TEP here is a response to a multisensory event that
     includes a magnetic pulse.'
-  notes: the delivered field is modelled, never measured; the model's discrepancy is the difference between
-    a coil-position claim and a cortical-dose claim
+  notes: 'scalp EEG at kHz with TMS pulses at millisecond precision, and MRI in a SEPARATE session.  the
+    rate is given only as ''kHz'' and the bytes are not held, so 250 Hz is a conservative ceiling to be
+    re-read from the deposit.  FOUR DIFFERENT THINGS MUST NOT BE COLLAPSED here: the requested settings,
+    the delivered physical field, the peripheral co-stimulation, and the candidate neural response.  collapsing
+    them is how a coil position becomes a claim about cortex, and without a sham arm the response recorded
+    here is to a multi-modal event rather than to an induced field.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 250.0
   temporal_support: TMS pulses at millisecond precision; EEG/EMG at kHz; MRI in a separate session
   spatial_support: TMS coil pose relative to the head, and the induced electric field it produces in the
     brain -- which is a FIELD over the whole head, not a point at the coil's centre
+  constrains:
+  - device.contact_potential
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: emg_mep
   kind: measured
-  via: null
+  via:
+  - effector_activation
   observation_chain: motor-unit action potentials -> muscle and subcutaneous volume conduction -> surface
     or intramuscular electrode -> sampled voltage
   confounds:
@@ -68,28 +81,57 @@ streams:
     -- which is why motor threshold is the field's dosing unit. It is a CORTICOSPINAL measure, not a cortical
     one.
   band_hz:
-  - null
-  - null
+  - 10.0
+  - 100.0
+  constrains:
+  - effector.activation
+  notes: 'THE MEP IS THE ONE TMS READOUT WITH AN UNAMBIGUOUS PHYSICAL ENDPOINT -- a muscle contracted
+    -- which is why motor threshold is the field''s dosing unit.  bound to `effector.activation` through
+    `effector_activation`, as sleep-edfx binds its chin EMG; the 10 Hz floor is where a surface EMG stops
+    being movement artifact and the 100 Hz ceiling is where the component is declared meaningful.  IT
+    IS A CORTICOSPINAL MEASURE, NOT A CORTICAL ONE: everything between motor cortex and the muscle is
+    in it.'
 - name: coil_positions
-  kind: measured
+  kind: context
   via: null
   systematic_bias: §56.4 asks for TMS winding/current geometry as a constructed object; a navigated coil
     pose is the boundary condition that object needs
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  a
+    NAVIGATED coil pose, which is the boundary condition a constructed TMS winding/current object would
+    need -- this is the geometry, not the field.  it is context rather than imposed because a pose is
+    where the coil was, and the quantity a materialization conditions on is the field that pose and that
+    current produced, which is MODELLED and never measured.  the model''s discrepancy is exactly the difference
+    between a coil-position claim and a cortical-dose claim.'
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.  acquired in a separate session,
+    which is what makes the coil pose referable to anatomy at all.'
 - name: stimulation_parameters
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: context, and this is the ds004024 rule.  the trigger times mark a real intervention, so `imposed`
+    is the obvious reading -- but an imposed stream is CONDITIONED ON, and what a materialization would
+    condition on is the DELIVERED FIELD, not a machine setting.  binding a pulse mark to `device.coil_current`
+    without a recorded coil pose, winding and waveform would hand the model an amplitude and a location
+    nobody measured, dressed as a boundary condition.  intensity and timing are recorded; the winding
+    geometry and the delivered field are not.
 absent:
 - delivered_field_measurement
 - sham_arm
@@ -99,10 +141,17 @@ absent:
 requires:
 - geometry: device-geometry
   severity: blocking
-  without_it: 'Two device geometries are needed at once and neither can be defaulted: the electrode positions
-    that define the lead field, and the coil winding and pose that determine the induced field. Without
-    both, the pulse is a machine setting and the response is a channel-space waveform, with nothing connecting
-    them at any cortical location.'
+  without_it: 'The delivered quantity is an induced electric field throughout the head, set by the coil''s
+    winding geometry and its pose relative to the anatomy. This card is the best case in the corpus for
+    the pose half -- it is NAVIGATED and an individual T1 exists -- and the winding half is still missing,
+    so the field remains modelled rather than known. KEPT BLOCKING and scoped to no streams, the corpus
+    idiom for a requirement nothing currently claims against: `tms_eeg` binds to `device.contact_potential`
+    on `sensor_array`, `emg_mep` to `effector.activation` on `motor_units`, and every stimulation stream
+    is context precisely because the delivered field is not recorded. Re-scope it the moment a stream
+    here attributes anything to `electromagnetic.efield`.'
+  for_streams: []
+  substitute: A manufacturer winding model with the navigated pose. That is a datasheet geometry rather
+    than this coil's, and its error propagates directly into every predicted cortical dose.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
@@ -113,8 +162,11 @@ use:
 - calibrate
 - fit
 forbidden:
-- ds003037/* -> delivered-field claims without an explicit field model
-- ds003037/tms_eeg -> cortical response without a co-stimulation model
+- ds003037/* -> a delivered cortical field or dose (the field is modelled, never measured)
+- ds003037/tms_eeg -> a purely transcranial evoked response (no sham arm; the response is to a multi-modal
+  event)
+- 'ds003037/emg_mep -> a cortical measure (an MEP is corticospinal: everything between motor cortex and
+  the muscle is in it)'
 split:
   group_by:
   - participant

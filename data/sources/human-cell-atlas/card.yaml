@@ -13,7 +13,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -21,24 +21,40 @@ frames:
 - cell_taxonomy
 streams:
 - name: peripheral_tissue_cell_references
-  kind: measured
+  kind: context
   via: null
   systematic_bias: '§52.6 registers HCA for PERIPHERAL AND SLOW PHENOTYPE PRIORS. Its relevance to B-WIN
     is the body, not the brain: vascular endothelium, immune populations, endocrine tissue. Using it as
     a brain cell-type reference means preferring it over BICAN and the Allen cell atlas, which would be
     wrong.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: single-cell reference maps across human tissues and organs; the brain is one tissue
     among many and is not its focus
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.  the brain is
+    one tissue among many here and is not the focus; using it as a brain cell-type reference means using
+    its weakest part.'
 - name: vascular_and_immune_references
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.  its relevance
+    is the BODY -- vascular endothelium, immune populations, endocrine tissue -- which is a peripheral
+    and slow phenotype prior.'
 absent:
 - brain_depth
 - spatial_position

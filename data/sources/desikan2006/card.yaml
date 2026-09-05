@@ -26,7 +26,7 @@ licence:
     atlas itself originates outside the FreeSurfer project and its authors'' own terms may be broader
     or narrower. That matters only for a copy obtained from the originating project; the copy we hold
     came through FreeSurfer and carries FreeSurfer''s terms.'
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -34,18 +34,26 @@ frames:
 - subject_native_surface
 streams:
 - name: gyral_labels
-  kind: measured
+  kind: context
   via: null
   systematic_bias: GYRAL anatomy, not function and not cytoarchitecture. Sulcal and gyral boundaries do
     not coincide with areal boundaries, and the atlas's popularity is a fact about FreeSurfer's defaults
     rather than about the cortex. Its main use here is that most published structural connectomes are
     expressed in it, so it is a required crosswalk.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: 34 gyral regions per hemisphere on individual FreeSurfer surfaces, propagated from
     a manually labelled training set
+  constrains: []
+  notes: 'context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set
+    is a COVER over a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value
+    any ibm component takes at them.  no registered component is a region label, and inventing one would
+    make a naming convention into biology.  it reaches a materialization as a support index and as a `prior`,
+    never as a likelihood.  GYRAL anatomy: sulcal boundaries are not areal boundaries, and this atlas
+    is held mainly because most published structural connectomes are expressed in it, i.e. as a required
+    crosswalk between covers.'
 absent:
 - areal_correspondence
 - individual_uncertainty

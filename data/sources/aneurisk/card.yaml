@@ -11,7 +11,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: Unresolved.
-binding: unbound
+binding: bound
 population:
   n: 100
   hierarchy:
@@ -22,7 +22,7 @@ frames:
 - mesh_native
 streams:
 - name: centerlines_with_radius
-  kind: measured
+  kind: context
   via: null
   systematic_bias: §56.3 asks for VESSEL CENTRELINE GRAPHS, branch topology, radius and length estimates,
     and ORIENTED TUBE representations. AneuRisk already distributes exactly that structure, computed by
@@ -30,13 +30,20 @@ streams:
     the target representation. The radius is a maximal inscribed sphere, which is a DEFINITION of radius,
     not the only one.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series
   spatial_support: vessel surface meshes plus CENTRELINE GRAPHS carrying radius, curvature and torsion
     as functions of arc length -- a tube-chain representation in all but name
+  constrains: []
+  notes: context, and the reason is an ONTOLOGY GAP that this card makes unusually sharp.  what is distributed
+    is exactly the structure a vascular product wants -- centreline graphs carrying radius, curvature
+    and torsion as functions of arc length, a tube-chain representation in all but name, computed by VMTK's
+    maximal-inscribed-sphere method -- and the registry has NO component for vessel geometry.  `blood.volume`
+    and `blood.flow` are per-tissue-element quantities and a lumen radius is not either of them.  so this
+    enters as a geometric prior and constrains no state until a vascular product exists.
 - name: vessel_surfaces
-  kind: measured
+  kind: context
   via: null
   observation_chain: clinical 3D rotational angiography or CTA -> segmentation -> surface reconstruction
     -> centreline extraction. Each stage is a derivation and only the first is a measurement
@@ -45,31 +52,48 @@ streams:
   - clinical population with altered haemodynamics
   - surface smoothing altering curvature and torsion
   systematic_bias: Derived geometry with an unusually well-documented derivation chain.
-  notes: curvature and torsion are second derivatives of a smoothed surface and are highly sensitive to
-    the smoothing
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  derived
+    geometry with an unusually well-documented derivation chain; curvature and torsion are second derivatives
+    of a smoothed surface and are highly sensitive to the smoothing.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
 - name: curvature_and_torsion
-  kind: measured
+  kind: context
   via: null
   systematic_bias: arc-length profiles of curvature and torsion are directly the statistics §56.3's stochastic
     microvascular ensembles must be conditioned on
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `centerlines_with_radius`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.  arc-length profiles of the same centrelines.'
 - name: aneurysm_annotations
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
+    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
+    takes at them.  no registered component is a region label.  it reaches a materialization as a support
+    index and as a `prior`, never as a likelihood.  an expert label of where a lesion is.'
 - name: clinical_metadata
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a behavioural score, rating or questionnaire response is a report ABOUT a state, produced
+    by a person rather than by a process the model represents, and often minutes later.  no registered
+    component is a score, and treating one as a measurement would let a self-report update tissue state
+    directly.
 absent:
 - parent_imaging_for_all_cases
 - healthy_cohort

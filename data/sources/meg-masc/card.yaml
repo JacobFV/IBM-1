@@ -17,7 +17,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: Unresolved. The MASC corpus texts and the recorded narration have separate terms.
-binding: unbound
+binding: bound
 population:
   n: 27
   hierarchy:
@@ -34,7 +34,8 @@ frames:
 streams:
 - name: meg_208ch
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
     plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
     SQUID flux -> sampled channel
@@ -49,47 +50,89 @@ streams:
   systematic_bias: The acoustic and the linguistic explanation of the same MEG response are collinear
     in natural speech; separating them requires modelling the acoustic stage rather than regressing it
     out.
-  notes: forward model uses individual anatomy where present and a template otherwise; which one applies
-    per participant must be recorded, not averaged over
+  notes: 'MEASURED FROM THE HELD SIDECARS 2026-09-05: KIT/Yokogawa, SamplingFrequency 1000 Hz, SoftwareFilters
+    n/a, 208 MEG channels plus 16 references, DigitizedLandmarks true.  the system is DC-coupled so the
+    floor is zero; the ceiling is set at 200 Hz rather than the 500 Hz nyquist because these are AXIAL
+    GRADIOMETERS in an unshielded-by-modern-standards environment and nothing above the gamma band survives
+    at a usable signal-to-noise here -- that is a judgement, and it is the only one in this stream.  `em_generation`
+    alone: a pickup coil has no contact interface, so the chain is shorter than a scalp electrode''s.  THE
+    HARD PART OF THIS SOURCE is not the band: the acoustic and the linguistic explanation of the same
+    response are collinear in natural speech, and separating them requires modelling the acoustic stage
+    rather than regressing it out.  em_generation is what produces the magnetic field from source currents;
+    the previous chain named vascular_flow, which is unrelated.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 200.0
   temporal_support: MEG at 1000 Hz; audio at 22.05 kHz; forced-aligned phoneme and word onsets at millisecond
     resolution -- the PHONEME clock and the MEG clock are the pairing that matters
   spatial_support: 208-channel axial gradiometer KIT system; head position from marker coils; individual
     anatomy where available
+  constrains:
+  - electromagnetic.bfield
+  rate_hz: 1000.0
+  frame: meg_device
+  units: T
 - name: word_and_phoneme_alignments
-  kind: imposed
+  kind: context
   via: null
   systematic_bias: FORCED ALIGNMENT is an algorithm's output, not a measurement of when a phoneme occurred;
     its error is systematic at word boundaries
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context, and this is a CORRECTION: the migration marked it `imposed`, and it is not.  an imposed
+    stream is state the experimenter set; a forced alignment is where an algorithm put a phoneme boundary
+    given the audio and the transcript.  its error is systematic at word boundaries, and binding it as
+    imposed would let a model condition on event times nobody measured.  the thing the experimenter actually
+    set is the WAVEFORM, which is `audio_stimuli`.'
 - name: audio_stimuli
   kind: imposed
-  via: null
+  via:
+  - transduction
   band_hz:
-  - null
-  - null
+  - 20.0
+  - 11025.0
+  constrains:
+  - device.speaker_pressure
+  notes: 'imposed: four short stories played to every participant, clamped on the display support and
+    conditioned on.  ceiling is the 22.05 kHz stimulus files'' own nyquist; floor is where `transduction`
+    reads speaker pressure.  the PHONEME clock and the MEG clock are the pairing that makes this dataset
+    worth holding, and the phoneme clock is the derived one.'
+  frame: story_timeline
 - name: story_transcripts
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context: a description of the stimulus, not the stimulus.  the pressure waveform above is what
+    was physically delivered.'
 - name: head_position
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  MEASURED
+    ON DISK 2026-09-05: _markers.mrk per run plus acq-ELP and acq-HSP _headshape.pos and a _coordsystem.json
+    per session.  marker-coil positions locate the head in the dewar; that is what makes the lead field
+    computable and it is not evidence about a brain.  head localisation here is at the START of a run
+    rather than continuous (ContinuousHeadLocalization false), so within-run drift is unmeasured.'
 - name: behaviour
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a behavioural score, rating or questionnaire response is a report ABOUT a state, produced
+    by a person rather than by a process the model represents, and often minutes later.  no registered
+    component is a score, and treating one as a measurement would let a self-report update tissue state
+    directly.
 absent:
 - fmri
 - eeg
@@ -100,10 +143,19 @@ requires:
 - geometry: device-geometry
   for_streams:
   - meg_208ch
-  severity: blocking
-  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
-    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
-    be attributed to any cortical location.
+  severity: degrading
+  without_it: 'Re-graded from blocking 2026-09-05 ON FILE EVIDENCE: every session carries *_task-*_markers.mrk,
+    *_acq-ELP_headshape.pos, *_acq-HSP_headshape.pos and a _coordsystem.json, and the sidecar declares
+    DigitizedLandmarks true. Marker coils plus a digitised head shape fix the sensor pose relative to
+    the head, so a lead field is computable and a sensor-space result can be attributed. Two reasons it
+    is degrading rather than satisfied. ContinuousHeadLocalization is false, so the head is localised
+    at the start of a run and any drift within it is unmeasured. And a `structural/` tree of T1s is held
+    but it does not cover every participant, so the forward model uses individual anatomy for some and
+    a template for others -- which one applies per participant must be recorded rather than averaged over,
+    and `forbidden` now says so.'
+  substitute: 'A template head model warped to the digitised head points, for the participants with no
+    structural scan. That makes the source-estimate error heterogeneous ACROSS the cohort, which is worse
+    than uniformly biased: a group contrast can then be driven by which participants had an MRI.'
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
@@ -113,8 +165,12 @@ requires:
 use:
 - fit
 forbidden:
-- meg-masc/* -> vascular or metabolic state
-- meg-masc/word_and_phoneme_alignments -> observation-role likelihoods
+- meg-masc/* -> a group result that pools participants with and without individual anatomy without recording
+  which is which
+- meg-masc/word_and_phoneme_alignments -> measured phoneme onsets (forced alignment is an algorithm's
+  output with systematic boundary error)
+- meg-masc/meg_208ch -> a linguistic effect separated from an acoustic one without an explicit acoustic
+  model (the two are collinear in natural speech)
 split:
   group_by:
   - participant

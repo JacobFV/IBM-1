@@ -28,7 +28,7 @@ bands is the request interface earning its keep.
 
 from __future__ import annotations
 
-from ibm.materialize.library import NamedModel, register, res, rule
+from ibm.materialize.library import NamedModel, anat, register, res, rule
 from ibm.materialize.request import (
     Budget,
     DeviceSpec,
@@ -36,7 +36,6 @@ from ibm.materialize.request import (
     SubjectSpec,
     Window,)
 from ibm.vocabulary import (
-    Anat,
     Band,
     Near,
     OnSupport,
@@ -378,13 +377,13 @@ DBS_RESPONSE = register(NamedModel(
                  sel("neural.exc.activity", "neural.inh.activity",
                      region=Near("lead", 15.0), band=RESPONSE)),
         regions=(("contact_shell", Near("lead", 3.0)),
-                 ("nucleus", Anat("bg_territories", "subthalamic")),
-                 ("loop", Anat("bg_territories", "sensorimotor"))),
+                 ("nucleus", anat("brainstem_nuclei", "subthalamic_nucleus")),
+                 ("loop", anat("bg_territories", "rostral_motor", "caudal_motor"))),
         resolution=res(
             rule(Near("lead", 3.0), 0.1, DBS_DRIVE),
             rule(Near("lead", 15.0), 0.5, DBS_DRIVE),
-            rule(Anat("bg_territories", "sensorimotor"), 2.0, RESPONSE),
-            rule(Anat("thalamic_nuclei", "ventral_lateral"), 2.0, RESPONSE),
+            rule(anat("bg_territories", "rostral_motor", "caudal_motor"), 2.0, RESPONSE),
+            rule(anat("thalamic_nuclei", "vla", "vlp"), 2.0, RESPONSE),
             default_mm=8.0, default_band=RESPONSE),
         fields=("device", "electromagnetic", "material", "neural", "structural"),
         anatomy=("bg_territories", "thalamic_nuclei", "striosome_matrix",
@@ -549,13 +548,13 @@ MOTOR_MAPPING = register(NamedModel(
         name="motor-mapping",
         targets=(sel("effector.drive", "effector.activation", "effector.force",
                      band=MEP),
-                 sel("neural.exc.activity", region=Anat("cortical_areas", "precentral"),
+                 sel("neural.exc.activity", region=anat("cortical_areas", "precentral"),
                      band=RESPONSE)),
-        regions=(("hand_knob", Anat("cortical_areas", "precentral")),
+        regions=(("hand_knob", anat("cortical_areas", "precentral")),
                  ("focus", Near("coil", 30.0))),
         resolution=res(
             rule(Near("coil", 15.0), 0.5, PULSE),
-            rule(Anat("cortical_areas", "precentral"), 2.0, RESPONSE),
+            rule(anat("cortical_areas", "precentral"), 2.0, RESPONSE),
             rule(OnSupport("head_volume"), 1.0, PULSE),
             default_mm=6.0, default_band=RESPONSE),
         fields=("device", "electromagnetic", "material", "neural", "effector",

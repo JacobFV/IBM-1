@@ -14,7 +14,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -22,25 +22,34 @@ frames:
 - fsaverage
 streams:
 - name: population_average_surface
-  kind: measured
+  kind: context
   via: null
   systematic_bias: An AVERAGE surface has no individual's folding pattern and systematically smooths sulcal
     depth; using it as a geometric substrate for a forward model gives dipole orientations that belong
     to nobody.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: a 69-subject average midthickness/inflated/very-inflated surface in fs_LR space, with
     left-right vertex correspondence -- the property that makes hemispheric comparison well-posed
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  an
+    average surface has nobody''s folding.'
 - name: interhemispheric_vertex_correspondence
-  kind: measured
+  kind: context
   via: null
   systematic_bias: the left-right correspondence is a genuine and unusual property, and it is what makes
     asymmetry a measurable rather than a definitional quantity
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  the
+    left-right vertex correspondence is a relation between two supports, which is exactly the kind of
+    thing a cover mapping carries and exactly not a state value.'
 absent:
 - individual_folding
 - subcortex

@@ -12,7 +12,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: HCP Open Access Data Use Terms.
-binding: unbound
+binding: bound
 population:
   n: 184
   hierarchy:
@@ -29,7 +29,12 @@ frames:
 streams:
 - name: dwi_7t
   kind: measured
-  via: null
+  via:
+    structural.fiber_orientation:
+    - tract_propagation
+    structural.axonal_density: &id001
+    - plasticity
+    structural.myelination: *id001
   observation_chain: water displacement over the diffusion time within and around axons and cells -> gradient-direction-dependent
     signal attenuation -> reconstructed q-space or orientation distribution; ORIENTATION EVIDENCE, not
     an observation of a tract
@@ -41,34 +46,69 @@ streams:
   - 7T B1 inhomogeneity and increased susceptibility distortion, both worse than at 3T
   systematic_bias: Higher spatial resolution reduces partial-volume mixing of fibre populations, which
     is the dominant error in tractography, at the cost of angular resolution.
-  notes: the 3T and 7T diffusion in the SAME participants is a direct, measurable estimate of how much
-    a tractography result depends on acquisition rather than on anatomy -- which is a model-class uncertainty
-    component that is usually assumed away
+  notes: '1.05 mm isotropic at 7 T, two b-values with 65 directions each.  ORIENTATION EVIDENCE, and the
+    distinction is the whole binding.  what a diffusion volume measures is direction-dependent attenuation
+    of water displacement, which constrains LOCAL microstructure -- fibre orientation, axonal density,
+    myelination -- and does NOT observe a tract: a tractogram is a reconstruction laid over this field
+    and is context wherever it appears in this corpus.  static band because microstructure is a tissue
+    parameter.  the via chain follows the corpus convention set by tractoinferno, ds000117 and aomic-id1000:
+    `plasticity` is named because it is the process that writes the structural field, though its declared
+    outputs cover density and myelination and NOT `structural.fiber_orientation`, which no registered
+    process writes.  WHY BOTH THIS AND THE 3T: higher spatial resolution reduces partial-volume mixing
+    of fibre populations, which is the dominant error in tractography, at the cost of angular resolution
+    and SNR per direction.  the 3T and 7T acquisitions in the SAME participants are a direct, measurable
+    estimate of how much a result depends on acquisition rather than on anatomy, which is a model-class
+    uncertainty term usually assumed away.  per-component chains: this acquisition makes more than one
+    claim and the routes differ.  one chain for all of them would let the component whose route is wrong
+    borrow the route of the ones that are right.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series; 2 b-values with 65 directions each
   spatial_support: 1.05 mm isotropic -- higher spatial resolution than the 3T HCP diffusion at the cost
     of fewer directions and lower SNR per direction. That trade is the reason to hold both rather than
     only one
+  constrains:
+  - structural.fiber_orientation
+  - structural.axonal_density
+  - structural.myelination
+  frame: subject_native
 - name: field_maps
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  a
+    B0 field map is what makes the EPI distortion correctable; it describes the acquisition''s geometry,
+    not the tissue''s state.'
 - name: gradient_tables
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  bvals
+    and bvecs are the acquisition''s own description of which direction each volume sampled.  without
+    them the diffusion volumes are unordered images; with them they are an orientation field.  provenance,
+    not evidence.'
 - name: preprocessed_volumes
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a PIPELINE OUTPUT, not a measurement: it is what one algorithm returned when
+    it was run on the bytes above.  ARCHITECTURE.md''s rule that a derived quantity carries its algorithm
+    forever applies -- binding it as measured would let one reconstruction contribute a likelihood about
+    tissue, which is the same argument that makes a tractogram context.  the minimal-preprocessing-pipeline
+    output of the same acquisition; binding it would count one scan twice and attribute the pipeline''s
+    choices to the tissue.'
 absent:
 - ex_vivo_validation
 - directionality

@@ -14,7 +14,7 @@ licence:
     The Open Data Commons Public Domain Dedication and Licence is a dedication to the public domain, so
     nothing derived from this source inherits a constraint. Its share-alike-free status is a property
     of PDDL 1.0 and not an inference from the file.'
-binding: unbound
+binding: bound
 population:
   n: 1
   hierarchy:
@@ -28,57 +28,108 @@ frames:
 streams:
 - name: median_nerve_evoked_response
   kind: measured
-  via: null
+  via:
+  - em_generation
   systematic_bias: The N20m response has a known latency, a known polarity and a known generator in area
     3b. That makes it one of the few fixtures where a source estimate can be checked against a physiologically
     expected answer rather than against itself -- exactly the 'assert against something that is not this
     code' requirement
   band_hz:
-  - null
-  - null
+  - 0.1
+  - 100.1
   temporal_support: MEG at 1000 Hz; median-nerve stimulation as discrete events with a very well-characterised
     early response
   spatial_support: 306-channel Neuromag MEG with FreeSurfer anatomy
+  constrains:
+  - electromagnetic.bfield
+  notes: 'MEASURED FROM THE HELD FIF 2026-09-05: sfreq 300.307 Hz, highpass 0.1 Hz, lowpass 100.103 Hz,
+    306 MEG channels and no EEG.  THE CARD SAID 1000 Hz AND WAS WRONG BY A FACTOR OF THREE; the band above
+    is the acquisition''s own passband, read from the file.  WHY THIS FIXTURE EXISTS: the N20m has a known
+    latency, a known polarity and a known generator in area 3b, so a source estimate computed here can
+    be checked against a physiologically expected answer rather than against itself.  n=1, so it validates
+    an implementation and establishes nothing about people.  em_generation is what produces the magnetic
+    field from source currents; the previous chain named vascular_flow, which is unrelated.'
+  rate_hz: 300.307
+  frame: meg_device
+  units: T
 - name: time_frequency_response
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.1
+  - 100.1
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `median_nerve_evoked_response`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.  a time-frequency decomposition is a VIEW
+    of the same samples; binding it would count one recording twice, once in the time domain and once
+    in the frequency domain.'
 - name: meg
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.1
+  - 100.1
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `median_nerve_evoked_response`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.'
 - name: freesurfer_reconstruction
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  a FreeSurfer reconstruction supplies the cortical and head supports a materialization
+    is indexed over.  it constrains no state and must never be allowed to update biology.  MEASURED ON
+    DISK 2026-09-05: the deposit also ships derivatives/sub-01/sub-01_task-somato-fwd.fif, a precomputed
+    forward solution.  a lead field is the analytic value of `em_generation` on this head -- it CALIBRATES
+    that process and is not a measurement of a brain, which is the same call mne-sample makes for its
+    own forward solution.'
 - name: stimulation_events
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 1.0
+  constrains: []
+  notes: 'context, and this is the ds004024 rule applied to a peripheral stimulator.  the fif carries
+    TRIGGER TIMES for median-nerve stimulation and nothing else: no delivered current, no pulse width,
+    no electrode position on the wrist.  an imposed stream is conditioned on, and what a materialization
+    would condition on is the delivered current, which is not recorded -- binding these marks to `device.coil_current`
+    would hand the model an amplitude nobody measured.  ONE FURTHER GAP: even with a current, the field
+    it drives is in the ARM, and `device_coupling` writes `electromagnetic.efield` on `head_volume` only,
+    so the registry has no support for a peripheral stimulation site at all.'
 absent:
 - population
 - eeg
 - vascular
 requires:
 - geometry: device-geometry
-  severity: blocking
-  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
-    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
-    be attributed to any cortical location.
+  severity: degrading
+  without_it: 'Re-graded from blocking 2026-09-05 ON FILE EVIDENCE read out of the held fif: dev_head_t
+    is present and 47 digitisation points are stored, and the deposit additionally ships a precomputed
+    forward solution (sub-01_task-somato-fwd.fif) together with the FreeSurfer reconstruction, so both
+    the sensor pose and the conductor are present and the lead field is not merely computable but computed.
+    It stays degrading rather than satisfied for one reason: coil INTEGRATION-POINT geometry is a property
+    of the Neuromag sensor model rather than of this file, so a reader that models each sensor as a point
+    will disagree with the shipped forward solution, and that disagreement is exactly what this fixture
+    is held to expose.'
+  substitute: The shipped forward solution itself, used as the reference a re-implementation is checked
+    against. That is calibration, not evidence, and it must never be inverted into a claim about this
+    participant's cortex.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.

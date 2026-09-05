@@ -13,7 +13,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -21,17 +21,23 @@ frames:
 - fsaverage
 streams:
 - name: consensus_connectome
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'A CONSENSUS matrix: edges surviving a group-level thresholding rule. The rule is a
     choice that determines the network''s density and therefore every graph statistic computed on it,
     and consensus thresholding systematically favours short connections.'
-  notes: one pipeline's answer, parcellated and thresholded
+  notes: 'context, and this is the case the schema singles out.  a connectome matrix is a TOPOLOGY ASSERTION
+    -- which supports are taken to interact -- produced by somebody''s reconstruction pipeline.  ARCHITECTURE.md
+    §3 makes interaction topologies a separate primitive from state, and binding a matrix as `measured`
+    would let one pipeline''s tractography contribute a likelihood about tissue.  a CONSENSUS matrix:
+    edges surviving a group-level thresholding rule, and the rule sets the density and therefore every
+    graph statistic computed on it.  consensus thresholding systematically favours short edges.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: a group consensus structural connectome on the Schaefer parcellation at several resolutions
+  constrains: []
 absent:
 - provenance
 - path_geometry

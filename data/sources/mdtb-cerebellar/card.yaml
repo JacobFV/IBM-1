@@ -14,7 +14,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -23,26 +23,36 @@ frames:
 - MNI152
 streams:
 - name: task_defined_functional_regions
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Defined by TASK responses rather than resting correlation, which is a stronger basis
     than Buckner's -- the boundaries are where task profiles change. The boundaries demonstrably CROSS
     lobular boundaries, which is direct evidence for §5's claim that anatomical and functional partitions
     do not coincide.
-  notes: 47 tasks is a rich but finite sampling of the space of things a cerebellum does
+  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
+    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
+    takes at them.  no registered component is a region label.  it reaches a materialization as a support
+    index and as a `prior`, never as a likelihood.  defined by responses to 47 task conditions rather
+    than by resting correlation, which is a stronger basis than Buckner''s -- and the boundaries demonstrably
+    CROSS lobular ones, which is direct evidence that folding and function disagree in the cerebellum.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: cerebellar functional regions defined by responses to 47 task conditions in 24 participants,
     on the SUIT template and flatmap
+  constrains: []
 - name: task_activation_profiles
-  kind: measured
+  kind: context
   via: null
   systematic_bias: the continuous profiles are more informative than the derived regions
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a task-contrast profile is a GLM output under a canonical haemodynamic response and
+    a linear-additivity assumption, relative to the mean over one finite battery.  it has no absolute
+    scale and no unit any registered component carries.
 absent:
 - individual_boundaries
 - resting_state_correspondence

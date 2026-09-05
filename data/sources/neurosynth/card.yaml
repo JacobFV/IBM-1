@@ -14,44 +14,55 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
 - MNI152
 streams:
 - name: term_association_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'registry/README states it exactly: A NEUROSYNTH MAP SAYS ''PAPERS REPORTING THIS TERM
     ALSO REPORT COORDINATES NEAR HERE''. It does not say what any participant''s cortex is doing at time
     t. The unit of analysis is the ARTICLE, the feature is a word in an abstract, and the coordinates
     are peak locations from thresholded maps -- three layers of publication-process filtering between
     the tissue and the number.'
-  notes: publication bias, thresholding at the source studies, and the term-extraction step are all in
-    the estimator and none is modelled
+  notes: 'context, and the registry''s own phrasing is the right one: A NEUROSYNTH MAP SAYS ''PAPERS REPORTING
+    THIS TERM ALSO REPORT COORDINATES NEAR HERE''.  it does not say what any participant''s cortex is
+    doing at time t.  THE UNIT OF ANALYSIS IS THE ARTICLE, roughly 14,000 of them, and publication bias,
+    source-study thresholding and the term-extraction step are all inside the estimator and none is modelled.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: voxel-wise association maps between a TERM appearing in an article's abstract and coordinates
     reported in that article; roughly 14,000 studies
+  constrains: []
 - name: reverse_inference_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: the posterior-probability maps invite reverse inference ('this activation implies this
     process') and the base rates that would make that valid are the literature's, not the brain's
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and more dangerous than the association maps: a posterior-probability map invites ''this
+    activation implies this process'', and the base rates that would make that valid are the LITERATURE''s,
+    not the brain''s.'
 - name: decoding_as_negative_control
-  kind: measured
+  kind: context
   via: null
   systematic_bias: if a learned map decodes to a term profile indistinguishable from a random map's, that
     is a failure worth catching
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  using the term decoder as a NEGATIVE CONTROL is the one honest use of this source:
+    if a learned map decodes to a term profile indistinguishable from a random map''s, that is a failure
+    worth catching.  a control is machinery, never evidence.'
 absent:
 - participant_level_data
 - unthresholded_source_maps

@@ -18,7 +18,7 @@ licence:
     of which state CC0. The metadata is held beside the payloads under meta/ so the claim is checkable
     from the bytes rather than from this sentence. CC0 imposes nothing on distribution; rule 7 is not
     engaged either way.
-binding: unbound
+binding: bound
 population:
   n: 603
   hierarchy:
@@ -34,7 +34,7 @@ frames:
 - MNI152
 streams:
 - name: population_vessel_probability
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'Vessel position varies far more between people than cortical position does, so a population
     vessel probability map is diffuse exactly where it matters. MEASURED ON THE HELD BYTES: 5,262,854
@@ -45,13 +45,19 @@ streams:
     value confounds ''this vessel is rare'' with ''this vessel moves'', which no field in the deposit
     separates.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: population probability, mean radius and radius standard deviation of the cerebral ARTERIES
     on a 364x436x364 lattice at 0.5 mm, which is the FSL MNI152 1 mm grid subdivided by two
+  constrains: []
+  notes: context.  a population probability that a voxel is inside an artery is VESSEL GEOMETRY -- where
+    the tree tends to run across 603 people -- and the registry has no component for vessel presence,
+    calibre or topology.  `blood.volume` is the blood in a tissue element of one brain and this is not
+    that; binding them would let a population haze contribute a likelihood about an individual's perfusion.  it
+    enters as a `prior` over vascular geometry, which is what the card's `use` already says.
 - name: vessel_radius_statistics
-  kind: measured
+  kind: context
   via: null
   systematic_bias: A MEAN radius over 603 non-linearly registered subjects at a voxel that is only sometimes
     a vessel. The maximum anywhere in the volume is 3.96 mm, which is smaller than a real internal carotid
@@ -60,8 +66,13 @@ streams:
     and rule 4 makes that permanent. The standard-deviation volume is shipped beside it and is the thing
     to quote if a width is wanted.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, same reason as the probability map above: a mean radius over 603 imperfectly registered
+    subjects is a summary of a geometric prior, not a measurement of any vessel.  the maximum anywhere
+    is 3.96 mm, smaller than a real internal carotid, which is what averaging position does to calibre
+    -- usable as a ranking, never as a value.'
 absent:
 - cow_variant_conditioning
 - individual_geometry

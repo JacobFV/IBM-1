@@ -11,7 +11,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: HCP Open Access Data Use Terms.
-binding: unbound
+binding: partial
 population:
   n: 95
   hierarchy:
@@ -29,7 +29,8 @@ frames:
 streams:
 - name: meg_rest
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
     plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
     SQUID flux -> sampled channel
@@ -43,18 +44,28 @@ streams:
     the Neuromag configuration
   systematic_bias: 'MAGNETOMETER-only array: a different sensitivity profile from CTF and Neuromag systems,
     and a third independent test of the same forward physics.'
-  notes: the same participants' diffusion and BOLD data are available, so structural, functional and electrophysiological
-    claims can be compared WITHIN person -- which §38 requires before any of the three is substituted
-    for another
+  notes: 'MEG at 2034.5 Hz on a 248-channel 4D Neuroimaging MAGNETOMETER array -- not gradiometers, which
+    is the point: a third independent sensitivity profile against the CTF and Neuromag systems, and therefore
+    a third independent test of the same forward physics.  the ceiling is 200 Hz rather than the ~1017
+    Hz nyquist, the same judgement meg-masc''s card records: magnetometers in an urban environment have
+    nothing usable above the gamma band.  `em_generation` alone -- a pickup coil has no contact interface,
+    so the chain is shorter than a scalp electrode''s.  em_generation is what produces the magnetic field
+    from source currents; the previous chain named vascular_flow, which is unrelated.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 200.0
   temporal_support: MEG at 2034.5 Hz; resting state plus motor, working-memory and story-math tasks
   spatial_support: 248-channel 4D Neuroimaging magnetometer system (not gradiometers); individual anatomy
     and surfaces from the parent HCP acquisition
+  constrains:
+  - electromagnetic.bfield
+  rate_hz: 2034.5
+  frame: meg_device
+  units: T
 - name: meg_task
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
     plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
     SQUID flux -> sampled channel
@@ -65,34 +76,63 @@ streams:
   - muscle artifact at high frequency
   - SQUID jumps and sensor drift
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 200.0
+  constrains:
+  - electromagnetic.bfield
+  notes: separate runs from `meg_rest` -- motor, working-memory and story-math -- so both are measured
+    rather than one being a second count of the other.  same array and same clock.  em_generation is what
+    produces the magnetic field from source currents; the previous chain named vascular_flow, which is
+    unrelated.
+  rate_hz: 2034.5
+  frame: meg_device
+  units: T
 - name: cross_modal_within_person
-  kind: measured
+  kind: context
   via: null
   systematic_bias: structural, functional and electrophysiological measurements in the same people is
     the design §38's distinction actually needs
   band_hz:
   - null
   - null
+  constrains: []
+  notes: context.  what this names is the DESIGN -- structural, functional and electrophysiological measurement
+    in the same people -- which is what makes comparing the three a within-person question rather than
+    a between-cohort one.  a design is not a measurement, and the bytes it refers to belong to hcp-young-adult.
 - name: individual_anatomy
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.  inherited from the parent HCP
+    acquisition and carded there.'
 - name: derived_source_estimates
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and firmly: AN INVERSE SOLUTION IS NOT GROUND TRUTH.  a source estimate is what one
+    inverse operator returned from the sensor data above, and binding it as measured would let that operator''s
+    regularisation contribute a likelihood about cortical state -- the call mne-sample''s card makes for
+    a `.stc`.'
 - name: connectivity_products
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a connectivity map computed from an inverse solution inherits its entire uncertainty
+    structure, and MEG source connectivity is contaminated by SOURCE LEAKAGE, which produces spurious
+    zero-lag coupling that leakage correction then removes along with the true zero-lag coupling.  see
+    the hcp-meg-maps card, which is the same product.
 absent:
 - eeg
 - ieeg
@@ -105,9 +145,15 @@ requires:
   - meg_rest
   - meg_task
   severity: blocking
-  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
-    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
-    be attributed to any cortical location.
+  without_it: 'The MEG forward model is dominated by sensor pose relative to the head, and for a 248 MAGNETOMETER
+    array it is dominated harder than for a gradiometer one: a magnetometer sees distant sources, so a
+    pose error does not merely displace an estimate, it changes which sources contribute. KEPT BLOCKING,
+    and the reason is that the bytes are NOT HELD (access: priority), so nothing could be checked on disk.
+    The release is documented to ship head-position and coil geometry and this entry should be re-graded
+    to degrading the day the bytes arrive and that is verified -- re-grading now would be an assumption,
+    which is the thing this field exists to prevent.'
+  substitute: None while unheld. A template sensor pose for a magnetometer array is not a small error
+    and would be a fact about the template.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.

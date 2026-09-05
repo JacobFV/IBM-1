@@ -18,7 +18,7 @@ licence:
     CC BY-SA 4.0. THE SHARE-ALIKE TERM IS THE RISK: if the homepage is authoritative, everything derived
     from these data inherits share-alike. Recorded as unresolved on that axis rather than taking the more
     permissive reading.'
-binding: unbound
+binding: bound
 population:
   n: 40
   hierarchy:
@@ -30,7 +30,7 @@ frames:
 - channel_label
 streams:
 - name: seven_standard_erp_components
-  kind: measured
+  kind: context
   via: null
   observation_chain: post-synaptic currents in spatially aligned pyramidal populations -> volume conduction
     through brain, CSF, skull and scalp -> potential difference between an electrode and a reference ->
@@ -50,13 +50,19 @@ streams:
     the SAME 40 people with the SAME hardware. That is a standard measurement fixture: an observation
     model that cannot reproduce these components on this data has failed a test that could have been passed.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 100.0
   temporal_support: 1024 Hz acquisition. The distributed processed ERPs are averages over trials and are
     a DERIVED VIEW that has destroyed the single-trial clock entirely
   spatial_support: 30-channel scalp montage
+  constrains: []
+  notes: context, and it is a DERIVED VIEW rather than a gap.  what this entry names is the seven component
+    averages (N170, MMN, N2pc, N400, P3b, LRP, ERN) -- trial averages that have DESTROYED THE SINGLE-TRIAL
+    CLOCK ENTIRELY, so they are what one processing lineage returned rather than the recording.  the recording
+    is `eeg_raw` and that is where the likelihood is written.  binding both would count 40 people's data
+    twice, once raw and once averaged.
 - name: reference_pipelines_and_published_effects
-  kind: measured
+  kind: context
   via: null
   systematic_bias: The published effect sizes and the shipped EEGLAB/ERPLAB pipelines together give a
     reproducible target. A reimplementation that lands elsewhere has a defect, and that is the cheapest
@@ -64,48 +70,91 @@ streams:
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context.  the shipped EEGLAB/ERPLAB pipelines and the published effect sizes together are a
+    REPRODUCIBLE TARGET: a reimplementation that lands elsewhere has a defect, and that is the cheapest
+    end-to-end check available for an EEG path.  a target is calibration machinery, not evidence about
+    a brain.'
 - name: held_out_component_reproduction
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: context.  an evaluation protocol -- can the observation model reproduce these seven components
+    on this data -- and a protocol constrains nothing.
 - name: eeg_raw
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 100.0
+  constrains:
+  - device.contact_potential
+  notes: 'THE STREAM THE LIKELIHOOD IS WRITTEN ON.  1024 Hz acquisition on a 30-channel scalp montage,
+    SIX PARADIGMS YIELDING SEVEN COMPONENTS ON THE SAME 40 PEOPLE WITH THE SAME HARDWARE, which is what
+    makes this a standard measurement fixture rather than another ERP study: an observation model that
+    cannot reproduce these components on this data has failed a test it was not tuned on.  the ceiling
+    is 100 Hz rather than the 512 Hz nyquist -- a judgement, and the reason is that the ERP components
+    this exists for all live below it while the band above is dominated by EMG in a 30-channel scalp montage.'
+  rate_hz: 1024.0
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: eeg_bids
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 100.0
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `eeg_raw`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.  the BIDS-organised copy of the same recordings.'
 - name: event_codes
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.'
 - name: behavioural_responses
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a behavioural score, rating or questionnaire response is a report ABOUT a state, produced
+    by a person rather than by a process the model represents, and often minutes later.  no registered
+    component is a score, and treating one as a measurement would let a self-report update tissue state
+    directly.
 - name: eeglab_erplab_pipelines
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context: SOFTWARE shipped with the data.  a pipeline is provenance and a reproducibility target;
+    it constrains no state.'
 - name: processed_erps
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 100.0
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `seven_standard_erp_components`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.  the same averages under another name.'
 absent:
 - mri
 - digitised_electrode_positions
@@ -135,8 +184,11 @@ use:
 - evaluate
 - fit
 forbidden:
-- erp-core/* -> lead field construction from a template head recorded as subject-specific
-- erp-core/* -> an artifact, until the CC-BY versus CC-BY-SA conflict is resolved
+- erp-core/seven_standard_erp_components -> a second likelihood about device.contact_potential (they are
+  trial averages of erp-core/eeg_raw)
+- erp-core/eeg_bids -> independent evidence from erp-core/eeg_raw (same recordings)
+- erp-core/* -> single-trial dynamics from the distributed ERPs (averaging destroyed the single-trial
+  clock)
 split:
   group_by:
   - participant

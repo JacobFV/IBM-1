@@ -14,7 +14,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -22,28 +22,38 @@ frames:
 - source_space
 streams:
 - name: band_limited_connectivity
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'MEG source-space connectivity is contaminated by SOURCE LEAKAGE: the inverse solution
     spreads a single source across neighbouring vertices, producing spurious zero-lag coupling. Leakage
     correction (orthogonalisation) removes true zero-lag coupling along with the artifact, so both corrected
     and uncorrected maps are wrong in known and opposite directions.'
-  notes: '§8''s warning is exactly on point: an inverse solution is not ground truth, and a connectivity
-    map computed from one inherits its uncertainty structure entirely'
+  notes: 'context.  what is shipped is a FITTED OR AGGREGATED MAP -- an inverse solution, a GLM contrast,
+    a meta-analytic summary -- rather than a measurement.  binding it would let one pipeline''s answer
+    contribute a likelihood about tissue, which is the same argument that makes a tractogram context.  and
+    the specific hazard: MEG source-space connectivity is contaminated by SOURCE LEAKAGE -- the inverse
+    solution spreads one source across neighbouring vertices, producing spurious zero-lag coupling --
+    and leakage correction removes true zero-lag coupling along with it.  an inverse solution is not ground
+    truth and a connectivity map computed from one inherits its entire uncertainty structure.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: source-space band-limited power and connectivity maps derived from HCP MEG, on the
     same grayordinate mesh as the fMRI products
+  constrains: []
 - name: frequency_resolved_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: §52.9 requires FREQUENCY and LAG to travel with an association map; MEG products are
     among the few that carry frequency explicitly, and lag is usually still discarded
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, same reading.  worth naming because MEG products are among the few association maps
+    that carry FREQUENCY explicitly; LAG is usually still discarded, and an association map without a
+    lag is not a claim about a direction.
 absent:
 - directionality
 - leakage_free_estimates

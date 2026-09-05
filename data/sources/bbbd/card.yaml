@@ -22,7 +22,7 @@ licence:
     it without an access request. That is evidence about the acquisition rather than an opinion about
     the deposit''s policy. It says nothing about the LICENCE terms, which are recorded separately and
     still govern distribution; a non-commercial work with no DUA is an ordinary combination.'
-binding: unbound
+binding: bound
 population:
   n: 178
   hierarchy:
@@ -41,7 +41,10 @@ frames:
 streams:
 - name: eeg_64ch
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: oriented cortical current-source state -> volume conduction through an individualised
     head model -> electrode contact geometry -> reference -> sampled voltage
   confounds:
@@ -54,38 +57,61 @@ streams:
     than in a preprocessing footnote
   systematic_bias: Montage geometry is population-template unless per-participant digitisation exists;
     a template montage is a CHOICE with uncertainty, never a default (obj-device-geometry).
-  notes: head model discrepancy vs. the true individual geometry
+  notes: 'MEASURED FROM THE HELD SIDECARS 2026-09-05 (experiment2, sub-01): BioSemi ActiveTwo, EasyCap
+    CUCHW-TDCS, 64 EEG channels, EEGReference ''none'' (CMS/DRL), SamplingFrequency 128 Hz IN THE DEPOSITED
+    FILES with a 5th-order butterworth high pass at 0.3 Hz and a 60 Hz notch already applied.  the amplifier
+    ran far faster -- the hardware band is quoted as 0.016-250 Hz -- but what is on disk is 128 Hz, so
+    the ceiling is that file''s nyquist and the floor is the applied high pass.  a card that declared
+    the amplifier''s band here would promise precision the bytes do not carry.'
   band_hz:
-  - null
-  - null
+  - 0.3
+  - 64.0
   temporal_support: EEG/ECG/EOG at high electrophysiological rates; eye tracker at 500 Hz; video at its
     own frame rate; quizzes as discrete events minutes later.
   spatial_support: '64-channel scalp EEG montage; screen-coordinate gaze; head position. Electrode positions
     per participant: unresolved -- see notes, this gates the observation model.'
+  constrains:
+  - device.contact_potential
+  rate_hz: 128.0
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: gaze
-  kind: imposed
+  kind: context
   via: null
   systematic_bias: calibration drift within session; screen-coordinate to visual-angle conversion depends
     on display geometry
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 64.0
+  constrains: []
+  notes: 'context, and it is a decision.  a gaze trace is a measurement -- of the eye''s pose -- and the
+    registry has no oculomotor component: `effector.*` is motor-unit drive, force and fatigue on `motor_units`,
+    not an eye''s direction in a head, and `transduction.photoreceptor` is what light does to a retina,
+    not where the retina was pointing.  ONTOLOGY GAP, recorded here so it is visible.  it is also the
+    stream the `retinal-world-geometry` requirement exists for: until that product exists a gaze trace
+    cannot be turned into retinal input either.  A CORRECTION: the migration marked this `imposed`, which
+    cannot be right -- the experimenter did not set where the participant looked.  MEASURED ON DISK 2026-09-05:
+    EyeLink 1000 Plus at 128 Hz in the deposited files, with columns x, y in screen pixels AND vdx, vdy
+    in degrees of VISUAL ANGLE, so the screen-to-eye conversion has already been applied by the depositor.'
 - name: blinks
-  kind: measured
+  kind: context
   via: null
   observation_chain: eyelid closure -> (a) retinal input gating and (b) corneo-retinal dipole rotation
     appearing in scalp EEG
   confounds:
   - detector false positives
   - partial blinks below detection threshold
-  notes: the SAME physical event participates in two interactions with different roles -- §25's argument
-    for an interaction network rather than modality heads, and this stream is the cleanest instance of
-    it
+  notes: 'context, and the cleanest instance in the corpus of one event playing two roles.  a blink is
+    (a) a gate on retinal input and (b) a rotating corneo-retinal dipole that appears in the scalp recording.  neither
+    is bindable here: the registry has no eyelid or oculomotor component for (a), and (b) is ALREADY IN
+    `eeg_64ch` as an artifact, so binding it to `device.contact_potential` would count one event twice.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 64.0
+  constrains: []
 - name: ecg
-  kind: measured
+  kind: context
   via: null
   observation_chain: cardiac electrical activity -> torso volume conduction -> scalp; simultaneously an
     autonomic-brain interaction
@@ -93,92 +119,185 @@ streams:
   - electrode motion
   - respiration-coupled baseline drift
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and the reason is an ONTOLOGY GAP rather than an undecided stream.  an ECG trace IS
+    a contact potential, but `device.contact_potential` is written by `device_coupling` out of the field
+    that `em_generation` makes from NEURAL transmembrane current, and the generator here is cardiac muscle,
+    which the registry does not represent at all.  binding it would let the heart contribute a likelihood
+    about cortical current -- precisely the mis-attribution the `via` chain exists to make visible.  held
+    and usable as a regressor and as an artifact template; it constrains nothing.
 - name: video_stimulus
   kind: imposed
-  via: null
+  via:
+  - transduction
   systematic_bias: the participant sees a gaze-dependent projection of this, not this -- treating the
     video as the input is the modelling error obj-retinalization exists to prevent
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 30.0
+  constrains:
+  - device.display_luminance
+  notes: 'imposed: educational videos played to every participant, clamped on the display support and
+    conditioned on, never sampled.  the ceiling is the frame rate -- a display is a sampled stimulus and
+    the refresh is a real property of it.  WHAT THIS IS NOT: the participant saw a gaze-dependent projection
+    of this, not this.  treating the video as the input is exactly the error `retinal-world-geometry`
+    exists to prevent, and here the gaze is recorded in visual angle, so the correction is possible rather
+    than merely necessary.'
+  frame: display
 - name: attention_condition
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Same stimulus, different internal state. This is the designed interaction-strength
     experiment of §26 and the direct evidence for lambda_visual varying with attention.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.  and
+    it is the designed interaction-strength manipulation this card is worth holding for: SAME STIMULUS,
+    DIFFERENT INTERNAL STATE (attentive versus distracted by silent serial subtraction).  the manipulation
+    is real; the label is still a label.'
 - name: quizzes
-  kind: imposed
+  kind: context
   via: null
   systematic_bias: a quiz score minutes later is a behavioural outcome, not a state observation at any
     time t
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a behavioural score, rating or questionnaire response is a report ABOUT a state, produced
+    by a person rather than by a process the model represents, and often minutes later.  no registered
+    component is a score, and treating one as a measurement would let a self-report update tissue state
+    directly.  a quiz score minutes after a video is an outcome, not a state observation at any time t,
+    which is why this is context and not imposed even though the questions themselves were presented.
 - name: eog
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, for the ECG reason and one more.  the generator is the corneo-retinal standing dipole
+    rotating with the eye, which no registered process writes; and the same physical event is already
+    present in the scalp recording as an artifact, so binding both to `device.contact_potential` over
+    one band would count one event twice.  this DIVERGES from sleep-edfx, which binds its EOG as measured;
+    the divergence is deliberate and the reason is written here rather than left silent.
 - name: respiration
   kind: measured
-  via: null
+  via:
+  - mechanical_propagation
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 2.0
+  constrains:
+  - mechanical.displacement
+  notes: 'a respiration belt measures thoracic circumference, and it binds to `mechanical.displacement`
+    through `mechanical_propagation` following aomic-id1000, which is the corpus precedent for exactly
+    this sensor.  READ THE SCOPE NARROWLY: what `mechanical_propagation` writes is displacement on `head_volume`,
+    and the belt is on a chest -- what makes the binding defensible is that the respiratory volume swing
+    drives intracranial displacement through the same closed-box coupling the process describes, so the
+    belt constrains that drive rather than the head directly.  band to 2 Hz: respiration is 0.1-0.5 Hz
+    and nothing physiological is up at the sampling rate.'
+  rate_hz: null
 - name: pupil
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 64.0
+  constrains: []
+  notes: context.  pupil diameter is smooth-muscle state under autonomic control and the registry has
+    no component for it -- `effector.*` is striated motor-unit drive on `motor_units`, not an iris.  ONTOLOGY
+    GAP.  it is the most-used arousal proxy in this deposit and it constrains nothing until an autonomic
+    effector state exists.
 - name: saccades
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 64.0
+  constrains: []
+  notes: 'context, and it is a decision.  a gaze trace is a measurement -- of the eye''s pose -- and the
+    registry has no oculomotor component: `effector.*` is motor-unit drive, force and fatigue on `motor_units`,
+    not an eye''s direction in a head, and `transduction.photoreceptor` is what light does to a retina,
+    not where the retina was pointing.  ONTOLOGY GAP, recorded here so it is visible.  it is also the
+    stream the `retinal-world-geometry` requirement exists for: until that product exists a gaze trace
+    cannot be turned into retinal input either.  a saccade list is a derived event series on top of the
+    gaze trace, so it is doubly unbindable: no component, and an algorithm''s segmentation.'
 - name: fixations
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 64.0
+  constrains: []
+  notes: 'context, and it is a decision.  a gaze trace is a measurement -- of the eye''s pose -- and the
+    registry has no oculomotor component: `effector.*` is motor-unit drive, force and fatigue on `motor_units`,
+    not an eye''s direction in a head, and `transduction.photoreceptor` is what light does to a retina,
+    not where the retina was pointing.  ONTOLOGY GAP, recorded here so it is visible.  it is also the
+    stream the `retinal-world-geometry` requirement exists for: until that product exists a gaze trace
+    cannot be turned into retinal input either.  same as saccades: a derived segmentation of the same
+    gaze trace.'
 - name: head_position
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  where
+    the head was relative to the screen and the cap; it conditions the display geometry and constrains
+    no brain state.'
 - name: engagement
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a behavioural score, rating or questionnaire response is a report ABOUT a state, produced
+    by a person rather than by a process the model represents, and often minutes later.  no registered
+    component is a score, and treating one as a measurement would let a self-report update tissue state
+    directly.
 - name: working_memory
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a behavioural score, rating or questionnaire response is a report ABOUT a state, produced
+    by a person rather than by a process the model represents, and often minutes later.  no registered
+    component is a score, and treating one as a measurement would let a self-report update tissue state
+    directly.  a digit-span score is a trait measure of the person, not a state at any moment of the recording.
 - name: learning_condition
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.  intentional
+    versus incidental learning.'
 - name: motivation_condition
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.  the
+    monetary-incentive and question-preview arms.'
 absent:
 - fmri
 - meg
@@ -192,12 +311,16 @@ requires:
   for_streams:
   - eeg_64ch
   severity: degrading
-  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
-    positions carried as a device-geometry object there is no lead field for this montage, so nothing
-    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
-  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
-    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
-    than random, and it must be carried as uncertainty in every number derived from it.
+  without_it: 'A scalp voltage is a function of where the electrode sat. CHECKED ON DISK 2026-09-05: 60
+    _electrodes.tsv ARE held, one per subject-session, each naming all 64 channels with x/y/z and a material
+    -- but the coordinates lie on a unit sphere (the first row reads Fp1 at 0.931, 0.302, 0.205, norm
+    1.0), so they are a NOMINAL CAP LAYOUT expressed in a normalised head frame, not a per-participant
+    digitisation. That is a template montage with a filename per subject, which is worse than an obviously
+    shared template because it looks individual. No individual anatomy is held either. So the layout addresses
+    `sensor_array` and nothing addresses this participant''s head.'
+  substitute: The shipped unit-sphere layout scaled to a template head. It displaces every electrode in
+    a head-size-dependent, spatially correlated way; the error is systematic and shared across the cohort,
+    so it does not average away over participants.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
@@ -208,18 +331,30 @@ requires:
   for_streams:
   - gaze
   - video_stimulus
-  severity: blocking
-  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
-    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
-    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+  severity: degrading
+  without_it: 'Re-graded from blocking 2026-09-05 ON FILE EVIDENCE, which is unusually good here. The
+    gaze is deposited as *_desc-gaze_visualangle_eyetrack.tsv.gz carrying vdx and vdy in DEGREES OF VISUAL
+    ANGLE alongside the raw screen pixels, so the display-size and viewing-distance conversion has already
+    been applied by the depositor -- that is precisely the screen-to-eye half of the product this entry
+    said was missing, and it is present at 128 Hz on the same clock as the EEG. What is still absent,
+    and is why it is degrading rather than satisfied: the gaze is in visual angle from the SCREEN CENTRE,
+    not on a retina. Turning it into retinal input needs the eye''s optics and the retinal sampling lattice,
+    so nothing here may yet be attributed to `transduction.photoreceptor` or to an eccentricity on a retinotopic
+    support.'
+  substitute: The visual-angle gaze trace plus a nominal retinal sampling function. That is a model of
+    an eye rather than this eye, and its error is largest in the periphery, which is most of the visual
+    field.
 use:
 - calibrate
 - fit
 forbidden:
-- bbbd/* -> vascular state
-- bbbd/* -> metabolic state
-- bbbd/* -> structural interactome parameters
-- bbbd/quizzes -> instantaneous cortical state
+- bbbd/* -> subject-specific head geometry (the shipped electrodes.tsv is a nominal unit-sphere layout,
+  not a digitisation, and no individual anatomy is held)
+- bbbd/video_stimulus -> retinal input (the participant saw a gaze-dependent projection; the gaze is held
+  in visual angle and must be used)
+- bbbd/blinks -> a second likelihood about device.contact_potential (already carried by bbbd/eeg_64ch
+  as an artifact)
+- bbbd/quizzes -> a state observation at any time t (it is an outcome measured minutes after the episode)
 split:
   group_by:
   - participant

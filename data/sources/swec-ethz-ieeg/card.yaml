@@ -16,7 +16,7 @@ licence:
   notes: Community Data License Agreement - Permissive, Version 2.0, as stated on the Hugging Face mirror.
     The canonical ETH host could not be reached to confirm that the same terms apply there, so this is
     the MIRROR's stated licence and the parent's is unverified. No registration was observed on the mirror.
-binding: unbound
+binding: bound
 population:
   n: 68
   hierarchy:
@@ -32,7 +32,10 @@ frames:
 streams:
 - name: continuous_long_term_ieeg
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: local post-synaptic and spiking activity within a few millimetres of a contact ->
     extracellular potential -> potential difference against a reference contact whose own activity is
     in every number -> amplifier and filter -> sampled microvolts. NO SKULL AND NO INVERSE PROBLEM, which
@@ -49,15 +52,33 @@ streams:
     transition in a system that is otherwise only nudged -- which is directly what obj-transition-sufficient-state
     is about, and is also a pathological transition and not a normal one.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 256.0
   temporal_support: 512 Hz or 1024 Hz depending on subject -- a TWOFOLD RATE DIFFERENCE inside one dataset,
     which means any spectral feature above 256 Hz exists for some subjects and not others. Recordings
     are continuous over days
   spatial_support: multi-channel intracranial EEG; channel count varies by subject and the contact positions
     are not part of the release
+  constrains:
+  - device.contact_potential
+  notes: '9,328 HOURS OF CONTINUOUS HUMAN INTRACRANIAL RECORDING, the largest openly-licensed such corpus
+    in this survey, and continuous long-term recording is what makes a STATE TRANSITION observable rather
+    than inferred from averaged trials.  THE RATE DIFFERS BY SUBJECT -- 512 Hz or 1024 Hz, a TWOFOLD DIFFERENCE
+    INSIDE ONE DATASET -- so the band declared here is the SLOWER subjects'' nyquist, which is the only
+    band every subject supports; any spectral feature above 256 Hz exists for some subjects and not others,
+    and a fit must carry the per-subject band rather than this floor.  the support is `implanted_array`,
+    not `sensor_array`: a contact sees current sources within millimetres over a short conduction path,
+    with NO SKULL AND NO SCALP in the way, which is the spatially local electrical evidence scalp EEG
+    cannot supply.  the reference contact''s own activity is in every number.  and COVERAGE IS CLINICALLY
+    DICTATED and differs completely between patients, so treating it as a random sample of cortex overstates
+    what it constrains and a group-level map from it is an aggregation over incompatible supports.  AND
+    THE CONTACT POSITIONS ARE NOT PART OF THE RELEASE AT ALL, which is why this card cannot make an anatomically
+    located claim and kai-miller-ecog-library can.'
+  frame: electrode_native
+  support: implanted_array
+  units: V
 - name: annotated_ictal_events
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 704 annotated events give a real prediction target with an unambiguous chance level,
     and the long inter-ictal baseline means a naive always-negative predictor scores extremely well --
@@ -65,31 +86,46 @@ streams:
   band_hz:
   - null
   - null
+  constrains: []
+  notes: context.  704 annotated seizure events give a real prediction target with an unambiguous chance
+    level -- and the annotation is a CLINICIAN'S MARK on a voltage that is already bound above, so binding
+    it would both double-count and promote an interpretation to evidence.  the sleep-edfx hypnogram and
+    the mass spindle marks get the same reading.  the long inter-ictal baseline means a naive always-negative
+    predictor scores extremely well, which is the floor any seizure-prediction number must be quoted against.
 - name: ieeg_continuous
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 256.0
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `continuous_long_term_ieeg`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 - name: seizure_annotations
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `annotated_ictal_events`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 absent:
-- contact_localisation
-- mri
-- scalp_eeg
-- healthy_controls
+- electrode_localisation
+- individual_anatomy
+- stimulus
 - behaviour
-- sleep_staging
 use:
 - evaluate
 - fit
 forbidden:
-- swec-ethz-ieeg/* -> any anatomically localised claim (there are no contact coordinates)
-- swec-ethz-ieeg/* -> a normal-brain state prior
+- swec-ethz-ieeg/* -> any anatomically located claim (the contact positions are not in the release)
+- swec-ethz-ieeg/* -> a single band across subjects (rates are 512 Hz for some and 1024 Hz for others;
+  features above 256 Hz exist for only some)
+- swec-ethz-ieeg/ieeg_continuous -> independent evidence from continuous_long_term_ieeg
+- swec-ethz-ieeg/* -> a seizure-prediction number quoted without the always-negative floor
 split:
   group_by:
   - participant
@@ -101,3 +137,23 @@ provenance:
   card: swec-ethz-ieeg
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+requires:
+- geometry: device-geometry
+  severity: degrading
+  for_streams:
+  - continuous_long_term_ieeg
+  without_it: 'THE CONTACT POSITIONS ARE NOT IN THIS RELEASE AT ALL -- that is stated by the deposit itself,
+    not inferred -- so no number from this source can be attributed to any anatomical location, and every
+    result is a channel-space result. It is degrading rather than blocking for the reason the corpus applies
+    uniformly: `device.contact_potential` lives on `implanted_array`, and a channel index addresses that
+    support even when nothing addresses the brain under it. What is blocked is the step from a contact
+    to cortex, which the `cortical-support-bank` entry blocks already. The practical consequence is severe
+    and is now in `forbidden`: this source may contribute to a claim about intracranial dynamics and may
+    never contribute to a claim about WHERE.'
+  substitute: None. There is no defensible default position for a clinical implant, and assuming one would
+    invent the anatomy the release deliberately withheld.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: 'This source constrains cortical state, and a cortical state has a fully qualified address.
+    Here the requirement is doubly unmet: even with the support bank there are no contact positions to
+    attach to it.'

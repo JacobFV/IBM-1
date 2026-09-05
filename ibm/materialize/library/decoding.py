@@ -28,7 +28,7 @@ whose tuning does not survive averaging over a cortical column.
 
 from __future__ import annotations
 
-from ibm.materialize.library import NamedModel, register, res, rule
+from ibm.materialize.library import NamedModel, anat, register, res, rule
 from ibm.materialize.request import (
     Budget,
     DeviceSpec,
@@ -36,7 +36,6 @@ from ibm.materialize.request import (
     SubjectSpec,
     Window,)
 from ibm.vocabulary import (
-    Anat,
     Band,
     HIGH_GAMMA,
     LFP,
@@ -59,6 +58,23 @@ ENVELOPE = Band(0.5, 12.0)
 #: the band of a binned neural decoder's own output -- 20 ms bins, so nothing
 #: above 25 Hz means anything even though the observation reaches 5 kHz.
 DECODER_OUTPUT = Band(0.0, 25.0)
+
+#: the parcels these models mean, in the vocabulary the declared
+#: `cortical_areas` system actually has.  it is a desikan-killiany
+#: parcellation, so "v1", "heschl" and "posterior parietal" are not labels in it
+#: and naming them selected nothing; each is written here as the union of the
+#: parcels that cover it, once, so a reader can check the mapping in one place
+#: rather than in six resolution rules.
+V1 = anat("cortical_areas", "pericalcarine")
+OCCIPITAL = anat("cortical_areas", "lateraloccipital", "cuneus", "lingual",
+                 "pericalcarine")
+VENTRAL_TEMPORAL = anat("cortical_areas", "fusiform", "inferiortemporal")
+HESCHL = anat("cortical_areas", "transversetemporal")
+SUPERIOR_TEMPORAL = anat("cortical_areas", "superiortemporal", "bankssts")
+INFERIOR_FRONTAL = anat("cortical_areas", "parsopercularis", "parstriangularis")
+POSTERIOR_PARIETAL = anat("cortical_areas", "superiorparietal", "inferiorparietal")
+PRECENTRAL = anat("cortical_areas", "precentral")
+
 
 
 EEG_TO_IMAGE = register(NamedModel(
@@ -91,14 +107,14 @@ EEG_TO_IMAGE = register(NamedModel(
     request=MaterializationRequest(
         name="eeg-to-image",
         targets=(sel("transduction.photoreceptor", band=SCALP),
-                 sel("neural.exc.activity", region=Anat("cortical_areas", "occipital"),
+                 sel("neural.exc.activity", region=OCCIPITAL,
                      band=SCALP)),
-        regions=(("visual", Anat("cortical_areas", "occipital")),
-                 ("ventral", Anat("cortical_areas", "ventral_temporal")),
+        regions=(("visual", OCCIPITAL),
+                 ("ventral", VENTRAL_TEMPORAL),
                  ("cortex", OnSupport("cortical_surface"))),
         resolution=res(
-            rule(Anat("cortical_areas", "v1"), 3.0, SCALP),
-            rule(Anat("cortical_areas", "occipital"), 6.0, SCALP),
+            rule(V1, 3.0, SCALP),
+            rule(OCCIPITAL, 6.0, SCALP),
             rule(OnSupport("cortical_surface"), 10.0, SCALP),
             default_mm=12.0, default_band=SCALP),
         fields=("neural", "electromagnetic", "transduction", "device"),
@@ -175,14 +191,14 @@ MEG_TO_TEXT = register(NamedModel(
     request=MaterializationRequest(
         name="meg-to-text",
         targets=(sel("neural.exc.activity",
-                     region=Anat("cortical_areas", "superior_temporal"), band=DEWAR),
+                     region=SUPERIOR_TEMPORAL, band=DEWAR),
                  sel("transduction.hair_cell", band=ENVELOPE)),
-        regions=(("auditory", Anat("cortical_areas", "superior_temporal")),
-                 ("language", Anat("cortical_areas", "inferior_frontal")),
+        regions=(("auditory", SUPERIOR_TEMPORAL),
+                 ("language", INFERIOR_FRONTAL),
                  ("cortex", OnSupport("cortical_surface"))),
         resolution=res(
-            rule(Anat("cortical_areas", "superior_temporal"), 3.0, DEWAR),
-            rule(Anat("cortical_areas", "inferior_frontal"), 4.0, DEWAR),
+            rule(SUPERIOR_TEMPORAL, 3.0, DEWAR),
+            rule(INFERIOR_FRONTAL, 4.0, DEWAR),
             rule(OnSupport("cortical_surface"), 8.0, SCALP),
             default_mm=12.0, default_band=SCALP),
         fields=("neural", "electromagnetic", "transduction", "device"),
@@ -258,13 +274,13 @@ SPEECH_ENVELOPE = register(NamedModel(
         name="speech-envelope",
         targets=(sel("transduction.hair_cell", band=ENVELOPE),
                  sel("neural.exc.activity",
-                     region=Anat("cortical_areas", "superior_temporal"),
+                     region=SUPERIOR_TEMPORAL,
                      band=ENVELOPE)),
-        regions=(("auditory_core", Anat("cortical_areas", "heschl")),
-                 ("belt", Anat("cortical_areas", "superior_temporal"))),
+        regions=(("auditory_core", HESCHL),
+                 ("belt", SUPERIOR_TEMPORAL)),
         resolution=res(
-            rule(Anat("cortical_areas", "heschl"), 3.0, ENVELOPE),
-            rule(Anat("cortical_areas", "superior_temporal"), 5.0, ENVELOPE),
+            rule(HESCHL, 3.0, ENVELOPE),
+            rule(SUPERIOR_TEMPORAL, 5.0, ENVELOPE),
             rule(OnSupport("cortical_surface"), 10.0, ENVELOPE),
             default_mm=12.0, default_band=ENVELOPE),
         fields=("neural", "electromagnetic", "transduction", "device"),
@@ -352,12 +368,12 @@ INVASIVE_BCI = register(NamedModel(
                      band=Band(0.5, 5000.0))),
         regions=(("array_neighbourhood", Near("array", 2.0)),
                  ("local_circuit", Near("array", 20.0)),
-                 ("connected", Anat("cortical_areas", "precentral"))),
+                 ("connected", PRECENTRAL)),
         resolution=res(
             rule(Near("array", 2.0), 0.05, Band(0.5, 5000.0)),
             rule(Near("array", 20.0), 0.5, Band(0.5, 5000.0)),
-            rule(Anat("cortical_areas", "precentral"), 2.0, LFP),
-            rule(Anat("cortical_areas", "posterior_parietal"), 2.0, LFP),
+            rule(PRECENTRAL, 2.0, LFP),
+            rule(POSTERIOR_PARIETAL, 2.0, LFP),
             default_mm=10.0, default_band=Band(0.0, 100.0)),
         fields=("neural", "electromagnetic", "device", "effector", "extracellular"),
         anatomy=("cortical_areas", "cortical_layers"),
@@ -509,11 +525,11 @@ HANDWRITING_BCI = register(NamedModel(
                  sel("neural.exc.activity", region=Near("array", 2.0),
                      band=SPIKE_BAND)),
         regions=(("array_neighbourhood", Near("array", 2.0)),
-                 ("hand_knob", Anat("cortical_areas", "precentral"))),
+                 ("hand_knob", PRECENTRAL)),
         resolution=res(
             rule(Near("array", 2.0), 0.05, Band(0.5, 5000.0)),
             rule(Near("array", 20.0), 0.5, Band(0.5, 5000.0)),
-            rule(Anat("cortical_areas", "precentral"), 2.0, LFP),
+            rule(PRECENTRAL, 2.0, LFP),
             default_mm=10.0, default_band=Band(0.0, 50.0)),
         fields=("neural", "device", "effector", "electromagnetic"),
         anatomy=("cortical_areas",),
@@ -581,15 +597,15 @@ INNER_SPEECH = register(NamedModel(
     request=MaterializationRequest(
         name="inner-speech",
         targets=(sel("neural.exc.activity",
-                     region=Anat("cortical_areas", "ventral_precentral"),
+                     region=PRECENTRAL,
                      band=INTRACRANIAL),
                  sel("effector.drive", band=Band(0.0, 25.0))),
-        regions=(("speech_motor", Anat("cortical_areas", "ventral_precentral")),
-                 ("auditory", Anat("cortical_areas", "superior_temporal"))),
+        regions=(("speech_motor", PRECENTRAL),
+                 ("auditory", SUPERIOR_TEMPORAL)),
         resolution=res(
             rule(Near("grid", 5.0), 0.5, INTRACRANIAL),
-            rule(Anat("cortical_areas", "ventral_precentral"), 4.0, INTRACRANIAL),
-            rule(Anat("cortical_areas", "superior_temporal"), 4.0, INTRACRANIAL),
+            rule(PRECENTRAL, 4.0, INTRACRANIAL),
+            rule(SUPERIOR_TEMPORAL, 4.0, INTRACRANIAL),
             default_mm=10.0, default_band=SCALP),
         fields=("neural", "electromagnetic", "effector", "device"),
         anatomy=("cortical_areas",),

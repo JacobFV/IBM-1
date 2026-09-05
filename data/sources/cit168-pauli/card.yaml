@@ -14,7 +14,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -22,26 +22,37 @@ frames:
 - CIT168
 streams:
 - name: probabilistic_nucleus_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Built from IN-VIVO MRI, so the nuclei are defined by MR contrast, not by cytoarchitecture.
     Where MR contrast and cytoarchitectonic boundaries differ -- which they do for several brainstem nuclei
     -- this atlas follows the contrast. That is a real and stateable limitation, not a defect.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: probabilistic maps of subcortical nuclei built from 168 HCP participants' high-resolution
     T1 and T2 images, including nuclei that lower-resolution atlases merge -- substantia nigra, subthalamic
     nucleus, red nucleus, ventral tegmental area
+  constrains: []
+  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
+    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
+    takes at them.  no registered component is a region label.  it reaches a materialization as a support
+    index and as a `prior`, never as a likelihood.  built from in-vivo MRI, so the nuclei are defined
+    by MR CONTRAST rather than by cytoarchitecture; where the two differ, and for several brainstem nuclei
+    they do, this follows the contrast.'
 - name: multi_contrast_definition
-  kind: measured
+  kind: context
   via: null
   systematic_bias: using T1 and T2 together separates iron-rich from myelin-rich structures better than
     either alone
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  using T1 and T2 together separates iron-rich from myelin-rich structures better than
+    either alone -- that is a statement about how the cover was drawn, i.e. provenance, and provenance
+    constrains no state.
 absent:
 - cytoarchitectonic_validation
 - individual_geometry

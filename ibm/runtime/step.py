@@ -252,7 +252,15 @@ class Coupling:
     mix: np.ndarray | None = None
     delay_s: float | np.ndarray = 0.0
     gain: float | np.ndarray = 1.0
-    #: a time-domain rate law: fn(dict[cid, (n_sites, n)]) -> (n_out, n).
+    #: a time-domain rate law, called as `fn(x, theta)` -- one positional
+    #: mapping of component id to `(n_sites, n)` trajectories, and one positional
+    #: theta dict -- returning `(n_out, n)` or a mapping keyed by written
+    #: component.  the two positional arguments are not a style choice: it is the
+    #: convention `ibm.processes.base` declares at the top of the file as fixed
+    #: and load-bearing, and every registered `Form.RATE` implementation is
+    #: written to it.  this module previously spread theta as keyword arguments,
+    #: which meant no registered rate law could be called at all -- invisible
+    #: until a materialized model with a nonlinear f was actually stepped.
     fn: Callable[..., Any] | None = None
     #: gamma, for Form.CONSTRAINT.  the stiff limit of pressure is a question of
     #: how it is solved, not of what it is (§4), and this is that number.
@@ -402,7 +410,7 @@ class Coupling:
             return np.zeros((n_out, basis.k), dtype=np.complex128)
 
         xs = {cid: basis.synthesize(_coefficients(state, cid, basis)) for cid in self.reads}
-        y = self.fn(xs, **self.theta) if self.theta else self.fn(xs)
+        y = self.fn(xs, self.theta)
         y = y[self.writes] if isinstance(y, dict) else y
         y = np.atleast_2d(np.asarray(y, float))
         z = basis.analyze(_fit_sites(y, n_out))
@@ -446,7 +454,7 @@ class Coupling:
         if self.fn is None:
             return zero, zero
         xs = {cid: _dc_value(state, cid)[:, None] for cid in self.reads}
-        y = self.fn(xs, **self.theta) if self.theta else self.fn(xs)
+        y = self.fn(xs, self.theta)
         y = y[self.writes] if isinstance(y, dict) else y
         y = np.asarray(y, float).reshape(n_out, -1).mean(-1)
         return zero, y * w
@@ -702,6 +710,19 @@ def _drift(state: State, couplings: Sequence[Coupling],
         if c.writes not in acc:
             continue
         acc[c.writes] = acc[c.writes] + c.spectral_drift(state, basis)
+    # a block carries only the coefficients inside its declared band, and a
+    # coefficient it does not carry cannot have pressure applied to it.  the
+    # solve writes back `z[:, :block.k]`, so drift above that is state the
+    # iterate can never move and residual it can never remove -- a floor
+    # proportional to however much of the graph's bandwidth the narrowest block
+    # declined, which reads from outside as a solver that stalls for no reason.
+    # a materialization whose blocks all share one band never sees this; one
+    # that makes bandwidth a laziness axis per component, which is the whole
+    # point of B(q), sees it immediately.
+    for cid, v in acc.items():
+        k = state.layout[cid].k
+        if k and k < basis.k:
+            v[:, k:] = 0.0
     return acc
 
 
@@ -815,7 +836,13 @@ def _match_overlap(state: State, carry: Carry | None, basis: TemporalBasis,
             continue
         gap = max(gap, float(np.max(np.abs(x[:, 0] - head[:, 0]))))
         x[:, :m] = (1.0 - w) * x[:, :m] + w * head
-        state.beliefs[cid] = replace(belief, mean=basis.analyze(x)[..., : basis.k])
+        # re-analysed at the *block's* width, not the window's.  a block whose
+        # band is narrower than the solve's carries fewer coefficients than
+        # `basis.k`, and writing the wider array back left its mean and its psd
+        # different lengths -- which survives until something asks for the total
+        # power and then fails a long way from here.
+        k = state.layout[cid].k or basis.k
+        state.beliefs[cid] = replace(belief, mean=basis.analyze(x)[..., : k])
     return gap
 
 

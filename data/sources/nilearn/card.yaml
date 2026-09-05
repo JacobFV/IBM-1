@@ -13,7 +13,7 @@ licence:
   commercial: unresolved
   notes: Code licence not read; the atlases Nilearn FETCHES carry their own terms (Harvard-Oxford is non-commercial
     and is fetched by a one-line call) and a fetcher does not relax them.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -22,25 +22,32 @@ frames:
 - subject_native
 streams:
 - name: parcel_averaging_and_masking
-  kind: measured
+  kind: context
   via: null
   systematic_bias: NiftiLabelsMasker makes 'reduce a volume to a parcel time series' a one-liner, which
     is exactly the step where a cover becomes an ontology by accident. The averaging is also a derived
     view whose information loss (within-parcel heterogeneity, partial volume at parcel edges) is never
     recorded by the call.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: TR-sampled series as provided
   spatial_support: label and probabilistic masking over volumes and surfaces; parcel averaging
+  constrains: []
+  notes: 'context.  this is SOFTWARE, not a dataset.  and the specific hazard is worth writing down: NiftiLabelsMasker
+    makes ''reduce a volume to a parcel time series'' a one-liner, which is exactly the step where a COVER
+    becomes an ontology by accident, and the within-parcel variance it discards is never reported.'
 - name: atlas_fetchers
-  kind: measured
+  kind: context
   via: null
   systematic_bias: a fetcher makes an atlas's licence invisible at the call site, which is how a non-commercial
     atlas ends up on a default path
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a fetcher makes an atlas's licence invisible at the call site, which is how a non-commercial
+    atlas ends up on a default path.  provenance machinery, no state.
 absent:
 - measurements
 - uncertainty_propagation

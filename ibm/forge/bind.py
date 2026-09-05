@@ -256,6 +256,7 @@ def bind_card(card: dict[str, Any], path: Path, cid: str) -> CardBinding:
 
     for st in card.get("streams") or []:
         name = str(st.get("name", "?"))
+        kind = str(st.get("kind", "measured"))
         constrains = tuple(str(x) for x in (st.get("constrains") or []))
         resolved, unknown = [], []
         band = band_of(st)
@@ -284,9 +285,47 @@ def bind_card(card: dict[str, Any], path: Path, cid: str) -> CardBinding:
         # single id would lose the step where the electrode interface enters.  a bare
         # string is read as a one-element chain.
         raw = st.get("via")
-        chain = ([raw] if isinstance(raw, str) else list(raw or []))
-        chain = [str(x) for x in chain]
+        # `via` may be one chain for the whole stream, or a mapping from component
+        # to chain when one acquisition makes several claims by different routes.
+        per_component: dict[str, list[str]] = {}
+        if isinstance(raw, dict):
+            per_component = {str(k): [str(x) for x in (v or [])] for k, v in raw.items()}
+            chain = [x for v in per_component.values() for x in v]
+        else:
+            chain = [str(x) for x in ([raw] if isinstance(raw, str) else list(raw or []))]
         missing_via = [x for x in chain if x not in REGISTRY.processes]
+        # a chain that resolves is not yet a chain that EXISTS.  `via` claims a
+        # route between this stream and the model, and the direction of that
+        # route depends on `kind`: a measured stream's chain ends in whatever
+        # writes the observed variable, while an imposed or exogenous one's
+        # chain begins with whatever consumes it, because nothing writes a
+        # quantity an experimenter set.  checking only that the ids resolve let
+        # 16 streams name a process that neither reads nor writes their
+        # component -- including the DWI convention the whole corpus had
+        # copied, which routed structural.fiber_orientation through plasticity,
+        # a process that does not touch it.
+        if chain and not missing_via and resolved:
+            for c in resolved:
+                own = per_component.get(c, chain)
+                if not own:
+                    problems.append(f"via: no chain given for {c!r}")
+                    continue
+                first = REGISTRY.processes[own[0]]
+                last = REGISTRY.processes[own[-1]]
+                writes = {v for sel in last.outputs for v in sel.vars}
+                reads = {v for sel in first.inputs for v in sel.vars}
+                comp = REGISTRY.components[c]
+                imposed = kind == "imposed" or comp.exogenous
+                if imposed and c not in reads:
+                    problems.append(
+                        f"via: {c!r} is imposed or exogenous, so the chain must BEGIN with a "
+                        f"process that reads it, but {own[0]!r} does not.  candidates: "
+                        + (", ".join(p.id for p in REGISTRY.readers(c)) or "none registered"))
+                elif not imposed and c not in writes:
+                    problems.append(
+                        f"via: the chain must END in a process that writes {c!r}, but "
+                        f"{own[-1]!r} does not.  candidates: "
+                        + (", ".join(p.id for p in REGISTRY.writers(c)) or "none registered"))
         via = " -> ".join(chain) if chain else None
         via_ok = bool(chain) and not missing_via
         for x in missing_via:
@@ -294,7 +333,6 @@ def bind_card(card: dict[str, Any], path: Path, cid: str) -> CardBinding:
         if name in blocked_streams:
             problems.append("geometry: a blocking requirement is unmet, so there is no support "
                             "for this constraint to attach to even once its ids resolve")
-        kind = str(st.get("kind", "measured"))
         if kind == "context":
             # a context stream is bound when it explicitly constrains nothing AND says why.
             # silence is not the same as a decision, so the note is required.

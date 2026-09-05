@@ -12,7 +12,7 @@ licence:
   name: CC0 (verbatim string in dataset_description.json)
   redistribution: permitted
   commercial: permitted
-binding: unbound
+binding: bound
 population:
   n: 152
   hierarchy:
@@ -26,7 +26,8 @@ frames:
 streams:
 - name: concurrent_tms_bold
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: coil current -> induced electric field (computed, not measured, and here not computed
     at all) -> cortical activation at and downstream of the target -> neurovascular coupling -> BOLD change
     -> EPI volume. The remote BOLD response to a local pulse is the closest thing to a causal, directed,
@@ -42,35 +43,65 @@ streams:
   systematic_bias: 152 participants with concurrent TMS/fMRI is a large perturbational corpus by any standard,
     and the causal direction it supplies is what obj-structural-effective-functional needs to separate
     effective from functional connectivity rather than assuming the separation.
-  notes: no sham arm and no auditory-masking arm, so the transcranial and peripheral routes are not separable
-    within the dataset
+  notes: 'MEASURED FROM THE HELD SIDECARS: the stimulation runs are TR 2.4 s, TE 30 ms at 3 T, so the
+    ceiling is that TR''s nyquist.  THE REMOTE BOLD RESPONSE TO A LOCAL PULSE is the closest thing to
+    a causal, directed, whole-brain measurement that exists non-invasively in humans, and it is why 152
+    participants of this are worth holding: it is what separates effective from functional connectivity
+    rather than assuming the separation.  what it does NOT separate is the transcranial route from the
+    peripheral one -- there is no sham arm and no auditory-masking arm -- so the click and the scalp sensation
+    are in every response.  em_generation is what produces the magnetic field from source currents; the
+    previous chain named vascular_flow, which is unrelated.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.2083
   temporal_support: TR-sampled BOLD interleaved with TMS pulses. The pulse-to-volume timing is the critical
     clock and it exists ONLY in a single root-level task-stim_events.tsv shared across every subject,
     not per run
   spatial_support: whole-brain EPI with the TMS coil inside the bore; the stimulation TARGET is encoded
     as a coordinate triple inside the task label string (task-stim46x26x38), which is the only record
     of where the coil was pointed
+  constrains:
+  - electromagnetic.bfield
+  rate_hz: 0.4167
+  frame: scanner
 - name: bold_tms_concurrent
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.2083
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `concurrent_tms_bold`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 - name: bold_rest
   kind: measured
-  via: null
+  via:
+  - em_generation
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.25
+  constrains:
+  - electromagnetic.bfield
+  notes: 'MEASURED FROM THE HELD SIDECARS: the resting runs are TR 2.0 s, TE 30 ms at 3 T, a different
+    clock from the stimulation runs, so it carries its own nyquist.  separate runs from `concurrent_tms_bold`
+    rather than the same bytes described twice, which is why both are measured -- the eegmmidb `eeg_64ch`
+    / `baseline_runs` case.  it is the floor any claim about a pulse-evoked response must clear.  em_generation
+    is what produces the magnetic field from source currents; the previous chain named vascular_flow,
+    which is unrelated.'
+  rate_hz: 0.5
+  frame: scanner
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.'
 absent:
 - eeg
 - emg
@@ -96,8 +127,12 @@ requires:
 use:
 - fit
 forbidden:
-- ds005498/* -> a delivered-field claim (no head model, no intensity, no pose beyond a filename)
-- ds005498/* -> a clinical-group contrast (the cohort prefixes are undefined in the release)
+- ds005498/* -> delivered-field parameters (no coil pose, winding or waveform is held; the only record
+  of where the coil pointed is a coordinate triple inside the task label string, e.g. task-stim46x26x38)
+- ds005498/* -> a transcranial effect separated from the peripheral one (no sham arm and no auditory-masking
+  arm exist in this dataset)
+- ds005498/bold_tms_concurrent -> independent evidence from ds005498/concurrent_tms_bold (the same bytes,
+  described twice by the migration)
 split:
   group_by:
   - participant

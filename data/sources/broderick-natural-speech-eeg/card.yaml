@@ -14,7 +14,7 @@ licence:
   commercial: permitted
   notes: CC0-1.0 from the Dryad record's licence field. Dryad imposes CC0 as a condition of deposit. The
     audiobook stimulus is separately copyrighted and is not covered by the waiver.
-binding: unbound
+binding: bound
 population:
   n: 19
   hierarchy:
@@ -29,7 +29,10 @@ frames:
 streams:
 - name: eeg_to_continuous_natural_speech
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: post-synaptic currents in spatially aligned pyramidal populations -> volume conduction
     through brain, CSF, skull and scalp -> potential difference between an electrode and a reference ->
     amplifier gain, filtering and group delay -> sampled voltage
@@ -51,14 +54,26 @@ streams:
     rests on a model-derived regressor whose status as teacher rather than observation is the distinction
     this registry enforces.'
   band_hz:
-  - null
-  - null
+  - 0.5
+  - 32.0
   temporal_support: about 60 minutes of continuous listening per participant to The Old Man and the Sea.
     Sampling rate unresolved from the record. Word onsets are FORCE-ALIGNED, a fitted clock relation with
     residual error, against a continuous acoustic stream
   spatial_support: 128-channel scalp EEG
+  constrains:
+  - device.contact_potential
+  notes: 'about 60 minutes of continuous listening per participant to The Old Man and the Sea, on a 128-channel
+    scalp montage.  THE SAMPLING RATE IS UNRESOLVED FROM THE RECORD and the bytes are not held, so the
+    band declared here is not a nyquist: it is the band the published analyses of this corpus actually
+    operate in -- a low-frequency envelope-tracking band -- and it must be re-read from the sidecars when
+    the bytes arrive.  declaring a rate nobody checked would be the failure this field exists to prevent.  the
+    word onsets it is analysed against are FORCE-ALIGNED, a fitted clock relation with residual error,
+    and the corpus''s own result rests on a model-derived regressor.'
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: reverse_speech_and_noise_controls
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'REVERSED SPEECH IS A CONTROL THAT CAN FAIL: it preserves the acoustic envelope and
     destroys comprehension, so an effect that survives reversal is acoustic and not linguistic. Cocktail-party
@@ -67,36 +82,87 @@ streams:
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.  and
+    it is the best kind: REVERSED SPEECH IS A CONTROL THAT CAN FAIL.  it preserves the acoustic envelope
+    and destroys comprehension, so an effect surviving reversal is acoustic and not linguistic.  the cocktail-party
+    and speech-in-noise arms add attention and degradation manipulations.  this names which runs belong
+    to which arm; the recordings themselves are the four `eeg_*` streams below.'
 - name: eeg_128ch_natural_speech
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.5
+  - 32.0
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `eeg_to_continuous_natural_speech`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.'
 - name: eeg_reverse_speech
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   band_hz:
-  - null
-  - null
+  - 0.5
+  - 32.0
+  constrains:
+  - device.contact_potential
+  notes: 'the reversed-speech control arm: SEPARATE RUNS from the natural-speech listening, so this is
+    measured rather than a second count of it -- the eegmmidb `eeg_64ch` / `baseline_runs` case.  same
+    montage and same unresolved rate caveat as the natural-speech stream.'
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: eeg_cocktail_party
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   band_hz:
-  - null
-  - null
+  - 0.5
+  - 32.0
+  constrains:
+  - device.contact_potential
+  notes: 'the attended/unattended two-talker arm: again separate runs, so measured.  same montage and
+    same rate caveat.'
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: eeg_speech_in_noise
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   band_hz:
-  - null
-  - null
+  - 0.5
+  - 32.0
+  constrains:
+  - device.contact_potential
+  notes: 'the degraded-speech arm: separate runs, so measured.  same montage and rate caveat.'
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: eeg_n400
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   band_hz:
-  - null
-  - null
+  - 0.5
+  - 32.0
+  constrains:
+  - device.contact_potential
+  notes: the semantic-violation arm, a fifth set of runs.  same montage and rate caveat.
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 absent:
 - mri
 - digitised_electrode_positions
@@ -125,9 +191,12 @@ use:
 - evaluate
 - fit
 forbidden:
-- broderick-natural-speech-eeg/* -> a word-embedding regressor treated as an observation
-- broderick-natural-speech-eeg/* -> redistribution of the audiobook stimulus
-- broderick-natural-speech-eeg/* -> quoting the deposit size for the Natural Speech experiment
+- broderick-natural-speech-eeg/eeg_128ch_natural_speech -> independent evidence from eeg_to_continuous_natural_speech
+  (same recordings)
+- broderick-natural-speech-eeg/* -> a linguistic effect that has not cleared the reversed-speech control
+  (reversal preserves the envelope and destroys comprehension)
+- broderick-natural-speech-eeg/* -> a band above 32 Hz until the acquisition rate and filters are read
+  from the deposit (the record does not state them)
 split:
   group_by:
   - participant

@@ -13,7 +13,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -21,29 +21,51 @@ frames:
 - brain_region_label
 streams:
 - name: protein_localisation
-  kind: measured
+  kind: context
   via: null
   systematic_bias: Immunohistochemistry scored ordinally by human annotators, with antibody specificity
     as the dominant uncertainty. A 'high' score is not a concentration and cannot be compared across antibodies.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: immunohistochemistry-based protein localisation across human tissues plus RNA expression,
     including brain sections; the protein data is ORDINAL (not detected / low / medium / high), not quantitative
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.  and the protein
+    data is ORDINAL -- not detected / low / medium / high, scored by human annotators -- so a ''high''
+    is not a concentration and cannot be compared across antibodies.  antibody specificity is the dominant
+    uncertainty.'
 - name: subcellular_localisation
-  kind: measured
+  kind: context
   via: null
   systematic_bias: subcellular compartment assignments are from cell lines, not from brain tissue
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.  compartment assignments
+    come from CELL LINES, not from brain tissue.'
 - name: peripheral_phenotype
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.  non-brain tissue.'
 absent:
 - quantitative_units
 - antibody_validation_uniformity

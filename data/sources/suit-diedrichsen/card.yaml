@@ -13,7 +13,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -22,33 +22,49 @@ frames:
 - cerebellar_flatmap
 streams:
 - name: lobular_probabilistic_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: LOBULES are anatomical folding units and are NOT functional units -- the MDTB atlas
     shows functional boundaries crossing lobular ones. Using SUIT lobules as functional supports is the
     same category error §5 warns about for the cerebrum.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: probabilistic cerebellar LOBULE definitions with a dedicated cerebellar normalisation
     template and a flatmap surface. Cerebellar cortex is far more tightly folded than cerebral cortex,
     so whole-brain normalisation blurs it catastrophically -- which is why a dedicated template exists
+  constrains: []
+  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
+    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
+    takes at them.  no registered component is a region label.  it reaches a materialization as a support
+    index and as a `prior`, never as a likelihood.  LOBULES are anatomical folding units and are NOT functional
+    units -- MDTB shows functional boundaries crossing lobular ones -- so using them as functional supports
+    is a category error.'
 - name: cerebellar_normalisation_template
-  kind: measured
+  kind: context
   via: null
   systematic_bias: the dedicated template measurably improves cerebellar alignment over whole-brain normalisation;
     using whole-brain MNI for cerebellum is a choice with a known cost
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  a
+    dedicated cerebellar template measurably improves alignment over whole-brain normalisation; using
+    whole-brain MNI for the cerebellum is a choice with a known cost.'
 - name: cerebellar_flatmap
-  kind: measured
+  kind: context
   via: null
   systematic_bias: a flatmap is a derived 2D representation with unavoidable distortion
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  a
+    flatmap is a derived 2D representation with unavoidable distortion.'
 absent:
 - individual_folia
 - function

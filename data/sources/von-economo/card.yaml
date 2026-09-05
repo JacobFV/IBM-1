@@ -19,7 +19,7 @@ licence:
     copy of this atlas in this store, shipped beside the data it licenses. NON-COMMERCIAL and SHARE-ALIKE;
     attribution required; no DUA, fetched anonymously as part of the netneurotools cache. It reaches us
     as a parent of netneurotools, which declares the edge.'
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -27,27 +27,40 @@ frames:
 - MNI152
 streams:
 - name: cytoarchitectonic_types
-  kind: measured
+  kind: context
   via: null
   systematic_bias: A century-old atlas, digitised by projecting hand-drawn boundaries onto a modern template.
     The laminar thickness and cell-density TABLES are the durable part; the spatial projection is a reconstruction
     with large and unquantified error.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: a digitised transcription of a 1925 histological atlas onto a modern surface; the ORIGINAL
     measurements are laminar thicknesses and cell densities from post-mortem sections, and the surface
     projection is a later reconstruction
+  constrains: []
+  notes: 'context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set
+    is a COVER over a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value
+    any ibm component takes at them.  no registered component is a region label, and inventing one would
+    make a naming convention into biology.  it reaches a materialization as a support index and as a `prior`,
+    never as a likelihood.  a 1925 atlas digitised by projecting hand-drawn boundaries onto a modern template;
+    the projection error is large and unquantified.'
 - name: laminar_quantitative_tables
-  kind: measured
+  kind: context
   via: null
   systematic_bias: quantitative laminar measurements from the original work are usable as priors over
     mesoscopic composition and are exactly the kind of literature-derived quantity §56.7 says to reconstruct
     explicitly rather than ignore
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP worth naming: the durable part of von Economo and Koskinas is quantitative
+    -- laminar thicknesses in mm and cell densities per unit volume -- and the registry declares neither.  `structural.dendritic_density`
+    is dendrite length per volume and `structural.synaptic_density` is synapses per volume; neither is
+    a cell count and neither is a layer depth.  so these tables constrain nothing today and enter as a
+    `prior` over mesoscopic composition.'
 absent:
 - modern_measurement
 - spatial_precision

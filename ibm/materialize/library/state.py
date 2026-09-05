@@ -28,7 +28,7 @@ implanted volume to pay for that.
 
 from __future__ import annotations
 
-from ibm.materialize.library import NamedModel, register, res, rule
+from ibm.materialize.library import NamedModel, anat, register, res, rule, subcortex
 from ibm.materialize.request import (
     Budget,
     DeviceSpec,
@@ -36,7 +36,6 @@ from ibm.materialize.request import (
     SubjectSpec,
     Window,)
 from ibm.vocabulary import (
-    Anat,
     Band,
     HEMODYNAMIC,
     LFP,
@@ -64,6 +63,22 @@ MODULATED = Band(0.5, 100.0)
 #: the resting-state fc band.  the low edge excludes scanner drift; the high edge
 #: excludes aliased cardiac signal at a 1-2 s tr.
 RESTING = Band(0.01, 0.1)
+
+#: frontal cortex, in the labels `cortical_areas` declares.  "prefrontal" is not
+#: one of them -- the system is a desikan-killiany parcellation -- and naming it
+#: selected nothing, which is how `anesthesia` came to argue for a 6 mm frontal
+#: refinement it never materialized.
+FRONTAL = anat("cortical_areas", "superiorfrontal", "rostralmiddlefrontal",
+               "caudalmiddlefrontal")
+#: the thalamic reticular nucleus, which the declared nucleus vocabulary calls
+#: `r`.  it is the gate the sleep and anaesthesia models are about, so a rule
+#: that missed it missed the point of both.
+RETICULAR = anat("thalamic_nuclei", "r")
+#: the sensorimotor striatum, as `bg_territories` partitions it.
+SENSORIMOTOR_STRIATUM = anat("bg_territories", "rostral_motor", "caudal_motor")
+#: the serotonergic raphe, which is declared as two nuclei rather than one.
+RAPHE = anat("brainstem_nuclei", "dorsal_raphe", "median_raphe")
+
 
 
 SEIZURE_PROPAGATION = register(NamedModel(
@@ -193,12 +208,12 @@ SLEEP_DYNAMICS = register(NamedModel(
         targets=(sel("neural.exc.activity", "neural.inh.activity", band=SLEEP),
                  sel("extracellular.acetylcholine", "extracellular.noradrenaline",
                      "extracellular.adenosine", band=PHARMACOKINETIC)),
-        regions=(("thalamus", Anat("thalamic_nuclei", "reticular")),
+        regions=(("thalamus", RETICULAR),
                  ("cortex", OnSupport("cortical_surface")),
-                 ("brainstem", Anat("brainstem_nuclei", "locus_coeruleus"))),
+                 ("brainstem", anat("brainstem_nuclei", "locus_coeruleus"))),
         resolution=res(
-            rule(Anat("thalamic_nuclei", "reticular"), 2.0, SLEEP),
-            rule(Anat("brainstem_nuclei", "locus_coeruleus"), 2.0, SLEEP),
+            rule(RETICULAR, 2.0, SLEEP),
+            rule(anat("brainstem_nuclei", "locus_coeruleus"), 2.0, SLEEP),
             rule(OnSupport("cortical_surface"), 8.0, SLEEP),
             default_mm=10.0, default_band=SLEEP),
         fields=("neural", "extracellular", "electromagnetic", "device"),
@@ -281,12 +296,12 @@ ANESTHESIA = register(NamedModel(
         targets=(sel("neural.exc.activity", "neural.inh.activity", band=SEDATION),
                  sel("neural.inh.gaba_a", "neural.exc.nmda", band=SEDATION),
                  sel("extracellular.gaba", band=PHARMACOKINETIC)),
-        regions=(("thalamus", Anat("thalamic_nuclei", "reticular")),
-                 ("frontal", Anat("cortical_areas", "prefrontal")),
+        regions=(("thalamus", RETICULAR),
+                 ("frontal", FRONTAL),
                  ("cortex", OnSupport("cortical_surface"))),
         resolution=res(
-            rule(Anat("thalamic_nuclei", "reticular"), 2.0, SEDATION),
-            rule(Anat("cortical_areas", "prefrontal"), 6.0, SEDATION),
+            rule(RETICULAR, 2.0, SEDATION),
+            rule(FRONTAL, 6.0, SEDATION),
             rule(OnSupport("cortical_surface"), 8.0, SEDATION),
             default_mm=10.0, default_band=SEDATION),
         fields=("neural", "extracellular", "electromagnetic", "device"),
@@ -366,13 +381,13 @@ PHARMACO = register(NamedModel(
                      band=PHARMACOKINETIC),
                  sel("neural.exc.activity", "neural.inh.activity",
                      band=MODULATED)),
-        regions=(("source_nuclei", Anat("brainstem_nuclei", "locus_coeruleus")),
-                 ("striatum", Anat("bg_territories", "sensorimotor")),
+        regions=(("source_nuclei", anat("brainstem_nuclei", "locus_coeruleus")),
+                 ("striatum", SENSORIMOTOR_STRIATUM),
                  ("cortex", OnSupport("cortical_surface"))),
         resolution=res(
-            rule(Anat("brainstem_nuclei", "locus_coeruleus"), 1.0, PHARMACOKINETIC),
-            rule(Anat("brainstem_nuclei", "raphe"), 1.0, PHARMACOKINETIC),
-            rule(Anat("bg_territories", "sensorimotor"), 2.0, PHARMACOKINETIC),
+            rule(anat("brainstem_nuclei", "locus_coeruleus"), 1.0, PHARMACOKINETIC),
+            rule(RAPHE, 1.0, PHARMACOKINETIC),
+            rule(SENSORIMOTOR_STRIATUM, 2.0, PHARMACOKINETIC),
             rule(OnSupport("cortical_surface"), 8.0, MODULATED),
             default_mm=10.0, default_band=MODULATED),
         fields=("extracellular", "neural", "blood", "metabolic"),
@@ -435,9 +450,52 @@ VIRTUAL_LESION = register(NamedModel(
     5 mm on the sheet, 3 mm around the lesion mask where the boundary gradient is
     the only place resolution changes the answer, 10 mm elsewhere.
 
+    **the neural field is on two supports, as a partition, and the model is
+    meaningless otherwise.**  a virtual lesion is an operation on a *graph*: cut a
+    node or a bundle and see what stops arriving where.  the answer is entirely
+    determined by which positions were neighbours before the cut, so getting the
+    neighbours right is not a refinement, it is the model.  cortical neighbours
+    are geodesic -- two points across a sulcus are a millimetre apart in the
+    volume, centimetres apart along the sheet, and joined by no horizontal axon --
+    so cortical population state goes on column nodes, where
+    `lateral_cortical_propagation` and the tract endpoints both live.  at the
+    5-10 mm this model materializes at, a euclidean cortical graph mis-connects a
+    large fraction of pairs, and a disconnection experiment run over
+    mis-connections measures the octree.
+
+    but the lesions this model is about are not all cortical, and its structural
+    targets are not cortical at all: `structural.axonal_density` and
+    `structural.myelination` describe white matter, and a stroke is an infarct
+    territory that takes thalamus and internal capsule with it.  those live in the
+    parenchyma volume, which is their only support.  so R names both and carves
+    the second with `subcortex()`: cortical population state on the sheet, white
+    matter and deep grey in the volume, no millimetre carrying either quantity
+    twice.  the previous R named `tissue` unrestricted, which put every neural
+    component on the sheet *and* on the voxels covering the same cortex -- a
+    doubled node whose two halves would be lesioned independently.
+
     **B is the resting band.**  the readout is a change in functional connectivity
     and in spectral power, both slow.  0.01-0.1 Hz for the hemodynamic readout and
     a wider lfp band when the readout is electrophysiological.
+
+    **the lesion is not in R, and that is the correction.**  it used to be
+    written as `Anat("cortical_areas", "structural_mri")`, which names no label
+    of any declared system: the region selected nothing, the 3 mm rule never
+    fired, and the model quietly materialized at 5 and 10 mm everywhere while its
+    docstring argued for a refined lesion boundary.  the fix is not a better
+    label, because a lesion is not a partition of a brain in the first place.
+    §6 already says what it is -- `graph_ablation`, declared below as this
+    model's intervention, which is externally constrained state and not an input
+    -- and the library's job is to declare the intact materialization the
+    counterfactual is a difference *against*.
+
+    a case therefore amends this request rather than being anticipated by it: it
+    hands the mask's voxel centres to `build(anchors={"lesion": ...})` and adds
+    one `Near("lesion", 20 mm) -> 3 mm` rule to r(q), which is the only place
+    resolution changes the answer, exactly as `materialize_eeg_forward` amends R
+    with one region for one subject.  writing that rule into the library instead
+    would make the model unbuildable on every brain that does not have a lesion
+    -- including the healthy ones this model is most often run on.
 
     **the one thing that would change this model's status** is intracranial
     stimulation data with simultaneous recording -- `ram-intracranial` has direct
@@ -448,11 +506,9 @@ VIRTUAL_LESION = register(NamedModel(
         targets=(sel("neural.exc.activity", "neural.inh.activity", band=RESTING),
                  sel("structural.axonal_density", "structural.myelination",
                      band=Band(0.0, 0.001))),
-        regions=(("lesion", Anat("cortical_areas", "structural_mri")),
-                 ("cortex", OnSupport("cortical_surface")),
-                 ("tracts", OnSupport("tissue"))),
+        regions=(("cortex", OnSupport("cortical_surface")),
+                 ("tracts", subcortex())),
         resolution=res(
-            rule(Anat("cortical_areas", "structural_mri"), 3.0, RESTING),
             rule(OnSupport("cortical_surface"), 5.0, RESTING),
             default_mm=10.0, default_band=RESTING),
         fields=("neural", "structural", "blood", "electromagnetic"),
@@ -513,6 +569,28 @@ RESTING_STATE_FC = register(NamedModel(
     directly.  the model materializes a grid rather than a parcellation so that a
     finer model can be coarsened onto it, but the honest rank is the parcel count.
 
+    **why the cortex is on the sheet and the rest of the brain is not.**  the
+    estimand here is a correlation structure, and the one error a correlation
+    structure cannot survive is a spurious short-range neighbour.  two points on
+    opposite banks of a sulcus are millimetres apart in the volume and joined by
+    no horizontal axon; a euclidean cortical graph at 5-8 mm connects them, and
+    `lateral_cortical_propagation` -- one of this model's two declared couplings
+    -- then generates exactly the short-range correlation the model is trying to
+    measure.  it is not a small effect at this spacing and it is not detectable in
+    the output, because a smooth, strong, distance-decaying correlation is what
+    the answer is supposed to look like.  so cortical population state goes on
+    column nodes, where the metric is geodesic, which is also the indexing every
+    parcellation in the eval list (`schaefer2018`, `yeo2011`) is defined on.
+
+    the thalamus, striatum and cerebellum have no sheet, carry a real share of
+    resting variance, and are named in this model's anatomy list, so they need the
+    volume.  R therefore names both supports and carves the volume with
+    `subcortex()`, which makes the two blocks a partition rather than a second
+    copy of the cortex: naming `tissue` unrestricted, as this model used to, put
+    every neural component on the column nodes *and* on the voxels containing
+    them, and a connectivity matrix computed over a doubled node is not a weaker
+    answer, it is a different one.
+
     **B.**  0.01-0.1 Hz.  below 0.01 Hz is scanner and physiological drift; above
     0.1 Hz a 1-2 s tr aliases cardiac and respiratory signal into the estimate, and
     the resulting 'connectivity' is a breathing pattern.  the band is not a
@@ -526,7 +604,7 @@ RESTING_STATE_FC = register(NamedModel(
         targets=(sel("neural.exc.activity", band=RESTING),
                  sel("blood.deoxyhemoglobin", band=RESTING)),
         regions=(("cortex", OnSupport("cortical_surface")),
-                 ("subcortex", OnSupport("tissue"))),
+                 ("subcortex", subcortex())),
         resolution=res(
             rule(OnSupport("cortical_surface"), 5.0, RESTING),
             rule(OnSupport("tissue"), 8.0, RESTING),
@@ -541,8 +619,14 @@ RESTING_STATE_FC = register(NamedModel(
         subject=SubjectSpec(),
         window=Window(n=512, dt=1.0),
         bands=(("neural", RESTING), ("blood", RESTING)),
-        budget=Budget(max_state_variables=60_000,
-                      max_spectral_coefficients=2_000_000),),
+        # counted in state variables, which is one component at one position and
+        # not one position.  5 mm on a real sheet is ~6,000 column nodes and
+        # ~2,500 ribbon-excluded parenchyma leaves, carrying 13 neural components
+        # plus the haemodynamic chain: 1.4e5 variables.  the old 6e4 was the
+        # *site* estimate in the docstring above, which is right, wearing the
+        # wrong unit -- and it made this model's own r(q) unreachable.
+        budget=Budget(max_state_variables=200_000,
+                      max_spectral_coefficients=8_000_000),),
     fit_sources=("hcp-functional-connectivity", "hcp-young-adult",
                  "midnight-scan-club", "nki-rockland", "aomic"),
     eval_sources=("corr-reliability", "abide", "adhd-200", "myconnectome",

@@ -14,7 +14,7 @@ licence:
   notes: The repository carries no LICENSE file. Unresolved gates DISTRIBUTION only and never reading,
     loading, computing with or fitting to this evidence; win.licences.release_gate is the one refusal
     and it is called at outward publication and nowhere earlier.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -23,74 +23,139 @@ frames:
 - MNI152
 streams:
 - name: consensus_structural_connectome
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series; every matrix is a static summary
   spatial_support: group consensus networks on three parcellations held side by side -- Cammoun033 (68
     nodes), Schaefer100, Schaefer400 -- which is a COVER family and not a choice of parcellation
+  constrains: []
+  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
+    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
+    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
+    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
+    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
+    about a component.
 - name: three_connectivity_kinds_on_one_parcellation
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
+    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
+    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
+    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
+    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
+    about a component.
 - name: same_networks_on_three_parcellations
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
+    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
+    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
+    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
+    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
+    about a component.
 - name: annotation_similarity_networks
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
+    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
+    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
+    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
+    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
+    about a component.
 - name: structural_connectivity
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
+    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
+    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
+    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
+    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
+    about a component.
 - name: functional_connectivity
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
+    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
+    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
+    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
+    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
+    about a component.
 - name: meg_connectivity
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
+    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
+    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
+    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
+    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
+    about a component.
 - name: pet_metabolic
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a parcel-level PET summary aggregated across studies is a group mean of a quantity
+    whose units differ by tracer and by quantification method.  the registry's `metabolic.*` components
+    are per-tissue-element values in declared units; this is not commensurable with them and normalising
+    it to a common scale would hide that rather than fix it.
 - name: gene_expression
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and here the ontology genuinely has no place for it: transcript abundance is not a
+    registered component and the six donors behind AHBA are not the population being fitted.'
 - name: receptor_density
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  see the hansen-receptors card: receptor DENSITY is a tissue composition parameter
+    and the registry declares none.  `extracellular.*` are neurotransmitter CONCENTRATIONS, which is a
+    different quantity with different units, and binding a receptor map to one of them would be a category
+    error dressed as evidence.'
 - name: laminar_thickness
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a per-parcel laminar thickness is anatomy -- geometry of the support -- and the registry
+    has no laminar-thickness component; `structural.dendritic_density` is a density, not a depth.
 absent:
 - per_participant_networks
 - edge_uncertainty

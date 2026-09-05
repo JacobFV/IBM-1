@@ -14,7 +14,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -23,35 +23,58 @@ frames:
 - cell_taxonomy
 streams:
 - name: cell_type_taxonomy
-  kind: measured
+  kind: context
   via: null
   systematic_bias: '§52.6 is explicit: H01, MICrONS, Patch-seq and cell-census sources are NOT whole-human-brain
     observations. They are model-class and local-geometry priors for what kinds of state and interaction
     are plausible. A cell-type taxonomy constrains the composition of a mesoscopic state; it does not
     observe one.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: single-cell and single-nucleus transcriptomes with a hierarchical cell-type taxonomy,
     plus spatial transcriptomic sections in parts of the atlas. The support is the CELL, which is a genuinely
     different level from every other card in this section
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.  THE SUPPORT IS
+    THE CELL, which is a genuinely different level from every other source here, and a cell-type taxonomy
+    is a cover over cells rather than a state of tissue.'
 - name: regional_cell_composition
-  kind: measured
+  kind: context
   via: null
   systematic_bias: dissociation-based assays lose spatial position and are biased against large, fragile
     neurons -- so the measured proportions are not the tissue's proportions
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.  dissociation-based
+    assays lose spatial position and are biased against large, fragile neurons, so the measured proportions
+    are not the tissue''s proportions.'
 - name: spatial_transcriptomics
-  kind: measured
+  kind: context
   via: null
   systematic_bias: where present, spatial assays recover the position dissociation destroyed, at coarser
     molecular resolution
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and an ONTOLOGY GAP rather than an undecided stream.  transcript abundance, protein
+    score and cell-type proportion are not registered components and none of the nearest names fits: `extracellular.*`
+    are neurotransmitter concentrations in the interstitium, `structural.*` are densities of synapses,
+    dendrites, axons and myelin.  molecular composition constrains WHICH interaction classes are plausible
+    where, which is a `prior` over model class, and it is never evidence about a state.  where present,
+    spatial assays recover the position dissociation destroyed, at coarser molecular resolution.'
 absent:
 - whole_brain_spatial_coverage
 - population

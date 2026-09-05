@@ -23,7 +23,7 @@ licence:
     license for derivative works''. No registration or DUA is mentioned; accepting the licence is the
     only condition of download. This was very nearly recorded as commercial_use prohibited from memory,
     which would have WRONGLY BLOCKED a legitimate release.'
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -33,26 +33,35 @@ frames:
 - subject_native_surface
 streams:
 - name: spherical_registration_target
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'fsaverage is the hub node of the cortical coordinate-frame graph in practice: most
     surface data in the registry can reach most other surface data only through it. That makes its registration
     residual a shared, systematic error affecting nearly every cross-source surface comparison, and it
     is almost never propagated.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: an average of 40 subjects' surfaces with a spherical coordinate system; the standard
     target for surface-based registration and the reason cross-study surface comparison is possible
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  it
+    is the hub of the surface frame graph, so its registration residual is a SHARED systematic error across
+    nearly every cross-source surface comparison -- a property of the frame graph, not a measurement.'
 - name: downsampled_variants
-  kind: measured
+  kind: context
   via: null
   systematic_bias: fsaverage5 and fsaverage6 are decimated meshes; moving data between resolutions is
     resampling and loses spatial detail irreversibly
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  fsaverage5/6
+    are decimated meshes of the same average.'
 absent:
 - individual_folding
 - registration_residual_distribution

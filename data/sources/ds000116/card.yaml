@@ -12,7 +12,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: Unresolved.
-binding: unbound
+binding: bound
 population:
   n: 17
   hierarchy:
@@ -29,7 +29,10 @@ frames:
 streams:
 - name: eeg
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
     brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
     filtered, sampled voltage
@@ -48,13 +51,25 @@ streams:
     a good CALIBRATION episode for the EEG-in-scanner observation model: the expected signal is known
     well enough that residual artifact is diagnosable.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 250.0
   temporal_support: EEG at 1000 Hz; BOLD at TR 2 s; discrete oddball trials with jittered ISI
   spatial_support: 43-channel MR-compatible EEG; 3 mm BOLD
+  constrains:
+  - device.contact_potential
+  notes: '43-channel MR-compatible EEG at 1000 Hz INSIDE THE BORE, simultaneous with BOLD at TR 2 s.  the
+    ceiling is 250 Hz rather than the 500 Hz nyquist for the ds002336 reason: above the imaging band what
+    survives gradient-artifact subtraction is residual rather than signal.  WHY IT IS A CALIBRATION SOURCE:
+    the P300 to an oddball is high-amplitude and well characterised, so the expected signal is known well
+    enough that residual artifact is DIAGNOSABLE rather than merely suspected.'
+  rate_hz: 1000.0
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: bold
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
     concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
     voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
@@ -67,40 +82,81 @@ streams:
   - susceptibility dropout and geometric distortion
   - scanner drift
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.25
+  constrains:
+  - electromagnetic.bfield
+  notes: 'TR 2 s, 3 mm, simultaneous with the EEG above -- and simultaneity is the point: two observations
+    of one episode through two different chains, neither conditioning the other.  ceiling is the TR nyquist.  BOLD
+    IS NOT NEURAL ACTIVITY, and the four-step chain is what says so: neurovascular coupling, then flow,
+    then tissue exchange, then the susceptibility change deoxyhaemoglobin makes -- which is why the component
+    is `electromagnetic.bfield` and not a neural one.  the vascular stages are modelled state, not nuisance
+    to be regressed away.  em_generation is what produces the magnetic field from source currents; the
+    previous chain named vascular_flow, which is unrelated.'
+  rate_hz: 0.5
+  frame: scanner
 - name: cross_modal_design
-  kind: measured
+  kind: context
   via: null
   systematic_bias: auditory and visual oddballs in the same session isolate the supramodal component by
     subtraction, and subtraction assumes additivity
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.  auditory
+    and visual oddballs in the same session isolate the supramodal component BY SUBTRACTION, and subtraction
+    assumes additivity -- which is an assumption about the design, carried here so it is not lost.'
 - name: button_responses
-  kind: imposed
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  a behavioural score, rating or questionnaire response is a report ABOUT a state, produced
+    by a person rather than by a process the model represents, and often minutes later.  no registered
+    component is a score, and treating one as a measurement would let a self-report update tissue state
+    directly.  A CORRECTION: marked `imposed` by the migration, and a button press is the participant''s
+    response rather than something the experimenter set.'
 - name: auditory_stimuli
-  kind: measured
-  via: null
+  kind: imposed
+  via:
+  - transduction
   band_hz:
-  - null
-  - null
+  - 20.0
+  - 8000.0
+  constrains:
+  - device.speaker_pressure
+  notes: 'imposed, and a CORRECTION: marked `measured` by the migration.  the oddball tones are state
+    the experimenter clamped on the display support.  the ceiling is a conservative audio bandwidth because
+    the deposit''s stimulus sampling rate is not recorded here.'
+  frame: display
 - name: visual_stimuli
-  kind: measured
-  via: null
+  kind: imposed
+  via:
+  - transduction
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 2.0
+  constrains:
+  - device.display_luminance
+  notes: imposed, same correction.  the visual oddballs, clamped on the display support; the band covers
+    a discrete presentation and its onset.
+  frame: display
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.'
 absent:
 - meg
 - ieeg
@@ -128,8 +184,11 @@ use:
 - calibrate
 - fit
 forbidden:
-- ds000116/* -> vascular geometry
-- ds000116/* -> naturalistic world-model claims (this is a trial design)
+- ds000116/* -> subject-specific head geometry (no electrode digitisation is recorded)
+- ds000116/cross_modal_design -> a supramodal component without stating the additivity assumption the
+  subtraction rests on
+- ds000116/eeg -> a band above 250 Hz (what survives gradient-artifact subtraction above the imaging band
+  is residual, not signal)
 split:
   group_by:
   - participant

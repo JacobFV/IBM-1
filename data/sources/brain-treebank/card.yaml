@@ -13,7 +13,7 @@ licence:
   commercial: unresolved
   notes: Unresolved. Film stimuli are third-party copyright and separable from the neural data; the transcripts
     are a derived product of them.
-binding: unbound
+binding: bound
 population:
   n: 10
   hierarchy:
@@ -29,7 +29,10 @@ frames:
 streams:
 - name: ieeg
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: current sources within millimetres of the contact -> local volume conduction over
     a short path -> contact surface area, impedance and referencing scheme -> sampled voltage; spatial
     support is the contact neighbourhood, not a parcel
@@ -40,49 +43,89 @@ streams:
   - epileptiform activity contaminating putative task responses
   systematic_bias: '§51.1 item 9: one of the strongest bridges between world events, language structure
     and LOCAL cortical electrophysiology.'
-  notes: electrode coverage is clinical and per-patient; a group-level map from this is an aggregation
-    over incompatible supports
+  notes: '1,688 depth and surface contacts across 10 patients, individually localised, at kHz sampling.  THE
+    RATE IS GIVEN ONLY AS ''kHz'' IN THE RECORD and the bytes are not held, so the 200 Hz ceiling is a
+    conservative floor on what the deposit certainly supports rather than a nyquist; it must be re-read
+    from the sidecars when the bytes arrive, and the high-gamma band this corpus is usually analysed in
+    sits above it.  the support is `implanted_array`, not `sensor_array`: a contact sees current sources
+    within millimetres over a short conduction path, with NO SKULL AND NO SCALP in the way, which is the
+    spatially local electrical evidence scalp EEG cannot supply.  the reference contact''s own activity
+    is in every number.  and COVERAGE IS CLINICALLY DICTATED and differs completely between patients,
+    so treating it as a random sample of cortex overstates what it constrains and a group-level map from
+    it is an aggregation over incompatible supports.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 200.0
   temporal_support: iEEG at kHz sampling; word onsets at manually corrected millisecond precision; film
     at its frame rate
   spatial_support: 1,688 depth and surface contacts across 10 patients, individually localised; coverage
     differs completely between patients
+  constrains:
+  - device.contact_potential
+  frame: electrode_native
+  support: implanted_array
+  units: V
 - name: word_timings
-  kind: imposed
+  kind: context
   via: null
   systematic_bias: manually corrected -- among the most accurate stimulus timing in the registry, which
     is precisely why the residual matters
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context, and a CORRECTION of a close call: the migration marked it `imposed`, and the onsets
+    are MANUALLY CORRECTED to millisecond precision, which is among the most accurate stimulus timing
+    in this registry.  it is still an annotation OF the film''s soundtrack rather than a physical variable
+    the experimenter clamped -- the clamped variable is the film, which is `film_stimuli`.  precisely
+    because the timing is this good, the residual matters and must be carried rather than assumed zero.'
 - name: dependency_parses
-  kind: imposed
+  kind: context
   via: null
   systematic_bias: a parse is a THEORY of the sentence, not a property of the acoustic signal; §29 says
     abstract-linguistic forcing starts at low authority and earns influence
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context, and emphatically: A PARSE IS A THEORY OF THE SENTENCE, not a property of the acoustic
+    signal.  it is the output of a grammar and an annotator, so it enters as an abstract-linguistic forcing
+    candidate at low authority that must earn influence through held-out prediction, and never as a boundary
+    condition or a likelihood.'
 - name: film_stimuli
   kind: imposed
-  via: null
+  via:
+  - transduction
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 25.0
+  constrains:
+  - device.display_luminance
+  notes: 'imposed: the films the patients watched, clamped on the display support.  ceiling is the frame
+    rate.  the soundtrack is the other half of this stimulus and no stream binds `device.speaker_pressure`,
+    so the auditory drive is unrepresented rather than absent -- which matters more here than usual, because
+    the card''s value is the LANGUAGE alignment.'
+  frame: display
 - name: electrode_localisation
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  per-contact
+    positions for all 1,688 contacts.  this is the device geometry the iEEG stream needs, not a second
+    measurement of a brain.'
 - name: transcripts
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context: a written record of what was said in the film, which indexes the stimulus rather than
+    being it.'
 absent:
 - scalp_eeg
 - meg
@@ -94,10 +137,17 @@ requires:
 - geometry: device-geometry
   for_streams:
   - ieeg
-  severity: blocking
-  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
-    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
-    channel is an index and nothing measured here can be attached to a cortical location.
+  - electrode_localisation
+  severity: degrading
+  without_it: 'A contact''s position IS its spatial support. Re-graded to degrading 2026-09-05 on the
+    card''s own record rather than on disk (the bytes are not held): the release states 1,688 contacts
+    INDIVIDUALLY LOCALISED, and the `electrode_localisation` stream is that localisation. It stays degrading
+    rather than satisfied for the reason ds003688''s entry gives, where the same files were read off disk:
+    a coordinate triple is a point where the physics has a contact area and an impedance, and the post-implant
+    brain-shift correction is a modelling choice whose residual is not reported. Verify against the sidecars
+    when the bytes arrive.'
+  substitute: The contact coordinates as points with a datasheet contact area. That assumption sets the
+    spatial low-pass of every source estimate.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
@@ -107,8 +157,12 @@ requires:
 use:
 - fit
 forbidden:
-- brain-treebank/dependency_parses -> observation-role likelihoods
-- brain-treebank/* -> whole-cortex state outside contact neighbourhoods
+- brain-treebank/ieeg -> a random sample of cortex, or a group-level map (coverage is clinical and differs
+  completely between the ten patients)
+- brain-treebank/dependency_parses -> a boundary condition (a parse is a theory of the sentence, not a
+  property of the signal)
+- brain-treebank/word_timings -> an imposed variable (the clamped variable is the film)
+- brain-treebank/* -> the auditory stimulus (no speaker pressure is recorded)
 split:
   group_by:
   - participant

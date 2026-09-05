@@ -25,7 +25,7 @@ licence:
     that serves it without an access request. That is evidence about the acquisition rather than an opinion
     about the deposit''s policy. It says nothing about the LICENCE terms, which are recorded separately
     and still govern distribution; a non-commercial work with no DUA is an ordinary combination.'
-binding: unbound
+binding: bound
 population:
   n: 1
   hierarchy:
@@ -41,7 +41,8 @@ frames:
 streams:
 - name: meg
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
     plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
     SQUID flux -> sampled channel
@@ -55,38 +56,75 @@ streams:
   systematic_bias: 'One person means one head model: the between-subject variance that dominates MEG group
     analyses is absent, so within-person model discrepancy becomes visible.'
   band_hz:
-  - null
-  - null
+  - 0.03
+  - 330.0
   temporal_support: MEG at its acquisition rate; audiobook chapters as continuous listening blocks across
     many sessions
   spatial_support: whole-head MEG; a single participant's head geometry throughout, which removes between-subject
     forward-model variance entirely
+  constrains:
+  - electromagnetic.bfield
+  notes: 'MEASURED FROM THE HELD RAW FIF 2026-09-05: Elekta, sfreq 1000 Hz, highpass 0.03 Hz, lowpass
+    330 Hz, 306 MEG channels, and the sidecar declares DigitizedLandmarks true, DigitizedHeadPoints true
+    and ContinuousHeadLocalization true with five HPI coil frequencies.  the band is the acquisition''s
+    own passband and not a nyquist guess.  NOTE the serialised derivative alongside it is further processed
+    -- the filename records bads+headpos+sss+notch+bp+ds -- so a fit reading the .h5 rather than the .fif
+    is working over a NARROWER band than this, and which one a run used is a fact about the answer.  MEG
+    constrains `electromagnetic.bfield` directly through `em_generation` and does NOT pass through `device_coupling`:
+    unlike a scalp electrode there is no contact interface, which is the whole reason the two modalities''
+    `via` chains differ in length.  em_generation is what produces the magnetic field from source currents;
+    the previous chain named vascular_flow, which is unrelated.'
+  rate_hz: 1000.0
+  frame: meg_device
+  units: T
 - name: held_out_splits
-  kind: measured
+  kind: context
   via: null
   systematic_bias: a within-person held-out split tests generalisation across sessions and material, NOT
     across people; the two claims are different and must not be conflated
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context.  a split definition is a protocol for evaluation, not a measurement -- and here it
+    carries a warning worth keeping: a within-person held-out split tests generalisation across SESSIONS
+    AND MATERIAL, never across people, and the two claims must not be conflated.  n=1.'
 - name: audio_stimuli
   kind: imposed
-  via: null
+  via:
+  - transduction
   band_hz:
-  - null
-  - null
+  - 20.0
+  - 11025.0
+  constrains:
+  - device.speaker_pressure
+  notes: 'imposed: the audiobook is what the experimenter played, clamped on the display support and conditioned
+    on, never sampled.  MEASURED FROM THE HELD FILES 2026-09-05: the stimuli are 16-bit mono PCM WAV at
+    22050 Hz, so the ceiling is that file''s nyquist -- not the component''s 20 kHz, which would claim
+    content the deposit does not contain.  the floor is 20 Hz because that is where `transduction` reads
+    speaker pressure and where a cochlea starts.'
+  frame: audiobook_timeline
 - name: transcripts
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: context.  a transcript is a written record of what was said, which is a description of the stimulus
+    rather than a physical variable; the pressure waveform is the imposed stream above and this indexes
+    into it.
 - name: alignments
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: context, and specifically because FORCED ALIGNMENT IS AN ALGORITHM'S OUTPUT.  a word or phoneme
+    onset here is where an aligner put it, not when a phoneme occurred, and its error is systematic at
+    word boundaries rather than random.  binding it as imposed would hand a model an event time nobody
+    measured.
 absent:
 - population
 - fmri
@@ -97,10 +135,18 @@ requires:
 - geometry: device-geometry
   for_streams:
   - meg
-  severity: blocking
-  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
-    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
-    be attributed to any cortical location.
+  severity: degrading
+  without_it: 'Re-graded from blocking 2026-09-05 ON FILE EVIDENCE read out of the held raw fif: dev_head_t
+    is present, 219 digitisation points are stored, hpi_results is populated, and the BIDS sidecar declares
+    DigitizedLandmarks true, DigitizedHeadPoints true and ContinuousHeadLocalization true with five HPI
+    coil frequencies. So the sensor pose relative to the head is measured continuously, which is the geometry
+    this entry said was missing, and a lead field can be built. It stays degrading rather than satisfied
+    because no subject MRI is held for this participant: there is a head position but no head MODEL, so
+    the conductor the field propagates through is still a template. With n=1 that template error is a
+    constant offset on everything this source ever contributes rather than something that averages away.'
+  substitute: A template head geometry scaled to the digitised head points. For a single participant that
+    is a fixed, unmeasured displacement applied to every estimate this source produces, so it is bias
+    and not noise.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.

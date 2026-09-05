@@ -83,6 +83,8 @@ streams:
   - electromagnetic.bfield
   rate_hz: 600.0
   frame: meg_head
+  notes: em_generation is what produces the magnetic field from source currents; the previous chain named
+    vascular_flow, which is unrelated.
 - name: eeg
   kind: measured
   via:

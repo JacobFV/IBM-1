@@ -20,7 +20,7 @@ licence:
     rather than an opinion about the deposit''s policy. It says nothing about the LICENCE terms, which
     are recorded separately and still govern distribution; a non-commercial work with no DUA is an ordinary
     combination.'
-binding: unbound
+binding: bound
 population:
   n: 44
   hierarchy:
@@ -37,7 +37,7 @@ frames:
 - visual_field_polar
 streams:
 - name: population_receptive_field_estimates
-  kind: measured
+  kind: context
   via: null
   observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
     concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
@@ -62,16 +62,23 @@ streams:
     sample that a PROBABILISTIC retinal-to-cortical mapping needs. A single atlas label lookup is what
     this replaces.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: TR-sampled BOLD during rotating-wedge and expanding-ring stimulus sweeps; the stimulus
     apertures are shipped, so the forward stimulus timeline is recoverable
   spatial_support: 3T whole-brain EPI analysed on the SUBJECT'S OWN SURFACE (fsnative) as well as fsaverage,
     with pRF parameters estimated per vertex and V1/V2/V3/hV4 ROIs drawn on those surfaces. The retinotopic
     map is a coordinate system in the VISUAL FIELD attached to cortical locations -- which is the mapping
     obj-retinotopic-mapping needs, and it is estimated, never measured
+  constrains: []
+  notes: context, and this is the tractogram argument in another modality.  a pRF parameter -- a centre,
+    a size, a gain -- is what one receptive-field model returned when it was fitted to a BOLD time course.  it
+    is an INVERSE SOLUTION, and binding it as measured would let one pipeline's fit contribute a likelihood
+    about cortical state, which is exactly what mne-sample's card refuses for a `.stc` and what tractoinferno's
+    refuses for a tractogram.  it enters through an observation model or as a `prior` over the retinotopic
+    mapping, never as evidence about a component.
 - name: cross_dataset_reproducibility
-  kind: measured
+  kind: context
   via: null
   systematic_bias: The dataset exists to be compared against the HCP 7T retinotopy release. Two independent
     measurements of the same quantity in different people on different scanners is the only way to separate
@@ -79,61 +86,115 @@ streams:
   band_hz:
   - null
   - null
+  constrains: []
+  notes: context.  this names a COMPARISON the deposit was built to support -- the same quantity measured
+    in different people on a different scanner, against the HCP 7T release -- which is a protocol for
+    separating estimation error from individual variation.  a protocol is not a measurement and constrains
+    nothing.
 - name: bold_retinotopy
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.25
+  constrains: []
+  notes: 'context, and the reason is that THE BYTES ARE NOT HERE.  CHECKED 2026-09-05: the held tree under
+    this root contains CHANGES, dataset_description.json, participants.tsv/json, README and a `derivatives/`
+    directory and NOTHING ELSE -- there are no sub-* directories and no raw functional volumes at all,
+    1.4 GiB in total.  what is held is the pRF fits, the ROIs, the Bayesian maps and the stimulus apertures,
+    i.e. the outputs, not the BOLD they were computed from.  same decision as ds004024''s `fmri` and `dwi`
+    entries: the stream is kept so the absence is visible in the stream list and not only in `absent`,
+    and it constrains nothing because there is nothing here to constrain with.'
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and the reason is that THE BYTES ARE NOT HERE.  no anatomical volumes are held under
+    this root either; only derivatives.  same decision as ds004024''s `fmri` and `dwi` entries: the stream
+    is kept so the absence is visible in the stream list and not only in `absent`, and it constrains nothing
+    because there is nothing here to constrain with.'
 - name: freesurfer_surfaces
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and the reason is that THE BYTES ARE NOT HERE.  the surfaces the pRF parameters are
+    written on are referenced by the derivatives but the subject reconstructions themselves are not in
+    the held tree.  same decision as ds004024''s `fmri` and `dwi` entries: the stream is kept so the absence
+    is visible in the stream list and not only in `absent`, and it constrains nothing because there is
+    nothing here to constrain with.'
 - name: fmriprep_derivatives
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a PIPELINE OUTPUT, not a measurement: it is what one algorithm returned when
+    it was run on the bytes above.  ARCHITECTURE.md''s rule that a derived quantity carries its algorithm
+    forever applies -- binding it as measured would let one reconstruction contribute a likelihood about
+    tissue, which is the same argument that makes a tractogram context.'
 - name: vistasoft_prf_parameters
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a PIPELINE OUTPUT, not a measurement: it is what one algorithm returned when
+    it was run on the bytes above.  ARCHITECTURE.md''s rule that a derived quantity carries its algorithm
+    forever applies -- binding it as measured would let one reconstruction contribute a likelihood about
+    tissue, which is the same argument that makes a tractogram context.  and specifically a SECOND pRF
+    solution over the same acquisition, held beside the Bayesian one so that two pipelines'' disagreement
+    is visible rather than hidden behind whichever ran last.'
 - name: visual_area_rois
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  V1/V2/V3/hV4 boundaries drawn on a surface are a COVER -- which vertices a name collects
+    -- and they were drawn by hand from the pRF fits above, so they inherit that fit's algorithm.  no
+    registered component is an area label.
 - name: bayesian_inferred_maps
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  this is a PIPELINE OUTPUT, not a measurement: it is what one algorithm returned when
+    it was run on the bytes above.  ARCHITECTURE.md''s rule that a derived quantity carries its algorithm
+    forever applies -- binding it as measured would let one reconstruction contribute a likelihood about
+    tissue, which is the same argument that makes a tractogram context.  a Bayesian retinotopic map combines
+    the measured fits with an atlas PRIOR, so it is further from the data than the vistasoft solution
+    rather than closer to it, and the prior''s contribution is not separable in the shipped product.'
 - name: stimulus_apertures
-  kind: measured
-  via: null
+  kind: imposed
+  via:
+  - transduction
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 1.0
+  constrains:
+  - device.display_luminance
+  notes: 'imposed, and it is the one stream here that is genuinely a clamped physical variable: the rotating-wedge
+    and expanding-ring apertures ARE what the display showed, and they are shipped, so the forward stimulus
+    timeline is recoverable rather than inferred.  the band is the analysis sampling of the aperture sequence
+    and NOT the monitor''s frame rate: what is held is one binary mask per volume, so nothing faster than
+    the volume clock is recorded here even though the display ran far faster.'
+  frame: visual_field_polar
 absent:
-- eyetracking
-- diffusion
-- eeg
-- meg
-- physiology
-- 7t_comparison_within_subject
+- bold
+- t1w
+- freesurfer_reconstruction
+- raw_acquisition
 requires:
 - geometry: cortical-support-bank
   severity: blocking
@@ -151,8 +212,11 @@ use:
 - calibrate
 - fit
 forbidden:
-- ds003787/* -> a pRF size treated as a neural receptive-field size
-- ds003787/* -> the derivative group-average 'subjects' counted as participants
+- ds003787/* -> measured cortical state (only fitted parameters are held, not the BOLD)
+- ds003787/population_receptive_field_estimates -> a likelihood about cortical state (a pRF parameter
+  is an inverse solution and enters only through an observation model)
+- ds003787/bayesian_inferred_maps -> independent evidence from ds003787/vistasoft_prf_parameters (same
+  acquisition, and the Bayesian map adds an atlas prior on top of it)
 split:
   group_by:
   - participant

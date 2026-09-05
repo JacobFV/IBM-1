@@ -13,7 +13,7 @@ licence:
   redistribution: unresolved
   commercial: permitted
   notes: Read from the repository record. Open download, no registration.
-binding: unbound
+binding: bound
 population:
   n: 20
   hierarchy:
@@ -26,7 +26,10 @@ frames:
 streams:
 - name: graded_sedation_eeg
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: post-synaptic currents in spatially aligned pyramidal populations -> volume conduction
     through brain, CSF, skull and scalp -> potential difference between an electrode and a reference ->
     amplifier gain, filtering and group delay -> sampled voltage. The manipulated variable is plasma propofol
@@ -49,24 +52,47 @@ streams:
   systematic_bias: Only the preprocessed data are distributed. Every quantity computed from them carries
     a preprocessing lineage that cannot be varied, which rules out any claim that depends on the raw signal.
   band_hz:
-  - null
-  - null
+  - 0.5
+  - 45.0
   temporal_support: '10-second epochs in the RELEASED form. The continuous recording clock is gone: what
     is distributed is epoched, filtered 0.5-45 Hz, artefact-cleaned and average-referenced, which is a
     DERIVED VIEW and not the native acquisition'
   spatial_support: 91-channel scalp EEG
+  constrains:
+  - device.contact_potential
+  notes: '91-channel scalp EEG, and THE RELEASED FORM IS NOT THE ACQUISITION: what is distributed is 10-second
+    epochs, filtered 0.5-45 Hz, artefact-cleaned and average-referenced.  the band above is that filter,
+    read from the release description rather than from an amplifier setting, and it is the honest one
+    -- the continuous recording clock is gone and every quantity computed from these bytes carries a preprocessing
+    lineage that cannot be varied.  the graded propofol levels are the manipulation and they are the reason
+    to hold it: a designed, monotonic excursion of cortical state without a lesion.'
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: eeg_preprocessed
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.5
+  - 45.0
+  constrains: []
+  notes: 'context, and a DUPLICATE carried over from the migration: it describes the same bytes as `graded_sedation_eeg`,
+    which is where the likelihood is written.  kept so the card still describes the archive it came from,
+    bound to nothing so one measurement is not counted twice.  the same distributed epochs under another
+    name; there is no raw form in this release at all.'
 - name: sedation_condition_labels
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context.  this is a DESIGN FACTOR -- a label naming which condition a block belonged to -- not
+    a physical variable.  the same reading as eegmmidb''s `task_annotations`: it indexes the imposed stimulus
+    rather than constraining any state, so it binds to nothing and that is correct, not missing.  and
+    here the design factor is a PHARMACOLOGICAL one, which the registry can name as an intervention but
+    not as a component: there is no registered component for a plasma or effect-site anaesthetic concentration,
+    so the graded level indexes the manipulation without constraining any state.  ONTOLOGY GAP.'
 absent:
 - raw_continuous_eeg
 - fmri
@@ -92,8 +118,12 @@ requires:
 use:
 - fit
 forbidden:
-- chennu-propofol-sedation-eeg/* -> a raw-signal claim
-- chennu-propofol-sedation-eeg/* -> a sedation label treated as a measured drug concentration
+- chennu-propofol-sedation-eeg/* -> any claim that depends on the raw signal (only preprocessed 10 s epochs
+  are distributed, filtered 0.5-45 Hz and average-referenced)
+- chennu-propofol-sedation-eeg/eeg_preprocessed -> independent evidence from graded_sedation_eeg (the
+  same epochs)
+- chennu-propofol-sedation-eeg/* -> a drug concentration (none is recorded and no component exists for
+  one)
 split:
   group_by:
   - participant

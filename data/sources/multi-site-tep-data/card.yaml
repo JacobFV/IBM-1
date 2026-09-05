@@ -11,7 +11,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: Mendeley Data deposit; the deposit's stated licence has not been verified here. Unresolved.
-binding: unbound
+binding: bound
 population:
   n: null
   hierarchy:
@@ -29,7 +29,10 @@ frames:
 streams:
 - name: tms_eeg
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
     brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
     filtered, sampled voltage
@@ -45,16 +48,26 @@ streams:
   systematic_bias: '§51.4 item 31 is explicit: useful for SITE-CONDITIONED RESPONSE SHAPE, BUT ONLY WITH
     EXPLICIT AUDITORY AND SOMATOSENSORY CO-STIMULATION MODELS. Without those, between-site TEP differences
     are partly differences in how loud the click was.'
-  notes: site is confounded with coil model, targeting method, masking protocol and operator; the dataset
-    cannot separate them
+  notes: 'scalp EEG at kHz with single TMS pulses at long inter-pulse intervals, across several laboratories.  the
+    acquisition rate is given only as ''kHz'' in the record and the bytes are not held, so 250 Hz is a
+    conservative ceiling to be re-read from the deposit.  WHAT IS IN THE WAVEFORM: the recorded response
+    is the neural response SUMMED WITH the amplifier''s recovery, cranial muscle activation, and the evoked
+    response to the click and the scalp sensation -- so a TEP is partly a measurement of how loud the
+    coil was.  between-site differences are therefore partly differences in masking protocol, and this
+    source may only be used with EXPLICIT auditory and somatosensory co-stimulation models.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 250.0
   temporal_support: EEG at kHz; single pulses at long inter-pulse intervals
   spatial_support: scalp EEG with site-specific montages; coil position over a nominally common target
     that each site localised its own way
+  constrains:
+  - device.contact_potential
+  frame: eeg_cap
+  support: sensor_array
+  units: V
 - name: between_site_variability
-  kind: measured
+  kind: context
   via: null
   systematic_bias: The between-site spread is a direct measurement of how reproducible a TEP is across
     laboratories, which is the floor any TEP-based claim must be quoted against (§46). It is also the
@@ -62,24 +75,47 @@ streams:
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context, and it is the most useful thing in the dataset: the between-site spread is a direct
+    measurement of HOW REPRODUCIBLE A TEP IS ACROSS LABORATORIES, which is the floor any TEP-based claim
+    must be quoted against.  a reproducibility spread is an uncertainty budget computed from the recordings
+    above, not a value of a component, and binding it would count those recordings twice.'
 - name: site_metadata
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context, and it carries the card''s hardest limitation: SITE IS CONFOUNDED WITH COIL MODEL,
+    TARGETING METHOD, MASKING PROTOCOL AND OPERATOR, and the dataset cannot separate them.  so ''site''
+    is a label over a bundle of unmeasured differences rather than a variable.'
 - name: stimulation_parameters
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: context, and this is the ds004024 rule.  the trigger times mark a real intervention, so `imposed`
+    is the obvious reading -- but an imposed stream is CONDITIONED ON, and what a materialization would
+    condition on is the DELIVERED FIELD, not a machine setting.  binding a pulse mark to `device.coil_current`
+    without a recorded coil pose, winding and waveform would hand the model an amplitude and a location
+    nobody measured, dressed as a boundary condition.  here the settings ARE recorded per site, but the
+    coil model differs by site and the pose was localised by each site's own method, so a stated intensity
+    in per cent of motor threshold does not name a common physical quantity across the collection.
 - name: coil_targeting
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context: geometry, not evidence.  it supplies a support that a materialization is indexed over
+    and constrains no ibm component; letting it update biology would turn a reconstruction into a measurement.  each
+    site''s record of where it aimed at a nominally common target, obtained by that site''s own method.  it
+    is the device geometry the TEP needs and it is not commensurable across sites, which is the same confound
+    as `site_metadata`.'
 absent:
 - delivered_field_measurement
 - sham_arm
@@ -88,13 +124,18 @@ absent:
 - emg
 requires:
 - geometry: device-geometry
-  for_streams:
-  - tms_eeg
+  for_streams: []
   severity: blocking
-  without_it: 'Two device geometries are needed at once and neither can be defaulted: the electrode positions
-    that define the lead field, and the coil winding and pose that determine the induced field. Without
-    both, the pulse is a machine setting and the response is a channel-space waveform, with nothing connecting
-    them at any cortical location.'
+  without_it: 'Two device geometries are needed at once: the electrode positions that define the lead
+    field, and the coil winding and pose that determine the induced field. Neither is verifiable -- the
+    bytes are not held -- and the coil half is worse than absent, because the coil MODEL differs by site
+    and each site localised its own way, so even a recorded pose would not be commensurable across the
+    collection. KEPT BLOCKING and scoped to no streams, which is how this corpus carries a requirement
+    no stream currently claims against: `tms_eeg` binds to `device.contact_potential` on `sensor_array`,
+    which a nominal montage addresses, and every stimulation stream is bound as context precisely because
+    the delivered field is not recorded.'
+  substitute: None for the coil. A nominal pose would invent the one quantity a between-site TEP comparison
+    is most sensitive to.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
@@ -105,8 +146,11 @@ use:
 - evaluate
 - fit
 forbidden:
-- multi-site-tep-data/* -> cortical response without a co-stimulation model
-- multi-site-tep-data/* -> delivered-field claims
+- multi-site-tep-data/* -> delivered-field parameters or a cortical dose
+- multi-site-tep-data/tms_eeg -> a purely transcranial evoked response (the click and the scalp sensation
+  are in every waveform, and no sham arm exists)
+- multi-site-tep-data/site_metadata -> a site effect (site is confounded with coil model, targeting method,
+  masking protocol and operator)
 split:
   group_by:
   - site

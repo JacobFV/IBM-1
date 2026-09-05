@@ -12,7 +12,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: NSD data-use terms; the COCO source images carry their own licence. Unresolved.
-binding: unbound
+binding: bound
 population:
   n: 8
   hierarchy:
@@ -30,7 +30,8 @@ frames:
 streams:
 - name: bold_images
   kind: measured
-  via: null
+  via:
+  - em_generation
   observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
     concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
     voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
@@ -46,72 +47,163 @@ streams:
   systematic_bias: Repeat presentations within participant give a genuine noise ceiling -- one of the
     few sources where 'a number without its floor' can actually be given its floor (§46).
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.3125
   temporal_support: TR 1.6 s; discrete 3 s trials -- an event design, not a continuous world
   spatial_support: 1.8 mm 7T BOLD; individual surfaces; per-participant pRF and category localisers
+  constrains:
+  - electromagnetic.bfield
+  notes: 'TR 1.6 s, 1.8 mm at 7 T, discrete 3 s trials -- AN EVENT DESIGN, NOT A CONTINUOUS WORLD, which
+    matters for anything that wants a naturalistic trajectory.  ceiling is the TR nyquist.  BOLD IS NOT
+    NEURAL ACTIVITY, and the four-step chain is what says so: neurovascular coupling, then flow, then
+    tissue exchange, then the susceptibility change deoxyhaemoglobin makes -- which is why the component
+    is `electromagnetic.bfield` and not a neural one.  the vascular stages are modelled state, not nuisance
+    to be regressed away.  the reason to hold it is the REPEAT PRESENTATIONS within participant, which
+    give a genuine per-voxel noise ceiling: this is one of the few sources where a decoding or encoding
+    number can actually be quoted against its floor.  em_generation is what produces the magnetic field
+    from source currents; the previous chain named vascular_flow, which is unrelated.'
+  rate_hz: 0.625
+  frame: subject_native
 - name: prf_mapping
-  kind: measured
+  kind: context
   via: null
   systematic_bias: pRF estimates are model fits (gaussian pRF assumed) and inherit that model's bias
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, same call as hcp-7t-retinotopy''s `prf_parameters`: a pRF estimate is a model fit under
+    an assumed isotropic gaussian and inherits that model''s bias.  derived, not measured.'
 - name: noise_ceiling
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a per-voxel noise ceiling is an uncertainty budget computed from the repeats of `bold_images`
+    -- it is a property of the measurement's reliability, not a value of any component, and binding it
+    would count those repeats a second time.
 - name: coco_images
   kind: imposed
-  via: null
+  via:
+  - transduction
   systematic_bias: COCO overlap with BOLD5000 is a cross-dataset stimulus leakage channel
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 1.0
+  constrains:
+  - device.display_luminance
+  notes: 'imposed: tens of thousands of COCO photographs shown for 3 s each, clamped on the display support
+    and conditioned on, never sampled.  the band covers a 3 s presentation and its onset; the monitor''s
+    refresh is not recorded here.  ONE HAZARD WORTH THE LINE: COCO overlaps with BOLD5000''s stimulus
+    set, so training on one and evaluating on the other is a cross-dataset stimulus leakage channel, and
+    `forbidden` now says so.'
+  frame: display
 - name: category_localisers
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context.  a category-selective ROI is a COVER drawn from a localiser contrast, so it is a GLM
+    output turned into a label: two derivations away from the measurement and no registered component
+    is a region name.'
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.'
 - name: t2w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: geometry.  the anatomical volume the supports are indexed over.  as ds004024''s card
+    records, a T1 would genuinely bind to `material.conductivity` and `material.mass_density` once a head
+    model exists to put the values into -- but a material value asserted for a conductor nobody can address
+    is not evidence, so it stays context until the support bank exists.'
 - name: dwi
   kind: measured
-  via: null
+  via:
+    structural.fiber_orientation:
+    - tract_propagation
+    structural.axonal_density: &id001
+    - plasticity
+    structural.myelination: *id001
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains:
+  - structural.fiber_orientation
+  - structural.axonal_density
+  - structural.myelination
+  notes: 'ORIENTATION EVIDENCE, and the distinction is the whole binding.  what a diffusion volume measures
+    is direction-dependent attenuation of water displacement, which constrains LOCAL microstructure --
+    fibre orientation, axonal density, myelination -- and does NOT observe a tract: a tractogram is a
+    reconstruction laid over this field and is context wherever it appears in this corpus.  static band
+    because microstructure is a tissue parameter.  the via chain follows the corpus convention set by
+    tractoinferno, ds000117 and aomic-id1000: `plasticity` is named because it is the process that writes
+    the structural field, though its declared outputs cover density and myelination and NOT `structural.fiber_orientation`,
+    which no registered process writes.  per-component chains: this acquisition makes more than one claim
+    and the routes differ.  one chain for all of them would let the component whose route is wrong borrow
+    the route of the ones that are right.'
+  frame: subject_native
 - name: behaviour
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  a phenotype, a demographic field, a questionnaire score or a genotype is a property
+    of a PERSON rather than a value of any state variable at any time.  the registry has no component
+    for any of them and should not acquire one; they belong in `split` and in covariates, not in a likelihood.  the
+    recognition-memory responses collected during scanning are also the only compliance evidence that
+    the participant looked at anything.
 - name: eye_tracking_subset
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and it is a decision.  a gaze trace is a measurement -- of the eye''s pose -- and the
+    registry has no oculomotor component: `effector.*` is motor-unit drive, force and fatigue on `motor_units`,
+    not an eye''s direction in a head, and `transduction.photoreceptor` is what light does to a retina,
+    not where the retina was pointing.  ONTOLOGY GAP, recorded here so it is visible.  it is also the
+    stream the `retinal-world-geometry` requirement exists for: until that product exists a gaze trace
+    cannot be turned into retinal input either.  and it covers only a SUBSET of participants, so a gaze-corrected
+    analysis and an uncorrected one are over different cohorts.'
 - name: physiology
   kind: measured
-  via: null
+  via:
+    blood.volume:
+    - vascular_flow
+    blood.oxygenation:
+    - tissue_exchange
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.5
+  constrains:
+  - blood.volume
+  - blood.oxygenation
+  notes: 'concurrent cardiac and respiratory recording during scanning.  the PULSE trace is what is bound,
+    to the systemic blood volume and oxygenation it constrains through `vascular_flow`, capped at the
+    0.5 Hz where those components are declared meaningful -- the aomic-id1000 binding for the same sensor.  the
+    respiratory channel rides in the same file and is not separately bound, because one stream cannot
+    name two chains.  per-component chains: this acquisition makes more than one claim and the routes
+    differ.  one chain for all of them would let the component whose route is wrong borrow the route of
+    the ones that are right.'
 absent:
 - eeg
 - meg
@@ -128,23 +220,39 @@ requires:
     to ship.
 - geometry: retinal-world-geometry
   for_streams:
-  - bold_images
   - coco_images
-  severity: blocking
-  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
-    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
-    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+  severity: degrading
+  without_it: 'Re-graded from blocking and re-scoped 2026-09-05. It no longer names `bold_images`: a BOLD
+    volume constrains `electromagnetic.bfield` through the haemodynamic chain and that attribution does
+    not pass through a retina, so the retinal product was never what stood between that stream and its
+    component -- the cortical support bank is. For `coco_images` it is degrading because the photograph
+    is clamped as `device.display_luminance` on the DISPLAY support, which is defined without a screen-to-retina
+    map. What remains unavailable is everything after the screen: nothing here may be attributed to `transduction.photoreceptor`,
+    to an eccentricity, or to a retinotopic support, and the eye tracking covers only a subset of participants,
+    so for most of the cohort the pointing direction is unknown.'
+  substitute: The per-participant pRF maps in this same dataset, used to place a stimulus in visual-field
+    coordinates. That is a model fit standing in for a geometry, and its error is largest at the area
+    boundaries where it matters.
 - geometry: tract-path-products
-  severity: blocking
-  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
-    exists there is no engineered claim of the form 'this tract transmits between these two supports',
-    so this source can constrain local microstructure but no interaction between supports.
+  severity: degrading
+  without_it: 'A diffusion volume is a field of orientations attached to no pathway. Re-graded to degrading
+    and unscoped 2026-09-05 on the entry''s own logic, which already said the source ''can constrain local
+    microstructure but no interaction between supports'': local microstructure is exactly what `dwi` binds
+    -- `structural.fiber_orientation`, `axonal_density` and `myelination` -- so the missing product does
+    not stand between that stream and its components. What it blocks is any claim of the form ''this tract
+    transmits between these two supports'', and no stream here makes one.'
+  for_streams: []
 use:
 - evaluate
 - fit
 forbidden:
-- natural-scenes-dataset/* -> population covariance priors
-- natural-scenes-dataset/* -> world transition dynamics
+- natural-scenes-dataset/coco_images -> retinal input (the participant saw a gaze-dependent projection;
+  eye tracking covers only a subset)
+- natural-scenes-dataset/* -> evaluation against BOLD5000 without accounting for the shared COCO stimuli
+  (a cross-dataset leakage channel)
+- natural-scenes-dataset/prf_mapping -> measured retinotopy (it is a gaussian pRF fit)
+- natural-scenes-dataset/dwi -> a measured connection (orientation evidence is not a tract)
+- natural-scenes-dataset/* -> a population claim (n=8, deep not wide)
 split:
   group_by:
   - participant

@@ -19,7 +19,7 @@ licence:
     it, computing with it and scoring against it is internal private research and is not gated. win.licences.release_gate
     is where the share-alike obligation bites, at outward publication, and any artifact carrying these
     bytes forward inherits it.'
-binding: unbound
+binding: bound
 population:
   n: 1298
   hierarchy:
@@ -32,7 +32,7 @@ frames:
 - MNI152
 streams:
 - name: arterial_territory_maps
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'An arterial territory atlas is a COVER organised by blood supply rather than by cytoarchitecture
     or function, so §11''s multi-cover argument applies to it identically. Three biases are specific to
@@ -45,13 +45,22 @@ streams:
     width, are on NITRC behind a login and are NOT held, so what is held has had its own uncertainty flattened
     out of it.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: 'a whole-brain label volume on the MNI152 1 mm grid partitioning supra- and infra-tentorial
     tissue by arterial supply, in two hierarchical levels: 30 arterial territories plus 2 ventricles at
     level 1, and 8 arterial territories (ACA, MCA, PCA, VB, each bilateral) plus 2 ventricles at level
     2'
+  constrains: []
+  notes: 'context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set
+    is a COVER over a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value
+    any ibm component takes at them.  no registered component is a region label, and inventing one would
+    make a naming convention into biology.  it reaches a materialization as a support index and as a `prior`,
+    never as a likelihood.  a territory here is where infarcts co-occurred, which is a statement about
+    which artery supplies which tissue -- a topology assertion about the vascular tree, not a value of
+    `blood.flow` or `blood.volume` anywhere.  binding it `measured` would let a lesion-derived cover contribute
+    a likelihood about perfusion in a brain that never had a stroke.'
 absent:
 - cow_variant_conditioning
 - individual_geometry
