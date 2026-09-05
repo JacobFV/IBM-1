@@ -105,19 +105,22 @@ class _Tiers:
     with what is actually on disk.  a tier is not a preference, it is a report of
     what happened.
 
-    **every fall-through is recorded, and the record travels.**  `record` returns
-    the answer and appends the rung, and there is no way to get the first without
-    the second -- the same contract `tract_prior.edge_support` enforces by
-    returning a tuple, for the same reason: the array is what gets passed around
-    and the provenance is what gets dropped.
+    **every fall-through is recorded, and the record travels with the answer.**
+    the substrate hands back the structure and its rung as one tuple and the three
+    methods below append the rung before returning the structure, so there is no
+    path from a fall-through to an edge set that does not also write the ledger.
+    that is the contract `tract_prior.edge_support` enforces by returning a tuple
+    and it is enforced here for the same reason: the array is what gets passed
+    around and the provenance is what gets dropped.
 
     **a ceiling refuses, loudly.**  `strict=True` does NOT refuse a fall-through:
     a materialization resting on a population prior is legitimate and §7 asks only
     that it be reportable as one.  what a ceiling refuses is a fall-through the
     caller has forbidden by name, because there are models whose entire claim is
-    about one individual -- a virtual lesion resects a fascicle, and resecting a
-    fascicle from a group average produces a number that no inspection of it would
-    reveal as meaningless.
+    about one individual -- `seizure_propagation` predicts which contact a
+    patient's seizure reaches next along that patient's own white matter, and the
+    same map computed over a group connectome looks exactly like a propagation map
+    while being about nobody.
     """
 
     def __init__(self, request: MaterializationRequest, substrate: Any, cache: Any) -> None:

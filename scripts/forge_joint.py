@@ -92,7 +92,8 @@ across modalities would manufacture the coupling this script is trying to detect
 BOLD source only, because above ~0.1 Hz a BOLD series is thermal and
 physiological noise rather than haemodynamics and a model without a floor would
 spend its whole likelihood there.  the scalp sources get no floor because they do
-not need one (r^2 of log psd is already 0.77-0.97 without it).
+not need one -- they reach r^2 of log psd between 0.6 and 0.9 without it -- and a
+nuisance a source does not need is a way for a fit to stop being able to fail.
 
 ### how the sources are weighted, and why it is not by size
 
@@ -1083,8 +1084,9 @@ def main() -> int:
     print(f"  {len(sl_nights)} nights from {len(sl_subj)} participants.  "
           f"{sl_ev[sl_nights[0]]['W']}")
     print("  band stops at 25 Hz: above it these recordings are flat, which is the "
-          "archive's\n  own anti-alias floor and not cortex (checked: 30-50 Hz differs from "
-          "20-30 Hz by\n  0.02 decades in W).")
+          "archive's\n  own anti-alias floor and not cortex.  checked: in scored wake the mean "
+          "log10 psd\n  over 30-50 Hz differs from 20-30 Hz by under 0.02 decades, against 1.8 "
+          "decades of\n  fall from 1 to 25 Hz.")
 
     print("\nds000117 -- 102 magnetometers and 70 EEG channels, simultaneous, same head")
     meg_ev, meg_root = read_ds000117(args.meg_subjects, 4.0, args.meg_seconds)

@@ -352,6 +352,11 @@ class Provenance:
     #: every piece of structure that fell through to a prior tier, keyed by the
     #: topology, support or partitioning system it stands in for.  a build with an
     #: empty tuple here used this subject's own anatomy for everything it built.
+    #: the snapshot is taken when the model is built, which covers geometry,
+    #: topologies and every region expression in R; a region a *process* composes
+    #: at run time is answered from the same substrate and arrives after this
+    #: record is frozen, which is the one hole and is why `RegionWeights` is not
+    #: the place to look for what a model rests on.
     tiers: tuple[TierRecord, ...] = ()
     #: processes reached by the trace with no implementation at all.  §5 permits a
     #: process to exist in the ontology without a high-confidence f; a

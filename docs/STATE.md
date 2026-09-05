@@ -216,7 +216,20 @@ r(q)-dependent one: the hop is the only temporal knob and the floor does not
 respond to it, which leaves the disagreement between the dynamics and the imposed
 tail — a property of the transfer functions and `match_weight`, neither of which
 is r(q). the r(q) axis is formally open (only the hop was varied) with a strong
-prior that it does not matter.
+prior that it does not matter — **now corroborated**: a partial full-resolution
+run at 13,647 column nodes, 3.4x the coarse sheet, gives the same iteration
+counts and the same residual ratio to two figures (window 0: 19 picard sweeps at
+8.4e-09 of initial against coarse's 20 at 3.9e-09; window 1 drive-frozen: 12
+picard at 1.3e+00 in both). the raw joint gap scales with amplitude (3.4x,
+matching the denser fan-in), which is why the NORMALIZED ratio is the only number
+that means anything there — and that one did not land before the run was stopped
+under machine contention. corroboration, not proof.
+
+the full-resolution propagation report did land and confirms the machinery at
+that r(q): the same 28 theta groups, the same 13 capped at sigma/median > 0.5
+(worst 74.99), the same two components flagged first-order-invalid (523x and
+32.5x |H| against coarse's 515x and 32.5x). posterior psds are ~10x larger
+throughout, which is the denser fan-in rather than a propagation artefact.
 
 **side finding: `WindowPlan.for_memory` gives advice that does not do what a
 reader will assume.** it exists to widen the overlap until a plan is causally

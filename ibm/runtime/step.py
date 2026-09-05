@@ -185,6 +185,32 @@ class WindowPlan:
 
         offered rather than applied automatically: widening the overlap costs
         real work per window and the caller should see it happen.
+
+        what it buys is legality and nothing else, and that is worth saying
+        plainly because "widen the overlap" reads like advice about quality.  it
+        is not.  measured on `eeg_forward` at its coarse r(q) -- 4,318 sites, a
+        600 ms longest memory, a 2048 ms window, three windows with the drive
+        advanced -- taking the overlap from the 0.586 this function returns up to
+        0.80 moves the hop from 1.41x the graph's memory to 0.68x it and gives:
+
+            overlap  hop_ms  joint gap / rms   residual / initial   seconds
+              0.586     848           0.0690               0.0925       114
+              0.700     614           0.0615               0.0939       167
+              0.800     410           0.0582               0.0987       287
+
+        two and a half times the work for a 16% better stitch and a *worse*
+        residual, monotonically.  the residual rising as the overlap widens is
+        the diagnostic half: a driven cyclic window already has a unique
+        solution, so pinning more of it adds constraint without adding
+        agreement, and every extra pinned sample is one more equation the
+        dynamics and the carried tail have to disagree about.  the floor is set
+        by how much they disagree, not by how much of the window is pinned, and
+        no overlap removes it -- `match_weight` says why, and `StepReport`
+        reports the price as `limited_by="continuity"`.
+
+        so widen the overlap to make a plan legal, which is what the causality
+        argument above requires and is not negotiable; do not widen it hoping the
+        window will converge.
         """
         want = min(0.9, headroom * max_memory_s / max(self.basis.duration_s, _EPS))
         return replace(self, overlap=max(self.overlap, want))
