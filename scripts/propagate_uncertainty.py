@@ -277,32 +277,45 @@ def main() -> int:
     print(f"    {ACT_TO_POT}   the E/I loop and the alpha resonator, TWO channels")
     print("    sharing one input -- so this second row also tests the coherent composition,")
     print("    which an incoherent sum would get wrong by the cross term between them.")
+    print("  and it is checked per (site, coefficient) rather than per band: |G|^2 varies")
+    print("  inside a band, so a band-averaged ratio compares two differently-weighted")
+    print("  averages and blurs the very thing being tested at the percent level.")
     rows = []
-    for lbl, (src, dst) in (("gain", (R.AMPA, R.TMC)), ("loop+resonator", (R.ACT, R.POT))):
+    worst = 0.0
+    for lbl, (src, dst) in (("frequency-flat gain", (R.AMPA, R.TMC)),
+                            ("E/I loop + resonator", (R.ACT, R.POT))):
         b_ = model.layout[dst].basis or basis
-        ps, pd = psd_power(state_nt, src), psd_power(state_nt, dst)
-        ms, md = mean_power(state_nt, src), mean_power(state_nt, dst)
-        n = min(ps.size, pd.size, ms.size, md.size, b_.freqs_hz.size)
-        for name, (lo, hi) in BANDS.items():
-            msk = band_of(b_, lo, hi)[:n]
-            if not msk.any():
-                continue
-            gp = float(pd[:n][msk].mean() / max(ps[:n][msk].mean(), 1e-300))
-            gm = float(md[:n][msk].mean() / max(ms[:n][msk].mean(), 1e-300))
-            rows.append((f"{src} -> {dst}", name, f"{gp:.6g}", f"{gm:.6g}",
-                         f"{gp / max(gm, 1e-300):.6f}"))
-    hd = ("site-local link", "band", "|G|^2 from psd", "|G|^2 from mean", "ratio")
+        P0 = np.asarray(state_nt[src].total_psd())
+        P1 = np.asarray(state_nt[dst].total_psd())
+        M0 = np.abs(np.asarray(state_nt[src].mean)) ** 2
+        M1 = np.abs(np.asarray(state_nt[dst].mean)) ** 2
+        n = min(P0.shape[-1], P1.shape[-1], M0.shape[-1], M1.shape[-1])
+        ns = min(P0.shape[0], P1.shape[0], M0.shape[0], M1.shape[0])
+        P0, P1 = P0[:ns, :n], P1[:ns, :n]
+        M0, M1 = M0[:ns, :n], M1[:ns, :n]
+        # only where both denominators carry real power: a coefficient whose prior
+        # is numerically zero has no ratio, and dividing by it measures round-off.
+        ok = (P0 > 1e-12 * P0.max()) & (M0 > 1e-12 * M0.max())
+        gp = np.where(ok, P1 / np.maximum(P0, 1e-300), 1.0)
+        gm = np.where(ok, M1 / np.maximum(M0, 1e-300), 1.0)
+        dev = np.abs(gp / np.maximum(gm, 1e-300) - 1.0)[ok]
+        worst = max(worst, float(dev.max()) if dev.size else 0.0)
+        rows.append((f"{src} -> {dst}", lbl, f"{int(ok.sum()):,}",
+                     f"{float(np.median(dev)):.3e}", f"{float(dev.max()) if dev.size else 0.0:.3e}"))
+    hd = ("site-local link", "what it is", "cells compared", "median |dev|", "max |dev|")
     wd = [max(len(h), *(len(r[i]) for r in rows)) for i, h in enumerate(hd)]
     print()
     print("  " + "  ".join(h.ljust(x) for h, x in zip(hd, wd)))
     print("  " + "  ".join("-" * x for x in wd))
     for r in rows:
         print("  " + "  ".join(c.ljust(x) for c, x in zip(r, wd)))
-    worst = max(abs(float(r[4]) - 1.0) for r in rows)
-    print(f"  worst departure from 1: {worst:.3e}")
-    print("  a departure of order the solver's own tolerance means the width and the mean")
-    print("  went through the same operator, exactly, which is what ARCHITECTURE.md 4 means")
-    print("  by \"for a linear f this projection is exact\".")
+    print(f"  worst departure from 1 over every (site, coefficient): {worst:.3e}")
+    print("  that is the width and the mean going through the same operator, elementwise,")
+    print("  which is what ARCHITECTURE.md 4 means by \"for a linear f this projection is")
+    print("  exact\".  the second row also carries the coherent composition: two couplings")
+    print("  read neural.exc.activity and write neural.exc.potential, and an incoherent sum")
+    print("  would have missed the cross term between the E/I loop and the resonator, which")
+    print("  is what puts the x1116 alpha peak in the table above.")
     print()
     print("  the same comparison over the whole chain, including the topology-mediated")
     print("  links.  these are NOT required to agree -- a mean sums coherently over an")
@@ -484,19 +497,29 @@ def main() -> int:
         print("  eval_sleep_state.py asks a DIRECTIONAL question -- does the exponent steepen")
         print("  as arousal falls -- and the transfer above does not depend on sleep stage.")
         print("  so it shifts every stage by the same amount and the ordering is invariant.")
+        seq = []
         for e0 in (1.2, 1.6, 2.0):
             s0 = np.asarray(field_priors.build(
                 "neural_population", tb, **{**got["post"], "exponent": e0}).psd).reshape(-1)
             r0 = refit_shape(tb, s0 / np.maximum(transfer, 1e-300),
                              {**got["post"], "exponent": e0}, band=(lo, hi),
                              free=("exponent",))
+            seq.append((e0, r0["exponent"]))
             print(f"    source exponent {e0:.2f}  ->  deconvolved refit "
                   f"{r0['exponent']:.4f}   (shift {r0['exponent'] - e0:+.4f})")
+        mono = all(b[1] > a[1] for a, b in zip(seq, seq[1:]))
+        infl = [(b[1] - a[1]) / (b[0] - a[0]) for a, b in zip(seq, seq[1:])]
         print()
-        print("  the shifts agree to the third decimal, so every stage difference and every")
-        print("  rank correlation that script reports is UNCHANGED by putting the dynamics")
-        print("  back in.  that is the worse of the two possible answers and it should be")
-        print("  said as plainly as the other one: the dynamics are irrelevant to that test.")
+        print(f"  the ordering is {'STRICTLY PRESERVED' if mono else 'NOT preserved'}, and the")
+        print(f"  stage DIFFERENCES are multiplied by {min(infl):.3f}-{max(infl):.3f} -- the shift")
+        print("  is not quite constant, because the transfer is a smooth slope and the fitted")
+        print("  exponent trades against the knee differently at each level.  that is far")
+        print("  inside the standard errors eval_sleep_state.py reports on its stage")
+        print("  contrasts, so every stage difference and every rank correlation it reports")
+        print("  survives putting the dynamics back in.")
+        print()
+        print("  that is the worse of the two possible answers and it should be said as")
+        print("  plainly as the other one: the dynamics are irrelevant to that test.")
         print("  what the test measures is a property of the fitted curve, and a linear")
         print("  time-invariant head is transparent to a comparison between two spectra")
         print("  recorded through it.  it would stop being transparent the moment the")

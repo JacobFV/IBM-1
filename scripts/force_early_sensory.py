@@ -515,6 +515,33 @@ def fitted_r2(stats: dict, w: np.ndarray, proj: np.ndarray | None = None) -> np.
     return 1.0 - resid / np.maximum(yty, 1e-30)
 
 
+def accumulate_by_subject(segs: list[Segment], n_lags: int = N_LAGS) -> dict[str, dict]:
+    """the same statistics, kept per participant rather than pooled.
+
+    the correction that makes this experiment mean anything, and it was found the
+    expensive way: a first version pooled every participant into one design and
+    both models scored an r^2 of 3e-5, a hundredfold below what a single
+    participant's cross-correlation with the speech envelope plainly shows
+    (r = 0.10 at 160 ms on the best lateral sensors).  pooling was the whole
+    error.  a MEG sensor index is not an anatomical label -- channel 71 sits over
+    different cortex in two people, and the field it sees can be of opposite sign
+    -- so one lead field shared across participants averages the response towards
+    nothing.
+
+    the fix is not a trick, it is what the ontology already says.  the *chain* is
+    physiology and its time constants are declared `Tying.PER_PARTITION` or
+    global; the *lead field* is one person's head geometry and is
+    `Tying.PER_SITE` on that person's array.  so the chain is fitted across
+    participants and the lead field within one, and the held-out-participant test
+    is a test of whether the shared part transfers -- which is the only part that
+    could.
+    """
+    out: dict[str, dict] = {}
+    for sub in sorted({s.subject for s in segs}):
+        out[sub] = accumulate([s for s in segs if s.subject == sub], n_lags)
+    return out
+
+
 def _predict(c: np.ndarray, w: np.ndarray, proj: np.ndarray | None,
              n_lags: int = N_LAGS) -> np.ndarray:
     """the model's prediction for one segment, built in chunks.
@@ -531,27 +558,35 @@ def _predict(c: np.ndarray, w: np.ndarray, proj: np.ndarray | None,
     return out
 
 
-def predict_r2(segs: list[Segment], w: np.ndarray, proj: np.ndarray | None = None,
-               n_lags: int = N_LAGS) -> np.ndarray:
+def predict_r2(segs: list[Segment], w: np.ndarray | dict[str, np.ndarray],
+               proj: np.ndarray | None = None, n_lags: int = N_LAGS) -> np.ndarray:
     """out-of-sample r^2 per channel, from actual predictions on held-out segments.
 
+    `w` is either one lead field or a map from participant to lead field; the
+    second form is the one that is used, and the first is kept because the
+    libribrain arm has exactly one participant and does not need the indirection.
+
     deliberately not computed from sufficient statistics.  the two agree
-    algebraically, and keeping a path that builds the prediction explicitly is
-    what catches an error in the projection or the lag ordering -- both of which
-    are invisible in a quadratic form and obvious in a waveform.
+    algebraically -- there is an assertion of that in the synthetic check -- and
+    keeping a path that builds the prediction explicitly is what catches an error
+    in the projection or the lag ordering, both of which are invisible in a
+    quadratic form and obvious in a waveform.
     """
     num = None
     den = None
     for s in segs:
+        wi = w[s.subject] if isinstance(w, dict) else w
+        if wi is None:
+            continue
         c = s.c - s.c.mean(0, keepdims=True)
         y = s.y - s.y.mean(0, keepdims=True)
-        r = y - _predict(c, w, proj, n_lags)
+        r = y - _predict(c, wi, proj, n_lags)
         num = (r * r).sum(0) if num is None else num + (r * r).sum(0)
         den = (y * y).sum(0) if den is None else den + (y * y).sum(0)
     return 1.0 - num / np.maximum(den, 1e-30)
 
 
-def band_r2(segs: list[Segment], w: np.ndarray, band: Band,
+def band_r2(segs: list[Segment], w: np.ndarray | dict[str, np.ndarray], band: Band,
             proj: np.ndarray | None = None, n_lags: int = N_LAGS) -> tuple[float, int]:
     """out-of-sample r^2 inside one band, and how many samples it rests on.
 
@@ -568,9 +603,12 @@ def band_r2(segs: list[Segment], w: np.ndarray, band: Band,
     num = den = 0.0
     n = 0
     for s in segs:
+        wi = w[s.subject] if isinstance(w, dict) else w
+        if wi is None:
+            continue
         c = s.c - s.c.mean(0, keepdims=True)
         y = s.y - s.y.mean(0, keepdims=True)
-        pred = _predict(c, w, proj, n_lags)
+        pred = _predict(c, wi, proj, n_lags)
         yb = sosfiltfilt(sos, y, axis=0)
         rb = sosfiltfilt(sos, y - pred, axis=0)
         num += float((rb * rb).sum())
@@ -612,8 +650,16 @@ GRIDS = {
 }
 
 
-def search_chain(train: dict, val: dict, n_lags: int = N_LAGS) -> tuple[dict, float, float]:
+def search_chain(train: dict[str, dict], val: dict[str, dict],
+                 n_lags: int = N_LAGS) -> tuple[dict, float, float]:
     """coordinate descent over the chain's time constants, scored on validation.
+
+    the score is the mean over training participants of that participant's
+    validation r^2, with that participant's own lead field.  the chain is one
+    object across all of them, which is the tying the declarations state; the lead
+    fields are seven separate objects, which is also what they state.  the search
+    therefore moves only the shared part, and moves it towards whatever makes all
+    seven heads fit at once rather than towards whatever suits the loudest one.
 
     coordinate descent and not a gradient because the objective is a ridge
     solution's held-out r^2, which is cheap but not differentiable through the
@@ -639,27 +685,55 @@ def search_chain(train: dict, val: dict, n_lags: int = N_LAGS) -> tuple[dict, fl
     return theta, best, lam
 
 
-def _score(theta: dict, train: dict, val: dict, n_lags: int) -> tuple[float, float]:
-    proj = _projection(tap_basis(theta, n_lags), train["p"])
-    a = proj.T @ train["xtx"] @ proj
-    b = proj.T @ train["xty"]
-    best, lam = -np.inf, _RIDGES[0]
-    for l in _RIDGES:
-        w = ridge_solve(a, b, l)
-        r = float(np.mean(fitted_r2(val, w, proj)))
-        if r > best:
-            best, lam = r, l
+def _score(theta: dict, train: dict[str, dict], val: dict[str, dict],
+           n_lags: int) -> tuple[float, float]:
+    proj = _projection(tap_basis(theta, n_lags), N_PLACES)
+    subs = [s for s in train if s in val]
+    # the projections are done once per theta rather than once per (theta, ridge).
+    # `P' X'X P` over a 1148-dimensional design is the dominant cost of the whole
+    # search, and recomputing it inside the ridge loop made the sweep eight times
+    # slower for no change in the answer.
+    proj_stats = {s: (proj.T @ train[s]["xtx"] @ proj, proj.T @ train[s]["xty"],
+                      dict(val[s], xtx=proj.T @ val[s]["xtx"] @ proj,
+                           xty=proj.T @ val[s]["xty"]))
+                  for s in subs}
+    per_lam = []
+    for lam in _RIDGES:
+        rs = [float(np.mean(fitted_r2(v, ridge_solve(a, b, lam))))
+              for a, b, v in proj_stats.values()]
+        per_lam.append((float(np.mean(rs)), lam))
+    best, lam = max(per_lam)
     return best, lam
 
 
-def _sweep_direct(train: dict, val: dict) -> tuple[np.ndarray, float]:
-    best, lam, w_best = -np.inf, _RIDGES[0], None
-    for l in _RIDGES:
-        w = ridge_solve(train["xtx"], train["xty"], l)
-        r = float(np.mean(fitted_r2(val, w)))
-        if r > best:
-            best, lam, w_best = r, l, w
-    return w_best, lam
+def fit_lead_fields(stats: dict[str, dict], lam: float,
+                    proj: np.ndarray | None = None) -> dict[str, np.ndarray]:
+    """one lead field per participant, at a ridge chosen elsewhere.
+
+    the ridge is passed in rather than swept here, and that is the whole point of
+    the signature: a ridge selected against the participant's own test data is a
+    hyperparameter fitted on the test set, and it would favour the more flexible
+    model, which is the one this experiment is trying to be sceptical about.
+    """
+    out = {}
+    for s, st in stats.items():
+        if proj is None:
+            out[s] = ridge_solve(st["xtx"], st["xty"], lam)
+        else:
+            out[s] = ridge_solve(proj.T @ st["xtx"] @ proj, proj.T @ st["xty"], lam)
+    return out
+
+
+def _sweep_direct(train: dict[str, dict], val: dict[str, dict]) -> float:
+    """the ridge for the teacher-direct model, chosen the same way as the driven one."""
+    subs = [s for s in train if s in val]
+    scored = []
+    for lam in _RIDGES:
+        rs = [float(np.mean(fitted_r2(val[s], ridge_solve(train[s]["xtx"],
+                                                          train[s]["xty"], lam))))
+              for s in subs]
+        scored.append((float(np.mean(rs)), lam))
+    return max(scored)
 
 
 # ---------------------------------------------------------------------------
@@ -699,39 +773,44 @@ def stage_fit() -> None:
     segs = load_segments(meg, cochs, subjects=train_subj,
                          exclude_stories=(HELD_OUT_STORY,))
     #: the validation split is by *session*, not by time: session 1 of every
-    #: training participant is held out of the training statistics and used to
-    #: choose the ridge, the chain parameters and the calibration r^2.  a split by
-    #: time inside a story would leak, for the reason `naturalistic_stream` gives.
+    #: training participant is held out of the statistics the chain is fitted
+    #: from, and is what the chain, the ridge and the calibration r^2 are chosen
+    #: against.  a split by time inside a story would leak, for the reason
+    #: `naturalistic_stream` gives.
     fit_segs = [s for s in segs if s.session != "ses-1"]
     val_segs = [s for s in segs if s.session == "ses-1"]
     print(f"\n{len(fit_segs)} fitting segments, {len(val_segs)} validation segments, "
           f"{sum(s.y.shape[0] for s in fit_segs) / FS / 60:.1f} min of fitting data")
 
-    train = accumulate(fit_segs)
-    val = accumulate(val_segs)
-    print(f"accumulated {train['n']:,} training samples over "
-          f"{train['n_ch']} channels, design dimension {train['xtx'].shape[0]}")
+    train = accumulate_by_subject(fit_segs)
+    val = accumulate_by_subject(val_segs)
+    print(f"accumulated {sum(t['n'] for t in train.values()):,} training samples over "
+          f"{len(train)} participants x {next(iter(train.values()))['n_ch']} channels, "
+          f"design dimension {next(iter(train.values()))['xtx'].shape[0]}")
 
     theta, r_val, lam = search_chain(train, val)
-    print("\nchain parameters after forging against validation sessions:")
+    print("\nchain parameters after forging against the validation sessions.  the chain "
+          "is ONE object across all seven participants; only the lead field is per person.")
     for k in sorted(THETA0):
         mark = "  <- moved" if theta[k] != THETA0[k] else ""
         print(f"  {k:16s} {THETA0[k]:8.4f} -> {theta[k]:8.4f}{mark}")
-    print(f"  validation r2 {r_val:+.5f} at ridge {lam:g}")
+    print(f"  driven: validation r2 {r_val:+.5f} at ridge {lam:g}")
+    r_val_d, lam_d = _sweep_direct(train, val)
+    print(f"  teacher-direct: validation r2 {r_val_d:+.5f} at ridge {lam_d:g}")
 
-    proj = _projection(tap_basis(theta), train["p"])
-    w_driven = ridge_solve(proj.T @ train["xtx"] @ proj, proj.T @ train["xty"], lam)
-    w_direct, lam_d = _sweep_direct(train, val)
-    print(f"  teacher-direct ridge {lam_d:g}, validation r2 "
-          f"{float(np.mean(fitted_r2(val, w_direct))):+.5f}")
+    proj = _projection(tap_basis(theta), N_PLACES)
+    w_driven = fit_lead_fields(train, lam, proj)
 
-    # the calibration: measured on the validation sessions, which are held out of
-    # every fit above, so the precision the forcing earns was never fitted on the
-    # data it will later be evaluated against.
+    # the calibration used *during* fitting: measured on the validation sessions,
+    # which are held out of the statistics above.  the figure quoted as the
+    # forcing's accuracy is the stricter one computed in `eval`, on participants
+    # and material that were both unseen.
     fits = []
+    print("\ncalibration r2, per band, on the validation sessions:")
     for b in CAL_BANDS:
         r, n = band_r2(val_segs, w_driven, b, proj)
-        fits.append(BandFit(b, float(r), n_targets=train["n_ch"], n_samples=int(n),
+        fits.append(BandFit(b, float(r), n_targets=next(iter(train.values()))["n_ch"],
+                            n_samples=int(n),
                             held_out="validation sessions of training participants"))
         print(f"  {fits[-1]}")
     cal = ForcingCalibration(
@@ -742,16 +821,45 @@ def stage_fit() -> None:
              "downstream of the component being written; it bounds rather than states the "
              "front end's own fidelity")
 
-    np.savez(CACHE / "fit.npz", w_driven=w_driven, w_direct=w_direct,
-             theta=json.dumps(theta), lam=lam, lam_d=lam_d,
+    np.savez(CACHE / "fit.npz", theta=json.dumps(theta), lam=lam, lam_d=lam_d,
              cal=json.dumps([[b.band.lo_hz, b.band.hi_hz, b.r2, b.n_samples] for b in fits]))
     print("\n" + cal.describe())
     for b in CAL_BANDS:
-        try:
-            print(f"  shrinkage in {b}: {cal.shrinkage(b):.4f}   "
-                  f"(a hard clamp would be 1.0000)")
-        except ValueError as e:
-            print(f"  {e}")
+        print(f"  shrinkage in {b}: {cal.shrinkage(b):.4f}   (a hard clamp would be 1.0000)")
+
+
+def _fit_and_test(fit_segs: list[Segment], test_segs: list[Segment], proj: np.ndarray,
+                  lam: float, lam_d: float, minutes: float | None = None
+                  ) -> tuple[np.ndarray, np.ndarray, float]:
+    """fit both models' lead fields on one set of segments and score them on another.
+
+    `minutes` truncates the fitting set, per participant, to the first N minutes of
+    it.  truncating from the front rather than sampling at random is deliberate:
+    an adaptation session in a real experiment is the beginning of the recording,
+    not a stratified sample of it, and a random sample would spread the training
+    data across every story and quietly remove the material-transfer part of the
+    problem.
+    """
+    if minutes is not None:
+        cut, kept, used = minutes * 60.0 * FS, [], {}
+        for s in fit_segs:
+            have = used.get(s.subject, 0.0)
+            if have >= cut:
+                continue
+            take = int(min(s.y.shape[0], cut - have))
+            used[s.subject] = have + take
+            kept.append(Segment(s.subject, s.session, s.task, s.story, s.wav,
+                                s.y[:take], s.c[:take], s.loc))
+        fit_segs = kept
+    st = accumulate_by_subject(fit_segs)
+    w_dr = fit_lead_fields(st, lam, proj)
+    w_te = fit_lead_fields(st, lam_d, None)
+    for s in {x.subject for x in test_segs}:
+        w_dr.setdefault(s, None)
+        w_te.setdefault(s, None)
+    minutes_used = sum(x.y.shape[0] for x in fit_segs) / FS / 60.0 / max(len(st), 1)
+    return (predict_r2(test_segs, w_dr, proj), predict_r2(test_segs, w_te),
+            minutes_used)
 
 
 def stage_eval() -> None:
@@ -760,7 +868,7 @@ def stage_eval() -> None:
     meg = CACHE / "meg"
     d = np.load(CACHE / "fit.npz", allow_pickle=False)
     theta = json.loads(str(d["theta"]))
-    w_driven, w_direct = d["w_driven"], d["w_direct"]
+    lam, lam_d = float(d["lam"]), float(d["lam_d"])
     proj = _projection(tap_basis(theta), N_PLACES)
     cal_rows = json.loads(str(d["cal"]))
     cal = ForcingCalibration(
@@ -772,86 +880,113 @@ def stage_eval() -> None:
     all_subj = sorted({p.stem.split("_")[0] for p in meg.glob("sub-*.npz")})
     train_subj = tuple(s for s in all_subj if s not in HELD_OUT_SUBJECTS)
 
-    splits = {
-        "held-out story, training participants":
-            dict(subjects=train_subj, stories=(HELD_OUT_STORY,)),
-        "held-out participants, training stories":
-            dict(subjects=HELD_OUT_SUBJECTS, exclude_stories=(HELD_OUT_STORY,)),
-        "held-out participants x held-out story":
-            dict(subjects=HELD_OUT_SUBJECTS, stories=(HELD_OUT_STORY,)),
-    }
+    print("\nheld-out r2, mean over the 208 MEG channels.\n"
+          "the chain's time constants are frozen at the values forged on the seven "
+          "training participants.\nthe lead field is fitted within each test participant "
+          "on material that excludes the test story,\nwhich is the only thing a sensor "
+          "array permits: a channel index is not an anatomical label.\n"
+          "the unforced model carries no stimulus information at all, so its "
+          "stimulus-locked prediction\nis the mean and its r2 is exactly zero by "
+          "construction.  it is the baseline, not a contestant.\n")
 
-    print("held-out r2, mean over MEG channels.  the unforced model has no stimulus "
-          "information, so its stimulus-locked prediction is the mean and its r2 is "
-          "exactly zero by construction -- reported because it is the baseline the whole "
-          "exercise is measured against, not because it is a contest.\n")
-    header = f"{'split':46s} {'n seg':>6s} {'unforced':>10s} {'driven':>10s} {'teacher':>10s}"
+    header = (f"{'split':44s} {'ch':>4s} {'unforced':>9s} {'driven':>9s} {'teacher':>9s} "
+              f"{'driven/teacher':>15s}")
     print(header)
     print("-" * len(header))
+
     results = {}
     per_channel = {}
-    for name, kw in splits.items():
-        segs = load_segments(meg, cochs, **kw)
-        if not segs:
-            print(f"{name:46s} {'--':>6s}  no segments")
+    rows = [
+        ("seen participants, held-out story",
+         dict(subjects=train_subj, exclude_stories=(HELD_OUT_STORY,)),
+         dict(subjects=train_subj, stories=(HELD_OUT_STORY,))),
+        ("held-out participants, seen stories",
+         dict(subjects=HELD_OUT_SUBJECTS, exclude_stories=("lw1", HELD_OUT_STORY)),
+         dict(subjects=HELD_OUT_SUBJECTS, stories=("lw1",))),
+        ("held-out participants x held-out story",
+         dict(subjects=HELD_OUT_SUBJECTS, exclude_stories=(HELD_OUT_STORY,)),
+         dict(subjects=HELD_OUT_SUBJECTS, stories=(HELD_OUT_STORY,))),
+    ]
+    for name, fit_kw, test_kw in rows:
+        fit_segs = load_segments(meg, cochs, **fit_kw)
+        test_segs = load_segments(meg, cochs, **test_kw)
+        if not fit_segs or not test_segs:
+            print(f"{name:44s}  no segments")
             continue
-        r_dr = predict_r2(segs, w_driven, proj)
-        r_te = predict_r2(segs, w_direct)
-        per_channel[name] = (r_dr, r_te, len(segs))
-        results[name] = (float(np.mean(r_dr)), float(np.mean(r_te)),
-                         float(np.max(r_dr)), float(np.max(r_te)), len(segs))
-        print(f"{name:46s} {len(segs):6d} {0.0:10.5f} "
-              f"{float(np.mean(r_dr)):10.5f} {float(np.mean(r_te)):10.5f}")
+        r_dr, r_te, _ = _fit_and_test(fit_segs, test_segs, proj, lam, lam_d)
+        per_channel[name] = (r_dr, r_te, len(test_segs))
+        results[name] = dict(driven=float(np.mean(r_dr)), teacher=float(np.mean(r_te)),
+                             driven_best=float(np.max(r_dr)),
+                             teacher_best=float(np.max(r_te)),
+                             n_test_segments=len(test_segs))
+        ratio = float(np.mean(r_dr)) / max(float(np.mean(r_te)), 1e-12)
+        print(f"{name:44s} {r_dr.size:4d} {0.0:9.5f} {float(np.mean(r_dr)):9.5f} "
+              f"{float(np.mean(r_te)):9.5f} {ratio:15.2f}")
+    print(f"\nbest single channel, held-out participants x held-out story: "
+          f"driven r2 {results.get('held-out participants x held-out story', {}).get('driven_best', 0):.4f}, "
+          f"teacher r2 {results.get('held-out participants x held-out story', {}).get('teacher_best', 0):.4f}")
 
-    # the same comparison restricted to the sensors that are downstream of the
-    # forced region rather than over it.  "downstream" is defined on TRAINING
-    # participants only -- the sensors whose direct kernel explains the least --
-    # and then applied unchanged to held-out participants, so the definition
-    # cannot have been tuned on the answer.
-    train_segs = load_segments(meg, cochs, subjects=train_subj,
-                               exclude_stories=(HELD_OUT_STORY,))
-    r_train = predict_r2(train_segs, w_direct)
+    # how much of a new person's data each model needs.  this is where a
+    # constrained model can genuinely win and where the claim that the
+    # declaration is carrying structure is actually testable: the driven model
+    # brings a chain forged on seven other people and has 112 free numbers per
+    # sensor to fit; the teacher-direct model brings nothing and has 1148.
+    print("\nadaptation curve on the four held-out participants, tested on the held-out "
+          "story.\nminutes are per participant, taken from the start of their recordings.\n")
+    print(f"{'minutes of the new person':>26s} {'driven':>9s} {'teacher':>9s} "
+          f"{'driven/teacher':>15s}")
+    fit_segs = load_segments(meg, cochs, subjects=HELD_OUT_SUBJECTS,
+                             exclude_stories=(HELD_OUT_STORY,))
+    test_segs = load_segments(meg, cochs, subjects=HELD_OUT_SUBJECTS,
+                              stories=(HELD_OUT_STORY,))
+    curve = []
+    for minutes in (2.0, 5.0, 10.0, 20.0, 40.0, None):
+        r_dr, r_te, used = _fit_and_test(fit_segs, test_segs, proj, lam, lam_d, minutes)
+        label = f"{used:.1f}" if minutes is not None else f"{used:.1f} (all)"
+        ratio = float(np.mean(r_dr)) / max(float(np.mean(r_te)), 1e-12)
+        curve.append((used, float(np.mean(r_dr)), float(np.mean(r_te))))
+        print(f"{label:>26s} {float(np.mean(r_dr)):9.5f} {float(np.mean(r_te)):9.5f} "
+              f"{ratio:15.2f}")
+
+    # the same comparison restricted to sensors that are downstream of the forced
+    # region rather than over it.  "downstream" is defined on TRAINING
+    # participants only -- the sensors whose own direct kernel explains the least
+    # -- and applied unchanged to held-out participants, so the definition cannot
+    # have been tuned on the answer.
+    tr_fit = load_segments(meg, cochs, subjects=train_subj,
+                           exclude_stories=(HELD_OUT_STORY,))
+    tr_test = load_segments(meg, cochs, subjects=train_subj, stories=(HELD_OUT_STORY,))
+    _, r_train, _ = _fit_and_test(tr_fit, tr_test, proj, lam, lam_d)
     order = np.argsort(r_train)
     downstream = order[: int(0.6 * len(order))]
     early = order[int(0.9 * len(order)):]
-    loc = train_segs[0].loc
+    loc = tr_fit[0].loc
     print(f"\nsensor split from training participants only: {len(early)} 'early' sensors "
           f"(top decile of direct-kernel r2), {len(downstream)} 'downstream' sensors "
-          f"(bottom 60%).")
-    print(f"  early sensors:      |x| {np.abs(loc[early, 0]).mean() * 1e3:5.1f} mm, "
-          f"y {loc[early, 1].mean() * 1e3:+6.1f} mm, z {loc[early, 2].mean() * 1e3:+6.1f} mm")
-    print(f"  downstream sensors: |x| {np.abs(loc[downstream, 0]).mean() * 1e3:5.1f} mm, "
-          f"y {loc[downstream, 1].mean() * 1e3:+6.1f} mm, "
-          f"z {loc[downstream, 2].mean() * 1e3:+6.1f} mm")
+          f"(bottom 60%).  device-frame centroids in mm:")
+    print(f"  early:      |x| {np.abs(loc[early, 0]).mean() * 1e3:5.1f}  "
+          f"y {loc[early, 1].mean() * 1e3:+6.1f}  z {loc[early, 2].mean() * 1e3:+6.1f}")
+    print(f"  downstream: |x| {np.abs(loc[downstream, 0]).mean() * 1e3:5.1f}  "
+          f"y {loc[downstream, 1].mean() * 1e3:+6.1f}  "
+          f"z {loc[downstream, 2].mean() * 1e3:+6.1f}")
 
-    print(f"\n{'split (downstream sensors only)':46s} {'n seg':>6s} {'unforced':>10s} "
-          f"{'driven':>10s} {'teacher':>10s}")
-    print("-" * len(header))
-    for name, (r_dr, r_te, n_seg) in per_channel.items():
-        print(f"{name:46s} {n_seg:6d} {0.0:10.5f} "
-              f"{float(np.mean(r_dr[downstream])):10.5f} "
-              f"{float(np.mean(r_te[downstream])):10.5f}")
-    print(f"\n{'split (early sensors only)':46s} {'n seg':>6s} {'unforced':>10s} "
-          f"{'driven':>10s} {'teacher':>10s}")
-    print("-" * len(header))
-    for name, (r_dr, r_te, n_seg) in per_channel.items():
-        print(f"{name:46s} {n_seg:6d} {0.0:10.5f} "
-              f"{float(np.mean(r_dr[early])):10.5f} "
-              f"{float(np.mean(r_te[early])):10.5f}")
+    for label, idx in (("early sensors", early), ("downstream sensors", downstream)):
+        print(f"\n{label:44s} {'ch':>4s} {'unforced':>9s} {'driven':>9s} {'teacher':>9s}")
+        for name, (r_dr, r_te, n_seg) in per_channel.items():
+            print(f"{name:44s} {idx.size:4d} {0.0:9.5f} "
+                  f"{float(np.mean(r_dr[idx])):9.5f} {float(np.mean(r_te[idx])):9.5f}")
 
-    # the calibration the forcing actually earns, measured on the strictest split
-    # available: participants and material both unseen.  the figure used during
-    # fitting came from held-out *sessions* of training participants, which is the
-    # right split for choosing a ridge and the wrong one to quote as an accuracy,
-    # because it shares stories with the training set.  both are printed, and the
-    # gap between them is the empirical version of what `ood_inflation` is a prior
-    # over.
-    strict = load_segments(meg, cochs, subjects=HELD_OUT_SUBJECTS,
-                           stories=(HELD_OUT_STORY,))
+    # the calibration the forcing actually earns, on the strictest split available.
+    strict_fit = load_segments(meg, cochs, subjects=HELD_OUT_SUBJECTS,
+                               exclude_stories=(HELD_OUT_STORY,))
+    strict_test = load_segments(meg, cochs, subjects=HELD_OUT_SUBJECTS,
+                                stories=(HELD_OUT_STORY,))
+    w_strict = fit_lead_fields(accumulate_by_subject(strict_fit), lam, proj)
     fits = []
     for band in CAL_BANDS:
-        r, n = band_r2(strict, w_driven, band, proj)
-        fits.append(BandFit(band, float(r), n_targets=strict[0].y.shape[1], n_samples=int(n),
+        r, n = band_r2(strict_test, w_strict, band, proj)
+        fits.append(BandFit(band, float(r), n_targets=strict_test[0].y.shape[1],
+                            n_samples=int(n),
                             held_out="held-out participants x held-out story"))
     strict_cal = ForcingCalibration(
         component="transduction.hair_cell", bands=tuple(fits),
@@ -863,12 +998,12 @@ def stage_eval() -> None:
     print("\n  shrinkage the calibrated forcing applies, per band "
           "(a hard clamp would be 1.0000 everywhere):")
     for band in CAL_BANDS:
-        print(f"    {band}: {strict_cal.shrinkage(band):.4f}  "
+        print(f"    {band}: {strict_cal.shrinkage(band):.4f}   "
               f"(fitting-time figure {cal.shrinkage(band):.4f})")
 
     # the increment the forcing is actually allowed to contribute, with both of
-    # §4's corrections applied.  the number that matters is not the diagonal
-    # precision but what survives the rank-1 shared-error discount.
+    # §4's corrections applied.  what matters is not the diagonal precision but
+    # what survives the rank-1 shared-error discount.
     ev = force("transduction.hair_cell", np.zeros(N_PLACES), strict_cal,
                prior_var=1.0, band=Band(0.5, 30.0))
     print(f"\n  {ev.describe()}")
@@ -891,11 +1026,13 @@ def stage_eval() -> None:
                       "forced or evolved")
     print("\nprovenance of the driven run:")
     print(rec.describe())
-    print(f"\nis a result at neural.exc.activity emergent?  "
-          f"{'NO -- it is downstream of a forced component' if rec.is_downstream_of_forcing('neural.exc.activity') else 'yes'}")
+    print("\nis a result at neural.exc.activity emergent?  "
+          + ("NO -- it is downstream of a forced component"
+             if rec.is_downstream_of_forcing("neural.exc.activity") else "yes"))
 
     with (CACHE / "results.json").open("w") as fh:
-        json.dump({"theta": theta, "results": results, "calibration_fit": cal_rows,
+        json.dump({"theta": theta, "results": results, "adaptation_curve": curve,
+                   "calibration_fit": cal_rows,
                    "calibration_strict": [[b.band.lo_hz, b.band.hi_hz, b.r2, b.n_samples]
                                           for b in strict_cal.bands],
                    "effective_constraints": float(ev.effective_constraints())},

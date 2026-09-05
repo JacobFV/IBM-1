@@ -809,6 +809,19 @@ class ForcingCalibration:
         it, so the shrinkage reweights the bands, and that reweighting is a
         Wiener filter derived from measurement rather than a smoothing constant
         somebody chose.
+
+        one property of ARCHITECTURE.md's formula is worth stating plainly here
+        rather than discovering later, because it bites hard at the r^2 a
+        stimulus front end actually achieves against MEG.  `dJ = 1/((1-r2)Var[x])`
+        does **not** go to zero as `r2` does: at `r2 = 0` the teacher's residual
+        variance equals the prior variance, so it still contributes `1/Var[x]` and
+        `w = 0.5`.  a teacher that explains nothing would halve the posterior
+        variance.  the only thing standing between that and the state is the
+        off-distribution inflation, so at the r^2 measured here the shrinkage is
+        set almost entirely by the inflation prior and almost not at all by the
+        measurement -- which means the *number* is the prior's and only the
+        *ordering across bands* is the data's.  that is a limitation of the
+        formula, not of this measurement, and it should be read as one.
         """
         t = self.teacher(band)
         dj = 1.0 / max((1.0 - t.r2) * float(prior_var) * t.inflation(), _EPS)

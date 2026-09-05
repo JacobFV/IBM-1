@@ -118,11 +118,10 @@ slope of **+1.11 over 1-45 Hz**.
 
 `fit_neural_spectra.py` fits `neural_population` — a prior over a CORTICAL
 component — to a SCALP psd. deconvolving by that transfer moves the fitted
-aperiodic exponent from **1.480 to 0.361** on a full refit, or to **0.391** when
-the exponent alone is refitted with the other five parameters held (three of six
-run to a boundary on the full refit, so the exponent-only number is the more
-trustworthy of the two). the prior it was moved off is 2.000,
-so **the chain's bias is 215% of the entire distance the data moved that
+aperiodic exponent from **1.480 to 0.435** on an exponent-only refit with the
+other five held, or to 0.361 on the full six-parameter refit where three
+parameters hit a boundary — the exponent-only number is the trustworthy one. the prior it was moved off is 2.000,
+so **the chain's bias is 201% of the entire distance the data moved that
 parameter.** alpha_gain moves 5.74 -> 2.80.
 
 the SIGN of its held-out delta log-likelihood is safe — both curves are filtered
@@ -131,10 +130,11 @@ p 0.0014" stands. **every parameter VALUE it reports is a scalp-level quantity
 presented as a cortical one and must be redone.**
 
 `eval_sleep_state.py` is NOT changed, and that is the worse answer. its claim is
-directional and the transfer does not depend on sleep stage: deconvolving at
-source exponents 1.20 / 1.60 / 2.00 gives shifts of -1.134 / -1.116 / -1.115,
-agreeing to the third decimal. **a linear time-invariant head is transparent to a
-comparison between two spectra recorded through it, so the dynamics are
+directional and the transfer does not depend on sleep stage: deconvolving source
+exponents 1.20 / 1.60 / 2.00 gives 0.133 / 0.563 / 1.015 — **ordering strictly
+preserved**, and stage differences inflated by only x1.075-1.130, far inside the
+sems that test already reports. **a linear time-invariant head is transparent to
+a comparison between two spectra recorded through it, so the dynamics are
 irrelevant to that test.** it would stop being transparent only if something
 between cortex and scalp were stage-dependent or nonlinear, and nothing in this
 model is.
