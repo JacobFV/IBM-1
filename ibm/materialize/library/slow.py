@@ -165,6 +165,14 @@ THERMAL_SAFETY = register(NamedModel(
     wrong in.  0.25 mm through the skull and its interfaces; 0.5 mm through the
     focal region; 4 mm elsewhere, where the bio-heat equation is smooth.
 
+    the skull is expressed as "within 30 mm of the transducer" because there is
+    no skull region in the vocabulary -- `head_volume` is the whole conductor,
+    scalp and brain included -- and the bone that matters is the bone the beam
+    passes through.  this is one of the few places where §1's warning against
+    deriving r(q) from proximity to the instrument does not apply: the
+    commutation failure and the instrument are in the same place, because the
+    instrument is what puts the energy there.
+
     **B is 0-0.1 Hz and that is generous.**  perfused tissue has a thermal time
     constant of order a minute and the bio-heat equation is diffusive, so the
     temperature field has no structure above a few tens of millihertz.  the window
@@ -184,9 +192,16 @@ THERMAL_SAFETY = register(NamedModel(
         regions=(("skull", OnSupport("head_volume")),
                  ("focus", Near("transducer", 30.0))),
         resolution=res(
-            rule(OnSupport("head_volume"), 0.25, THERMAL),
-            rule(Near("transducer", 30.0), 0.5, THERMAL),
-            rule(Near("transducer", 90.0), 2.0, THERMAL),
+            # finest neighbourhood first.  the three spacings are the ones the
+            # docstring argues for; the order is the correction.  written the
+            # other way round -- OnSupport("head_volume") at 0.25 mm first -- the
+            # broad rule matched every conductor cell before either `Near` was
+            # reached, so the whole head was sampled at 0.25 mm, the graded
+            # refinement the model is built around never happened, and the
+            # materialization was ~7e5 leaves where it meant to be ~1e4.
+            rule(Near("transducer", 30.0), 0.25, THERMAL),
+            rule(Near("transducer", 90.0), 0.5, THERMAL),
+            rule(OnSupport("head_volume"), 2.0, THERMAL),
             default_mm=4.0, default_band=THERMAL),
         fields=("thermal", "material", "blood", "metabolic", "mechanical"),
         anatomy=("vascular_territories",),

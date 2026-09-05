@@ -56,7 +56,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import ibm
 from ibm.materialize import geometry as geo
 from ibm.materialize.build import (
-    _place_components, _supports_to_materialize, build,
+    _named_supports, _place_components, _supports_to_materialize, build,
 )
 from ibm.materialize.trace import trace as _trace
 from ibm.materialize.cache import Cache
@@ -65,14 +65,26 @@ from ibm.materialize.request import BudgetExceeded, DeviceSpec, SubjectSpec
 from ibm.materialize.sites import MissingData
 from ibm.topologies.builders import MissingInput
 from ibm.registry import REGISTRY
+from ibm.vocabulary import Resolution, ResolutionRule
 
 #: the coarsening ladder.  a model whose declared r(q) does not fit its own
 #: declared budget on a real head is not thereby unbuildable -- §1's whole
 #: argument is that a coarser materialization is the same model until the
-#: coarse-graining stops commuting -- so the request is coarsened by these
-#: factors in turn and the factor that fit is reported.  it is reported and not
-#: hidden: a model built at 4x its declared spacing is a different statement
-#: about where resolution earns its cost, and the row says so.
+#: coarse-graining stops commuting -- so the request is coarsened and the rung
+#: that fit is reported.  it is reported and not hidden: a model built at 4x its
+#: declared spacing is a different statement about where resolution earns its
+#: cost, and the row says so.
+#:
+#: the volume rungs come first, and that ordering is the one modelling decision
+#: in this script.  `materialize_eeg_forward` makes the argument by hand for one
+#: model: an octree's site count goes as the cube of 1/r and a poisson-disk
+#: sheet's as the square, so a budget is almost always blown by the volume, and
+#: a uniform coarsening pays for the conductor by destroying the sheet -- which
+#: for a forward model is exactly backwards, since the sheet is what the lead
+#: field integrates over and the conductor is a partial-volume conductivity that
+#: 8 mm carries as well as 1.5 mm.  so the volume supports are coarsened alone
+#: until they run out of room, and only then is everything coarsened together.
+VOLUME_COARSENINGS = (2.0, 4.0, 8.0, 16.0)
 COARSENINGS = (2.0, 4.0, 8.0)
 
 #: markers that identify a problem as *external data this subject does not
@@ -296,7 +308,7 @@ class Row:
         self.coefficients = 0
         self.bytes = 0
         self.edges: dict[str, int] = {}
-        self.factor = 1.0
+        self.factor = "1x"
         self.strict = False
         self.gaps: list[str] = []
         self.faults: list[str] = []
@@ -368,6 +380,41 @@ def one_line(problem: str) -> str:
     return problem.strip().splitlines()[0].strip()
 
 
+def coarsen_volumes(request, factor: float):
+    """the same request with only its volume rules coarsened.
+
+    a rule is taken to govern the volume when the supports it names *by name* are
+    volumes, and also when it names none at all: a `Near(...)` shell or an atlas
+    label is a set of positions rather than a support, and in this library every
+    such rule is written for a parenchyma or conductor octree.  a rule that names
+    a surface support keeps its spacing, which is the whole point -- the sheet is
+    where a coarsening is most expensive in accuracy and least effective in cost.
+
+    the default clause is coarsened, because the default is what every support
+    with no rule of its own falls through to, and those are volumes here.
+    """
+    vols = frozenset(n for n, s in REGISTRY.supports.items() if s.kind == "volume")
+    r = request.resolution
+    rules = []
+    for x in r.rules:
+        named = _named_supports(x.region)
+        volumetric = (not named) or bool(named & vols)
+        rules.append(ResolutionRule(x.region,
+                                    x.spacing_mm * factor if volumetric else x.spacing_mm,
+                                    x.band))
+    return replace(request, name=f"{request.name}@{factor:g}x-vol",
+                   resolution=Resolution(tuple(rules), r.default_mm * factor, r.default_band))
+
+
+def ladder(request):
+    """(label, request) for each rung, declared first, volumes next, all last."""
+    yield "1x", request
+    for f in VOLUME_COARSENINGS:
+        yield f"{f:g}x-vol", coarsen_volumes(request, f)
+    for f in COARSENINGS:
+        yield f"{f:g}x", request.coarsened(f)
+
+
 def attempt(request, **kw):
     """build at the declared r(q), coarsening only if the budget refuses.
 
@@ -387,8 +434,7 @@ def attempt(request, **kw):
     cap, which is the more common of the two.
     """
     last = ""
-    for f in (1.0,) + COARSENINGS:
-        req = request if f == 1.0 else request.coarsened(f)
+    for label, req in ladder(request):
         try:
             m = build(req, **kw)
         except BudgetExceeded as exc:
@@ -396,19 +442,18 @@ def attempt(request, **kw):
             continue
         v = m.cost.check(req.budget)
         if not v:
-            return m, f, ()
+            return m, label, req, ()
         last = "; ".join(v)
-    # every rung of the ladder refused.  return the coarsest attempt if it built
-    # at all, so the row can still report what it would have cost.
+    # every rung refused.  return the coarsest attempt if it built at all, so the
+    # row can still report what the model would have cost.
     try:
         req = request.coarsened(COARSENINGS[-1])
-        return build(req, **kw), COARSENINGS[-1], tuple(last.split("; "))
+        return build(req, **kw), f"{COARSENINGS[-1]:g}x", req, tuple(last.split("; "))
     except BudgetExceeded:
         raise BudgetExceeded(last)
 
 
-def run_model(mid: str, *, geometry, warp, anchors, anatomy, paths, montage_ids,
-              cache) -> Row:
+def run_model(mid: str, *, montages, warp, anchors, anatomy, paths, cache) -> Row:
     row = Row(mid)
     model = MODELS[mid]
     t0 = time.time()
@@ -419,29 +464,36 @@ def run_model(mid: str, *, geometry, warp, anchors, anatomy, paths, montage_ids,
     subject = SubjectSpec(id="sample", frame=geo.ANATOMICAL_FRAME,
                           surface_frame=geo.ANATOMICAL_FRAME, template=None,
                           note="mne sample: individual T1, watershed BEM, individual coreg")
+    # the sensor array is whichever instrument the request declares: this
+    # recording carries both a 60-channel eeg montage and a 306-channel meg
+    # helmet, they are digitised in different frames, and a meg model handed the
+    # eeg positions is not a coarser meg model -- it is a different instrument.
+    # the request's own device frame is what picks between them.
+    dev = next((d for d in model.request.devices if d.support == "sensor_array"), None)
+    kind = "meg" if dev is not None and dev.frame == "meg_head" else "eeg"
+    geom, ids = montages[kind]
     devices = tuple(
-        replace(d, n_elements=len(montage_ids), element_ids=montage_ids,
-                positions=np.asarray(geometry.get("sensor_array").xyz, float))
+        replace(d, n_elements=len(ids), element_ids=ids,
+                positions=np.asarray(geom.get("sensor_array").xyz, float))
         if d.support == "sensor_array" else d
         for d in model.request.devices)
     request = replace(model.request, subject=subject, devices=devices)
 
-    common = dict(geometry=geometry, warp=warp, anchors=anchors, anatomy=anatomy,
+    common = dict(geometry=geom, warp=warp, anchors=anchors, anatomy=anatomy,
                   cache=cache, strict=False)
     over: tuple[str, ...] = ()
+    chosen = request
     try:
-        m, factor, over = attempt(request, topology_inputs=base_inputs(request), **common)
-        row.factor = factor
+        m, label, chosen, over = attempt(request, topology_inputs=base_inputs(request),
+                                         **common)
+        row.factor = label
         # a second pass only where the electromagnetic topology has both ends.
         ti = base_inputs(request)
         if "electromagnetic" in m.trace.topologies:
-            kind = "meg" if "meg" in mid or "bfield" in " ".join(request.target_components) \
-                else "eeg"
-            lf = lead_field_for(mid, m.sites, paths, montage_ids, kind)
+            lf = lead_field_for(mid, m.sites, paths, ids, kind)
             if lf is not None:
                 ti["electromagnetic"] = lf
-                req = request if factor == 1.0 else request.coarsened(factor)
-                m = build(req, topology_inputs=ti, **common)
+                m = build(chosen, topology_inputs=ti, **common)
     except BudgetExceeded as exc:
         row.reason = f"budget: {one_line(str(exc))}"
         row.faults.append(str(exc))
@@ -470,8 +522,7 @@ def run_model(mid: str, *, geometry, warp, anchors, anatomy, paths, montage_ids,
     row.edges = {n: (0 if m.edges.get(n) is None else m.edges[n].n_edges)
                  for n in sorted(set(m.trace.topologies))}
     row.split = len(m.layout.split)
-    out_of_view = excluded_supports(request if row.factor == 1.0
-                                    else request.coarsened(row.factor))
+    out_of_view = excluded_supports(chosen)
     for p in m.provenance.missing:
         if not is_gap(p):
             row.faults.append(p)
@@ -490,9 +541,8 @@ def run_model(mid: str, *, geometry, warp, anchors, anatomy, paths, montage_ids,
     else:
         row.status = "built"
         # the only honest way to fill the strict column is to run it.
-        req = request if row.factor == 1.0 else request.coarsened(row.factor)
         try:
-            build(req, topology_inputs=ti, geometry=geometry, warp=warp, anchors=anchors,
+            build(chosen, topology_inputs=ti, geometry=geom, warp=warp, anchors=anchors,
                   anatomy=anatomy, cache=cache, strict=True)
             row.strict = True
         except Exception as exc:                                    # noqa: BLE001
@@ -515,9 +565,20 @@ def main(argv: list[str]) -> int:
     geometry = geo.sample_subject(paths=paths)
     coreg = geo.sample_coregistration(geometry=geometry, paths=paths)
     montage = geometry.get("sensor_array")
-    montage_ids = tuple(montage.ids)
     white = np.asarray(geometry.get("cortical_surface").vertices, float)
     aparc = Aparc(paths.subject_dir)
+    # two instruments, one head.  `sample_subject` puts the eeg montage on
+    # `sensor_array`; the same recording also carries a 306-channel meg helmet,
+    # digitised in `meg_head` rather than `eeg_cap`, and a meg model handed eeg
+    # positions would be a forward solution for the wrong instrument.  so the
+    # helmet is read separately and swapped onto the same support, and
+    # `run_model` picks by the frame the request's own device declares.
+    meg_montage, meg_ids = geo.from_montage(paths.raw_fif, kind="meg", frame="meg_head")
+    montages = {
+        "eeg": (geometry, tuple(montage.ids)),
+        "meg": (geo.GeometrySet({**geometry.by_support, "sensor_array": meg_montage},
+                                subject="sample"), tuple(meg_ids)),
+    }
     print()
     print("  supports this reconstruction supplies:")
     for s, g in sorted(geometry.by_support.items()):
@@ -542,6 +603,10 @@ def main(argv: list[str]) -> int:
           "by reporting the")
     print("             missing landmark rather than by silently refining nothing.")
     print()
+    print("  instruments on `sensor_array`, one per request frame:")
+    for k, (_, mids) in sorted(montages.items()):
+        print(f"    {k:4s} {len(mids):>4} channels")
+    print()
     print(coreg.describe())
 
     head("2. building")
@@ -551,8 +616,8 @@ def main(argv: list[str]) -> int:
     rows: list[Row] = []
     for mid in ids:
         try:
-            r = run_model(mid, geometry=geometry, warp=warp, anchors=anchors,
-                          anatomy=aparc, paths=paths, montage_ids=montage_ids, cache=cache)
+            r = run_model(mid, montages=montages, warp=warp, anchors=anchors,
+                          anatomy=aparc, paths=paths, cache=cache)
         except Exception:                                           # noqa: BLE001
             traceback.print_exc()
             r = Row(mid)
@@ -565,7 +630,7 @@ def main(argv: list[str]) -> int:
     hdr = ("model", "status", "r", "sites", "state vars", "spectral coef", "MiB",
            "edges", "strict", "why")
     def fmt(r: Row) -> tuple[str, ...]:
-        return (r.id, r.status, f"{r.factor:g}x", f"{r.sites:,}", f"{r.variables:,}",
+        return (r.id, r.status, r.factor, f"{r.sites:,}", f"{r.variables:,}",
                 f"{r.coefficients:,}", f"{r.bytes / 2**20:,.1f}",
                 f"{sum(r.edges.values()):,}", "yes" if r.strict else "-",
                 r.reason[:74] or "-")
@@ -581,7 +646,7 @@ def main(argv: list[str]) -> int:
     for r in rows:
         print()
         print(f"  {r.id}  [{r.status}]  {r.seconds:.1f}s"
-              + (f"  built at {r.factor:g}x its declared r(q)" if r.factor != 1.0 else ""))
+              + (f"  built at {r.factor} of its declared r(q)" if r.factor != "1x" else ""))
         if r.supports:
             print("    sites      " + ", ".join(f"{s} {n:,}" for s, n in r.supports.items())
                   + (f"   ({r.split} component(s) split across supports)" if r.split else ""))
@@ -614,8 +679,8 @@ def main(argv: list[str]) -> int:
     for name, group in (("built", built), ("missing-data", missing), ("refused", refused)):
         print(f"  {name:13s} " + (", ".join(r.id for r in group) or "(none)"))
     print()
-    print(f"  coarsened      " + (", ".join(f"{r.id}@{r.factor:g}x" for r in rows
-                                            if r.factor != 1.0) or "(none)"))
+    print(f"  coarsened      " + (", ".join(f"{r.id}@{r.factor}" for r in rows
+                                            if r.factor != "1x") or "(none)"))
     print()
     print("  a `built` row has no gap and no fault.  `missing-data` means it materialized and")
     print("  something external was absent.  `refused` means it did not materialize, or did so")
@@ -627,7 +692,15 @@ def main(argv: list[str]) -> int:
     counts: dict[str, list[str]] = {}
     for r in rows:
         for g in r.gaps:
-            counts.setdefault(one_line(g), []).append(r.id)
+            # the "N traced component(s) name a support with no site table" line
+            # differs between models only in N and in which six ids it lists
+            # first, and grouping on the raw text turns one gap into fifteen
+            # rows.  the count is per model and belongs on the left.
+            line = one_line(g)
+            if "traced component(s) name a support with no site table" in line:
+                line = "traced components name a support with no site table (a "\
+                       "consequence of the geometry gaps above)"
+            counts.setdefault(line, []).append(r.id)
     for why, ms in sorted(counts.items(), key=lambda kv: -len(kv[1])):
         print(f"  {len(ms):2d} model(s)  {why}")
     return 0

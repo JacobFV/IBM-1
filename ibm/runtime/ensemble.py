@@ -308,7 +308,14 @@ def reproject_nonlinear(state: State, couplings: Iterable[Any], basis: TemporalB
 
     diag: list[NonGaussianity] = []
     for cid, mem in acc.items():
-        z = basis.analyze(mem)[..., : basis.k]
+        # to the *block's* width and not the window's.  a component whose band is
+        # narrower than the solve's carries fewer coefficients than `basis.k`,
+        # and adding a `basis.k`-wide variance onto its psd raised a broadcast
+        # error -- which is to say this function had never run against a model
+        # whose components differ in bandwidth, i.e. against a model using the
+        # laziness axis §1 introduces bandwidth for.
+        k = state.layout[cid].k or basis.k
+        z = basis.analyze(mem)[..., : k]
         d = _diagnose(cid, z)
         diag.append(d)
         belief = state[cid]

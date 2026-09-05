@@ -910,10 +910,33 @@ def _newton_correction(state: State, couplings: Sequence[Coupling], basis: Tempo
         return state
 
     def flat_residual(vec: np.ndarray) -> np.ndarray:
+        """r(z), packed the same way `pack_means` packs z -- and only that far.
+
+        the residual is computed over the *window* basis and the state is stored
+        over each *block's* basis, and those are the same length only when every
+        block carries the whole retained band.  the moment one does not -- which
+        is the ordinary case as soon as B(q) varies per component, and is exactly
+        what §1 says bandwidth is for -- the packed residual came out longer than
+        the packed state and `LinearOperator` was handed a rectangular shape it
+        refused outright.  newton-krylov could therefore never run on a model
+        with per-component bandwidth, and nothing said so: picard stalls, newton
+        is called, and the caller gets a ValueError about a non-square matrix
+        from three frames down inside scipy.
+
+        the entries being dropped here are structurally zero anyway -- `_drift`
+        applies no pressure above a block's width and `_coefficients` pads the
+        state with zeros -- so this is the packing agreeing with itself, not an
+        approximation.
+        """
         s = state.unpack_means(vec, comps)
         r = _residual(s, couplings, basis)
-        return np.concatenate([np.concatenate([r[c].real.ravel(), r[c].imag.ravel()])
-                               for c in comps])
+        parts: list[np.ndarray] = []
+        for c in comps:
+            k = s.layout[c].k or basis.k
+            v = r[c][..., :k]
+            parts.append(v.real.ravel())
+            parts.append(v.imag.ravel())
+        return np.concatenate(parts)
 
     x0 = state.pack_means(comps)
     r0 = flat_residual(x0)

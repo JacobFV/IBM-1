@@ -31,17 +31,27 @@ which can fail and each of which is reported with the number that decided it:
                  `stability_margin`, and the nonlinear solve must stay bounded
                  over several windows rather than growing.
 
-it also exercises the causality refusal -- a plan whose overlap is shorter than the
-longest conduction memory in the graph is refused, because the temporal laplacian
-is cyclic and a delay that long wraps and reads the window's own future as its past
--- and fuses one real EEG segment from the same subject as evidence.
+and it exercises the causality refusal -- a plan whose overlap is shorter than the
+longest memory in the graph is refused, because the temporal laplacian is cyclic
+and a memory that long wraps and reads the window's own future as its past -- and
+fuses one real EEG segment from the same subject as evidence.
 
-what this script does NOT do is tune anything until it looks right.  a failure
-reported with its diagnosis is the most valuable thing available here, and there
-are failures below.
+what this script does NOT do is tune anything until it looks right.  every theta
+is the prior median the build recorded, and a failure reported with its diagnosis
+is the most valuable thing available here.  there are failures below: the
+multi-window solve stops at a residual floor, the lead field the build computed
+connects nothing in the state graph, the declared window is too short for the
+declared amplifier, and the closed loop diverges at prior gains.  each is
+reported with the number that decided it.
 
-run:  ./.venv/bin/python scripts/run_eeg_forward.py
-      ./.venv/bin/python scripts/run_eeg_forward.py --coarse    (a cheaper r(q))
+run:  ./.venv/bin/python scripts/run_eeg_forward.py            (r(q) as
+      `materialize_eeg_forward.py` reports it -- 13,647 column nodes at 3.25 mm,
+      531 tissue voxels, 12,419 conductor cells, 389,510 state variables; about
+      22 minutes, most of it in the three-window solve)
+      ./.venv/bin/python scripts/run_eeg_forward.py --coarse   (6 mm sheet: the
+      same head, the same BEM, a third of the nodes, about 4 minutes.  every
+      conclusion below holds on both; the numbers quoted in the checks are the
+      full-resolution ones)
 """
 
 from __future__ import annotations
@@ -347,9 +357,15 @@ def theta_of(model, impl, fn=None) -> dict:
 #: dataclass that can hold `H_e(omega)` for 4.3e5 edges.  so the operator is
 #: written as a sum of terms, one per distance bin, each of which is an exact
 #: (mix x transfer) pair evaluated at that bin's mean distance.  the
-#: approximation is the within-bin spread of the delay, which is reported below
-#: in milliseconds rather than asserted to be small; 12 quantile bins keep it
-#: under a millisecond on this subject, which is under one sample of the window.
+#: approximation is the within-bin spread of the delay, and it is REPORTED in
+#: milliseconds in section 3 rather than asserted to be small.  it is not small:
+#: 12 quantile bins over an 8-168 mm association graph leave more than ten
+#: milliseconds of delay spread in the top bin, because that distribution is
+#: skewed and its top quantile is wide however finely it is cut.  bins cost real
+#: time -- each is a separate `spectral_drift` over a (sites x k) array, and
+#: tripling them tripled the window -- so the number here is a budget decision,
+#: and section 9's delay check is run on *unbinned* couplings, one per edge, so
+#: that what it measures is the phase ramp and not this approximation.
 DISTANCE_BINS = 12
 
 
@@ -581,13 +597,22 @@ def assemble(model, lead_data, *, nonlinear: bool = False, verbose: bool = True)
                      f"q {th_tc.get('q', float('nan')):.2f}")
     else:
         wc = imp("local_excitation", "wilson_cowan_adaptive")
-        th_wc = {k.partition(".")[2]: median_of(v) for k, v in model.priors.items()
-                 if k.startswith("local_excitation.")}
-        fn = lambda x, theta: wc.fn(x, theta)
+        # this implementation was not the one build selected, so `model.priors`
+        # carries `conductance_lti`'s theta under the same `process.param` keys
+        # and none of wilson-cowan's.  the declaration's own params are the only
+        # place its priors exist.
+        th_wc = {name: median_of(pr) for name, pr in wc.params.items()}
+        fn = wc.fn
         for out in (POT, ACT, ADAPT):
             cs.append(Coupling(process="local_excitation[wilson_cowan_adaptive]", writes=out,
                                reads=(POT, ADAPT, AMPA, NMDA, ACT), form=Form.RATE,
-                               fn=fn, theta=th_wc, memory_s=2.0,
+                               fn=fn, theta=th_wc,
+                               # the adaptation current integrates the rate with a
+                               # half-second time constant, so this f reads a second
+                               # and a half into its own past.  that is longer than
+                               # any conduction delay in the model and it is what
+                               # makes the closed loop unwindowable at 2.048 s.
+                               memory_s=3.0 * th_wc.get("tau_adaptation_s", 0.5),
                                note="the sigmoid: the only nonlinearity in the file, and the "
                                     "one edge that closes the cortical loop"))
         lines.append(f"  local_excitation[wilson_cowan_adaptive]  {POT},{ADAPT},{AMPA},{NMDA},"
@@ -805,6 +830,25 @@ def peak_in(freqs, psd, beta, offset, lo=6.0, hi=16.0):
 
 
 
+
+def joint_scale(state, couplings) -> float:
+    """the rms of the trajectory the joint gap is a gap in.
+
+    `StepReport.joint_gap` is in state units, and state units here are whatever
+    the prior medians made them (section 3).  the number that means something is
+    the gap divided by the size of the thing it is a gap in, and reporting the
+    ratio is the only way two runs at different amplitudes can be compared at
+    all.
+    """
+    tot, n = 0.0, 0
+    for cid in dict.fromkeys(c.writes for c in couplings):
+        if cid not in state or state.layout[cid].uncertainty != "spectral":
+            continue
+        x = state.mean_time(cid)
+        tot += float((x ** 2).mean()); n += 1
+    return math.sqrt(tot / max(n, 1))
+
+
 def exogenous(model, couplings) -> tuple[str, ...]:
     """the spectral components no assembled coupling writes.
 
@@ -867,7 +911,7 @@ def continuity_probe(model, couplings, basis, plan, solve, drive, state0):
     print("  there is no hook in `advance` for doing it.")
     s = state0.copy()
     carry = None
-    gaps, res, amps = [], [], []
+    gaps, res, amps, reps = [], [], [], []
     k = model.layout[ACT].k
     for i in range(plan.n_windows):
         seg = drive[:, i * plan.hop_n: i * plan.hop_n + basis.n]
@@ -875,14 +919,15 @@ def continuity_probe(model, couplings, basis, plan, solve, drive, state0):
         s, rep = solve_window(s, couplings, basis, solve=solve, carry=carry,
                               match_weight=plan.match_weight, window=i)
         carry = Carry.tail(s, plan.overlap_n)
-        gaps.append(rep.joint_gap)
+        gaps.append(rep.joint_gap / max(joint_scale(s, couplings), 1e-300))
         res.append(rep.residual / max(rep.residual0, 1e-300))
         amps.append(window_amplitude(s, couplings))
+        reps.append(rep)
         print(f"    {rep}")
-    print(f"  joint gaps {['%.3g' % g for g in gaps]}, "
+    print(f"  joint gap relative to the state's own rms {['%.3g' % g for g in gaps]}, "
           f"residual/initial {['%.2e' % r for r in res]}")
     print(f"  max |mean| per window {['%.4g' % a for a in amps]}")
-    return s, gaps, amps
+    return s, gaps, amps, reps
 
 
 def check_spectrum(model, state0, state1, basis, sheet_sites):
@@ -900,6 +945,9 @@ def check_spectrum(model, state0, state1, basis, sheet_sites):
           f"{'total power':>13s}")
     for cid, label, beta, fpk, rel, tot in rows:
         print(f"    {cid:30s} {label:6s} {beta:6.2f} {fpk:8.2f} {rel:7.2f} {tot:13.4g}")
+    print(f"    ({ACT} is exogenous -- no assembled coupling writes it -- so its two rows")
+    print("     are two slices of the same drive realisation and differ only by sampling.")
+    print("     the conductances and the potential are what the solve produced.)")
     out = [r for r in rows if r[1] == "output" and r[0] == POT][0]
     ok_beta = 0.5 <= out[2] <= 4.0
     ok_alpha = 8.0 <= out[3] <= 13.0 and out[4] > 1.2
@@ -994,7 +1042,7 @@ def imp_of(process: str, name: str):
     raise KeyError(f"{process}/{name}")
 
 
-def check_topography(model, state, basis, lead_data, dip):
+def check_topography(model, state, basis, lead_data, dip, couplings):
     head("10. check 3 -- lead field and topography")
     sensors = model.sites["sensor_array"]
     xyz = np.asarray(sensors.xyz, float)
@@ -1021,13 +1069,34 @@ def check_topography(model, state, basis, lead_data, dip):
     print(f"    spatial correlation length of the simulated map: {corr_len:.0f} mm")
 
     # -- a focal source, and whether it is dipolar --------------------------
+    #
+    # solved rather than read off the lead field.  the two should agree, and that
+    # they do is itself the check that the instrument coupling is being applied
+    # by the solver the way the matrix says: a delta of current at one column
+    # node is put into the state, the window is solved with the device coupling
+    # and its stiff-limit leak, and what comes out at the 60 contacts is compared
+    # against the lead field's own column.
     L, _ = lead_field_mix(model, lead_data)
-    sheet = model.sites["cortical_surface"]
-    smap, _ = merged_index(model, TMC)
-    # the node the montage sees best, so the map is not a noise floor.
     col = np.asarray(L.todense())
-    best = int(np.argmax(np.abs(col).max(0)))
-    v = col[:, best]
+    best = int(np.argmax(np.abs(col).max(0)))       # the node the montage sees best
+    dev = [c for c in couplings if c.writes == CP]
+    n_tmc = merged_index(model, TMC)[1]
+    s = State.prior(model.layout)
+    zt = np.zeros((n_tmc, model.layout[TMC].k), dtype=np.complex128)
+    zt[best, :] = 1.0
+    s.beliefs[TMC] = replace(s[TMC], mean=zt)
+    s.beliefs[CP] = replace(s[CP], mean=np.zeros_like(s[CP].mean))
+    s, rep = solve_window(s, tuple(dev) + (stiff_limit(CP, model.layout[CP].n_sites),),
+                          basis, solve=Solve(damping=1.0, max_iter=6))
+    solved = np.asarray(s[CP].mean)
+    ratio = solved[:, 1] / np.where(np.abs(col[:, best]) > 0, col[:, best], np.nan)
+    print()
+    print(f"    focal solve: {rep}")
+    print(f"    solved map / lead-field column: spread across contacts "
+          f"{np.nanstd(ratio) / max(abs(np.nanmean(ratio)), 1e-30):.2e} "
+          "(the instrument coupling is applied as the matrix says)")
+    v = solved[:, 1].real / abs(np.nanmean(ratio)) if np.isfinite(
+        np.nanmean(ratio)) else col[:, best]
     pos, neg = float(v.max()), float(v.min())
     ext_p, ext_n = xyz[int(np.argmax(v))], xyz[int(np.argmin(v))]
     sep = float(np.linalg.norm(ext_p - ext_n))
@@ -1093,7 +1162,9 @@ def measured_alpha_topography(model, basis):
 
     paths = geo.sample_paths()
     raw = mne.io.read_raw_fif(paths.raw_fif, preload=True, verbose="ERROR")
-    raw.pick("eeg")
+    # bads excluded: this recording marks one EEG contact bad, and a dead
+    # electrode fused as evidence is a measurement of the amplifier.
+    raw.pick("eeg", exclude="bads")
     ids = list(np.asarray(model.sites["sensor_array"].columns["element_ids"]))
     have = [c for c in ids if c in raw.ch_names]
     raw.pick(have)
@@ -1273,6 +1344,10 @@ def fuse_real_eeg(model, state, basis, channels, seg, zobs, sfreq):
           f"{geo.sample_paths().raw_fif.name}, resampled {sfreq:.1f} -> "
           f"{1.0 / basis.dt:.0f} Hz onto the model's own window")
     print(f"    recording RMS {np.sqrt((seg ** 2).mean()):.2f} uV")
+    print("    no re-referencing is applied.  `device.contact_potential` is declared as the")
+    print("    voltage 'relative to the system reference', and the recording carries its")
+    print("    own; a montage change is a declared transformation this model does not")
+    print("    carry, so the two are being compared in whatever reference each was in.")
 
     # the amplifier's noise floor, measured rather than assumed, and measured
     # ABOVE the band the model retains: between 120 and 165 Hz this recording is
@@ -1489,10 +1564,12 @@ def main() -> int:
           f"reals, so every krylov vector is "
           f"{sum(model.layout[c].n_sites * model.layout[c].k * 2 for c in set(c.writes for c in couplings)) * 8 / 2**30:.2f} GiB.")
     trace_amp: list[tuple[Any, float]] = []
+    rel_a: list[float] = []
     t0 = time.time()
 
     def on_window(i, s, rep):
         trace_amp.append((rep, window_amplitude(s, couplings)))
+        rel_a.append(rep.joint_gap / max(joint_scale(s, couplings), 1e-300))
         print(f"    {rep}")
 
     state1, reports = advance(state0, couplings, plan, solve=solve, on_window=on_window)
@@ -1505,15 +1582,19 @@ def main() -> int:
     print(f"  joint gaps: {['%.3g' % r.joint_gap for r in reports]}")
     print(f"  residual / initial: {['%.2e' % (r.residual / max(r.residual0, 1e-300)) for r in reports]}")
 
-    state1b, gaps_b, amps_b = continuity_probe(model, couplings, basis, plan, solve,
-                                               drive, state0)
-    gap_a = max(r.joint_gap for r in reports)
+    state1b, gaps_b, amps_b, reps_b = continuity_probe(model, couplings, basis, plan, solve,
+                                                       drive, state0)
+    gap_a = max(rel_a) if rel_a else float("nan")
     gap_b = max(gaps_b)
+    res_a = max(r.residual / max(r.residual0, 1e-300) for r in reports[1:]) if len(
+        reports) > 1 else float("nan")
+    res_b = (max(r.residual / max(r.residual0, 1e-300) for r in reps_b[1:])
+             if len(reps_b) > 1 else float("nan"))
     print()
-    print(f"  the joint gap over the run: {gap_a:.4g} with the drive frozen (what `advance`")
-    print(f"  does), {gap_b:.4g} with it advanced -- a factor of "
-          f"{gap_a / max(gap_b, 1e-300):.3g}.")
-    print("  so `limited_by=\"continuity\"` in the run above was reporting the price of")
+    print("  the same three windows, compared on the two numbers that mean something:")
+    print(f"    joint gap / state rms     {gap_a:.4g} frozen   ->  {gap_b:.4g} advanced")
+    print(f"    residual / initial        {res_a:.4g} frozen   ->  {res_b:.4g} advanced")
+    print("  so `limited_by=\"continuity\"` in the run above was mostly reporting the price of")
     print("  freezing the drive and not the price of imposing continuity on the dynamics.")
     print("  the missing piece is in `advance`: a run over several windows needs the")
     print("  caller to supply the next window of every exogenous component, and there is")
@@ -1523,10 +1604,20 @@ def main() -> int:
 
     # ------------------------------------------------------------------
     state1 = state1b            # the run with the drive advanced, per section 7
-    trace_amp = [(r, a) for r, a in zip(reports, amps_b)]
+    trace_amp = list(zip(reps_b, amps_b))
+    conv_note = (
+        f"window 0 converged in {reps_b[0].iterations} picard sweeps "
+        f"({reps_b[0].residual / max(reps_b[0].residual0, 1e-300):.1e} of its initial "
+        "residual), 0 newton solves; "
+        + ("later windows too" if all(r.converged for r in reps_b[1:]) else
+           f"windows 1-{len(reps_b) - 1} stopped at limited_by="
+           f"{reps_b[1].limited_by!r} with the residual at "
+           f"{max(r.residual / max(r.residual0, 1e-300) for r in reps_b[1:]):.0%} of "
+           "initial"))
     ok_beta, ok_alpha = check_spectrum(model, state0, state1, basis, sheet_sites)
     ok_delay = check_delays(model, basis, rng)
-    amp, corr_len, ok_topo = check_topography(model, state1, basis, lead_data, dip)
+    amp, corr_len, ok_topo = check_topography(model, state1, basis, lead_data, dip,
+                                              couplings)
     m_ei, ok_bounded, cycles = check_stability(model, couplings, basis, trace_amp, False)
 
     channels, seg, zobs, sfreq = measured_alpha_topography(model, basis)
@@ -1562,7 +1653,27 @@ def main() -> int:
 
     # ------------------------------------------------------------------
     head("14. what was fixed in ibm/runtime, and why")
-    print("""  four things, all of them invisible until a materialized model was stepped.
+    # the band-mask fix, measured on this model rather than asserted.
+    narrow = [c for c in model.layout.components
+              if model.layout[c].uncertainty == "spectral"
+              and 0 < model.layout[c].k < basis.k]
+    lost, total = 0.0, 0.0
+    for c in couplings:
+        if c.writes not in narrow:
+            continue
+        d = c.spectral_drift(state1, basis)
+        k = model.layout[c.writes].k
+        lost += float(np.sum(np.abs(d[:, k:]) ** 2))
+        total += float(np.sum(np.abs(d) ** 2))
+    print(f"  measured on this run, for the fix in point 1 below: the blocks narrower than")
+    print(f"  the solve are {', '.join(narrow)}")
+    print(f"  ({', '.join(str(model.layout[c].k) for c in narrow)} coefficients against the "
+          f"solve's {basis.k}), and the pressure that")
+    print(f"  landed above their own width was {math.sqrt(lost / max(total, 1e-300)):.1%} of "
+          "the pressure written to them --")
+    print("  an irreducible residual of that size, in a solve whose tolerance is 1e-8.")
+    print()
+    print("""  seven things, all of them invisible until a materialized model was stepped.
 
   ibm/runtime/step.py
 
@@ -1587,13 +1698,28 @@ def main() -> int:
      implementation could be called at all -- every one of them is written
      `def f(x, theta)`.
 
+  4. `_newton_correction` packs the residual to each block's own width.  the
+     residual is computed over the window basis and `pack_means` packs the state
+     over each block's basis, so the moment one block is narrower than the solve
+     -- again, the ordinary case as soon as B varies per component -- the two
+     lengths differed and `LinearOperator` was handed a rectangular shape.  on
+     this model that is 28,350,680 residual entries against 24,827,192 state
+     entries, and scipy raises `expected square matrix` from three frames down.
+     newton-krylov could never have run on a model with per-component bandwidth,
+     and the only way to find that out was to make picard stall on one.
+
   ibm/runtime/ensemble.py
 
-  4. `reproject_nonlinear` had the same call, and the same fix.
+  5. `reproject_nonlinear` had the same `fn(x, **theta)` call, and the same fix.
+
+  6. `reproject_nonlinear` also matched moments at the window's width and added
+     the result onto a psd of the block's width, which is a numpy broadcast
+     error the moment two components differ in bandwidth.  same family as 1 and
+     4: three separate places assumed one band for the whole model.
 
   ibm/runtime/state.py
 
-  5. `State.prior` allocates at the prior the component actually declares.  every
+  7. `State.prior` allocates at the prior the component actually declares.  every
      component names a builder in `ibm.fields.priors` -- `neural_population` is
      1/f with theta, alpha and beta bumps and cites its sources -- and `prior()`
      was allocating a generic 1/f^beta for everything, throwing the ontology's
@@ -1601,10 +1727,13 @@ def main() -> int:
      cannot show an alpha peak because it was never given one.""")
 
     head("15. what is still untested")
+    same = all(np.array_equal(state0[c].psd, state1[c].psd)
+               for c in dict.fromkeys(c.writes for c in couplings) if c in state1)
     print(f"""  the honest list, after this run.
 
-  * the uncertainty is never propagated.  {POT}'s psd after {args.windows} windows is
-    bit-identical to its prior.  ARCHITECTURE.md 4 says the push-forward of a
+  * the uncertainty is never propagated.  every written component's psd after
+    {args.windows} windows is bit-identical to its prior ({'confirmed' if same else 'NOT confirmed'}, checked
+    element-wise).  ARCHITECTURE.md 4 says the push-forward of a
     linear f is exact and `SpectralGaussian.apply_transfer` is that push-forward,
     but `solve_window` moves means only and `reproject_nonlinear` widens the
     belief of components a NONLINEAR coupling writes.  an all-LTI materialization
@@ -1633,6 +1762,19 @@ def main() -> int:
     {len(model.priors)} entries and provenance says 0 of them have been moved by evidence.
     the spectrum, the amplitudes and the loop gains are what the literature
     priors say, not what this subject's data says.""")
+    head("16. the verdict")
+    rows = [
+        ("solver converged", conv_note),
+        ("check 1  spectrum", f"{'PASS' if ok_beta and ok_alpha else 'FAIL'}"),
+        ("check 2  delays", f"{'PASS' if ok_delay else 'FAIL'}"),
+        ("check 3  topography", f"{'PASS' if ok_topo else 'FAIL'}"),
+        ("check 4  stability", f"{'PASS' if ok_bounded else 'FAIL'}"),
+        ("causality refusal", f"{'PASS' if causal_ok else 'FAIL'}"),
+        ("evidence fusion", f"{'PASS' if ok_fuse else 'FAIL'}"),
+        ("closed loop (Form.RATE)", nonlinear_note),
+    ]
+    for name, verdict in rows:
+        print(f"  {name:28s} {verdict}")
     print(f"\n  total run time {time.time() - t_start:.0f}s")
     return 0
 
@@ -1651,8 +1793,8 @@ def run_nonlinear(model, lead_data, basis, rng) -> str:
     head("13. the closed loop: the one nonlinearity, and what the solver does with it")
     cs, _, _ = assemble(model, lead_data, nonlinear=True, verbose=False)
     print(f"  {len(cs)} couplings, {sum(1 for c in cs if not c.linear)} of them Form.RATE")
-    th = {k.partition(".")[2]: median_of(v) for k, v in model.priors.items()
-          if k.startswith("local_excitation.")}
+    th = {name: median_of(pr) for name, pr
+          in imp_of("local_excitation", "wilson_cowan_adaptive").params.items()}
     tau_m = float(th.get("tau_membrane_s", 0.015))
     slope = float(th.get("slope_mv", 4.0))
     r_max = float(th.get("r_max_hz", 100.0))
@@ -1688,6 +1830,14 @@ def run_nonlinear(model, lead_data, basis, rng) -> str:
           f"(local + lateral + association, horvitz-thompson corrected)")
     print(f"  |L(0)| = {abs(loop[0]):.4g}; min |1 - L| over the band = {m:.4g} at "
           f"{peak:.1f} Hz")
+    print("  note what `stability_margin` does and does not say here.  it is min |1 + L|,")
+    print("  the distance from the nyquist curve to -1, and with |L| in the thousands that")
+    print("  distance is large for the wrong reason: the curve is far from -1 because it is")
+    print("  far from everything, not because the loop is damped.  the number that decides")
+    print("  stability for a positive-feedback loop is |L| against 1, and it is above it by")
+    print(f"  {abs(loop[0]):.0f}x.  a margin quoted without the gain beside it is misleading,")
+    print("  and `base.stability_margin`'s docstring says it is a statement about a fixed")
+    print("  point, not about what the nonlinear system does instead.")
     if abs(loop[0]) > 1.0:
         print("  the loop gain is above unity at DC, so the linearised fixed point is")
         print("  UNSTABLE.  that is a statement about the prior medians, not about cortex:")
@@ -1696,33 +1846,75 @@ def run_nonlinear(model, lead_data, basis, rng) -> str:
         print("  at ~0.6%, so the recurrent gain is whatever the geometry says it is with no")
         print("  data holding it down.  the nonlinear solve below is what actually happens.")
 
-    solve = Solve(damping=0.3, max_iter=25, newton=True, max_newton=1,
-                  krylov_restart=4, krylov_maxiter=12, ensemble=8, seed=1)
-    plan = WindowPlan(basis, overlap=0.25, n_windows=2)
-    s = initial_state(model, basis, rng)
-    t0 = time.time()
-    amps = []
+    print()
+    mem = longest_memory(cs)
+    print(f"  a multi-window plan is REFUSED before anything is solved: the graph's longest")
+    print(f"  memory is now {mem * 1e3:.0f} ms, from the adaptation current's own time")
+    print(f"  constant, against a {basis.duration_s * 1e3:.0f} ms window --")
     try:
-        s, reps = advance(s, cs, plan, solve=solve,
-                          on_window=lambda i, st, r: amps.append(window_amplitude(st, cs)))
-        for r in reps:
-            print(f"    {r}")
-        print(f"  {time.time() - t0:.0f}s.  max |mean| per window: "
-              + ", ".join(f"{a:.4g}" for a in amps))
-        grew = amps[-1] / max(amps[0], 1e-300) if len(amps) > 1 else 1.0
-        bounded = np.isfinite(grew) and grew < 1e3
-        print(f"  growth x{grew:.3g}  [{'bounded' if bounded else 'DIVERGED'}]")
-        note = (f"picard{'+newton' if any(r.newton_calls for r in reps) else ''}, "
-                f"{[r.iterations for r in reps]} iters, "
-                f"{'converged' if all(r.converged for r in reps) else 'NOT CONVERGED'}, "
-                f"{'bounded' if bounded else 'diverged'}")
+        WindowPlan(basis, overlap=0.25, n_windows=2).refuse_if_acausal(mem)
+        print("    IT PASSED, which would be a bug in the refusal.")
+    except CausalityViolation as exc:
+        for part in str(exc).split("; "):
+            print(f"    REFUSED  {part}")
+    print("  and no overlap fixes it, because the memory is most of the window.  that is a")
+    print("  real result: selecting the one f in the inventory that can produce up/down")
+    print("  alternation makes `eeg_forward`'s declared window too short to stitch, and the")
+    print("  request has no way to know that -- the window is chosen against the target,")
+    print("  not against the implementations the target's trace selects.")
+    print()
+    print("  so what follows is ONE window, solved through `solve_window` directly with no")
+    print("  carry and no stitching, which is legal: the refusal is about the overlap")
+    print("  between windows and there is no second window.  the cyclic wrap WITHIN the")
+    print("  window is still there and is the reason the multi-window run is refused.")
+    solve = Solve(damping=0.3, max_iter=25, newton=True, max_newton=1,
+                  krylov_restart=4, krylov_maxiter=6, ensemble=8, seed=1)
+    st = initial_state(model, basis, rng)
+    t0 = time.time()
+    try:
+        st, rep = solve_window(st, cs, basis, solve=solve)
+        print(f"    {rep}")
+        v = st.mean_time(POT)
+        r = st.mean_time(ACT)
+        finite = bool(np.isfinite(v).all() and np.isfinite(r).all())
+        print(f"  {time.time() - t0:.0f}s.  within the window: "
+              f"{POT} spans {v.min():+.4g} to {v.max():+.4g} mV, "
+              f"{ACT} spans {r.min():+.4g} to {r.max():+.4g} Hz")
+        bounded = finite and abs(v).max() < 1e6
+        print(f"  finite everywhere: {finite}   "
+              f"[{'bounded' if bounded else 'DIVERGED'}]")
+        if not bounded or abs(r).max() > 2.0 * th.get("r_max_hz", 100.0):
+            print(f"  the rate leaves [0, {th.get('r_max_hz', 100.0):g}] Hz, and the sigmoid "
+                  "is not what let it:")
+            print("  `wilson_cowan_excitatory` writes `(r_sig(v) - r)/5e-3` -- the rate is a")
+            print("  state variable integrating TOWARDS the saturating curve, not the curve")
+            print("  itself -- so an unstable loop carries it wherever it likes.  the overflow")
+            print("  warning above is `_sigmoid` saturating exactly as it should while the")
+            print("  variable it feeds runs away.  with a DC loop gain of "
+                  f"{abs(loop[0]):.0f} that is the")
+            print("  correct answer for these parameters and not a solver failure: the same")
+            print("  1/inclusion_prob reweighting that section 3 measured is in the loop now,")
+            print("  and nothing has ever fitted the gain that would hold it down.")
+        from ibm.runtime.ensemble import advise, reproject_nonlinear
+        m, why = advise(model.layout, cs, target_mc_error=0.05)
+        print(f"  ensemble advice: {why}")
+        before = {c: st[c].psd.copy() for c in (POT, ACT, ADAPT)}
+        diag = reproject_nonlinear(st, cs, basis, m=solve.ensemble,
+                                   rng=np.random.default_rng(1))
+        for d in diag:
+            grew = float(np.mean(st[d.component].psd / np.maximum(before[d.component], 1e-300)))
+            print(f"    {d}  -> psd x{grew:.3g}")
+        note = (f"{rep.method}, {rep.iterations} iters, "
+                f"{'converged' if rep.converged else 'NOT CONVERGED'}"
+                f"{', ' + rep.limited_by if rep.limited_by else ''}, "
+                f"{'bounded' if bounded else 'DIVERGED'}, "
+                f"psd reprojected from {solve.ensemble} members")
     except Exception as exc:                                   # noqa: BLE001
         note = f"{type(exc).__name__}: {exc}"
         print(f"  the nonlinear run raised: {note}")
     print()
-    print("  the psd of every component a nonlinear coupling writes was reprojected from")
-    print(f"  {solve.ensemble} members, which is the ONE path in this repository that widens a")
-    print("  belief at all; the LTI half of the run leaves every psd at its prior.")
+    print("  this is the only place in the whole run where a belief's WIDTH moves at all.")
+    print("  everything in sections 6 to 12 is LTI, and `solve_window` propagates means.")
     return note
 
 

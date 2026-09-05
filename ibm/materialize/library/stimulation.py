@@ -107,9 +107,14 @@ TMS_RESPONSE = register(NamedModel(
                  ("field", Near("coil", 60.0)),
                  ("conductor", OnSupport("head_volume"))),
         resolution=res(
+            # the 1 mm conductor rule is spent at the csf/grey boundary under
+            # the coil, so it belongs between the two `Near` shells and not in
+            # front of them: ahead of `Near("coil", 60)` it matched every
+            # conductor cell first, and the "4 mm is exact six centimetres away"
+            # this model's docstring argues for never happened.
             rule(Near("coil", 20.0), 0.5, PULSE),
-            rule(OnSupport("head_volume"), 1.0, PULSE),
             rule(Near("coil", 60.0), 1.5, RESPONSE),
+            rule(OnSupport("head_volume"), 4.0, PULSE),
             rule(OnSupport("cortical_surface"), 3.0, RESPONSE),
             default_mm=6.0, default_band=RESPONSE),
         fields=("device", "electromagnetic", "material", "neural", "structural"),
@@ -285,8 +290,16 @@ TFUS_RESPONSE = register(NamedModel(
                  ("skull", OnSupport("head_volume")),
                  ("focus", Near("transducer", 90.0))),
         resolution=res(
-            rule(OnSupport("head_volume"), 0.25, ACOUSTIC),
+            # finest neighbourhood first, or the broad conductor rule matches
+            # every cell before the path rule is reached and the entire head is
+            # sampled at 0.25 mm.  the skull that matters acoustically is the
+            # skull the beam crosses, which is the 30 mm cap under the
+            # transducer; the 120 mm rule is the propagation path, kept because
+            # the docstring is explicit that truncating the domain is not
+            # conservative.
+            rule(Near("transducer", 30.0), 0.25, ACOUSTIC),
             rule(Near("transducer", 120.0), 0.5, ACOUSTIC),
+            rule(OnSupport("head_volume"), 2.0, ACOUSTIC),
             rule(OnSupport("cortical_surface"), 2.0, SLOW_RESPONSE),
             # the default band is the *acoustic* one: this request's window is a
             # field-solve window, and the slow response is carried by the band
