@@ -1,0 +1,58 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: trimesh
+title: trimesh -- Python triangular mesh library
+provider: Michael Dawson-Haggerty and contributors
+citation: 'trimesh: Python library for loading and using triangular meshes.'
+urls:
+- https://trimesh.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- arbitrary_mesh
+streams:
+- name: watertightness_and_volumetric_properties
+  kind: measured
+  via: null
+  systematic_bias: WATERTIGHTNESS IS A PRECONDITION FOR VOLUME MESHING, and a surface that is not watertight
+    cannot be tetrahedralised -- which is where a head model for DUNEuro or a vessel model for SimVascular
+    fails. Detecting and repairing that is the unglamorous step between a cortical surface and a finite-element
+    head model.
+  notes: mesh repair CHANGES the geometry to make it valid, and the change is a derivation step that must
+    be recorded
+  band_hz:
+  - null
+  - null
+  temporal_support: static
+  spatial_support: watertight triangular meshes with rigorous VOLUMETRIC properties -- volume, centre
+    of mass, inertia tensor, ray intersection -- which surface-only libraries do not compute
+- name: ray_intersection
+  kind: measured
+  via: null
+  systematic_bias: §56.5 needs gaze RAYS intersected with a display plane or a scene; ray-mesh intersection
+    is that operation
+  band_hz:
+  - null
+  - null
+absent:
+- physical_semantics
+- uncertainty
+use:
+- calibrate
+forbidden:
+- trimesh/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: trimesh
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

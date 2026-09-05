@@ -1,0 +1,117 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: eegmmidb
+title: EEG Motor Movement/Imagery Database (PhysioNet EEGMMIDB)
+provider: PhysioNet / BCI2000
+citation: 'Schalk et al., BCI2000: a general-purpose brain-computer interface (BCI) system. IEEE TBME
+  2004; Goldberger et al., PhysioNet. Circulation 2000.'
+urls:
+- https://physionet.org/content/eegmmidb/1.0.0/
+access: held
+licence:
+  name: ODC-BY 1.0 (PhysioNet states an open licence for this database)
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'PhysioNet states an open licence; SPDX identity and commercial terms not independently verified
+    here. Resolved from the named licence''s own terms, which are public record rather than a judgement:
+    ODC-BY 1.0 requires attribution, PERMITS COMMERCIAL USE, and has NO share-alike clause (that is ODbL,
+    its sibling). dua_required false because this is an OPEN-ACCESS PhysioNet database, not a credentialed
+    one, and it is held here from an anonymous fetch that accepted no terms.'
+binding: unbound
+population:
+  n: 109
+  hierarchy:
+  - participant
+  - run
+  notes: 'HELD: 109 participants (S001 .. S109), 1,526 EDF recordings, 48.53 h -- measured 2026-08-15
+    by summing the record count and record duration in each EDF header. That figure is an independent
+    re-derivation of the 48.53 h the predecessor recorded, computed from the files rather than inherited
+    from them.'
+frames:
+- eeg_cap
+- head
+streams:
+- name: eeg_64ch
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - 160 Hz sampling aliases muscle activity into the band of interest
+  systematic_bias: 'Template montage with no individual anatomy: every source estimate carries template-head
+    uncertainty, and at 64 channels and 160 Hz the spatial and temporal resolution are both modest.'
+  notes: no individual head model exists, so the forward operator is a population approximation
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at 160 Hz. That is a low sampling rate by modern standards and it band-limits
+    everything derived from this source
+  spatial_support: 64-channel BCI2000 montage in the extended 10-10 system; positions are NOMINAL template
+    positions, never digitised
+- name: motor_imagery_vs_execution
+  kind: imposed
+  via: null
+  systematic_bias: 'imagery trials have NO behavioural verification: compliance is assumed. Executed trials
+    do, because the movement happened'
+  band_hz:
+  - null
+  - null
+- name: baseline_runs
+  kind: measured
+  via: null
+  systematic_bias: eyes-open and eyes-closed baseline runs are the floor any task claim must clear
+  band_hz:
+  - null
+  - null
+- name: task_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- individual_anatomy
+- emg
+- eye_tracking
+- fmri
+- meg
+- electrode_digitisation
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg_64ch
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- evaluate
+- fit
+forbidden:
+- eegmmidb/* -> subject-specific head geometry
+- eegmmidb/* -> vascular or metabolic state
+- eegmmidb/motor_imagery_vs_execution -> verified covert motor state
+split:
+  group_by:
+  - participant
+  - run
+provenance:
+  imported_from: win-registry
+  card: eegmmidb
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

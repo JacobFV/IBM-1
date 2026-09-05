@@ -1,0 +1,119 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: naturalistic-neuroimaging-database
+title: Naturalistic Neuroimaging Database (ds002837) and its stimulus register
+provider: Naturalistic Neuroimaging Database / OpenNeuro ds002837
+citation: Aliko et al., A naturalistic neuroimaging database for understanding the brain using ecological
+  stimuli. Scientific Data 2020.
+urls:
+- https://www.naturalistic-neuroimaging-database.org/datasets.html
+- https://openneuro.org/datasets/ds002837
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: ds002837 terms unresolved; the ten full-length films are third-party copyright. The AGGREGATED
+    REGISTER is a catalogue, and cataloguing is not licensing.
+binding: unbound
+population:
+  n: 86
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: ds002837 itself is 86 participants watching one of ten full-length films. The wider NNDb site
+    aggregates many other studies.
+frames:
+- scanner
+- subject_native
+- MNI152
+- film_timeline
+streams:
+- name: bold_movie
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - 'a two-hour run: scanner drift and participant arousal change over the session in ways that are not
+    stationary'
+  systematic_bias: Each participant sees ONE film, so film and participant are partly confounded by design.
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 1 s; full-length films of 90-120 minutes -- the longest continuous world trajectories
+    in the registry
+  spatial_support: 3 mm BOLD; whole-brain
+- name: aggregated_study_register
+  kind: measured
+  via: null
+  systematic_bias: '§52.2: the aggregate is useful as a DISCOVERY and cross-dataset stimulus register,
+    but every underlying study still requires its own source card. A catalogue entry is a proposal, not
+    a source.'
+  band_hz:
+  - null
+  - null
+- name: film_stimuli
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- eye_tracking
+- physiology
+- vascular
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - bold_movie
+  - film_stimuli
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- fit
+- prior
+forbidden:
+- naturalistic-neuroimaging-database/aggregated_study_register -> any evidence role (it is a catalogue)
+- naturalistic-neuroimaging-database/* -> retinal input as if gaze were known
+split:
+  group_by:
+  - participant
+  - stimulus
+  notes: film and participant are partially confounded; report both
+provenance:
+  imported_from: win-registry
+  card: naturalistic-neuroimaging-database
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

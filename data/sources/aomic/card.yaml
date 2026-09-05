@@ -1,0 +1,198 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: aomic
+title: AOMIC PIOP1 and PIOP2 (ds002785, ds002790) -- ID1000 has its own card and is held
+provider: University of Amsterdam (NILab), distributed via OpenNeuro; group maps on NeuroVault
+citation: 'Snoek et al., AOMIC: the Amsterdam Open MRI Collection, a set of multimodal MRI datasets for
+  individual difference analyses. Scientific Data 8:85, 2021. doi:10.1038/s41597-021-00870-6.'
+urls:
+- https://nilab-uva.github.io/AOMIC.github.io/
+- https://openneuro.org/datasets/ds002785
+- https://openneuro.org/datasets/ds002790
+access: priority
+licence:
+  name: CC0 (verbatim License field in each dataset_description.json)
+  redistribution: permitted
+  commercial: permitted
+  notes: Both dataset_description.json files were read directly over HTTPS on 2026-08-19 and each says
+    exactly "CC0". Neither carries a DatasetType field, which is BIDS' definition of RAW -- so both ship
+    a raw diffusion form, the same property that made ds003097 worth fetching. No data-use agreement.
+binding: unbound
+population:
+  n: 442
+  hierarchy:
+  - participant
+  - run
+  notes: 'PIOP1 n=216 and PIOP2 n=226 as stated in the paper, and both reproduce from the deposits'' own
+    participants.tsv (217 and 227 lines including the header), read 2026-08-19. The card read n_participants
+    1370 across three accessions until then; ID1000''s 928 moved to aomic-id1000 when that deposit was
+    held. RAW DWI IS NARROWER THAN THE COHORT: PIOP1 has raw dwi for 211 of its 216 subject directories,
+    PIOP2 for 226 of 226. Single 3T Philips site, one session per participant. The two accessions number
+    their subjects sub-0001... independently with NO cross-accession key, so an overlapping participant
+    between them would be undetectable -- which is a reason not to pool them and not a claim that none
+    exists.'
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: bold_with_concurrent_physiology
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away. Respiration and cardiac waveforms were recorded concurrently,
+    so the physiological contribution is OBSERVED rather than inferred from the BOLD itself'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift and between-session hardware change
+  - the physiological recordings have their own failure modes -- belt slippage, oximeter dropout -- and
+    a missing physio trace is not a flat one
+  systematic_bias: 'One site, one scanner, one session: between-site variance is zero by construction
+    and therefore unestimable here. That makes it a clean source for within-scanner questions and a bad
+    one for generalisation claims.'
+  band_hz:
+  - null
+  - null
+  temporal_support: TR-sampled BOLD with CONCURRENT RESPIRATION AND CARDIAC RECORDING at the physiological
+    device's own much faster rate. Two clocks per run, and the physiological one is what makes the vascular
+    nuisance a measurable state rather than a regressor
+  spatial_support: 'T1w structural, single-shell DWI at b=1000 with 32 directions and one b=0 (one run
+    per participant), resting and task BOLD. PIOP2 ships a B0 phase-difference FIELDMAP for all 226 subjects;
+    PIOP1 ships NO fmap directory at all. NEITHER ships a reverse phase-encode acquisition: PhaseEncodingDirection
+    is ''j'' in all 211 PIOP1 and all 226 PIOP2 per-scan _dwi.json files. AND PIOP2''s fieldmap IntendedFor
+    names ONLY func/ BOLD runs, in 226 of 226 files -- not one names a dwi target -- so a BIDS-respecting
+    pipeline does not unwarp the diffusion data there either.'
+- name: population_representative_sample
+  kind: measured
+  via: null
+  systematic_bias: PIOP1 and PIOP2 are university students and are NOT population-representative. The
+    representative cohort in this collection is ID1000, which is carded and held as aomic-id1000. Pooling
+    the three loses that property with no warning.
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  observation_chain: water displacement over the diffusion time within and around axons and cells -> gradient-direction-dependent
+    signal attenuation -> reconstructed q-space or orientation distribution. ORIENTATION EVIDENCE, not
+    an observation of a tract THE RAW FORM IS PRESENT in both accessions -- sub-XXXX/dwi/sub-XXXX_dwi.nii.gz
+    with its .bval and .bvec, outside any derivatives/ directory -- verified against the bucket 2026-08-19.
+    Both also ship derivatives/dwipreproc. A card declaring a dwi stream is not a deposit shipping a raw
+    one, and that distinction is what obj-independent-preprocessing-needs-a-deposit-that-ships-raw-dwi
+    turns on.
+  confounds:
+  - eddy-current and susceptibility distortion
+  - motion between diffusion directions
+  - partial volume of crossing fibres, which no single-tensor model represents
+  - the fitting model itself is a choice with its own bias
+  - 'susceptibility distortion, which no preprocessing arm can correct here: PIOP1 has no fieldmap and
+    PIOP2''s is declared for the BOLD only, and neither has a reverse phase-encode scan'
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_task
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: fieldmaps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: respiration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cardiac
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: events
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: demographics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: psychometrics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: fmriprep_derivatives
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- clinical_populations
+- eeg
+- fieldmap_intended_for_dwi
+- intervention
+- meg
+- reverse_phase_encode_dwi
+- second_session
+- second_site
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  for_streams:
+  - dwi
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- fit
+- prior
+forbidden:
+- aomic/* -> a between-site generalisation claim
+- aomic/* -> a missing physiological trace treated as a flat one
+- aomic/* -> pooling with aomic-id1000, which mixes three acquisition protocols and destroys the population-representative
+  property
+split:
+  group_by:
+  - participant
+  - run
+provenance:
+  imported_from: win-registry
+  card: aomic
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

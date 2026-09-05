@@ -1,0 +1,93 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brainbert
+title: BrainBERT -- self-supervised representations for intracranial recordings
+provider: MIT and collaborators
+citation: 'Wang et al., BrainBERT: Self-supervised representation learning for intracranial recordings.
+  ICLR 2023.'
+urls:
+- https://github.com/czlwang/BrainBERT
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- electrode_native
+streams:
+- name: per_electrode_representation
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. Operating per electrode is an unusually clean
+    design decision for §53.2''s concern: with no channel axis there is no channel identity to learn as
+    anatomy, and the representation is of a LOCAL signal whose spatial support is the contact neighbourhood.
+    What it gives up is any account of how contacts relate to each other, which is where the interactions
+    are.'
+  notes: a per-contact representation cannot express a propagation or a delay, which is the quantity task-ieeg-propagation-fields
+    makes available
+  band_hz:
+  - null
+  - null
+  temporal_support: spectrogram time-frequency patches from kHz-sampled iEEG
+  spatial_support: SINGLE-ELECTRODE intracranial spectrograms -- the model operates per contact and makes
+    no spatial assumption at all, which sidesteps §53.2's channel-identity problem by not having a channel
+    axis
+- name: brain_treebank_pretraining
+  kind: measured
+  via: null
+  systematic_bias: pretrained on intracranial data from clinical populations; see brain-treebank and clinical-ieeg-archives
+  band_hz:
+  - null
+  - null
+absent:
+- spatial_relationships
+- electrode_localisation
+- healthy_population
+- uncertainty
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: This model's channel axis is a set of names, not a set of positions -- the channel-identity
+    problem exactly. Its representation can be computed without any geometry, but relating it to a cortical
+    support, or transferring it to a montage it was not trained on, requires the electrode or sensor geometry
+    that the name stands in for.
+  substitute: Channel-name matching, which silently asserts that two electrodes sharing a label sat in
+    the same place on two different heads.
+use:
+- distil
+- prior
+forbidden:
+- brainbert/* -> observation-role likelihoods
+- brainbert/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: brainbert
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - per_electrode_representation
+    - brain_treebank_pretraining
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

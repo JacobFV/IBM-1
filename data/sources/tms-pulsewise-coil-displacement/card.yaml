@@ -1,0 +1,111 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tms-pulsewise-coil-displacement
+title: Pulsewise coil displacement, cortical |E| and MEP (GWDG pcd repository)
+provider: Max Planck Institute for Human Cognitive and Brain Sciences, GWDG GitLab project tms-localization/papers/pcd
+citation: Numssen, Martin, Williams, Hartwigsen, Knosche. Quantification of subject motion during TMS
+  via pulsewise coil displacement, 2023 -- JOURNAL AND DOI ARE PLACEHOLDERS IN THE SOURCE README. The
+  underlying E-field and MEP values are from Numssen et al., NeuroImage 2021, doi:10.1016/j.neuroimage.2021.118654.
+urls:
+- https://gitlab.gwdg.de/tms-localization/papers/pcd
+- https://doi.org/10.1016/j.neuroimage.2021.118654
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: The GitLab project API returns no licence field and there is no LICENSE blob. Project visibility
+    is public; visibility is not a licence. Raw-file and blob URLs redirect to a GWDG login, so only the
+    API paths are anonymously readable.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  notes: The column `sub` identifies participants and the documentation states about 1,000 pulses per
+    subject; the participant count is NOT stated in the repository and is left null rather than counted
+    from a secondary source.
+frames:
+- displacement_magnitude_only
+streams:
+- name: e_field_to_mep_dose_response
+  kind: measured
+  via: null
+  observation_chain: 'coil current -> induced electric field in the head, whose magnitude and direction
+    at the cortical target are NOT measured but computed from a head model -> depolarisation of some unknown
+    mixture of interneurons and corticospinal cells -> descending volley -> spinal motoneuron pool, whose
+    excitability is a separate uncontrolled state -> muscle fibre action potentials -> surface EMG ->
+    rectified peak-to-peak amplitude. FOUR DISTINCT THINGS get conflated here: the requested machine setting,
+    the delivered physical field, peripheral co-stimulation, and the candidate neural response'
+  confounds:
+  - spinal motoneuron excitability, which varies over minutes and is never measured
+  - background voluntary EMG, which multiplies MEP amplitude and is often only loosely controlled
+  - coil-to-scalp distance and scalp/skull thickness, which change the delivered field without changing
+    the machine setting
+  - 'peripheral co-stimulation: the click, the scalp sensation and the twitch itself are salient sensory
+    events with their own evoked responses'
+  - the head model used to compute the field is derived geometry with its own error, and its output is
+    routinely reported as if measured
+  - attention, arousal and time of day
+  - coil displacement is confounded with time-in-session, because subjects drift progressively
+  systematic_bias: Several thousand per-pulse (|E|, MEP) pairs is a genuinely large dose-response sample,
+    and the |E| axis is SIMULATED -- so a model fitted to it is fitted to another model's output, and
+    inherits that model's error as if it were measurement noise.
+  notes: the E values are reused from the 2021 paper and were not recomputed here
+  band_hz:
+  - null
+  - null
+  temporal_support: one row per pulse; no continuous clock
+  spatial_support: one cortical target (the FDI muscle representation). The pose information has been
+    COLLAPSED to a single displacement magnitude, which discards direction entirely -- the thing gp-tms-hsh
+    retains
+- name: per_pulse_coil_displacement_scalar
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: simulated_cortical_e_field
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mep_amplitude
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- raw_emg
+- coil_orientation
+- structural_mri
+- head_meshes
+- eeg
+- sham_arm
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The delivered quantity is an induced electric field throughout the head, set by the coil's
+    winding geometry and its pose relative to the anatomy. Without the device product the stimulation
+    is recorded as a machine setting rather than as a dose at any cortical location, and the four stages
+    of an intervention collapse into one.
+- geometry: literature-derived-geometry
+  severity: blocking
+  without_it: 'The spatial arrangement this source depends on is described in its paper and figures rather
+    than distributed with the data: the navigation frame, the target definition or the pose convention
+    is not in the repository. It has to be reconstructed from the publication, as a derived product that
+    says so, before any number here can be placed.'
+use:
+- fit
+forbidden:
+- tms-pulsewise-coil-displacement/* -> any artifact, until a licence is resolved
+- tms-pulsewise-coil-displacement/* -> a coil-orientation-dependent claim
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: tms-pulsewise-coil-displacement
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

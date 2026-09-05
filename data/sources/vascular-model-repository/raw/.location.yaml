@@ -1,0 +1,5 @@
+# where the bytes for `vascular-model-repository` actually live.  never the bytes themselves.
+source_url: "https://www.vascularmodel.com/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

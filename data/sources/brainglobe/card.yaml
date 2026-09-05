@@ -1,0 +1,66 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brainglobe
+title: BrainGlobe Atlas API -- programmatic cross-species atlas access
+provider: BrainGlobe / Sainsbury Wellcome Centre
+citation: 'Claudi et al., BrainGlobe Atlas API: a common interface for neuroanatomical atlases. Journal
+  of Open Source Software 2020.'
+urls:
+- https://brainglobe.info/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- allen_mouse_ccf
+- MNI152
+- zebrafish
+- rat
+- macaque
+streams:
+- name: cross_species_atlas_access
+  kind: measured
+  via: null
+  systematic_bias: A UNIFORM INTERFACE OVER NON-UNIFORM OBJECTS. Convenient access to a mouse atlas and
+    a human atlas through one API makes it easy to write code that treats them as interchangeable, which
+    they are not. §52.7 lists it for cross-species atlas access and that is its correct scope.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: a uniform Python interface to many atlases across species, each retaining its own reference
+    space and structure hierarchy
+- name: structure_hierarchies
+  kind: measured
+  via: null
+  systematic_bias: the hierarchical structure trees are a useful vocabulary and encode a specific taxonomy
+    of what counts as a structure
+  band_hz:
+  - null
+  - null
+absent:
+- human_depth
+- uncertainty
+- cross_species_correspondence
+use:
+- calibrate
+- prior
+forbidden:
+- brainglobe/* -> cross-species correspondence claims
+- brainglobe/* -> any evidence role for the atlases it exposes
+- brainglobe/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: brainglobe
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

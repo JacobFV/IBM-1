@@ -1,0 +1,59 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hippomaps
+title: HippoMaps -- multimodal hippocampal map repository in unfolded space
+provider: Khan lab and collaborators
+citation: 'DeKraker et al., HippoMaps: multiscale cartography of human hippocampal organization. 2024.'
+urls:
+- https://hippomaps.readthedocs.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- hippocampal_unfolded_space
+streams:
+- name: multimodal_hippocampal_maps
+  kind: measured
+  via: null
+  systematic_bias: Every map here inherits its own source's population, modality and processing, and §52.9's
+    requirement that those travel with the map applies. What HippoMaps adds is a COMMON SUPPORT, which
+    is the prerequisite for comparing them at all -- and it is the concrete demonstration that a shared
+    continuous coordinate system solves the problem a shared parcellation only appears to solve.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: a collection of hippocampal maps from many modalities, all expressed in the HippUnfold
+    unfolded coordinate system -- the shared coordinate space is what makes them comparable
+- name: unfolded_space_as_common_support
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- per_map_uncertainty
+- individual_maps
+- raw_data
+use:
+- calibrate
+- prior
+forbidden:
+- hippomaps/* -> observation-role likelihoods
+- hippomaps/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: hippomaps
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

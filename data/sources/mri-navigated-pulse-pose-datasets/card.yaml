@@ -1,0 +1,71 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mri-navigated-pulse-pose-datasets
+title: MRI-navigated TMS pulse and pose datasets
+provider: multiple -- neuronavigated TMS studies
+citation: PROMPT.md §52.13, 'MRI-navigated pulse/pose datasets'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- coil_frame
+- head
+- subject_native
+- navigation_tracker
+streams:
+- name: per_pulse_coil_pose
+  kind: measured
+  via: null
+  systematic_bias: Per-pulse pose in subject anatomical coordinates is what makes an individualised induced-field
+    computation possible AT ALL, and it is what §56.4's TMS geometry product consumes. Navigation registration
+    error (typically a few millimetres) and within-session coil drift are both real and both usually unreported.
+  notes: navigation gives the coil's pose relative to a registered head model, and the registration itself
+    has an error that propagates directly into the field estimate
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: PER-PULSE coil pose in the individual's MRI coordinates, recorded by an optical navigation
+    system -- the boundary condition an individualised field computation requires
+- name: targeting_variability
+  kind: measured
+  via: null
+  systematic_bias: pulse-to-pulse pose scatter within a session is a directly measurable uncertainty component
+    that is almost always summarised away as a single target coordinate
+  band_hz:
+  - null
+  - null
+absent:
+- delivered_field_measurement
+- public_availability
+- registration_error_reporting
+requires:
+- geometry: device-geometry
+  for_streams:
+  - per_pulse_coil_pose
+  severity: blocking
+  without_it: The delivered quantity is an induced electric field throughout the head, set by the coil's
+    winding geometry and its pose relative to the anatomy. Without the device product the stimulation
+    is recorded as a machine setting rather than as a dose at any cortical location, and the four stages
+    of an intervention collapse into one.
+use:
+- calibrate
+forbidden:
+- mri-navigated-pulse-pose-datasets/* -> delivered-field claims without a field model
+- mri-navigated-pulse-pose-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: mri-navigated-pulse-pose-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

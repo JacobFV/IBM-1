@@ -1,0 +1,213 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: wand-cubric
+title: WAND -- the Welsh Advanced Neuroimaging Database (multi-modal MRI, MEG and TMS)
+provider: Cardiff University Brain Research Imaging Centre (CUBRIC), distributed on G-Node GIN as CUBRIC/WAND
+citation: 'McNabb, Driver, Hyde, ... Singh, Jones. WAND: A multi-modal dataset integrating advanced MRI,
+  MEG, and TMS for multi-scale brain analysis. Scientific Data 2025, doi:10.1038/s41597-024-04154-7. Dataset
+  doi:10.12751/g-node.5mv3bf.'
+urls:
+- https://doi.gin.g-node.org/10.12751/g-node.5mv3bf
+- https://gin.g-node.org/CUBRIC/WAND
+access: priority
+licence:
+  name: CC-BY-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'Creative Commons Attribution 4.0 International Public License, as stated on the GIN repository.
+    No DUA beyond CC-BY. Access is nonetheless gated on operational registration: a G-Node GIN account,
+    an SSH key, git-annex and the GIN CLI. That is a credential barrier, not a licence barrier, and the
+    two must not be recorded as the same thing.'
+binding: unbound
+population:
+  n: 170
+  hierarchy:
+  - participant
+  - session
+  - device
+  notes: '108 female. Coverage is HEAVILY UNBALANCED across modalities and the headline n is misleading
+    per stream: only 40 of 170 completed the TMS session and only 39 of 170 completed the metabolic MRI
+    session.'
+frames:
+- scanner_per_device
+- meg_device
+- subject_native
+- mni
+streams:
+- name: ultrastrong_gradient_diffusion
+  kind: measured
+  via: null
+  observation_chain: water displacement over the diffusion time within and around axons -> attenuation
+    at b-values only reachable with 300 mT/m gradients -> compartment-model fit yielding restricted fraction
+    and apparent axon diameter. ORIENTATION AND MICROSTRUCTURE EVIDENCE, and the microstructure numbers
+    are MODEL OUTPUTS whose identifiability is exactly what the strong gradients buy
+  confounds:
+  - eddy currents, which are far larger at 300 mT/m than on a clinical system
+  - peripheral nerve stimulation limits shaping the achievable waveforms
+  - gradient nonlinearity, which biases b-values spatially across the field of view
+  - the compartment model itself -- AxCaliber and CHARMED assume geometries that are not verified in the
+    tissue being measured
+  band_hz:
+  - null
+  - null
+  temporal_support: MEG at its own sampling rate against MRI volumes with their own TRs, on different
+    days and different machines. There is NO hardware clock relation between the MEG session and the MRI
+    sessions; only the anatomy relates them
+  spatial_support: '3T Connectom with ULTRA-STRONG 300 mT/m gradients, a separate 3T Prisma, and a 7T
+    system, plus a 275-channel MEG and a TMS session. The 300 mT/m gradients are the point: they reach
+    diffusion weightings that make axon-diameter and restricted-compartment models identifiable where
+    a clinical scanner cannot'
+- name: meg_with_same_subject_structure
+  kind: measured
+  via: null
+  observation_chain: post-synaptic currents in aligned pyramidal populations -> magnetic field outside
+    the head, negligibly distorted by skull conductivity -> SQUID sensor flux -> sampled tesla. The subject's
+    own MRI is available, so the forward model is subject-specific rather than templated
+  confounds:
+  - environmental magnetic interference and its rejection method
+  - head position within the helmet, which differs between subjects and within a session
+  - MEG-MRI coregistration error, which is the dominant forward-model error and whose scripts live in
+    a SEPARATE repository from the DOI snapshot
+  - cardiac and ocular fields
+  band_hz:
+  - null
+  - null
+- name: multi_field_multi_device_same_subject
+  kind: measured
+  via: null
+  systematic_bias: The same head measured on 3T Connectom, 3T Prisma, 7T and MEG is a direct handle on
+    between-device variance, which every multi-site study estimates and almost none measures within-subject.
+  band_hz:
+  - null
+  - null
+- name: dwi_ultrastrong_gradient
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: qmt
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mcdespot
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: axcaliber
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: charmed
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: structural_mri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: asl
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mrs_3t
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mrs_7t
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: meg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: tms
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cognitive_tests
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: trait_questionnaires
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- tms_for_130_of_170_participants
+- metabolic_mri_for_131_of_170_participants
+- ieeg
+- pet
+- some_mini_questionnaire_sections
+requires:
+- geometry: device-geometry
+  for_streams:
+  - meg_with_same_subject_structure
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  for_streams:
+  - ultrastrong_gradient_diffusion
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+- geometry: mr-acquisition-objects
+  severity: blocking
+  without_it: A quantitative parameter map is a FITTED field, and its value depends on the sequence, the
+    timing and the field maps that produced it. Without the acquisition object those are not carried,
+    and the number is a fit output rather than a measurement of tissue.
+use:
+- calibrate
+- fit
+forbidden:
+- wand-cubric/* -> a cohort-level n for a per-modality stream
+- wand-cubric/* -> an assumed hardware clock relation between the MEG and MRI sessions
+split:
+  group_by:
+  - participant
+  - session
+  - device
+provenance:
+  imported_from: win-registry
+  card: wand-cubric
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

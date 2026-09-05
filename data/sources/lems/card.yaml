@@ -1,0 +1,52 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: lems
+title: LEMS -- Low Entropy Model Specification language
+provider: NeuroML / Open Source Brain
+citation: 'Cannon et al., LEMS: a language for expressing complex biological models in concise and hierarchical
+  form. Frontiers in Neuroinformatics 2014.'
+urls:
+- https://lems.github.io/LEMS/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- arbitrary_state_space
+streams:
+- name: dimensional_component_algebra
+  kind: measured
+  via: null
+  systematic_bias: 'LEMS separates WHAT A COMPONENT IS (a type with dimensioned state and update rules)
+    from WHAT IT MEANS BIOLOGICALLY, and lets new component types be defined without changing the simulator.
+    That is structurally what §6''s interaction primitive needs: a general algebra of typed, dimensioned,
+    composable dynamical objects. Worth reading as a design precedent for obj-win-formalism, not merely
+    as a file format.'
+  notes: LEMS assumes continuous-time dynamics over dimensioned states; §32's event systems, lookups and
+    discrete algorithms do not fit it
+  band_hz:
+  - null
+  - null
+  temporal_support: declares dynamics, not a timestep
+  spatial_support: 'the LAYER BENEATH NeuroML: a general language for declaring dynamical component types
+    with dimensioned state variables, from which NeuroML''s neuroscience-specific components are built'
+absent:
+- biological_content
+- discrete_and_event_dynamics
+use:
+- calibrate
+forbidden:
+- lems/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: lems
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

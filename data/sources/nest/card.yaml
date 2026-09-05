@@ -1,0 +1,60 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nest
+title: NEST -- large-scale spiking neuronal network simulator
+provider: NEST Initiative
+citation: Gewaltig and Diesmann, NEST (NEural Simulation Tool). Scholarpedia 2007.
+urls:
+- https://www.nest-simulator.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- network_specification
+streams:
+- name: large_scale_spiking_simulation
+  kind: measured
+  via: null
+  systematic_bias: 'Point-neuron networks at cortical-column scale are how mean-field approximations get
+    CHECKED: the neural masses in TVB and neurolib are supposed to approximate exactly this, and running
+    both is how the approximation''s error becomes measurable rather than assumed. §36 wants physical
+    modules validated against physical truth, and for a mean field the relevant truth is the network it
+    approximates.'
+  notes: point neurons have no dendrites, so no dendritic computation and no spatial current distribution
+    -- which means they generate no extracellular field and cannot produce an EEG or LFP without an added
+    model
+  band_hz:
+  - null
+  - null
+  temporal_support: fixed or adaptive timestep with exact spike-time handling in some models
+  spatial_support: 'POINT NEURONS at large scale: millions of cells with no spatial extent, connected
+    by delayed synapses. Morphology is deliberately absent, which is what makes the scale possible'
+- name: synaptic_delay_handling
+  kind: measured
+  via: null
+  systematic_bias: delays are first-class and exact, which matters for the same reason TVB's do
+  band_hz:
+  - null
+  - null
+absent:
+- morphology
+- extracellular_fields
+- human_parameters
+use:
+- surrogate
+forbidden:
+- nest/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: nest
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

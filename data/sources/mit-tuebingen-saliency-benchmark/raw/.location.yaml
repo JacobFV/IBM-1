@@ -1,0 +1,5 @@
+# where the bytes for `mit-tuebingen-saliency-benchmark` actually live.  never the bytes themselves.
+source_url: "https://saliency.tuebingen.ai/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

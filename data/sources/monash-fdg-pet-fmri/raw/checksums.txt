@@ -1,0 +1,1 @@
+# sha256 manifest for monash-fdg-pet-fmri; written on acquisition

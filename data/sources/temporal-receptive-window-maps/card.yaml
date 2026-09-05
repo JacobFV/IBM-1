@@ -1,0 +1,70 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: temporal-receptive-window-maps
+title: Cortical temporal receptive window maps
+provider: multiple -- Hasson lab and successors
+citation: Hasson et al., A hierarchy of temporal receptive windows in human cortex. Journal of Neuroscience
+  2008; PROMPT.md §52.9.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- fsaverage
+streams:
+- name: temporal_integration_windows
+  kind: measured
+  via: null
+  systematic_bias: Measured with BOLD, so the estimated window is confounded with the haemodynamic response's
+    own time constant at the short end -- a region with a 4-second window and a region with a 1-second
+    window are hard to separate through a filter with a 6-second impulse response. The long-window end
+    is far better constrained.
+  notes: scrambling changes the stimulus statistics as well as its temporal structure, so the manipulation
+    is not purely temporal
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: cortical maps of the timescale over which a region integrates information, measured
+    by scrambling naturalistic stimuli at different granularities and asking where responses remain reliable
+- name: hierarchy_ordering
+  kind: measured
+  via: null
+  systematic_bias: 'the ORDERING of regions by integration timescale is more robust than the absolute
+    windows and is a direct constraint on §35''s transition-sufficient state: a region with a long window
+    needs more history in its sufficient state'
+  band_hz:
+  - null
+  - null
+absent:
+- electrophysiological_measurement
+- individual_maps
+- uncertainty
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- temporal-receptive-window-maps/* -> observation-role likelihoods
+- temporal-receptive-window-maps/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: temporal-receptive-window-maps
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

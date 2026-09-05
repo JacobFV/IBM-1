@@ -1,0 +1,1 @@
+# sha256 manifest for audio-spectrotemporal-encoders; written on acquisition

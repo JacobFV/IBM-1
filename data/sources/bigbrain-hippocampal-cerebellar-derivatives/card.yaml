@@ -1,0 +1,54 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bigbrain-hippocampal-cerebellar-derivatives
+title: BigBrain hippocampal and cerebellar derivative products
+provider: MNI / Julich / EBRAINS and community derivatives
+citation: Derived products of Amunts et al. 2013 (see the bigbrain card); PROMPT.md §52.7.
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- bigbrain_native
+- MNI152
+- hippocampal_unfolded_space
+streams:
+- name: bigbrain_derived_subcortical_geometry
+  kind: measured
+  via: null
+  systematic_bias: 'DERIVED FROM A DERIVED PRODUCT: BigBrain''s 3D volume is itself a reconstruction from
+    sections, and these are segmentations of that reconstruction. Two derivation steps from measurement,
+    in one 65-year-old brain, and §52.7 lists them with the honest qualifier ''where available''.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: hippocampal and cerebellar segmentations and laminar products derived from the BigBrain
+    volume, where such derivatives exist
+absent:
+- availability
+- population
+- in_vivo_correspondence
+- uncertainty
+use:
+- calibrate
+- prior
+forbidden:
+- bigbrain-hippocampal-cerebellar-derivatives/* -> measured geometry claims
+- bigbrain-hippocampal-cerebellar-derivatives/* -> population claims
+- bigbrain-hippocampal-cerebellar-derivatives/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: bigbrain-hippocampal-cerebellar-derivatives
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

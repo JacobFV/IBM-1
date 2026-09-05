@@ -1,0 +1,64 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ismrmrd-example-data
+title: ISMRMRD / MRD example datasets
+provider: ISMRM Raw Data working group
+citation: 'Inati et al., ISMRM Raw data format: A proposed standard for MRI raw datasets. Magnetic Resonance
+  in Medicine 2017.'
+urls:
+- https://ismrmrd.readthedocs.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- kspace
+- coil_array
+streams:
+- name: reference_raw_datasets
+  kind: measured
+  via: null
+  systematic_bias: 'THE FIXTURE for MR acquisition-object interoperability. Its real contribution is the
+    HEADER SCHEMA: the MRD header is a worked answer to what an acquisition object must record, and §56.6''s
+    list -- scanner-frame geometry, sequence timeline, RF and gradient events, k-space trajectory, coil
+    sensitivity, reconstruction provenance -- maps onto it closely enough that reinventing it would be
+    a mistake.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: small reference datasets in the MRD container, each carrying a COMPLETE XML HEADER
+    describing the acquisition -- sequence parameters, encoding limits, coil labels, trajectory type --
+    next to the data
+- name: per_readout_metadata
+  kind: measured
+  via: null
+  systematic_bias: MRD timestamps every readout, so the acquisition clock is explicit per sample rather
+    than inferred from a volume's TR
+  band_hz:
+  - null
+  - null
+absent:
+- scale
+- biological_content
+use:
+- calibrate
+forbidden:
+- ismrmrd-example-data/* -> any biological claim
+- ismrmrd-example-data/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: ismrmrd-example-data
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

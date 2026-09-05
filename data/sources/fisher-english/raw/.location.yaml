@@ -1,0 +1,5 @@
+# where the bytes for `fisher-english` actually live.  never the bytes themselves.
+source_url: "https://catalog.ldc.upenn.edu/LDC2004S13"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

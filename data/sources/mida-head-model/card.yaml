@@ -1,0 +1,108 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mida-head-model
+title: MIDA v1.0 -- multimodal imaging-based detailed anatomical model of the human head and neck
+provider: IT'IS Foundation (Zurich) Virtual Population, created jointly with the US FDA Center for Devices
+  and Radiological Health
+citation: 'Iacono, Neufeld, Akinnagbe, Bower, Wolf, Vogiatzis Oikonomidis, Sharma, Lloyd, Wilm, Wyss,
+  Pruessmann, Jakab, Makris, Cohen, Kuster, Kainz, Angelone. MIDA: a multimodal imaging-based detailed
+  anatomical model of the human head and neck. PLoS ONE 10(4):e0124126, 2015. Model data doi:10.13099/ViP-MIDA-V1.0.'
+urls:
+- https://itis.swiss/virtual-population/regional-human-models/mida-model
+- https://cdrh-rst.fda.gov/mida-multimodal-imaging-based-model-human-head-and-neck
+access: restricted
+licence:
+  name: Terms and Conditions of User License MIDA Model v1.0 (bespoke; no SPDX identifier)
+  redistribution: prohibited
+  commercial: unresolved
+  notes: 'A RESTRICTIVE BESPOKE EULA WITH CLAUSES THAT MATTER TO A SHARED SUBSTRATE. Clause 2.1 grants
+    a non-exclusive, non-transferable, free licence. Clause 2.3.2 verbatim: the Model Data or works derived
+    from the Model Data must not be distributed or redistributed in the original form or in any modified
+    form or updated form. Clause 2.3.3 requires the face to be disguised in published images. Clause 2.3.4
+    forbids reading the loaded data from computer or graphics memory or intercepting it on the data bus.
+    Clause 2.3.5 forbids military use. Clause 2.3.8 mandates FDA/CDRH and IT''IS citation. CLAUSE 2.3.10
+    MAKES THE LICENCE REVOCABLE if the donor withdraws consent, and termination requires confirmed deletion.
+    Swiss law. There is no explicit non-commercial clause, so commercial use is unresolved rather than
+    prohibited. The model is free of charge except for handling fees, whose amount is unresolved. The
+    PLoS ONE article is CC0 -- that is the paper and does not transfer.'
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - participant
+  notes: One head. Every dimension in the model is that person's, and individual variation is entirely
+    outside it.
+frames:
+- mida_model_frame
+streams:
+- name: high_resolution_head_and_neck_segmentation
+  kind: measured
+  via: null
+  systematic_bias: At 500 micrometres with 115 structures including the ear, eye and cranial nerves, this
+    is the most detailed head geometry available for electromagnetic and acoustic forward modelling, and
+    it is the reference the FDA uses for regulatory device evaluation. It is ONE PERSON'S ANATOMY and
+    is derived geometry forever; individual variation is entirely outside it.
+  notes: a forward-model result computed on MIDA is a result about MIDA, and its transfer to any participant
+    is an unmodelled extrapolation
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- static anatomy
+  spatial_support: 500 micrometre isotropic labelled volume of the head and neck with 115 structures plus
+    background, including ear, eye and cranial-nerve detail, with matching CAD surfaces. This is the most
+    detailed head geometry available for electromagnetic and acoustic forward modelling and is the reference
+    the FDA uses for regulatory device evaluation
+- name: dti_derived_anisotropy
+  kind: measured
+  via: null
+  systematic_bias: White-matter conductivity anisotropy is usually assumed isotropic in head models; here
+    there is a DTI-derived orientation field to test that assumption against. The mapping from diffusion
+    tensor to conductivity tensor is itself a modelled relation with a contested scaling.
+  band_hz:
+  - null
+  - null
+- name: labelled_volume
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cad_surfaces
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dti_derived_orientation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: installer
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- raw_mr_and_dti
+- ct
+- dielectric_properties
+- population_variation
+- redistribution_rights
+use:
+- calibrate
+- prior
+forbidden:
+- mida-head-model/* -> any redistribution, in original or modified or derived form
+- mida-head-model/* -> military use
+- mida-head-model/* -> any relabelling as measured rather than derived
+- mida-head-model/* -> an EM simulation reported without naming the separate tissue-property source
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: mida-head-model
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

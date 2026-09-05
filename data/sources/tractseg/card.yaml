@@ -1,0 +1,61 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tractseg
+title: TractSeg -- convolutional bundle segmentation from fibre orientation maps
+provider: German Cancer Research Center
+citation: 'Wasserthal et al., TractSeg: Fast and accurate white matter tract segmentation. NeuroImage
+  2018.'
+urls:
+- https://github.com/MIC-DKFZ/TractSeg
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- MNI152
+streams:
+- name: learned_bundle_segmentation
+  kind: measured
+  via: null
+  systematic_bias: A NEURAL NETWORK trained on expert-labelled bundles from 105 HCP subjects. Its output
+    reproduces the TRAINING LABELS' bundle definitions, which are one laboratory's convention; a bundle
+    TractSeg does not know does not exist in its output. §52.8's requirement that bundle definitions travel
+    with the product is unusually load-bearing here.
+  notes: the 72 bundles are a fixed vocabulary; anatomy outside it is silently unrepresented
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: voxel-wise bundle probability maps in subject space for 72 predefined bundles
+- name: bundle_probability_maps
+  kind: measured
+  via: null
+  systematic_bias: it emits probabilities rather than hard masks, which is the right form, and they are
+    network confidences rather than anatomical probabilities
+  band_hz:
+  - null
+  - null
+absent:
+- novel_bundles
+- ground_truth
+- population_diversity
+use:
+- prior
+- surrogate
+forbidden:
+- tractseg/* -> anatomical existence claims for bundles outside its vocabulary
+- tractseg/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: tractseg
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

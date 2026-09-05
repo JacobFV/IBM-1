@@ -1,0 +1,143 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: psychencode
+title: PsychENCODE Consortium (PEC)
+provider: PsychENCODE Consortium; primary home is the NIMH Data Archive, with a legacy Synapse portal
+citation: unresolved -- no single citation is stated on the consortium data page; cite the specific study
+  and data release used.
+urls:
+- https://www.psychencode.org/data
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'UNRESOLVED AND VERIFIED-ABSENT: no licence text is published. What IS stated is a USE RESTRICTION
+    rather than a grant -- data use is limited to Health/Medical/Biomedical purposes and DOES NOT INCLUDE
+    THE STUDY OF POPULATION ORIGINS OR ANCESTRY, and researchers must make results of studies using the
+    data available to the larger scientific community. Controlled access with separate Data Access Requests
+    per permission group, institutional eligibility review, signed institutional authorisation and NIH
+    Data Access Committee review; approval grants one year.'
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  notes: The data page does not quantify individuals or samples and no figure is invented here.
+frames:
+- region_label
+- dissociated_no_coordinates
+- spatial_section_where_available
+streams:
+- name: regulatory_and_expression_atlases_in_psychiatric_cohorts
+  kind: measured
+  via: null
+  systematic_bias: The molecular substrate that determines which interaction classes exist in a region,
+    in cohorts defined by psychiatric diagnosis. Post-mortem, so it describes end-state tissue and cannot
+    separate cause from consequence from treatment. Medication history, agonal state, post-mortem interval
+    and cause of death all differ systematically between diagnostic groups and all affect the molecular
+    measurements.
+  notes: a diagnosis is a clinical category, not a biological one, and the case-control contrast inherits
+    that
+  band_hz:
+  - null
+  - null
+  temporal_support: none for the assays; developmental stage and age at death are the only ordering variables
+  spatial_support: human post-mortem brain tissue and organoids across multiple regions, plus spatial
+    transcriptomics where available. Most assays are DISSOCIATED and carry no spatial coordinates at all
+- name: chromatin_contact_maps
+  kind: measured
+  via: null
+  systematic_bias: Hi-C contact frequency is a population-average over cells and over conformational states;
+    a contact is a statistical tendency, not a wire.
+  band_hz:
+  - null
+  - null
+- name: bulk_rna_seq
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: single_cell_rna_seq
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: single_nucleus_rna_seq
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: atac_seq
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: genotyping
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: hi_c
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: chip_seq
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bisulfite_sequencing
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: proteomics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: spatial_transcriptomics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: long_read_sequencing
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- function
+- in_vivo_data
+- imaging
+- electrophysiology
+- licence
+- ancestry_analysis_permission
+use:
+- prior
+forbidden:
+- psychencode/* -> any study of population origins or ancestry (prohibited by the use limitation)
+- psychencode/* -> any state channel at time t
+- psychencode/* -> an artifact, before the per-permission-group access terms are resolved
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: psychencode
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

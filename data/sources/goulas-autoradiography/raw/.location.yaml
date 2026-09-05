@@ -1,0 +1,5 @@
+# where the bytes for `goulas-autoradiography` actually live.  never the bytes themselves.
+source_url: "https://github.com/AlGoulas/receptor_principles"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

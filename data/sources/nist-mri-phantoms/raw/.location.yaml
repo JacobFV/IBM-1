@@ -1,0 +1,5 @@
+# where the bytes for `nist-mri-phantoms` actually live.  never the bytes themselves.
+source_url: "https://www.nist.gov/programs-projects/quantitative-mri"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

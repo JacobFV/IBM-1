@@ -1,0 +1,81 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tms-fmri-studies
+title: Concurrent TMS-fMRI studies
+provider: multiple -- concurrent TMS-fMRI literature
+citation: PROMPT.md §52.13, 'TMS-fMRI studies'.
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- coil_frame
+- subject_native
+- MNI152
+streams:
+- name: remote_bold_response
+  kind: measured
+  via: null
+  systematic_bias: 'Whole-brain readout of a focal perturbation is the strongest available human evidence
+    for EFFECTIVE connectivity at network scale (§38) -- and it is BOLD, so §17 applies: the remote response
+    passes through neurovascular coupling before it is measured, and a region with different vascular
+    reactivity shows a different response to identical input.'
+  notes: the coil distorts B0 and the pulse induces currents in the scanner; both produce artifacts that
+    are time-locked to the stimulation, which is the worst case
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: BOLD acquired during TMS delivered inside the scanner bore, giving whole-brain haemodynamic
+    response to a focal perturbation
+- name: in_bore_coil_pose
+  kind: measured
+  via: null
+  systematic_bias: in-bore coil positioning is mechanically constrained and typically less accurate than
+    navigated positioning outside the scanner
+  band_hz:
+  - null
+  - null
+absent:
+- delivered_field_measurement
+- sham_arms_in_most_studies
+- public_availability
+- millisecond_resolution
+requires:
+- geometry: device-geometry
+  for_streams:
+  - in_bore_coil_pose
+  severity: blocking
+  without_it: The delivered quantity is an induced electric field throughout the head, set by the coil's
+    winding geometry and its pose relative to the anatomy. Without the device product the stimulation
+    is recorded as a machine setting rather than as a dose at any cortical location, and the four stages
+    of an intervention collapse into one.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- prior
+forbidden:
+- tms-fmri-studies/* -> delivered-field claims
+- tms-fmri-studies/remote_bold_response -> neural propagation without a vascular stage
+- tms-fmri-studies/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: tms-fmri-studies
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,64 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ashs
+title: ASHS -- Automatic Segmentation of Hippocampal Subfields
+provider: University of Pennsylvania / Yushkevich lab
+citation: Yushkevich et al., Automated volumetry and regional thickness analysis of hippocampal subfields
+  and medial temporal cortical structures in mild cognitive impairment. Human Brain Mapping 2015.
+urls:
+- https://sites.google.com/view/ashs-dox
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- hippocampus_native
+streams:
+- name: subfield_labels
+  kind: measured
+  via: null
+  systematic_bias: Requires a dedicated high-resolution T2 with a specific slice orientation. Most datasets
+    do not have one, and running ASHS on a whole-brain T1 is a different and much weaker inference. Subfield
+    boundary definitions also DIFFER BETWEEN LABORATORIES -- the field has an acknowledged harmonisation
+    problem, so two 'CA1' labels from two atlases are not the same object.
+  notes: the multi-atlas prior determines the answer where image contrast is ambiguous, which in hippocampal
+    subfields is most of the boundary
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: hippocampal subfields and medial temporal cortical regions segmented by multi-atlas
+    label fusion, from a high-resolution T2 acquisition ORIENTED OBLIQUE-CORONAL to the hippocampal long
+    axis -- the acquisition geometry is part of the method
+- name: label_fusion_confidence
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- harmonised_subfield_definitions
+- histological_validation
+- whole_brain_applicability
+use:
+- calibrate
+- prior
+forbidden:
+- ashs/subfield_labels -> cross-atlas subfield comparison without a stated protocol
+- ashs/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: ashs
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

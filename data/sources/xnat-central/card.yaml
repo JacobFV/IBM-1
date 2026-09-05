@@ -1,0 +1,50 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: xnat-central
+title: XNAT Central -- DECOMMISSIONED 2024-05-01
+provider: Washington University in St. Louis Neuroinformatics Research Group
+citation: 'Herrick et al., XNAT Central: open sourcing imaging research data. NeuroImage 124:1093-1096,
+  2016. doi:10.1016/j.neuroimage.2015.06.076.'
+urls:
+- https://central.xnat.org
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'UNRESOLVED AND NOW MOOT. central.xnat.org presents an expired TLS certificate and the service
+    was decommissioned on 2024-05-01. A third-party registry classifies it as CC BY 3.0; that is a curator''s
+    classification, not a primary quote, and no primary page is reachable to confirm it. The datasets
+    migrated: IXI to NITRC, ADHD-200 to fcon_1000, OASIS to the OASIS site.'
+binding: unbound
+population:
+  n: null
+frames:
+- per_project
+streams:
+- name: decommissioned_holdings
+  kind: measured
+  via: null
+  systematic_bias: Carded because a dead link that is not recorded gets rediscovered and re-investigated.
+    The card's whole value is that it says where the data went, so the next agent does not repeat the
+    search. An external URL in a published citation outliving its service is the normal case, not the
+    exception.
+  band_hz:
+  - null
+  - null
+  temporal_support: session-indexed
+  spatial_support: an XNAT instance that held, per its registry record, 506 projects, 7,135 subjects and
+    16,567 imaging sessions
+absent:
+- everything -- the service is gone
+use:
+- prior
+forbidden:
+- xnat-central/* -> any acquisition attempt against central.xnat.org
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: xnat-central
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

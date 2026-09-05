@@ -1,0 +1,92 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: motion-x
+title: Motion-X -- large-scale expressive whole-body motion and text dataset
+provider: IDEA Research and collaborators
+citation: 'Lin et al., Motion-X: A Large-scale 3D Expressive Whole-body Human Motion Dataset. NeurIPS
+  2023.'
+urls:
+- https://motion-x-dataset.github.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Research licence; underlying video sources are third-party. Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: n unresolved. Whole-body SMPL-X motion INCLUDING HANDS AND FACE, largely ESTIMATED FROM VIDEO
+    rather than captured with markers.
+frames:
+- camera_uncontrolled
+- smplx_body_frame
+streams:
+- name: smplx_motion
+  kind: imposed
+  via: null
+  systematic_bias: ESTIMATED FROM MONOCULAR VIDEO by a pose-estimation network in most of the dataset.
+    That is a model's output about a model's parameters -- two derivations from any measurement -- and
+    depth ambiguity in monocular estimation is not resolvable in principle. §4a's derived-is-not-measured
+    rule applies twice over.
+  notes: monocular pose estimation has systematic depth and scale errors that no amount of data removes
+  band_hz:
+  - null
+  - null
+  temporal_support: video frame rate; motion sequences of seconds
+  spatial_support: SMPL-X parameters covering body, hands and face -- the articulatory detail AMASS lacks;
+    obtained mostly by MODEL-BASED ESTIMATION from monocular video
+- name: hand_and_face_detail
+  kind: imposed
+  via: null
+  systematic_bias: hand and face parameters from video are the least reliable part of an already estimated
+    pose, and they are the part that would matter most for manipulation and expression
+  band_hz:
+  - null
+  - null
+- name: text_annotations
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: hand_pose
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: facial_expression
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: source_video_ids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- ground_truth_kinematics
+- muscle_activity
+- contact_forces
+- the_source_video
+use:
+- fit
+forbidden:
+- motion-x/* -> any cortical state directly
+- motion-x/smplx_motion -> measured-kinematics claims
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: motion-x
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

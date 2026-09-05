@@ -1,0 +1,52 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: yarra
+title: Yarra -- clinical MR raw-data processing and workflow framework
+provider: Yarra framework / NYU and collaborators
+citation: Yarra framework for MR raw data processing (named in PROMPT.md §52.12).
+urls:
+- https://yarraframework.com/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- kspace
+streams:
+- name: raw_data_workflow
+  kind: measured
+  via: null
+  systematic_bias: INGESTION INFRASTRUCTURE, not science. §52.12 groups these as 'offline oracles and
+    ingestion tools' and this one is squarely the second. It matters only because raw k-space is normally
+    discarded at the scanner, and something has to capture it before it can be carded at all.
+  band_hz:
+  - null
+  - null
+  temporal_support: per-acquisition job scheduling; not a scientific time axis
+  spatial_support: moves raw data off a scanner and through a reconstruction queue in a clinical setting
+absent:
+- scientific_content
+requires:
+- geometry: mr-acquisition-objects
+  severity: blocking
+  without_it: This consumes raw acquisition data and emits images or parameter maps. Run as an offline
+    oracle it needs the acquisition object as its input -- trajectory, coil sensitivities, sequence timing
+    -- and without it there is nothing for the reconstruction to be a reconstruction OF.
+use:
+- surrogate
+forbidden:
+- yarra/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: yarra
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

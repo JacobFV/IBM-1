@@ -1,0 +1,98 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: novel-view-synthesis-benchmark-scenes
+title: Novel-view-synthesis benchmark scenes (Mip-NeRF 360, Tanks and Temples, Deep Blending)
+provider: Google Research (Mip-NeRF 360); Intel ISL and collaborators (Tanks and Temples); UCL/Adobe (Deep
+  Blending)
+citation: 'Barron et al., Mip-NeRF 360: unbounded anti-aliased neural radiance fields. CVPR 2022; Knapitsch
+  et al., Tanks and Temples: benchmarking large-scale scene reconstruction. ACM Transactions on Graphics
+  2017; Hedman et al., Deep blending for free-viewpoint image-based rendering. ACM Transactions on Graphics
+  2018.'
+urls:
+- https://jonbarron.info/mipnerf360/
+- https://www.tanksandtemples.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: UNRESOLVED AND DIFFERENT PER COLLECTION. Three separate providers with three separate sets of
+    terms, none read. These are the scenes on which essentially every published Gaussian-splatting and
+    radiance-field result is reported, which makes their terms worth resolving before any artifact ships
+    a rendering.
+binding: unbound
+population:
+  n: null
+frames:
+- camera
+- sfm_world
+- laser_scan_world
+streams:
+- name: held_out_view_reconstruction
+  kind: measured
+  via: null
+  systematic_bias: 'These are the standard held-out-view benchmarks and they carry PUBLISHED BASELINE
+    NUMBERS from many methods, which is what a g-splat implementation needs before it can claim anything.
+    A photometric score on held-out views measures re-rendering, not geometry: a method can score well
+    while placing surfaces in the wrong place, and only the Tanks and Temples laser scans can catch that.'
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- static scenes captured over a session; the view index is not a clock
+  spatial_support: multi-view photographs of real scenes with structure-from-motion camera poses. Tanks
+    and Temples additionally carries INDUSTRIAL LASER SCANS as ground-truth geometry, which is the part
+    that makes a reconstruction check possible rather than merely a photometric one
+- name: laser_scanned_ground_truth_geometry
+  kind: imposed
+  via: null
+  systematic_bias: An independently measured geometry against which a reconstruction can be checked is
+    rare, and it is the difference between validating a renderer and validating a reconstruction. It exists
+    only for the Tanks and Temples subset; the other two collections have photometric evaluation only.
+  band_hz:
+  - null
+  - null
+- name: multi_view_images
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: sfm_camera_poses
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: laser_scanned_geometry_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: held_out_test_views
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- human_observer
+- gaze
+- neural_data
+- physical_scale_for_two_collections
+- photometric_calibration
+- dynamic_content
+use:
+- evaluate
+- fit
+forbidden:
+- novel-view-synthesis-benchmark-scenes/* -> any brain state channel
+- novel-view-synthesis-benchmark-scenes/* -> a geometry claim from a photometric score alone
+- novel-view-synthesis-benchmark-scenes/* -> an artifact, before each collection's terms are read
+split:
+  group_by:
+  - site
+provenance:
+  imported_from: win-registry
+  card: novel-view-synthesis-benchmark-scenes
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

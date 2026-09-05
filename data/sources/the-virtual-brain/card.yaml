@@ -1,0 +1,92 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: the-virtual-brain
+title: The Virtual Brain (TVB) -- whole-brain network simulation platform
+provider: TVB consortium / Charite Berlin and Aix-Marseille
+citation: 'Sanz Leon et al., The Virtual Brain: a simulator of primate brain network dynamics. Frontiers
+  in Neuroinformatics 2013.'
+urls:
+- https://www.thevirtualbrain.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- Desikan2006
+- parcel_network
+- source_space
+streams:
+- name: delay_coupled_network_simulation
+  kind: measured
+  via: null
+  systematic_bias: 'TVB''s DELAY-COUPLED formulation is the closest existing implementation of §10''s
+    tractome-as-interaction idea: tract length determines conduction delay, and delay changes the dynamics
+    qualitatively. The predecessor''s native-clock result and §33''s insistence on preserved clocks point
+    at the same physics. What TVB retains and B-WIN rejects is the PARCEL-CONNECTOME-BALLOON abstraction:
+    nodes are parcels, edges are connectome entries, and the observation model is a balloon.'
+  notes: a neural mass is a mean-field approximation whose validity depends on the population being large
+    and homogeneous, which cortical populations are not
+  band_hz:
+  - null
+  - null
+  temporal_support: delay differential equations integrated at sub-millisecond steps, with delays derived
+    from tract lengths -- TVB is one of the few frameworks in which conduction delay is a first-class
+    modelled quantity
+  spatial_support: NEURAL MASSES at parcel nodes, coupled through a structural connectome with DISTANCE-DEPENDENT
+    CONDUCTION DELAYS, plus forward models to BOLD and EEG
+- name: forward_models_to_bold_and_eeg
+  kind: measured
+  via: null
+  systematic_bias: TVB includes observation models, which most simulation frameworks do not; they are
+    the conventional ones §43 demotes to baselines
+  band_hz:
+  - null
+  - null
+- name: parameter_exploration
+  kind: measured
+  via: null
+  systematic_bias: systematic sweeps over coupling and delay are how the dynamical regimes are mapped,
+    which is model-class evidence rather than a fit
+  band_hz:
+  - null
+  - null
+absent:
+- native_supports
+- individual_geometry_beyond_parcels
+- uncertainty_on_delays
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A connectome matrix is an adjacency over parcel indices. Without the tract product its edges
+    have no path, no length and no supports to terminate on, so it cannot supply a delay, a route or an
+    engineered structural commitment -- only a number per pair of labels.
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'This solver''s input IS the geometry: sensor or electrode positions on one side, a head
+    model on the other. Used as an offline oracle it can produce nothing until the device product supplies
+    the first of those, and a solver run against assumed positions validates an internal implementation
+    against an assumption rather than against physics.'
+use:
+- prior
+- surrogate
+forbidden:
+- the-virtual-brain/* -> a parcel-connectome-balloon commitment in B-WIN
+- the-virtual-brain/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: the-virtual-brain
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

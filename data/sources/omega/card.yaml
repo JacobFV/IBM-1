@@ -1,0 +1,148 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: omega
+title: OMEGA -- the Open MEG Archive
+provider: McConnell Brain Imaging Centre, Montreal Neurological Institute-Hospital, McGill University,
+  with the Universite de Montreal
+citation: 'Niso et al., OMEGA: The Open MEG Archive. NeuroImage 124(B):1182-1187, 2016. doi:10.1016/j.neuroimage.2015.04.028.'
+urls:
+- https://www.mcgill.ca/bic/neuroinformatics/omega
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: No SPDX identifier. Governed by the OMEGA Data Use Agreement, whose stated terms include no re-identification,
+    no redistribution, secure storage and acknowledgement in publications. Controlled access requiring
+    full name, institutional affiliation, a valid institutional email and documented IRB/REB approval.
+    NO REDISTRIBUTION is the operative constraint.
+binding: unbound
+population:
+  n: 644
+  hierarchy:
+  - participant
+  - session
+  - device
+  notes: MEG-MRI co-registration exists for 480 of the 644, so the subset with a usable subject-specific
+    forward model is smaller than the cohort and must be counted per stream.
+frames:
+- ctf_device
+- head_coordinate_from_fiducials
+- subject_mri
+- MNI152
+streams:
+- name: resting_state_meg
+  kind: measured
+  via: null
+  observation_chain: post-synaptic currents in spatially aligned pyramidal populations, predominantly
+    tangential sources in sulcal walls -> magnetic field outside the head, only weakly distorted by skull
+    conductivity -> SQUID pickup coil flux -> gradiometer or magnetometer channel -> sampled tesla. The
+    forward problem is better conditioned than EEG's; the inverse problem is still ill-posed and a source
+    estimate remains uncertain evidence entering through an observation model, never a label
+  confounds:
+  - environmental magnetic interference and whatever rejection method was applied
+  - head position within the helmet, which differs between and within sessions and is the dominant forward-model
+    error
+  - cardiac magnetic field and ocular artefact
+  - MEG-MRI coregistration error
+  - SQUID sensor noise and channel dropout
+  systematic_bias: 150+ hours of resting MEG on one sensor array with co-registered anatomy for 480 people
+    is the largest single lever in this registry on the MAGNETIC half of obj-magnetic-mechanism-separation.
+    MEG sees tangential sources far better than radial ones, so gyral-crown activity is systematically
+    under-represented -- a geometric bias, not a noise term.
+  band_hz:
+  - null
+  - null
+  temporal_support: around 1,800 resting-state recordings totalling over 150 hours at the CTF acquisition
+    rate; EOG and ECG are recorded on the same clock as the MEG, which is a hardware relation rather than
+    a fitted one
+  spatial_support: 275-channel CTF axial gradiometers -- a SECOND sensor geometry alongside the Neuromag/MEGIN
+    arrays elsewhere in this registry, which is what makes a lead-field implementation checkable against
+    something other than itself. Defaced T1w MRI for co-registration
+- name: concurrent_ecg_and_eog
+  kind: measured
+  via: null
+  systematic_bias: ECG and EOG on the MEG's own clock make the cardiac and ocular contributions measurable
+    rather than assumed, which is what turns them from artefacts into modelled peripheral states.
+  band_hz:
+  - null
+  - null
+- name: patient_volunteers
+  kind: measured
+  via: null
+  systematic_bias: three clinical groups with no matched recruitment; a group contrast here is confounded
+    with whatever brought each group to the centre
+  band_hz:
+  - null
+  - null
+- name: meg_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eog
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ecg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: demographics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: questionnaires
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- task_meg
+- fmri
+- dwi
+- eeg
+- intervention
+- mri_coregistration_for_164_participants
+requires:
+- geometry: device-geometry
+  for_streams:
+  - resting_state_meg
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+- prior
+forbidden:
+- omega/* -> redistribution of any OMEGA bytes
+- omega/* -> a subject-specific forward model for a participant without co-registration
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: omega
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

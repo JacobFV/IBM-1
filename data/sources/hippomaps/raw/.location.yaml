@@ -1,0 +1,5 @@
+# where the bytes for `hippomaps` actually live.  never the bytes themselves.
+source_url: "https://hippomaps.readthedocs.io/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

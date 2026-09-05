@@ -1,0 +1,62 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: vascular-model-repository
+title: Vascular Model Repository
+provider: SimVascular / Stanford
+citation: 'Wilson et al., The Vascular Model Repository: A Public Resource of Medical Imaging Data and
+  Blood Flow Simulation Results. Journal of Medical Devices 2013.'
+urls:
+- https://www.vascularmodel.com/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- mesh_native
+- subject_native
+streams:
+- name: paired_models_and_simulations
+  kind: measured
+  via: null
+  systematic_bias: Distributing imaging, model, boundary conditions and result TOGETHER is what makes
+    a simulation reproducible and auditable, and is exactly the provenance discipline §57 requires of
+    every generated product. It is a model for how obj-vascular-products should ship its own output, not
+    only a source of geometries.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: curated vascular models with their PARENT IMAGING, meshes, boundary conditions AND
+    simulation results together -- provenance kept intact, which is rare
+- name: cerebral_models_subset
+  kind: measured
+  via: null
+  systematic_bias: most models are cardiac, aortic or peripheral; the cerebral subset is small
+  band_hz:
+  - null
+  - null
+absent:
+- cerebral_depth
+- microvasculature
+- measured_flow_for_all_cases
+use:
+- prior
+- surrogate
+forbidden:
+- vascular-model-repository/* -> measured flow claims
+- vascular-model-repository/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: vascular-model-repository
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

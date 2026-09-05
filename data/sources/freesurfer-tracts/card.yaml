@@ -1,0 +1,60 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: freesurfer-tracts
+title: FreeSurfer TRACULA and tract priors
+provider: Martinos Center / FreeSurfer
+citation: Yendiki et al., Automated probabilistic reconstruction of white-matter pathways in health and
+  disease using an atlas of the underlying anatomy. Frontiers in Neuroinformatics 2011.
+urls:
+- https://surfer.nmr.mgh.harvard.edu/fswiki/Tracula
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- fsaverage
+streams:
+- name: anatomically_informed_tractography
+  kind: measured
+  via: null
+  systematic_bias: 'TRACULA constrains tracking with a prior on the pathway''s relationship to surrounding
+    anatomy. That makes it robust in low-quality data and makes the prior part of the answer: where data
+    and prior disagree, the prior wins, and the output does not say by how much.'
+  notes: the anatomical prior is the model discrepancy and it is not separable from the result in the
+    distributed output
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: probabilistic pathway distributions constrained by an ANATOMICAL PRIOR derived from
+    a manually labelled training set, in subject space
+- name: pathway_probability_distributions
+  kind: measured
+  via: null
+  systematic_bias: it emits a probability distribution over pathway location rather than a set of streamlines,
+    which is closer to what §56.2's path ensembles want
+  band_hz:
+  - null
+  - null
+absent:
+- ground_truth
+- novel_pathways
+use:
+- prior
+- surrogate
+forbidden:
+- freesurfer-tracts/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: freesurfer-tracts
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,75 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: allen-brain-cell-atlas
+title: Allen Brain Cell Atlas -- human 10x single-cell and multimodal cell-type products
+provider: Allen Institute for Brain Science
+citation: Allen Brain Cell Atlas; Siletti et al., Transcriptomic diversity of cell types across the adult
+  human brain. Science 2023.
+urls:
+- https://portal.brain-map.org/atlases-and-data/bkp/abc-atlas
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- donor_native
+- MNI152
+- cell_taxonomy
+streams:
+- name: cell_type_taxonomy
+  kind: measured
+  via: null
+  systematic_bias: '§52.6 is explicit: H01, MICrONS, Patch-seq and cell-census sources are NOT whole-human-brain
+    observations. They are model-class and local-geometry priors for what kinds of state and interaction
+    are plausible. A cell-type taxonomy constrains the composition of a mesoscopic state; it does not
+    observe one.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: single-cell and single-nucleus transcriptomes with a hierarchical cell-type taxonomy,
+    plus spatial transcriptomic sections in parts of the atlas. The support is the CELL, which is a genuinely
+    different level from every other card in this section
+- name: regional_cell_composition
+  kind: measured
+  via: null
+  systematic_bias: dissociation-based assays lose spatial position and are biased against large, fragile
+    neurons -- so the measured proportions are not the tissue's proportions
+  band_hz:
+  - null
+  - null
+- name: spatial_transcriptomics
+  kind: measured
+  via: null
+  systematic_bias: where present, spatial assays recover the position dissociation destroyed, at coarser
+    molecular resolution
+  band_hz:
+  - null
+  - null
+absent:
+- whole_brain_spatial_coverage
+- population
+- dynamics
+- function
+use:
+- calibrate
+- prior
+forbidden:
+- allen-brain-cell-atlas/* -> observation-role likelihoods about a living participant
+- allen-brain-cell-atlas/regional_cell_composition -> measured tissue composition
+- allen-brain-cell-atlas/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: allen-brain-cell-atlas
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

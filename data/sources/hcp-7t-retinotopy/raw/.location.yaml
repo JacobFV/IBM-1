@@ -1,0 +1,5 @@
+# where the bytes for `hcp-7t-retinotopy` actually live.  never the bytes themselves.
+source_url: "https://www.humanconnectome.org/study/hcp-young-adult/article/first-release-of-7t-mr-image-data"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

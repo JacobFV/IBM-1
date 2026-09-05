@@ -1,0 +1,5 @@
+# where the bytes for `ninapro` actually live.  never the bytes themselves.
+source_url: "https://ninapro.hevs.ch/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

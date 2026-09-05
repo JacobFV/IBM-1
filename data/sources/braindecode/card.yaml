@@ -1,0 +1,72 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: braindecode
+title: Braindecode -- deep-learning model zoo for EEG
+provider: University of Freiburg and contributors
+citation: Schirrmeister et al., Deep learning with convolutional neural networks for EEG decoding and
+  visualization. Human Brain Mapping 2017; Braindecode library.
+urls:
+- https://braindecode.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+streams:
+- name: architecture_zoo
+  kind: measured
+  via: null
+  systematic_bias: '§53.2 lists it as a BASELINE family, and §43 says the predecessor''s simpler models
+    become optional baselines rather than the foundation. A well-tuned ShallowNet is a surprisingly strong
+    baseline on most EEG decoding tasks, which is exactly why §46''s equal-capacity-alternative requirement
+    points here: a foundation model that does not beat it has demonstrated nothing.'
+  notes: supervised decoding accuracy is not a measurement of anything about the brain; it is a measurement
+    of how much task-relevant information survives to the scalp
+  band_hz:
+  - null
+  - null
+  temporal_support: epoched EEG at the dataset's rate
+  spatial_support: supervised EEG decoding architectures operating on channels x time; the classic ShallowNet
+    and DeepNet architectures plus later additions
+- name: reproducible_implementations
+  kind: measured
+  via: null
+  systematic_bias: reference implementations remove the 'the baseline was badly tuned' excuse, which is
+    the standard way a weak comparison passes review
+  band_hz:
+  - null
+  - null
+absent:
+- electrode_geometry
+- forward_model
+- mechanism
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: This model's channel axis is a set of names, not a set of positions -- the channel-identity
+    problem exactly. Its representation can be computed without any geometry, but relating it to a cortical
+    support, or transferring it to a montage it was not trained on, requires the electrode or sensor geometry
+    that the name stands in for.
+  substitute: Channel-name matching, which silently asserts that two electrodes sharing a label sat in
+    the same place on two different heads.
+use:
+- calibrate
+- evaluate
+forbidden:
+- braindecode/* -> observation-role likelihoods
+- braindecode/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: braindecode
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

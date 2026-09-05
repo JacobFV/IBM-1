@@ -1,0 +1,84 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds003059
+title: OpenNeuro ds003059 -- neural correlates of the LSD experience (derivative release)
+provider: OpenNeuro; Imperial College London (Carhart-Harris and colleagues)
+citation: Carhart-Harris et al., Neural correlates of the LSD experience revealed by multimodal neuroimaging.
+  PNAS 113(17):4853-4858, 2016. doi:10.1073/pnas.1518377113. Dataset doi:10.18112/openneuro.ds003059.v1.0.0.
+urls:
+- https://openneuro.org/datasets/ds003059
+access: priority
+licence:
+  name: CC0 (verbatim License field in dataset_description.json)
+  redistribution: permitted
+  commercial: permitted
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: n is unresolved -- participants.tsv was not read and no count is invented here.
+frames:
+- unresolved
+streams:
+- name: lsd_versus_placebo_fmri
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away. A serotonergic psychedelic is a pharmacological manipulation
+    acting through 5-HT2A receptors whose cortical distribution is itself mapped by the receptor atlases
+    in this registry -- so the intervention''s spatial target is known independently of the response,
+    which is rare'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - LSD has direct cardiovascular and cerebrovascular effects that change BOLD without changing neural
+    activity
+  - head motion increases markedly under the drug and is confounded with condition
+  - the participant knows which condition they are in -- blinding fails completely for a psychedelic --
+    so expectancy is present in every contrast
+  - eyes-closed visual imagery is a task the drug induces, so 'resting state' is not rest
+  systematic_bias: Blinding failure is total and unfixable in this design, and the released data are a
+    derivative whose processing cannot be varied. Its value is as a pharmacological state-change arm with
+    an independently mapped receptor target, not as a clean contrast.
+  notes: a derivative release means the preprocessing is fixed and its choices are inherited by every
+    number computed from it
+  band_hz:
+  - null
+  - null
+  temporal_support: unresolved. The PNAS study was fMRI and MEG; whether MEG is in this accession is unresolved
+    and must not be assumed
+  spatial_support: 'unresolved in detail. The dataset_description declares DatasetType: derivative, so
+    WHAT IS DISTRIBUTED IS NOT RAW -- it is processed output, and its preprocessing lineage is a property
+    of someone else''s pipeline'
+- name: derivative_fmri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- raw_data
+- participant_count
+- meg_status_unresolved
+- physiological_recordings
+use:
+- fit
+forbidden:
+- ds003059/* -> a raw-signal or alternative-preprocessing claim
+- ds003059/* -> a blinded-contrast claim
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: ds003059
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

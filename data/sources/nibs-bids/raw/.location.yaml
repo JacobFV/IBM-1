@@ -1,0 +1,5 @@
+# where the bytes for `nibs-bids` actually live.  never the bytes themselves.
+source_url: "https://zenodo.org/records/19337642"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

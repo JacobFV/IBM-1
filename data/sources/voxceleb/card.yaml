@@ -1,0 +1,71 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: voxceleb
+title: VoxCeleb 1 and 2 -- speaker recognition from interview video
+provider: University of Oxford VGG
+citation: 'Nagrani et al., VoxCeleb: a large-scale speaker identification dataset. Interspeech 2017; Chung
+  et al., VoxCeleb2, Interspeech 2018.'
+urls:
+- https://www.robots.ox.ac.uk/~vgg/data/voxceleb/
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Distributed for non-commercial research; the underlying video is third-party. Unresolved.
+binding: unbound
+population:
+  n: 7000
+  hierarchy:
+  - participant
+  - session
+  notes: Over a million utterances from ~7,000 speakers, extracted automatically from interview videos.
+    Speaker labels come from face recognition, so the labels are MODEL OUTPUTS.
+frames:
+- broadcast_uncontrolled
+streams:
+- name: audio_segments
+  kind: imposed
+  via: null
+  systematic_bias: heavy background noise and overlapping speech in many segments, which is realistic
+    but uncharacterised
+  band_hz:
+  - null
+  - null
+  temporal_support: utterance segments of a few seconds
+  spatial_support: 'uncontrolled interview footage: red carpets, studios, telephone links'
+- name: speaker_identities
+  kind: imposed
+  via: null
+  systematic_bias: 'identities assigned by an automatic face-recognition pipeline: DERIVED labels with
+    an error rate, not measured identity'
+  band_hz:
+  - null
+  - null
+- name: face_tracks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: nationality_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- clean_audio
+- verified_labels
+use:
+- fit
+forbidden:
+- voxceleb/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: voxceleb
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

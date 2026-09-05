@@ -1,0 +1,95 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: coco-search18
+title: COCO-Search18 -- goal-directed visual search fixation dataset
+provider: Stony Brook University
+citation: Chen et al., COCO-Search18 fixation dataset for predicting goal-directed attention control.
+  Scientific Reports 2021.
+urls:
+- https://sites.google.com/view/cocosearch/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Fixation data and COCO images have separate terms; unresolved.
+binding: unbound
+population:
+  n: 10
+  hierarchy:
+  - participant
+  - session
+  notes: 10 participants searching for 18 target categories over COCO images; ~300,000 fixations.
+frames:
+- eye
+- display
+- image_plane
+streams:
+- name: fixation_sequences
+  kind: imposed
+  via: null
+  systematic_bias: 'GOAL-CONDITIONED gaze: the same image produces different scanpaths under different
+    search targets. That is direct behavioural evidence for §26''s interaction-strength claim -- the top-down
+    term changes where the retina is pointed'
+  band_hz:
+  - null
+  - null
+  temporal_support: eye tracker at 1000 Hz reduced to fixation events; trials are discrete
+  spatial_support: desktop eye tracker, chin rest, documented viewing distance
+- name: target_category
+  kind: imposed
+  via: null
+  systematic_bias: the instructed goal is known exactly, which is rare and useful
+  band_hz:
+  - null
+  - null
+- name: coco_images
+  kind: imposed
+  via: null
+  systematic_bias: COCO overlap with NSD, BOLD5000 and SpokenCOCO
+  band_hz:
+  - null
+  - null
+- name: target_categories
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: coco_image_ids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: target_present_absent
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- pupil
+- free_viewing_condition
+requires:
+- geometry: retinal-world-geometry
+  for_streams:
+  - fixation_sequences
+  - coco_images
+  severity: blocking
+  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
+    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
+    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+use:
+- fit
+forbidden:
+- coco-search18/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: coco-search18
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

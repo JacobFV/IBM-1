@@ -1,0 +1,61 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: voxconverse
+title: VoxConverse -- audio-visual speaker diarisation dataset
+provider: University of Oxford VGG
+citation: 'Chung et al., Spot the conversation: speaker diarisation in the wild. Interspeech 2020.'
+urls:
+- https://www.robots.ox.ac.uk/~vgg/data/voxconverse/
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Annotations distributed; source video third-party. Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - session
+  notes: Over 50 hours of multi-speaker human speech from YouTube with diarisation labels, including substantial
+    OVERLAPPED speech -- the hard case.
+frames:
+- broadcast_uncontrolled
+streams:
+- name: overlap_annotations
+  kind: imposed
+  via: null
+  systematic_bias: labelled overlapping speech is the condition under which auditory scene analysis is
+    actually hard, and it pairs directly with ds007738's cocktail-party neural data
+  band_hz:
+  - null
+  - null
+  temporal_support: speaker-turn intervals; overlap regions explicitly labelled
+  spatial_support: uncontrolled broadcast and web video
+- name: diarisation_annotations
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: video_ids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- the_video_itself
+- any_neural_measurement
+- spatial_audio
+use:
+- fit
+forbidden:
+- voxconverse/* -> any cortical state directly
+split:
+  group_by:
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: voxconverse
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

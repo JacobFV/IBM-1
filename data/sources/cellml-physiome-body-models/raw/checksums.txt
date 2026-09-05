@@ -1,0 +1,1 @@
+# sha256 manifest for cellml-physiome-body-models; written on acquisition

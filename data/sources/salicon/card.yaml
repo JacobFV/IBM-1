@@ -1,0 +1,70 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: salicon
+title: SALICON -- saliency in context, mouse-tracking attention annotations on COCO
+provider: National University of Singapore
+citation: 'Jiang et al., SALICON: Saliency in Context. CVPR 2015.'
+urls:
+- http://salicon.net/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Annotations and COCO images have separate terms; unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  notes: Crowdworkers, n unresolved. THE ATTENTION SIGNAL IS MOUSE MOVEMENT UNDER A BLURRED-PERIPHERY
+    INTERFACE, NOT EYE MOVEMENT.
+frames:
+- image_plane
+- uncontrolled_display
+streams:
+- name: mouse_derived_saliency_maps
+  kind: imposed
+  via: null
+  systematic_bias: A MOUSE-MOVEMENT PROXY for gaze collected in a browser. It correlates with fixation
+    density but is not fixation, and the viewing distance is unknown so nothing here can be converted
+    to visual angle. Using it as gaze evidence is the category error this card exists to flag.
+  band_hz:
+  - null
+  - null
+  temporal_support: mouse trace at browser event rate
+  spatial_support: image plane; crowdsourced browser interface with uncontrolled screen size and viewing
+    distance -- visual angle is therefore UNKNOWN
+- name: saliency_as_control
+  kind: measured
+  via: null
+  systematic_bias: 'a useful control: if a retinalization model''s predictions are matched by a bottom-up
+    saliency map, the model has not demonstrated a top-down term'
+  band_hz:
+  - null
+  - null
+- name: coco_image_ids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- true_gaze
+- visual_angle
+- viewing_geometry
+use:
+- control
+- fit
+forbidden:
+- salicon/* -> any cortical state
+- salicon/mouse_derived_saliency_maps -> gaze or retinal coordinates
+split:
+  group_by:
+  - stimulus
+  - participant
+provenance:
+  imported_from: win-registry
+  card: salicon
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

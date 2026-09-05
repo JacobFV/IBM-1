@@ -1,0 +1,73 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tribe-v2
+title: TRIBE v2
+provider: Meta AI and collaborators
+citation: TRIBE v2, arXiv:2605.04326. Identified 2026-08-17 from NeuroWorld's bibliography rather than
+  by a name search; the method and what was ruled out are in notes/literature/tribe-v2.md.
+urls:
+- https://arxiv.org/abs/2605.04326
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- fsaverage
+- common_tr_grid
+streams:
+- name: architectural_revision
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. Carded separately from TRIBE because a version
+    is a different model: comparing v1 and v2 on the same benchmark isolates what the revision bought,
+    which is more informative than either number alone.'
+  band_hz:
+  - null
+  - null
+  temporal_support: unresolved
+  spatial_support: unresolved -- a successor to TRIBE with unverified changes
+absent:
+- everything_unverified
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- distil
+forbidden:
+- tribe-v2/* -> observation-role likelihoods
+- tribe-v2/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: tribe-v2
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - architectural_revision
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

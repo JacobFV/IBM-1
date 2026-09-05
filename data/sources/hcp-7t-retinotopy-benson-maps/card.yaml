@@ -1,0 +1,117 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hcp-7t-retinotopy-benson-maps
+title: The HCP 7T Retinotopy Dataset (Benson et al. derived pRF solutions)
+provider: NYU and Washington University; mirrored on OSF (osf.io/bw9ec) and BALSA (study 9Zkk)
+citation: 'Benson, Jamison, Arcaro, Vu, Glasser, Coalson, Van Essen, Yacoub, Ugurbil, Winawer, Kay. The
+  Human Connectome Project 7 Tesla retinotopy dataset: description and population receptive field analysis.
+  Journal of Vision 18(13):23, 2018. doi:10.1167/18.13.23.'
+urls:
+- https://osf.io/bw9ec/
+- https://balsa.wustl.edu/study/show/9Zkk
+- https://nben.net/HCP-Retinotopy/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: permitted
+  notes: THE SAME DERIVED MAPS CARRY TWO DIFFERENT LICENCES DEPENDING ON THE MIRROR, and provenance must
+    record which mirror the bytes came from. The OSF node's licence resolves to CC-By Attribution 4.0
+    International and downloads anonymously. BALSA distributes the same study under the WU-Minn HCP Consortium
+    Open Access Data Use Terms -- no re-identification, institutional compliance, redistribution only
+    under the same terms (share-alike in effect) and a mandated acknowledgement -- and requires an account
+    plus explicit agreement. The underlying 7T time series are on ConnectomeDB under a further set of
+    terms, with a separate Restricted tier. The article's CC-BY is the article's and does not transfer.
+binding: unbound
+population:
+  n: 181
+  hierarchy:
+  - participant
+  - run
+  notes: 109 female, 72 male. Three group averages are distributed alongside the 181 individual solutions
+    and are DERIVED products, not participants.
+frames:
+- fsLR_32k
+- fsaverage
+- MNI152
+- visual_field_polar
+streams:
+- name: population_prf_solutions
+  kind: measured
+  via: null
+  systematic_bias: 181 individual retinotopic solutions is the largest such sample available and is what
+    makes a PROBABILISTIC visual-field-to-cortex mapping estimable rather than assumed. It is DERIVED
+    GEOMETRY and never loses that status.
+  notes: the pRF model is a compressive-nonlinearity Gaussian; a different model form yields different
+    parameters from the same data
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- these are fitted parameters, not a time series. The underlying acquisition
+    was six 300-second runs at TR 1 s, and that clock is not in this product
+  spatial_support: per-surface-location pRF parameters on fsaverage plus an MNI subcortical volume, with
+    visual-area atlases and the stimulus apertures. The retinotopic map is a coordinate system in the
+    VISUAL FIELD attached to cortical locations
+- name: cross_dataset_reference
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: prf_parameters
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: visual_area_atlases
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_apertures
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- raw_time_series_on_the_open_mirror
+- confidence_intervals
+- eyetracking
+- subcortical_prf_beyond_the_provided_volume
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+- geometry: retinal-world-geometry
+  for_streams:
+  - population_prf_solutions
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- calibrate
+- prior
+forbidden:
+- hcp-7t-retinotopy-benson-maps/* -> any relabelling as measured rather than derived
+- hcp-7t-retinotopy-benson-maps/* -> use of a parameter without its variance-explained value
+- hcp-7t-retinotopy-benson-maps/* -> redistribution of BALSA-sourced bytes outside the HCP terms
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: hcp-7t-retinotopy-benson-maps
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

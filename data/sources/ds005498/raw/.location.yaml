@@ -1,0 +1,10 @@
+# where the bytes for `ds005498` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/ds005498
+acquired_at: '2026-09-04'
+files: 3477
+bytes: 47927556410
+gib: 44.64
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://openneuro.org/datasets/ds005498

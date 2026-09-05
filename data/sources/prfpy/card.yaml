@@ -1,0 +1,65 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: prfpy
+title: prfpy -- population receptive field fitting library
+provider: Spinoza Centre / VU Amsterdam
+citation: 'prfpy: population receptive field fitting in Python.'
+urls:
+- https://github.com/VU-Cog-Sci/prfpy
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the repository licence file.
+binding: unbound
+population:
+  n: null
+frames:
+- visual_field_polar
+streams:
+- name: prf_fitting_reference
+  kind: measured
+  via: null
+  systematic_bias: An OFFLINE reference implementation for pRF estimation. B-WIN must implement the retina-to-support
+    mapping internally (§1 no runtime black boxes); prfpy is what that implementation is validated against,
+    not what it calls.
+  notes: prfpy's gaussian/DoG/CSS model family is a specific and contestable set; using it as the oracle
+    bakes its model class into the validation
+  band_hz:
+  - null
+  - null
+  temporal_support: TR-sampled; the HRF model it convolves with is a parameter, not a constant
+  spatial_support: operates on any timeseries with a stimulus aperture; imposes no spatial support of
+    its own
+- name: hrf_model
+  kind: measured
+  via: null
+  systematic_bias: the canonical HRF it convolves with is a population average and is wrong per voxel;
+    §17 says the haemodynamic stage is a modelled state, not a fixed kernel
+  band_hz:
+  - null
+  - null
+absent:
+- subject_data
+- uncertainty_propagation_into_downstream_use
+requires:
+- geometry: retinal-world-geometry
+  severity: degrading
+  without_it: 'A receptive field expressed in degrees of visual angle presupposes a display geometry:
+    the stimulus aperture is in screen units and the conversion is the geometry. Without it the fitted
+    parameters are in pixels wearing the units of visual angle.'
+  substitute: The viewing distance and screen size reported in the parent study's methods, carried as
+    an exact number when it is a nominal one.
+use:
+- calibrate
+- surrogate
+forbidden:
+- prfpy/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: prfpy
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

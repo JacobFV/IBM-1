@@ -1,0 +1,1 @@
+# sha256 manifest for mri-navigated-pulse-pose-datasets; written on acquisition

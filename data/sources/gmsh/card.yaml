@@ -1,0 +1,63 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: gmsh
+title: Gmsh -- finite element mesh generator
+provider: University of Liege and Universite catholique de Louvain
+citation: 'Geuzaine and Remacle, Gmsh: a three-dimensional finite element mesh generator with built-in
+  pre- and post-processing facilities. International Journal for Numerical Methods in Engineering 2009.'
+urls:
+- https://gmsh.info/
+access: reference
+licence:
+  name: GPL-2.0-or-later (stated by the providers) with additional linking terms
+  redistribution: unresolved
+  commercial: unresolved
+  notes: COPYLEFT. §59 reference 43 flags this explicitly as needing review. The consequence for a distributed
+    B-WIN artifact is a licence-lineage question, not a preference.
+binding: unbound
+population:
+  n: null
+frames:
+- arbitrary_mesh
+- volume_mesh
+streams:
+- name: volume_mesh_generation
+  kind: measured
+  via: null
+  systematic_bias: 'EVERY FINITE-ELEMENT FORWARD MODEL IN THIS REGISTRY NEEDS A VOLUME MESH: DUNEuro''s
+    anisotropic EEG lead field, SimNIBS and ROAST''s tES fields, and any internal solver B-WIN builds.
+    Mesh RESOLUTION AND ELEMENT QUALITY change the solution, so ''the FEM answer'' is a function of the
+    mesh and convergence must be demonstrated rather than assumed.'
+  notes: poor elements near thin structures -- the skull's inner table, CSF layers -- are exactly where
+    the field gradients are largest
+  band_hz:
+  - null
+  - null
+  temporal_support: static
+  spatial_support: TETRAHEDRAL VOLUME MESHES from boundary surfaces, with named PHYSICAL GROUPS so each
+    region can carry its own material properties -- which is what a heterogeneous head model requires
+- name: licence_review_requirement
+  kind: measured
+  via: null
+  systematic_bias: '§59 reference 43 says it directly: GMSH AND TETGEN CARRY LICENCE IMPLICATIONS THAT
+    NEED EXPLICIT REVIEW. Gmsh is GPL, which is a COPYLEFT licence -- linking it into a distributed artifact
+    has consequences for that artifact''s licence, and obj-licence-lineage must treat a tool that touches
+    the code path differently from one that produced an input'
+  band_hz:
+  - null
+  - null
+absent:
+- mesh_convergence_guarantees
+- biological_content
+use:
+- calibrate
+- surrogate
+forbidden:
+- gmsh/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: gmsh
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

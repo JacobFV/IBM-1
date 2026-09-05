@@ -1,0 +1,60 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: neurobagel
+title: Neurobagel -- federated cohort discovery across neuroimaging datasets
+provider: Neurobagel / McGill and collaborators
+citation: 'Neurobagel: a federated query tool for neuroimaging cohort discovery. PROMPT.md §55.'
+urls:
+- https://neurobagel.org/
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- federated_node
+streams:
+- name: federated_availability_query
+  kind: measured
+  via: null
+  systematic_bias: ANSWERS THE QUESTION 'WHO HAS DATA MATCHING THIS DESCRIPTION' WITHOUT MOVING THE DATA,
+    which is the only tractable approach for the restricted cards in this registry -- UKB, ABCD, ADNI,
+    TUH, RAM and the clinical archives all prohibit redistribution. Availability is metadata; access is
+    still governed per source.
+  notes: harmonised phenotypic terms across institutions require a mapping that loses institution-specific
+    meaning
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: 'a FEDERATED query layer: participant-level attributes are queried across institutions
+    without the data leaving them, returning counts and availability rather than records'
+- name: availability_versus_access
+  kind: measured
+  via: null
+  systematic_bias: knowing a dataset exists and being permitted to use it are different, and a discovery
+    layer makes it easy to conflate them -- registry/README's discovery-is-not-admission rule applies
+  band_hz:
+  - null
+  - null
+absent:
+- the_data_itself
+- licence_resolution
+- coverage
+use:
+- prior
+forbidden:
+- neurobagel/* -> any evidence role for the datasets it indexes
+- neurobagel/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: neurobagel
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

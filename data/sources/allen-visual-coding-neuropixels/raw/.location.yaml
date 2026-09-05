@@ -1,0 +1,5 @@
+# where the bytes for `allen-visual-coding-neuropixels` actually live.  never the bytes themselves.
+source_url: "https://brain-map.org/circuits-behavior/visual-coding-neuropixels"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

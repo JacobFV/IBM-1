@@ -1,0 +1,88 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: dcm-spm
+title: Dynamic Causal Modelling and SPM
+provider: Wellcome Centre for Human Neuroimaging, UCL
+citation: Friston et al., Dynamic causal modelling. NeuroImage 2003; Statistical Parametric Mapping.
+urls:
+- https://www.fil.ion.ucl.ac.uk/spm/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- source_space
+- node_network
+streams:
+- name: effective_connectivity_estimation
+  kind: measured
+  via: null
+  systematic_bias: 'DCM IS THE PRIOR ART FOR WHAT B-WIN IS DOING: a generative model with an explicit
+    neural state, an explicit observation model and Bayesian model comparison over architectures. §38''s
+    structural/effective/functional distinction is DCM''s distinction. Its limitation is scale and rigidity
+    -- a handful of pre-specified nodes, chosen by the analyst, with the observation model fixed by the
+    method rather than measured.'
+  notes: model evidence compares the models the analyst wrote down; a better model outside the considered
+    set is invisible to it
+  band_hz:
+  - null
+  - null
+  temporal_support: continuous-time differential equations, observed at the measurement's sampling rate
+  spatial_support: a SMALL NETWORK OF NAMED NODES with a generative model mapping neural states through
+    a haemodynamic or electromagnetic observation model to the measured signal
+- name: haemodynamic_forward_model
+  kind: measured
+  via: null
+  systematic_bias: DCM for fMRI contains an explicit BALLOON-MODEL haemodynamic stage with estimable parameters,
+    which is exactly §17's requirement that the vascular stage be a modelled state. §43 makes it a baseline
+    rather than the foundation, and it is a strong one
+  band_hz:
+  - null
+  - null
+- name: bayesian_model_comparison
+  kind: measured
+  via: null
+  systematic_bias: §37 wants model-class uncertainty treated as first-class; Bayesian model comparison
+    is the established machinery for it and its failure modes (Laplace approximation, local optima, prior
+    sensitivity) are documented rather than unknown
+  band_hz:
+  - null
+  - null
+- name: spm_preprocessing_and_statistics
+  kind: measured
+  via: null
+  systematic_bias: SPM's preprocessing conventions are embedded in decades of published results and in
+    the ds000117 and mne-spm-face fixtures
+  band_hz:
+  - null
+  - null
+absent:
+- scale
+- flexible_node_definition
+- native_geometry
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- surrogate
+forbidden:
+- dcm-spm/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: dcm-spm
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

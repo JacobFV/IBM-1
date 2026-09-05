@@ -1,0 +1,5 @@
+# where the bytes for `cmu-mosei` actually live.  never the bytes themselves.
+source_url: "http://multicomp.cs.cmu.edu/resources/cmu-mosei-dataset/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

@@ -1,0 +1,77 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: schaefer2018
+title: Schaefer 2018 local-global functional parcellation
+provider: Yeo lab / Schaefer et al.
+citation: Schaefer et al., Local-Global Parcellation of the Human Cerebral Cortex from Intrinsic Functional
+  Connectivity MRI. Cerebral Cortex 2018.
+urls:
+- https://github.com/ThomasYeoLab/CBIG
+access: held
+licence:
+  name: MIT (CBIG); the underlying GSP data under its own terms
+  redistribution: permitted
+  commercial: permitted
+  notes: 'Read from data/assets/MANIFEST.json. MIT covers the CBIG release of the parcellation. The Brain
+    Genomics Superstruct Project data the parcellation was estimated FROM have their own terms, and commercial
+    use is left unresolved for that reason rather than inferred from the MIT grant. Resolved for the PARCELLATION,
+    which is what this card holds and what CBIG releases under MIT: commercial use permitted, no share-alike.
+    THE CAVEAT IN spdx_or_name IS NOT DISCHARGED BY THIS -- the underlying GSP subject data carries its
+    own terms, and it is not held here. That is a lineage question about a source we do not have, so it
+    cannot reach release_gate through this card. dua_required false: fetched anonymously.'
+binding: unbound
+population:
+  n: null
+frames:
+- fsaverage
+- fs_LR
+- MNI152
+streams:
+- name: parcellation_labels
+  kind: measured
+  via: null
+  systematic_bias: A FUNCTIONALLY derived parcellation at an arbitrary chosen granularity. §53.1 is explicit
+    that B-WIN adopts NeuroWorld's causal test but REJECTS its forced Schaefer-1000 representation. Schaefer
+    belongs here as one cover among several and as the baseline representation competing approaches are
+    compared against -- not as the state's address.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: surface parcellations at 100 to 1000 parcels on fsaverage and fs_LR, derived from resting-state
+    functional connectivity in 1,489 participants
+- name: multi_resolution_family
+  kind: measured
+  via: null
+  systematic_bias: 'the 100-to-1000 family is unusually useful evidence that granularity is a CHOICE:
+    the same data yields all of them and none is privileged'
+  band_hz:
+  - null
+  - null
+absent:
+- individual_topography
+- uncertainty_per_vertex
+- subcortex
+- cerebellum
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- 'schaefer2018/* -> the state address (§3: state lives at a fully qualified address, not in a parcel
+  index)'
+- schaefer2018/parcellation_labels -> hard support boundaries
+- schaefer2018/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: schaefer2018
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,88 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: extrasensory
+title: ExtraSensory -- in-the-wild multimodal context recognition dataset
+provider: UC San Diego
+citation: Vaizman et al., Recognizing Detailed Human Context In-the-Wild from Smartphones and Smartwatches.
+  IEEE Pervasive Computing 2017.
+urls:
+- http://extrasensory.ucsd.edu/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Publicly downloadable; terms unresolved.
+binding: unbound
+population:
+  n: 60
+  hierarchy:
+  - participant
+  - device
+  - session
+  notes: '60 participants over a week of ordinary life, self-labelling their context from a phone. IN
+    THE WILD: no protocol, no laboratory, and label sparsity that is itself informative.'
+frames:
+- phone_device
+- wrist
+- world
+streams:
+- name: accelerometry
+  kind: imposed
+  via: null
+  systematic_bias: unknown and varying device placement means the same behaviour produces different signals
+    on different days
+  band_hz:
+  - null
+  - null
+  temporal_support: 40-second sensor windows, sampled through the day over a week; labels applied by the
+    participant when they chose to
+  spatial_support: phone and smartwatch sensors in whatever pocket or wrist position the participant chose
+    -- the sensor's body location is UNKNOWN and varies
+- name: self_reported_context_labels
+  kind: imposed
+  via: null
+  systematic_bias: 'LABELS ARE MISSING NOT AT RANDOM: participants labelled when they were free to, so
+    unlabelled periods are systematically different from labelled ones. That is a censoring mechanism,
+    and treating unlabelled as unlabelled-at-random biases everything downstream'
+  band_hz:
+  - null
+  - null
+- name: audio_features
+  kind: imposed
+  via: null
+  systematic_bias: MFCCs rather than audio, computed on-device for privacy; the raw acoustic scene is
+    irrecoverable
+  band_hz:
+  - null
+  - null
+- name: gyroscope
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: location
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- raw_audio
+- known_device_placement
+- complete_labels
+use:
+- fit
+forbidden:
+- extrasensory/* -> cortical state without an explicit carded interaction
+- extrasensory/* -> any cortical state
+split:
+  group_by:
+  - participant
+  - device
+provenance:
+  imported_from: win-registry
+  card: extrasensory
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

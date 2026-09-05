@@ -1,0 +1,186 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ibl-brain-wide-map
+title: IBL Brain Wide Map -- standardised Neuropixels recordings across 12 laboratories (mouse)
+provider: International Brain Laboratory; ONE-api/Alyx, AWS s3://ibl-brain-wide-map-public and DANDI 000409
+citation: International Brain Laboratory, Angelaki et al. A brain-wide map of neural activity during complex
+  behaviour. Nature 645(8079):177-191, 2025. doi:10.1038/s41586-025-09235-0.
+urls:
+- https://docs.internationalbrainlab.org/notebooks_external/2025_data_release_brainwidemap.html
+- https://dandiarchive.org/dandiset/000409
+access: priority
+licence:
+  name: CC-BY-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: CC-BY-4.0 CONSISTENT ACROSS ALL THREE DISTRIBUTION CHANNELS -- the AWS Open Data registry and
+    its source YAML, the DANDI 000409 licence field, and the IBL's own data page, which states that all
+    their work is CC-BY for publications and data and MIT for software. The same IBL page separately marks
+    the WEBSITE CC BY-NC 4.0; that non-commercial term applies to the site and not to the data. No DUA,
+    no approval step. Consistency across mirrors is unusual enough in this registry to be worth stating.
+binding: unbound
+population:
+  n: 139
+  hierarchy:
+  - participant
+  - site
+  - session
+  - device
+  notes: 'RELEASE AND PAPER DIFFER BECAUSE THEY COUNT DIFFERENT THINGS, and both are recorded: the release
+    page says 459 sessions, 699 insertions, 139 subjects across 12 laboratories, 621,733 putative neurons
+    of which 75,708 pass QC, across 241 recorded regions; the paper says 454 sessions and 279 brain areas.
+    The 459 figure includes a February 2024 addition of 105 sessions, 152 insertions and 24 subjects on
+    top of an original 354. ONLY ABOUT 12% OF PUTATIVE UNITS PASS QC.'
+frames:
+- probe_channel
+- allen_ccf_registered
+- wheel_angle
+- camera_pixel
+streams:
+- name: brain_wide_spiking_during_a_standardised_task
+  kind: measured
+  via: null
+  observation_chain: spiking of unit populations near each probe site -> spike sorting -> unit trains,
+    during a visual contrast two-alternative forced-choice task with block-structured priors. CROSS-SPECIES
+    throughout
+  confounds:
+  - only about 12% of putative units pass QC, so the analysed population is heavily selected by an algorithm
+  - REGION ASSIGNMENT IS DERIVED from histological probe-track reconstruction registered to the Allen
+    CCF, with registration error that is larger for deep and small structures
+  - one task only, so any 'brain-wide' claim is brain-wide for this task
+  - movement -- wheel, licking, whisking, eye -- explains a large fraction of neural variance everywhere
+    and is recorded rather than controlled
+  - laboratory is a real effect that the standardisation reduces without eliminating
+  systematic_bias: The largest single-task brain-wide electrophysiology dataset in existence and the only
+    one where the SAME protocol was run at 12 laboratories. That makes between-laboratory variance measurable,
+    which is the control almost no neuroscience dataset can run.
+  band_hz:
+  - null
+  - null
+  temporal_support: spike times against three camera streams (left, right, body) with pose tracking, a
+    rotary-encoder wheel signal, piezo lick timing and trial events. Several native clocks, hardware-related
+    within a session
+  spatial_support: Neuropixels 1.0 insertions targeted across the brain by a STANDARDISED REPEATED-SITE
+    PROTOCOL executed at 12 independent laboratories -- the design is the point, because it makes between-laboratory
+    reproducibility a measured quantity rather than a hope. Coverage is left forebrain and midbrain plus
+    right hindbrain and cerebellum, NOT BILATERAL
+- name: between_laboratory_reproducibility
+  kind: measured
+  via: null
+  systematic_bias: A standardised protocol replicated across 12 sites is a control that could fail and
+    partly did -- the IBL's own reproducibility work found site effects that survive standardisation.
+    That result is worth more to this substrate than the map itself.
+  band_hz:
+  - null
+  - null
+- name: histology_registered_probe_tracks
+  kind: measured
+  via: null
+  systematic_bias: reconstructed geometry carrying its registration algorithm and error, and labelled
+    derived forever
+  band_hz:
+  - null
+  - null
+- name: spikes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: raw_ephys
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: video_three_cameras
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pose_tracking
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: wheel_position
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: lick_timing
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: motion_energy
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: trial_structure
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: passive_replay
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: histology_probe_tracks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- human_data
+- bilateral_coverage
+- multiple_tasks
+- connectome_for_the_same_animals
+- documented_lfp_dataset_type
+requires:
+- geometry: device-geometry
+  for_streams:
+  - brain_wide_spiking_during_a_standardised_task
+  - histology_registered_probe_tracks
+  severity: blocking
+  without_it: 'A penetrating array samples along its own geometry: site pitch, shank trajectory and insertion
+    depth decide which tissue each channel sees. Without that geometry the channel index carries no spatial
+    claim and the recording cannot be placed against any support.'
+- geometry: retinal-world-geometry
+  severity: degrading
+  without_it: The stimulus is presented on a screen at a fixed distance from an eye whose position is
+    tracked only in part of the sessions. Without the display and eye geometry the visual field coordinate
+    of any response is unknown, and retinotopic claims made from screen coordinates carry an uncorrected
+    eye-position error.
+  substitute: Screen coordinates treated as retinal coordinates under an assumption of fixed gaze, which
+    is false during the periods the pupil trace shows movement.
+use:
+- evaluate
+- fit
+- prior
+forbidden:
+- ibl-brain-wide-map/* -> any human state channel without an explicit cross-species mapping
+- ibl-brain-wide-map/* -> a region label treated as measured rather than reconstructed
+- ibl-brain-wide-map/* -> a task-general claim from one task
+split:
+  group_by:
+  - participant
+  - site
+  - session
+  - device
+  notes: Laboratory is a first-class split axis here; a within-laboratory split reports a number the dataset
+    was built to show does not generalise.
+provenance:
+  imported_from: win-registry
+  card: ibl-brain-wide-map
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

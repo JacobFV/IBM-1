@@ -1,0 +1,5 @@
+# where the bytes for `riemannian-baselines` actually live.  never the bytes themselves.
+source_url: "https://pyriemann.readthedocs.io/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

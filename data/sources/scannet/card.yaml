@@ -1,0 +1,119 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: scannet
+title: ScanNet and ScanNet++ -- annotated RGB-D scans of indoor scenes
+provider: Stanford, Princeton and TU Munich (ScanNet); TU Munich (ScanNet++)
+citation: 'Dai et al., ScanNet: richly-annotated 3D reconstructions of indoor scenes. CVPR 2017; Yeshwanth
+  et al., ScanNet++: a high-fidelity dataset of 3D indoor scenes. ICCV 2023.'
+urls:
+- http://www.scan-net.org/
+- https://kaldir.vc.in.tum.de/scannetpp/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: UNRESOLVED. Access to both releases is by a signed terms-of-use form returned to the maintainers,
+    and the terms themselves have not been read. A form-gated download is an access mechanism, not a licence,
+    and the two must not be recorded as the same thing.
+binding: unbound
+population:
+  n: null
+frames:
+- camera
+- scene_world
+- mesh_vertex_index
+streams:
+- name: posed_rgbd_with_reconstructed_geometry
+  kind: imposed
+  via: null
+  systematic_bias: This is ENVIRONMENT geometry, terminating at the world side of the eye interface, and
+    it constrains nothing about any brain. Its use is that retinalisation needs a scene with real geometry
+    and real camera poses before it can render anything to a retinal coordinate; a screen-space stimulus
+    does not have that. The scenes are indoor, static and human-built, which is a narrow slice of visual
+    environments.
+  notes: the reconstructed mesh has fusion artefacts, holes behind occluders and smoothed thin structures,
+    and a renderer that treats it as ground truth inherits all three
+  band_hz:
+  - null
+  - null
+  temporal_support: 'RGB-D frame rate along a hand-held scanning trajectory. The trajectory is a MOVING
+    OBSERVER, which is what makes the corpus usable for the retinalisation question: the same scene is
+    seen from many poses'
+  spatial_support: reconstructed triangle meshes and point clouds of real rooms with per-vertex semantic
+    and instance labels, plus the raw RGB-D frame stream and per-frame camera poses. THE MESH IS A RECONSTRUCTION
+    -- derived geometry from a SLAM/fusion pipeline, never a measurement of the room
+- name: camera_pose_and_intrinsics
+  kind: measured
+  via: null
+  systematic_bias: Poses come from a tracking system and carry drift that is corrected by loop closure;
+    the corrected trajectory is smooth and wrong in a different way from the raw one.
+  band_hz:
+  - null
+  - null
+- name: rgb
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: depth
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: camera_poses
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: reconstructed_meshes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: semantic_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: instance_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cad_alignments
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- human_observer
+- gaze
+- neural_data
+- outdoor_scenes
+- dynamic_objects
+- photometric_calibration
+use:
+- calibrate
+- fit
+forbidden:
+- scannet/* -> any brain state channel
+- scannet/* -> a reconstructed mesh recorded as measured geometry
+- scannet/* -> an artifact, until the terms of use are read
+split:
+  group_by:
+  - site
+  - session
+  notes: Frames from one scan are near-duplicates; a frame-level split reports a number that means nothing.
+    Scene is the grouping level.
+provenance:
+  imported_from: win-registry
+  card: scannet
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

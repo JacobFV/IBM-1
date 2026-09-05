@@ -1,0 +1,64 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: freesurfer-thalamic-histological
+title: FreeSurfer ex-vivo histological thalamic nuclei atlas
+provider: Martinos Center / FreeSurfer
+citation: Iglesias et al., A probabilistic atlas of the human thalamic nuclei combining ex vivo MRI and
+  histology. NeuroImage 2018.
+urls:
+- https://surfer.nmr.mgh.harvard.edu/fswiki/ThalamicNuclei
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- subject_native
+- atlas_native
+streams:
+- name: histology_derived_nucleus_probabilities
+  kind: measured
+  via: null
+  systematic_bias: HISTOLOGICAL ground truth, which THOMAS and the diffusion atlases lack, from six specimens.
+    Its in-vivo application is a generative model's posterior, so a subject's labels are an INFERENCE
+    conditioned on that prior rather than a measurement -- and usefully, the model does produce a posterior
+    that can be propagated.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: a probabilistic thalamic atlas built from HISTOLOGY in six ex-vivo specimens combined
+    with ex-vivo MRI, then applied to in-vivo scans through a generative segmentation model
+- name: segmentation_posterior
+  kind: measured
+  via: null
+  systematic_bias: one of the few segmentation tools in the registry that yields a per-voxel posterior
+    rather than a hard label; §39 wants exactly that and it is usually thrown away
+  band_hz:
+  - null
+  - null
+absent:
+- donor_diversity
+- in_vivo_ground_truth
+- cortex
+use:
+- calibrate
+- prior
+forbidden:
+- freesurfer-thalamic-histological/segmentation_posterior -> measured subject geometry
+- freesurfer-thalamic-histological/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: freesurfer-thalamic-histological
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

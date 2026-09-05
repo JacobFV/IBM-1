@@ -1,0 +1,52 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: meep
+title: Meep -- finite-difference time-domain electromagnetics
+provider: MIT / Simpetus
+citation: 'Oskooi et al., Meep: A flexible free-software package for electromagnetic simulations by the
+  FDTD method. Computer Physics Communications 2010.'
+urls:
+- https://meep.readthedocs.io/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Code licence not read.
+binding: unbound
+population:
+  n: null
+frames:
+- simulation_grid
+streams:
+- name: full_wave_reference
+  kind: measured
+  via: null
+  systematic_bias: The head-modelling literature assumes quasi-statics throughout. A full-wave solver
+    is the control that could show the assumption failing -- at the frequencies and dimensions involved
+    it is expected to hold, and an expected result from a method that COULD have disagreed is worth more
+    than the assumption alone.
+  notes: dispersive tissue models and grid staircasing dominate the difference at tissue boundaries, which
+    is where the interesting fields are
+  band_hz:
+  - null
+  - null
+  temporal_support: explicit FULL-WAVE time stepping at the Courant limit -- the regime where the quasi-static
+    approximation used by every TMS/tES solver can be checked rather than assumed
+  spatial_support: Yee-grid finite differences over a rectilinear volume; staircased tissue boundaries
+    unless subpixel averaging is used
+absent:
+- measurements
+- individual_anatomy
+- tissue_dispersion_data
+use:
+- surrogate
+forbidden:
+- meep/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: meep
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

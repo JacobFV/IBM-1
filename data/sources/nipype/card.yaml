@@ -1,0 +1,48 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nipype
+title: Nipype -- uniform interfaces to neuroimaging software
+provider: Nipy community
+citation: 'Gorgolewski et al., Nipype: a flexible, lightweight and extensible neuroimaging data processing
+  framework in Python. Frontiers in Neuroinformatics 2011.'
+urls:
+- https://nipype.readthedocs.io/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Code licence not read; every wrapped package (FSL, SPM, FreeSurfer, AFNI, ANTs) carries its OWN
+    terms and Nipype does not relax them.
+binding: unbound
+population:
+  n: null
+frames:
+- described_by_reference
+streams:
+- name: wrapped_tool_provenance
+  kind: measured
+  via: null
+  systematic_bias: Nipype is where a preprocessing_lineage entry can be MEASURED rather than asserted,
+    because the node records the interface version and the argument string. It also makes it trivially
+    easy to build a chain whose licence union nobody computed -- which is the failure obj-licence-lineage
+    exists for.
+  band_hz:
+  - null
+  - null
+  temporal_support: execution order only
+  spatial_support: none of its own -- it records which executable, which version and which arguments produced
+    each file
+absent:
+- measurements
+use:
+- calibrate
+forbidden:
+- nipype/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: nipype
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

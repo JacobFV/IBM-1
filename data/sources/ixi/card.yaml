@@ -1,0 +1,149 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ixi
+title: IXI -- Information eXtraction from Images brain MR dataset
+provider: brain-development.org; acquired at three London hospitals
+citation: No formal citation is requested. The site asks that the source of the IXI data be acknowledged,
+  e.g. by citing the website.
+urls:
+- https://brain-development.org/ixi-dataset/
+access: priority
+licence:
+  name: CC-BY-SA-3.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'Verbatim from the provider: this data is made available under the Creative Commons CC BY-SA
+    3.0 license. SHARE-ALIKE IS LOAD-BEARING and propagates to anything derived. Direct download; no registration.'
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - device
+  notes: 'The provider says nearly 600 healthy subjects without an exact count, and states no age range.
+    n is left null rather than rounded. Three scanners at three hospitals: Guy''s (Philips 1.5T), Hammersmith
+    (Philips 3T) and the Institute of Psychiatry (GE 1.5T) -- so site, vendor and field strength are all
+    confounded with each other.'
+frames:
+- scanner
+- subject_native
+streams:
+- name: mra_angiography
+  kind: measured
+  via: null
+  observation_chain: 'flowing blood entering an unsaturated slab -> time-of-flight signal enhancement
+    relative to stationary tissue -> maximum-intensity or volumetric reconstruction. TOF MRA IS A FLOW
+    CONTRAST, NOT A LUMEN MEASUREMENT: a patent vessel with slow or in-plane flow is invisible, and vessel
+    calibre read off a TOF volume is a flow-weighted apparent calibre'
+  confounds:
+  - in-plane flow saturation making a real vessel disappear
+  - turbulent flow causing signal loss at stenoses and bifurcations -- exactly where the anatomy is interesting
+  - 'partial volume: vessels near the voxel size are systematically mis-sized'
+  - the three scanners have different TOF sequences and therefore different detection thresholds for small
+    vessels
+  systematic_bias: An absent small vessel in a TOF volume is overwhelmingly a detection failure rather
+    than an absent vessel. Missing is not zero, and for vasculature it is the dominant failure mode.
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- static volumes
+  spatial_support: 'T1w, T2w and proton-density structural volumes, MRA angiography, and 15-direction
+    diffusion. THE MRA IS THE REASON THIS DATASET MATTERS HERE: healthy-volunteer cerebral angiography
+    at this scale, openly licensed, is scarce'
+- name: multi_contrast_structural
+  kind: measured
+  via: null
+  observation_chain: tissue relaxation and proton density -> three differently weighted acquisitions of
+    the same head -> three intensity volumes whose RATIOS carry more physical information than any one
+    alone
+  confounds:
+  - receive-coil bias field, uncorrected
+  - no absolute intensity scale in any of the three contrasts
+  - between-scanner contrast differences dominate between-subject ones
+  band_hz:
+  - null
+  - null
+- name: three_scanner_comparison
+  kind: measured
+  via: null
+  systematic_bias: Three scanners with different vendors and field strengths, but NOT the same people
+    on all three -- so this measures between-site differences confounded with between-cohort differences,
+    which is weaker than a travelling-head design and is often quoted as if it were one.
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pd
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mra
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi_15dir
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: demographics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- functional_mri
+- eeg
+- meg
+- task
+- clinical_labels
+- traveling_subjects
+- exact_participant_count
+requires:
+- geometry: vascular-products
+  for_streams:
+  - mra_angiography
+  severity: blocking
+  without_it: An angiographic volume is an image of a lumen, not a vessel. Without the vascular product
+    -- a resolved graph carrying radius, topology and territory -- there is no vessel for this evidence
+    to constrain and no way to say which cortical support any of it supplies.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- calibrate
+- fit
+- prior
+forbidden:
+- ixi/* -> an artifact that does not carry the share-alike term
+- ixi/* -> a vessel-calibre claim treated as a lumen measurement
+- ixi/* -> an absent small vessel treated as a measured absence
+split:
+  group_by:
+  - participant
+  - site
+  - device
+provenance:
+  imported_from: win-registry
+  card: ixi
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

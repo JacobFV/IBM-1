@@ -1,0 +1,47 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: loris
+title: LORIS -- Longitudinal Online Research and Imaging System
+provider: McGill Centre for Integrative Neuroscience, The Neuro, McGill University
+citation: 'Das et al., LORIS: a web-based data management system for multi-center studies. Frontiers in
+  Neuroinformatics 5:37, 2012. doi:10.3389/fninf.2011.00037. Software doi:10.5281/zenodo.5177111.'
+urls:
+- https://loris.ca
+- https://github.com/aces/Loris
+access: reference
+licence:
+  name: GPL-3.0
+  redistribution: permitted
+  commercial: permitted
+  notes: GPL-3.0 is the SOFTWARE licence. LORIS is a platform and holds no data of its own; the terms
+    on any particular LORIS instance's data are unresolved and are set by that study.
+binding: unbound
+population:
+  n: null
+frames:
+- described_by_reference
+streams:
+- name: longitudinal_study_schema
+  kind: measured
+  via: null
+  systematic_bias: A visit-indexed schema makes the session grouping level explicit, which is what a leakage-safe
+    split needs and what flat exports destroy.
+  band_hz:
+  - null
+  - null
+  temporal_support: the VISIT is the temporal unit -- a study calendar, not an acquisition clock
+  spatial_support: 'a multi-site longitudinal study database: imaging, clinical, behavioural and genetic
+    instruments keyed to visits'
+absent:
+- measurements
+use:
+- calibrate
+forbidden:
+- loris/* -> any state channel
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: loris
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

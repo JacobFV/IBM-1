@@ -1,0 +1,4 @@
+# sha256 manifest for libribrain -- DEFERRED
+# 163 files, 48943755496 bytes (45.58 GiB) at /home/brandonin/Documents/win-data/libribrain
+# hashing this source has not been run; until it has, no derive recipe may claim
+# reproducibility against a specific raw state.

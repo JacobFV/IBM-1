@@ -1,0 +1,113 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: midnight-scan-club
+title: Midnight Scan Club -- dense individual functional mapping
+provider: Washington University / OpenNeuro ds000224
+citation: Gordon et al., Precision functional mapping of individual human brains. Neuron 2017.
+urls:
+- https://openneuro.org/datasets/ds000224
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: OpenNeuro-hosted; per-dataset terms unresolved pending inspection of the dataset_description.json.
+binding: unbound
+population:
+  n: 10
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: Ten participants, ~5 h of resting fMRI EACH across 10 sessions. The point is depth per person,
+    not breadth.
+frames:
+- scanner
+- subject_native
+- fsaverage
+- MNI152
+- subject_native_surface
+streams:
+- name: bold_rest
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  systematic_bias: 'The individual-specific network topography here is direct evidence for §5: individual
+    network boundaries do not respect any group parcellation.'
+  notes: TR 2.2 s aliases cardiac and respiratory fluctuation; that is a modelled state here, not noise
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 2.2 s; 10 sessions per participant on consecutive nights
+  spatial_support: 4 mm isotropic BOLD; high-quality individual surfaces from averaged structurals
+- name: individual_network_topography
+  kind: measured
+  via: null
+  systematic_bias: a mechanism that only reproduces group-average topography has failed this test
+  band_hz:
+  - null
+  - null
+- name: bold_task
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: field_maps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- ieeg
+- dwi_high_angular
+- angiography
+- pet
+- intervention
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- evaluate
+- fit
+- prior
+forbidden:
+- midnight-scan-club/* -> population covariance priors
+split:
+  group_by:
+  - participant
+  - session
+  notes: session-held-out within participant is the informative split here
+provenance:
+  imported_from: win-registry
+  card: midnight-scan-club
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

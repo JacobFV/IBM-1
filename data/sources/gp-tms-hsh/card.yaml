@@ -1,0 +1,133 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: gp-tms-hsh
+title: gp-tms-hsh -- Gaussian-process motor hotspot hunting with concurrent coil location and orientation
+  optimisation
+provider: University of Freiburg (Vlachos and Boedecker groups), GitHub repository david-schu/gp-tms-hsh
+citation: Schultheiss, Turi, Boedecker, Vlachos. Efficient Gaussian process-based motor hotspot hunting
+  with concurrent optimization of TMS coil location and orientation. PLOS Computational Biology 22(2):e1013994,
+  2026. doi:10.1371/journal.pcbi.1013994
+urls:
+- https://github.com/david-schu/gp-tms-hsh
+- https://doi.org/10.1371/journal.pcbi.1013994
+access: priority
+licence:
+  name: CC-BY-NC-4.0
+  redistribution: unresolved
+  commercial: prohibited
+  notes: 'The repository README asserts Creative Commons Attribution-NonCommercial 4.0 in prose. There
+    is NO LICENSE file and GitHub''s licence detection returns null, so the assertion is the author''s
+    sentence rather than a machine-readable grant. NOTE the split: the PLOS article is CC-BY-4.0 while
+    the data repository is the more restrictive NC variant -- reading the article licence and applying
+    it to the data would be wrong. If this reaches an artifact, that artifact is non-commercial.'
+binding: unbound
+population:
+  n: 8
+  hierarchy:
+  - participant
+  - session
+  notes: 'The paper reports 8 healthy individuals. The data directory holds eight result arrays with NON-CONTIGUOUS
+    ids (002-004, 006-010): 001 and 005 are absent and the repository does not say why. No new human data
+    was collected for this work -- it is a secondary analysis of the authors'' earlier study, so the acquisition
+    provenance lives in a different paper.'
+frames:
+- unresolved -- neuronavigation frame not documented in the repository
+streams:
+- name: mep_versus_coil_pose
+  kind: measured
+  via: null
+  observation_chain: 'coil current -> induced electric field in the head, whose magnitude and direction
+    at the cortical target are NOT measured but computed from a head model -> depolarisation of some unknown
+    mixture of interneurons and corticospinal cells -> descending volley -> spinal motoneuron pool, whose
+    excitability is a separate uncontrolled state -> muscle fibre action potentials -> surface EMG ->
+    rectified peak-to-peak amplitude. FOUR DISTINCT THINGS get conflated here: the requested machine setting,
+    the delivered physical field, peripheral co-stimulation, and the candidate neural response'
+  confounds:
+  - spinal motoneuron excitability, which varies over minutes and is never measured
+  - background voluntary EMG, which multiplies MEP amplitude and is often only loosely controlled
+  - coil-to-scalp distance and scalp/skull thickness, which change the delivered field without changing
+    the machine setting
+  - 'peripheral co-stimulation: the click, the scalp sensation and the twitch itself are salient sensory
+    events with their own evoked responses'
+  - the head model used to compute the field is derived geometry with its own error, and its output is
+    routinely reported as if measured
+  - attention, arousal and time of day
+  systematic_bias: Coil ORIENTATION is varied, not just location. An input-output relation fitted at one
+    orientation cannot separate field magnitude from field direction; this corpus can. That is the whole
+    reason to prefer it over the larger fixed-pose MEP datasets.
+  notes: the Gaussian process is the paper's method, not a measurement; the released arrays are its OUTPUT
+    and are derived, not raw EMG
+  band_hz:
+  - null
+  - null
+  temporal_support: per-pulse, in the order the optimiser visited poses; there is no continuous clock
+  spatial_support: per-pulse coil location AND orientation over the motor cortex -- the reason this source
+    matters is that orientation VARIES, where in almost every other MEP corpus the coil is parked on one
+    target at one angle
+- name: hotspot_search_efficiency
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mep_emg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: coil_pose
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: e_field_simulation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: structural_mri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- raw_emg
+- structural_mri
+- e_field_meshes
+- eeg
+- sham_arm
+requires:
+- geometry: device-geometry
+  for_streams:
+  - mep_versus_coil_pose
+  severity: blocking
+  without_it: The delivered quantity is an induced electric field throughout the head, set by the coil's
+    winding geometry and its pose relative to the anatomy. Without the device product the stimulation
+    is recorded as a machine setting rather than as a dose at any cortical location, and the four stages
+    of an intervention collapse into one.
+- geometry: literature-derived-geometry
+  for_streams:
+  - mep_versus_coil_pose
+  severity: blocking
+  without_it: 'The spatial arrangement this source depends on is described in its paper and figures rather
+    than distributed with the data: the navigation frame, the target definition or the pose convention
+    is not in the repository. It has to be reconstructed from the publication, as a derived product that
+    says so, before any number here can be placed.'
+use:
+- evaluate
+- fit
+forbidden:
+- gp-tms-hsh/* -> any commercial artifact (the data licence is non-commercial)
+- gp-tms-hsh/* -> a delivered-field claim (fields here are computed from a head model, never measured)
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: gp-tms-hsh
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

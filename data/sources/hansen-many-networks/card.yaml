@@ -1,0 +1,113 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hansen-many-networks
+title: 'Hansen many-networks: ten annotation and connectivity networks on three shared parcellations'
+provider: netneurolab (Bratislav Misic lab), McGill University
+citation: Hansen et al. 2023, PLOS Biology. Repository netneurolab/hansen_many_networks. Cammoun et al.
+  2012 parcellation; Schaefer et al. 2018 parcellations.
+urls:
+- https://github.com/netneurolab/hansen_many_networks
+access: held
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: The repository carries no LICENSE file. Unresolved gates DISTRIBUTION only and never reading,
+    loading, computing with or fitting to this evidence; win.licences.release_gate is the one refusal
+    and it is called at outward publication and nowhere earlier.
+binding: unbound
+population:
+  n: null
+frames:
+- Lausanne
+- fsaverage
+- MNI152
+streams:
+- name: consensus_structural_connectome
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series; every matrix is a static summary
+  spatial_support: group consensus networks on three parcellations held side by side -- Cammoun033 (68
+    nodes), Schaefer100, Schaefer400 -- which is a COVER family and not a choice of parcellation
+- name: three_connectivity_kinds_on_one_parcellation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: same_networks_on_three_parcellations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: annotation_similarity_networks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: structural_connectivity
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: functional_connectivity
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: meg_connectivity
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pet_metabolic
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: gene_expression
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: receptor_density
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: laminar_thickness
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- per_participant_networks
+- edge_uncertainty
+- path_geometry
+- directionality
+- tractography_provenance
+use:
+- fit
+- prior
+split:
+  group_by:
+  - participant
+  notes: 'a group consensus: it is held out of nothing and must be trusted for nothing on its own. No
+    per-participant network is redistributed here, so it cannot leak an individual into a split -- and
+    equally cannot serve as an observation of one.'
+provenance:
+  imported_from: win-registry
+  card: hansen-many-networks
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

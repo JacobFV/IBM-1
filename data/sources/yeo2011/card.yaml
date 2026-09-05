@@ -1,0 +1,92 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: yeo2011
+title: Yeo 2011 resting-state cortical networks (7 and 17), on fsaverage
+provider: Martinos Center / FreeSurfer, shipped inside the fsaverage subject directory
+citation: Yeo et al., The organization of the human cerebral cortex estimated by intrinsic functional
+  connectivity. Journal of Neurophysiology 2011.
+urls:
+- https://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation_Yeo2011
+access: held
+licence:
+  name: FreeSurfer Software License
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'Unresolved, and unresolved is a thing to record rather than a reason to leave it unread: rule
+    7 gates DISTRIBUTION only, and this cover is read, computed with and mapped freely. It travels with
+    FreeSurfer''s fsaverage subject and inherits whatever that carries; nothing in the files themselves
+    states a licence. LICENCE LINEAGE, NOT A LOOKUP: this reached us inside a FreeSurfer subject directory
+    (bundled in turn by an MNE sample dataset or a nilearn cache), so the terms under which WE received
+    it are the FreeSurfer Software License. READ, not recalled -- the licence text was fetched: it PERMITS
+    COMMERCIAL USE (''any commercialization of the Software is at the sole risk of the party ... engaged
+    in such commercialization''), requires that the licence terms and all attributions and copyright notices
+    be preserved in any copy, and EXPLICITLY DISCLAIMS COPYLEFT -- contributors warrant their code ''does
+    not contain any code that requires or prescribes an open source license for derivative works''. No
+    registration or DUA is mentioned; accepting the licence is the only condition of download. This was
+    very nearly recorded as commercial_use prohibited from memory, which would have WRONGLY BLOCKED a
+    legitimate release. Residual question this does NOT settle: the atlas itself originates outside the
+    FreeSurfer project and its authors'' own terms may be broader or narrower. That matters only for a
+    copy obtained from the originating project; the copy we hold came through FreeSurfer and carries FreeSurfer''s
+    terms.'
+binding: unbound
+population:
+  n: null
+frames:
+- fsaverage
+streams:
+- name: network_labels
+  kind: measured
+  via: null
+  systematic_bias: FUNCTIONAL clustering of resting-state connectivity in 1,000 young healthy adults,
+    thresholded into a hard per-vertex assignment. Two things follow. It is not anatomy and does not respect
+    sulcal boundaries, which is exactly why it is worth holding beside Desikan and Destrieux. And the
+    published product is a hard label whose underlying quantity was continuous, so the confidence a vertex
+    had in its network is gone from the file and cannot be recovered from it.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series. It is a clustering of resting-state functional connectivity, so
+    it is a summary OVER time and carries none
+  spatial_support: per-vertex annotation on the 163,842-vertex fsaverage surface, per hemisphere, in two
+    granularities -- 7 networks and 17 -- plus an explicit FreeSurfer_Defined_Medial_Wall entry
+- name: volumetric_network_labels
+  kind: measured
+  via: null
+  systematic_bias: The MNI152 VOLUME of the same networks, which is not the same object as the surface
+    annotation and must not be treated as a redundant copy. The parcellation was estimated on the surface
+    and projected to the volume, so the volumetric boundaries carry the projection's error on top of the
+    estimation's -- and a voxel near a sulcal bank can be assigned to a network whose surface patch it
+    does not touch.
+  notes: surface-annot and MNI152-volume labellings of the same subject disagree at every boundary; which
+    one a query used is a fact about the answer, not an implementation detail
+  band_hz:
+  - null
+  - null
+absent:
+- per_vertex_confidence
+- individual_networks
+- subcortex
+- cerebellum
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A network labelling is a COVER over a carrier, and on its own it is 163,842 integers with
+    no geometry. It also needs the subject-to-fsaverage spherical relation before it says anything about
+    anybody in particular; used without one it is a claim about the average of a thousand other people
+    wearing this subject's name.
+use:
+- prior
+forbidden:
+- yeo2011/network_labels -> cytoarchitectonic or areal claims
+- yeo2011/* -> observation-role likelihoods
+- yeo2011/network_labels -> subject-specific network boundaries without the individual functional data
+  that would define them
+split:
+  group_by:
+  - participant
+  notes: 'a population atlas: it is held out of nothing and must be trusted for nothing on its own. Its
+    thousand subjects are not ours and overlap with no split here.'
+provenance:
+  imported_from: win-registry
+  card: yeo2011
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

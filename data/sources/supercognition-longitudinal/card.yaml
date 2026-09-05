@@ -1,0 +1,52 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: supercognition-longitudinal
+title: Planned Supercognition longitudinal sessions
+provider: Supercognition (this programme)
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: First-party acquisition. Consent scope, retention and redistribution terms are design decisions
+    not yet taken; recorded unresolved so the card cannot be mistaken for a settled plan.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - run
+  - device
+  notes: Design not fixed. THIS CARD DESCRIBES NOTHING THAT EXISTS. It is here so that the acquisition
+    it plans is designed against the registry's requirements rather than retrofitted to them.
+frames:
+- unresolved
+streams:
+- name: planned_dense_multimodal
+  kind: measured
+  via: null
+  systematic_bias: nothing is measured yet; this entry exists to bind the acquisition design to the clock-graph
+    and device-geometry objectives before hardware is chosen
+  band_hz:
+  - null
+  - null
+  temporal_support: unresolved -- but the design commitment is that NATIVE clocks are recorded with hardware
+    triggers and never discarded in favour of a resampled grid (§33)
+  spatial_support: unresolved -- to be fixed by the acquisition design
+absent:
+- everything
+use:
+- calibrate
+- fit
+forbidden:
+- supercognition-longitudinal/* -> everything, until data exists
+split:
+  group_by:
+  - participant
+  - session
+  notes: 'design requirement: the held-out arm is chosen BEFORE acquisition'
+provenance:
+  imported_from: win-registry
+  card: supercognition-longitudinal
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

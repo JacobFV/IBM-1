@@ -1,0 +1,64 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bican
+title: BICAN -- BRAIN Initiative Cell Atlas Network human cell census products
+provider: NIH BRAIN Initiative Cell Atlas Network
+citation: BICAN consortium; PROMPT.md §51.3 item 25 and §59 reference 21.
+urls:
+- https://brain-bican.org/
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- donor_native
+- MNI152
+- cell_taxonomy
+streams:
+- name: consensus_cell_taxonomy
+  kind: measured
+  via: null
+  systematic_bias: A CONSENSUS taxonomy across laboratories is more robust than any single study's clustering,
+    and it is still a clustering with a chosen granularity. §51.3 item 25 asks for population priors over
+    mesoscopic state composition, which is exactly this and nothing more.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: consensus human cell-type references across many assays and laboratories, with spatial
+    distributions where measured
+- name: multimodal_cell_evidence
+  kind: measured
+  via: null
+  systematic_bias: where transcriptomic, epigenomic and morphological evidence agree on a cell type, the
+    type is better supported; where they disagree, the disagreement is the honest uncertainty and should
+    be preserved rather than resolved by fiat
+  band_hz:
+  - null
+  - null
+absent:
+- whole_brain_coverage
+- population
+- in_vivo_measurement
+- function
+use:
+- calibrate
+- prior
+forbidden:
+- bican/* -> observation-role likelihoods about a living participant
+- bican/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: bican
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

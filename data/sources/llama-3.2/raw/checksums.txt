@@ -1,0 +1,1 @@
+# sha256 manifest for llama-3.2; written on acquisition

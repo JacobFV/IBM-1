@@ -1,0 +1,51 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: prahl-haemoglobin-extinction
+title: Haemoglobin molar extinction, Gratzer/Kollias as distributed by Prahl
+provider: Compiled by Gratzer (Med. Res. Council Labs) and Kollias (Wellman Labs); distributed by S. Prahl,
+  Oregon Medical Laser Center
+citation: S. Prahl, Optical absorption of haemoglobin, Oregon Medical Laser Center, after Gratzer and
+  Kollias. Tabulated base-10 molar extinction per mole of haemoglobin TETRAMER (64,500 g/mol).
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'Unresolved and RECORDED rather than resolved, which rule 7 permits: a licence governs DISTRIBUTION
+    only and never reading, computing with or scoring against. win.licences.release_gate is where this
+    would bite, at outward publication and nowhere earlier.'
+binding: unbound
+population:
+  n: null
+streams:
+- name: haemoglobin_molar_extinction
+  kind: measured
+  via: null
+  systematic_bias: MEASURED ON HAEMOLYSED HAEMOGLOBIN IN A CUVETTE. Red cells in flowing blood scatter
+    and are not optically identical, so the difference is a MODEL-CLASS term and not a measurement error
+    -- rule 4, and the reason a fit against these values is not a fit against blood.
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- static optical constants
+  spatial_support: none -- a spectrum, not a map
+absent:
+- scattering
+- water_absorption
+- cytochrome
+use:
+- calibrate
+- prior
+forbidden:
+- prahl-haemoglobin-extinction/* -> in-vivo whole-blood absorption without a scattering term
+- prahl-haemoglobin-extinction/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'A tabulation of physical constants: HELD OUT OF NOTHING and trusted for nothing on its own.
+    `group_by` names participant only because the schema requires a non-empty list and every consumer
+    of this table is grouped that way; nothing here is split, because there is nothing to split.'
+provenance:
+  imported_from: win-registry
+  card: prahl-haemoglobin-extinction
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

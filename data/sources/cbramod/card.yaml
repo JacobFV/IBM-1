@@ -1,0 +1,95 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cbramod
+title: CBraMod -- criss-cross brain foundation model for EEG
+provider: Zhejiang University and collaborators
+citation: 'Wang et al., CBraMod: A Criss-Cross Brain Foundation Model for EEG Decoding. ICLR 2025.'
+urls:
+- https://github.com/wjq-learning/CBraMod
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+streams:
+- name: criss_cross_attention
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. §53.2: the test is NOT leaderboard accuracy.
+    It is whether a representation survives new montages, devices, subjects, tasks and physically different
+    observation supports WITHOUT SILENTLY LEARNING CHANNEL IDENTITY AS ANATOMY. Separating spatial from
+    temporal attention makes the channel axis explicit, which is a step toward montage generality -- and
+    the spatial attention still operates over channel INDICES, not over electrode POSITIONS, so nothing
+    prevents it from learning that channel 17 means occipital.'
+  notes: 'no forward model and no electrode geometry: the mapping from channels to anatomy is learned
+    from data correlations, which is precisely what the physical observation model in obj-eeg-meg-observation
+    exists to replace'
+  band_hz:
+  - null
+  - null
+  temporal_support: patched EEG at a fixed resampled rate
+  spatial_support: EEG channels x time patches, with separate spatial and temporal attention -- the CHANNEL
+    AXIS IS TREATED AS A SET rather than as geometry, which is the architectural choice §53.2 is warning
+    about
+- name: cross_dataset_transfer
+  kind: measured
+  via: null
+  systematic_bias: transfer across datasets with the SAME montage is not the test; transfer across montages
+    and devices is
+  band_hz:
+  - null
+  - null
+absent:
+- electrode_geometry
+- forward_model
+- individual_anatomy
+- uncertainty
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: This model's channel axis is a set of names, not a set of positions -- the channel-identity
+    problem exactly. Its representation can be computed without any geometry, but relating it to a cortical
+    support, or transferring it to a montage it was not trained on, requires the electrode or sensor geometry
+    that the name stands in for.
+  substitute: Channel-name matching, which silently asserts that two electrodes sharing a label sat in
+    the same place on two different heads.
+use:
+- distil
+- evaluate
+forbidden:
+- cbramod/* -> observation-role likelihoods
+- cbramod/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: cbramod
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - criss_cross_attention
+    - cross_dataset_transfer
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

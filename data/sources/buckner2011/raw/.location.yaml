@@ -1,0 +1,5 @@
+# where the bytes for `buckner2011` actually live.  never the bytes themselves.
+source_url: "https://surfer.nmr.mgh.harvard.edu/fswiki/CerebellumParcellation_Buckner2011"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

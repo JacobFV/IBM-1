@@ -1,4 +1,3 @@
-```markdown
 # implicit brain model (ibm-1)
 
 the implicit brain model (ibm) is a multiscale probabilistic dynamical substrate from which task-specific explicit brain models are lazily materialized.
@@ -11,7 +10,9 @@ $$
 }
 $$
 
-resolution, datasets, observations, interventions, and explicit models are expressed through these four primitives rather than introduced as additional primitives.
+resolution, bandwidth, datasets, observations, interventions, and explicit models are expressed through these four primitives rather than introduced as additional primitives.
+
+the implicit structure exists independently of what any instrument can observe or any materialization can afford. evidence constrains what it constrains; elsewhere the structure remains at its prior, and is typically smooth or homogeneous. that is the machinery working, not failing.
 
 ## 1. fields
 
@@ -25,10 +26,16 @@ $$
 
 where:
 
-- $\Omega$ is the spatial support of the field
+- $\Omega$ is the support of the field
 - $q$ is a position on that support
 - $x(q)$ is the state associated with that position
 - $d$ is the number of state components at each position
+
+the ontology declares **components**. a materialization instantiates **state variables**: one component of one field at one position on its support. a component is a kind of physical quantity — membrane potential, $K^+$ concentration, flow rate. it is what processes exert pressure on, and it is never an encoding of something else.
+
+fields do not share a support. the cortical surface, the vascular tree, the interstitial volume and a sensor array are different domains with different notions of adjacency and distance. a support carries whatever coordinate frame its positions are expressed in, and every atlas, tractogram and dataset declares the frame it speaks. there is no universal spatial domain, and consequently no universal spatial operator.
+
+### materialization of a field
 
 a materialization chooses a region $R\subseteq\Omega$ and spatial resolution $r$:
 
@@ -74,36 +81,74 @@ where $e$ is an invasive electrode location.
 
 this is the basis of spatial laziness.
 
-### canonical uncertain state
+### when resolution earns its cost
 
-for a materialized field, concatenate its state variables into $\mathbf x$ and represent them in a laplacian basis:
+if the state over a region is smooth and every process acting there is linear, coarse-graining commutes with the dynamics: $F[R,r_{\text{fine}}]$ and $F[R,r_{\text{coarse}}]$ produce the same answer, and materializing the finer one is waste.
 
-$$
-\mathbf x=Uz
-$$
+resolution earns its cost only where that commutation breaks — a nonlinearity whose average is not the average's image, heterogeneity within a coarse cell, or a topology whose edges do not survive coarsening.
 
-$$
-z\sim\mathcal N(\mu,\Sigma)
-$$
+$r(q)$ should be derived from this, not from proximity to whatever we happen to be measuring.
 
-with
+### uncertain state
 
-$$
-LU=U\Lambda
-$$
+a state variable is not a value at an instant. it is a belief about its trajectory over a window.
 
-where $L$ is the laplacian associated with the materialized spatial support or interaction topology.
+*how* that uncertainty is carried is part of the field declaration, not a separate concept:
+
+| form | belief | appropriate when |
+|---|---|---|
+| scalar gaussian | $x\sim\mathcal N(\mu,\sigma^2)$ over the window | the component has one relevant timescale |
+| spectral gaussian | gaussian over temporal laplacian coefficients | several timescales interact within the component |
+
+blood has no meaningful structure above roughly $0.5\ \mathrm{Hz}$; a scalar gaussian carries its uncertainty adequately. neural population state is not like this: slow drift, theta, alpha and gamma interact within the same component, and collapsing them loses the interaction.
+
+learned latent embeddings are not a form of uncertain state. a latent is an encoding, not a physical quantity, and nothing exerts pressure on it. latents live inside a process's $f$ and are invisible to the state graph.
 
 gaussianity describes ibm-1's epistemic representation of uncertain state, not a claim that the underlying biological state is gaussian.
 
-the spectral representation gives ibm-1 explicit control over:
+### the spectral form
 
-- spatial bandwidth
-- uncertainty
-- interpolation
-- multiresolution truncation
-- heterogeneous evidence fusion
-- lazy computation
+where overlapping timescales interact within a component, take the laplacian of the **time** axis of that single state variable over a window of $N$ samples:
+
+$$
+L_t\varphi_k=\lambda_k\varphi_k,
+\qquad
+\lambda_k=4\sin^2\!\left(\frac{\pi k}{N}\right)
+$$
+
+and carry the belief in that basis:
+
+$$
+x=\sum_k z_k\varphi_k,
+\qquad
+z\sim\mathcal N(\mu,\Sigma)
+$$
+
+$L_t$ is a laplacian over time, for one state variable. it is not a laplacian over space; there is no shared spatial domain to take one over. spatial structure is carried entirely by interaction topologies (§3).
+
+three properties follow.
+
+**the laplacian spectrum is the power spectrum.** $\lambda_k$ is monotone in $\omega_k$, so a distribution over the laplacian spectrum is a distribution over the power spectral density. a diagonal $\Sigma$ is a stationary gaussian process; aperiodic $1/f^\beta$ background is a one-line prior.
+
+**amplitude and phase are separately representable.** every eigenvalue away from DC and nyquist is doubly degenerate, and its eigenspace is the $(\cos,\sin)$ pair at that frequency. an isotropic gaussian on that plane is known amplitude with uniform phase — the honest belief about an ongoing rhythm. an anisotropic one is phase preference — an evoked, phase-locked response. the same state variable expresses both, and the transition between them across a trial is what an evoked response is.
+
+**off-diagonal $\Sigma$ is cross-frequency structure.** diagonal is stationary; band-block correlation is phase–amplitude coupling; dense is an arbitrary transient. the covariance structure a model materializes is the hypothesis class it entertains.
+
+a process interacts with only the components of the spectrum that concern it. marginalizing a gaussian to a band is exact, so band-limited coupling costs nothing in accuracy: an fMRI observation contributes precision below $0.25\ \mathrm{Hz}$ and none above it, and no special case is required to say so. conduction delay and any linear time-invariant coupling are likewise diagonal — a phase ramp and a transfer function — rather than requiring per-edge history and a delay-bounded timestep.
+
+it costs, in exchange: a pointwise nonlinearity is local in time and dense in frequency, so a nonlinear $f$ must be evaluated in the time domain and re-analyzed, and does not preserve gaussianity. the window is finite, so continuity between windows is imposed rather than inherited.
+
+### bandwidth as a laziness axis
+
+spatial resolution $r(q)$ is spatial laziness. bandwidth is its temporal twin:
+
+$$
+F[R,r,B]
+$$
+
+where $B$ is the band materialized for the field over region $R$.
+
+both are budgeted, and the two budgets multiply. a whole-brain hemodynamic materialization is spatially broad and temporally narrow; a single-electrode spike materialization is spatially tiny and temporally wide.
 
 ### canonical fields
 
@@ -119,8 +164,48 @@ the spectral representation gives ibm-1 explicit control over:
 | material | conductivity, permittivity, density and mechanical properties |
 | thermal | temperature |
 | mechanical | displacement, velocity, stress, strain, pressure |
+| sensory transduction | photoreceptor and bipolar state, hair-cell displacement and transduction current, vestibular afferent drive, mechanoreceptor, thermoreceptor and nociceptor state, olfactory and gustatory receptor occupancy, visceral and baroreceptor state, adaptation |
+| effector | motor-unit recruitment and rate, muscle activation, contractile force, fatigue; extraocular, articulatory and autonomic effector state |
+| device | electrode contact voltage and impedance, coil current, array channel state, transducer drive, scanner sequence state, display and speaker output |
 
 additional fields should only be introduced when they represent state that cannot cleanly be expressed as components of an existing field.
+
+### sensorimotor, body and device state
+
+the last three fields are not a different kind of thing. a photoreceptor potential, a
+muscle activation and an eeg electrode voltage are state variables with values,
+uncertainty and interaction topologies to brain state, exactly as a thalamic membrane
+potential is. they are separate fields only because their supports are separate — the
+retina, the musculature and an instrument's contacts are not brain tissue — which is
+the same reason the vascular tree and the cortical surface are separate.
+
+three things that look like they need new fields do not:
+
+- **afferent and efferent traffic** is neural population state on peripheral supports:
+  retinal ganglion, spiral ganglion, dorsal root and cranial nerve, motor neuron pools,
+  autonomic ganglia. the neural field's support extends beyond the brain.
+- **limb, eye and articulator kinematics** is the mechanical field on body supports.
+- **visceral state** is the mechanical, blood and metabolic fields on visceral supports;
+  interoception is transduction from those.
+
+it follows that a stimulus, a movement and a measurement are not special:
+
+$$
+\text{stimulus}=\text{intervention on transduction state}
+$$
+
+$$
+\text{movement}=\text{evidence about effector state}
+$$
+
+$$
+\text{electrode voltage}=\text{device state}
+$$
+
+none of them is an input or an output of the model. they are ordinary state, coupled to
+the rest by ordinary processes, and a materialization that predicts a movement from a
+stimulus is doing the same thing as one that predicts blood oxygenation from population
+activity.
 
 ## 2. anatomical partitioning systems
 
@@ -197,6 +282,8 @@ anatomical partitioning systems provide the biological interpretation of multire
 
 for example, ibm-1 can represent the subcortex with a $500\ \mu\text m$ neural-population field while simultaneously mapping those state variables through thalamic nuclei, basal-ganglia compartments, hippocampal subfields, or other relevant anatomical systems.
 
+memberships enter processes as weights. a partition boundary is a gradient, not a wall.
+
 ## 3. interaction topologies
 
 an interaction topology specifies which materialized state variables may interact through some class of process.
@@ -226,7 +313,7 @@ a topology may additionally contain geometric information such as:
 - contact area
 - transport path
 
-interaction strength and dynamics generally belong to processes rather than to the topology itself.
+a topology is a *support* for interaction, not a weighting of it. interaction strength and dynamics belong to processes.
 
 canonical topologies include:
 
@@ -241,6 +328,9 @@ canonical topologies include:
 - electromagnetic spatial
 - mechanical
 - metabolic exchange
+- afferent pathway
+- efferent pathway
+- device coupling
 
 there is no universal interaction graph:
 
@@ -256,11 +346,9 @@ $$
 
 even when these topologies operate over overlapping state variables.
 
-the state graph is simply the set of currently materialized state variables.
+the state graph is simply the set of currently materialized state variables. interaction graphs are induced when a topology is applied to that materialized state.
 
-interaction graphs are induced when a topology is applied to that materialized state.
-
-learned effective connectivity is generally represented as learned process parameters over an interaction topology rather than as a separate fundamental topology.
+learned effective connectivity is represented as learned process parameters over an interaction topology rather than as a separate fundamental topology.
 
 ## 4. processes
 
@@ -320,9 +408,33 @@ $$
 \sum_p f_p(\mathbf x)
 $$
 
-### process uncertainty
+### what a process may write
 
-process parameters are uncertain:
+a process applies pressure to state, and may also apply pressure to the parameters of another process:
+
+$$
+\dot\theta_{p'}
+\mathrel{+}=
+f(\cdot)
+$$
+
+neuromodulation does this — a modulator multiplies a target population's input–output gain rather than injecting current into it — and so does plasticity, whose output is a parameter as much as a state. this requires no additional mechanism: $\theta$ is already part of the process schema, and pressure on it composes by summation exactly as pressure on state does.
+
+an instantaneous algebraic relation $x_O=g(x_I)$ — a quasi-static electromagnetic field determined by its source currents, an mr-observable signal determined by blood state — is the stiff limit of pressure,
+
+$$
+\dot x_O
+\mathrel{+}=
+-\gamma\left(x_O-g(x_I)\right),
+\qquad
+\gamma\to\infty
+$$
+
+and is a question of how it is solved, not of what it is.
+
+### dynamics and their uncertainty
+
+$(I,O,T)$ is ontology. $(f,\theta)$ is what we know about the dynamics, and it is uncertain:
 
 $$
 \theta\sim p(\theta)
@@ -354,6 +466,26 @@ p(\theta)
 p_{\text{weak}}(\theta)
 $$
 
+a process may carry more than one candidate form of $f$ — an analytic transfer function, a mass-action or conductance-based rate law, a table or atlas lookup, a learned module — and a materialization selects among them. this is not a separate primitive: a different $f$ is a different $p(\theta)$ over a differently shaped $\theta$, and $(I,O,T)$ is untouched. nothing about the process graph presumes $f$ is linear, differentiable, closed-form, or interpretable.
+
+most of the inventory in §5 will begin analytic and become learned as data accumulates. that transition changes $p(\theta)$ and no declaration.
+
+$f$ may also use state to set its own effective interaction weights, since $f$ depends on state by definition:
+
+$$
+w_{ij}
+=
+\underbrace{\exp(-d_{ij}/\ell)}_{\text{from }T}
+\cdot
+\underbrace{\sigma\!\left(\langle e_i,e_j\rangle\right)}_{\text{from }f}
+$$
+
+where $e_i$ is a learned embedding of the state at $i$. the topology still specifies which state variables *may* interact; $f$ decides how strongly they *do*, which is where interaction strength was always said to live.
+
+$\theta$ may be shared globally, per anatomical partition, as a function of a learned embedding, or held per position. this determines how many effective parameters exist and therefore what data could move them off their prior. it does not determine what exists: a per-position parameterization over $10^5$ cortical positions is a legitimate declaration even when no available dataset can distinguish its entries. the posterior simply stays near the prior, and the structure comes out smooth.
+
+### forging
+
 forging over heterogeneous datasets has the semantics of posterior updating:
 
 $$
@@ -374,6 +506,67 @@ this common mechanism covers:
 - heterogeneous supervised forging
 - distillation
 - subject-specific adaptation
+
+### distillation precision
+
+a teacher supplies a value where no measurement exists. that value enters as evidence
+and therefore carries a precision, and the precision is not free: it is calibrated from
+the teacher's own reported accuracy on the variable it is writing.
+
+if a teacher explains a fraction $r^2$ of the variance of a state variable, the residual
+variance is $(1-r^2)\operatorname{Var}[x]$, so the precision it may contribute is
+
+$$
+\Delta J_{\text{distilled}}
+=
+\frac{1}{(1-r^2)\operatorname{Var}[x]}
+$$
+
+a stimulus-to-brain encoder reporting $r^2=0.1$ — a respectable figure for that task —
+contributes roughly a tenth of the precision a perfect measurement would. distilling it
+at unit precision instead is the fastest way to make a model hold a teacher's biases as
+firmly as its own measurements.
+
+two corrections are mandatory beyond the nominal figure.
+
+**reported accuracy holds on the benchmark distribution.** used off that distribution the
+precision must be inflated, and by how much is itself uncertain — so the inflation is a
+process parameter with a prior, not a constant.
+
+**a teacher's errors are correlated across everything it writes.** a model writing $10^4$
+cortical positions does not supply $10^4$ independent constraints; its residuals share
+structure. model the teacher's residual covariance as a diagonal part plus a low-rank
+part capturing the shared error directions,
+
+$$
+R
+=
+\operatorname{diag}\!\left((1-\rho)\,v\right)
++
+BB^{\top},
+\qquad
+B\in\mathbb R^{n\times q}
+$$
+
+where $\rho$ is the fraction of the teacher's error variance that is shared and $q$ is
+the rank of that sharing. the precision it contributes is the inverse of that, which by
+the woodbury identity is a diagonal **minus** a rank-$q$ correction:
+
+$$
+\Delta J
+=
+R^{-1}
+=
+D^{-1}-D^{-1}B\left(I+B^{\top}D^{-1}B\right)^{-1}B^{\top}D^{-1}
+$$
+
+it is worth being exact about the sign, because the intuition points the wrong way: a
+teacher's shared error does not *add* a low-rank constraint, it *subtracts* the
+confidence that correlated values would otherwise appear to supply. at $\rho=0.9$, $10^4$
+distilled values contribute the precision of roughly one independent measurement.
+
+a distilled value is therefore always distinguishable from a measured one in the
+materialized model's provenance, and the two never carry the same weight by default.
 
 ### state uncertainty propagation
 
@@ -396,7 +589,9 @@ p(\theta)
 \right)
 $$
 
-ibm-1 approximates the resulting state using its canonical laplacian-spectral gaussian representation.
+ibm-1 projects the result back onto each component's declared form of uncertain state.
+
+for a linear $f$ this projection is exact. for a nonlinear or learned $f$ it is not, and the general mechanism is sampling followed by moment matching. the projection is where non-gaussian structure is discarded — deliberately and visibly — and the ensemble width it requires is a real cost that scales with how much of a materialized graph is learned rather than analytic.
 
 ### gaussian evidence fusion
 
@@ -426,7 +621,7 @@ $$
 
 high-confidence evidence therefore contributes greater precision than low-confidence evidence.
 
-this is distinct from the dynamical pressure applied by processes.
+this is distinct from the dynamical pressure applied by processes: pressure moves state, evidence constrains it, and the two compose by different rules.
 
 ## 5. initial process inventory
 
@@ -454,9 +649,14 @@ this is distinct from the dynamical pressure applied by processes.
 | interstitial transport | interstitial state → neighboring interstitial state | spatial |
 | thermal diffusion | temperature + metabolic heat + blood → temperature | spatial + vascular |
 | mechanical propagation | mechanical + material + fluid state → mechanical state | spatial |
+| transduction | physical field state at a receptor surface → afferent population drive | receptor |
+| afferent propagation | afferent population activity → brainstem, thalamic and primary sensory population state | afferent pathway |
+| efferent propagation | motor and autonomic population activity → motor-unit and effector drive | efferent pathway |
+| effector activation | motor-unit drive → muscle activation, force, and the mechanical state of the body | effector |
+| device coupling | brain, body or device field state ↔ device element state | device coupling |
 | plasticity | activity history + modulatory + structural state → structural state and process parameters | local + tractometric |
 
-a process may exist in the ibm ontology without having a high-confidence implementation.
+a process may exist in the ibm ontology without having a high-confidence $f$.
 
 uncertainty in $\theta$ represents uncertainty in the corresponding dynamics rather than requiring ibm-1 to invent precision where the science does not provide it.
 
@@ -490,9 +690,7 @@ $$
 p(y\mid x_{\text{electrode}})
 $$
 
-the electrode voltage remains ordinary ibm state.
-
-the observation is simply evidence constraining it.
+the electrode voltage remains ordinary ibm state. the coupling is an ordinary process. the observation is simply evidence constraining it.
 
 ### intervention
 
@@ -531,7 +729,7 @@ M
 =
 \operatorname{materialize}
 (
-R,r,F,A,T,P
+R,r,B,F,A,T,P
 )
 $$
 
@@ -539,28 +737,103 @@ where:
 
 - $R$ specifies spatial regions
 - $r$ specifies resolution over those regions
+- $B$ specifies bandwidth over those regions
 - $F$ specifies fields
 - $A$ specifies anatomical partitioning systems
 - $T$ specifies interaction topologies
 - $P$ specifies processes
 
-dependency tracing determines which state variables and processes must actually be instantiated.
+dependency tracing determines which state variables and processes must actually be instantiated. every process reachable from a target is materialized. the process graph is finite, so the core clique is shared across most materializations, and $R$, $r$ and $B$ are the levers by which materializations actually differ.
 
-an explicit model therefore materializes only the field components, anatomical information, interactions, and dynamics required to produce or constrain its target state.
+a materialized model carries provenance: which $f$ was selected per process, which parameters were moved off their prior by evidence and which were not, and where a process was run outside the resolution or bandwidth regime in which its $f$ is meaningful. a prediction resting on prior-dominated structure must not be presented with the confidence of one resting on constrained structure.
 
-examples include:
+candidate explicit models include:
 
-- `ibm-1-eeg-predict`
-- `ibm-1-eeg-to-image`
-- `ibm-1-meg-to-text`
-- `ibm-1-fmri-infill`
-- `ibm-1-invasive-bci`
-- `ibm-1-tms-response`
-- `ibm-1-macro-surrogate`
+| group | models |
+|---|---|
+| electrophysiological forward | `eeg-forward`, `meg-forward`, `ecog-forward`, `lfp-forward`, `csd-laminar` |
+| electrophysiological inverse | `eeg-source`, `meg-source`, `eeg-predict` |
+| decoding | `eeg-to-image`, `meg-to-text`, `speech-envelope`, `invasive-bci`, `spike-decode` |
+| hemodynamic | `bold-forward`, `fmri-infill`, `hrf`, `fnirs-forward` |
+| stimulation response | `tms-response`, `tes-response`, `tfus-response`, `dbs-response` |
+| state and disorder | `seizure-propagation`, `sleep-dynamics`, `anesthesia`, `pharmaco`, `virtual-lesion` |
+| slow and physiological | `glymphatic`, `thermal-safety`, `plasticity` |
+| surrogate | `macro-surrogate`, `resting-state-fc` |
 
 all are materialized views of the same implicit model rather than independently defined brain models.
 
-## 8. core schema
+the sources these are fitted and evaluated against are inventoried in
+[EVIDENCE.md](EVIDENCE.md), and their cards live in `data/sources/`.
+
+## 8. organization
+
+the codebase mirrors the four primitives. nothing else may become a peer of them.
+
+```
+ibm/
+  registry.py          one namespace: register, resolve, validate, print
+  vocabulary.py        controlled ids, synonym table, collision refusal
+  frames.py            coordinate frames
+
+  fields/              F = {x(q) : q in Omega}
+    supports.py          the domains fields are indexed over
+    uncertainty/         how a belief about a component is carried
+      scalar.py
+      spectral.py        the temporal laplacian
+    neural.py  extracellular.py  electromagnetic.py  blood.py  csf.py
+    metabolic.py  structural.py  material.py  thermal.py  mechanical.py
+    transduction.py  effector.py  device.py
+
+  anatomy/             a(q) in [0,1]^k
+    systems.py  sources.py
+
+  topologies/          T(i,j)
+    builders.py
+    local.py  surface.py  laminar.py  tract.py  vascular.py
+    interstitial.py  csf.py  em.py  mechanical.py  metabolic.py
+    afferent.py  efferent.py  device.py
+
+  processes/           P = (I, O, T, f, theta)
+    neural.py  ionic.py  transmitter.py  neuromodulation.py  electromagnetic.py
+    vascular.py  metabolic.py  csf.py  thermal.py  mechanical.py  plasticity.py
+    transduction.py  effector.py  device.py
+    observation.py  intervention.py
+    nn.py                reusable learned building blocks for f
+
+  materialize/         M = materialize(R, r, B, F, A, T, P)
+    request.py  trace.py  build.py  model.py  provenance.py  cache.py
+    library/             the named explicit models
+
+  runtime/             executing a materialized model
+    state.py  step.py  fuse.py
+
+  forge/               p(theta | D)
+    fit.py  priors.py  bind.py     # binds data/sources cards to registered components
+```
+
+four placements follow from the architecture rather than from convenience:
+
+- **there is no `observe/` directory.** §6 states that observations and interventions are not primitives; giving them peer status would contradict that. electrode coupling is an ordinary process, and the measurement likelihood is evidence.
+- **there is no `spatial/` directory.** $\Omega$ belongs to fields, atlas sources belong to anatomy, and $\operatorname{grid}(R,r)$ belongs to materialization. nothing coherent remains.
+- **forms of uncertain state live under `fields/`.** how a belief is carried is part of the field declaration, not a concept alongside the four. the temporal laplacian is one file, two levels down; if it were removed the ontology would not notice.
+- **candidate forms of $f$ live beside their process declaration.** they are alternative dynamics for one process, not a parallel tree.
+
+### the registry
+
+the way an ontology of this size normally fails is not that it is wrong. it is that after two years there are hundreds of components and processes declared across dozens of files, several pairs of which are the same thing under different names and several more of which almost are, until no one can say which processes are actually coupled.
+
+so nothing exists unless it is registered:
+
+- every component and every process is declared exactly once, in one registry
+- ids are checked against a grammar and a controlled vocabulary
+- two ids that normalize to the same token multiset are refused, not warned about
+- $I$ and $O$ name registered components; a typo is a declaration error, not a silently empty coupling
+- sealing the registry rejects unregistered topologies, dead components, writes above a component's declared band, and any process coupling two forms of uncertain state with no declared conversion between them
+- every lossy conversion declares what it destroys, and appears in materialization provenance
+
+the whole ontology must be printable as one table. if it is not, it has already begun to sprawl.
+
+## 9. core schema
 
 $$
 \boxed{
@@ -582,4 +855,3 @@ $$
 \text{lazy materialization of the ibm}
 }
 $$
-```

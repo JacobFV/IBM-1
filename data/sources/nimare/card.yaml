@@ -1,0 +1,67 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nimare
+title: NiMARE -- Neuroimaging Meta-Analysis Research Environment
+provider: NBC Lab / NiMARE developers
+citation: 'Salo et al., NiMARE: Neuroimaging Meta-Analysis Research Environment. Aperture Neuro 2023.'
+urls:
+- https://nimare.readthedocs.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+streams:
+- name: meta_analytic_estimators
+  kind: measured
+  via: null
+  systematic_bias: NiMARE implements SEVERAL meta-analytic estimators (ALE, MKDA, KDA, image-based methods)
+    over the same coordinates. The spread between them on identical input is a direct measurement of estimator-choice
+    uncertainty, which is the useful thing here and is invisible when a single method's output is quoted.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: meta-analytic estimation over coordinate or image datasets in MNI space
+- name: spatial_uncertainty_kernels
+  kind: measured
+  via: null
+  systematic_bias: ALE's kernel width is an explicit model of how uncertain a reported peak coordinate
+    is -- which is exactly the quantity §56.7's literature-derived activation patches need, and it is
+    already formalised here rather than needing invention
+  band_hz:
+  - null
+  - null
+- name: meta_analytic_null_models
+  kind: measured
+  via: null
+  systematic_bias: Monte Carlo null distributions over coordinate sets are the floor a meta-analytic map
+    must clear
+  band_hz:
+  - null
+  - null
+absent:
+- participant_level_data
+- unthresholded_source_maps
+use:
+- calibrate
+- control
+- prior
+forbidden:
+- nimare/* -> observation-role likelihoods
+- nimare/* -> instantaneous subject state
+- nimare/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: nimare
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

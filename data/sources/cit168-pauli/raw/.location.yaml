@@ -1,0 +1,5 @@
+# where the bytes for `cit168-pauli` actually live.  never the bytes themselves.
+source_url: "https://www.nature.com/articles/sdata201863"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

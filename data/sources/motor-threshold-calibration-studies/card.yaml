@@ -1,0 +1,77 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: motor-threshold-calibration-studies
+title: Motor threshold calibration studies
+provider: multiple -- TMS dosing methodology literature
+citation: PROMPT.md §52.13, 'motor-threshold calibration studies'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- coil_frame
+- head
+- subject_native
+streams:
+- name: motor_threshold_as_dose_unit
+  kind: measured
+  via: null
+  systematic_bias: 'MOTOR THRESHOLD IS THE FIELD''S DOSING UNIT AND IT IS A CORTICOSPINAL MEASUREMENT
+    AT ONE SITE. Expressing stimulation of prefrontal cortex as ''110 percent of motor threshold'' assumes
+    the field-to-effect relationship transfers across cortex, which it does not: scalp-to-cortex distance,
+    gyral geometry and local excitability all differ. This is the clearest everyday instance of §52.13''s
+    requested-versus-delivered confusion.'
+  notes: threshold depends on coil orientation, background muscle state, time of day and attention; it
+    is a noisy measurement treated as a constant
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: the relationship between stimulator output, coil-to-cortex distance, individual anatomy
+    and the intensity at which a motor evoked potential appears
+- name: distance_correction_models
+  kind: measured
+  via: null
+  systematic_bias: published distance-adjustment formulas are empirical fits, and an individualised field
+    model supersedes them rather than being calibrated by them
+  band_hz:
+  - null
+  - null
+absent:
+- delivered_field_measurement
+- non_motor_site_thresholds
+- public_datasets
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The delivered quantity is an induced electric field throughout the head, set by the coil's
+    winding geometry and its pose relative to the anatomy. Without the device product the stimulation
+    is recorded as a machine setting rather than as a dose at any cortical location, and the four stages
+    of an intervention collapse into one.
+- geometry: literature-derived-geometry
+  severity: blocking
+  without_it: 'The spatial arrangement this source depends on is described in its paper and figures rather
+    than distributed with the data: the navigation frame, the target definition or the pose convention
+    is not in the repository. It has to be reconstructed from the publication, as a derived product that
+    says so, before any number here can be placed.'
+use:
+- calibrate
+forbidden:
+- motor-threshold-calibration-studies/* -> dose claims at non-motor sites without an individualised field
+  model
+- motor-threshold-calibration-studies/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: motor-threshold-calibration-studies
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

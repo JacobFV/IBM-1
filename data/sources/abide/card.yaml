@@ -1,0 +1,145 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: abide
+title: ABIDE I and ABIDE II -- Autism Brain Imaging Data Exchange
+provider: ABIDE consortia, distributed by FCP/INDI on NITRC and mirrored on AWS S3
+citation: 'Di Martino et al., The autism brain imaging data exchange: towards a large-scale evaluation
+  of the intrinsic brain architecture in autism. Molecular Psychiatry 19(6):659-667, 2014; Di Martino
+  et al., Enhancing studies of the connectome in autism using the autism brain imaging data exchange II.
+  Scientific Data 4:170010, 2017.'
+urls:
+- https://fcon_1000.projects.nitrc.org/indi/abide/abide_I.html
+- https://fcon_1000.projects.nitrc.org/indi/abide/abide_II.html
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: THE TWO RELEASES DIFFER AND THE DIFFERENCE IS VERIFIED, NOT ASSUMED. ABIDE I's own distribution
+    page states Creative Commons Attribution-NonCommercial (no version given, so no SPDX id is asserted
+    here). ABIDE II's distribution page states NO LICENCE AT ALL -- checked, and absent, not merely unfetched
+    -- and the Scientific Data paper's Data Records and Usage Notes contain no licence sentence either.
+    The article's own CC-BY is the ARTICLE's licence and must not be carried across to the data. Do not
+    propagate ABIDE I's terms to ABIDE II. Download requires a NITRC login and FCP/INDI registration.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: 'ABIDE I: 1,112 datasets, 539 ASD and 573 controls, 17 sites. ABIDE II: the distribution page
+    says 521 ASD + 593 controls = 1,114 across 19 sites, while the paper says 1,044 individuals (487 ASD,
+    557 controls) across 17 collections at 16 institutions -- the page reflects post-publication additions.
+    n is left null because the two disagree; count at acquisition. ABIDE II adds longitudinal follow-up
+    for 38 individuals in two pilot collections.'
+frames:
+- scanner_per_site
+- MNI152
+streams:
+- name: resting_state_bold
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift and between-session hardware change
+  - site, which is confounded with cohort because each site contributed its own participants
+  - scanner vendor, field strength, coil and sequence differ between sites
+  - head-motion distributions differ systematically between diagnostic groups and inflate every connectivity
+    contrast in the direction of the group that moves more
+  systematic_bias: 'The motion confound in ABIDE is not a technicality: the diagnostic groups differ in
+    head motion, motion changes measured connectivity in the direction the literature reports as the group
+    effect, and no scrubbing scheme removes a confound aligned with the grouping. Authority is low for
+    that reason and not because the data are small.'
+  band_hz:
+  - null
+  - null
+  temporal_support: per-site TRs varying several-fold across sites. A pooled analysis mixes sampling clocks
+    and the mixing is confounded with site
+  spatial_support: resting-state and structural MRI at every site; diffusion from 6 ABIDE II collections
+    covering 284 datasets
+- name: site_heterogeneity
+  kind: measured
+  via: null
+  systematic_bias: '17-19 independent sites is a genuine generalisation test: a method that works within
+    site and fails across site has learned the scanner. That is a control that can fail, which is what
+    makes it worth running.'
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: phenotype
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: diagnostic_instruments
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- meg
+- eeg
+- intervention
+- task_fmri_at_most_sites
+- harmonised_acquisition
+- abide_ii_licence
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- evaluate
+- fit
+- prior
+forbidden:
+- abide/* -> a diagnostic-group contrast that does not carry site and motion as modelled terms
+- abide/* -> an artifact, for ABIDE II, until its licence is resolved
+- abide/* -> a commercial artifact, for ABIDE I (non-commercial term)
+split:
+  group_by:
+  - participant
+  - site
+  - session
+  notes: 'Site must be a split axis, not merely a covariate: within-site cross-validation reports a number
+    that does not survive a new scanner.'
+provenance:
+  imported_from: win-registry
+  card: abide
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

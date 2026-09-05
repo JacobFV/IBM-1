@@ -1,0 +1,59 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: buckner2011
+title: Buckner cerebellar functional-connectivity atlas
+provider: Buckner lab / Harvard
+citation: Buckner et al., The organization of the human cerebellum estimated by intrinsic functional connectivity.
+  Journal of Neurophysiology 2011.
+urls:
+- https://surfer.nmr.mgh.harvard.edu/fswiki/CerebellumParcellation_Buckner2011
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- SUIT
+streams:
+- name: cerebellar_network_labels
+  kind: measured
+  via: null
+  systematic_bias: A WINNER-TAKE-ALL assignment of cerebellar voxels to cerebral networks based on resting
+    BOLD correlation. It is a functional association map twice over -- the cerebral networks are themselves
+    a clustering -- and cerebellar BOLD is contaminated by the nearby transverse sinus and by respiratory
+    motion.
+  notes: the winner-take-all step discards the fact that cerebellar voxels correlate substantially with
+    several networks
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: cerebellar voxels assigned to the cerebral cortical network with which they correlate
+    most strongly at rest, in 1,000 participants
+absent:
+- anatomical_ground_truth
+- individual_variation
+- directionality
+- boundary_uncertainty
+use:
+- calibrate
+- prior
+forbidden:
+- buckner2011/* -> anatomical or effective connectivity claims
+- buckner2011/* -> a merged single cerebellar parcellation
+- buckner2011/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: buckner2011
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

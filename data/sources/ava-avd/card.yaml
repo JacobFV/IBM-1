@@ -1,0 +1,64 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ava-avd
+title: AVA-AVD -- audio-visual speaker diarisation in the wild
+provider: Multiple institutions (AVA benchmark family)
+citation: 'Xu et al., AVA-AVD: Audio-visual Speaker Diarization in the Wild. ACM MM 2022.'
+urls:
+- https://github.com/showlab/AVA-AVD
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Annotations distributed; footage third-party. Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - session
+  notes: 'Speaker diarisation annotations over AVA movie clips: who speaks when, with the speaking face
+    localised in frame.'
+frames:
+- broadcast_edit
+- image_plane
+streams:
+- name: diarisation_annotations
+  kind: imposed
+  via: null
+  systematic_bias: who-speaks-when is a genuine world-structure fact and is exactly the kind of event
+    boundary a listener's brain must be tracking
+  band_hz:
+  - null
+  - null
+  temporal_support: speaker-turn intervals at sub-second resolution
+  spatial_support: edited film footage; the active speaker's face is localised per frame
+- name: active_speaker_face_boxes
+  kind: imposed
+  via: null
+  systematic_bias: audio-visual binding of a voice to a face, which is a cross-modal correspondence rather
+    than an annotation convention
+  band_hz:
+  - null
+  - null
+- name: ava_clip_ids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- the_video_itself
+- any_neural_measurement
+- gaze
+use:
+- fit
+forbidden:
+- ava-avd/* -> any cortical state directly
+split:
+  group_by:
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: ava-avd
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,84 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ismrm2015-tractography-challenge
+title: ISMRM 2015 Tractography Challenge -- simulated ground-truth bundles and submitted algorithm outputs
+provider: Tractometer / Universite de Sherbrooke
+citation: Maier-Hein et al., The challenge of mapping the human connectome based on diffusion tractography.
+  Nature Communications 2017.
+urls:
+- https://tractometer.org/ismrm2015/dwi_data/
+access: held
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distribution terms.
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - participant
+  notes: ONE simulated phantom brain with 25 KNOWN ground-truth bundles, plus the tractograms submitted
+    by 20 research groups running 96 distinct pipelines. The submitted outputs are as valuable as the
+    phantom.
+frames:
+- phantom_native
+streams:
+- name: ground_truth_bundles
+  kind: measured
+  via: null
+  systematic_bias: '§51.3 item 22 is emphatic: use this to QUANTIFY TRACTOGRAPHY ERROR, NOT BIOLOGICAL
+    PREVALENCE. The phantom''s bundles were chosen by the organisers; the fact that a bundle exists in
+    the phantom says nothing about how common it is in people. The simulation is also simpler than real
+    tissue, so measured error rates here are a LOWER BOUND on real error.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: a simulated diffusion volume generated FROM a known fibre geometry, so the answer is
+    available by construction -- the only source in the registry where tractography can be scored against
+    truth rather than against consensus
+- name: submitted_tractograms
+  kind: measured
+  via: null
+  systematic_bias: 96 pipelines producing 96 different answers from IDENTICAL input is the cleanest available
+    measurement of model-class uncertainty in tractography (§39). The headline result -- large numbers
+    of false-positive bundles across essentially all pipelines -- is the control that a tractography-derived
+    connectome must be quoted against
+  band_hz:
+  - null
+  - null
+- name: scoring_results
+  kind: measured
+  via: null
+  systematic_bias: '§46: a number without its floor is not a result, and this dataset IS the floor for
+    any structural connectivity claim'
+  band_hz:
+  - null
+  - null
+- name: simulated_dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- biological_tissue
+- real_acquisition_artifacts
+- population
+- biological_prevalence
+use:
+- control
+- evaluate
+- surrogate
+forbidden:
+- ismrm2015-tractography-challenge/* -> biological prevalence claims
+- ismrm2015-tractography-challenge/* -> observation-role likelihoods
+split:
+  group_by:
+  - run
+  notes: a phantom fixture; participant splits do not apply
+provenance:
+  imported_from: win-registry
+  card: ismrm2015-tractography-challenge
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

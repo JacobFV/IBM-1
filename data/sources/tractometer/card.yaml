@@ -1,0 +1,56 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tractometer
+title: Tractometer -- tractography evaluation system
+provider: Universite de Sherbrooke / SCIL
+citation: 'Cote et al., Tractometer: towards validation of tractography pipelines. Medical Image Analysis
+  2013.'
+urls:
+- https://tractometer.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- phantom_native
+streams:
+- name: tractography_scoring
+  kind: measured
+  via: null
+  systematic_bias: The scoring system that produced the ISMRM 2015 challenge's headline error rates. Its
+    metrics -- valid bundles, invalid bundles, overlap, overreach -- are the vocabulary in which a tractography
+    claim can be falsified, and §46 requires a control that could have failed. This is that control's
+    implementation.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: scores a tractogram against a phantom's known bundles
+- name: invalid_bundle_metric
+  kind: measured
+  via: null
+  systematic_bias: counting FALSE-POSITIVE bundles is the metric most tractography papers omit and the
+    one that matters most
+  band_hz:
+  - null
+  - null
+absent:
+- biological_ground_truth
+use:
+- control
+- surrogate
+forbidden:
+- tractometer/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: tractometer
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,1 @@
+# sha256 manifest for ppg-benchmark-collections; written on acquisition

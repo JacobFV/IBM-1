@@ -1,0 +1,48 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mirage
+title: MIRAGE -- adaptive multimodal gating for whole-brain fMRI encoding
+provider: Gokce, AlKhamissi and Schrimpf (EPFL)
+citation: 'A. Gokce, B. AlKhamissi and M. Schrimpf, "MIRAGE: Adaptive multimodal gating for whole-brain
+  fMRI encoding", arXiv:2605.29850, 2026.'
+urls:
+- https://arxiv.org/abs/2605.29850
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- unresolved
+streams:
+- name: architecture_and_results
+  kind: measured
+  via: null
+  systematic_bias: Named in §53.1 without a resolvable reference in §59. Registered so the name is not
+    silently dropped; identifying the actual artifact is the unblock condition.
+  band_hz:
+  - null
+  - null
+  temporal_support: unresolved
+  spatial_support: unresolved
+absent:
+- everything_unverified
+use:
+- prior
+forbidden:
+- mirage/* -> anything until the model is identified
+- mirage/* -> observation-role likelihoods
+- mirage/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: mirage
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

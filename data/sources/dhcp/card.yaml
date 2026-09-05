@@ -1,0 +1,159 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: dhcp
+title: dHCP -- developing Human Connectome Project (fetal and neonatal)
+provider: King's College London / Imperial College London / University of Oxford
+citation: Edwards et al., The Developing Human Connectome Project neonatal data release. Frontiers in
+  Neuroscience 2022; Hughes et al., A dedicated neonatal brain imaging system. Magnetic Resonance in Medicine
+  2017.
+urls:
+- http://www.developingconnectome.org/
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Access is by registration and acceptance of data-use terms; the exact terms have not been read.
+    Neonatal and fetal imaging of identifiable minors -- treat consent scope as unresolved until the terms
+    are read, not as permissive.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - site
+  notes: n left null rather than guessed; releases differ and the count must be read from the release
+    actually obtained.
+frames:
+- scanner
+- subject_native
+- dhcp_neonatal_template
+streams:
+- name: neonatal_bold_rest
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away. In the neonate the coupling itself is developing and the polarity
+    of the haemodynamic response is not assumed to match the adult'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift and between-session hardware change
+  - immature neurovascular coupling, which changes the sign and shape of the response rather than merely
+    its amplitude
+  - sleep state during the scan, which is not controlled and is not recorded as a state
+  systematic_bias: 'Every adult-derived prior in this registry -- parcellation, tract atlas, receptor
+    map, haemodynamic response function -- is WRONG here in a way that an age covariate does not fix.
+    That is precisely why the dataset is worth holding: it is a control on how much of the substrate''s
+    structure is an adult-population artefact.'
+  band_hz:
+  - null
+  - null
+  temporal_support: sub-second multiband BOLD TR; the developmental axis (post-menstrual age at scan)
+    is a second, much slower clock and the two must not be conflated
+  spatial_support: high-resolution neonatal-optimised structural, multi-shell diffusion and high-temporal-resolution
+    multiband BOLD on a dedicated neonatal coil
+- name: neonatal_dwi
+  kind: measured
+  via: null
+  observation_chain: water displacement over the diffusion time within and around axons and cells -> gradient-direction-dependent
+    signal attenuation -> reconstructed q-space or orientation distribution. ORIENTATION EVIDENCE, not
+    an observation of a tract. Myelination is incomplete, so diffusion anisotropy at this age reflects
+    axonal packing and water content far more than myelin
+  confounds:
+  - eddy-current and susceptibility distortion
+  - motion between diffusion directions
+  - partial volume of crossing fibres, which no single-tensor model represents
+  - the fitting model itself (DTI vs. CSD vs. NODDI) is a choice with its own bias
+  - high free-water content in immature white matter, which biases every tensor-derived scalar
+  band_hz:
+  - null
+  - null
+- name: developmental_trajectory
+  kind: measured
+  via: null
+  systematic_bias: Preterm infants are scanned at term-equivalent age; gestational age at birth and age
+    at scan are separate axes and collapsing them is a standard error here.
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: physiology
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: clinical_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- meg
+- eeg
+- ieeg
+- pet
+- intervention
+- task_fmri
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  for_streams:
+  - neonatal_dwi
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- fit
+- prior
+forbidden:
+- dhcp/* -> adult haemodynamic response parameters
+- dhcp/* -> intervention response parameters
+split:
+  group_by:
+  - participant
+  - session
+  - site
+  notes: Twins are present in neonatal cohorts; family structure must be resolved before a split is called
+    leakage-safe.
+provenance:
+  imported_from: win-registry
+  card: dhcp
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

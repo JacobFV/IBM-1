@@ -1,0 +1,116 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds004194
+title: ds004194 -- visual electrocorticography dataset
+provider: OpenNeuro ds004194
+citation: Visual ECoG dataset (named in PROMPT.md §52.5).
+urls:
+- https://openneuro.org/datasets/ds004194
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. Clinical intracranial recordings.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: n unresolved. Visual-cortex ECoG with controlled stimuli is the direct local-electrophysiology
+    complement to the retinotopy fMRI in §52.3.
+frames:
+- electrode_native
+- subject_native
+- display
+- visual_field_polar
+streams:
+- name: ecog
+  kind: measured
+  via: null
+  observation_chain: current sources within millimetres of the contact -> local volume conduction over
+    a short path -> contact surface area, impedance and referencing scheme -> sampled voltage; spatial
+    support is the contact neighbourhood, not a parcel
+  confounds:
+  - 'clinical pathology at the electrode: this is a patient population, not a healthy one'
+  - medication state and post-implant recovery
+  - referencing scheme (common average vs. bipolar) reshaping the apparent field
+  - epileptiform activity contaminating putative task responses
+  - dura and CSF between the grid and cortex, which the contact geometry model must include
+  systematic_bias: ECoG over visual cortex measures the SAME quantity a retinotopy fMRI infers, at millisecond
+    resolution and millimetre support. Disagreement between the two is a direct test of the BOLD observation
+    model rather than of the retinotopy.
+  notes: grid contacts sample the cortical surface at fixed spacing regardless of where the functional
+    boundaries are
+  band_hz:
+  - null
+  - null
+  temporal_support: ECoG at kHz sampling; controlled stimulus events
+  spatial_support: subdural grid contacts over visual cortex, individually localised; the contact spacing
+    sets the spatial support and it is millimetres
+- name: visual_stimuli
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: electrode_localisation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: retinotopic_estimates
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- scalp_eeg
+- fmri_in_same_session
+- eye_tracking
+- healthy_controls
+requires:
+- geometry: device-geometry
+  for_streams:
+  - ecog
+  severity: blocking
+  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
+    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
+    channel is an index and nothing measured here can be attached to a cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - visual_stimuli
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- fit
+forbidden:
+- ds004194/* -> healthy population priors without pathology conditioning
+- ds004194/* -> whole-cortex state outside contact neighbourhoods
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: ds004194
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

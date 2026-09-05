@@ -1,0 +1,56 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brain-image-library
+title: Brain Image Library (BIL)
+provider: Pittsburgh Supercomputing Center and the University of Pittsburgh Center for Biological Imaging
+citation: 'Kenney et al., The Brain Image Library: a community-contributed microscopy resource for neuroscientists.
+  Scientific Data 11:1212, 2024. doi:10.1038/s41597-024-03761-8. RRID SCR_017272.'
+urls:
+- https://www.brainimagelibrary.org
+access: reference
+licence:
+  name: CC-BY-SA-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'The official citation page states Creative Commons Attribution-ShareAlike 4.0 International.
+    NOTE A CONFLICT: the re3data registry entry says CC BY 4.0. The provider''s own page is taken as authoritative
+    and the disagreement is recorded rather than silently resolved. SHARE-ALIKE IS LOAD-BEARING: anything
+    derived from BIL data inherits it. Restricted datasets and uploads need registration under BICCN terms,
+    which are unresolved.'
+binding: unbound
+population:
+  n: null
+frames:
+- specimen_native
+- ccf_registered_where_provided
+streams:
+- name: whole_brain_light_microscopy
+  kind: measured
+  via: null
+  systematic_bias: Single-neuron morphologies at whole-brain scale are the strongest available prior on
+    what an anatomical interaction path can physically be. They are almost entirely mouse, and the mouse-to-human
+    step is not a scaling factor.
+  notes: clearing and sectioning deform tissue; reconstructions are traced, and tracing is an algorithm
+    plus a human
+  band_hz:
+  - null
+  - null
+  temporal_support: none; fixed-tissue anatomy
+  spatial_support: whole-brain volumetric light microscopy -- confocal, serial two-photon tomography and
+    fMOST -- plus neuron and cell morphology reconstructions
+absent:
+- in_vivo_function
+- human_data_at_scale
+- uniform_registration
+use:
+- prior
+forbidden:
+- brain-image-library/* -> any human state channel without an explicit cross-species mapping
+- brain-image-library/* -> an artifact that does not carry the share-alike term
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: brain-image-library
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

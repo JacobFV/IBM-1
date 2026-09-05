@@ -1,0 +1,58 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mriqc
+title: MRIQC -- automated MRI quality control
+provider: Poldrack lab / NiPreps
+citation: 'Esteban et al., MRIQC: Advancing the automatic prediction of image quality in MRI from unseen
+  sites. PLoS ONE 2017.'
+urls:
+- https://mriqc.readthedocs.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+streams:
+- name: image_quality_metrics
+  kind: measured
+  via: null
+  systematic_bias: IQMs are a MEASUREMENT-VARIANCE component made explicit per scan, which §39 wants and
+    which is usually replaced by a binary include/exclude decision. Excluding scans on quality grounds
+    is a censoring mechanism, and if it correlates with the variable of interest -- age, clinical status,
+    motion tendency -- it biases everything downstream. That censoring belongs in `missingness`, not in
+    a preprocessing footnote.
+  band_hz:
+  - null
+  - null
+  temporal_support: framewise metrics for functional runs; scalar summaries per structural scan
+  spatial_support: image-quality metrics per scan, in the input's own space
+- name: cross_site_quality_comparison
+  kind: measured
+  via: null
+  systematic_bias: IQM distributions differ systematically between sites and scanners, so a fixed threshold
+    excludes different people at different sites
+  band_hz:
+  - null
+  - null
+absent:
+- ground_truth_quality
+- biological_content
+use:
+- calibrate
+forbidden:
+- mriqc/* -> undeclared exclusion of data (exclusion is censoring and must be recorded in missingness)
+- mriqc/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: mriqc
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

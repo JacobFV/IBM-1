@@ -1,0 +1,89 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: video-jepa-family
+title: Video joint-embedding predictive model family
+provider: multiple -- V-JEPA, V-JEPA 2 and successors
+citation: PROMPT.md §53.3, 'video joint-embedding predictive models'; Bardes et al., V-JEPA. 2024.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- video_frame_grid
+- model_layer_stack
+streams:
+- name: spatially_structured_video_representations
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. §53.3: the required output is NOT one flat embedding.
+    A model must expose MULTISCALE, SPATIAL, TEMPORAL and EVENT-STRUCTURED state suitable for interaction
+    with SPECIFICALLY ADDRESSED cortical supports. A single pooled vector cannot address a support. The
+    JEPA objective predicts in REPRESENTATION space rather than pixel space, which avoids spending capacity
+    on unpredictable detail -- the same argument §35 makes for transition-sufficiency over reconstruction-sufficiency.
+    The spatial patch layout is what §21''s retinotopic mapping consumes, and a model that pools it away
+    is unusable for that purpose however good its benchmark numbers are.'
+  band_hz:
+  - null
+  - null
+  temporal_support: video frame rate, patched in time
+  spatial_support: spatiotemporal patch embeddings retaining a SPATIAL LAYOUT -- which is what makes a
+    retinotopic pushforward possible at all. A model that emits one pooled vector per clip cannot be addressed
+    to a cortical support; one that emits a patch grid can
+- name: forcing_precision
+  kind: measured
+  via: null
+  systematic_bias: '§53.3: the model may represent more detail than a person''s imagery. The LEARNED FORCING
+    PRECISION controls how much of that representation affects the modelled brain -- it is a parameter
+    to be estimated, not a design constant.'
+  band_hz:
+  - null
+  - null
+absent:
+- uncertainty
+- gaze_conditioning
+- biological_plausibility
+requires:
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: This model's value is that it retains a SPATIAL layout, which is what makes a retinotopic
+    pushforward possible at all. Without the retinal and world geometry there is no map from its patch
+    grid to retinal coordinate, and the features can only be pooled -- which destroys the property they
+    were selected for.
+use:
+- distil
+forbidden:
+- video-jepa-family/* -> observation-role likelihoods
+- video-jepa-family/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: video-jepa-family
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - spatially_structured_video_representations
+    - forcing_precision
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

@@ -1,0 +1,75 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bids
+title: BIDS -- Brain Imaging Data Structure
+provider: BIDS community / Stanford and collaborators
+citation: Gorgolewski et al., The brain imaging data structure, a format for organizing and describing
+  outputs of neuroimaging experiments. Scientific Data 2016.
+urls:
+- https://bids.neuroimaging.io/
+- https://openneuroscience.org/Standards/BIDS
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- file_system
+- run_relative_time
+streams:
+- name: layout_and_sidecar_contract
+  kind: measured
+  via: null
+  systematic_bias: Nearly every ds00xxxx card in this registry is BIDS, and §49.4 records that the predecessor's
+    NATIVE-CLOCK BIDS LOADERS should survive into B-WIN. The contract is worth adopting; what it CANNOT
+    express is the point of the caveat -- there is no place in BIDS for a clock relation between devices,
+    a coordinate-frame graph edge with a residual, an epistemic role, or a forbidden update path.
+  notes: a BIDS-valid dataset is structurally well-formed and says nothing about whether the data are
+    what the sidecars claim
+  band_hz:
+  - null
+  - null
+  temporal_support: events.tsv gives onsets in SECONDS RELATIVE TO THE RUN'S START, which is a per-run
+    clock. Relations between runs, sessions and devices are NOT expressed -- BIDS has no clock graph,
+    which is exactly the gap obj-clock-graph fills
+  spatial_support: 'a FILE-SYSTEM LAYOUT plus JSON sidecars: subject, session, task, run and modality
+    are expressed as path components. The spatial support of the data is whatever the file contains; BIDS
+    describes where it is, not what it means'
+- name: modality_specific_extensions
+  kind: measured
+  via: null
+  systematic_bias: BIDS-EEG, BIDS-MEG and BIDS-iEEG carry ELECTRODE POSITIONS and coordinate system declarations,
+    which is the single most important metadata for a forward model and is optional in practice -- so
+    its absence is common and consequential
+  band_hz:
+  - null
+  - null
+- name: events_representation
+  kind: measured
+  via: null
+  systematic_bias: events in seconds from run onset is a per-run clock with no relation to any other;
+    §33's native-clock requirement needs more
+  band_hz:
+  - null
+  - null
+absent:
+- clock_graph
+- epistemic_roles
+- coordinate_frame_residuals
+- provenance_of_derivations
+use:
+- calibrate
+forbidden:
+- bids/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: bids
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

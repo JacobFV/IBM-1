@@ -1,0 +1,95 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: labram
+title: LaBraM -- Large Brain Model for EEG
+provider: Shanghai Jiao Tong University and collaborators
+citation: Jiang et al., Large Brain Model for Learning Generic Representations with Tremendous EEG Data
+  in BCI. ICLR 2024.
+urls:
+- https://github.com/935963004/LaBraM
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+streams:
+- name: neural_tokenisation
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. §53.2: the test is NOT leaderboard accuracy.
+    It is whether a representation survives new montages, devices, subjects, tasks and physically different
+    observation supports WITHOUT SILENTLY LEARNING CHANNEL IDENTITY AS ANATOMY. DISCRETISING EEG into
+    a learned codebook is a strong commitment: the codebook is fitted to the training corpus''s montages
+    and amplitudes, so a physically different observation support produces tokens the model has never
+    seen. That is the failure mode §53.2 names, made concrete.'
+  notes: a vector-quantised bottleneck discards exactly the amplitude and waveform detail that distinguishes
+    one generator from another
+  band_hz:
+  - null
+  - null
+  temporal_support: resampled to a fixed rate before tokenisation -- the resampling is a derived view
+    and the native rate is discarded
+  spatial_support: EEG channel-time patches tokenised by a learned vector-quantised codebook, then modelled
+    with masked prediction over tokens
+- name: multi_dataset_pretraining
+  kind: measured
+  via: null
+  systematic_bias: pretraining on many datasets improves benchmark numbers; whether it improves PHYSICAL
+    generality is the separate and harder question
+  band_hz:
+  - null
+  - null
+absent:
+- electrode_geometry
+- forward_model
+- native_sampling_rate
+- uncertainty
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: This model's channel axis is a set of names, not a set of positions -- the channel-identity
+    problem exactly. Its representation can be computed without any geometry, but relating it to a cortical
+    support, or transferring it to a montage it was not trained on, requires the electrode or sensor geometry
+    that the name stands in for.
+  substitute: Channel-name matching, which silently asserts that two electrodes sharing a label sat in
+    the same place on two different heads.
+use:
+- distil
+- evaluate
+forbidden:
+- labram/* -> observation-role likelihoods
+- labram/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: labram
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - neural_tokenisation
+    - multi_dataset_pretraining
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

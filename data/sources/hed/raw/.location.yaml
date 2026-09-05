@@ -1,0 +1,5 @@
+# where the bytes for `hed` actually live.  never the bytes themselves.
+source_url: "https://www.hedtags.org/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

@@ -1,0 +1,5 @@
+# where the bytes for `ds002725` actually live.  never the bytes themselves.
+source_url: "https://nemar.org/dataset/on002725"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

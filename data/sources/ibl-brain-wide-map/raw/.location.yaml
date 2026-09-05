@@ -1,0 +1,5 @@
+# where the bytes for `ibl-brain-wide-map` actually live.  never the bytes themselves.
+source_url: "https://docs.internationalbrainlab.org/notebooks_external/2025_data_release_brainwidemap.html"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

@@ -1,0 +1,102 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brain-of
+title: Brain-OF -- omnifunctional foundation model for fMRI, EEG and MEG
+provider: RWTH Aachen University (Computer Science 3 -- Software Engineering); INM-7, Forschungszentrum
+  Julich; Institute of Systems Neuroscience, Heinrich Heine University
+citation: 'Guo, Bi, Abdellatif, Galbenus, Shah, Morrison and Dammers, Brain-OF: An Omnifunctional Foundation
+  Model for fMRI, EEG and MEG. arXiv:2602.23410 (v1 2026-02-26, v3 2026-05-15). IDENTIFIED 2026-08-17;
+  see notes/literature/brain-of.md for what was searched and why the arXiv title index did NOT resolve
+  it.'
+urls:
+- https://arxiv.org/abs/2602.23410
+access: watch
+licence:
+  name: unresolved -- paper is CC-BY-NC-ND-4.0 on arXiv (NON-COMMERCIAL, NO-DERIVATIVES); WEIGHTS licence
+    unread
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. The arXiv paper is CC BY-NC-ND 4.0, which is the most
+    restrictive paper licence on any §53.2 card and governs the PAPER only. Pretrained on ~40 public datasets
+    whose own agreements may travel. Rule 7: all of this governs distribution only, is never a reason
+    to leave the work unread, and is refused only at win.licences.release_gate.'
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+- meg_device
+- MNI152
+streams:
+- name: representation
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. §53.2: the test is NOT leaderboard accuracy.
+    It is whether a representation survives new montages, devices, subjects, tasks and physically different
+    observation supports WITHOUT SILENTLY LEARNING CHANNEL IDENTITY AS ANATOMY.'
+  band_hz:
+  - null
+  - null
+  temporal_support: '200 Hz for BOTH EEG and MEG -- a DERIVED view, and for MEG a 5x or greater downsampling
+    from kHz native rates. fMRI enters at the deposit''s TR after fMRIPrep. §33: coarse resampling destroys
+    delay information.'
+  spatial_support: 'RESOLVED 2026-08-17, and the resolution is that THERE IS NO SPATIAL SUPPORT. A signal
+    S in R^(N x T) -- N channels for M/EEG, N ROIs for fMRI -- is patched along time PER CHANNEL, flattened
+    into one sequence, and padded to a fixed length of 2,048 with an attention mask over the padding.
+    No sensor coordinate, no orientation, no electrode name, no ROI identity enters the model; the only
+    spatial structure is the COLUMN ORDERING, over which a spatial FFT is taken. So a montage difference
+    is not absorbed, it is UNREPRESENTABLE: the model cannot be wrong about which electrode is which because
+    it was never told, and equally cannot be asked. Note the invariance is not even the invariance it
+    appears to be -- reordering the same electrodes changes the input. fMRI enters as 246 Brainnetome
+    parcels, a canonical parcellation (invariant 2).'
+absent:
+- sensor_geometry
+- channel_identity
+- absolute_amplitude
+- every_nuisance_floor
+- weights_licence
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'ADDED 2026-08-17 after reading the paper. This model does not consume geometry and cannot:
+    channels are flattened into a padded token sequence with no coordinate, orientation or name. Geometry
+    is therefore required not BY the model but AROUND it -- nothing a Brain-OF embedding says can be attached
+    to a support, compared across montages, or read as a statement about a place, unless the caller carries
+    the electrode or sensor geometry alongside and outside the representation.'
+  substitute: None. There is no channel-name matching to fall back to, because there are no channel names
+    -- the only spatial structure inside the model is column ordering, which is a property of how the
+    file was written.
+use:
+- distil
+forbidden:
+- brain-of/* -> observation-role likelihoods
+- brain-of/* -> B-WIN's state ontology or support definitions
+- brain-of/* -> any claim about WHICH electrode or WHICH region, since the model carries no channel identity
+  at all
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: brain-of
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - representation
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

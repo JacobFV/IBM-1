@@ -1,0 +1,139 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mne-sample
+title: MNE-Python sample dataset -- MEG/EEG auditory and visual evoked responses
+provider: MNE-Python / Martinos Center
+citation: Gramfort et al., MEG and EEG data analysis with MNE-Python. Frontiers in Neuroscience 2013.
+urls:
+- https://mne.tools/stable/documentation/datasets.html
+access: held
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'Distributed with MNE-Python for tutorial use; redistribution terms unresolved. UNRESOLVED, AND
+    THE REASON IS THAT NO LICENCE EXISTS TO FIND -- not that nobody has looked. MNE''s own datasets page
+    grants no licence and states a PURPOSE RESTRICTION instead: the data are ''provided solely for the
+    purpose of getting familiar with the MNE software'' and ''should not be used to evaluate the performance
+    of the MEG or MRI system employed''. No LICENSE, LICENCE or COPYING file ships in the held tree either.
+    A purpose restriction is not a licence and does not grant redistribution, so the fields stay unresolved
+    rather than being filled in either direction: recording ''prohibited'' would invent a term nobody
+    wrote, and recording ''permitted'' would invent a grant nobody made.
+
+
+    THE PRACTICAL READING MATTERS HERE because this deposit is used throughout the repository for examples
+    and tests. Licence governs DISTRIBUTION ONLY, so reading it, loading it, computing with it and testing
+    against it are unaffected and always were. What it means is that an ARTIFACT DERIVED FROM IT CANNOT
+    PASS release_gate, and any published figure or model with an mne-sample component is blocked until
+    someone obtains terms from the depositor. Also note the second sentence is a restriction on INFERENCE,
+    not on distribution: benchmarking the scanner is forbidden by it even for purely internal work, which
+    is a kind of constraint the licence vocabulary cannot express at all.'
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - participant
+  - run
+  notes: ONE participant, 0.18 h of MEG (§49.3, held locally). This is a FIXTURE, not evidence about people.
+frames:
+- meg_device
+- eeg_cap
+- head_fiducial
+- subject_native
+- fsaverage
+streams:
+- name: forward_solution_and_bem
+  kind: measured
+  via: null
+  systematic_bias: 'The reason to hold this: a complete, published, reproducible chain from anatomy through
+    BEM surfaces to a forward solution. It is the fixture B-WIN''s internal lead field is checked against,
+    and §49.4 records that the predecessor''s lead-field code already interoperated with it'
+  band_hz:
+  - null
+  - null
+  temporal_support: MEG/EEG at 600 Hz; auditory and visual stimuli as discrete events
+  spatial_support: 306-channel Neuromag MEG plus 60-channel EEG, with a complete FreeSurfer reconstruction
+    and BEM surfaces shipped alongside
+- name: evoked_responses
+  kind: measured
+  via: null
+  systematic_bias: 'n=1 tutorial data: it validates an implementation, it establishes nothing about people'
+  band_hz:
+  - null
+  - null
+- name: meg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eeg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: freesurfer_reconstruction
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bem_surfaces
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: forward_solution
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: coregistration_transform
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- population
+- naturalistic_stimulus
+- vascular
+- ieeg
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- evaluate
+forbidden:
+- mne-sample/* -> any claim about people
+- mne-sample/* -> population anatomy (n = 1, and the anatomy is reconstructed)
+- mne-sample/* -> population priors
+- mne-sample/source_estimate -> measured cortical state (a `.stc` is an inverse solution and enters only
+  through an observation model)
+split:
+  group_by:
+  - run
+  notes: 'not applicable in the usual sense: this is a fixture'
+provenance:
+  imported_from: win-registry
+  card: mne-sample
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,70 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ebrains-knowledge-graph
+title: EBRAINS Knowledge Graph -- the openMINDS metadata index behind the EBRAINS data catalogue
+provider: EBRAINS AISBL / Human Brain Project
+citation: EBRAINS Knowledge Graph, core API v3 (https://core.kg.ebrains.eu/v3/api-docs); openMINDS metadata
+  models, openMetadataInitiative/openMINDS.
+urls:
+- https://core.kg.ebrains.eu/v3/api-docs
+- https://search.kg.ebrains.eu/
+- https://github.com/openMetadataInitiative/openMINDS
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: The INDEX's terms are not the DATA's terms. Every dataset version reached through the Knowledge
+    Graph carries its own `license` link, and this archive is unusual in also carrying a required per-version
+    `ethicsAssessment` and `accessibility`. None of those transfer to this card, and this card's terms
+    transfer to none of them.
+binding: unbound
+population:
+  n: null
+frames:
+- none
+streams:
+- name: dataset_version_metadata_index
+  kind: measured
+  via: null
+  systematic_bias: A DISCOVERY CONNECTOR source emitting card PROPOSALS, never an automatic pool. Discovery
+    may be automatic; admission may not. Reaching the graph needs an EBRAINS IAM bearer token, so the
+    holdings visible to an unauthenticated reader are none at all -- an access boundary, not a smaller
+    archive.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: 'no data of its own: an index over other people''s datasets, models and workflows'
+- name: per_version_ethics_and_accessibility_terms
+  kind: measured
+  via: null
+  systematic_bias: 'openMINDS makes `ethicsAssessment` and `accessibility` REQUIRED on every dataset version,
+    which no other archive carded here does at all. That richness is a thing to RECORD on a proposal and
+    never a thing to act on: rule 7 governs distribution only, and a listing narrowed by an access term
+    would report the records it skipped as records the archive does not hold. The terms are also a controlled
+    vocabulary that can gain members, so an unrecognised one is recorded as unrecognised rather than dropped.'
+  band_hz:
+  - null
+  - null
+absent:
+- the_data_itself
+- licence_resolution
+- file_level_inventory
+- participant_counts
+use:
+- prior
+forbidden:
+- ebrains-knowledge-graph/* -> any evidence role for the datasets it indexes
+- ebrains-knowledge-graph/* -> automatic admission of a source without a resolved card
+- ebrains-knowledge-graph/* -> any refusal to read, fetch or propose based on a licence, ethics or accessibility
+  term
+split:
+  group_by:
+  - site
+  notes: 'an index, not a measurement: it is held out of nothing and must be trusted for nothing on its
+    own'
+provenance:
+  imported_from: win-registry
+  card: ebrains-knowledge-graph
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

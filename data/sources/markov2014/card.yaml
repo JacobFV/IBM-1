@@ -1,0 +1,76 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: markov2014
+title: Markov macaque directed cortical connectivity
+provider: Kennedy lab / Lyon
+citation: Markov et al., A weighted and directed interareal connectivity matrix for macaque cerebral cortex.
+  Cerebral Cortex 2014.
+urls:
+- https://core-nets.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- macaque_atlas
+- macaque_surface
+streams:
+- name: directed_weighted_connectivity
+  kind: measured
+  via: null
+  systematic_bias: MEASURED DIRECTION AND MEASURED WEIGHT over five orders of magnitude, from tracer transport.
+    Diffusion tractography can produce neither. §38's structural/effective/functional distinction needs
+    a reference case where the structural answer is actually known, and in a primate this is it. It is
+    macaque, and the cross-species step is an assumption to be carded wherever it is used.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: a weighted, DIRECTED interareal connectivity matrix from retrograde tracer injections
+    in macaque, with a consistently sampled 29x91 subgraph in which every possible connection was actually
+    looked for
+- name: edge_completeness
+  kind: measured
+  via: null
+  systematic_bias: The consistently sampled subgraph is the rare case where ABSENCE OF A CONNECTION IS
+    EVIDENCE OF ABSENCE, because every pair was examined. Everywhere else in the registry, missing is
+    not zero; here, within that subgraph, a zero is a measurement -- and that makes it a uniquely valuable
+    negative-evidence source.
+  band_hz:
+  - null
+  - null
+- name: weight_distance_relationship
+  kind: measured
+  via: null
+  systematic_bias: the exponential distance rule derived from these weights is a candidate structural
+    prior for human interactomes, transferred across species
+  band_hz:
+  - null
+  - null
+absent:
+- human_correspondence
+- individual_variation
+- subcortex
+- function
+use:
+- calibrate
+- prior
+forbidden:
+- markov2014/* -> human connectivity claims without an explicit cross-species assumption
+- markov2014/* -> human observation-role likelihoods
+- markov2014/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: markov2014
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

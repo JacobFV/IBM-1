@@ -1,0 +1,1 @@
+# sha256 manifest for wav2vec-bert-2.0; written on acquisition

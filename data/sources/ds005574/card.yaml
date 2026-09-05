@@ -1,0 +1,137 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds005574
+title: OpenNeuro ds005574 -- the Podcast ECoG dataset (naturalistic story listening)
+provider: OpenNeuro; Princeton (Hasson lab) and NYU (Flinker lab)
+citation: Zada, Nastase, ... Flinker, Hasson. Scientific Data, 2025. doi:10.1038/s41597-025-05462-2. Dataset
+  doi:10.18112/openneuro.ds005574.v1.0.2.
+urls:
+- https://openneuro.org/datasets/ds005574
+- https://hassonlab.github.io/podcast-ecog-tutorials
+access: priority
+licence:
+  name: CC0 (verbatim License field in dataset_description.json)
+  redistribution: permitted
+  commercial: permitted
+binding: unbound
+population:
+  n: 9
+  hierarchy:
+  - participant
+  - run
+  notes: 1,330 electrodes across grid, strip and depth types in 9 participants.
+frames:
+- electrode_contact
+- subject_native
+- MNI152
+streams:
+- name: ecog_during_naturalistic_listening
+  kind: measured
+  via: null
+  observation_chain: local post-synaptic and spiking activity within a few millimetres of a contact ->
+    extracellular potential -> potential difference against a reference contact whose own activity is
+    in every number -> amplifier and filter -> sampled microvolts. No skull and no inverse problem. Passive
+    listening, so there is no motor confound and no behavioural response -- and equally no behavioural
+    check that the participant attended
+  confounds:
+  - the reference contact's own activity
+  - the epileptogenic zone and interictal discharges, present by definition in a clinical cohort
+  - anti-epileptic medication, often being tapered during monitoring
+  - electrode placement follows a surgical hypothesis, so coverage is not a sample of the brain
+  - 'hospital environment: sleep, arousal and drug state uncontrolled'
+  - acoustic envelope, word frequency, syntactic structure and semantic content are all correlated in
+    natural speech, so an effect attributed to one level is not separated from the others
+  - attention and drowsiness over 30 minutes in a hospital bed are uncontrolled and unmeasured
+  - the shipped high-gamma version is a derived view whose band and smoothing are fixed
+  systematic_bias: The release ships LLM EMBEDDINGS of the transcript alongside the neural data. Those
+    embeddings are a TEACHER representation, never an observation of anyone's language cortex, and their
+    influence has to be earned on held-out prediction. Shipping them in the same archive as the measurements
+    is exactly the confusion the role vocabulary exists to prevent.
+  band_hz:
+  - null
+  - null
+  temporal_support: a 30-minute continuous story with more than 5,000 words. The word-onset annotation
+    is FORCE-ALIGNED, which is a fitted clock relation with residual error, while the audio-to-recording
+    relation is a hardware one
+  spatial_support: mixed grid, strip and depth coverage across 9 participants -- the union is broad and
+    no individual has it
+- name: shared_stimulus_across_participants
+  kind: measured
+  via: null
+  systematic_bias: One stimulus heard by nine people with different electrode coverage is a natural test
+    of whether a support mapping transfers across individuals -- and the shared stimulus means a participant-only
+    split leaks completely.
+  band_hz:
+  - null
+  - null
+- name: ecog_raw
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ecog_high_gamma_derived
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: audio_stimulus
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: word_aligned_transcript
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: acoustic_features
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: llm_embeddings
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- speech_production
+- behavioural_response
+- attention_measure
+- fmri
+- healthy_controls
+- whole_brain_coverage
+requires:
+- geometry: device-geometry
+  for_streams:
+  - ecog_during_naturalistic_listening
+  severity: blocking
+  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
+    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
+    channel is an index and nothing measured here can be attached to a cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- evaluate
+- fit
+forbidden:
+- ds005574/* -> an LLM embedding used as an observation of language cortex
+- ds005574/* -> a whole-brain claim from nine partial coverages
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: ds005574
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

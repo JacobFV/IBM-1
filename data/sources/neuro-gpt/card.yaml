@@ -1,0 +1,90 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: neuro-gpt
+title: Neuro-GPT -- foundation model for EEG
+provider: University of Southern California and collaborators
+citation: 'Cui et al., Neuro-GPT: Towards A Foundation Model for EEG. ISBI 2024.'
+urls:
+- https://github.com/wenhui0206/NeuroGPT
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+streams:
+- name: causal_chunk_prediction
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. §53.2: the test is NOT leaderboard accuracy.
+    It is whether a representation survives new montages, devices, subjects, tasks and physically different
+    observation supports WITHOUT SILENTLY LEARNING CHANNEL IDENTITY AS ANATOMY. A causal objective over
+    EEG chunks, pretrained on TUH. The chunk granularity is the interesting parameter: predicting the
+    next second of EEG and predicting the next millisecond are different problems, and only the second
+    is about dynamics.'
+  band_hz:
+  - null
+  - null
+  temporal_support: resampled to a fixed rate and chunked
+  spatial_support: fixed-montage EEG chunks with an encoder and a causal GPT-style predictor over chunk
+    embeddings
+- name: transfer_to_small_datasets
+  kind: measured
+  via: null
+  systematic_bias: the claimed benefit is sample efficiency downstream, which is a practical rather than
+    a mechanistic claim
+  band_hz:
+  - null
+  - null
+absent:
+- electrode_geometry
+- forward_model
+- uncertainty
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: This model's channel axis is a set of names, not a set of positions -- the channel-identity
+    problem exactly. Its representation can be computed without any geometry, but relating it to a cortical
+    support, or transferring it to a montage it was not trained on, requires the electrode or sensor geometry
+    that the name stands in for.
+  substitute: Channel-name matching, which silently asserts that two electrodes sharing a label sat in
+    the same place on two different heads.
+use:
+- distil
+- evaluate
+forbidden:
+- neuro-gpt/* -> observation-role likelihoods
+- neuro-gpt/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: neuro-gpt
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - causal_chunk_prediction
+    - transfer_to_small_datasets
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

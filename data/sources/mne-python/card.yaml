@@ -1,0 +1,100 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mne-python
+title: MNE-Python -- MEG and EEG analysis and forward/inverse modelling
+provider: Martinos Center and the MNE community
+citation: Gramfort et al., MEG and EEG data analysis with MNE-Python. Frontiers in Neuroscience 2013.
+urls:
+- https://mne.tools/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- head_fiducial
+- meg_device
+- eeg_cap
+- fsaverage
+- source_space
+streams:
+- name: bem_forward_solution
+  kind: measured
+  via: null
+  systematic_bias: THE reference implementation of the EEG/MEG forward problem via boundary elements.
+    §49.4 records that the predecessor's lead-field code already interoperated with MNE's BEM, and that
+    interoperation is what makes an internal implementation checkable. Its three-layer BEM assumes ISOTROPIC,
+    HOMOGENEOUS compartments and takes skull conductivity from the literature -- an assumption shared
+    with essentially every forward model in the registry, so agreement between implementations does not
+    validate it (see tes-montage-field-validation-data for what would).
+  notes: BEM cannot represent anisotropic white matter or skull inhomogeneity; DUNEuro's FEM can, and
+    the difference between them is a measurable model-class uncertainty
+  band_hz:
+  - null
+  - null
+  temporal_support: operates on the data's native sampling rate; the forward operator is static
+  spatial_support: source space as a set of oriented dipoles on the cortical surface or in a volume grid;
+    sensor space as electrode contacts or coil integration points. The LEAD FIELD is the linear operator
+    between them and it is where all the geometry lives
+- name: inverse_operators
+  kind: measured
+  via: null
+  systematic_bias: '§8''s rule is decisive: AN INVERSE SOLUTION IS NOT GROUND TRUTH. An EEG source estimate
+    is uncertain evidence entering through an observation model, and training cortical state against one
+    as if it were a label is the category error the architecture exists to prevent. MNE''s several inverse
+    operators (MNE, dSPM, sLORETA, beamformers) disagree, and that disagreement is the honest uncertainty.'
+  band_hz:
+  - null
+  - null
+- name: coregistration_and_geometry_tooling
+  kind: measured
+  via: null
+  systematic_bias: digitised head shape to MRI coregistration with a reported residual -- exactly the
+    kind of frame-graph edge with an uncertainty that §57 requires
+  band_hz:
+  - null
+  - null
+- name: analytic_sphere_solutions
+  kind: measured
+  via: null
+  systematic_bias: the multilayer sphere model has a CLOSED-FORM solution, so a numerical implementation
+    can be checked against exact truth rather than against another implementation -- which §46 requires
+    and which is available in only a handful of places in this registry
+  band_hz:
+  - null
+  - null
+absent:
+- measured_conductivities
+- individual_skull_properties
+- in_vivo_field_validation
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'This solver''s input IS the geometry: sensor or electrode positions on one side, a head
+    model on the other. Used as an offline oracle it can produce nothing until the device product supplies
+    the first of those, and a solver run against assumed positions validates an internal implementation
+    against an assumption rather than against physics.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- surrogate
+forbidden:
+- mne-python/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: mne-python
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

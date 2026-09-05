@@ -1,0 +1,53 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: netpyne
+title: NetPyNE -- high-level interface to NEURON for network modelling
+provider: SUNY Downstate / Neurosim lab
+citation: Dura-Bernal et al., NetPyNE, a tool for data-driven multiscale modeling of brain circuits. eLife
+  2019.
+urls:
+- http://netpyne.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- cell_morphology
+- cortical_column_volume
+- electrode_positions
+streams:
+- name: spatially_embedded_networks
+  kind: measured
+  via: null
+  systematic_bias: Cells have 3D POSITIONS and connectivity can depend on distance, so the network has
+    SPATIAL EXTENT rather than being a graph. Combined with LFP calculation at specified electrode positions,
+    that makes it a direct simulation of the ieeg observation process in the ds004194 and clinical-ieeg-archives
+    cards -- an offline oracle for what a contact actually records.
+  notes: cortical column models are built from rodent connectivity statistics scaled to human dimensions,
+    and the scaling is an assumption
+  band_hz:
+  - null
+  - null
+  temporal_support: NEURON's timestep
+  spatial_support: declarative specification of multiscale networks with 3D CELL POSITIONS, running on
+    NEURON, with built-in LFP calculation at specified electrode locations
+absent:
+- human_connectivity_statistics
+- in_vivo_validation
+use:
+- surrogate
+forbidden:
+- netpyne/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: netpyne
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,92 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: aneurisk
+title: AneuRisk -- cerebral aneurysm geometry and centreline repository
+provider: AneuriskWeb / Politecnico di Milano and collaborators
+citation: AneuriskWeb project repository, Emory University and Politecnico di Milano.
+urls:
+- http://ecm2.mathcs.emory.edu/aneuriskweb/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: 100
+  hierarchy:
+  - participant
+  notes: Around a hundred cases with reconstructed surfaces AND CENTRELINES with radius along them --
+    the centreline representation is the part §56.3 wants.
+frames:
+- mesh_native
+streams:
+- name: centerlines_with_radius
+  kind: measured
+  via: null
+  systematic_bias: §56.3 asks for VESSEL CENTRELINE GRAPHS, branch topology, radius and length estimates,
+    and ORIENTED TUBE representations. AneuRisk already distributes exactly that structure, computed by
+    VMTK's maximal-inscribed-sphere method -- which makes it both a data source and a worked example of
+    the target representation. The radius is a maximal inscribed sphere, which is a DEFINITION of radius,
+    not the only one.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: vessel surface meshes plus CENTRELINE GRAPHS carrying radius, curvature and torsion
+    as functions of arc length -- a tube-chain representation in all but name
+- name: vessel_surfaces
+  kind: measured
+  via: null
+  observation_chain: clinical 3D rotational angiography or CTA -> segmentation -> surface reconstruction
+    -> centreline extraction. Each stage is a derivation and only the first is a measurement
+  confounds:
+  - segmentation threshold determining apparent lumen radius
+  - clinical population with altered haemodynamics
+  - surface smoothing altering curvature and torsion
+  systematic_bias: Derived geometry with an unusually well-documented derivation chain.
+  notes: curvature and torsion are second derivatives of a smoothed surface and are highly sensitive to
+    the smoothing
+  band_hz:
+  - null
+  - null
+- name: curvature_and_torsion
+  kind: measured
+  via: null
+  systematic_bias: arc-length profiles of curvature and torsion are directly the statistics §56.3's stochastic
+    microvascular ensembles must be conditioned on
+  band_hz:
+  - null
+  - null
+- name: aneurysm_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: clinical_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- parent_imaging_for_all_cases
+- healthy_cohort
+- venous_tree
+- capillary_scale
+- flow_measurement
+use:
+- calibrate
+- fit
+forbidden:
+- aneurisk/* -> measured-geometry claims
+- aneurisk/* -> flow or pressure state
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: aneurisk
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

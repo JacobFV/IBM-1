@@ -1,0 +1,149 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mous
+title: MOUS -- Mother Of Unification Studies, MEG and fMRI language comprehension
+provider: Donders Institute
+citation: Schoffelen et al., A 204-subject multimodal neuroimaging dataset to study language processing.
+  Scientific Data 2019.
+urls:
+- https://data.ru.nl/collections/di/dccn/DSC_3011020.09_236
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Donders Repository terms with a data-use agreement. Unresolved.
+binding: unbound
+population:
+  n: 204
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 204 participants split between MEG and fMRI arms, each reading or listening to sentences and
+    word lists. Different people in the two arms.
+frames:
+- meg_device
+- head_fiducial
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: meg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
+    plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
+    SQUID flux -> sampled channel
+  confounds:
+  - environmental magnetic interference and urban noise
+  - head motion within and between runs
+  - ocular and cardiac fields
+  - muscle artifact at high frequency
+  - SQUID jumps and sensor drift
+  systematic_bias: Individual anatomy for every participant is unusual at this n and makes the forward
+    model subject-specific rather than template-based.
+  band_hz:
+  - null
+  - null
+  temporal_support: MEG at 1200 Hz; BOLD at TR 2 s; sentences and word lists as discrete trials
+  spatial_support: 275-channel CTF axial gradiometers; 3 mm BOLD; individual anatomy for all participants
+- name: bold
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  band_hz:
+  - null
+  - null
+- name: sentence_vs_wordlist_contrast
+  kind: imposed
+  via: null
+  systematic_bias: the sentence/word-list contrast is a designed manipulation of compositional structure
+    holding lexical content largely constant
+  band_hz:
+  - null
+  - null
+- name: audio_and_visual_stimuli
+  kind: imposed
+  via: null
+  systematic_bias: the same sentences presented in BOTH auditory and visual modality -- a modality crossing
+    that separates acoustic from amodal linguistic responses
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: audio_stimuli
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: visual_sentence_stimuli
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- simultaneous_meg_and_fmri
+- eye_tracking
+- ieeg
+- vascular
+requires:
+- geometry: device-geometry
+  for_streams:
+  - meg
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- fit
+forbidden:
+- mous/* -> joint MEG-fMRI likelihoods treating the arms as one session
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: mous
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

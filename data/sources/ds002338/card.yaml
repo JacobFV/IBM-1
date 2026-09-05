@@ -1,0 +1,123 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds002338
+title: OpenNeuro ds002338 -- XP2 simultaneous EEG-fMRI motor-imagery neurofeedback
+provider: OpenNeuro; Inria/Empenn, Rennes
+citation: 'Lioi, Cury, Perronnet, Mano, Bannier, Lecuyer, Barillot. A multi-modal human neuroimaging dataset
+  for data integration: simultaneous EEG and fMRI acquisition during a motor imagery neurofeedback task:
+  XP2. Dataset doi:10.18112/openneuro.ds002338.v2.0.1. The release''s only ReferencesAndLinks entry is
+  Perronnet et al., Learning 2-in-1: Towards Integrated EEG-fMRI-Neurofeedback, bioRxiv 397729, 2018.'
+urls:
+- https://openneuro.org/datasets/ds002338
+access: priority
+licence:
+  name: CC0 (verbatim string in dataset_description.json)
+  redistribution: permitted
+  commercial: permitted
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - run
+  notes: 'THREE DIFFERENT NUMBERS FROM THREE PLACES IN THE SAME DATASET: participants.tsv has 23 rows
+    (sub-xp201..sub-xp223), only 17 subject directories exist (xp208, xp209, xp212, xp214, xp215 and xp223
+    are absent), and the README text describes 16 subjects. n is left null; count the directories when
+    the bytes are held. participants.tsv carries a feedback_type column with values 1d and 2d, which is
+    a real experimental factor.'
+frames:
+- channel_label
+- scanner
+- subject_native
+streams:
+- name: simultaneous_eeg_fmri
+  kind: measured
+  via: null
+  observation_chain: post-synaptic currents -> volume conduction to scalp -> electrode potential -> amplifier,
+    recorded INSIDE a switching gradient field that induces voltages orders of magnitude larger than the
+    signal; and in parallel the same neural activity -> neurovascular coupling -> BOLD -> EPI volume.
+    Two observation processes on one state, with entirely different failure modes
+  confounds:
+  - gradient artefact, removed by template subtraction whose residual is signal-band and is not reported
+  - ballistocardiogram artefact, which is heartbeat-locked and survives most correction schemes
+  - helium pump and cryocooler vibration
+  - 'the usual BOLD nuisances: motion, respiration, CO2, draining veins'
+  - in a NEUROFEEDBACK task the participant's strategy changes across runs by design, so the state being
+    measured is not stationary and is not meant to be
+  systematic_bias: This is the replication arm for ds002336 -- same producers, same paradigm, further
+    participants, and a feedback_type factor that ds002336 does not have. The predecessor programme named
+    it as the natural replication set and never fetched it.
+  band_hz:
+  - null
+  - null
+  temporal_support: 'TWO CLOCKS ON THE SAME SUBJECT AT THE SAME TIME -- the EEG amplifier''s and the scanner''s.
+    This is the fully paired episode: electrophysiology and haemodynamics measured simultaneously, where
+    the clock relation is a hardware fact rather than an assumption'
+  spatial_support: BrainVision scalp montage inside the scanner, plus whole-brain EPI and an MPRAGE
+- name: eeg_raw
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eeg_gradient_corrected
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: neurofeedback_scores
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- events_tsv
+- eeg_json_sidecars
+- channels_tsv
+- emg
+- eyetracking
+- physiology
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- ds002338/* -> an event-locked analysis using assumed block timing
+- ds002338/* -> lead field construction (no digitisation)
+split:
+  group_by:
+  - participant
+  - run
+  notes: feedback_type (1d vs 2d) is a between-participant factor and a split that ignores it can put
+    all of one condition in one fold.
+provenance:
+  imported_from: win-registry
+  card: ds002338
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

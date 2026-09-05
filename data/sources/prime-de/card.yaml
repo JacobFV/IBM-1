@@ -1,0 +1,108 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: prime-de
+title: PRIME-DE -- PRIMatE Data Exchange (non-human primate MRI)
+provider: International Neuroimaging Data-sharing Initiative (INDI) / Child Mind Institute
+citation: Milham et al., An open resource for non-human primate imaging. Neuron 2018.
+urls:
+- https://fcon_1000.projects.nitrc.org/indi/PRIME/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Terms are set per contributing site and differ; not read. A collection-level statement is not
+    a licence for any one site's data.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: n left null; the aggregate changes with each contribution.
+frames:
+- scanner
+- subject_native
+- NMT_macaque_template
+- D99_atlas
+streams:
+- name: macaque_bold_rest
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away. CROSS-SPECIES: this constrains macaque state, and any transfer
+    to human passes through a contested areal homology that is itself a modelled and uncertain mapping'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift and between-session hardware change
+  - anaesthetic agent and depth, which dominate resting network structure and are recorded inconsistently
+    across sites
+  - head-post and training history differ per site and per animal
+  systematic_bias: Nothing here licenses a claim about a specific human pathway. Its value is that macaque
+    is the species where invasive tracer ground truth (markov2014) and in-vivo imaging coexist, so tractography
+    can be validated against tracers IN THE SAME SPECIES -- which is impossible in humans.
+  band_hz:
+  - null
+  - null
+  temporal_support: site-specific TRs; anaesthetised and awake sessions have entirely different state
+    dynamics and must not be pooled
+  spatial_support: macaque-scale voxels at field strengths from 3T to 7T and above, with site-specific
+    coils and protocols that are not harmonised
+- name: tracer_comparable_diffusion
+  kind: measured
+  via: null
+  systematic_bias: the only route to a false-positive/false-negative rate for tractography that is measured
+    rather than assumed
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: anaesthesia_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- human_data
+- harmonised_protocol
+- intervention
+- behaviour_for_most_sites
+use:
+- fit
+- prior
+forbidden:
+- prime-de/* -> any human state channel without an explicit, uncertainty-carrying homology mapping
+split:
+  group_by:
+  - participant
+  - site
+  - session
+provenance:
+  imported_from: win-registry
+  card: prime-de
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,1 @@
+# sha256 manifest for ome-ngff; written on acquisition

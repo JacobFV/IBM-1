@@ -1,0 +1,109 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: venat
+title: VENAT -- high-resolution 7T QSM venous atlas
+provider: VENAT (PubMed 31278570)
+citation: A high-resolution 7T QSM venous atlas. 2019.
+urls:
+- https://pubmed.ncbi.nlm.nih.gov/31278570/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  notes: 'n unresolved. §51.2 item 15: venous geometry, susceptibility and VASCULAR-BIAS MODELLING --
+    the last is why this is p0 rather than p1.'
+frames:
+- scanner_anat
+streams:
+- name: venous_probability_atlas
+  kind: measured
+  via: null
+  observation_chain: tissue magnetic susceptibility -> field perturbation -> phase accrual over TE ->
+    phase unwrapping, background-field removal and an ill-posed dipole inversion -> susceptibility map.
+    The inversion is regularised and its regularisation is a choice
+  confounds:
+  - QSM contrast for veins depends on DEOXYHAEMOGLOBIN concentration, so a vein's visibility depends on
+    its oxygenation -- the measurement is confounded with the physiological state it would be used to
+    constrain
+  - the dipole inversion is ill-posed and regularised; vessel diameter estimates inherit the regularisation's
+    smoothing
+  - iron-rich grey matter structures also produce positive susceptibility and are confusable with veins
+  - partial volume at sub-voxel calibre inflates apparent diameter
+  systematic_bias: 'THE source for venous geometry, and the reason it matters is §17: BOLD signal is displaced
+    downstream into draining veins, so the venous tree''s geometry is the spatial transfer function between
+    neural activity and where the BOLD signal appears.'
+  notes: QSM-derived diameter is a regularised estimate, not a measured lumen
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: 7T quantitative susceptibility mapping at sub-millimetre resolution, with vessel location,
+    DIAMETER and CURVATURE -- geometric attributes, not only a mask
+- name: vessel_diameter_and_curvature
+  kind: measured
+  via: null
+  systematic_bias: 'S56.3 asks for ORIENTED TUBE representations with radius and length, and diameter
+    and curvature are exactly those parameters. NOTHING MEASURED IS HELD. This entry previously said they
+    were ''supplied as measurement rather than assumption''; the only file held is the partial-volume
+    map, and every radius bwin.geometry.venous derives from it is a function of a THRESHOLD somebody chose
+    -- measured across four thresholds, the largest vessel''s radius runs 2.91 to 4.85 mm, and laminar
+    resistance goes as r^-4, so the two ends disagree by roughly eightfold on any flow either could support.
+    Authority lowered from high to medium to match: a reconstructed calibre with a free parameter in it
+    is not a measured one.'
+  band_hz:
+  - null
+  - null
+- name: venous_bias_prior
+  kind: measured
+  via: null
+  systematic_bias: a population venous atlas is a prior over WHERE BOLD IS DISPLACED, which is directly
+    actionable in the observation model rather than only descriptive
+  band_hz:
+  - null
+  - null
+- name: qsm_volumes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: vessel_diameter_estimates
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: vessel_curvature_estimates
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- arterial_tree
+- capillary_scale
+- flow_velocity
+- individual_geometry
+- oxygenation_state
+use:
+- calibrate
+- fit
+- prior
+forbidden:
+- venat/* -> arterial geometry
+- venat/* -> capillary-scale geometry
+- venat/venous_probability_atlas -> oxygenation state (circular)
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: venat
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

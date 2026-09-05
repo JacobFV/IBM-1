@@ -1,0 +1,65 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mdtb-cerebellar
+title: MDTB -- Multi-Domain Task Battery cerebellar functional atlas
+provider: Diedrichsen lab / King et al.
+citation: King et al., Functional boundaries in the human cerebellum revealed by a multi-domain task battery.
+  Nature Neuroscience 2019.
+urls:
+- https://www.diedrichsenlab.org/imaging/mdtb.htm
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- SUIT
+- cerebellar_flatmap
+- MNI152
+streams:
+- name: task_defined_functional_regions
+  kind: measured
+  via: null
+  systematic_bias: Defined by TASK responses rather than resting correlation, which is a stronger basis
+    than Buckner's -- the boundaries are where task profiles change. The boundaries demonstrably CROSS
+    lobular boundaries, which is direct evidence for §5's claim that anatomical and functional partitions
+    do not coincide.
+  notes: 47 tasks is a rich but finite sampling of the space of things a cerebellum does
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: cerebellar functional regions defined by responses to 47 task conditions in 24 participants,
+    on the SUIT template and flatmap
+- name: task_activation_profiles
+  kind: measured
+  via: null
+  systematic_bias: the continuous profiles are more informative than the derived regions
+  band_hz:
+  - null
+  - null
+absent:
+- individual_boundaries
+- resting_state_correspondence
+- anatomy
+use:
+- calibrate
+- prior
+forbidden:
+- mdtb-cerebellar/* -> anatomical claims
+- mdtb-cerebellar/* -> a merged single cerebellar parcellation
+- mdtb-cerebellar/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: mdtb-cerebellar
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

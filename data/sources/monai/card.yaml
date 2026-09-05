@@ -1,0 +1,56 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: monai
+title: MONAI -- Medical Open Network for AI
+provider: MONAI consortium / NVIDIA and King's College London
+citation: 'Cardoso et al., MONAI: An open-source framework for deep learning in healthcare. arXiv 2022.'
+urls:
+- https://monai.io/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+streams:
+- name: segmentation_baselines
+  kind: measured
+  via: null
+  systematic_bias: §52.10 lists MONAI and nnU-Net as SOURCE-SPECIFIC SEGMENTATION BASELINES. A baseline
+    is what a B-WIN internal implementation must beat or match on a held-out arm, and §46's no-toy-validation
+    rule means the comparison must be against a properly tuned baseline rather than a strawman.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: operates on medical image volumes in their own voxel grids; imposes no anatomy of its
+    own
+- name: transform_pipelines
+  kind: measured
+  via: null
+  systematic_bias: its preprocessing transforms encode conventions about intensity normalisation that
+    are not physics and should not be inherited silently
+  band_hz:
+  - null
+  - null
+absent:
+- training_data
+- anatomical_priors
+- uncertainty_calibration
+use:
+- surrogate
+forbidden:
+- monai/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: monai
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

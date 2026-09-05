@@ -1,0 +1,5 @@
+# where the bytes for `corr-reliability` actually live.  never the bytes themselves.
+source_url: "http://fcon_1000.projects.nitrc.org/indi/CoRR/html/index.html"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

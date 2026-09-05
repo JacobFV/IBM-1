@@ -1,0 +1,126 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds003037
+title: 'ds003037 -- SudMex TMS: transcranial magnetic stimulation with MRI'
+provider: OpenNeuro ds003037
+citation: SudMex-TMS dataset (named in PROMPT.md §52.13).
+urls:
+- https://openneuro.org/datasets/ds003037
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: OpenNeuro-hosted; terms unresolved pending inspection.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: n unresolved pending file-level audit.
+frames:
+- coil_frame
+- head
+- subject_native
+- eeg_cap
+- MNI152
+streams:
+- name: tms_eeg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - 'THE AUDITORY AND SOMATOSENSORY CO-STIMULATION IS NOT A SMALL CORRECTION: sham studies show much of
+    a conventional TEP after ~60 ms is explicable by click and scalp sensation alone'
+  - amplifier saturation and recharge artifact in the first milliseconds
+  - cranial muscle artifact lasting tens of milliseconds at lateral sites
+  systematic_bias: '§52.13: REQUESTED SETTINGS, DELIVERED PHYSICAL FIELD, PERIPHERAL CO-STIMULATION and
+    CANDIDATE NEURAL RESPONSE are four different things. Collapsing them is how a coil position becomes
+    a claim about cortex. Without a sham arm, the TEP here is a response to a multisensory event that
+    includes a magnetic pulse.'
+  notes: the delivered field is modelled, never measured; the model's discrepancy is the difference between
+    a coil-position claim and a cortical-dose claim
+  band_hz:
+  - null
+  - null
+  temporal_support: TMS pulses at millisecond precision; EEG/EMG at kHz; MRI in a separate session
+  spatial_support: TMS coil pose relative to the head, and the induced electric field it produces in the
+    brain -- which is a FIELD over the whole head, not a point at the coil's centre
+- name: emg_mep
+  kind: measured
+  via: null
+  observation_chain: motor-unit action potentials -> muscle and subcutaneous volume conduction -> surface
+    or intramuscular electrode -> sampled voltage
+  confounds:
+  - background muscle activation, which changes MEP amplitude several-fold
+  - spinal excitability, which the MEP includes and the cortex does not control alone
+  - coil drift between trials
+  systematic_bias: The MEP is the one TMS readout with an unambiguous physical endpoint -- a muscle contracted
+    -- which is why motor threshold is the field's dosing unit. It is a CORTICOSPINAL measure, not a cortical
+    one.
+  band_hz:
+  - null
+  - null
+- name: coil_positions
+  kind: measured
+  via: null
+  systematic_bias: §56.4 asks for TMS winding/current geometry as a constructed object; a navigated coil
+    pose is the boundary condition that object needs
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulation_parameters
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- delivered_field_measurement
+- sham_arm
+- auditory_masking_verification
+- fmri
+- meg
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'Two device geometries are needed at once and neither can be defaulted: the electrode positions
+    that define the lead field, and the coil winding and pose that determine the induced field. Without
+    both, the pulse is a machine setting and the response is a channel-space waveform, with nothing connecting
+    them at any cortical location.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- fit
+forbidden:
+- ds003037/* -> delivered-field claims without an explicit field model
+- ds003037/tms_eeg -> cortical response without a co-stimulation model
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: ds003037
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

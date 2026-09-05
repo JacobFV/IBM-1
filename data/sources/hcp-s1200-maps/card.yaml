@@ -1,0 +1,73 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hcp-s1200-maps
+title: HCP S1200 group-average maps -- myelin, thickness, curvature and function
+provider: WU-Minn HCP Consortium
+citation: Glasser et al., The minimal preprocessing pipelines for the Human Connectome Project. NeuroImage
+  2013.
+urls:
+- https://balsa.wustl.edu/study/RVVG
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MSMAll_32k_fs_LR
+- grayordinates
+streams:
+- name: myelin_maps
+  kind: measured
+  via: null
+  systematic_bias: The T1w/T2w ratio is a MYELIN PROXY, confounded by iron content and by receive-coil
+    bias field. §52.6 lists 'myelin maps' as a registered source and this is what that means in practice;
+    the proxy status is the load-bearing caveat.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: group-average grayordinate maps over 1,200 participants on the fs_LR 32k mesh
+- name: thickness_and_curvature
+  kind: measured
+  via: null
+  systematic_bias: group-average thickness is smoothed by registration; individual thickness from the
+    same pipeline is the more useful quantity and lives in the hcp-young-adult card
+  band_hz:
+  - null
+  - null
+- name: group_average_gradients
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- individual_variation
+- subcortex_detail
+- uncertainty_maps
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- hcp-s1200-maps/myelin_maps -> quantitative myelin content claims
+- hcp-s1200-maps/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: hcp-s1200-maps
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

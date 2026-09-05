@@ -1,0 +1,74 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: microns
+title: MICrONS -- millimetre-scale mouse visual cortex EM connectome with functional imaging
+provider: IARPA MICrONS consortium / Allen Institute, Baylor, Princeton
+citation: MICrONS Consortium, Functional connectomics spanning multiple areas of mouse visual cortex.
+  Nature 2025.
+urls:
+- https://www.microns-explorer.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- microns_native
+- mouse_visual_cortex
+streams:
+- name: structure_function_correspondence
+  kind: measured
+  via: null
+  systematic_bias: '§52.6: MICrONS is A MOUSE MESOSCALE/MICROCIRCUIT PRIOR. Its unique value is that the
+    same neurons have both a measured synaptic wiring diagram and a measured functional response -- which
+    is the only direct empirical handle anywhere on §38''s structural-versus-functional distinction. It
+    is mouse, and the extrapolation to human is an assumption that must be carded wherever it is used.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: one cubic millimetre of MOUSE visual cortex with electron-microscopy reconstruction
+    AND prior in-vivo two-photon calcium imaging of the same neurons -- structure and function in the
+    same cells, which exists nowhere else
+- name: synaptic_wiring_statistics
+  kind: measured
+  via: null
+  systematic_bias: connection probability as a function of cell type and distance is the local interaction
+    prior; it is measured in mouse V1 and nowhere else
+  band_hz:
+  - null
+  - null
+- name: calcium_functional_data
+  kind: measured
+  via: null
+  systematic_bias: calcium fluorescence is a slow, nonlinear proxy for spiking -- an observation process
+    in its own right that this card does not model
+  band_hz:
+  - null
+  - null
+absent:
+- human_correspondence
+- population
+- long_range_connectivity
+- whole_brain
+use:
+- calibrate
+- prior
+forbidden:
+- microns/* -> human observation-role likelihoods
+- microns/* -> human connectivity claims without an explicit cross-species assumption
+- microns/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: microns
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

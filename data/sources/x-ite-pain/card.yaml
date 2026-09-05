@@ -1,0 +1,141 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: x-ite-pain
+title: X-ITE Pain Database -- experimental heat and electrical pain with phasic and tonic stimuli
+provider: University of Ulm and collaborators
+citation: Gruss et al., Multi-modal signals for analyzing pain responses to thermal and electrical stimuli.
+  Journal of Visualized Experiments 2019.
+urls:
+- https://www.nit.ovgu.de/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Academic licence agreement; identifiable video and audio. Unresolved.
+binding: unbound
+population:
+  n: 134
+  hierarchy:
+  - participant
+  - session
+  notes: '134 participants with TWO STIMULUS MODALITIES (thermal and electrical) and TWO TEMPORAL PROFILES
+    (phasic and tonic). The 2x2 design is the point: it separates what is specific to a modality from
+    what is specific to pain, and tonic stimuli are closer to clinical pain than phasic ones.'
+frames:
+- forearm_thermode
+- electrode_site
+- face
+- torso
+- camera
+- microphone
+streams:
+- name: dual_modality_design
+  kind: measured
+  via: null
+  systematic_bias: 'Two physically different routes to a matched perceptual endpoint is a genuine dissociation
+    experiment: a response present for both is about pain, a response present for one is about the stimulus.
+    §46''s requirement for a control that could fail is met by the design rather than added afterwards.'
+  band_hz:
+  - null
+  - null
+  temporal_support: phasic stimuli of seconds and TONIC stimuli of minutes -- two timescales, and the
+    tonic one is where habituation, sensitisation and coping become visible
+  spatial_support: thermode on the forearm and electrical electrodes at a separate site; facial EMG, camera
+    and microphone
+- name: tonic_stimuli
+  kind: measured
+  via: null
+  observation_chain: sustained nociceptive input over minutes -> sustained afferent barrage -> autonomic
+    and expressive responses that CHANGE OVER TIME as habituation, sensitisation and voluntary coping
+    engage
+  confounds:
+  - habituation and sensitisation, which move in opposite directions and are not separable from the response
+    alone
+  - voluntary coping and distraction, which are unmeasured
+  - the participant's knowledge that the stimulus will end
+  systematic_bias: The temporal evolution of a sustained aversive state is a slow interaction of exactly
+    the kind §52.15 and §35 care about, with a known and constant external dose.
+  notes: a constant stimulus producing a changing response is the signature of an internal state variable
+    that no channel here measures
+  band_hz:
+  - null
+  - null
+- name: eda_and_facial_emg
+  kind: measured
+  via: null
+  observation_chain: motor-unit action potentials -> muscle and subcutaneous volume conduction -> surface
+    or intramuscular electrode -> sampled voltage
+  confounds:
+  - sensor placement and contact quality
+  - motion artifact
+  - respiratory-cardiac cross-coupling that makes the two streams non-independent
+  band_hz:
+  - null
+  - null
+- name: pain_ratings
+  kind: imposed
+  via: null
+  systematic_bias: a report
+  band_hz:
+  - null
+  - null
+- name: thermal_stimulus
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: electrical_stimulus
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eda
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ecg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: facial_emg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: audio
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- afferent_recording
+- clinical_pain
+use:
+- fit
+forbidden:
+- x-ite-pain/* -> cortical or limbic state directly
+- x-ite-pain/pain_ratings -> a pain state observation
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: x-ite-pain
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

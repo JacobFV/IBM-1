@@ -1,0 +1,10 @@
+# where the bytes for `ds004514` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/ds004514
+acquired_at: '2026-09-04'
+files: 202
+bytes: 25932440293
+gib: 24.15
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://openneuro.org/datasets/ds004514

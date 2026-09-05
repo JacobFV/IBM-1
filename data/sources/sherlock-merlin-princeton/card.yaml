@@ -1,0 +1,143 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: sherlock-merlin-princeton
+title: Sherlock and Merlin naturalistic movie/recall fMRI (Princeton)
+provider: Princeton Neuroscience Institute (Hasson lab), distributed via Princeton DataSpace and the Princeton
+  openneuro/dataspace mirrors
+citation: Chen et al., Shared memories reveal shared structure in neural activity across individuals.
+  Nature Neuroscience 2017; Zadbood et al., How we transmit memories to other brains. Cerebral Cortex
+  2017.
+urls:
+- https://dataspace.princeton.edu/handle/88435/dsp01nz8062179
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Terms not read. A dataset being downloadable without a click-through is not a licence grant,
+    and the stimulus (a commercial television episode) is separately copyrighted and is NOT redistributable
+    with the responses.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - run
+  notes: n left null; read from the release. A single stimulus is shared across participants; that grouping
+    level is not expressible in population.hierarchy and lives in split_policy.group_by.
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: bold_movie_viewing
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift and between-session hardware change
+  - the stimulus is shared across participants, so ANY shared signal -- including shared motion at scene
+    cuts and shared arousal -- produces inter-subject correlation without shared representation
+  band_hz:
+  - null
+  - null
+  temporal_support: TR-sampled BOLD during continuous ~48 min viewing, then FREE SPOKEN RECALL of unconstrained
+    and per-participant-different duration. The recall clock is not the movie clock and there is no hardware
+    relation between them -- the mapping is reconstructed from the transcript, which makes it a fitted
+    clock relation with real uncertainty
+  spatial_support: whole-brain EPI
+- name: bold_free_recall
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away. During recall there is NO external stimulus: the only handle
+    on what the participant is representing is their own speech, which is a behavioural report and not
+    a measurement of the represented content'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift and between-session hardware change
+  - speech production motor and articulatory activity, which is present throughout recall and absent during
+    viewing
+  - the transcript-to-scene alignment is an annotator's judgement, not a measurement
+  systematic_bias: 'This is the abstract-cognition case obj-abstract-cognition-authority is about: the
+    mapping from a spoken sentence to a claimed internal state is the weakest link in the chain and its
+    authority starts low.'
+  band_hz:
+  - null
+  - null
+- name: held_out_intersubject_prediction
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_movie
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: recall_transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: scene_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- eyetracking
+- physiology
+- intervention
+- individual_anatomy_beyond_t1
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - bold_movie_viewing
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- evaluate
+- fit
+forbidden:
+- sherlock-merlin-princeton/* -> redistribution of the stimulus
+- sherlock-merlin-princeton/* -> treating a recall transcript as a measurement of internal state
+split:
+  group_by:
+  - participant
+  - stimulus
+  notes: One stimulus is shared by every participant; a participant-only split leaks completely through
+    the stimulus axis.
+provenance:
+  imported_from: win-registry
+  card: sherlock-merlin-princeton
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

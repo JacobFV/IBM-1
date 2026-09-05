@@ -1,0 +1,120 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: haxby-hyperalignment-corpora
+title: Haxby-lab hyperalignment movie corpora (Raiders, Budapest, Whiplash, Grand Budapest)
+provider: Dartmouth College (Haxby lab), distributed via DataLad/OpenNeuro and datasets.datalad.org
+citation: Haxby et al., A common, high-dimensional model of the representational space in human ventral
+  temporal cortex. Neuron 2011; Visconti di Oleggio Castello et al., An fMRI dataset in response to 'The
+  Grand Budapest Hotel', a socially-rich, naturalistic movie. Scientific Data 2020.
+urls:
+- https://datasets.datalad.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Terms differ per dataset and were not read. The feature films used as stimuli are copyrighted
+    and not redistributable.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - run
+  notes: A single stimulus is shared across participants; that grouping level is not expressible in population.hierarchy
+    and lives in split_policy.group_by.
+frames:
+- scanner
+- subject_native
+- fsaverage
+- hyperaligned_common_space
+streams:
+- name: bold_movie_multiple_films
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift and between-session hardware change
+  - shared stimulus produces shared signal irrespective of shared representation
+  - unconstrained gaze means the retinal input differs between participants viewing the same frames
+  systematic_bias: The reason to hold several films by the same lab is that hyperalignment trained on
+    one film and tested on another is a real generalisation test, whereas within-film cross-validation
+    is not.
+  band_hz:
+  - null
+  - null
+  temporal_support: TR-sampled BOLD over continuous feature-film viewing
+  spatial_support: whole-brain EPI, analysed on the cortical surface; the hyperalignment method these
+    datasets exist for produces a DERIVED common representational space which is not an anatomical frame
+- name: hyperalignment_common_space
+  kind: measured
+  via: null
+  systematic_bias: Hyperalignment is a functional-response-derived between-subject mapping and is therefore
+    DERIVED, never measured. It is directly comparable to what obj-overlap-reconciliation wants from probabilistic
+    support mapping, and it is the strongest existing baseline that method has to beat.
+  notes: a common space fitted on responses to one stimulus class may not transfer to another, and the
+    failure looks like a subject difference
+  band_hz:
+  - null
+  - null
+- name: bold_movie
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_task_localiser
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eyetracking
+- eeg
+- meg
+- physiology
+- intervention
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - bold_movie_multiple_films
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- evaluate
+- fit
+forbidden:
+- haxby-hyperalignment-corpora/* -> redistribution of the stimulus films
+- haxby-hyperalignment-corpora/* -> a hyperaligned space being recorded as a measured anatomical frame
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: haxby-hyperalignment-corpora
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

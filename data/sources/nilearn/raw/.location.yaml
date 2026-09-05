@@ -1,0 +1,5 @@
+# where the bytes for `nilearn` actually live.  never the bytes themselves.
+source_url: "https://nilearn.github.io/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

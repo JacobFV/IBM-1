@@ -1,0 +1,86 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: qsm-reconstruction-challenge
+title: QSM Reconstruction Challenge datasets
+provider: ISMRM Electro-Magnetic Tissue Properties study group
+citation: 'Langkammer et al., Quantitative susceptibility mapping: Report from the 2016 reconstruction
+  challenge. Magnetic Resonance in Medicine 2018; QSM Challenge 2.0, 2021.'
+urls:
+- https://qsm.neuroimaging.at/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- subject_native
+- simulation_native
+streams:
+- name: ground_truth_susceptibility
+  kind: measured
+  via: null
+  systematic_bias: 'The QSM dipole inversion is ILL-POSED: the forward problem has a null cone in k-space,
+    so infinitely many susceptibility distributions produce the same measured phase, and every algorithm
+    resolves that ambiguity by regularisation. This challenge quantifies how much the answer depends on
+    that choice -- which is a model-class uncertainty component (§39) and is invisible in any single QSM
+    map.'
+  notes: COSMOS ground truth requires rotating the head in the scanner and is itself an estimate; simulated
+    ground truth is exact for a phantom that is not tissue
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: phase data with a GROUND-TRUTH susceptibility map -- from a simulated head model in
+    the 2.0 challenge, and from COSMOS multi-orientation acquisition in the first -- against which dipole-inversion
+    algorithms are scored
+- name: algorithm_comparison
+  kind: measured
+  via: null
+  systematic_bias: 'the challenge''s finding that different metrics favour different algorithms is the
+    control: a QSM result quoted without stating the inversion is underspecified'
+  band_hz:
+  - null
+  - null
+- name: phase_data
+  kind: measured
+  via: null
+  systematic_bias: §14 wants electromagnetism to be internal physical state; phase-to-susceptibility is
+    a concrete, well-posed-except-for-the-null-cone electromagnetic inverse problem and is the natural
+    first target for an internal implementation
+  band_hz:
+  - null
+  - null
+absent:
+- in_vivo_ground_truth
+- biological_validation
+requires:
+- geometry: mr-acquisition-objects
+  for_streams:
+  - ground_truth_susceptibility
+  - phase_data
+  severity: blocking
+  without_it: A quantitative parameter map is a FITTED field, and its value depends on the sequence, the
+    timing and the field maps that produced it. Without the acquisition object those are not carried,
+    and the number is a fit output rather than a measurement of tissue.
+use:
+- calibrate
+- control
+- surrogate
+forbidden:
+- qsm-reconstruction-challenge/* -> biological prevalence claims
+- qsm-reconstruction-challenge/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: qsm-reconstruction-challenge
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

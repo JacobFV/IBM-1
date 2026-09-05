@@ -1,0 +1,166 @@
+{
+ "held": [
+  {
+   "id": "aomic-id1000",
+   "bytes": 97403036433,
+   "files": 14359
+  },
+  {
+   "id": "arterial-territory-atlas-liu2023",
+   "bytes": 57348213,
+   "files": 7
+  },
+  {
+   "id": "bbbd",
+   "bytes": 26973320945,
+   "files": 126
+  },
+  {
+   "id": "bendr",
+   "bytes": 628586182,
+   "files": 2
+  },
+  {
+   "id": "cerebral-artery-atlas-mouches2019",
+   "bytes": 237286834,
+   "files": 8
+  },
+  {
+   "id": "ds000117",
+   "bytes": 94130982522,
+   "files": 2095
+  },
+  {
+   "id": "ds002336",
+   "bytes": 19012914056,
+   "files": 546
+  },
+  {
+   "id": "ds003670",
+   "bytes": 104721294016,
+   "files": 890
+  },
+  {
+   "id": "ds003688",
+   "bytes": 16423373220,
+   "files": 1632
+  },
+  {
+   "id": "ds003787",
+   "bytes": 1411089589,
+   "files": 1748
+  },
+  {
+   "id": "ds004024",
+   "bytes": 29097535025,
+   "files": 1654
+  },
+  {
+   "id": "ds004514",
+   "bytes": 25932440293,
+   "files": 202
+  },
+  {
+   "id": "ds004873",
+   "bytes": 77399927041,
+   "files": 38693
+  },
+  {
+   "id": "ds005498",
+   "bytes": 47927556410,
+   "files": 3477
+  },
+  {
+   "id": "ds008037",
+   "bytes": 41600053165,
+   "files": 3033
+  },
+  {
+   "id": "eegmmidb",
+   "bytes": 3616824885,
+   "files": 3060
+  },
+  {
+   "id": "hansen-many-networks",
+   "bytes": 232931758,
+   "files": 127
+  },
+  {
+   "id": "ismrm2015-submissions",
+   "bytes": 38968819489,
+   "files": 99
+  },
+  {
+   "id": "ismrm2015-tractography-challenge",
+   "bytes": 787131814,
+   "files": 34
+  },
+  {
+   "id": "kamitani-perception-and-imagery-fmri",
+   "bytes": 23881069166,
+   "files": 38
+  },
+  {
+   "id": "libribrain",
+   "bytes": 48943755496,
+   "files": 163
+  },
+  {
+   "id": "m4raw",
+   "bytes": 17967217976,
+   "files": 8
+  },
+  {
+   "id": "meg-masc",
+   "bytes": 45686596016,
+   "files": 632
+  },
+  {
+   "id": "mne-sample",
+   "bytes": 2951099650,
+   "files": 621
+  },
+  {
+   "id": "mne-somato",
+   "bytes": 784852770,
+   "files": 596
+  },
+  {
+   "id": "mne-spm-face",
+   "bytes": 1592215881,
+   "files": 579
+  },
+  {
+   "id": "scatterbrains",
+   "bytes": 3336850,
+   "files": 18
+  },
+  {
+   "id": "sleep-edfx",
+   "bytes": 7598595964,
+   "files": 307
+  },
+  {
+   "id": "studyforrest-ds000113",
+   "bytes": 4169001898,
+   "files": 393
+  },
+  {
+   "id": "synthrad2023",
+   "bytes": 3658926601,
+   "files": 724
+  },
+  {
+   "id": "tractoinferno",
+   "bytes": 34449365361,
+   "files": 1031
+  },
+  {
+   "id": "wan2.2-ti2v-5b",
+   "bytes": 34203131261,
+   "files": 72
+  }
+ ],
+ "total_bytes": 852451616780,
+ "total_files": 76974
+}

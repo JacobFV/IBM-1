@@ -1,0 +1,138 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tuh-eeg
+title: Temple University Hospital EEG Corpus (TUH EEG) and its clinical subcorpora
+provider: Temple University Neural Engineering Data Consortium
+citation: Obeid and Picone, The Temple University Hospital EEG Data Corpus. Frontiers in Neuroscience
+  2016.
+urls:
+- https://isip.piconepress.com/projects/nedc/html/tuh_eeg/
+access: restricted
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Registration and data-use agreement; clinical records from a hospital population. Redistribution
+    prohibited; other terms unresolved. Registered but never held in the predecessor (§49.3).
+binding: unbound
+population:
+  n: 14000
+  hierarchy:
+  - participant
+  - session
+  - device
+  notes: '''Temple clinical EEG'' in §52.5 refers to this same corpus family. Tens of thousands of recordings
+    over more than a decade, on changing hardware.'
+frames:
+- eeg_cap
+- head
+streams:
+- name: clinical_eeg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - antiepileptic and sedative medication, which changes the EEG systematically and is recorded only in
+    free text
+  - the reason for referral, which is the sampling mechanism and is correlated with the signal
+  - hardware and montage changes over a decade of acquisition
+  systematic_bias: This is a HOSPITAL population selected by clinical suspicion. Its base rates are not
+    the population's, and 'normal' here means 'no abnormality found in a person who was referred'.
+  notes: no individual anatomy, varying montages, unrecorded medication state
+  band_hz:
+  - null
+  - null
+  temporal_support: sampling rates vary by record (250-512 Hz typical); recordings from minutes to hours;
+    over a decade of acquisition on evolving hardware
+  spatial_support: clinical montages that VARY between recordings (referential, bipolar, reduced arrays);
+    the montage is a property of each record, not of the corpus
+- name: scale_prior
+  kind: measured
+  via: null
+  systematic_bias: its value is sheer volume and device/montage diversity -- the thing §53.2 says a representation
+    must survive without learning channel identity as anatomy
+  band_hz:
+  - null
+  - null
+- name: abnormality_labels
+  kind: measured
+  via: null
+  systematic_bias: a mechanism that predicts identically on abnormal and normal records has not demonstrated
+    sensitivity to cortical state
+  band_hz:
+  - null
+  - null
+- name: physician_reports
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: seizure_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: artifact_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: patient_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- individual_anatomy
+- electrode_digitisation
+- task
+- stimulus
+- medication_state_structured
+- healthy_population
+requires:
+- geometry: device-geometry
+  for_streams:
+  - clinical_eeg
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- control
+- fit
+- prior
+forbidden:
+- tuh-eeg/* -> healthy population priors without clinical conditioning
+- tuh-eeg/* -> subject-specific head geometry
+- tuh-eeg/* -> world-model forcing parameters
+split:
+  group_by:
+  - participant
+  - session
+  - device
+  notes: 'device matters: hardware changed over the corpus''s decade'
+provenance:
+  imported_from: win-registry
+  card: tuh-eeg
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,5 @@
+# where the bytes for `tribe` actually live.  never the bytes themselves.
+source_url: "https://arxiv.org/abs/2507.22229"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

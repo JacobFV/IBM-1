@@ -1,0 +1,5 @@
+# where the bytes for `mpi-leipzig-mind-brain-body` actually live.  never the bytes themselves.
+source_url: "https://openneuro.org/datasets/ds000221"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

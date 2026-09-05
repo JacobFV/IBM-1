@@ -1,0 +1,70 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: babelbrain
+title: BabelBrain -- prospective transcranial focused ultrasound modelling application
+provider: University of Calgary / Pichardo lab
+citation: 'Pichardo, BabelBrain: an open-source application for prospective modeling of transcranial focused
+  ultrasound for neuromodulation applications. arXiv:2301.12727.'
+urls:
+- https://github.com/ProteusMRIgHIFU/BabelBrain
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- simulation_grid
+- transducer_frame
+streams:
+- name: subject_specific_transcranial_pipeline
+  kind: measured
+  via: null
+  systematic_bias: §59 reference 42 and §54.2 single it out because it EXPLICITLY MODELS SKULL-INDUCED
+    ACOUSTIC DISTORTION AND THERMAL EXPOSURE FROM SUBJECT IMAGING. That is the whole delivered-field computation
+    §52.13 requires, packaged. Its ZTE/UTE-MRI-to-acoustic-property path means a radiation-free pipeline
+    is possible and adds a derivation step whose error is measurable only where paired CT exists.
+  notes: the CT-Hounsfield-to-speed-of-sound relation is empirical with real scatter, and the MRI substitute
+    adds a second empirical mapping on top
+  band_hz:
+  - null
+  - null
+  temporal_support: acoustic simulation over the pulse; thermal integration over the sonication
+  spatial_support: an end-to-end pipeline from an individual's SKULL IMAGING to a predicted acoustic and
+    thermal field at a targeted brain location, including the transducer's own geometry
+- name: targeting_workflow
+  kind: measured
+  via: null
+  systematic_bias: transducer pose relative to individual anatomy is the boundary condition the whole
+    computation rests on; see the mr-arfi-displacement-data card for the only in-vivo check on whether
+    the predicted focus is the actual one
+  band_hz:
+  - null
+  - null
+absent:
+- measured_fields
+- skull_microstructure
+- in_vivo_temperature
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The acoustic focus is a millimetre-scale volume whose position depends on transducer element
+    geometry, the drive phase and amplitude mapping, and the pose of the transducer against the skull.
+    Without the device product the target is a nominal coordinate and the intended and delivered foci
+    are not distinguishable.
+use:
+- surrogate
+forbidden:
+- babelbrain/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: babelbrain
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

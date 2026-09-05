@@ -1,0 +1,60 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: simnibs
+title: SimNIBS — transcranial electric and magnetic field simulation
+provider: SimNIBS developers
+urls:
+- https://simnibs.github.io/simnibs/
+access: reference
+licence:
+  name: GPL-3.0 (verify for the pinned release)
+  redistribution: unresolved
+  commercial: unresolved
+  notes: A GPL oracle used OFFLINE to generate reference fields does not encumber a WIN artifact the way
+    linking it at runtime would. This distinction is one of the concrete reasons for the no-runtime-black-boxes
+    rule -- it is an engineering rule with a licensing consequence.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native_ras
+- tms_coil
+streams:
+- name: efield_solutions
+  kind: measured
+  via: null
+  systematic_bias: A numerical solution under assumed conductivities is not ground truth about a head.
+    It is ground truth about the equations, which is what we want it for.
+  notes: The internal-solver-vs-SimNIBS discrepancy is RECORDED as model discrepancy in the uncertainty
+    ledger, not absorbed. It does not vanish once the internal solver is accepted.
+  band_hz:
+  - null
+  - null
+  temporal_support: static or quasi-static field solutions
+  spatial_support: tetrahedral head meshes
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: Transcranial electrical stimulation delivers a current-density field throughout the head,
+    determined by electrode geometry, contact area and the tissue conductivities between them -- not a
+    spot under an electrode. Without the device product a montage is a pair of labels and the delivered
+    dose is unknown.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- surrogate
+forbidden:
+- simnibs/* -> any runtime code path (offline only, §1)
+split:
+  group_by:
+  - participant
+  notes: Surrogates trained on SimNIBS output are accepted on HELD-OUT GEOMETRIES, not on the head models
+    they saw. A field surrogate that works on its training heads has learned an atlas, not a physics.
+provenance:
+  imported_from: win-registry
+  card: simnibs
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

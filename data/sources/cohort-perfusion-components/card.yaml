@@ -1,0 +1,82 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cohort-perfusion-components
+title: Perfusion and vascular-pathology components of the large cohorts
+provider: multiple -- see the hcp-aging, uk-biobank-imaging, adni and oasis-3 cards
+citation: 'PROMPT.md §52.11: ''HCP/UKB perfusion where available'' and ''ADNI/OASIS perfusion and vascular
+  pathology only under appropriate domain conditioning''.'
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: cohort_perfusion
+  kind: measured
+  via: null
+  systematic_bias: Large-n perfusion in absolute units is the population prior a vascular state model
+    needs, and it arrives with the cohort's own selection bias attached. Site and scanner effects on ASL
+    are large relative to the physiological differences of interest.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: ASL perfusion and vascular-pathology markers (white-matter hyperintensities, microbleeds,
+    perivascular spaces) already present inside the large cohorts, reachable under each cohort's own governance
+- name: vascular_pathology_markers
+  kind: measured
+  via: null
+  systematic_bias: §52.11 says ADNI/OASIS vascular pathology is usable ONLY UNDER APPROPRIATE DOMAIN CONDITIONING.
+    White-matter hyperintensity burden changes both the vascular and the structural model, and using such
+    a cohort unconditioned contaminates the healthy prior.
+  band_hz:
+  - null
+  - null
+- name: perfusion_geometry_pairing
+  kind: measured
+  via: null
+  systematic_bias: where a cohort has both perfusion and an angiographic sequence, flow and geometry are
+    available in the same people -- which is rare and is the reason to card this class separately from
+    the parent cohorts
+  band_hz:
+  - null
+  - null
+absent:
+- dedicated_calibration
+- arterial_transit_time
+- vessel_geometry_in_most_cohorts
+requires:
+- geometry: vascular-products
+  severity: degrading
+  without_it: A perfusion or reactivity map is a voxel field with no vessel attached. It can be used as
+    a voxel-wise measurement, but attributing it to a supplying artery, a draining vein or a microvascular
+    compartment -- which is what makes it evidence about the vascular state rather than about the image
+    -- requires the vascular product.
+  substitute: Voxel-wise use with no vessel attribution, which cannot separate an arterial transit effect
+    from a tissue perfusion change.
+use:
+- calibrate
+- prior
+forbidden:
+- cohort-perfusion-components/* -> neural supervision
+- cohort-perfusion-components/* -> use outside the parent cohort's governance
+- cohort-perfusion-components/vascular_pathology_markers -> healthy priors without conditioning
+- cohort-perfusion-components/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: cohort-perfusion-components
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

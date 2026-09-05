@@ -1,0 +1,114 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: chang-lab-ecog-cv-syllables
+title: Human ECoG speaking consonant-vowel syllables (Bouchard and Chang)
+provider: UCSF (Chang lab) and LBNL (Bouchard), curated for CRCNS and hosted on figshare
+citation: 'Bouchard & Chang, Human ECoG speaking consonant-vowel syllables. figshare collection doi:10.6084/m9.figshare.c.4617263.v4,
+  2019. Primary: Bouchard et al., Functional organization of human sensorimotor cortex for speech articulation.
+  Nature 495:327-332, 2013.'
+urls:
+- https://figshare.com/collections/Human_ECoG_speaking_consonant-vowel_syllables/4617263
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: COLLECTION-LEVEL LICENCE UNRESOLVED. Individual file records carry MIT -- verified on one article
+    record -- which is an unusual and probably unintended licence for human recordings, and it must be
+    checked PER FILE rather than assumed for the collection. A code licence applied to data is a strong
+    signal that the licence field was filled in without thought, and the safe reading is that the terms
+    are not established.
+binding: unbound
+population:
+  n: 3
+  hierarchy:
+  - participant
+  - run
+  notes: Subjects EC2, EC9 and GP31, distributed as block-level files (EC2_B1 through B76, EC9_B39 through
+    B63). Exact block totals unresolved.
+frames:
+- grid_index
+- subject_native
+streams:
+- name: high_density_ecog_during_syllable_production
+  kind: measured
+  via: null
+  observation_chain: local post-synaptic and spiking activity within a few millimetres of a contact ->
+    extracellular potential -> potential difference against a reference contact whose own activity is
+    in every number -> amplifier and filter -> sampled microvolts. No skull and no inverse problem. High-density
+    grids over ventral sensorimotor cortex during overt syllable production; the articulatory output is
+    described by hand annotation because the microphone signal was removed
+  confounds:
+  - the reference contact's own activity
+  - the epileptogenic zone and interictal discharges, present by definition in a clinical cohort
+  - anti-epileptic medication, often being tapered during monitoring
+  - electrode placement follows a surgical hypothesis, so coverage is not a sample of the brain
+  - 'hospital environment: sleep, arousal and drug state uncontrolled'
+  - articulatory muscle artefact time-locked to production
+  - auditory feedback of the participant's own voice
+  - the hand annotation is an annotator's judgement of syllable boundaries, with no independent acoustic
+    check available in the release
+  - 'three participants: any organisation reported is a within-subject observation replicated three times,
+    not a population result'
+  systematic_bias: 'THE MICROPHONE SIGNAL WAS REMOVED FOR PRIVACY COMPLIANCE. There is therefore NO ACOUSTIC
+    GROUND TRUTH: the boundary variable that would close the production loop is absent, and every alignment
+    rests on hand marks. That is a censoring decision with a stated reason, and it is exactly the kind
+    of absence that must not be read as ''the acoustics were not informative''.'
+  band_hz:
+  - null
+  - null
+  temporal_support: 'one file per continuous recording block, with hand-marked syllable onset, consonant-vowel
+    transition and offset. THE ANNOTATION IS THE ONLY TIMEBASE FOR THE SPEECH: there is no acoustic signal
+    to align against'
+  spatial_support: 256-channel HIGH-DENSITY subdural grids over sensorimotor cortex -- the electrode pitch
+    that resolves articulator somatotopy, which a standard clinical grid does not
+- name: ecog_256_channel
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: syllable_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: rest_baseline
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- audio
+- articulatory_kinematics
+- electrode_localisation_verified
+- continuous_speech
+- healthy_controls
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
+    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
+    channel is an index and nothing measured here can be attached to a cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- chang-lab-ecog-cv-syllables/* -> an acoustic claim (there is no audio)
+- chang-lab-ecog-cv-syllables/* -> an artifact, before the per-file licence is verified
+split:
+  group_by:
+  - participant
+  - run
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: chang-lab-ecog-cv-syllables
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

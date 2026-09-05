@@ -1,0 +1,86 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: scatterbrains
+title: scatterBrains -- sixteen MRI-derived human head models, outer scalp surfaces
+provider: Wu, Horstmeyer & Carp (Massachusetts General Hospital / Duke), via GitHub
+citation: 'Wu MM, Horstmeyer RW, Carp SA. scatterBrains: an open database of human head models and companion
+  optode locations for realistic Monte Carlo photon simulations. J Biomed Opt. 28(10):100501 (2023).'
+urls:
+- https://github.com/wumelissa/scatterBrains
+access: held
+licence:
+  name: BSD-2-Clause
+  redistribution: permitted
+  commercial: permitted
+  notes: 'BSD-2 is the most permissive licence in this registry, which makes this source unusually good
+    as a first held artifact: nothing it contributes to inherits a redistribution or share-alike constraint.
+    The licence file and its sha256 are vendored alongside the data.'
+binding: unbound
+population:
+  n: 16
+  hierarchy:
+  - participant
+  notes: 'Sixteen individuals, and the between-subject variation is the point rather than noise to be
+    averaged out: head extents across the sixteen have a standard deviation of 6-9 mm on each axis. A
+    template head is not a sample from this population, it is a summary of it.'
+frames:
+- scatterbrains_subject_native
+streams:
+- name: outer_scalp_surface
+  kind: measured
+  via: null
+  observation_chain: T1-weighted MRI -> tissue segmentation -> volume mesh -> outer surface extraction.
+    The scalp boundary is where a segmentation put it, not where a ruler did.
+  confounds:
+  - segmentation threshold choice, which moves the scalp boundary by roughly a voxel
+  - hair and scanner-coil compression of the scalp, which is present in the MRI and is not tissue
+  - MRI geometric distortion, uncorrected and unquantified in the vendored artifacts
+  systematic_bias: A reconstructed surface, not a measured one. Every subject went through one segmentation
+    pipeline, so its error is shared across all sixteen and does NOT average away over subjects -- which
+    is exactly the case where a population mean looks more precise than it is.
+  notes: Head geometry constrains where a sensor or coil sits and how far it is from tissue. It says nothing
+    about what is under the scalp.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- one static surface per subject
+  spatial_support: triangulated outer scalp surface per subject; 9,959-15,415 vertices and 19,918-30,828
+    triangles, median 11,179 and 22,354
+- name: outer_scalp_surface
+  kind: measured
+  via: null
+  systematic_bias: Sixteen is enough to fit a low-order shape basis and not enough to claim population
+    coverage. A basis fitted here is a prior over head shape, with n=16 written on it.
+  band_hz:
+  - null
+  - null
+- name: head_surface_mesh
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- cortical_surface
+- skull
+- csf
+- tissue_conductivity
+- function
+- vasculature
+- optode_or_electrode_positions_in_this_vendored_subset
+use:
+- calibrate
+- prior
+forbidden:
+- scatterbrains/* -> any claim about tissue below the scalp
+- scatterbrains/outer_scalp_surface -> measured head geometry (it is reconstructed)
+- scatterbrains/* -> cortical geometry of any kind
+split:
+  group_by:
+  - participant
+  notes: Sixteen subjects. Any shape basis fitted across them and then applied to one of them has seen
+    that subject; group by participant or the basis is evaluating itself.
+provenance:
+  imported_from: win-registry
+  card: scatterbrains
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

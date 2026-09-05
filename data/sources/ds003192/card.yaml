@@ -1,0 +1,158 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds003192
+title: ds003192 -- EuskalIBUR multi-echo breath-hold cerebrovascular reactivity dataset
+provider: OpenNeuro ds003192 / BCBL
+citation: Moia et al., ICA-based denoising strategies in breath-hold induced cerebrovascular reactivity
+  mapping with multi-echo BOLD fMRI. NeuroImage 2021; PROMPT.md §51.2 item 13.
+urls:
+- https://openneuro.org/datasets/ds003192
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: 7
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 'SEVEN participants scanned in TEN SESSIONS each. The design is a reliability study: the same
+    person''s vascular reactivity measured repeatedly, which gives a within-person between-session variance
+    component that almost nothing else in the registry supplies.'
+frames:
+- scanner
+- subject_native
+- MNI152
+- respiratory_cycle
+streams:
+- name: cvr_amplitude_and_delay
+  kind: measured
+  via: null
+  systematic_bias: 'CEREBROVASCULAR REACTIVITY AND DELAY PER VOXEL PER SESSION. §51.2 item 13 is emphatic
+    that this is for subject/session vascular calibration and NOT for neural supervision: a region with
+    sluggish vascular reactivity produces a delayed and blunted BOLD response to identical neural activity,
+    and without a CVR map that difference is misread as a neural difference.'
+  notes: breath-hold compliance varies and is itself measured by the end-tidal trace, which is why the
+    CO2 recording is not optional
+  band_hz:
+  - null
+  - null
+  temporal_support: TR seconds; breath-hold blocks of tens of seconds; end-tidal CO2 sampled breath by
+    breath, on the RESPIRATORY clock rather than the scanner's
+  spatial_support: multi-echo BOLD, which separates T2* changes from non-BOLD signal drift by their echo-time
+    dependence -- a physical rather than statistical separation
+- name: multi_echo_bold
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - breath-hold induces head motion that is time-locked to the task, which is the worst possible motion
+    structure
+  systematic_bias: Multi-echo lets T2*-dependent (BOLD-like) and T2*-independent (artifact-like) components
+    be separated by physics rather than by a regression assumption.
+  band_hz:
+  - null
+  - null
+- name: end_tidal_co2
+  kind: measured
+  via: null
+  observation_chain: thoracic/abdominal circumference or airflow -> transducer -> sampled waveform; end-tidal
+    CO2 partial pressure is a proxy for arterial CO2, which is the actual vasoactive stimulus
+  confounds:
+  - end-tidal to arterial CO2 gradient, which is not zero and varies between people
+  - sampling line delay and mixing, which smears the trace
+  - breath-hold compliance
+  systematic_bias: The measured stimulus for the reactivity estimate. Without it, a breath-hold CVR map
+    conflates reactivity with compliance.
+  band_hz:
+  - null
+  - null
+- name: repeat_sessions
+  kind: measured
+  via: null
+  systematic_bias: ten sessions per person makes the SESSION-LEVEL variance of a vascular parameter measurable,
+    which is the number every single-session CVR estimate needs and never has
+  band_hz:
+  - null
+  - null
+- name: respiration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cardiac_trace
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: breath_hold_task
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: derived_cvr_maps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- vessel_geometry
+- arterial_blood_gas
+- population
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: vascular-products
+  for_streams:
+  - cvr_amplitude_and_delay
+  severity: degrading
+  without_it: A perfusion or reactivity map is a voxel field with no vessel attached. It can be used as
+    a voxel-wise measurement, but attributing it to a supplying artery, a draining vein or a microvascular
+    compartment -- which is what makes it evidence about the vascular state rather than about the image
+    -- requires the vascular product.
+  substitute: Voxel-wise use with no vessel attribution, which cannot separate an arterial transit effect
+    from a tissue perfusion change.
+use:
+- calibrate
+- fit
+forbidden:
+- ds003192/* -> neural supervision of any kind
+- ds003192/* -> population priors
+- ds003192/cvr_amplitude_and_delay -> neural response amplitude
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: ds003192
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

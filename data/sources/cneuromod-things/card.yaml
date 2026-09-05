@@ -1,0 +1,110 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cneuromod-things
+title: cNeuroMod THINGS -- dense object-image fMRI in the THINGS stimulus space
+provider: Courtois NeuroMod
+citation: 'Courtois NeuroMod THINGS dataset; THINGS stimulus set: Hebart et al., PLoS ONE 2019.'
+urls:
+- https://docs.cneuromod.ca/en/latest/DATASETS.html
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: cNeuroMod access agreement for responses; the THINGS image set carries its own separate terms.
+    Two licences, two lineages.
+binding: unbound
+population:
+  n: 4
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: Very many trials per participant over the shared THINGS concept space -- the bridge between cNeuroMod,
+    NSD, BOLD5000 and THINGS-EEG.
+frames:
+- scanner
+- subject_native
+- display
+streams:
+- name: bold_images
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  systematic_bias: Discrete static images are a CONTROL condition for the naturalistic claim, not a substitute
+    for it (§51.1 item 4 makes the same point about THINGS-EEG2).
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 1.49 s; discrete trials, not a continuous world trajectory
+  spatial_support: 1.6 mm BOLD; individual surfaces
+- name: things_images
+  kind: imposed
+  via: null
+  systematic_bias: the shared THINGS concept space is what lets this be compared with THINGS-EEG/2 and
+    with the NSD/BOLD5000 COCO overlap; it is also a shared-stimulus leakage channel ACROSS DATASETS,
+    which no per-dataset split policy catches
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eye_tracking
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: anatomical
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- naturalistic_video
+- vascular
+- population
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
+    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
+    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+use:
+- fit
+forbidden:
+- cneuromod-things/* -> population covariance priors
+- cneuromod-things/* -> temporal transition dynamics of a continuous world
+split:
+  group_by:
+  - participant
+  - stimulus
+  notes: 'CROSS-DATASET stimulus grouping is required: THINGS images appear in things-eeg, things-eeg2
+    and cneuromod-things'
+provenance:
+  imported_from: win-registry
+  card: cneuromod-things
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

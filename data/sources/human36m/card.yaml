@@ -1,0 +1,92 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: human36m
+title: Human3.6M -- large-scale 3D human pose dataset
+provider: Institute of Mathematics of the Romanian Academy / Imperial College
+citation: 'Ionescu et al., Human3.6M: Large Scale Datasets and Predictive Methods for 3D Human Sensing
+  in Natural Environments. IEEE TPAMI 2014.'
+urls:
+- http://vision.imar.ro/human3.6m/
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: prohibited
+  notes: Academic-use agreement; commercial use prohibited by the providers. Redistribution not permitted.
+    SPDX unresolved.
+binding: unbound
+population:
+  n: 11
+  hierarchy:
+  - participant
+  - session
+  notes: 3.6 million frames from 11 professional actors performing 17 scripted scenarios. SCRIPTED, in
+    a laboratory, by actors -- the motion distribution is not everyday behaviour.
+frames:
+- capture_room
+- camera
+- body_frame
+streams:
+- name: 3d_joint_positions
+  kind: imposed
+  via: null
+  systematic_bias: Marker-based positions are among the most accurate kinematics in the registry, and
+    the scenarios are scripted so the motion distribution is narrow and unnatural
+  band_hz:
+  - null
+  - null
+  temporal_support: mocap at 50 Hz; video at 50 fps; hardware-synchronised
+  spatial_support: marker-based motion capture synchronised with four calibrated RGB cameras and a depth
+    sensor, in a fixed room with known camera geometry
+- name: camera_calibration
+  kind: measured
+  via: null
+  systematic_bias: a fully calibrated multi-camera rig with known extrinsics -- reusable as a worked example
+    of the room and camera geometry §56.4 asks for
+  band_hz:
+  - null
+  - null
+- name: body_scans
+  kind: measured
+  via: null
+  systematic_bias: per-participant 3D body scans make the body model subject-specific rather than population-fitted
+  band_hz:
+  - null
+  - null
+- name: joint_angles
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: multi_view_video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: depth
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- muscle_activity
+- contact_forces
+- natural_behaviour
+- gaze
+use:
+- fit
+forbidden:
+- human36m/* -> any cortical state directly
+- human36m/* -> natural behaviour priors
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: human36m
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

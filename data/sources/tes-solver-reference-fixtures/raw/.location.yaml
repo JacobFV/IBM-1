@@ -1,0 +1,5 @@
+# where the bytes for `tes-solver-reference-fixtures` actually live.  never the bytes themselves.
+source_url: "https://www.parralab.org/roast/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

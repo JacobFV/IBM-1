@@ -1,0 +1,68 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: scanner-field-maps-and-gradient-phantoms
+title: Scanner field maps and gradient-nonlinearity phantoms
+provider: multiple -- per-scanner B0/B1 mapping and geometric distortion phantoms
+citation: PROMPT.md §52.12, 'scanner field maps and gradient-nonlinearity phantoms'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- subject_native
+- phantom_native
+streams:
+- name: b0_field_maps
+  kind: measured
+  via: null
+  systematic_bias: B0 off-resonance produces GEOMETRIC DISPLACEMENT in EPI, several millimetres near air
+    cavities, which means functional and structural images of the same brain do not align even when perfectly
+    registered. That is a coordinate-frame-graph edge with a real, measurable, spatially varying residual
+    (§56.6's field maps).
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: 'per-scanner measurements of the field the sample actually experiences: B0 off-resonance,
+    B1 transmit inhomogeneity, and the geometric displacement produced by gradient nonlinearity'
+- name: b1_transmit_maps
+  kind: measured
+  via: null
+  systematic_bias: B1 inhomogeneity is the dominant confound in quantitative T1 mapping and is severe
+    at 7T; a relaxometry dataset without a B1 map has an unmeasured multiplicative bias
+  band_hz:
+  - null
+  - null
+- name: gradient_nonlinearity_displacement
+  kind: measured
+  via: null
+  systematic_bias: a systematic, scanner-specific spatial distortion that grows toward the edge of the
+    field of view; it affects every distance and volume measured on that scanner and is correctable only
+    if measured
+  band_hz:
+  - null
+  - null
+absent:
+- availability_per_dataset
+- temporal_stability_records
+use:
+- calibrate
+forbidden:
+- scanner-field-maps-and-gradient-phantoms/* -> biological claims
+- scanner-field-maps-and-gradient-phantoms/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: scanner-field-maps-and-gradient-phantoms
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

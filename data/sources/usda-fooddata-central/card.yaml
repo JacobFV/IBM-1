@@ -1,0 +1,61 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: usda-fooddata-central
+title: USDA FoodData Central
+provider: US Department of Agriculture Agricultural Research Service
+citation: USDA FoodData Central.
+urls:
+- https://fdc.nal.usda.gov/
+access: priority
+licence:
+  name: US Government public domain
+  redistribution: permitted
+  commercial: permitted
+  notes: A US Government work; the public-domain status is stated by the provider.
+binding: unbound
+population:
+  n: null
+frames:
+- food_item
+streams:
+- name: nutrient_composition
+  kind: measured
+  via: null
+  systematic_bias: THE BRIDGE BETWEEN A DIETARY RECORD AND A METABOLIC INPUT. A food diary is a list of
+    names; this is what turns it into grams of glucose, and glucose is the brain's substrate. Composition
+    varies with cultivar, season, preparation and portion estimation, so the conversion adds error at
+    every step -- but without it the dietary records in myconnectome, nhanes and studentlife cannot enter
+    a metabolic model at all.
+  notes: branded and calculated entries are derived from label declarations rather than assayed, and the
+    two are mixed in the database
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: measured and calculated nutrient composition for hundreds of thousands of foods; the
+    support is the FOOD ITEM, and the values are laboratory assays or calculations from ingredients
+- name: portion_reference_weights
+  kind: measured
+  via: null
+  systematic_bias: self-reported portion size is the dominant error in any dietary assessment and this
+    database cannot fix it
+  band_hz:
+  - null
+  - null
+absent:
+- any_biological_measurement
+- individual_absorption
+- preparation_effects
+use:
+- calibrate
+forbidden:
+- usda-fooddata-central/* -> any physiological state directly
+- usda-fooddata-central/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: usda-fooddata-central
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

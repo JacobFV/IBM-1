@@ -1,0 +1,84 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: meld
+title: MELD -- Multimodal EmotionLines Dataset
+provider: Nanyang Technological University and collaborators
+citation: 'Poria et al., MELD: A Multimodal Multi-Party Dataset for Emotion Recognition in Conversations.
+  ACL 2019.'
+urls:
+- https://affective-meld.github.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Annotations distributed; the underlying television footage is third-party copyright. Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: Dialogue turns extracted from a television series, annotated for emotion. The speakers are ACTORS
+    playing characters and the audio is post-produced with a laugh track.
+frames:
+- broadcast_edit
+- episode_timeline
+streams:
+- name: emotion_labels
+  kind: imposed
+  via: null
+  systematic_bias: annotations of a scripted performance. Two inferential steps from any state, plus an
+    editing stage that selected which takes exist at all
+  band_hz:
+  - null
+  - null
+  temporal_support: utterance-level segments aligned to the episode timeline
+  spatial_support: 'broadcast television production: multi-camera, edited, scored and laugh-tracked'
+- name: audio
+  kind: imposed
+  via: null
+  systematic_bias: a laugh track and a music bed are mixed into the audio; the acoustic scene is not one
+    a listener could be in
+  band_hz:
+  - null
+  - null
+- name: video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: sentiment_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: speaker_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- physiology
+- unedited_audio
+use:
+- fit
+forbidden:
+- meld/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: meld
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

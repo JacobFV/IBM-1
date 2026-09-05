@@ -1,0 +1,101 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: body-surface-gastric-mapping
+title: Body surface gastric mapping normative studies
+provider: University of Auckland and collaborators
+citation: Gharibans et al., Spatial patterns from high-resolution electrogastrography correlate with severity
+  of symptoms in patients with functional dyspepsia. Clinical Gastroenterology and Hepatology 2019; normative
+  BSGM studies.
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: n unresolved and growing. HIGH-RESOLUTION electrode ARRAYS over the abdomen, which recover the
+    SPATIAL PROPAGATION of the gastric slow wave that three-channel EGG cannot.
+frames:
+- abdomen_array
+- stomach
+- torso
+streams:
+- name: propagation_maps
+  kind: measured
+  via: null
+  observation_chain: 'gastric slow-wave propagation across the smooth-muscle syncytium -> volume conduction
+    through the abdominal wall -> a dense surface potential map -> estimated propagation direction and
+    velocity. THE FORWARD PROBLEM IS STRUCTURALLY THE SAME AS EEG''S: a spatially extended current source,
+    an inhomogeneous conducting volume, and a surface electrode array'
+  confounds:
+  - adiposity, which acts as the skull does in EEG -- a low-conductivity layer that smears the surface
+    pattern
+  - stomach position and volume, which change with meal state, so the source geometry moves
+  - respiratory and cardiac artifact
+  - posture
+  systematic_bias: 'Registered here for a reason beyond digestion: it is a second instance of the same
+    inverse problem the whole EEG side of this registry turns on, in an organ whose source geometry is
+    simpler and independently imageable. A forward-model implementation that works for both is better
+    tested than one that works for one.'
+  notes: no individual stomach geometry in most studies, so the inverse problem uses an assumed source
+    location -- the gastric equivalent of a template head model
+  band_hz:
+  - null
+  - null
+  temporal_support: slow-wave propagation at 0.05 Hz over recordings of an hour or more, with pre- and
+    postprandial blocks
+  spatial_support: a dense two-dimensional array on the abdominal wall -- a body-surface potential map
+    with a genuine spatial support, and an inverse problem from skin to stomach that is structurally the
+    same as EEG's
+- name: normative_reference_values
+  kind: measured
+  via: null
+  systematic_bias: normative ranges from healthy volunteers; the technique is new enough that the reference
+    population is small
+  band_hz:
+  - null
+  - null
+- name: high_resolution_egg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: meal_response
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- individual_stomach_geometry
+- large_normative_n
+requires:
+- geometry: device-geometry
+  for_streams:
+  - propagation_maps
+  severity: degrading
+  without_it: 'This is a body-surface inverse problem with the same structure as EEG''s: the measured
+    potential depends on where each electrode sat relative to the generator sheet. Without a device-geometry
+    object for the array the signal constrains the source''s state but not its location or extent.'
+  substitute: The nominal placement described in the protocol, treated as exact. Between participants
+    the anatomy under a nominally identical placement varies, and that variation is absorbed silently
+    into the estimate.
+use:
+- fit
+forbidden:
+- body-surface-gastric-mapping/* -> cortical state without an explicit carded interaction
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: body-surface-gastric-mapping
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

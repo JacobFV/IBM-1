@@ -1,0 +1,114 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: things-eeg
+title: THINGS-EEG -- EEG responses to THINGS object images
+provider: THINGS initiative
+citation: Grootswagers et al., Human EEG recordings for 1,854 concepts presented in rapid serial visual
+  presentation streams. Scientific Data 2022.
+urls:
+- https://things-initiative.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. THINGS image set has separate terms from the EEG.
+binding: unbound
+population:
+  n: 50
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 'RSVP presentation: images at 5 Hz or faster, so responses to consecutive images overlap in time
+    by construction.'
+frames:
+- eeg_cap
+- display
+streams:
+- name: eeg_64ch
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - 'RSVP response overlap: the response to image n is contaminated by images n-1 and n+1 and no epoching
+    removes that'
+  systematic_bias: Short-latency visual interaction evidence. Rapid presentation means the linear-superposition
+    assumption behind epoch averaging is doing heavy lifting.
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at 1000 Hz; RSVP stream at 5-20 Hz -- the stimulus rate is fast relative to the
+    evoked response, which is the design
+  spatial_support: 64-channel scalp EEG; electrode positions template unless digitised
+- name: things_images
+  kind: imposed
+  via: null
+  systematic_bias: shared THINGS concept space with things-eeg2 and cneuromod-things
+  band_hz:
+  - null
+  - null
+- name: stimulus_sequence
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- fmri
+- meg
+- eye_tracking
+- individual_anatomy
+- vascular
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg_64ch
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - things_images
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- fit
+forbidden:
+- things-eeg/* -> vascular or metabolic state
+- things-eeg/* -> subject-specific head geometry
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: things-eeg
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,115 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: neuroworld
+title: NeuroWorld -- causal naturalistic brain world model
+provider: arXiv:2608.01773
+citation: NeuroWorld, arXiv:2608.01773. Identified 2026-08-17 from NeuroWorld's bibliography rather than
+  by a name search; the method and what was ruled out are in notes/literature/neuroworld.md.
+urls:
+- https://arxiv.org/abs/2608.01773
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- Schaefer2018
+- common_tr_grid
+streams:
+- name: causal_transition_learning_result
+  kind: measured
+  via: null
+  systematic_bias: '§24 and §53.1: NeuroWorld''s KEY RESULT is that causal transition learning with autoregressive
+    rollout OUTPERFORMS modified stimulus-to-response encoders under STRICT CAUSAL ACCESS. That is the
+    test B-WIN adopts. The result is a fact about models on a parcellated common grid; whether it survives
+    on native supports and native clocks is the open question B-WIN is built to answer.'
+  notes: the forced Schaefer-1000 representation and the common TR grid are load-bearing for the result
+    and are precisely what §5 and §33 reject
+  band_hz:
+  - null
+  - null
+  temporal_support: a common TR grid across subjects and sessions, which is a derived view of several
+    native clocks and destroys the delay structure the 001-004 result showed matters
+  spatial_support: 'Schaefer-1000 parcels on a common TR grid. §24 and §53.1: B-WIN ADOPTS ITS CAUSAL
+    TEST AND REJECTS THIS REPRESENTATION -- a forced parcellation and a common time grid are exactly the
+    two commitments §5 and §33 refuse'
+- name: strict_past_only_conditioning
+  kind: measured
+  via: null
+  systematic_bias: the causal-access protocol -- the model may see only the stimulus up to time t -- is
+    the methodological contribution and it transfers regardless of representation. Most encoding models
+    leak future stimulus through their HRF basis or their preprocessing
+  band_hz:
+  - null
+  - null
+- name: free_rollout_evaluation
+  kind: measured
+  via: null
+  systematic_bias: teacher-forced and free-rollout performance diverge, and only the second tests whether
+    the state is transition-sufficient (§35). Reporting only the first is the standard and is what makes
+    most reported numbers uninformative about dynamics
+  band_hz:
+  - null
+  - null
+- name: architectural_choices
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction.'
+  band_hz:
+  - null
+  - null
+absent:
+- native_geometry
+- native_clocks
+- uncertainty
+- subject_specific_anatomy
+- electrophysiology
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- distil
+- evaluate
+- prior
+forbidden:
+- neuroworld/* -> B-WIN's state representation
+- neuroworld/* -> a parcellation or common-clock commitment
+- neuroworld/* -> observation-role likelihoods
+- neuroworld/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: neuroworld
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - causal_transition_learning_result
+    - strict_past_only_conditioning
+    - free_rollout_evaluation
+    - architectural_choices
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

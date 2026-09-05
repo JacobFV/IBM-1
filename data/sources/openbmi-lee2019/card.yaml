@@ -1,0 +1,125 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: openbmi-lee2019
+title: OpenBMI large-scale EEG BCI dataset (Lee et al., 54 participants, three paradigms)
+provider: Korea University, distributed via GigaDB
+citation: 'Lee et al., EEG dataset and OpenBMI toolbox for three BCI paradigms: an investigation into
+  BCI illiteracy. GigaScience 2019.'
+urls:
+- http://gigadb.org/dataset/100542
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: GigaDB datasets carry per-dataset terms; not read.
+binding: unbound
+population:
+  n: 54
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 54 participants, each in two sessions across three paradigms -- the two-session design is what
+    makes between-session variance estimable rather than assumed.
+frames:
+- channel_label
+- 10_20_nominal_positions
+streams:
+- name: three_paradigm_eeg
+  kind: measured
+  via: null
+  observation_chain: post-synaptic currents in spatially aligned pyramidal populations -> volume conduction
+    through brain, CSF, skull and scalp -> potential difference between a scalp electrode and a reference
+    -> amplifier gain, filtering and group delay -> sampled integer
+  confounds:
+  - ocular and blink artefact
+  - muscle (EMG) contamination, broadband and strongest at temporal sites
+  - cardiac field and pulse artefact
+  - electrode impedance drift and movement artefact
+  - the reference choice, which is itself a montage operator and not a property of the brain
+  - line noise and its harmonics
+  - SSVEP responses are driven by a flickering stimulus and the photic drive is present in the signal
+    whether or not the participant attends it
+  - 'EMG was recorded, which is unusual and valuable: in most motor-imagery corpora the muscle confound
+    is unmeasurable'
+  systematic_bias: The paper's own subject is BCI illiteracy -- a large fraction of participants produce
+    no usable signal. That is a real and quantified variance component across people, and it is the control
+    most single-paradigm EEG results lack.
+  band_hz:
+  - null
+  - null
+  temporal_support: 1000 Hz acquisition; a downsampled version is distributed alongside and is a derived
+    view
+  spatial_support: 62-channel scalp montage
+- name: between_session_replication
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eeg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: emg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: task_labels_motor_imagery
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: task_labels_erp
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: task_labels_ssvep
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- mri
+- digitised_electrode_positions
+- fmri
+- intervention
+requires:
+- geometry: device-geometry
+  for_streams:
+  - three_paradigm_eeg
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- evaluate
+- fit
+forbidden:
+- openbmi-lee2019/* -> lead field construction from nominal positions
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: openbmi-lee2019
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

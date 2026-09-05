@@ -1,0 +1,130 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: vessap
+title: VesSAP -- whole mouse brain vasculature by light-sheet microscopy
+provider: DISCO Technologies (Erturk lab), Helmholtz Munich / LMU
+citation: Todorov et al., Machine learning analysis of whole mouse brain vasculature. Nature Methods 17:442-449,
+  2020. doi:10.1038/s41592-020-0792-1.
+urls:
+- http://discotechnologies.org/VesSAP/
+- https://github.com/vessap/vessap
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: prohibited
+  notes: The VesSAP page states a Creative Commons Attribution-NonCommercial 4.0 International License.
+    No version-qualified SPDX id is asserted here beyond that phrasing. Access runs through a published
+    access-guide PDF; whether registration is required is unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  notes: The number of brains and the voxel counts are not stated on the resource page and are left unresolved.
+    Atlas registrations are provided for 1,238 anatomical structures.
+frames:
+- specimen_native
+- allen_ccf_registered
+streams:
+- name: whole_brain_vascular_geometry
+  kind: measured
+  via: null
+  observation_chain: 'vascular endothelium immunolabelled in a cleared, fixed brain -> light-sheet excitation
+    and detection -> fluorescence volume -> machine segmentation -> skeletonisation into centerlines,
+    radii and bifurcations. THE FEATURES ARE MODEL OUTPUTS: a radius here is a segmentation''s estimate
+    of a fixed, shrunken vessel, not a lumen measurement in a perfused brain'
+  confounds:
+  - tissue shrinkage during clearing, which changes every length and radius by a factor that is not measured
+    per specimen
+  - incomplete labelling, which drops capillaries below the detection threshold -- the smallest vessels
+    are the most likely to be missed and are the most numerous
+  - light-sheet attenuation with depth, so detection sensitivity varies systematically across the volume
+  - the segmentation network's own false negatives, which correlate with vessel size
+  - fixation collapses the lumen; a fixed vessel is not a perfused one
+  systematic_bias: CROSS-SPECIES and EX-VIVO. Its use is as a statistical prior on branching, density
+    and radius distributions in cortical tissue -- the structure a reconstructed human vascular tree must
+    be consistent with -- and never as a measurement of a human vessel.
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- fixed tissue. THE VASCULAR TREE IS STATIC HERE AND DYNAMIC IN LIFE, which
+    is the gap between this source and obj-vascular-metabolic-state
+  spatial_support: light-sheet microscopy of cleared, immunolabelled WHOLE mouse brain vasculature, with
+    original scans, atlas-registered scans, trained segmentation models, training data and extracted features
+    -- centerlines, bifurcation points and vessel radii. This is the capillary-scale vascular geometry
+    that no in-vivo human angiography reaches
+- name: vascular_density_per_structure
+  kind: measured
+  via: null
+  systematic_bias: Regional vascular density is the geometric substrate of regional metabolic supply and
+    is the missing term in most neurovascular coupling models, which assume a spatially uniform vasculature
+    that this data shows is not uniform.
+  band_hz:
+  - null
+  - null
+- name: lightsheet_vasculature
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: vessel_segmentation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: centerlines
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bifurcation_points
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: vessel_radii
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: trained_models
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- human_data
+- flow
+- pressure
+- in_vivo_dynamics
+- oxygenation
+- brain_count
+- vessel_type_labels
+requires:
+- geometry: vascular-products
+  severity: blocking
+  without_it: These are images of vasculature, not vasculature. Segmentation, centreline extraction and
+    graph construction are the manufacturing step, and until the vascular product performs it with its
+    assumptions and uncertainty recorded, there is no vessel geometry here that anything can be addressed
+    to.
+use:
+- fit
+- prior
+forbidden:
+- vessap/* -> a human vascular measurement
+- vessap/* -> a commercial artifact (non-commercial term)
+- vessap/* -> a segmented radius treated as a perfused lumen diameter
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: vessap
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,114 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ego4d
+title: Ego4D -- massive-scale egocentric video with gaze, audio and narration
+provider: Ego4D Consortium / Meta AI
+citation: 'Grauman et al., Ego4D: Around the World in 3,000 Hours of Egocentric Video. CVPR 2022.'
+urls:
+- https://ego4d-data.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Ego4D licence agreement with a signed data-use agreement; commercial terms differ by partition.
+    Unresolved here.
+binding: unbound
+population:
+  n: 931
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: 3,000+ hours from 931 camera wearers across nine countries. There is NO neural data. This is
+    world-side evidence only.
+frames:
+- camera_egocentric
+- head
+- eye
+- world
+streams:
+- name: egocentric_video
+  kind: imposed
+  via: null
+  systematic_bias: 'a head-mounted camera is NOT a retina: fixed wide field, no foveation, no eye movement,
+    different dynamic range. Using it as retinal input without the retinalization stage is exactly the
+    error obj-retinalization exists to prevent'
+  band_hz:
+  - null
+  - null
+  temporal_support: video at 30 fps; gaze at 30-60 Hz in the subset; IMU at ~200 Hz; narration as sparse
+    timed text
+  spatial_support: head-mounted camera; a gaze subset uses eye-tracking glasses; egocentric frame moves
+    with the head, which is the entire point
+- name: gaze_subset
+  kind: imposed
+  via: null
+  systematic_bias: only a subset has gaze; the rest has head pose standing in for it, which is a different
+    and worse proxy
+  band_hz:
+  - null
+  - null
+- name: imu
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: narrations
+  kind: imposed
+  via: null
+  systematic_bias: post-hoc annotator narration, not the wearer's speech or thought
+  band_hz:
+  - null
+  - null
+- name: audio
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: 3d_scans_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: multi_camera_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- physiology
+- individual_anatomy
+requires:
+- geometry: device-geometry
+  for_streams:
+  - egocentric_video
+  - gaze_subset
+  - imu
+  severity: blocking
+  without_it: A multi-sensor rig is usable only if its intrinsics, extrinsics and clock relations are
+    carried as one object. Without them the cameras, the eye trackers and the inertial streams cannot
+    be brought into a common frame and no egocentric quantity is well defined.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: The egocentric frame moves with the head, which is the entire point of the recording. Without
+    the world and eye geometry -- rig pose in the world, gaze ray, scene depth -- the frames are video
+    from a moving camera and nothing recovers what was foveated.
+use:
+- fit
+forbidden:
+- ego4d/* -> any cortical state directly
+- ego4d/egocentric_video -> retinal state without an explicit gaze-conditioned retinalization
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: ego4d
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

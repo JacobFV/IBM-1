@@ -1,0 +1,89 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hcp-7t-diffusion
+title: HCP 7T diffusion imaging
+provider: WU-Minn HCP Consortium
+citation: Vu et al., High resolution whole brain diffusion imaging at 7T for the Human Connectome Project.
+  NeuroImage 2015.
+urls:
+- https://www.humanconnectome.org/study/hcp-young-adult/article/first-release-of-7t-mr-image-data
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: HCP Open Access Data Use Terms.
+binding: unbound
+population:
+  n: 184
+  hierarchy:
+  - participant
+  - family
+  - session
+  - run
+  notes: The 7T diffusion subset; same participants as hcp-movie-7t and hcp-7t-retinotopy, so structure
+    and naturalistic function are available in the same people.
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: dwi_7t
+  kind: measured
+  via: null
+  observation_chain: water displacement over the diffusion time within and around axons and cells -> gradient-direction-dependent
+    signal attenuation -> reconstructed q-space or orientation distribution; ORIENTATION EVIDENCE, not
+    an observation of a tract
+  confounds:
+  - eddy-current and susceptibility distortion
+  - motion between diffusion directions
+  - partial volume of crossing fibres, which no single-tensor model represents
+  - the fitting model itself (DTI vs. CSD vs. NODDI) is a choice with its own bias
+  - 7T B1 inhomogeneity and increased susceptibility distortion, both worse than at 3T
+  systematic_bias: Higher spatial resolution reduces partial-volume mixing of fibre populations, which
+    is the dominant error in tractography, at the cost of angular resolution.
+  notes: the 3T and 7T diffusion in the SAME participants is a direct, measurable estimate of how much
+    a tractography result depends on acquisition rather than on anatomy -- which is a model-class uncertainty
+    component that is usually assumed away
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series; 2 b-values with 65 directions each
+  spatial_support: 1.05 mm isotropic -- higher spatial resolution than the 3T HCP diffusion at the cost
+    of fewer directions and lower SNR per direction. That trade is the reason to hold both rather than
+    only one
+- name: field_maps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: gradient_tables
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: preprocessed_volumes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- ex_vivo_validation
+- directionality
+- vascular
+use:
+- fit
+forbidden:
+- hcp-7t-diffusion/* -> directed connectivity claims
+- hcp-7t-diffusion/* -> measured-connection claims
+split:
+  group_by:
+  - family
+  - participant
+provenance:
+  imported_from: win-registry
+  card: hcp-7t-diffusion
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

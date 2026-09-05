@@ -1,0 +1,89 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: pamap2
+title: PAMAP2 -- Physical Activity Monitoring dataset
+provider: University of Bremen and Bosch
+citation: Reiss and Stricker, Introducing a New Benchmarked Dataset for Activity Monitoring. ISWC 2012.
+urls:
+- https://archive.ics.uci.edu/dataset/231/pamap2+physical+activity+monitoring
+access: priority
+licence:
+  name: CC BY 4.0 via the UCI repository (stated by the repository)
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Not verified here.
+binding: unbound
+population:
+  n: 9
+  hierarchy:
+  - participant
+  - session
+  notes: 9 participants performing 18 PROTOCOLISED activities with three IMUs at KNOWN body positions
+    plus a heart rate monitor. The controlled counterpart to ExtraSensory.
+frames:
+- wrist
+- chest
+- ankle
+- world
+streams:
+- name: imu_streams
+  kind: imposed
+  via: null
+  systematic_bias: known sensor placement makes these signals a usable proxy for whole-body motion in
+    a way that pocket-carried phone data is not
+  band_hz:
+  - null
+  - null
+  temporal_support: IMUs at 100 Hz; heart rate at ~9 Hz; protocolised activity blocks of minutes
+  spatial_support: IMUs at the wrist, chest and ankle -- KNOWN, FIXED body positions, which is what makes
+    the signals interpretable and comparable across participants
+- name: heart_rate_during_activity
+  kind: measured
+  via: null
+  observation_chain: pulsatile arterial blood volume -> optical absorption change at the sensor site ->
+    photodetector current -> sampled waveform; chest-strap electrical detection in this dataset rather
+    than optical
+  confounds:
+  - strap displacement
+  - the lag between metabolic demand and heart-rate response, which is tens of seconds
+  systematic_bias: Cardiovascular response to graded physical demand, with the demand known -- a controlled
+    metabolic perturbation.
+  band_hz:
+  - null
+  - null
+- name: activity_labels
+  kind: imposed
+  via: null
+  systematic_bias: protocolised and therefore known exactly, unlike self-reported context
+  band_hz:
+  - null
+  - null
+- name: heart_rate
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: participant_characteristics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- large_n
+- ecological_validity
+use:
+- fit
+forbidden:
+- pamap2/* -> cortical state without an explicit carded interaction
+- pamap2/* -> any cortical state
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: pamap2
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,5 @@
+# where the bytes for `recola` actually live.  never the bytes themselves.
+source_url: "https://diuf.unifr.ch/main/diva/recola/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

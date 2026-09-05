@@ -1,0 +1,5 @@
+# where the bytes for `wan2.2-i2v-a14b` actually live.  never the bytes themselves.
+source_url: "https://huggingface.co/Wan-AI/Wan2.2-I2V-A14B"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

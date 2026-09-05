@@ -1,0 +1,88 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: wav2vec-bert-2.0
+title: wav2vec-BERT 2.0 -- self-supervised speech representation model
+provider: Meta AI
+citation: 'Barrault et al., Seamless: Multilingual Expressive and Streaming Speech Translation. 2023;
+  wav2vec-BERT 2.0. Referenced by NeuroWorld (PROMPT.md §53.3).'
+urls:
+- https://huggingface.co/facebook/w2v-bert-2.0
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights are released under a stated licence that has not been verified here; training data
+    terms are separate and largely unstated.
+binding: unbound
+population:
+  n: null
+frames:
+- audio_waveform
+- model_layer_stack
+streams:
+- name: layerwise_representations
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. §53.3: the required output is NOT one flat embedding.
+    A model must expose MULTISCALE, SPATIAL, TEMPORAL and EVENT-STRUCTURED state suitable for interaction
+    with SPECIFICALLY ADDRESSED cortical supports. A single pooled vector cannot address a support. Directly
+    referenced by NeuroWorld as its audio encoder. The layer axis gives an acoustic-to-linguistic gradient
+    that maps naturally onto a cortical processing hierarchy -- and that mapping is a HYPOTHESIS to be
+    tested by held-out prediction, not a correspondence to be assumed. §29: it starts at low authority
+    and earns influence.'
+  notes: the model was trained for speech recognition and translation, so its representations are shaped
+    by that objective; the brain's are not
+  band_hz:
+  - null
+  - null
+  temporal_support: 20 ms frames at 50 Hz -- a native rate that is fast relative to fMRI and slow relative
+    to MEG, so it sits between the two clocks it would be used to bridge
+  spatial_support: 'a per-frame embedding sequence with a LAYER axis: early layers carry acoustic detail,
+    later layers carry more abstract phonetic and lexical structure. The layer axis IS the multiscale
+    structure §53.3 asks for, and it is routinely collapsed by taking one layer'
+- name: forcing_precision
+  kind: measured
+  via: null
+  systematic_bias: '§53.3: the model may represent more detail than a person''s imagery. The LEARNED FORCING
+    PRECISION controls how much of that representation affects the modelled brain -- it is a parameter
+    to be estimated, not a design constant.'
+  band_hz:
+  - null
+  - null
+absent:
+- uncertainty
+- biological_plausibility
+- training_data_transparency
+use:
+- distil
+forbidden:
+- wav2vec-bert-2.0/* -> observation-role likelihoods
+- wav2vec-bert-2.0/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: wav2vec-bert-2.0
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - layerwise_representations
+    - forcing_precision
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

@@ -1,0 +1,80 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: switchboard
+title: Switchboard-1 Telephone Speech Corpus
+provider: Linguistic Data Consortium
+citation: 'Godfrey et al., SWITCHBOARD: telephone speech corpus for research and development. ICASSP 1992.'
+urls:
+- https://catalog.ldc.upenn.edu/LDC97S62
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: 'LDC licence: institutional membership or per-corpus fee, redistribution prohibited. Commercial
+    terms differ by licence class and are unresolved.'
+binding: unbound
+population:
+  n: 543
+  hierarchy:
+  - participant
+  - session
+  notes: 543 speakers in ~2,400 spontaneous telephone conversations. One of the few large corpora of genuinely
+    spontaneous dialogue rather than read or acted speech.
+frames:
+- telephone_channel
+- conversation_timeline
+streams:
+- name: conversational_audio
+  kind: imposed
+  via: null
+  systematic_bias: '8 kHz telephone band: the spectral content a listener would receive in person is absent,
+    so any acoustic forcing model trained here is trained on a filtered world'
+  band_hz:
+  - null
+  - null
+  temporal_support: audio at 8 kHz; conversations of ~5 minutes; turn boundaries as intervals
+  spatial_support: telephone handset at 8 kHz bandwidth -- the acoustic support is BAND-LIMITED and nothing
+    above 4 kHz exists in it
+- name: disfluency_annotations
+  kind: imposed
+  via: null
+  systematic_bias: spontaneous disfluency is the property read-speech corpora lack entirely
+  band_hz:
+  - null
+  - null
+- name: transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: turn_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: speaker_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- video
+- full_bandwidth_audio
+- room_acoustics
+use:
+- fit
+forbidden:
+- switchboard/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: switchboard
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

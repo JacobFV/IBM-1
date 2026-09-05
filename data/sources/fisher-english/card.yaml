@@ -1,0 +1,72 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fisher-english
+title: Fisher English Training Speech
+provider: Linguistic Data Consortium
+citation: 'Cieri et al., The Fisher Corpus: a resource for the next generations of speech-to-text. LREC
+  2004.'
+urls:
+- https://catalog.ldc.upenn.edu/LDC2004S13
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: LDC licence; redistribution prohibited.
+binding: unbound
+population:
+  n: 11000
+  hierarchy:
+  - participant
+  - session
+  notes: ~2,000 hours from over 11,000 speakers on assigned conversation topics. Larger and more topically
+    controlled than Switchboard.
+frames:
+- telephone_channel
+- conversation_timeline
+streams:
+- name: conversational_audio
+  kind: imposed
+  via: null
+  systematic_bias: telephone band; transcription is 'quick' (fast, less accurate) rather than careful
+  band_hz:
+  - null
+  - null
+  temporal_support: audio at 8 kHz; 10-minute conversations on an assigned topic
+  spatial_support: telephone channel at 8 kHz
+- name: topic_assignments
+  kind: imposed
+  via: null
+  systematic_bias: an assigned topic constrains but does not determine what was discussed
+  band_hz:
+  - null
+  - null
+- name: quick_transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: speaker_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- video
+- full_bandwidth_audio
+- careful_transcription
+use:
+- fit
+forbidden:
+- fisher-english/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: fisher-english
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

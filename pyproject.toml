@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ibm-1"
+version = "0.1.0"
+description = "implicit brain model: a multiscale probabilistic dynamical substrate"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26", "scipy>=1.11", "pyyaml>=6.0"]
+
+[project.optional-dependencies]
+runtime = ["jax>=0.4.30"]
+cuda = ["jax[cuda12]>=0.4.30"]
+data = ["nibabel>=5.2", "zarr>=2.17", "h5py>=3.10"]
+atlas = ["nilearn", "neuromaps", "netneurotools", "templateflow"]
+
+[project.scripts]
+ibm = "ibm.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ibm"]

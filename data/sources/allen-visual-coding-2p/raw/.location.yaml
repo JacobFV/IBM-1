@@ -1,0 +1,5 @@
+# where the bytes for `allen-visual-coding-2p` actually live.  never the bytes themselves.
+source_url: "https://brain-map.org/our-research/circuits-behavior/visual-coding"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

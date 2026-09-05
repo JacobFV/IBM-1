@@ -1,0 +1,92 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: studyforrest-meg-ds003633
+title: StudyForrest ForrestGump MEG -- ds003633 / NEMAR on003633
+provider: OpenNeuro ds003633 / NEMAR on003633
+citation: ForrestGump MEG dataset. NEMAR on003633.
+urls:
+- https://nemar.org/dataset/on003633
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. Film stimulus third-party copyright.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: n unresolved pending inspection of the released BIDS tree.
+frames:
+- meg_device
+- head_fiducial
+- film_timeline
+streams:
+- name: meg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
+    plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
+    SQUID flux -> sampled channel
+  confounds:
+  - environmental magnetic interference and urban noise
+  - head motion within and between runs
+  - ocular and cardiac fields
+  - muscle artifact at high frequency
+  - SQUID jumps and sensor drift
+  systematic_bias: Millisecond-scale evidence on the SAME world trajectory that ds000113 samples at TR
+    2 s. This pairing is the value; simultaneity is not available and is not claimed.
+  band_hz:
+  - null
+  - null
+  temporal_support: MEG at its acquisition rate (kHz-scale); the audio-movie timeline as the world clock
+  spatial_support: whole-head MEG array; head position measured by HPI coils
+- name: audio_movie_stimulus
+  kind: imposed
+  via: null
+  systematic_bias: 'audio-description track: the linguistic content differs from the audio-visual arm''s'
+  band_hz:
+  - null
+  - null
+- name: head_position
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- fmri
+- eeg
+- eye_tracking
+- individual_mri_for_all_participants
+requires:
+- geometry: device-geometry
+  for_streams:
+  - meg
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- studyforrest-meg-ds003633/* -> vascular or metabolic state
+- studyforrest-meg-ds003633/* -> any claim of simultaneity with ds000113
+split:
+  group_by:
+  - participant
+  - stimulus
+  - run
+provenance:
+  imported_from: win-registry
+  card: studyforrest-meg-ds003633
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

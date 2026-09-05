@@ -1,0 +1,120 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: willett-handwriting-bci
+title: High-performance brain-to-text via handwriting -- intracortical BrainGate data
+provider: Stanford University (BrainGate2), deposited on Dryad
+citation: Willett, Avansino, Hochberg, Henderson, Shenoy. High-performance brain-to-text communication
+  via handwriting. Nature 593:249-254, 2021. doi:10.1038/s41586-021-03506-2. Data doi:10.5061/dryad.wh70rxwmv.
+urls:
+- https://datadryad.org/dataset/doi:10.5061/dryad.wh70rxwmv
+access: priority
+licence:
+  name: CC0-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: CC0-1.0 in the Dryad record's licence field. Dryad imposes CC0 as a condition of deposit; the
+    waiver covers copyright and does not settle the consent constraints on data from a single identifiable
+    clinical-trial participant.
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - participant
+  - session
+  notes: n=1. 1,000 sentences and 43,501 characters over 10.7 hours, 1.41 GB.
+frames:
+- array_electrode_index
+- subject_native
+streams:
+- name: intracortical_activity_during_attempted_handwriting
+  kind: measured
+  via: null
+  observation_chain: spiking of individual and multi-unit populations near each electrode tip -> threshold
+    crossings and spike-band power in 10 ms bins. THIS IS THE MICROSCOPIC END of the state hierarchy,
+    observed directly, with no volume conduction and no inverse problem -- and with a recording population
+    of a few hundred units standing for millions
+  confounds:
+  - 'array recordings drift across days: the units on an electrode change, so a session is not exchangeable
+    with the next'
+  - no actual movement occurs, so the 'intended' kinematics are inferred from the cue and never observed
+  - attention, fatigue and time-in-session change firing rates independently of the task
+  - the participant's injury and years of paralysis make this cortex atypical
+  - threshold crossings are not sorted spikes and mix units of different sizes
+  systematic_bias: n=1, and that is intrinsic to intracortical human recording rather than a design weakness.
+    It supports a within-participant decoding claim and no population claim whatsoever.
+  band_hz:
+  - null
+  - null
+  temporal_support: binned neural activity against cued character timing. The participant ATTEMPTS handwriting
+    and does not move, so there is no kinematic signal and the only timebase for the intended movement
+    is the cue
+  spatial_support: two 96-electrode Utah arrays in the HAND KNOB of precentral gyrus -- INTRACORTICAL,
+    resolving individual units and multi-unit activity rather than field potentials, which is a different
+    observation process from every ECoG source in this registry
+- name: attempted_movement_as_boundary
+  kind: imposed
+  via: null
+  systematic_bias: The intended letter is a boundary variable at the body interface and it is CUED rather
+    than measured -- there is no pen, no hand movement and no video, so compliance is assumed.
+  band_hz:
+  - null
+  - null
+- name: intracortical_threshold_crossings
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: spike_band_power
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: character_cues
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: sentence_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- kinematics
+- emg
+- video
+- audio
+- imaging
+- other_participants
+- sorted_single_units
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'A penetrating array samples along its own geometry: site pitch, shank trajectory and insertion
+    depth decide which tissue each channel sees. Without that geometry the channel index carries no spatial
+    claim and the recording cannot be placed against any support.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- willett-handwriting-bci/* -> any population-level claim
+- willett-handwriting-bci/* -> a kinematic claim (no movement was recorded)
+split:
+  group_by:
+  - session
+  - stimulus
+  notes: Sessions are days apart and the recorded units change between them; a within-session split reports
+    a number that does not survive to the next day.
+provenance:
+  imported_from: win-registry
+  card: willett-handwriting-bci
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

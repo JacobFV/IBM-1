@@ -1,0 +1,101 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bigbrain
+title: BigBrain -- 20 micron whole-brain histological reconstruction, complete volumetric products
+provider: MNI / Forschungszentrum Julich / EBRAINS
+citation: 'Amunts et al., BigBrain: an ultrahigh-resolution 3D human brain model. Science 2013.'
+urls:
+- https://bigbrainproject.org/
+- https://ebrains.eu/
+access: priority
+licence:
+  name: CC BY-NC-SA 4.0 (stated for the BigBrain volumes; not independently verified here)
+  redistribution: unresolved
+  commercial: prohibited
+  notes: 'A non-commercial share-alike licence, if the stated terms hold, is one of the strongest lineage
+    constraints in the registry: anything BigBrain contributes to inherits share-alike. obj-licence-lineage
+    must compute this per artifact, not over the whole pile.'
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - participant
+  notes: ONE 65-year-old brain. Every laminar and cytoarchitectonic statement derived from BigBrain is
+    a statement about this one person's cortex, however finely resolved.
+frames:
+- bigbrain_native
+- MNI152
+- fsaverage
+- bigbrain_surfaces
+streams:
+- name: histological_volume
+  kind: measured
+  via: null
+  observation_chain: fixed tissue -> sectioning -> staining -> imaging -> a 2D section whose 3D geometry
+    must be reconstructed; shrinkage, tearing and section loss are systematic and not noise
+  confounds:
+  - shrinkage from fixation and dehydration, which is not spatially uniform
+  - section tearing, folding and loss, repaired by interpolation in the reconstruction
+  - staining intensity varying between sections and across the microscope field
+  - the 3D reconstruction's own alignment error, which is a geometric distortion field
+  systematic_bias: 'A DIRECT measurement of cellular density at a resolution nothing else approaches,
+    in one brain, after fixation. §4a''s distinction applies inside this source: the sections are measured,
+    the 3D volume is reconstructed.'
+  notes: the reconstructed volume is derived geometry with a real distortion field; treating it as measured
+    3D anatomy is the error §4a names
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: 20 micron isotropic reconstructed volume; 7,404 coronal sections. The 20 micron figure
+    is the IN-PLANE resolution; through-plane it is the section thickness plus the reconstruction's alignment
+    error, and the two are not the same number
+- name: cortical_layer_surfaces
+  kind: measured
+  via: null
+  systematic_bias: probabilistic laminar supports built from these are population priors informed by n=1,
+    and that is what §56.1 asks for -- a prior, with its parent recorded
+  band_hz:
+  - null
+  - null
+- name: cell_density_profiles
+  kind: measured
+  via: null
+  systematic_bias: laminar cell-density profiles constrain what mesoscopic state composition is plausible;
+    they do not observe any state
+  band_hz:
+  - null
+  - null
+- name: cortical_surfaces
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: registration_transforms
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- population
+- in_vivo_geometry
+- vasculature_at_capillary_scale
+- molecular_identity
+- function
+use:
+- calibrate
+- fit
+- prior
+forbidden:
+- bigbrain/* -> observation-role likelihoods about any living participant
+- bigbrain/cortical_layer_surfaces -> measured laminar boundaries
+- bigbrain/* -> population variance estimates
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: bigbrain
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

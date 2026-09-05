@@ -1,0 +1,60 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: babelviscofdtd
+title: BabelViscoFDTD -- viscoelastic finite-difference time-domain solver
+provider: University of Calgary / Pichardo lab
+citation: 'Pichardo et al., BabelViscoFDTD: a finite-difference time-domain viscoelastic solver.'
+urls:
+- https://github.com/ProteusMRIgHIFU/BabelViscoFDTD
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- simulation_grid
+- subject_native
+streams:
+- name: viscoelastic_shear_wave_modelling
+  kind: measured
+  via: null
+  systematic_bias: 'The PHYSICS DIFFERENCE from k-Wave''s fluid model is the point: at oblique incidence
+    on the skull, longitudinal-to-shear mode conversion is significant, and a fluid model cannot represent
+    it. Comparing a fluid and a viscoelastic solution on the same skull is a MODEL-CLASS uncertainty measurement
+    in §39''s sense -- not a numerical one -- and it is the kind of comparison §37 says must stay live
+    rather than being settled by convention.'
+  notes: viscoelastic parameters for skull are less well characterised than acoustic ones, so the more
+    complete physics carries less certain parameters
+  band_hz:
+  - null
+  - null
+  temporal_support: explicit FDTD time stepping
+  spatial_support: a VISCOELASTIC medium supporting both longitudinal and SHEAR waves -- which matters
+    because the skull is a solid, and mode conversion at the skull interface transfers energy into shear
+    waves that a fluid-only solver cannot represent
+absent:
+- measured_skull_viscoelasticity
+- in_vivo_validation
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The acoustic focus is a millimetre-scale volume whose position depends on transducer element
+    geometry, the drive phase and amplitude mapping, and the pose of the transducer against the skull.
+    Without the device product the target is a nominal coordinate and the intended and delivered foci
+    are not distinguishable.
+use:
+- surrogate
+forbidden:
+- babelviscofdtd/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: babelviscofdtd
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

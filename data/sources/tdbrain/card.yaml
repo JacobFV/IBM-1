@@ -1,0 +1,154 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tdbrain
+title: TDBRAIN -- Two Decades Brainclinics Research Archive for Insights in Neurophysiology
+provider: Brainclinics Foundation, Nijmegen
+citation: van Dijk, van Wingen, Denys, Olbrich, van Ruth, Arns. The two decades brainclinics research
+  archive for insights in neurophysiology (TDBRAIN) database. Scientific Data 9:333, 2022. doi:10.1038/s41597-022-01409-z.
+urls:
+- https://brainclinics.com/resources/tdbrain-dataset/introduction
+- https://brainclinics.com/data-use-agreement
+access: restricted
+licence:
+  name: CC-BY-4.0 for the data; MIT for the code
+  redistribution: prohibited
+  commercial: permitted
+  notes: 'AN OPEN LICENCE THAT IS NOT REDISTRIBUTABLE, and the provider says so explicitly. The data are
+    CC BY 4.0 and the provider states the licence permits both non-commercial and commercial use, copying,
+    redistribution, adaptation and building upon. A MANDATORY DUA OVERLAYS IT and its restrictions survive
+    the licence by the provider''s own words: no re-identification or subject contact, no linking to other
+    databases yielding identifiable information, NO REDISTRIBUTION TO THIRD PARTIES WITHOUT INDEPENDENT
+    DUA APPROVAL, IRB approval or exemption required, citation required. The redistribution field records
+    the DUA''s constraint rather than the licence''s grant, because the DUA is what binds. Passwords are
+    emailed after the form.'
+binding: unbound
+population:
+  n: 1274
+  hierarchy:
+  - participant
+  - session
+  notes: '1,274 participants (620 female) across 1,346 sessions, collected 2001-2021. THE PUBLIC RELEASE
+    IS NOT THE WHOLE ARCHIVE: about 30% of outcome data is deliberately withheld for validation, and the
+    released group sizes are correspondingly smaller than the published ones -- MDD 378 released against
+    426 published, ADHD 253 against 271, subjective memory complaints 63 against 119, OCD 70 against 75.
+    DO NOT ASSUME THE DOWNLOADED N MATCHES THE PUBLISHED N.'
+frames:
+- channel_label
+streams:
+- name: large_clinical_resting_eeg
+  kind: measured
+  via: null
+  observation_chain: post-synaptic currents in spatially aligned pyramidal populations -> volume conduction
+    through brain, CSF, skull and scalp -> potential difference between an electrode and a reference ->
+    amplifier gain, filtering and group delay -> sampled voltage
+  confounds:
+  - ocular and blink artefact
+  - muscle (EMG) contamination
+  - cardiac field and pulse artefact
+  - electrode impedance drift and movement artefact
+  - the reference choice, which is a montage operator and not a property of the brain
+  - line noise and its harmonics
+  - twenty years of acquisition means amplifier, electrode and technician change across the archive and
+    are confounded with era and therefore with diagnosis fashion
+  - medication status at recording varies and is a clinic-referral population
+  - the diagnoses are clinic diagnoses made for treatment, not research diagnoses made by structured interview
+  - two minutes per condition sets a hard floor on the frequency resolution available
+  systematic_bias: '1,274 participants is by far the largest resting-EEG cohort in this registry with
+    diagnostic labels attached. It is a referral sample: the base rates are a clinic''s, the controls
+    are subjective-memory-complaint patients rather than healthy volunteers, and a classification accuracy
+    on it has a chance level that must be quoted with it.'
+  band_hz:
+  - null
+  - null
+  temporal_support: '500 Hz, TWO TWO-MINUTE CONDITIONS ONLY: eyes open fixating a dot, and eyes closed.
+    Two minutes is short for anything slower than about 0.05 Hz'
+  spatial_support: 26-channel 10-10 scalp montage with an offline mastoid reference -- coarse for source
+    space, and the reference is a montage operator that must be undone before any lead-field use
+- name: diagnostic_and_personality_phenotype
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eeg_rest_eyes_open
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eeg_rest_eyes_closed
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: events
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: task_responses
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: clinical_data
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: demographics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: personality
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- mri
+- task_eeg
+- digitised_electrode_positions
+- healthy_control_group
+- thirty_percent_of_outcome_data
+requires:
+- geometry: device-geometry
+  for_streams:
+  - large_clinical_resting_eeg
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+- prior
+forbidden:
+- tdbrain/* -> redistribution to a third party without independent DUA approval
+- tdbrain/* -> any re-identification or linkage to another identifiable database
+- tdbrain/* -> a published group size quoted for the released data
+split:
+  group_by:
+  - participant
+  - session
+  notes: Diagnosis must be stratified across folds; era should be too, because acquisition changed across
+    the two decades.
+provenance:
+  imported_from: win-registry
+  card: tdbrain
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

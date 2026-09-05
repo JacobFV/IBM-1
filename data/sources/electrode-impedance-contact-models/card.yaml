@@ -1,0 +1,61 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: electrode-impedance-contact-models
+title: Electrode impedance and contact models
+provider: multiple -- electrode-skin interface characterisation literature
+citation: PROMPT.md §52.13, 'electrode impedance and contact models'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- electrode_contact
+- scalp
+streams:
+- name: interface_impedance_models
+  kind: measured
+  via: null
+  systematic_bias: The electrode-skin interface is a FREQUENCY-DEPENDENT, DRIFTING, NONLINEAR element
+    sitting between the head and every EEG or tES number. §56.4 asks for EEG electrode contact geometry
+    AND IMPEDANCE SUPPORT as a constructed object, and this is the physics that object encodes -- for
+    both directions, since the same interface carries recording and stimulation.
+  notes: impedance drifts over a session as gel dries and skin hydrates; a single start-of-session impedance
+    check does not characterise it
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: 'the electrical behaviour of the electrode-gel-skin interface: frequency-dependent
+    impedance, polarisation, drift and contact area effects'
+- name: contact_area_effects
+  kind: measured
+  via: null
+  systematic_bias: current density at the scalp is current divided by contact area, so electrode size
+    determines both comfort and the field's entry pattern
+  band_hz:
+  - null
+  - null
+absent:
+- per_participant_measurement
+- temporal_drift_records
+- public_datasets
+use:
+- calibrate
+forbidden:
+- electrode-impedance-contact-models/* -> per-participant contact state without a measurement
+- electrode-impedance-contact-models/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: electrode-impedance-contact-models
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

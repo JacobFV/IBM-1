@@ -1,0 +1,81 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: eeglab
+title: EEGLAB -- EEG signal processing toolbox
+provider: Swartz Center for Computational Neuroscience, UCSD
+citation: 'Delorme and Makeig, EEGLAB: an open source toolbox for analysis of single-trial EEG dynamics.
+  Journal of Neuroscience Methods 2004.'
+urls:
+- https://sccn.ucsd.edu/eeglab/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+- source_space
+streams:
+- name: independent_component_analysis
+  kind: measured
+  via: null
+  systematic_bias: ICA is the field's standard artifact-separation method and it is a STATISTICAL decomposition
+    assuming linear mixing and statistical independence, not a physical one. Ocular, cardiac and muscle
+    components are identified by their topography and time course -- an expert or classifier judgement.
+    §39 wants nuisance alternatives modelled as states; ICA REMOVES them instead, and what it removes
+    is not recoverable.
+  notes: 'components are not sources: a single ICA component can mix several generators and a single generator
+    can split across components'
+  band_hz:
+  - null
+  - null
+  temporal_support: the data's native rate
+  spatial_support: channels x time, with INDEPENDENT COMPONENT ANALYSIS as its central operation -- components
+    are spatial filters over channels, and each has a scalp topography that can be dipole-fitted
+- name: nemar_and_eegdash_lineage
+  kind: measured
+  via: null
+  systematic_bias: the same group maintains NEMAR and EEGDash, so the tooling and the archive share conventions
+    -- which is convenient and is also a monoculture worth noticing
+  band_hz:
+  - null
+  - null
+- name: dipole_fitting
+  kind: measured
+  via: null
+  systematic_bias: equivalent-dipole fitting to an ICA topography assumes the component IS a focal source,
+    which is the assumption at issue
+  band_hz:
+  - null
+  - null
+absent:
+- physical_source_model
+- measured_conductivities
+- matlab_independence
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: This model's channel axis is a set of names, not a set of positions -- the channel-identity
+    problem exactly. Its representation can be computed without any geometry, but relating it to a cortical
+    support, or transferring it to a montage it was not trained on, requires the electrode or sensor geometry
+    that the name stands in for.
+  substitute: Channel-name matching, which silently asserts that two electrodes sharing a label sat in
+    the same place on two different heads.
+use:
+- calibrate
+- surrogate
+forbidden:
+- eeglab/independent_component_analysis -> physical source claims
+- eeglab/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: eeglab
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

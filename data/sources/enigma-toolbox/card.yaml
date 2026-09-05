@@ -1,0 +1,64 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: enigma-toolbox
+title: ENIGMA Toolbox -- harmonised atlases, summary maps and connectome utilities
+provider: ENIGMA Consortium / MICA lab
+citation: 'Lariviere et al., The ENIGMA Toolbox: multiscale neural contextualization of multisite neuroimaging
+  datasets. Nature Methods 2021.'
+urls:
+- https://enigma-toolbox.readthedocs.io/
+access: held
+licence:
+  name: BSD-3-Clause
+  redistribution: permitted
+  commercial: permitted
+  notes: Read from data/assets/MANIFEST.json. BSD-3 covers the TOOLBOX. The summary statistics it ships
+    are ENIGMA working-group products with their own publication and citation expectations, and this card
+    does not resolve those.
+binding: unbound
+population:
+  n: null
+frames:
+- Desikan2006
+- Glasser2016
+- Schaefer2018
+- fsaverage
+streams:
+- name: bundled_summary_maps
+  kind: measured
+  via: null
+  systematic_bias: convenience access to ENIGMA summaries; inherits every limitation of the enigma card
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: Desikan, Glasser and Schaefer parcellations
+- name: parcellation_crosswalks
+  kind: measured
+  via: null
+  systematic_bias: crosswalks here are label-to-label lookups; §11 requires probabilistic mappings rendered
+    from underlying evidence, so these are a starting point and not the answer
+  band_hz:
+  - null
+  - null
+absent:
+- raw_data
+- uncertainty_on_bundled_maps
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- enigma-toolbox/* -> observation-role likelihoods
+split:
+  group_by:
+  - site
+provenance:
+  imported_from: win-registry
+  card: enigma-toolbox
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

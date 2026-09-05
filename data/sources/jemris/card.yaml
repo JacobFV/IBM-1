@@ -1,0 +1,52 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: jemris
+title: JEMRIS -- general-purpose MRI simulation framework
+provider: Forschungszentrum Julich / Aachen
+citation: Stocker et al., High-performance computing MRI simulations. Magnetic Resonance in Medicine 2010.
+urls:
+- https://www.jemris.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- kspace
+- phantom_native
+- coil_array
+streams:
+- name: bloch_simulation
+  kind: measured
+  via: null
+  systematic_bias: 'An established, validated Bloch solver handling off-resonance, chemical shift, concomitant
+    fields, coil sensitivity and non-ideal gradients. §1 and §48: this is an OFFLINE ORACLE. B-WIN implements
+    the spin physics it needs internally and checks it against JEMRIS; it does not call JEMRIS during
+    a query.'
+  notes: spin-system discretisation determines what the simulation can represent; intravoxel dephasing
+    depends on the sampling density of spins
+  band_hz:
+  - null
+  - null
+  temporal_support: the full sequence timeline at simulation time resolution
+  spatial_support: Bloch-equation simulation over a discretised spin object with arbitrary sequences,
+    coil sensitivities and field imperfections
+absent:
+- real_tissue
+- biological_content
+use:
+- surrogate
+forbidden:
+- jemris/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: jemris
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

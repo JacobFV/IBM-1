@@ -1,0 +1,68 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: babel
+title: BABEL -- Bodies, Action and Behavior with English Labels
+provider: Max Planck Institute for Intelligent Systems
+citation: 'Punnakkal et al., BABEL: Bodies, Action and Behavior with English Labels. CVPR 2021.'
+urls:
+- https://babel.is.tue.mpg.de/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Inherits AMASS's per-constituent licences plus BABEL's own annotation terms. Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  notes: Dense action annotation over 43 hours of AMASS motion -- the ANNOTATIONS are the product; the
+    motion is AMASS's.
+frames:
+- smpl_body_frame
+streams:
+- name: frame_level_action_labels
+  kind: imposed
+  via: null
+  systematic_bias: ACTION LABELS ARE A THEORY OF THE MOVEMENT, assigned by annotators after the fact.
+    Where one action ends and the next begins is an annotator judgement, and §29's rule that abstract
+    structure enters at low authority applies directly. The frame-level granularity makes the boundaries
+    look more precise than they are.
+  band_hz:
+  - null
+  - null
+  temporal_support: annotation intervals at sub-second resolution over the parent motion's clock
+  spatial_support: temporal intervals over AMASS motion sequences, with FRAME-LEVEL as well as sequence-level
+    labels
+- name: action_taxonomy
+  kind: measured
+  via: null
+  systematic_bias: a 250-category action vocabulary is a useful shared language and is not a claim about
+    how movement is organised
+  band_hz:
+  - null
+  - null
+- name: sequence_level_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- the_motion_itself
+- any_neural_measurement
+- annotator_agreement_per_segment
+use:
+- fit
+forbidden:
+- babel/* -> any cortical state directly
+- babel/frame_level_action_labels -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: babel
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

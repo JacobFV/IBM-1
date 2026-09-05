@@ -1,0 +1,102 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: acoustic-closed-forms
+title: 'O''Neil, Rayleigh and the layered-fluid transfer matrix: exact acoustic solutions'
+provider: the analytic acoustics literature
+citation: O'Neil, Theory of focusing radiators. Journal of the Acoustical Society of America 1949; Rayleigh,
+  The Theory of Sound, on the field of a circular piston; Brekhovskikh, Waves in Layered Media, for the
+  transfer-matrix solution of a fluid stack; Pennes, Analysis of tissue and arterial blood temperatures
+  in the resting human forearm. Journal of Applied Physiology 1948; Sapareto and Dewey, Thermal dose determination
+  in cancer therapy. IJROBP 1984, for CEM43.
+urls:
+- https://doi.org/10.1121/1.1906542
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Published mathematics rather than a distributed artifact. Unresolved because no file was acquired;
+    nothing here is redistributed.
+binding: unbound
+population:
+  n: null
+frames:
+- analytic_axis
+- transducer_frame
+- layer_stack_normal
+streams:
+- name: oneil_focused_cap_axial_field
+  kind: measured
+  via: null
+  systematic_bias: 'EXACT, not paraxial: the Rayleigh integral over a spherical cap reduces in the range
+    variable to a closed form, so a focused-transducer solver can be checked against truth rather than
+    against another simulator. This is what replaces k-Wave as the check for the geometry tFUS uses, and
+    it is stronger than an intercode comparison because it cannot both be wrong the same way. Two corollaries
+    are independently checkable and are checked in bwin: the focal gain is k R (1 - cos theta_max), and
+    the on-axis maximum lies BEFORE the geometric focus.'
+  notes: the cap is treated as a rigidly baffled source with no obliquity factor, and the solution is
+    on-axis only. It says nothing about the off-axis lobes and nothing about a heterogeneous medium.
+  band_hz:
+  - null
+  - null
+  temporal_support: time-harmonic for the acoustics; transient for the heat solutions
+  spatial_support: 'exact analytic expressions on the geometries transcranial focused ultrasound actually
+    uses: the on-axis field of a spherically curved radiator (O''Neil), the on-axis field of a flat circular
+    piston with its maxima and nulls at closed-form positions, plane-wave reflection and transmission
+    through a stack of fluid layers at arbitrary incidence, and three exact solutions of the bioheat equation
+    (adiabatic, perfusion-limited, self-similar Gaussian diffusion)'
+- name: circular_piston_axial_extrema
+  kind: measured
+  via: null
+  systematic_bias: The axial maxima and nulls of a flat piston sit at positions fixed by PATH DIFFERENCE
+    ALONE -- z = (4 a^2 - (2m+1)^2 lambda^2)/(4 (2m+1) lambda) and z = (a^2 - m^2 lambda^2)/(2 m lambda).
+    No amplitude, no impedance, no absorption enters. That makes them a check on the solver's geometry
+    and phase that is completely independent of its calibration, which is the rare kind.
+  band_hz:
+  - null
+  - null
+- name: layered_fluid_transfer_matrix
+  kind: measured
+  via: null
+  systematic_bias: 'The impedance mismatch at the brain/skull interface is the dominant physical fact
+    of transcranial ultrasound and the transfer matrix solves the slab exactly, including the HALF-WAVE
+    RESONANCE: a slab an integer number of half-wavelengths thick transmits perfectly however mismatched
+    it is. Any ray or WKB propagator drops that, and the size of what it drops is measurable rather than
+    assertable -- bwin.tfus records it at 0.26 rms over the adult skull-thickness band at 500 kHz.'
+  notes: 'fluid layers only: no shear wave and no mode conversion, so it is wrong past the longitudinal
+    critical angle (about 31 degrees for soft tissue into skull) in the direction of under-predicting
+    transmitted energy'
+  band_hz:
+  - null
+  - null
+- name: bioheat_exact_solutions
+  kind: measured
+  via: null
+  systematic_bias: 'Three exact solutions of Pennes'' equation that a discretisation cannot fake between
+    them: the adiabatic rise Q t/(rho C) with conduction and perfusion off, the perfusion-limited approach
+    T_ss (1 - exp(-t/tau)) with conduction off, and the self-similar Gaussian whose variance grows as
+    sigma0^2 + 2 D t with the source off. Together they check the source term, the sink term and the Laplacian
+    stencil separately. CEM43''s defining arithmetic -- one minute at 43 C is one CEM43, two minutes at
+    42 C is half of one -- checks the dose integrator against a convention that predates any of this code.'
+  band_hz:
+  - null
+  - null
+absent:
+- heterogeneous_media
+- off_axis_fields
+- shear_waves
+- nonlinear_propagation
+use:
+- surrogate
+forbidden:
+- acoustic-closed-forms/* -> heterogeneous transcranial field claims
+- acoustic-closed-forms/* -> observation-role likelihoods
+- acoustic-closed-forms/* -> in-vivo delivered-field claims
+split:
+  group_by:
+  - participant
+  notes: 'mathematics: it is held out of nothing and it is trusted for exactly the geometry it solves'
+provenance:
+  imported_from: win-registry
+  card: acoustic-closed-forms
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,67 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: electrophysiology-container-formats
+title: EDF/EDF+, BDF, GDF, BrainVision, CTF, FIF and Curry electrophysiology containers
+provider: 'multiple: Kemp & Olivan (EDF+), BioSemi (BDF), Schlogl (GDF), Brain Products, CTF/MEG International,
+  MEGIN/Elekta (FIF), Compumedics'
+citation: Kemp & Olivan, European data format 'plus' (EDF+). Clinical Neurophysiology 2003; Schlogl, GDF
+  -- a general dataformat for biosignals. arXiv 2006.
+urls:
+- https://www.edfplus.info/
+- https://www.biosemi.com/faq/file_format.htm
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Each format has its own terms; the vendor formats (BrainVision, CTF, FIF, Curry) are documented
+    to varying degrees and some are reverse-engineered in readers.
+binding: unbound
+population:
+  n: null
+frames:
+- channel_label
+- device_sensor_geometry_for_fif_and_ctf
+streams:
+- name: per_channel_physical_calibration
+  kind: measured
+  via: null
+  systematic_bias: The digital-to-physical scaling is IN the header and is the only thing standing between
+    an integer and a volt. It is also routinely wrong in practice -- a mislabelled physical dimension
+    produces a plausible number.
+  notes: the reference electrode, the anti-alias filter and the amplifier group delay are not required
+    fields in any of these formats, and all three change what the numbers mean
+  band_hz:
+  - null
+  - null
+  temporal_support: EDF's per-signal sampling rate is genuinely heterogeneous within one file (the sleep-edfx
+    100 Hz EEG alongside 1 Hz respiration is a real instance); FIF and BrainVision carry one rate per
+    file plus event markers
+  spatial_support: 'a channel list. ELECTRODE POSITION IS NOT IN THE FORMAT for EDF/BDF/GDF: the channel
+    is a label, and where it sat on the head is carried, if at all, in a separate montage or digitisation
+    file. FIF and CTF do carry sensor geometry'
+absent:
+- electrode_positions
+- reference_definition
+- amplifier_group_delay
+- impedance
+- head_geometry
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: Electrode position is not in these containers. EDF, BDF, GDF and BrainVision carry a channel
+    LABEL and nothing about where it sat; FIF and CTF carry sensor geometry in a vendor-specific form.
+    Reading a file therefore yields signals with no support, and the geometry has to come from a device
+    object built alongside it.
+use:
+- calibrate
+forbidden:
+- electrophysiology-container-formats/* -> lead field construction without a resolved digitisation
+split:
+  group_by:
+  - device
+  - session
+provenance:
+  imported_from: win-registry
+  card: electrophysiology-container-formats
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

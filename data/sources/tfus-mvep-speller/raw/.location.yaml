@@ -1,0 +1,5 @@
+# where the bytes for `tfus-mvep-speller` actually live.  never the bytes themselves.
+source_url: "https://figshare.com/articles/dataset/tFUS-EEG-BCI_mVEP_Speller_Dataset_for_Transcranial_Focused_Ultrasound_to_V5_Enhances_Human_Visual_Motion_Brain-Computer_Interface_by_Modulating_Feature-Based_Attention_/25583334"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

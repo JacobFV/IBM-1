@@ -1,0 +1,80 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: neurolib
+title: neurolib -- whole-brain neural mass modelling framework
+provider: Technische Universitat Berlin
+citation: 'Cakan et al., neurolib: A Simulation Framework for Whole-Brain Neural Mass Modeling. Cognitive
+  Computation 2023.'
+urls:
+- https://neurolib-dev.github.io/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- AAL
+- parcel_network
+streams:
+- name: adex_mean_field
+  kind: measured
+  via: null
+  systematic_bias: '§59 reference 41 and §53.4 name neurolib specifically, WITH the caveat: it gives useful
+    whole-brain neural-mass and excitation/inhibition references and RETAINS THE CONVENTIONAL PARCEL-CONNECTOME-BALLOON
+    ABSTRACTION THAT B-WIN IS EXPLICITLY GENERALIZING. Its ADEX mean-field is the more valuable half:
+    a mean-field derived FROM a spiking model, so its parameters connect to cellular measurements like
+    those in allen-cell-types-patchseq.'
+  notes: a mean-field derived under adiabatic and homogeneity assumptions inherits them
+  band_hz:
+  - null
+  - null
+  temporal_support: millisecond integration with a balloon-model BOLD stage
+  spatial_support: neural masses at parcel nodes with a structural connectome, notably including the ADEX
+    mean-field model whose parameters derive from a spiking network rather than being posited
+- name: excitation_inhibition_balance
+  kind: measured
+  via: null
+  systematic_bias: §58.3 asks for phenotype-conditioned e/i priors; the e/i formulation here is a candidate
+    parameterisation of them
+  band_hz:
+  - null
+  - null
+- name: optimisation_and_exploration_tooling
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- native_supports
+- individual_geometry
+- uncertainty
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A connectome matrix is an adjacency over parcel indices. Without the tract product its edges
+    have no path, no length and no supports to terminate on, so it cannot supply a delay, a route or an
+    engineered structural commitment -- only a number per pair of labels.
+use:
+- prior
+- surrogate
+forbidden:
+- neurolib/* -> a parcel-connectome-balloon commitment in B-WIN
+- neurolib/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: neurolib
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

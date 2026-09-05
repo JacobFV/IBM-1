@@ -1,0 +1,1 @@
+# sha256 manifest for enigma-hcp-structural-connectome; written on acquisition

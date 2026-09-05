@@ -1,0 +1,59 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: pyafq
+title: pyAFQ -- Automated Fiber Quantification in Python
+provider: University of Washington / Rokem lab
+citation: Kruper et al., Evaluating the reliability of human brain white matter tractometry. Aperture
+  Neuro 2021.
+urls:
+- https://yeatmanlab.github.io/pyAFQ/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- bundle_arc_length
+streams:
+- name: tract_profiles
+  kind: measured
+  via: null
+  systematic_bias: §56.2 asks explicitly for NORMALISED ARC-LENGTH COORDINATES and tractometry profiles.
+    pyAFQ is the reference implementation of that representation, and it is a genuinely different support
+    type from anything else in the registry -- a coordinate along a path. The profile depends on the bundle
+    definition and the core-streamline computation, both of which are choices.
+  notes: arc-length normalisation assumes bundles are comparable end to end across people, which requires
+    the endpoints to be defined the same way in everyone
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: 'TRACT PROFILES: a scalar diffusion metric sampled at positions along a bundle''s length,
+    which is a 1D support along a path rather than a voxel or a parcel'
+- name: bundle_definitions
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- ground_truth
+- endpoint_certainty
+use:
+- calibrate
+- surrogate
+forbidden:
+- pyafq/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: pyafq
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

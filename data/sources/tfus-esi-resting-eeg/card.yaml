@@ -1,0 +1,136 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tfus-esi-resting-eeg
+title: tFUS-ESI resting EEG dataset -- focused ultrasound and transcranial electrical stimulation with
+  EEG and MRI
+provider: Nature Communications 2026
+citation: tFUS-ESI resting EEG dataset. Nature Communications 2026.
+urls:
+- https://www.nature.com/articles/s41467-026-69853-8
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. An open-access paper does not imply an open data licence.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 'n unresolved. §51.4 item 30: tFUS AND transcranial electrical stimulation in the same framework,
+    which makes CROSS-INTERVENTION comparison possible -- two physically different perturbations with
+    the same readout.'
+frames:
+- transducer_frame
+- eeg_cap
+- head
+- subject_native
+- MNI152
+streams:
+- name: cross_intervention_comparison
+  kind: measured
+  via: null
+  systematic_bias: TWO PHYSICALLY DIFFERENT PERTURBATIONS, ONE READOUT, ONE PARTICIPANT SET. A focal acoustic
+    perturbation and a diffuse electrical one should produce different response patterns if the response
+    reflects the delivered field, and similar ones if it reflects a shared nonspecific pathway (auditory,
+    somatosensory, arousal). That contrast is a real test of §52.13's four-stage separation rather than
+    an assertion of it.
+  notes: the two modalities also differ in their peripheral co-stimulation, so a difference in response
+    is not automatically a difference in delivered field
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at kHz; resting-state recording with sonication or stimulation blocks
+  spatial_support: acoustic focal volume for tFUS and a whole-head current density field for electrical
+    stimulation -- two completely different spatial supports for the same nominal 'target'
+- name: eeg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - stimulation artifacts differing entirely between the two modalities
+  - auditory confound for tFUS
+  systematic_bias: Resting-state readout means no task confound and also no behavioural anchor.
+  band_hz:
+  - null
+  - null
+- name: individual_anatomy
+  kind: measured
+  via: null
+  systematic_bias: individual MRI makes both field computations subject-specific rather than template-based
+  band_hz:
+  - null
+  - null
+- name: tfus_parameters
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: tes_parameters
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: targeting
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: source_imaging_derivatives
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- delivered_field_measurement_for_either_modality
+- skull_ct
+- sham_arm_verification
+- behavioural_endpoint
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The acoustic focus is a millimetre-scale volume whose position depends on transducer element
+    geometry, the drive phase and amplitude mapping, and the pose of the transducer against the skull.
+    Without the device product the target is a nominal coordinate and the intended and delivered foci
+    are not distinguishable.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- fit
+forbidden:
+- tfus-esi-resting-eeg/* -> delivered-field claims without explicit acoustic and electric field models
+- tfus-esi-resting-eeg/* -> neuromodulation claims without peripheral co-stimulation controls
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: tfus-esi-resting-eeg
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,81 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: arterial-territory-atlas-liu2023
+title: Digital 3D brain MRI arterial territories atlas (Liu 2023)
+provider: Johns Hopkins University -- Chin-Fu Liu, Johnny Hsu, Andreia V. Faria and colleagues
+citation: Liu C-F, Hsu J, Xu X, Kim G, Sheppard SM, Meier EL, Miller MI, Hillis AE, Faria AV. Digital
+  3D Brain MRI Arterial Territories Atlas. Scientific Data 10:74 (2023). doi:10.1038/s41597-022-01923-0
+urls:
+- https://github.com/Chin-Fu-Liu/Arterial_Atlas
+- https://www.nitrc.org/projects/arterialatlas
+- https://doi.org/10.1038/s41597-022-01923-0
+access: held
+licence:
+  name: CC-BY-SA-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'Stated twice by the deposit and consistently: the repository ships the full CC BY-SA 4.0 text
+    in LICENSE, and the header of ArterialAtlasLables.txt repeats it beside a 2021 Johns Hopkins copyright
+    line. SHARE-ALIKE IS REQUIRED, which is a distribution constraint and nothing else -- rule 7. Reading
+    it, computing with it and scoring against it is internal private research and is not gated. win.licences.release_gate
+    is where the share-alike obligation bites, at outward publication, and any artifact carrying these
+    bytes forward inherits it.'
+binding: unbound
+population:
+  n: 1298
+  hierarchy:
+  - participant
+  notes: '1,298 patients with acute or subacute ischaemic stroke, whose lesion distributions on diffusion-weighted
+    MRI are what the territory boundaries were estimated from. NOT a healthy population and not a vascular
+    imaging cohort: a territory here is the region whose infarcts co-occurred, which is a functional definition
+    of supply and a very good one, and it is not the same object as the region a contrast bolus reaches.'
+frames:
+- MNI152
+streams:
+- name: arterial_territory_maps
+  kind: measured
+  via: null
+  systematic_bias: 'An arterial territory atlas is a COVER organised by blood supply rather than by cytoarchitecture
+    or function, so §11''s multi-cover argument applies to it identically. Three biases are specific to
+    how THIS one was made. (1) It is estimated from where INFARCTS fell, so it is best determined where
+    strokes are common and worst where they are rare -- the borderzones between territories are exactly
+    where the estimate is softest and exactly where a territory-assignment rule is tested. (2) Territory
+    boundaries depend on the individual''s Circle of Willis variant and this is a population map over
+    1,298 people whose variants were never recorded, so it is smoother and more central than any individual''s.
+    (3) The label volume is a HARD partition: the deposit''s probabilistic releases, which carry the borderzone
+    width, are on NITRC behind a login and are NOT held, so what is held has had its own uncertainty flattened
+    out of it.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: 'a whole-brain label volume on the MNI152 1 mm grid partitioning supra- and infra-tentorial
+    tissue by arterial supply, in two hierarchical levels: 30 arterial territories plus 2 ventricles at
+    level 1, and 8 arterial territories (ACA, MCA, PCA, VB, each bilateral) plus 2 ventricles at level
+    2'
+absent:
+- cow_variant_conditioning
+- individual_geometry
+- territory_probability
+- borderzone_width
+- vessel_geometry
+use:
+- evaluate
+- prior
+forbidden:
+- arterial-territory-atlas-liu2023/arterial_territory_maps -> territory assignment without CoW-variant
+  conditioning
+- arterial-territory-atlas-liu2023/* -> individual vessel geometry
+- arterial-territory-atlas-liu2023/* -> observation-role likelihoods
+- arterial-territory-atlas-liu2023/* -> borderzone width or territory probability, which the held form
+  does not carry
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own. Nothing
+    scored against it may claim a held-out reach on the strength of it, and bwin.perfusion_territories
+    does not.'
+provenance:
+  imported_from: win-registry
+  card: arterial-territory-atlas-liu2023
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,75 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cmu-mocap
+title: CMU Graphics Lab Motion Capture Database
+provider: Carnegie Mellon University Graphics Lab
+citation: CMU Graphics Lab Motion Capture Database.
+urls:
+- http://mocap.cs.cmu.edu/
+access: priority
+licence:
+  name: free for all uses (stated by CMU); NSF-funded release
+  redistribution: unresolved
+  commercial: unresolved
+  notes: CMU states the database is free for all uses. The exact terms are not expressed as an SPDX identifier
+    and have not been verified here.
+binding: unbound
+population:
+  n: 144
+  hierarchy:
+  - participant
+  - session
+  notes: One of the oldest and most reused mocap collections; 2,600+ trials across 144 subjects. A constituent
+    of AMASS.
+frames:
+- capture_room
+- skeleton_frame
+streams:
+- name: marker_trajectories
+  kind: imposed
+  via: null
+  systematic_bias: the RAW markers are available here, unlike in many derived releases -- which makes
+    it possible to refit a different body model and measure the fit's contribution
+  band_hz:
+  - null
+  - null
+  temporal_support: 120 Hz capture, downsampled in some distributions
+  spatial_support: optical marker capture with a subject-specific skeleton file; the ASF skeleton is a
+    FITTED kinematic tree, not a measured one
+- name: motion_category_labels
+  kind: imposed
+  via: null
+  systematic_bias: informal category labels from the capture sessions, not a controlled taxonomy
+  band_hz:
+  - null
+  - null
+- name: joint_angle_sequences
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: skeleton_definitions
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- muscle_activity
+- contact_forces
+- video
+- consistent_units_across_files
+use:
+- fit
+forbidden:
+- cmu-mocap/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: cmu-mocap
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

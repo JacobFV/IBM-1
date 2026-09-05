@@ -1,0 +1,63 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: itk-simpleitk
+title: ITK and SimpleITK -- Insight Toolkit for image analysis
+provider: Insight Software Consortium / Kitware
+citation: 'Yoo et al., Engineering and algorithm design for an image processing API: a technical report
+  on ITK. Studies in Health Technology and Informatics 2002; Lowekamp et al., SimpleITK. Frontiers in
+  Neuroinformatics 2013.'
+urls:
+- https://itk.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- arbitrary_image_space
+- physical_space
+streams:
+- name: physical_space_image_model
+  kind: measured
+  via: null
+  systematic_bias: '§3''s fully qualified state address needs a rigorous notion of physical position,
+    and ITK''s image model is the established one: index-to-physical mapping is explicit, carried with
+    the data, and applied consistently. Silently treating a NIfTI as an array and losing the direction
+    matrix is one of the most common and most consequential errors in neuroimaging code -- it flips left
+    and right.'
+  notes: conventions differ between NIfTI, DICOM and ITK about axis direction and origin; the conversions
+    are where handedness errors enter
+  band_hz:
+  - null
+  - null
+  temporal_support: static; supports time as a fourth dimension with its own spacing
+  spatial_support: 'an image is not an array: ITK''s image type carries SPACING, ORIGIN and a DIRECTION
+    COSINE MATRIX, so a voxel index maps to a physical position. That distinction is the whole difference
+    between an array library and a medical imaging library'
+- name: registration_and_filtering_framework
+  kind: measured
+  via: null
+  systematic_bias: ANTs is built on ITK, so the two share this model
+  band_hz:
+  - null
+  - null
+absent:
+- biological_content
+- surface_geometry
+use:
+- calibrate
+- surrogate
+forbidden:
+- itk-simpleitk/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: itk-simpleitk
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

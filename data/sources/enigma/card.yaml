@@ -1,0 +1,95 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: enigma
+title: ENIGMA Consortium meta-analytic and harmonised cohort resources
+provider: ENIGMA Consortium
+citation: 'Thompson et al., ENIGMA and global neuroscience: a decade of large-scale studies of the brain
+  in health and disease. Translational Psychiatry 2020.'
+urls:
+- https://enigma.ini.usc.edu/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Summary statistics and toolbox contents have per-working-group terms. Individual participant
+    data is NOT distributed. Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - site
+  - participant
+  notes: ENIGMA distributes SUMMARY STATISTICS from a distributed meta-analysis. It is not a participant-level
+    dataset and must not be carded as one.
+frames:
+- Desikan2006
+- Schaefer2018
+- Lausanne
+- fsaverage
+- MNI152
+streams:
+- name: case_control_effect_size_maps
+  kind: measured
+  via: null
+  systematic_bias: A meta-analytic effect size is a statement about a literature and a set of pipelines,
+    not about any participant's cortex at time t.
+  band_hz:
+  - null
+  - null
+  temporal_support: 'no time axis: these are cross-sectional summaries'
+  spatial_support: region-wise summaries over standard parcellations (Desikan, Schaefer, Lausanne)
+- name: structural_connectomes
+  kind: measured
+  via: null
+  systematic_bias: ENIGMA-HCP SC is one processing pipeline's answer; §52.8 requires the parent DWI, software
+    version, seeding and thresholds to travel with it, and here they do not.
+  band_hz:
+  - null
+  - null
+- name: disorder_maps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cortical_thickness_summaries
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: surface_area_summaries
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- raw_imaging
+- time_series
+- individual_participant_data
+- eeg
+- meg
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- control
+- evaluate
+- prior
+forbidden:
+- enigma/* -> instantaneous subject state
+- enigma/* -> observation-role likelihoods
+- enigma/structural_connectomes -> measured-connectivity claims
+split:
+  group_by:
+  - site
+  notes: already aggregated; no participant-level split is possible
+provenance:
+  imported_from: win-registry
+  card: enigma
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

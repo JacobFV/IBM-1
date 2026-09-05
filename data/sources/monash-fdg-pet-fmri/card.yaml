@@ -1,0 +1,133 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: monash-fdg-pet-fmri
+title: Monash task-evoked simultaneous FDG-PET and fMRI in visual cortex
+provider: Monash Biomedical Imaging
+citation: Jamadar et al., Task-evoked simultaneous FDG-PET and fMRI data for measurement of neural metabolism
+  in the human visual cortex. Scientific Data 2021.
+urls:
+- https://pubmed.ncbi.nlm.nih.gov/34654823/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: 10
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 'Small n, and the acquisition is exceptional: SIMULTANEOUS dynamic FDG-PET and BOLD during visual
+    stimulation, with a constant-infusion FDG protocol that gives a genuine metabolic TIME SERIES rather
+    than one static uptake image.'
+frames:
+- pet_mr_scanner
+- subject_native
+- MNI152
+streams:
+- name: dynamic_fdg_pet
+  kind: measured
+  via: null
+  observation_chain: glucose transport and hexokinase phosphorylation -> 18F-FDG trapping -> positron
+    emission and annihilation -> coincidence detection -> attenuation and scatter correction -> reconstruction
+    -> activity concentration -> kinetic model of the metabolic rate
+  confounds:
+  - partial-volume effects at PET resolution, which blur activation across sulci
+  - the lumped constant relating FDG uptake to glucose metabolism is assumed
+  - plasma glucose and insulin state affect uptake globally
+  - attenuation correction from MR rather than CT, which is an approximation
+  systematic_bias: '§51.2 item 12: adds METABOLIC information that neither BOLD nor CBF alone supplies.
+    Glucose metabolism and oxygen metabolism are not the same quantity and their ratio is regionally non-uniform
+    (see raichle-metabolism), so this is not redundant with ds004873.'
+  notes: constant-infusion FDG gives a dynamic signal whose effective time resolution is set by frame
+    binning, a post-hoc choice
+  band_hz:
+  - null
+  - null
+  temporal_support: BOLD at TR seconds; dynamic PET frames at tens of seconds to minutes. TWO NATIVE CLOCKS
+    separated by two orders of magnitude, hardware-simultaneous, which is exactly the heterogeneity §33
+    says to preserve rather than resample away
+  spatial_support: PET spatial resolution is millimetres and is much coarser than BOLD's, and PET's point-spread
+    function is broad -- the two modalities do NOT share a spatial support even in a simultaneous scanner
+- name: bold
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  band_hz:
+  - null
+  - null
+- name: simultaneous_metabolic_haemodynamic_pairing
+  kind: measured
+  via: null
+  systematic_bias: Genuinely simultaneous acquisition of a fast haemodynamic and a slow metabolic signal
+    in the same voxels is the cleanest available constraint on how the two relate in time -- and the two
+    native clocks must be kept, because resampling the PET onto the BOLD grid invents a temporal resolution
+    PET does not have
+  band_hz:
+  - null
+  - null
+- name: plasma_glucose_samples
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: visual_stimuli
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: physiology
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- oxygen_metabolism
+- whole_brain_task_coverage
+- population
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- fit
+forbidden:
+- monash-fdg-pet-fmri/* -> cortical current-source dynamics
+- monash-fdg-pet-fmri/dynamic_fdg_pet -> oxygen metabolism
+- monash-fdg-pet-fmri/* -> population priors
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: monash-fdg-pet-fmri
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,5 @@
+# where the bytes for `things-eeg` actually live.  never the bytes themselves.
+source_url: "https://things-initiative.org/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

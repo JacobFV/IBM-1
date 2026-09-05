@@ -1,0 +1,115 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: clinical-ieeg-archives
+title: Clinical intracranial EEG archives
+provider: multiple hospital and consortium archives
+citation: PROMPT.md §52.5, 'clinical iEEG archives'.
+access: restricted
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Institutional review board approval and data-use agreements per archive. Nothing about this class
+    is resolvable in the abstract, and pretending otherwise would be the error.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: Long-duration continuous recordings acquired for seizure localisation. The recording exists because
+    of pathology.
+frames:
+- electrode_native
+- subject_native
+- MNI152
+streams:
+- name: continuous_ieeg
+  kind: measured
+  via: null
+  observation_chain: current sources within millimetres of the contact -> local volume conduction over
+    a short path -> contact surface area, impedance and referencing scheme -> sampled voltage; spatial
+    support is the contact neighbourhood, not a parcel
+  confounds:
+  - 'clinical pathology at the electrode: this is a patient population, not a healthy one'
+  - medication state and post-implant recovery
+  - referencing scheme (common average vs. bipolar) reshaping the apparent field
+  - epileptiform activity contaminating putative task responses
+  - seizures and interictal discharges throughout, which are the reason for the recording and are not
+    removable by epoching
+  - medication withdrawal during monitoring, which is deliberate and changes cortical excitability by
+    design
+  - sleep-wake cycling over days, unmeasured unless PSG is also present
+  systematic_bias: Days of continuous local electrophysiology is a unique observation window. Everything
+    about the population, the coverage and the pharmacology is atypical, and the medication withdrawal
+    is an uncontrolled excitability manipulation.
+  notes: the tissue recorded is under investigation because it is suspected to be abnormal
+  band_hz:
+  - null
+  - null
+  temporal_support: continuous recording over days at kHz sampling -- by far the longest continuous intracranial
+    time series available
+  spatial_support: depth and subdural contacts placed by clinical hypothesis; coverage differs entirely
+    between patients and is never a sample of cortex
+- name: long_timescale_dynamics
+  kind: measured
+  via: null
+  systematic_bias: multi-day dynamics -- circadian, ultradian, medication-driven -- are visible here and
+    essentially nowhere else in human electrophysiology
+  band_hz:
+  - null
+  - null
+- name: seizure_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: electrode_localisation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: clinical_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- healthy_participants
+- task
+- stimulus
+- whole_brain_coverage
+- structured_medication_records
+requires:
+- geometry: device-geometry
+  for_streams:
+  - continuous_ieeg
+  severity: blocking
+  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
+    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
+    channel is an index and nothing measured here can be attached to a cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+- prior
+forbidden:
+- clinical-ieeg-archives/* -> healthy population priors
+- clinical-ieeg-archives/* -> world-model forcing parameters
+split:
+  group_by:
+  - participant
+  - site
+  - session
+provenance:
+  imported_from: win-registry
+  card: clinical-ieeg-archives
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

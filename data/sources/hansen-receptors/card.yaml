@@ -1,0 +1,69 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hansen-receptors
+title: Hansen neurotransmitter receptor and transporter density maps
+provider: Misic lab
+citation: Hansen et al., Mapping neurotransmitter systems to the structural and functional organization
+  of the human neocortex. Nature Neuroscience 2022.
+urls:
+- https://github.com/netneurolab/hansen_receptors
+access: held
+licence:
+  name: CC-BY-NC-SA-4.0
+  redistribution: unresolved
+  commercial: prohibited
+  notes: 'Read from data/assets/MANIFEST.json, which states it per asset. NON-COMMERCIAL and SHARE-ALIKE:
+    anything this source contributes to carries both forward. The manifest''s own note singles it out.
+    The underlying PET data have their own terms per tracer -- see Table S3 of Hansen et al. (2022) --
+    and this card does not resolve those.'
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- fsaverage
+- Desikan2006
+- Schaefer2018
+streams:
+- name: receptor_density_maps
+  kind: measured
+  via: null
+  systematic_bias: Aggregated from SEPARATE PET studies with different tracers, scanners, quantification
+    methods and participants. The units are not commensurable across systems -- a value in one map and
+    a value in another are not the same kind of number, and normalising them to a common scale hides that
+    rather than fixing it.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: cortical maps of 19 receptors and transporters across 9 neurotransmitter systems, aggregated
+    from PET studies in over 1,200 healthy participants
+- name: receptor_gradients
+  kind: measured
+  via: null
+  systematic_bias: receptor composition is one of the few available constraints on WHAT KIND of local
+    dynamics is plausible where -- directly relevant to §9's local cortical state and to §37's model-class
+    uncertainty
+  band_hz:
+  - null
+  - null
+absent:
+- individual_variation
+- subcortical_coverage_for_all_tracers
+- cross_tracer_commensurability
+- uncertainty
+use:
+- calibrate
+- prior
+forbidden:
+- hansen-receptors/* -> individual receptor state
+- hansen-receptors/* -> cross-system quantitative comparison on a common scale
+- hansen-receptors/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: hansen-receptors
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

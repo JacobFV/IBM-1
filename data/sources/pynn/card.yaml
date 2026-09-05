@@ -1,0 +1,52 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: pynn
+title: PyNN -- simulator-independent neuronal network modelling API
+provider: PyNN contributors / CNRS and collaborators
+citation: 'Davison et al., PyNN: a common interface for neuronal network simulators. Frontiers in Neuroinformatics
+  2009.'
+urls:
+- https://neuralensemble.org/PyNN/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- network_specification
+streams:
+- name: cross_simulator_reproducibility
+  kind: measured
+  via: null
+  systematic_bias: Running the identical network on several simulators measures NUMERICAL and IMPLEMENTATION
+    discrepancy directly -- the same argument as gpu-jemris versus jemris, and komamri versus both, applied
+    to spiking networks. §39's numerical uncertainty component is estimable this way and is otherwise
+    assumed negligible.
+  notes: simulators differ in spike-time resolution, synaptic delay handling and random number generation;
+    identical specifications do not give identical spike trains
+  band_hz:
+  - null
+  - null
+  temporal_support: the host simulator's timestep
+  spatial_support: populations and projections described once and run on NEST, NEURON, Brian2 or neuromorphic
+    hardware unchanged
+absent:
+- biological_content
+- human_parameters
+use:
+- calibrate
+- surrogate
+forbidden:
+- pynn/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: pynn
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

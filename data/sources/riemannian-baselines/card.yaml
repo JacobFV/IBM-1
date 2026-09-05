@@ -1,0 +1,74 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: riemannian-baselines
+title: Riemannian geometry baselines for EEG
+provider: multiple -- pyRiemann and the Riemannian BCI literature
+citation: Barachant et al., Multiclass Brain-Computer Interface Classification by Riemannian Geometry.
+  IEEE TBME 2012; pyRiemann.
+urls:
+- https://pyriemann.readthedocs.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+streams:
+- name: covariance_manifold_methods
+  kind: measured
+  via: null
+  systematic_bias: '§53.2 lists Riemannian methods as a baseline family, and MOABB''s results are why:
+    they are frequently competitive with or better than deep models, with orders of magnitude fewer parameters.
+    A representation-learning claim that does not clear this bar has not established that learned representations
+    were needed.'
+  notes: a covariance matrix discards phase and waveform entirely; that it works so well is itself informative
+    about how much of EEG decoding is second-order structure
+  band_hz:
+  - null
+  - null
+  temporal_support: covariance estimated over epochs at the dataset's rate
+  spatial_support: spatial COVARIANCE MATRICES between EEG channels, treated as points on the manifold
+    of symmetric positive-definite matrices with its natural geometry
+- name: transfer_via_manifold_alignment
+  kind: measured
+  via: null
+  systematic_bias: 'Riemannian recentring aligns sessions and subjects by transporting covariances on
+    the manifold -- a principled and PHYSICALLY MEANINGLESS alignment: it corrects for changes in the
+    observation without modelling them, which is what §53.2''s channel-adaptation family does generally'
+  band_hz:
+  - null
+  - null
+absent:
+- electrode_geometry
+- forward_model
+- mechanism
+- phase_information
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: This model's channel axis is a set of names, not a set of positions -- the channel-identity
+    problem exactly. Its representation can be computed without any geometry, but relating it to a cortical
+    support, or transferring it to a montage it was not trained on, requires the electrode or sensor geometry
+    that the name stands in for.
+  substitute: Channel-name matching, which silently asserts that two electrodes sharing a label sat in
+    the same place on two different heads.
+use:
+- calibrate
+- evaluate
+forbidden:
+- riemannian-baselines/* -> observation-role likelihoods
+- riemannian-baselines/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: riemannian-baselines
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

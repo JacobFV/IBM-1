@@ -1,0 +1,158 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tcia
+title: TCIA -- The Cancer Imaging Archive
+provider: US National Cancer Institute, operated at the University of Arkansas for Medical Sciences; restricted
+  collections now at the NCI Cancer Research Data Commons
+citation: 'Clark et al., The Cancer Imaging Archive (TCIA): maintaining and operating a public information
+  repository. Journal of Digital Imaging 26(6):1045-1057, 2013. doi:10.1007/s12278-013-9622-7 (DOI as
+  reported by search metadata; the publisher page redirected to authentication and the DOI was not verified
+  against it).'
+urls:
+- https://www.cancerimagingarchive.net/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'CORRECTED 2026-08-19 from TCIA''s own anonymous NBIA API rather than its front page. TCIA CEASED
+    HOSTING CONTROLLED-ACCESS DATA ON 8 JULY 2025: the head and head-and-neck collections did not become
+    harder to obtain, they LEFT, to the NCI General Commons under dbGaP phs004225, where a requester must
+    be at a level equivalent to a tenure-track professor and postdocs and graduate students are explicitly
+    barred. So `dua_required: true` UNDERSTATES it -- HEAD-NECK-RADIOMICS-HN1 now reads Unavailable. TWO
+    THINGS THE API CANNOT TELL YOU, both measured. First, it returns 156 collections where the browse
+    page lists 237, and 45 OF THE MISSING ARE PUBLIC -- they ship through Aspera as MHA rather than through
+    NBIA as DICOM, so an empty query result means NOT IN THIS INDEX and reads as NOT PUBLIC. `Pedi-Cranial-CT-Healthy`
+    is exactly that: Public, CC BY 4.0, no agreement of any kind, 100 healthy paediatric cranial CTs at
+    0.625-5.4 mm, and invisible to every API query. Second, BodyPartExamined LIES: of 228 CT series tagged
+    HEAD, 84 are SCOUT and 84 are LUNG AXIAL CT 2.5 MM, and only 20 name head, brain or skull -- in 7
+    people, all at 5 mm, which cannot resolve a 2-5 mm diploe. USABLE PUBLIC HEAD CT IN TCIA''S DICOM
+    HOLDINGS: ZERO. PER COLLECTION, stated in the Data Access table beside each download link. Named options
+    are CC BY 3.0 and CC BY 4.0; a small number of collections impose Creative Commons licences WITH COMMERCIAL-USE
+    RESTRICTIONS, which is no longer offered for new submissions but still binds the existing ones. There
+    is no repository-wide licence. Public collections carry a binding usage policy rather than a named
+    DUA: users agree not to use the datasets, alone or with other information, to identify or contact
+    individual participants, and to acknowledge the datasets, accession numbers and repositories. Since
+    April 2025, TCIA datasets requiring data use agreements are hosted by the NCI Cancer Research Data
+    Commons with access managed through dbGaP. Each dataset has a DOI that must be cited.'
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - device
+  notes: Per-collection counts run from 1 (phantoms) to over 26,000 (NLST). No headline total is published
+    and none is invented here.
+frames:
+- scanner
+- subject_native
+- slide_coordinates
+streams:
+- name: ct_and_pet_with_physical_units
+  kind: measured
+  via: null
+  observation_chain: X-ray attenuation -> reconstruction -> Hounsfield units referenced to water and air,
+    which is a CALIBRATED scale; and for PET, radiotracer concentration -> coincidence detection -> attenuation-corrected
+    reconstruction -> Bq/ml. Both are quantitative in a way MR intensity is not
+  confounds:
+  - reconstruction kernel changes CT texture and apparent density
+  - PET attenuation correction depends on a CT that may be misregistered by breathing
+  - SUV normalisation depends on injected dose, uptake time and body composition, all recorded with varying
+    care
+  - scanner and protocol vary enormously across 200+ collections
+  systematic_bias: 'TCIA''s relevance here is head-and-neck and brain CT: skull geometry with CALIBRATED
+    DENSITY is exactly what an acoustic or electromagnetic forward model needs, and the oncology framing
+    is incidental to that use.'
+  band_hz:
+  - null
+  - null
+  temporal_support: longitudinal treatment-response series in several collections; dynamic contrast-enhanced
+    and perfusion series carry a fast within-acquisition clock
+  spatial_support: CT, MR, PET, digital histopathology, ultrasound and mammography, plus computational
+    and physical phantoms; humans, mice and canines
+- name: skull_and_head_ct_for_forward_models
+  kind: measured
+  via: null
+  systematic_bias: Mapping Hounsfield units to acoustic speed and density, or to electrical conductivity,
+    uses a published empirical relation whose scatter is large and which is routinely applied without
+    its uncertainty.
+  band_hz:
+  - null
+  - null
+- name: ct
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mr
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pet
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: digital_pathology
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ultrasound
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mammography
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: clinical_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: genomics_where_available
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: phantoms
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- functional_neuroimaging
+- eeg
+- meg
+- healthy_controls_in_most_collections
+- uniform_licensing
+use:
+- fit
+- prior
+forbidden:
+- tcia/* -> an artifact, before the specific collection's licence is read from the Data Access table
+- tcia/* -> any re-identification attempt
+- tcia/* -> a Hounsfield-to-acoustic-property conversion without its scatter
+split:
+  group_by:
+  - participant
+  - site
+  - device
+provenance:
+  imported_from: win-registry
+  card: tcia
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

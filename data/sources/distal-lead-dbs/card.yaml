@@ -1,0 +1,75 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: distal-lead-dbs
+title: DISTAL atlas and Lead-DBS subcortical resources
+provider: Charite Berlin / Lead-DBS project
+citation: 'Ewert et al., Toward defining deep brain stimulation targets in MNI space: a subcortical atlas
+  based on multimodal MRI, histology and structural connectivity. NeuroImage 2018; Horn et al., Lead-DBS.
+  NeuroImage 2015.'
+urls:
+- https://www.lead-dbs.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152_2009b_NLIN_ASYM
+- ACPC
+- patient_native
+streams:
+- name: subcortical_nucleus_definitions
+  kind: measured
+  via: null
+  systematic_bias: Built for DBS targeting in a specific MNI variant (2009b NLIN ASYM). Using it in a
+    different MNI variant without the correct transform is a common and silent error, because the volumes
+    still overlay approximately.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: subcortical nuclei defined by combining multimodal 7T MRI, histology and structural
+    connectivity, ASSEMBLED FOR STEREOTACTIC TARGETING -- so its accuracy criterion is 'does the electrode
+    land where the surgeon intended', which is a different criterion from anatomical fidelity
+- name: dbs_electrode_geometry
+  kind: measured
+  via: null
+  systematic_bias: Lead-DBS ships MANUFACTURER ELECTRODE GEOMETRIES -- contact sizes, spacings and insulation
+    -- which is precisely what §56.4 asks B-WIN to construct for stimulation devices. Nominal geometry
+    from a datasheet, not a measured implant.
+  band_hz:
+  - null
+  - null
+- name: volume_of_tissue_activated_models
+  kind: measured
+  via: null
+  systematic_bias: a VTA is a THRESHOLDED field model, and §52.13's separation of requested settings from
+    delivered field says a VTA is neither -- it is a model output standing between them
+  band_hz:
+  - null
+  - null
+absent:
+- measured_delivered_field
+- individual_nucleus_geometry
+- cortex
+use:
+- calibrate
+- prior
+forbidden:
+- distal-lead-dbs/volume_of_tissue_activated_models -> delivered-field claims
+- distal-lead-dbs/* -> a merged single subcortical parcellation
+- distal-lead-dbs/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: distal-lead-dbs
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

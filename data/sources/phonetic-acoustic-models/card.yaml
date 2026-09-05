@@ -1,0 +1,82 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: phonetic-acoustic-models
+title: Phonetic and articulatory model family
+provider: multiple -- forced aligners, phonetic classifiers, articulatory inversion models
+citation: PROMPT.md §53.3, 'phonetic/acoustic models'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- audio_waveform
+- phone_inventory
+- vocal_tract_configuration
+streams:
+- name: phone_alignments
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. Forced alignments are what make phoneme-locked
+    neural analysis possible at all (see meg-masc and brain-treebank), and they are ALGORITHM OUTPUTS
+    with systematic errors concentrated at exactly the boundaries the analysis is locked to. The aligner''s
+    own posterior is usually discarded and should not be.'
+  notes: phone boundaries are a discretisation of a continuous articulatory process; the boundary is a
+    convention, not an event
+  band_hz:
+  - null
+  - null
+  temporal_support: frame-level posteriors at 10 ms; phone boundaries as intervals
+  spatial_support: a discrete PHONE inventory over time, and in the articulatory case an estimated vocal-tract
+    configuration -- the latter is a MOTOR variable derived from an acoustic one
+- name: articulatory_inversion
+  kind: measured
+  via: null
+  systematic_bias: Estimating vocal-tract configuration from acoustics is an ILL-POSED inverse problem
+    with genuine one-to-many structure -- different tract shapes produce identical spectra. The speech-rt-mri
+    card is the measured alternative, and comparing the two is how the inversion's error becomes known
+    rather than assumed.
+  band_hz:
+  - null
+  - null
+absent:
+- uncertainty_propagation
+- measured_articulation
+- speaker_specific_tract_geometry
+use:
+- distil
+forbidden:
+- phonetic-acoustic-models/* -> observation-role likelihoods
+- phonetic-acoustic-models/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: phonetic-acoustic-models
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - phone_alignments
+    - articulatory_inversion
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

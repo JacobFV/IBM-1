@@ -1,0 +1,60 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: openfoam
+title: OpenFOAM -- open-source computational fluid dynamics
+provider: OpenFOAM Foundation / ESI-OpenCFD
+citation: Weller et al., A tensorial approach to computational continuum mechanics using object-oriented
+  techniques. Computers in Physics 1998.
+urls:
+- https://openfoam.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Code licence not read; the two release lines may differ.
+binding: unbound
+population:
+  n: null
+frames:
+- mesh_native
+- subject_native_via_segmentation
+streams:
+- name: haemodynamic_flow_reference
+  kind: measured
+  via: null
+  systematic_bias: 'A second, independent CFD derivation against SimVascular for the same reconstructed
+    vasculature. Both consume a DERIVED geometry: the segmentation error dominates, and it is invisible
+    in the converged solution.'
+  notes: Newtonian vs. non-Newtonian rheology, rigid vs. compliant walls, and the outlet boundary condition
+    each change wall shear stress by more than the solver's numerical error
+  band_hz:
+  - null
+  - null
+  temporal_support: pulsatile cardiac-cycle time stepping, with the inlet waveform supplied by the user
+    rather than measured in the subject
+  spatial_support: finite-volume meshes over vessel lumens; the geometry comes from segmentation and is
+    derived, never measured
+absent:
+- measured_flow
+- measured_pressure
+- capillary_bed
+- neurovascular_coupling
+requires:
+- geometry: vascular-products
+  severity: blocking
+  without_it: The solver's domain is a vessel lumen. Its geometry is always derived from a segmentation
+    and never measured, so running this as an offline oracle requires the vascular product to supply the
+    lumen -- and to carry the segmentation's uncertainty into the flow result rather than dropping it.
+use:
+- surrogate
+forbidden:
+- openfoam/* -> runtime dependency in a WIN query
+- openfoam/* -> any measured-flow claim
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: openfoam
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

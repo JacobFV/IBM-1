@@ -1,0 +1,51 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: pyvista
+title: PyVista -- Pythonic interface to VTK
+provider: PyVista contributors
+citation: 'Sullivan and Kaszynski, PyVista: 3D plotting and mesh analysis through a streamlined interface
+  for the Visualization Toolkit. Journal of Open Source Software 2019.'
+urls:
+- https://pyvista.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- arbitrary_mesh
+- physical_space
+streams:
+- name: geometric_interchange_layer
+  kind: measured
+  via: null
+  systematic_bias: '§59 reference 43 names PyVista and VTK as GOOD GENERAL GEOMETRIC INTERCHANGE AND ANALYSIS
+    LAYERS, which is a specific and useful recommendation: the registry''s geometry comes from FreeSurfer,
+    VMTK, Gmsh, NIfTI and paper figures, and something has to hold all of it in one representation without
+    flattening what distinguishes them.'
+  notes: ergonomics can hide VTK's explicit physical-space semantics; a mesh loaded without its transform
+    is in no space at all
+  band_hz:
+  - null
+  - null
+  temporal_support: sequences of datasets for time-varying data
+  spatial_support: VTK's data model with an ergonomic API and NumPy interoperability
+absent:
+- biological_semantics
+- uncertainty_representation
+use:
+- calibrate
+forbidden:
+- pyvista/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: pyvista
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

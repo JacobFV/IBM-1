@@ -1,0 +1,115 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: lifespan-motor-somatosensory-fmri
+title: Lifespan motor and somatosensory fMRI in 155 participants
+provider: unresolved -- named in PROMPT.md §52.9
+citation: Lifespan motor/somatosensory fMRI dataset (named in PROMPT.md §52.9).
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: 155
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 155 participants across the lifespan performing motor and somatosensory tasks. Age is the design
+    variable.
+frames:
+- scanner
+- subject_native
+- MNI152
+- body_surface
+streams:
+- name: bold_motor_somatosensory
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - age-related differences in neurovascular coupling, which change the BOLD response independently of
+    neural activity -- the single most important confound in any lifespan BOLD study
+  systematic_bias: '§17 is directly load-bearing here: an age difference in BOLD amplitude is ambiguous
+    between a neural and a vascular explanation, and only an explicit vascular stage can separate them.'
+  notes: without a vascular calibration (breath-hold, hypercapnia or ASL) the neural and vascular contributions
+    to an age effect are not identifiable
+  band_hz:
+  - null
+  - null
+  temporal_support: TR seconds; blocked or event-related motor and somatosensory tasks
+  spatial_support: standard BOLD resolution; details unresolved pending file-level audit
+- name: age_conditioned_somatotopy
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_motor
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_somatosensory
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: age
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- vascular_calibration
+- emg
+- kinematics
+- eeg
+- meg
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+- prior
+forbidden:
+- lifespan-motor-somatosensory-fmri/* -> neural age effects without an explicit vascular stage
+- lifespan-motor-somatosensory-fmri/* -> measured muscle activation
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: lifespan-motor-somatosensory-fmri
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

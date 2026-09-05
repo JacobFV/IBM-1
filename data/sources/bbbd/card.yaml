@@ -1,0 +1,233 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bbbd
+title: The Brain, Body, and Behavior Dataset — multimodal recordings during educational videos
+provider: Scientific Data, 2026
+citation: 'Madsen J, Kuppa N, Parra LC. The Brain, Body, and Behavior Dataset (BBBD): Multimodal Recordings
+  during Educational Videos. Scientific Data (2026). doi:10.1038/s41597-026-07215-1. Data: Zenodo record
+  19241964.'
+urls:
+- https://zenodo.org/records/19241964
+- https://www.nature.com/articles/s41597-026-07215-1
+- https://bbbd.pythonanywhere.com/
+access: held
+licence:
+  name: CC-BY-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'Stated by the Zenodo record. RESOLVED 2026-08-16 -- this card carried an unresolved licence
+    AND NO URL AT ALL while being described as the central p0 source for the first vertical slice. A source
+    with no address is not a plan to acquire it. DUA: none. Recorded as dua_required false on the basis
+    of HOW THIS WAS ACTUALLY OBTAINED -- it is held in this store, fetched anonymously over plain HTTP
+    by a script in scripts/ that sends no credential and accepts no terms, from a repository that serves
+    it without an access request. That is evidence about the acquisition rather than an opinion about
+    the deposit''s policy. It says nothing about the LICENCE terms, which are recorded separately and
+    still govern distribution; a non-commercial work with no DUA is an ordinary combination.'
+binding: unbound
+population:
+  n: 178
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: ~110 h of aligned naturalistic data. Attention manipulation (attentive vs. distracted by silent
+    serial subtraction), intentional vs. incidental learning, and a monetary-incentive / question-preview
+    intervention.
+frames:
+- eeg_cap
+- display
+- eye
+- head
+- room
+streams:
+- name: eeg_64ch
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> volume conduction through an individualised
+    head model -> electrode contact geometry -> reference -> sampled voltage
+  confounds:
+  - 'ocular: blink and saccade potentials via the EOG-coupled channel'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis and neck EMG'
+  - electrode impedance drift and motion
+  - line noise
+  - the documented 16 Hz instrument contamination -- a named, known nuisance, and it belongs here rather
+    than in a preprocessing footnote
+  systematic_bias: Montage geometry is population-template unless per-participant digitisation exists;
+    a template montage is a CHOICE with uncertainty, never a default (obj-device-geometry).
+  notes: head model discrepancy vs. the true individual geometry
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG/ECG/EOG at high electrophysiological rates; eye tracker at 500 Hz; video at its
+    own frame rate; quizzes as discrete events minutes later.
+  spatial_support: '64-channel scalp EEG montage; screen-coordinate gaze; head position. Electrode positions
+    per participant: unresolved -- see notes, this gates the observation model.'
+- name: gaze
+  kind: imposed
+  via: null
+  systematic_bias: calibration drift within session; screen-coordinate to visual-angle conversion depends
+    on display geometry
+  band_hz:
+  - null
+  - null
+- name: blinks
+  kind: measured
+  via: null
+  observation_chain: eyelid closure -> (a) retinal input gating and (b) corneo-retinal dipole rotation
+    appearing in scalp EEG
+  confounds:
+  - detector false positives
+  - partial blinks below detection threshold
+  notes: the SAME physical event participates in two interactions with different roles -- §25's argument
+    for an interaction network rather than modality heads, and this stream is the cleanest instance of
+    it
+  band_hz:
+  - null
+  - null
+- name: ecg
+  kind: measured
+  via: null
+  observation_chain: cardiac electrical activity -> torso volume conduction -> scalp; simultaneously an
+    autonomic-brain interaction
+  confounds:
+  - electrode motion
+  - respiration-coupled baseline drift
+  band_hz:
+  - null
+  - null
+- name: video_stimulus
+  kind: imposed
+  via: null
+  systematic_bias: the participant sees a gaze-dependent projection of this, not this -- treating the
+    video as the input is the modelling error obj-retinalization exists to prevent
+  band_hz:
+  - null
+  - null
+- name: attention_condition
+  kind: measured
+  via: null
+  systematic_bias: Same stimulus, different internal state. This is the designed interaction-strength
+    experiment of §26 and the direct evidence for lambda_visual varying with attention.
+  band_hz:
+  - null
+  - null
+- name: quizzes
+  kind: imposed
+  via: null
+  systematic_bias: a quiz score minutes later is a behavioural outcome, not a state observation at any
+    time t
+  band_hz:
+  - null
+  - null
+- name: eog
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: respiration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pupil
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: saccades
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: fixations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: head_position
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: engagement
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: working_memory
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: learning_condition
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: motivation_condition
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- fmri
+- meg
+- ieeg
+- dwi
+- anatomical_mri
+- vascular
+- metabolic
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg_64ch
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - gaze
+  - video_stimulus
+  severity: blocking
+  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
+    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
+    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+use:
+- calibrate
+- fit
+forbidden:
+- bbbd/* -> vascular state
+- bbbd/* -> metabolic state
+- bbbd/* -> structural interactome parameters
+- bbbd/quizzes -> instantaneous cortical state
+split:
+  group_by:
+  - participant
+  - stimulus
+  notes: 'Grouping by participant alone is NOT enough: the same educational videos are shown to many participants,
+    so a stimulus-repeated split leaks through the stimulus axis. Both axes, always.'
+provenance:
+  imported_from: win-registry
+  card: bbbd
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

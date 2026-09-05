@@ -1,0 +1,91 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: scwbd-001-004-predecessor-models
+title: sc-wbd-001 to 004 -- the predecessor programme's four trained models
+provider: This programme's predecessor repository, integrated-whole-brain-modeling-across-modalities-scales-and-dynamics
+citation: The predecessor repository's own run reports (RUN2.md, RUN3.md, RUN4.md) and derived checkpoint
+  records (reports/scwbd-003_derived.json, reports/scwbd-004_derived.json). No external publication.
+access: reference
+licence:
+  name: CC-BY-NC-SA-4.0
+  redistribution: unresolved
+  commercial: prohibited
+  notes: The predecessor repository's LICENSE file is Attribution-NonCommercial-ShareAlike 4.0 International,
+    read from the file itself. That covers the repository. The CHECKPOINTS additionally inherit the licence
+    union of whatever entered the code path that produced them -- the predecessor's own audit found no
+    established restriction read by the default prior but an established non-commercial term (hansen_receptors)
+    CARRIED by the assembled object, and that distinction is the whole subject of its licence audit. Treat
+    the checkpoints as non-commercial and share-alike.
+binding: unbound
+population:
+  n: null
+frames:
+- schaefer414
+- MNI152
+streams:
+- name: runnable_demoted_assumptions
+  kind: measured
+  via: null
+  systematic_bias: obj-baseline-comparison requires an explicit comparison against sc-wbd-001-004 and
+    this card is what makes that reachable from the registry. The comparison is runnable because each
+    demoted assumption -- one global latent, one connectome graph, one weighted global source mixture,
+    balloon-Windkessel as the definitive fMRI ontology, global resampling, a shared neural trunk -- is
+    still implementable and can therefore be measured against rather than argued against.
+  band_hz:
+  - null
+  - null
+  temporal_support: a single globally resampled clock; the predecessor's own 001-004 native-clock finding
+    is why clock semantics became an invariant here
+  spatial_support: Schaefer-414 as the world-state topology, with one regional tensor shape, one global
+    brain latent, one universal patch topology and one universal connectome graph. EVERY ONE OF THOSE
+    IS AN ASSUMPTION B-WIN DEMOTES, which is precisely what makes these checkpoints usable as a runnable
+    comparison rather than a rhetorical one
+- name: shared_trunk_failure
+  kind: measured
+  via: null
+  systematic_bias: Run 4 demonstrated that strong gradients through a shared trunk destroyed a weak modality's
+    representation entirely WHILE THE LOSS WENT DOWN. That is a control that already failed, and it is
+    the reason learning here follows identifiable interaction paths. A mechanism that reproduces this
+    failure has reproduced a known defect, not a result.
+  notes: the leave-one-source-out deltas in RUN4 are small and several are negative transfer; the ordering
+    is what is readable, not the magnitudes
+  band_hz:
+  - null
+  - null
+- name: contributed_source_accounting
+  kind: measured
+  via: null
+  systematic_bias: The derived records name exactly which sources contributed to each checkpoint -- scwbd-003
+    lists eight, scwbd-004 nine -- and separately name sources ADMITTED BUT GIVEN NO LOSS TERM (scwbd-004's
+    T6 admitted two and gave neither a term). That distinction between admitted and contributing is the
+    operational definition licence lineage needs, and it was measured rather than declared.
+  band_hz:
+  - null
+  - null
+absent:
+- measurements
+- external_validation
+- published_evaluation
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- control
+- evaluate
+- prior
+forbidden:
+- scwbd-001-004-predecessor-models/* -> any subject likelihood term
+- scwbd-001-004-predecessor-models/* -> a commercial artifact (non-commercial, share-alike)
+- scwbd-001-004-predecessor-models/* -> adoption of Schaefer-414 as a world-state topology
+split:
+  group_by:
+  - participant
+  notes: Any re-evaluation must use the predecessor's own splits, or the comparison is against a different
+    experiment.
+provenance:
+  imported_from: win-registry
+  card: scwbd-001-004-predecessor-models
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

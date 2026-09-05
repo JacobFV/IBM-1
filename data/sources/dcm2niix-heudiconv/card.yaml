@@ -1,0 +1,55 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: dcm2niix-heudiconv
+title: dcm2niix and HeuDiConv -- DICOM to NIfTI/BIDS conversion
+provider: Chris Rorden (dcm2niix); ReproNim / Nipy (HeuDiConv)
+citation: 'Li et al., The first step for neuroimaging data analysis: DICOM to NIfTI conversion. Journal
+  of Neuroscience Methods 2016.'
+urls:
+- https://github.com/rordenlab/dcm2niix
+- https://heudiconv.readthedocs.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Two separate code licences, neither read.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- subject_native
+streams:
+- name: acquisition_parameter_extraction
+  kind: measured
+  via: null
+  systematic_bias: The MR acquisition objects obj-mr-acquisition-objects needs -- TE, TR, flip angle,
+    readout, phase-encode direction, slice order -- exist in the DICOM and reach the analysis only if
+    the converter carried them. A missing SliceTiming field is usually a converter fact, not an acquisition
+    fact, and reading its absence as 'no slice timing' is missing-treated-as-zero.
+  notes: vendor private tags hold parameters that no converter version extracts completely; the BIDS sidecar
+    is a lossy view of the DICOM header
+  band_hz:
+  - null
+  - null
+  temporal_support: THIS IS WHERE THE ACQUISITION CLOCK IS EITHER PRESERVED OR LOST. Slice timing, total
+    readout time, echo spacing and multiband factor either survive into the BIDS sidecar or they do not,
+    depending on vendor, sequence and converter version
+  spatial_support: voxel grid and affine reconstructed from DICOM geometry tags
+absent:
+- raw_k_space
+- vendor_private_reconstruction_parameters
+- gradient_waveforms
+use:
+- calibrate
+forbidden:
+- dcm2niix-heudiconv/* -> treating an absent sidecar field as a measured zero
+split:
+  group_by:
+  - device
+  - session
+provenance:
+  imported_from: win-registry
+  card: dcm2niix-heudiconv
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

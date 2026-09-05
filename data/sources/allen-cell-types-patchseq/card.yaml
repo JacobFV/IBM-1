@@ -1,0 +1,73 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: allen-cell-types-patchseq
+title: Allen Cell Types Database and Patch-seq multimodal cell characterisation
+provider: Allen Institute for Brain Science
+citation: Allen Cell Types Database; Gouwens et al., Integrated morphoelectric and transcriptomic classification
+  of cortical GABAergic cells. Cell 2020.
+urls:
+- https://celltypes.brain-map.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- cell_native
+- slice_native
+streams:
+- name: intrinsic_electrophysiology
+  kind: measured
+  via: null
+  systematic_bias: 'Measured current-clamp responses per cell type are the strongest available constraint
+    on WHICH LOCAL DYNAMICAL MODEL CLASS is appropriate where -- directly serving §37''s model-class uncertainty
+    and §53.4''s requirement for parameter priors. In acute slices, at non-physiological temperature and
+    without intact network input: the parameters are real, the regime is not in vivo.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: single cells characterised ELECTROPHYSIOLOGICALLY, morphologically and transcriptomically
+    at once, in acute slices and from human surgical tissue in part
+- name: morphoelectric_transcriptomic_correspondence
+  kind: measured
+  via: null
+  systematic_bias: Patch-seq is the only assay that links a cell's transcriptomic identity to its measured
+    dynamics; the yield is low and biased toward cells that survive the procedure
+  band_hz:
+  - null
+  - null
+- name: human_surgical_subset
+  kind: measured
+  via: null
+  systematic_bias: human tissue here comes from surgical resections, i.e. from patients, and usually from
+    tissue removed to reach a lesion
+  band_hz:
+  - null
+  - null
+absent:
+- in_vivo_conditions
+- network_context
+- population
+- whole_brain_coverage
+use:
+- calibrate
+- prior
+forbidden:
+- allen-cell-types-patchseq/* -> in-vivo network state
+- allen-cell-types-patchseq/* -> observation-role likelihoods about a participant
+- allen-cell-types-patchseq/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: allen-cell-types-patchseq
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,5 @@
+# where the bytes for `tractogram-formats` actually live.  never the bytes themselves.
+source_url: "https://tee-ar-ex.github.io/trx_python/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

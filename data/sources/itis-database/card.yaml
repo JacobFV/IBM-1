@@ -1,0 +1,71 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: itis-database
+title: IT'IS Foundation database of tissue material properties
+provider: IT'IS Foundation, Zurich
+citation: Hasgall et al., IT'IS Database for thermal and electromagnetic parameters of biological tissues.
+urls:
+- https://itis.swiss/virtual-population/tissue-properties/database/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Database access terms and the Virtual Population model licences differ and are unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- tissue_type
+streams:
+- name: tissue_material_properties
+  kind: measured
+  via: null
+  systematic_bias: 'EVERY FORWARD MODEL IN THIS REGISTRY DEPENDS ON THIS TABLE. EEG lead fields, tES fields,
+    TMS fields and acoustic propagation all need conductivity, permittivity, speed of sound or density
+    per tissue, and this is where those numbers come from. The database''s most important feature is that
+    it REPORTS THE SPREAD across source studies, so the uncertainty is available -- and it is almost universally
+    discarded, with a single point value propagated as if exact. Skull conductivity is the extreme case:
+    the literature spans roughly a factor of three, and it dominates the EEG forward model.'
+  notes: measurements come from excised tissue at varying temperatures, post-mortem intervals and hydration
+    states; in-vivo values are inferred
+  band_hz:
+  - null
+  - null
+  temporal_support: frequency-dependent for electromagnetic properties; static otherwise
+  spatial_support: material properties PER TISSUE TYPE, aggregated from the measurement literature, with
+    frequency dependence for the electromagnetic parameters and reported spread across studies
+- name: frequency_dependence
+  kind: measured
+  via: null
+  systematic_bias: §14 and §15 require distinct electromagnetic mechanisms to be kept distinct, and tissue
+    properties differ by orders of magnitude across the frequency range spanned by EEG, tES, TMS and MR
+    -- so 'the conductivity of skull' is not one number
+  band_hz:
+  - null
+  - null
+- name: virtual_population_models
+  kind: measured
+  via: null
+  systematic_bias: the associated anatomical models are detailed segmented human bodies usable as reference
+    geometry, with their own licence terms
+  band_hz:
+  - null
+  - null
+absent:
+- in_vivo_measurements
+- individual_variation
+- temperature_and_hydration_dependence
+use:
+- calibrate
+- prior
+forbidden:
+- itis-database/* -> point values propagated without their reported spread
+- itis-database/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: itis-database
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

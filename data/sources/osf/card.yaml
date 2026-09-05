@@ -1,0 +1,51 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: osf
+title: OSF -- Open Science Framework
+provider: Center for Open Science, Inc.
+citation: No platform-level citation is requested; projects carry their own DOIs.
+urls:
+- https://osf.io
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'PER DEPOSIT, DEPOSITOR-CHOSEN, AND THE UNCHOSEN STATE IS ''NO LICENSE''. The offered set includes
+    No License, several CC variants, and a range of software licences. THERE IS NO DEFAULT: a public OSF
+    node with no licence chosen conveys no reuse grant, and public is not licensed. Three TMS sources
+    in this registry are exactly that case. The hosting grant the OSF terms of service take from depositors
+    is not a licence to downstream users.'
+binding: unbound
+population:
+  n: null
+frames:
+- described_by_reference
+streams:
+- name: hosted_research_objects
+  kind: measured
+  via: null
+  systematic_bias: A crawler that reads only osfstorage reports an off-provider node as EMPTY. That is
+    the empty-search-is-not-absence failure in a form this registry has already hit once, and any OSF
+    connector must query every configured provider.
+  band_hz:
+  - null
+  - null
+  temporal_support: registration and revision timestamps
+  spatial_support: 'a general research-object host with pluggable storage providers -- osfstorage, ownCloud,
+    GitLab and others. The bytes are frequently NOT on OSF: a node can be public and complete while its
+    osfstorage is empty'
+absent:
+- measurements
+- guaranteed_licence
+use:
+- prior
+forbidden:
+- osf/* -> an artifact, from any node whose licence is null
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: osf
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

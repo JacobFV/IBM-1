@@ -1,0 +1,94 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: amass
+title: AMASS -- Archive of Motion Capture as Surface Shapes
+provider: Max Planck Institute for Intelligent Systems
+citation: 'Mahmood et al., AMASS: Archive of Motion Capture as Surface Shapes. ICCV 2019.'
+urls:
+- https://amass.is.tue.mpg.de/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: AMASS licence plus the PER-CONSTITUENT licences of the 15+ mocap datasets it unifies, several
+    of which prohibit commercial use. A licence union over AMASS as a whole is a fact about a pile; lineage
+    must be computed per constituent dataset actually used.
+binding: unbound
+population:
+  n: 300
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: Over 40 hours from 300+ subjects across many source datasets, all re-expressed in ONE body model.
+    The unification is the product.
+frames:
+- capture_room
+- smpl_body_frame
+- world
+streams:
+- name: smpl_pose_sequences
+  kind: imposed
+  via: null
+  systematic_bias: A FITTED BODY MODEL, not measured kinematics. Every pose is SMPL's best explanation
+    of the markers under its own kinematic tree and shape space, so motions the model cannot represent
+    are silently projected onto ones it can.
+  notes: the MoSh++ fit residual is the honest uncertainty and is not distributed with the poses
+  band_hz:
+  - null
+  - null
+  temporal_support: motion capture at 60-250 Hz depending on the source dataset, resampled to a common
+    rate in the release -- a derived view, not the native clock
+  spatial_support: the native measurement is optical MARKER POSITIONS; the distributed product is SMPL
+    body-model parameters fitted to them. Those are different objects and the fit is a derivation with
+    a residual
+- name: body_shape_parameters
+  kind: measured
+  via: null
+  systematic_bias: a low-dimensional shape space fitted across a specific population; it represents the
+    bodies it was trained on
+  band_hz:
+  - null
+  - null
+- name: unified_representation
+  kind: measured
+  via: null
+  systematic_bias: the value of AMASS is that heterogeneous marker sets become comparable -- the same
+    problem §11 solves for cortical parcellations, solved for body geometry by adopting one model rather
+    than by mapping between covers
+  band_hz:
+  - null
+  - null
+- name: surface_meshes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: source_dataset_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- muscle_activity
+- contact_forces
+- soft_tissue_dynamics
+- original_marker_residuals
+use:
+- calibrate
+- fit
+forbidden:
+- amass/* -> any cortical state directly
+- amass/smpl_pose_sequences -> measured-kinematics claims
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: amass
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

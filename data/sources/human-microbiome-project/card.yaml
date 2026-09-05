@@ -1,0 +1,100 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: human-microbiome-project
+title: Human Microbiome Project
+provider: NIH Human Microbiome Project / iHMP
+citation: Human Microbiome Project Consortium, Structure, function and diversity of the healthy human
+  microbiome. Nature 2012; Integrative HMP, Nature 2019.
+urls:
+- https://portal.hmpdacc.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Public and controlled-access tiers; human sequence data requires dbGaP authorisation. Unresolved.
+binding: unbound
+population:
+  n: 300
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: Reference microbiome sampling across body sites in healthy adults, plus longitudinal integrative
+    cohorts. The 'site' here is a BODY SITE (gut, oral, skin), which is a different meaning of site from
+    every other card in the registry.
+frames:
+- gut
+- oral_cavity
+- skin
+- participant_body
+streams:
+- name: gut_microbial_composition
+  kind: measured
+  via: null
+  systematic_bias: 'RELATIVE abundances from sequencing are COMPOSITIONAL data: they sum to one, so an
+    increase in one taxon forces decreases in others, and naive correlation analysis on them generates
+    spurious associations. This is a well-documented statistical trap and it is the main reason this source
+    enters at low authority.'
+  band_hz:
+  - null
+  - null
+  temporal_support: cross-sectional at one or a few visits; the iHMP arm is longitudinal over months
+  spatial_support: body sites sampled by swab or stool; the support is a MICROBIAL COMMUNITY, not a tissue
+- name: microbial_metabolites
+  kind: measured
+  via: null
+  systematic_bias: short-chain fatty acids and neurotransmitter precursors are the plausible mechanistic
+    link to the nervous system, and the pathway from gut lumen to brain is long, indirect and mostly hypothetical
+  band_hz:
+  - null
+  - null
+- name: 16s_sequencing
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: shotgun_metagenomics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: metatranscriptomics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: metabolomics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: host_measurements
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- causality
+- absolute_abundance
+- brain_linkage
+use:
+- prior
+forbidden:
+- human-microbiome-project/* -> cortical state without an explicit carded interaction
+- human-microbiome-project/* -> any cortical state
+- human-microbiome-project/* -> causal claims
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: human-microbiome-project
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

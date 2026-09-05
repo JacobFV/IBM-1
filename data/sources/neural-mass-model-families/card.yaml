@@ -1,0 +1,80 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: neural-mass-model-families
+title: 'Neural mass and population model families: Wilson-Cowan, Jansen-Rit, Wong-Wang, Hopf, AdEx/aLN,
+  conductance-based, neural-field, point-process and spiking'
+provider: the computational neuroscience literature
+citation: Wilson and Cowan 1972; Jansen and Rit 1995; Wong and Wang 2006; Brunel and Wang 2003; Amari
+  1977; and successors. PROMPT.md §53.4.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- arbitrary_state_space
+- cortical_surface
+streams:
+- name: competing_model_classes
+  kind: measured
+  via: null
+  systematic_bias: '§37: INTERACTION STRENGTHS AND MODEL CLASSES REMAIN UNCERTAIN, and this card is that
+    uncertainty made concrete. Nine families that all claim to describe local cortical dynamics and disagree
+    about what the state variable is. §53.4 says to use them as MODEL-CLASS CONTROLS, and §46 requires
+    an equal-capacity alternative that could have won -- which means implementing more than one properly
+    rather than picking a favourite and calling the rest baselines.'
+  notes: each family was derived under assumptions -- mean-field homogeneity, slow synapses, spatial continuity
+    -- that hold in different regimes, and the regimes are not everywhere
+  band_hz:
+  - null
+  - null
+  temporal_support: milliseconds to seconds depending on the family; neural fields carry a spatial axis
+    that the mass models do not
+  spatial_support: 'NINE DISTINCT MODEL FAMILIES spanning population rates, conductance-based dynamics,
+    continuum neural fields and spiking. They differ in what a STATE IS: a firing rate, a potential, a
+    field over space, or a set of spike times'
+- name: neural_field_spatial_formulation
+  kind: measured
+  via: null
+  systematic_bias: NEURAL FIELD models are the family whose state is a CONTINUOUS FIELD OVER CORTEX rather
+    than a value per node, which is structurally what §5's no-canonical-parcellation and §9's mesoscopic
+    state are asking for. They are the closest existing formalism to B-WIN's local dynamics and are correspondingly
+    under-used because they do not fit a connectome matrix
+  band_hz:
+  - null
+  - null
+- name: parameter_priors
+  kind: measured
+  via: null
+  systematic_bias: published parameter ranges per family are the starting priors; their provenance runs
+    back through modeldb to animal preparations
+  band_hz:
+  - null
+  - null
+absent:
+- identifiability_from_available_data
+- human_parameter_measurements
+- regime_boundaries
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: 'A neural field is a field over a support: it needs a surface with a metric, an orientation
+    and a laminar depth before the equations mean anything. Without the support bank these model families
+    can be integrated on an abstract state space but cannot be posed over cortex at all.'
+use:
+- evaluate
+- prior
+forbidden:
+- neural-mass-model-families/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: neural-mass-model-families
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

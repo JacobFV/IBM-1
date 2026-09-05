@@ -1,0 +1,117 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: shhs
+title: SHHS -- Sleep Heart Health Study
+provider: National Sleep Research Resource
+citation: 'Quan et al., The Sleep Heart Health Study: design, rationale, and methods. Sleep 1997; Zhang
+  et al., The National Sleep Research Resource. JAMIA 2018.'
+urls:
+- https://sleepdata.org/datasets/shhs
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: National Sleep Research Resource data access and use agreement.
+binding: unbound
+population:
+  n: 6441
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: '6,441 participants with home polysomnography and LONGITUDINAL CARDIOVASCULAR OUTCOMES over years.
+    The outcome linkage is what distinguishes it: sleep physiology with a downstream clinical endpoint.'
+frames:
+- eeg_cap
+- head
+- torso
+- finger
+streams:
+- name: home_polysomnography
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - unattended home recording, so signal loss and electrode failure are common and correlate with participant
+    characteristics
+  systematic_bias: Population-scale sleep physiology, at the cost of two EEG channels and unattended recording
+    quality.
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at 125 Hz; whole nights; two visits several years apart in a subset; outcomes
+    over a decade. THREE timescales in one study
+  spatial_support: two EEG channels in a home montage -- minimal spatial information, maximal sample size
+- name: intermittent_hypoxia
+  kind: measured
+  via: null
+  observation_chain: apnoea or hypopnoea -> reduced alveolar ventilation -> arterial desaturation -> pulse
+    oximeter reading, delayed by circulation time from lung to finger
+  confounds:
+  - oximeter averaging window, which blunts short desaturations
+  - peripheral perfusion and motion
+  - the lung-to-finger delay, which is several seconds and varies with cardiac output
+  systematic_bias: Repeated nocturnal desaturation is a naturally occurring HYPOXIC CHALLENGE, and it
+    is a vascular perturbation nobody administered -- the closest thing to a population-scale cerebrovascular
+    stress test in the registry.
+  band_hz:
+  - null
+  - null
+- name: cardiovascular_outcomes
+  kind: measured
+  via: null
+  systematic_bias: outcomes over years relate to sleep physiology through many mediating steps
+  band_hz:
+  - null
+  - null
+- name: sleep_staging
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: respiratory_events
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: oximetry
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: covariates
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_imaging
+- high_density_eeg
+- individual_anatomy
+- brain_measurement_beyond_two_eeg_channels
+use:
+- fit
+forbidden:
+- shhs/* -> cortical state without an explicit carded interaction
+split:
+  group_by:
+  - participant
+  - site
+  - session
+provenance:
+  imported_from: win-registry
+  card: shhs
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,129 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: myconnectome
+title: MyConnectome -- longitudinal single-subject multimodal study
+provider: Poldrack lab / OpenNeuro ds000031
+citation: Poldrack et al., Long-term neural and physiological phenotyping of a single human. Nature Communications
+  2015.
+urls:
+- https://openneuro.org/datasets/ds000031
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: OpenNeuro-hosted; terms unresolved. Single identified participant -- consent scope is itself
+    a fact to resolve before use.
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - session
+  - run
+  notes: One person, 104 sessions over 18 months, with metabolomics, gene expression and daily behavioural
+    logs alongside imaging.
+frames:
+- scanner
+- subject_native
+- fsaverage
+- MNI152
+- subject_native_surface
+streams:
+- name: bold_rest
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - caffeine and fasting state, which are LOGGED here and therefore modellable rather than nuisance
+  systematic_bias: Within-person session-to-session variability at a scale nothing else supplies.
+  band_hz:
+  - null
+  - null
+  temporal_support: sessions on a near-daily cadence over 18 months; the SLOW axis is the point
+  spatial_support: single subject across 104 sessions; individual surfaces
+- name: metabolomics
+  kind: measured
+  via: null
+  systematic_bias: peripheral blood metabolites are not cerebral metabolic state
+  band_hz:
+  - null
+  - null
+- name: behaviour_diary
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_task
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: gene_expression
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: food_diary
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- ieeg
+- angiography
+- intervention
+- population
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- evaluate
+- fit
+- prior
+forbidden:
+- myconnectome/* -> population covariance priors
+- myconnectome/metabolomics -> cortical metabolic state
+split:
+  group_by:
+  - session
+  - run
+provenance:
+  imported_from: win-registry
+  card: myconnectome
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

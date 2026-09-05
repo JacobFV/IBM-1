@@ -1,0 +1,70 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: dream-olfaction-challenge
+title: DREAM Olfaction Prediction Challenge dataset
+provider: DREAM Challenges / Sage Bionetworks and collaborators
+citation: Keller et al., Predicting human olfactory perception from chemical features of odor molecules.
+  Science 2017.
+urls:
+- https://www.synapse.org/#!Synapse:syn2811262
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- molecular_structure_space
+- perceptual_rating_space
+streams:
+- name: held_out_test_molecules
+  kind: measured
+  via: null
+  systematic_bias: A genuinely withheld test set with a public leaderboard is a rare and honest generalisation
+    test. It tests prediction of RATINGS from STRUCTURE -- a psychophysical mapping -- and says nothing
+    about neural state.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: 476 molecules rated by 49 subjects on 21 perceptual descriptors at two concentrations,
+    with a HELD-OUT test set that was withheld during the challenge
+- name: individual_rater_variation
+  kind: measured
+  via: null
+  systematic_bias: the per-subject data is retained rather than averaged, which makes between-person olfactory
+    variation visible; genetic receptor polymorphism drives much of it
+  band_hz:
+  - null
+  - null
+- name: perceptual_ratings
+  kind: imposed
+  via: null
+  systematic_bias: reports, not states
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- receptor_level_data
+- delivered_concentration_at_the_epithelium
+use:
+- evaluate
+- fit
+- prior
+forbidden:
+- dream-olfaction-challenge/* -> olfactory cortical state
+- dream-olfaction-challenge/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: dream-olfaction-challenge
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

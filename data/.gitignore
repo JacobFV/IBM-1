@@ -1,0 +1,11 @@
+# bytes are never committed.  most of these licences prohibit redistribution, and
+# the catalogue we draw from is 2.55 PB.  the repository commits cards, recipes and
+# manifests -- what a source is, how it was derived, and what the result hashed to.
+sources/*/raw/**
+!sources/*/raw/.location.yaml
+!sources/*/raw/checksums.txt
+sources/*/evidence/**
+!sources/*/evidence/*/manifest.yaml
+index/**/*.jsonl
+!index/neuro2/candidates.jsonl
+index/**/*.json.gz

@@ -1,0 +1,61 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tetgen
+title: TetGen -- quality tetrahedral mesh generator
+provider: Weierstrass Institute Berlin
+citation: Si, TetGen, a Delaunay-based quality tetrahedral mesh generator. ACM Transactions on Mathematical
+  Software 2015.
+urls:
+- https://www.wias-berlin.de/software/tetgen/
+access: reference
+licence:
+  name: AGPL-3.0 (stated by the provider); commercial licences available separately
+  redistribution: unresolved
+  commercial: prohibited
+  notes: NETWORK COPYLEFT. §59 reference 43 flags this explicitly. Stronger implications than the GPL
+    for anything served over a network.
+binding: unbound
+population:
+  n: null
+frames:
+- arbitrary_mesh
+- volume_mesh
+streams:
+- name: delaunay_tetrahedralisation
+  kind: measured
+  via: null
+  systematic_bias: Quality bounds are PROVEN rather than heuristic, which matters because element quality
+    bounds the finite-element solution's conditioning. It is the mesher behind several head-modelling
+    pipelines including SimNIBS's.
+  notes: quality guarantees apply to the interior; boundary conformity to a poor input surface is still
+    poor, so mesh quality does not rescue a bad segmentation
+  band_hz:
+  - null
+  - null
+  temporal_support: static
+  spatial_support: constrained Delaunay tetrahedralisation with quality guarantees expressed as a radius-edge
+    ratio bound
+- name: licence_review_requirement
+  kind: measured
+  via: null
+  systematic_bias: '§59 reference 43 flags TetGen alongside Gmsh: it is AGPL, which is copyleft that extends
+    to network use. That is a stronger constraint than the GPL for anything served over a network, and
+    it is a real consideration for obj-licence-lineage and for publish/ artifacts'
+  band_hz:
+  - null
+  - null
+absent:
+- biological_content
+- surface_repair
+use:
+- calibrate
+- surrogate
+forbidden:
+- tetgen/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: tetgen
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,92 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ptb-xl
+title: PTB-XL -- large clinical 12-lead ECG corpus
+provider: Physikalisch-Technische Bundesanstalt, distributed via PhysioNet
+citation: Wagner et al., PTB-XL, a large publicly available electrocardiography dataset. Scientific Data
+  2020.
+urls:
+- https://physionet.org/content/ptb-xl/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: PhysioNet assigns a licence per project and it varies by project; not read for this one. Do not
+    assume the archive's terms are the dataset's terms.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - device
+  notes: n left null; read from the release. Records outnumber patients.
+frames:
+- standard_12_lead_body_surface
+streams:
+- name: ecg_12_lead
+  kind: measured
+  via: null
+  observation_chain: cardiac myocyte depolarisation and repolarisation -> current dipole in the thorax
+    -> volume conduction through lung, blood and body tissue -> potential difference between standard
+    lead positions -> amplifier and filter -> sampled millivolts. Structurally the SAME forward problem
+    as EEG, in a geometry where the source is a single well-characterised organ, which is why it is a
+    useful validation case for a volume-conduction implementation
+  confounds:
+  - electrode placement error, which is large in clinical practice and unrecorded
+  - body habitus and lung volume changing the conductor geometry
+  - respiration moving the heart relative to the electrodes within a record
+  - baseline wander and muscle artefact
+  - the diagnostic label is a cardiologist's judgement from the same trace, not an independent measurement
+    of cardiac state
+  systematic_bias: The labels are read FROM THE ECG. Predicting them from the ECG is not predicting a
+    physiological state; it is reproducing a reader.
+  band_hz:
+  - null
+  - null
+  temporal_support: 10 s records at 500 Hz, with a 100 Hz downsampled copy distributed alongside as a
+    derived view
+  spatial_support: standard 12-lead body-surface montage -- a fixed, well-defined electrode geometry,
+    which is more than most EEG corpora carry
+- name: cardiac_interval_statistics
+  kind: measured
+  via: null
+  systematic_bias: A clinical population's heart-rate variability distribution is not a healthy population's,
+    and this corpus is clinical.
+  band_hz:
+  - null
+  - null
+- name: diagnostic_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: demographics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- respiration
+- blood_pressure
+- imaging
+- continuous_long_recordings
+- intervention
+use:
+- fit
+- prior
+forbidden:
+- ptb-xl/* -> any cortical state channel
+- ptb-xl/* -> a cardiologist's diagnostic statement treated as a measured cardiac state
+split:
+  group_by:
+  - participant
+  - device
+provenance:
+  imported_from: win-registry
+  card: ptb-xl
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

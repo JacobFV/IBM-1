@@ -1,0 +1,113 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds006623
+title: OpenNeuro ds006623 -- Michigan human anaesthesia fMRI (graded propofol, covert consciousness)
+provider: OpenNeuro; University of Michigan
+citation: Huang et al., An open fMRI resource for studying human brain function and covert consciousness
+  under anesthesia. Scientific Data, 2025. doi:10.1038/s41597-025-06442-2. Dataset doi:10.18112/openneuro.ds006623.v1.0.0.
+urls:
+- https://openneuro.org/datasets/ds006623
+access: priority
+licence:
+  name: CC0 (verbatim License field in dataset_description.json)
+  redistribution: permitted
+  commercial: permitted
+  notes: The paper's data-availability statement also states CC0.
+binding: unbound
+population:
+  n: 26
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 13 women. Data are defaced and de-identified.
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: graded_propofol_bold
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away. Under propofol the vascular stage itself changes: the drug is
+    a cerebral vasodilator and depresses metabolism, so BOLD amplitude falls for reasons that are not
+    a fall in neural activity. This dataset is therefore as much a neurovascular-coupling manipulation
+    as a consciousness one'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - propofol's direct vasodilatory and metabolic effects, which change the coupling itself
+  - respiratory depression changing arterial CO2, which is the single largest non-neural driver of global
+    BOLD
+  - the effect-site concentration is a pharmacokinetic MODEL output, not a measurement
+  - movement decreases with sedation, so motion confound is correlated with the condition of interest
+  systematic_bias: 'The MENTAL-IMAGERY TASK is the point: a participant who cannot respond behaviourally
+    may still produce a task-appropriate BOLD response, which dissociates responsiveness from the state
+    the model is supposed to represent. That dissociation is a control that could fail and is why the
+    dataset is worth more than a resting-state sedation study.'
+  band_hz:
+  - null
+  - null
+  temporal_support: two 10-minute resting runs and four task runs across graded propofol levels. The DRUG
+    clock -- a target-controlled infusion stepped by 0.4 ug/ml every 5 minutes to loss of behavioural
+    responsiveness -- runs at minutes while the BOLD clock runs at seconds, and the two are related by
+    the pump's pharmacokinetic model rather than by a hardware trigger
+  spatial_support: whole-brain EPI plus T1w structural
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_task_mental_imagery
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_task_motor_response
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- measured_drug_concentration
+- physiological_recordings
+- dwi
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- ds006623/* -> a neural-amplitude claim from a BOLD amplitude change under an anaesthetic
+- ds006623/* -> a target concentration treated as a measured one
+split:
+  group_by:
+  - participant
+  - session
+  - run
+provenance:
+  imported_from: win-registry
+  card: ds006623
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

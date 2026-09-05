@@ -1,0 +1,157 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: natural-scenes-dataset
+title: Natural Scenes Dataset (NSD) -- 7T fMRI over tens of thousands of natural images
+provider: University of Minnesota / NSD
+citation: Allen et al., A massive 7T fMRI dataset to bridge cognitive neuroscience and artificial intelligence.
+  Nature Neuroscience 2022.
+urls:
+- https://naturalscenesdataset.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: NSD data-use terms; the COCO source images carry their own licence. Unresolved.
+binding: unbound
+population:
+  n: 8
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 8 participants, up to 40 scan sessions each, 70k+ distinct COCO images. The deepest per-person
+    image-response sampling that exists.
+frames:
+- scanner
+- subject_native
+- fsaverage
+- display
+- MNI152
+streams:
+- name: bold_images
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - 7T susceptibility dropout in anterior temporal cortex is severe
+  systematic_bias: Repeat presentations within participant give a genuine noise ceiling -- one of the
+    few sources where 'a number without its floor' can actually be given its floor (§46).
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 1.6 s; discrete 3 s trials -- an event design, not a continuous world
+  spatial_support: 1.8 mm 7T BOLD; individual surfaces; per-participant pRF and category localisers
+- name: prf_mapping
+  kind: measured
+  via: null
+  systematic_bias: pRF estimates are model fits (gaussian pRF assumed) and inherit that model's bias
+  band_hz:
+  - null
+  - null
+- name: noise_ceiling
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: coco_images
+  kind: imposed
+  via: null
+  systematic_bias: COCO overlap with BOLD5000 is a cross-dataset stimulus leakage channel
+  band_hz:
+  - null
+  - null
+- name: category_localisers
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eye_tracking_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: physiology
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- ieeg
+- naturalistic_video
+- vascular
+- population
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - bold_images
+  - coco_images
+  severity: blocking
+  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
+    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
+    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- evaluate
+- fit
+forbidden:
+- natural-scenes-dataset/* -> population covariance priors
+- natural-scenes-dataset/* -> world transition dynamics
+split:
+  group_by:
+  - participant
+  - stimulus
+  notes: COCO images are shared with bold5000; group by stimulus across datasets
+provenance:
+  imported_from: win-registry
+  card: natural-scenes-dataset
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

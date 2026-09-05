@@ -1,0 +1,58 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fenics-dolfinx
+title: FEniCSx / DOLFINx -- general finite-element PDE solver
+provider: FEniCS Project
+citation: 'Baratta et al., DOLFINx: the next generation FEniCS problem solving environment. Zenodo 2023.'
+urls:
+- https://fenicsproject.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Code licence not read; the solver stack (PETSc, MPI, basix) has separate terms.
+binding: unbound
+population:
+  n: null
+frames:
+- mesh_native
+streams:
+- name: quasistatic_and_transient_pde_reference
+  kind: measured
+  via: null
+  systematic_bias: A general FEM solver is a SECOND independent derivation for the same quasi-static problem
+    SimNIBS, ROAST and duneuro solve with their own discretisations. Agreement between two independent
+    discretisations is a real check; agreement between a solver and itself is not. It solves the equations
+    it is given -- a wrong conductivity model converges beautifully.
+  notes: discretisation error, mesh quality and boundary-condition choice are all the user's, and none
+    of them announce themselves
+  band_hz:
+  - null
+  - null
+  temporal_support: time stepping is user-specified; quasi-static solves carry no clock at all
+  spatial_support: unstructured tetrahedral or hexahedral meshes with arbitrary polynomial order; the
+    same mesh objects obj-device-geometry and obj-tms-field already need
+absent:
+- measurements
+- tissue_conductivity_values
+- individual_anatomy
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'This solver''s input IS the geometry: sensor or electrode positions on one side, a head
+    model on the other. Used as an offline oracle it can produce nothing until the device product supplies
+    the first of those, and a solver run against assumed positions validates an internal implementation
+    against an assumption rather than against physics.'
+use:
+- surrogate
+forbidden:
+- fenics-dolfinx/* -> runtime dependency in a WIN query
+- fenics-dolfinx/* -> any subject likelihood term
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: fenics-dolfinx
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

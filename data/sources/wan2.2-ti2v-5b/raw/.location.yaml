@@ -1,0 +1,10 @@
+# where the bytes for `wan2.2-ti2v-5b` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/wan2.2-ti2v-5b
+acquired_at: '2026-09-04'
+files: 72
+bytes: 34203131261
+gib: 31.85
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://huggingface.co/Wan-AI/Wan2.2-TI2V-5B

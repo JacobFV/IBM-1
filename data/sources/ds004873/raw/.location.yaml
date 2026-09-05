@@ -1,0 +1,10 @@
+# where the bytes for `ds004873` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/ds004873
+acquired_at: '2026-09-04'
+files: 38693
+bytes: 77399927041
+gib: 72.08
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://openneuro.org/datasets/ds004873

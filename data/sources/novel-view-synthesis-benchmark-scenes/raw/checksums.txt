@@ -1,0 +1,1 @@
+# sha256 manifest for novel-view-synthesis-benchmark-scenes; written on acquisition

@@ -1,0 +1,5 @@
+# where the bytes for `ami-meeting-corpus` actually live.  never the bytes themselves.
+source_url: "https://groups.inf.ed.ac.uk/ami/corpus/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

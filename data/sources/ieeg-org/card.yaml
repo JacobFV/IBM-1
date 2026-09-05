@@ -1,0 +1,55 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ieeg-org
+title: IEEG.org -- International Epilepsy Electrophysiology Portal
+provider: University of Pennsylvania (Litt lab) with Mayo Clinic Rochester, CHOP and the University of
+  Michigan; NIH/NINDS U24NS063930
+citation: 'Citation unresolved as a fetched fact. The portal mandates the acknowledgement: access to the
+  image(s) and/or data was supported by Award number U24NS06930 from the U.S. National Institute of Neurological
+  Disorders and Stroke.'
+urls:
+- https://main.ieeg.org
+access: reference
+licence:
+  name: no SPDX and no open licence; a per-user research-project grant
+  redistribution: prohibited
+  commercial: prohibited
+  notes: 'Verbatim terms: the data may be used solely to conduct the research identified in the application
+    and/or solely for teaching or other educational purposes; no image or data may be published that the
+    user does not own without prior consent from the portal administrator. Accounts are per person and
+    the terms forbid sharing credentials even within a research group. Provided AS IS.'
+binding: unbound
+population:
+  n: null
+frames:
+- electrode_contact_labels
+streams:
+- name: annotated_long_term_ieeg
+  kind: measured
+  via: null
+  systematic_bias: Long continuous human intracranial recording with clinical annotation is the closest
+    thing to a direct observation of cortical state that exists, and it exists only in people whose cortex
+    is abnormal enough to warrant implantation.
+  band_hz:
+  - null
+  - null
+  temporal_support: long continuous recordings at clinical iEEG rates; the annotation clock and the signal
+    clock are the same file's
+  spatial_support: intracranial EEG with annotations, in MEF, human and animal, from an epilepsy-surgery
+    population
+absent:
+- healthy_controls
+- whole_brain_coverage
+- redistribution_rights
+use:
+- prior
+forbidden:
+- ieeg-org/* -> redistribution of any portal bytes
+- ieeg-org/* -> use outside the research project named in the account application
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: ieeg-org
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

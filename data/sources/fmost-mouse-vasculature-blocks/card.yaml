@@ -1,0 +1,97 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fmost-mouse-vasculature-blocks
+title: High-resolution fMOST mouse brain vasculature blocks for reconstruction
+provider: Huazhong University of Science and Technology (Quan and Shen groups); repository stated only
+  as 'online repositories'
+citation: Du, Li, Wang, Shen, Quan. A high-resolution dataset of mouse brain vasculature for deep learning-based
+  reconstruction. Frontiers in Neuroinformatics, 2026. doi:10.3389/fninf.2026.1809341.
+urls:
+- https://doi.org/10.3389/fninf.2026.1809341
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: UNRESOLVED. The paper states only that the data are in 'online repositories' without naming one
+    or stating terms. The article's own licence is the ARTICLE's and must not be read across to the data.
+    Status is 'watch' because the distribution point itself is unresolved -- there is nothing yet to fetch.
+binding: unbound
+population:
+  n: 4
+  hierarchy:
+  - participant
+  notes: '60 blocks of 512x512x512 voxels drawn from 4 mouse brains. FOUR ANIMALS: the between-animal
+    variance component is effectively unestimable, and 60 blocks are 60 samples of 4 brains, not 60 independent
+    samples.'
+frames:
+- block_index
+- specimen_native
+streams:
+- name: annotated_capillary_scale_volumes
+  kind: measured
+  via: null
+  observation_chain: vascular labelling in fixed tissue -> fMOST block-face imaging with sectioning between
+    planes -> fluorescence volume at 1x1x2 um -> hand or semi-automatic voxel annotation. The annotation
+    is a HUMAN JUDGEMENT about which voxels are vessel, not a measurement of a lumen
+  confounds:
+  - tissue shrinkage during fixation and processing, unmeasured per specimen, scaling every calibre
+  - anisotropic voxels bias measured radius by vessel orientation
+  - fluorescence attenuation and labelling incompleteness drop the smallest capillaries, and the smallest
+    are the most numerous
+  - annotator disagreement at the capillary scale, where a vessel is one to two voxels wide
+  - 'block selection: 60 blocks were chosen from the brains and the selection criterion determines the
+    density statistics'
+  systematic_bias: CROSS-SPECIES and EX-VIVO. Its value is as annotated training and validation material
+    at the capillary scale, which VesSAP's whole-brain volumes give at lower resolution. A reconstruction
+    method validated here is validated against an annotator, not against perfused vasculature.
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- fixed tissue
+  spatial_support: fMOST (fluorescence micro-optical sectioning tomography) blocks at 1 x 1 x 2 micrometre
+    voxels -- ANISOTROPIC, and the anisotropy is along the sectioning axis, so a vessel's apparent calibre
+    depends on its orientation relative to that axis. Over 3.8 TB uncompressed
+- name: fmost_vasculature_volumes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: voxel_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- human_data
+- flow
+- pressure
+- oxygenation
+- in_vivo_dynamics
+- whole_brain_coverage
+- named_repository
+requires:
+- geometry: vascular-products
+  severity: blocking
+  without_it: These are images of vasculature, not vasculature. Segmentation, centreline extraction and
+    graph construction are the manufacturing step, and until the vascular product performs it with its
+    assumptions and uncertainty recorded, there is no vessel geometry here that anything can be addressed
+    to.
+use:
+- fit
+- prior
+forbidden:
+- fmost-mouse-vasculature-blocks/* -> a human vascular measurement
+- fmost-mouse-vasculature-blocks/* -> an artifact, until the repository and terms are resolved
+- fmost-mouse-vasculature-blocks/* -> an annotated radius treated as a perfused lumen diameter
+split:
+  group_by:
+  - participant
+  notes: Blocks from one brain must not straddle folds -- with 4 brains, a block-level split is within-animal
+    and reports a number that will not survive a fifth animal.
+provenance:
+  imported_from: win-registry
+  card: fmost-mouse-vasculature-blocks
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

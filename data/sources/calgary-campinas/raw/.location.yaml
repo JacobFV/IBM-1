@@ -1,0 +1,5 @@
+# where the bytes for `calgary-campinas` actually live.  never the bytes themselves.
+source_url: "https://sites.google.com/view/calgary-campinas-dataset/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

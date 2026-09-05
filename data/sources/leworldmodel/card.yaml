@@ -1,0 +1,85 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: leworldmodel
+title: LeWorldModel (LeWM) -- stable end-to-end joint-embedding predictive architecture from pixels
+provider: Lucas Maes, Quentin Le Lidec, Damien Scieur, Yann LeCun, Randall Balestriero
+citation: 'Maes, Le Lidec, Scieur, LeCun and Balestriero, LeWorldModel: Stable End-to-End Joint-Embedding
+  Predictive Architecture from Pixels. arXiv:2603.19312, 2026. Builds on LeJEPA (Balestriero and LeCun,
+  arXiv:2511.08544, 2025) for the SIGReg latent-distribution regulariser.'
+urls:
+- https://arxiv.org/abs/2603.19312
+- https://arxiv.org/abs/2511.08544
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved. Less pressing than for other cards in this
+    cluster: what is taken from this system is a DESIGN, not a checkpoint, and a design is not distributed.'
+binding: unbound
+population:
+  n: null
+frames:
+- pixel_grid
+- not_applicable_to_anatomy
+streams:
+- name: surprise_signal
+  kind: measured
+  via: null
+  systematic_bias: 'A world model that reports when the next observation is inconsistent with its own
+    prediction is emitting a DISCREPANCY signal, which is what this substrate books rather than hides.
+    Recorded as a design precedent for a discrepancy channel on a learned transition. Its calibration
+    is unestablished: the paper reports detection of physically implausible events without a false-positive
+    rate on plausible-but-unusual ones, and prediction error inside a latent regularised toward isotropy
+    is not obviously calibrated.'
+  band_hz:
+  - null
+  - null
+  temporal_support: environment simulation step; no physical clock
+  spatial_support: image pixel grid of a 2D or 3D control environment -- NOT a brain support and never
+    mapped to one
+- name: stated_distributional_constraint
+  kind: measured
+  via: null
+  systematic_bias: 'SIGReg replaces the usual collapse-avoidance apparatus -- EMA target encoders, multi-term
+    losses, frozen pretrained encoders, auxiliary supervision -- with one explicit regulariser on the
+    latent distribution, taking tunable loss hyperparameters from six to one. The transferable half is
+    that a NAMED assumption beats an unnamed heuristic. The hazard is the assumption itself: an isotropic
+    Gaussian latent is adopted for trainability and is not a claim about the state''s geometry, and every
+    downstream reading of the latent (physical-quantity probes, surprise thresholds, density-based uncertainty)
+    inherits that imposed shape silently. Here it would have to be a DECLARED prior with provenance.'
+  band_hz:
+  - null
+  - null
+- name: small_end_to_end_from_pixels
+  kind: measured
+  via: null
+  systematic_bias: '~15M parameters competitive across 2D and 3D control, planning up to 48x faster than
+    foundation-model-based world models. That is a claim about COST, quoted here as a cost and not as
+    evidence of correctness. Its relevance is negative and useful: if a model this size is competitive,
+    the scale elsewhere in NeuroWorld''s cluster is buying something other than the world model.'
+  band_hz:
+  - null
+  - null
+absent:
+- brain_data
+- anatomy
+- native_clocks
+- heterogeneous_modalities
+- uncertainty
+use:
+- prior
+forbidden:
+- leworldmodel/* -> anything neural; there is no neural evidence here
+- leworldmodel/* -> observation-role likelihoods
+- leworldmodel/* -> B-WIN's state ontology or support definitions
+- leworldmodel/* -> any latent-distribution assumption adopted implicitly rather than declared as a prior
+  with provenance
+split:
+  group_by:
+  - pipeline
+provenance:
+  imported_from: win-registry
+  card: leworldmodel
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

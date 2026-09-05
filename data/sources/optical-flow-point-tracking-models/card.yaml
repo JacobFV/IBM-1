@@ -1,0 +1,89 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: optical-flow-point-tracking-models
+title: Optical flow and point-tracking model family
+provider: multiple -- RAFT, TAP-Vid/TAPIR, CoTracker and successors
+citation: PROMPT.md §53.3, 'optical flow and point-tracking models'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- image_plane
+- world
+streams:
+- name: motion_fields
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. Authority slightly higher than the abstract
+    encoders because the OUTPUT IS A PHYSICAL QUANTITY: retinal image motion is a real thing that real
+    motion-sensitive cortex responds to, and it is measurable rather than merely embedded. Crucially,
+    retinal flow during natural behaviour is dominated by the observer''s own EYE AND HEAD MOVEMENT, not
+    by object motion -- so a flow field computed on a screen-fixed video is not the flow field on the
+    retina, and obj-retinalization is what separates them.'
+  notes: model flow is an estimate with failure modes at occlusions, at low texture and at large displacements
+  band_hz:
+  - null
+  - null
+  temporal_support: between consecutive frames for flow; over long horizons for tracking, with explicit
+    occlusion handling
+  spatial_support: a DENSE VECTOR FIELD over the image (flow) or a set of persistent point TRAJECTORIES
+    (tracking). These are physically interpretable quantities in image coordinates, not abstract embeddings
+- name: point_tracks_and_occlusion
+  kind: measured
+  via: null
+  systematic_bias: persistent tracks through occlusion are a form of OBJECT PERMANENCE, which is a world-model
+    property rather than an image property and is closer to what §22's prediction prior needs than flow
+    is
+  band_hz:
+  - null
+  - null
+absent:
+- retinal_frame_computation
+- uncertainty
+- depth
+requires:
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: This model's value is that it retains a SPATIAL layout, which is what makes a retinotopic
+    pushforward possible at all. Without the retinal and world geometry there is no map from its patch
+    grid to retinal coordinate, and the features can only be pooled -- which destroys the property they
+    were selected for.
+use:
+- distil
+forbidden:
+- optical-flow-point-tracking-models/* -> observation-role likelihoods
+- optical-flow-point-tracking-models/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: optical-flow-point-tracking-models
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - motion_fields
+    - point_tracks_and_occlusion
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

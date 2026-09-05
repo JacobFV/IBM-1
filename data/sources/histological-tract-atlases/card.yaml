@@ -1,0 +1,62 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: histological-tract-atlases
+title: Histological and dissection-based tract atlases
+provider: multiple -- Klingler dissection studies, polarised light imaging, historical fibre atlases
+citation: PROMPT.md §52.8, 'histological tract atlases'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- specimen_native
+- MNI152
+streams:
+- name: dissection_derived_tract_geometry
+  kind: measured
+  via: null
+  systematic_bias: 'Direct observation of fibre pathways, in few specimens, post-mortem, with method-specific
+    artifacts: blunt dissection follows the plane of least resistance and can create tracts that are not
+    there, while polarised light imaging is limited to sectioned tissue. Their value is as an INDEPENDENT
+    CHECK on tractography -- a source of truth that is not more tractography.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: fibre pathway geometry from post-mortem blunt dissection, myelin staining or polarised
+    light imaging -- methods that see fibres directly rather than inferring them from water diffusion
+- name: fibre_orientation_ground_truth
+  kind: measured
+  via: null
+  systematic_bias: polarised light imaging gives measured fibre orientation at micron scale, which is
+    the quantity diffusion MRI estimates indirectly -- the comparison is the validation diffusion tractography
+    otherwise lacks
+  band_hz:
+  - null
+  - null
+absent:
+- population
+- in_vivo_correspondence
+- whole_brain_coverage
+- quantitative_weights
+use:
+- prior
+- surrogate
+forbidden:
+- histological-tract-atlases/* -> in-vivo geometry without a stated correspondence assumption
+- histological-tract-atlases/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: histological-tract-atlases
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,62 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bids-derivatives
+title: BIDS Derivatives -- conventions for generated products
+provider: BIDS community
+citation: BIDS Derivatives specification. PROMPT.md §55, 'BIDS derivatives for EVERY generated geometry
+  or preprocessing product'.
+urls:
+- https://bids-specification.readthedocs.io/en/stable/derivatives/introduction.html
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- file_system
+- physical_space
+streams:
+- name: generated_by_provenance
+  kind: measured
+  via: null
+  systematic_bias: §55 says BIDS DERIVATIVES FOR EVERY GENERATED GEOMETRY OR PREPROCESSING PRODUCT, and
+    §4a says derived geometry keeps its parents, generator version, parameters, templates, registration
+    paths, seed, uncertainty, validation fixtures and failure modes FOREVER. The derivatives convention
+    covers the first four of those nine. The remaining five are why registry/schema/derived-geometry.schema.json
+    exists as a separate schema rather than as a BIDS sidecar.
+  notes: the convention records WHAT ran, not whether the output is right, and it has no field for uncertainty
+  band_hz:
+  - null
+  - null
+  temporal_support: inherits the source's time base; derivations do not have a clock of their own
+  spatial_support: 'the same layout as BIDS with a REQUIRED provenance block: which pipeline, which version,
+    which inputs, which parameters produced each file'
+- name: source_linkage
+  kind: measured
+  via: null
+  systematic_bias: explicit input file lists are what make licence lineage computable per artifact rather
+    than as a union over a pile -- registry/README rule 4
+  band_hz:
+  - null
+  - null
+absent:
+- uncertainty
+- validation_fixtures
+- failure_modes
+- derivation_class
+use:
+- calibrate
+forbidden:
+- bids-derivatives/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: bids-derivatives
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

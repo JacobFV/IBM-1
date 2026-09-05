@@ -1,0 +1,116 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mni-open-ieeg-atlas
+title: MNI Open iEEG Atlas -- normative intracranial EEG
+provider: Montreal Neurological Institute, McGill University (Frauscher lab)
+citation: 'Frauscher et al., Atlas of the normal intracranial electroencephalogram: neurophysiological
+  awake activity in different cortical areas. Brain 141(4):1130-1144, 2018. doi:10.1093/brain/awy035.'
+urls:
+- https://mni-open-ieegatlas.research.mcgill.ca
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'UNRESOLVED AND NOT VERIFIABLE: the atlas site returned HTTP 401 on repeated attempts, so no
+    terms page could be read. Secondary literature describes access by request to the corresponding author
+    subject to a data use agreement and local ethics approval; that is not verified from a primary page
+    and is recorded as hearsay. A separately licensed DERIVATIVE exists -- normative iEEG sleep and wake
+    atlases, Pattnaik and Litt 2024, Pennsieve Discover doi:10.26275/xhte-d11l, CC-BY-NC-SA-4.0, 3,164
+    files and 4.36 GB -- and that derivative''s share-alike and non-commercial terms are established where
+    the parent''s are not.'
+binding: unbound
+population:
+  n: 106
+  hierarchy:
+  - participant
+  - site
+  notes: '54 male. 1,785 channels judged NORMAL (1,066 left, 719 right): 1,520 stereo-EEG contacts (85%)
+    and 265 grid or strip contacts (15%), across 38 cortical regions. The unit of evidence is the CHANNEL,
+    not the participant, and the two counts must not be interchanged.'
+frames:
+- subject_native
+- MNI152
+- region_label
+streams:
+- name: normative_regional_ieeg_spectra
+  kind: measured
+  via: null
+  systematic_bias: 'Regional variation in the normal intracranial spectrum is the reference an inverse
+    solution''s output should be checked against, and it is the closest available thing to a ground-truth
+    prior on local field statistics. Every contact comes from a person with refractory epilepsy: ''normal''
+    here means ''judged normal by a clinical reader in an abnormal brain'', which is a different thing
+    from a healthy brain and cannot be corrected for.'
+  notes: the normality judgement is an expert's, applied channel by channel, and its inter-rater agreement
+    is not published with the atlas
+  band_hz:
+  - null
+  - null
+  temporal_support: 60-second artefact-free wakeful eyes-closed sections at original sampling rates of
+    200-2000 Hz. THE RATE VARIES TENFOLD ACROSS CONTRIBUTING SITES, which sets a hard ceiling on the high-frequency
+    content that is comparable across the atlas
+  spatial_support: contacts localised to 38 cortical regions in a common space, retaining the stereo-EEG
+    versus grid distinction. A NORMATIVE ATLAS OF WHAT NORMAL LOOKS LIKE FROM INSIDE THE SKULL -- the
+    reference distribution that no scalp recording can supply
+- name: inverse_solution_reference
+  kind: measured
+  via: null
+  systematic_bias: AN INVERSE SOLUTION IS NOT GROUND TRUTH. This atlas is the nearest available check
+    on a source estimate that is not itself an inverse solution -- but it is a normative distribution
+    over regions, not a per-participant target, and using it as a training label would be the category
+    error the architecture exists to prevent.
+  band_hz:
+  - null
+  - null
+- name: ieeg_wakeful_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: contact_localisation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: regional_spectral_norms
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- healthy_participants
+- whole_brain_coverage
+- sleep_in_the_parent_atlas
+- task_conditions
+- verified_terms
+requires:
+- geometry: device-geometry
+  for_streams:
+  - normative_regional_ieeg_spectra
+  severity: blocking
+  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
+    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
+    channel is an index and nothing measured here can be attached to a cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- prior
+forbidden:
+- mni-open-ieeg-atlas/* -> a per-participant state target (it is a normative distribution)
+- mni-open-ieeg-atlas/* -> an artifact, until terms are read from a reachable provider page
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: mni-open-ieeg-atlas
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

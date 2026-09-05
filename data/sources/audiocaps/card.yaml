@@ -1,0 +1,55 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: audiocaps
+title: AudioCaps -- natural-language captions for audio events
+provider: Seoul National University
+citation: 'Kim et al., AudioCaps: Generating Captions for Audio in The Wild. NAACL 2019.'
+urls:
+- https://audiocaps.github.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Captions distributed under the project's terms; audio inherited from AudioSet and not distributed.
+    Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - session
+  notes: ~46,000 human-written captions for AudioSet clips. The captions are the product; the audio is
+    inherited from AudioSet along with its distribution problem.
+frames:
+- uncontrolled_recording
+streams:
+- name: captions
+  kind: imposed
+  via: null
+  systematic_bias: a caption is a listener's VERBAL DESCRIPTION of what they heard -- a report about a
+    percept, two steps from the acoustics and not a property of the signal
+  band_hz:
+  - null
+  - null
+  temporal_support: 10-second clips with one or more free-text captions
+  spatial_support: inherited from AudioSet; identifiers only
+- name: audioset_clip_ids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- the_audio_itself
+- the_listeners_themselves
+use:
+- fit
+forbidden:
+- audiocaps/* -> any cortical state directly
+split:
+  group_by:
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: audiocaps
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

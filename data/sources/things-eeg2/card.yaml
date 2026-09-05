@@ -1,0 +1,118 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: things-eeg2
+title: THINGS-EEG2 -- large image/EEG pairing over the THINGS concept space
+provider: THINGS initiative
+citation: Gifford et al., A large and rich EEG dataset for modeling human visual object recognition. NeuroImage
+  2022.
+urls:
+- https://osf.io/3jk45/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'EXPLICITLY UNRESOLVED. §51.1 item 4: the predecessor correctly left this unresolved rather than
+    inferring permission from the open-access paper, and that judgement is preserved here. Resolving this
+    licence is a precondition for ingestion, not a formality.'
+binding: unbound
+population:
+  n: 10
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 10 participants, 16,740 training images and 200 test images with many repetitions -- the repetitions
+    are what make a noise ceiling available.
+frames:
+- eeg_cap
+- display
+streams:
+- name: eeg_64ch
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - RSVP overlap between consecutive images
+  systematic_bias: '§51.1 item 4: this is the STATIC-IMAGE CONTROL for the naturalistic claim. If a naturalistic
+    world-model interaction explains nothing here that a static encoder does not, the naturalistic claim
+    is weaker than it looks.'
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at 1000 Hz; 100 ms image presentation at 10 Hz RSVP
+  spatial_support: 64-channel scalp EEG
+- name: test_set_repetitions
+  kind: measured
+  via: null
+  systematic_bias: the noise ceiling from repetitions is the floor every number here must be quoted against
+  band_hz:
+  - null
+  - null
+- name: stimulus_images
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- fmri
+- meg
+- eye_tracking
+- individual_anatomy
+- vascular
+- video
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg_64ch
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - stimulus_images
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- evaluate
+- fit
+forbidden:
+- things-eeg2/* -> vascular or metabolic state
+- things-eeg2/* -> subject-specific head geometry
+- things-eeg2/* -> anything at all until the licence is resolved
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: things-eeg2
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

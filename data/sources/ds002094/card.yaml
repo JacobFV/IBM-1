@@ -1,0 +1,102 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds002094
+title: OpenNeuro ds002094 -- single-pulse open-loop TMS-EEG
+provider: OpenNeuro
+citation: unresolved -- dataset_description.json carries only Name, BIDSVersion and License. There are
+  NO Authors, no DatasetDOI and no ReferencesAndLinks fields, and no README. External listings attribute
+  it to Hussain (2019); nothing in the dataset asserts that and it is not recorded here as fact.
+urls:
+- https://openneuro.org/datasets/ds002094
+access: priority
+licence:
+  name: CC0 (verbatim string; the file does not say CC0-1.0 and the SPDX id is not asserted here)
+  redistribution: permitted
+  commercial: permitted
+  notes: dataset_description.json says exactly "CC0".
+binding: unbound
+population:
+  n: 20
+  hierarchy:
+  - participant
+  - run
+  notes: 20 rows in participants.tsv with a SINGLE column, participant_id. No age, no sex, no handedness,
+    no resting motor threshold -- for a TMS dataset the missing RMT is the one that matters, because without
+    it the intensity is uninterpretable.
+frames:
+- channel_label
+streams:
+- name: tms_evoked_eeg
+  kind: measured
+  via: null
+  observation_chain: coil current -> induced electric field computed rather than measured -> cortical
+    activation -> post-synaptic currents in aligned pyramidal populations -> volume conduction to scalp
+    -> electrode potential -> amplifier that has just been driven into saturation by the pulse -> a recovery
+    transient overlapping the response of interest
+  confounds:
+  - amplifier saturation and recovery artefact, which occupies the first tens of milliseconds -- exactly
+    the window the early TEP components live in
+  - the auditory evoked potential from the coil click, which is large, reproducible and looks like a TEP
+  - the somatosensory evoked potential from scalp afferents
+  - muscle artefact from direct stimulation of scalp musculature, largest at lateral targets
+  - electrode movement and the electrode-skin polarisation transient
+  - the sham arm, where present, controls some of these and not others, and which ones is rarely stated
+  systematic_bias: Open-loop means the pulse is delivered without regard to the ongoing brain state, so
+    the pre-pulse state is a random variable that is recorded and can be conditioned on -- which is the
+    useful half. The authority is low because nothing in the release states the intensity relative to
+    threshold.
+  notes: no sham arm, so the auditory and somatosensory evoked components cannot be separated from the
+    transcranial response within this dataset
+  band_hz:
+  - null
+  - null
+  temporal_support: BrainVision native rate as recorded; task-rest and task-tmseeg1 runs
+  spatial_support: 30 channels, all typed eeg in channels.tsv
+- name: eeg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: tms
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- emg
+- mep
+- structural_mri
+- coil_pose
+- e_field
+- demographics
+- resting_motor_threshold
+- sham_arm
+- readme
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'Two device geometries are needed at once and neither can be defaulted: the electrode positions
+    that define the lead field, and the coil winding and pose that determine the induced field. Without
+    both, the pulse is a machine setting and the response is a channel-space waveform, with nothing connecting
+    them at any cortical location.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- ds002094/* -> lead field construction (no digitisation, no MRI)
+- ds002094/* -> a dose-response claim (intensity relative to threshold is unrecorded)
+split:
+  group_by:
+  - participant
+  - run
+provenance:
+  imported_from: win-registry
+  card: ds002094
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

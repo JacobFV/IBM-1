@@ -1,0 +1,50 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: opencor
+title: OpenCOR -- CellML modelling environment
+provider: Auckland Bioengineering Institute
+citation: 'Garny and Hunter, OpenCOR: a modular and interoperable approach to computational biology. Frontiers
+  in Physiology 2015.'
+urls:
+- https://opencor.ws/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- model_state_space
+streams:
+- name: cellml_simulation_environment
+  kind: measured
+  via: null
+  systematic_bias: 'The runnable half of the CellML story: cellml-physiome-circulation and cellml-physiome-body-models
+    describe models, and this is what executes them. Its practical value is making several competing circulation
+    or oxygen-transport models comparable on identical inputs -- which is what §52.11''s ''competing implementations,
+    not one truth'' requires operationally.'
+  notes: a solver's tolerances and stiff-integrator choices change trajectories in stiff physiological
+    models
+  band_hz:
+  - null
+  - null
+  temporal_support: per-model, as declared
+  spatial_support: loads, edits and simulates CellML models with their declared units checked
+absent:
+- biological_content
+- validation_data
+use:
+- surrogate
+forbidden:
+- opencor/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: opencor
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,5 @@
+# where the bytes for `project-aria` actually live.  never the bytes themselves.
+source_url: "https://www.projectaria.com/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

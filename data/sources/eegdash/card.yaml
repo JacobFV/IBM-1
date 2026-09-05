@@ -1,0 +1,59 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: eegdash
+title: EEGDash -- metadata-first programmatic access to 700+ BIDS electrophysiology datasets
+provider: EEGDash / UCSD SCCN and collaborators
+citation: 'EEGDash: an open-source platform for machine learning on public neurophysiological data. arXiv:2606.16041.'
+urls:
+- https://eegdash.org/
+- https://arxiv.org/abs/2606.16041
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: The CLIENT's licence is not the DATA's licence. Each dataset reached through EEGDash carries
+    its own terms, and this is the distinction the connector makes easiest to lose.
+binding: unbound
+population:
+  n: null
+frames:
+- none
+streams:
+- name: dataset_metadata_index
+  kind: measured
+  via: null
+  systematic_bias: '§51.5 item 32 and registry/README are explicit: this is a DISCOVERY CONNECTOR emitting
+    card PROPOSALS, not an unrestricted automatic pool. A proposal becomes a source when its licence,
+    role, interaction targets and file-level inventory are resolved, and the promotion is recorded with
+    what resolved it. Discovery may be automatic; admission may not.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: 'no data of its own: an index over other people''s datasets'
+- name: montage_and_task_facets
+  kind: measured
+  via: null
+  systematic_bias: §52.5's instruction is to discover BY montage, sensor geometry, availability of anatomy
+    and event semantics -- not by raw sample count. The facets are the useful part precisely because they
+    are the ones a forward model needs
+  band_hz:
+  - null
+  - null
+absent:
+- the_data_itself
+- licence_resolution
+- file_level_inventory
+use:
+- prior
+forbidden:
+- eegdash/* -> any evidence role for the datasets it indexes
+- eegdash/* -> automatic admission of a source without a resolved card
+split:
+  group_by:
+  - site
+provenance:
+  imported_from: win-registry
+  card: eegdash
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

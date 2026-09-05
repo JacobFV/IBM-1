@@ -1,0 +1,131 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: willett-speech-neuroprosthesis
+title: A high-performance speech neuroprosthesis -- intracortical speech-attempt data (T12)
+provider: Stanford University (BrainGate2), deposited on Dryad
+citation: Willett, Kunz, Fan, ... Henderson. A high-performance speech neuroprosthesis. Nature 620:1031-1036,
+  2023. Data doi:10.5061/dryad.x69p8czpq.
+urls:
+- https://datadryad.org/dataset/doi:10.5061/dryad.x69p8czpq
+access: priority
+licence:
+  name: CC0-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: CC0-1.0 in the Dryad record's licence field. The browser zip download path is capped at 11 GB
+    while the dataset is about 130 GB, so acquisition needs the API route.
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - participant
+  - session
+  notes: n=1. 12,100 spoken sentences plus instructed-delay tasks; about 130 GB.
+frames:
+- array_electrode_index
+- subject_native
+streams:
+- name: intracortical_activity_during_attempted_speech
+  kind: measured
+  via: null
+  observation_chain: spiking of unit populations near each electrode tip in speech motor cortex -> threshold
+    crossings and spike-band power per bin, during ATTEMPTED speech that the participant's dysarthria
+    prevents from being produced intelligibly
+  confounds:
+  - array drift across sessions changes the recorded population
+  - the intended phoneme sequence is the CUE, not a measurement of what was attempted
+  - ALS is progressive, so the cortex and the periphery both change across the months of recording
+  - residual orofacial movement and its afferent feedback are present and unmeasured
+  - threshold crossings mix units
+  systematic_bias: Single-unit-resolution recording from human speech cortex during speech attempts is
+    unique material for the phonetic and articulatory forcing interactions that obj-materialization-audio-language
+    wants kept separate. One participant, one disease, one implantation.
+  band_hz:
+  - null
+  - null
+  temporal_support: binned neural activity against cued sentence and phoneme timing. The participant ATTEMPTS
+    speech with severe dysarthria, so the acoustic output is not a usable reference and the timebase is
+    the cue
+  spatial_support: four 64-electrode intracortical arrays in ventral premotor cortex, area 44 and area
+    55b -- SPEECH cortex sampled at single-unit resolution, which exists essentially nowhere else
+- name: attempted_phoneme_sequence_as_boundary
+  kind: imposed
+  via: null
+  systematic_bias: the phoneme sequence is prompted, and whether the participant attempted exactly it
+    is assumed rather than observed
+  band_hz:
+  - null
+  - null
+- name: intracortical_threshold_crossings
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: spike_band_power
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: sentence_cues
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: diagnostic_blocks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: tuning_tasks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: language_model_files
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: rnn_decoder_components
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- intelligible_audio
+- articulatory_kinematics
+- imaging
+- other_participants
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'A penetrating array samples along its own geometry: site pitch, shank trajectory and insertion
+    depth decide which tissue each channel sees. Without that geometry the channel index carries no spatial
+    claim and the recording cannot be placed against any support.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- willett-speech-neuroprosthesis/* -> any population-level claim
+- willett-speech-neuroprosthesis/* -> an acoustic or articulatory measurement claim
+- willett-speech-neuroprosthesis/* -> a version other than the latest (earlier ones have known bugs)
+split:
+  group_by:
+  - session
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: willett-speech-neuroprosthesis
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

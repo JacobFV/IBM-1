@@ -1,0 +1,132 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hcp-meg
+title: HCP MEG -- resting-state and task magnetoencephalography in the HCP cohort
+provider: WU-Minn HCP Consortium
+citation: Larson-Prior et al., Adding dynamics to the Human Connectome Project with MEG. NeuroImage 2013.
+urls:
+- https://www.humanconnectome.org/study/hcp-young-adult
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: HCP Open Access Data Use Terms.
+binding: unbound
+population:
+  n: 95
+  hierarchy:
+  - participant
+  - family
+  - session
+  - run
+  notes: The MEG subset of HCP-YA. Same people as the HCP MRI data, so anatomy, diffusion and BOLD are
+    available for the SAME participants -- the cross-modal pairing that makes it valuable.
+frames:
+- meg_device_4d
+- head_fiducial
+- subject_native
+- MSMAll_32k_fs_LR
+streams:
+- name: meg_rest
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
+    plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
+    SQUID flux -> sampled channel
+  confounds:
+  - environmental magnetic interference and urban noise
+  - head motion within and between runs
+  - ocular and cardiac fields
+  - muscle artifact at high frequency
+  - SQUID jumps and sensor drift
+  - magnetometers without gradiometer reference are more sensitive to environmental interference than
+    the Neuromag configuration
+  systematic_bias: 'MAGNETOMETER-only array: a different sensitivity profile from CTF and Neuromag systems,
+    and a third independent test of the same forward physics.'
+  notes: the same participants' diffusion and BOLD data are available, so structural, functional and electrophysiological
+    claims can be compared WITHIN person -- which §38 requires before any of the three is substituted
+    for another
+  band_hz:
+  - null
+  - null
+  temporal_support: MEG at 2034.5 Hz; resting state plus motor, working-memory and story-math tasks
+  spatial_support: 248-channel 4D Neuroimaging magnetometer system (not gradiometers); individual anatomy
+    and surfaces from the parent HCP acquisition
+- name: meg_task
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
+    plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
+    SQUID flux -> sampled channel
+  confounds:
+  - environmental magnetic interference and urban noise
+  - head motion within and between runs
+  - ocular and cardiac fields
+  - muscle artifact at high frequency
+  - SQUID jumps and sensor drift
+  band_hz:
+  - null
+  - null
+- name: cross_modal_within_person
+  kind: measured
+  via: null
+  systematic_bias: structural, functional and electrophysiological measurements in the same people is
+    the design §38's distinction actually needs
+  band_hz:
+  - null
+  - null
+- name: individual_anatomy
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: derived_source_estimates
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: connectivity_products
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- ieeg
+- eye_tracking
+- naturalistic_stimulus
+- vascular
+requires:
+- geometry: device-geometry
+  for_streams:
+  - meg_rest
+  - meg_task
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+- prior
+forbidden:
+- hcp-meg/* -> vascular geometry
+- hcp-meg/meg_rest -> effective connectivity parameters
+split:
+  group_by:
+  - family
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: hcp-meg
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

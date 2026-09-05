@@ -1,0 +1,5 @@
+# where the bytes for `aneurisk` actually live.  never the bytes themselves.
+source_url: "http://ecm2.mathcs.emory.edu/aneuriskweb/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

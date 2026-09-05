@@ -1,0 +1,5 @@
+# where the bytes for `tfus-esi-resting-eeg` actually live.  never the bytes themselves.
+source_url: "https://www.nature.com/articles/s41467-026-69853-8"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

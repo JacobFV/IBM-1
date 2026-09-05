@@ -1,0 +1,53 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: popeye
+title: popeye -- population receptive field estimation toolbox
+provider: Kevin DeSimone and contributors
+citation: 'DeSimone et al., popeye: a toolbox for population receptive field estimation. Frontiers in
+  Neuroinformatics 2015.'
+urls:
+- https://github.com/kdesimone/popeye
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending repository inspection.
+binding: unbound
+population:
+  n: null
+frames:
+- visual_field_polar
+streams:
+- name: prf_fitting_reference
+  kind: measured
+  via: null
+  systematic_bias: 'A SECOND independent pRF implementation. Its value over prfpy is precisely that it
+    is a different implementation: the disagreement between the two on identical input is a measurable
+    model-class and numerical uncertainty component (§39).'
+  band_hz:
+  - null
+  - null
+  temporal_support: TR-sampled
+  spatial_support: voxel or vertex timeseries with a stimulus aperture
+absent:
+- subject_data
+requires:
+- geometry: retinal-world-geometry
+  severity: degrading
+  without_it: 'A receptive field expressed in degrees of visual angle presupposes a display geometry:
+    the stimulus aperture is in screen units and the conversion is the geometry. Without it the fitted
+    parameters are in pixels wearing the units of visual angle.'
+  substitute: The viewing distance and screen size reported in the parent study's methods, carried as
+    an exact number when it is a nominal one.
+use:
+- surrogate
+forbidden:
+- popeye/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: popeye
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

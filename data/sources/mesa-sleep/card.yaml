@@ -1,0 +1,121 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mesa-sleep
+title: MESA Sleep -- Multi-Ethnic Study of Atherosclerosis sleep exam
+provider: National Sleep Research Resource / MESA
+citation: 'Chen et al., Racial/ethnic differences in sleep disturbances: the Multi-Ethnic Study of Atherosclerosis.
+  Sleep 2015.'
+urls:
+- https://sleepdata.org/datasets/mesa
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: National Sleep Research Resource data access and use agreement.
+binding: unbound
+population:
+  n: 2237
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: 2,237 participants with polysomnography, ACTIGRAPHY and detailed vascular imaging from the parent
+    MESA cohort -- sleep physiology alongside measured atherosclerosis, which is a vascular-structure
+    link the other sleep cohorts lack.
+frames:
+- eeg_cap
+- torso
+- wrist
+- carotid_artery
+streams:
+- name: polysomnography
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  band_hz:
+  - null
+  - null
+  temporal_support: PSG over one night; actigraphy over a week at 30 s epochs; the parent cohort's measures
+    across exams over years
+  spatial_support: home polysomnography plus a week of wrist actigraphy plus, from the parent study, carotid
+    ultrasound and coronary calcium
+- name: actigraphy_week
+  kind: imposed
+  via: null
+  systematic_bias: a week of rest-activity gives the CIRCADIAN axis, which a single night cannot; wrist
+    actigraphy infers sleep from immobility and systematically overestimates it
+  band_hz:
+  - null
+  - null
+- name: vascular_structure_linkage
+  kind: measured
+  via: null
+  systematic_bias: carotid intima-media thickness and coronary calcium are SYSTEMIC vascular measures,
+    not cerebral ones; the link to cerebral vasculature is an inference
+  band_hz:
+  - null
+  - null
+- name: multi_ethnic_sampling
+  kind: measured
+  via: null
+  systematic_bias: deliberate multi-ethnic sampling makes population-generalisation testable rather than
+    assumed -- rare in this registry and worth using
+  band_hz:
+  - null
+  - null
+- name: actigraphy
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: sleep_staging
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: respiratory_events
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: parent_cohort_vascular_measures
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ethnicity_stratified_covariates
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- cerebral_imaging
+- individual_anatomy
+- high_density_eeg
+use:
+- fit
+forbidden:
+- mesa-sleep/* -> cortical state without an explicit carded interaction
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: mesa-sleep
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

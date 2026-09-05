@@ -1,0 +1,1 @@
+# sha256 manifest for kwave-reference-problems; written on acquisition

@@ -1,0 +1,124 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: gallant-crcns-natural-movies
+title: Gallant lab natural-movie and natural-image fMRI (CRCNS vim-1/vim-2)
+provider: Gallant lab, UC Berkeley, distributed via CRCNS.org
+citation: Nishimoto et al., Reconstructing visual experiences from brain activity evoked by natural movies.
+  Current Biology 2011; Kay et al., Identifying natural images from human brain activity. Nature 2008.
+urls:
+- https://crcns.org/data-sets/vc/vim-2
+- https://crcns.org/data-sets/vc/vim-1
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: CRCNS requires account registration and acceptance of data-sharing terms before download; terms
+    not read. The natural movie stimuli have their own copyright status, separate from the responses.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - run
+  notes: 'Small-n, very-many-trials design: a handful of participants with hours of scanning each. n left
+    null; read from the release. A single stimulus is shared across participants; that grouping level
+    is not expressible in population.hierarchy and lives in split_policy.group_by.'
+frames:
+- scanner
+- subject_native
+- flattened_cortical_surface
+- retinotopic_visual_field
+streams:
+- name: voxelwise_natural_movie_responses
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift and between-session hardware change
+  - eye movements are unconstrained in the movie condition, so the retinal input is NOT the screen input
+    and the difference is unmeasured here
+  - attention allocation covaries with scene content and is not separable from it
+  systematic_bias: 'This is the canonical held-out encoding-model dataset: the separate validation movie
+    repeated many times gives a genuine noise ceiling, which is the floor a number needs before it is
+    a result.'
+  band_hz:
+  - null
+  - null
+  temporal_support: '1 s TR against a 15 Hz movie: the stimulus clock is an order of magnitude faster
+    than the sampling clock, which is the coarse-resampling problem in its sharpest form'
+  spatial_support: occipital-focused high-resolution EPI, voxel-wise rather than parcel-wise -- the design
+    is explicitly single-voxel encoding-model fitting
+- name: repeated_validation_movie
+  kind: measured
+  via: null
+  systematic_bias: the repeated validation set is what makes a noise ceiling computable rather than assumed
+  band_hz:
+  - null
+  - null
+- name: bold_natural_movie
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_natural_image
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_frames
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: retinotopic_localiser
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eyetracking
+- eeg
+- meg
+- physiology
+- whole_brain_coverage
+- intervention
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- evaluate
+- fit
+forbidden:
+- gallant-crcns-natural-movies/* -> non-visual state channels
+- gallant-crcns-natural-movies/* -> screen coordinates treated as retinal coordinates
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: gallant-crcns-natural-movies
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

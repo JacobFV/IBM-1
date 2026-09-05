@@ -1,0 +1,102 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brainomni
+title: BrainOmni -- unified electrophysiology foundation model
+provider: Shanghai Artificial Intelligence Laboratory; Department of Electronic Engineering, Tsinghua
+  University; MRC Cognition and Brain Sciences Unit, University of Cambridge
+citation: 'Xiao, Cui, Zhang, Chen, Wu, Thwaites, Woolgar, Zhou and Zhang, BrainOmni: A Brain Foundation
+  Model for Unified EEG and MEG Signals. arXiv:2505.18185 (v1 2025-05-18, v3 2025-10-15).'
+urls:
+- https://arxiv.org/abs/2505.18185
+- https://github.com/OpenTSLab/BrainOmni
+access: watch
+licence:
+  name: unresolved -- paper is CC-BY-4.0 on arXiv; WEIGHTS licence unread
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. The arXiv paper is CC BY 4.0; that governs the PAPER
+    only and is recorded so a later reader does not mistake it for the checkpoint''s terms. Weights and
+    code licences unresolved. Rule 7: licence governs distribution only and never gates reading or fitting.'
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+- meg_device
+streams:
+- name: cross_modality_representation
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. §53.2: the test is NOT leaderboard accuracy.
+    It is whether a representation survives new montages, devices, subjects, tasks and physically different
+    observation supports WITHOUT SILENTLY LEARNING CHANNEL IDENTITY AS ANATOMY. A model spanning EEG and
+    MEG is the hardest case for that test: the two modalities have different sensitivity to radial versus
+    tangential sources, so a representation that transfers between them either has learned the shared
+    source or has learned a dataset shortcut, and only a physically different observation support distinguishes
+    those.'
+  band_hz:
+  - null
+  - null
+  temporal_support: 'The model consumes a DERIVED 256 Hz view: every pretraining source is resampled to
+    256 Hz from native rates of 500-1250 Hz (MEG-MASC 1000, SMN4Lang 1000, CTF sets 1200, MIND 1250, HBN
+    500). §33: that is a derived representation, not an ontological common clock, and coarse resampling
+    destroys delay information.'
+  spatial_support: 'SENSOR-LEVEL EEG and MEG, addressed by a Sensor Encoder over each sensor''s spatial
+    coordinates, ORIENTATION and TYPE rather than by channel name -- the only model in the §53.2 family
+    that reads geometry rather than labels. Pretraining spans EEG devices from 19 to 128 channels and
+    MEG devices from 157 to 306. THE HAZARD IS THE FALLBACK: the paper states coordinates and orientations
+    come ''from either the dataset-provided positions OR the device''s standard montage'', and the encoder
+    consumes both identically, so a TEMPLATE position and a DIGITISED one are indistinguishable downstream
+    (rule 4: derived is not measured). EEG and MEG remain DIFFERENT PHYSICAL OBSERVATION SUPPORTS -- an
+    electrode measures potential, a gradiometer measures a spatial derivative of magnetic flux -- and
+    the sensor-type embedding is a learned token, not a forward model.'
+absent:
+- physical_observation_model
+- position_derivation_class
+- weights_licence
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'CORRECTED 2026-08-17 after reading the paper: unlike the rest of the §53.2 family this
+    model''s channel axis is NOT a set of names -- its Sensor Encoder consumes coordinates, orientation
+    and sensor type explicitly, and the paper gives inconsistent channel naming across devices as its
+    reason. So device geometry is not a missing input here, it is a REQUIRED one, and the severity is
+    raised accordingly: without positions the model cannot embed the sensors at all. What degrades instead
+    is the DERIVATION CLASS of those positions.'
+  substitute: The device's standard montage -- which is what the paper itself falls back to when a deposit
+    ships no positions. That substitute is a TEMPLATE, not a measurement, and the encoder cannot tell
+    the two apart. bbbd declares mm for values on the unit sphere and ds008037 carries three distinct
+    coordinate arrays across 109 participants under one declared cap, so the substitute is silently wrong
+    on held data.
+use:
+- distil
+forbidden:
+- brainomni/* -> observation-role likelihoods
+- brainomni/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: brainomni
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - cross_modality_representation
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

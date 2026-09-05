@@ -1,0 +1,81 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: asl-bold-breath-hold-datasets
+title: Simultaneous ASL and BOLD breath-hold datasets
+provider: multiple -- dual-echo ASL/BOLD calibration studies
+citation: PROMPT.md §52.11, 'simultaneous ASL/BOLD breath-hold data'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: simultaneous_cbf_and_bold
+  kind: measured
+  via: null
+  systematic_bias: M is the maximum possible BOLD signal change if all deoxyhaemoglobin were removed,
+    and it depends on baseline venous blood volume and oxygenation -- i.e. on the VASCULAR STATE the model
+    is trying to estimate. Estimating M requires a challenge, and every CMRO2 number in the literature
+    inherits that estimate's error.
+  notes: the Davis model relating BOLD, CBF and CMRO2 contains exponents alpha and beta that are usually
+    FIXED AT LITERATURE VALUES rather than estimated, and the results are sensitive to them
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: dual-echo acquisitions giving perfusion and BOLD from the SAME excitation, under a
+    vasoactive challenge -- the combination required to estimate the calibration parameter M that every
+    calibrated-BOLD CMRO2 estimate depends on
+- name: perfusion_bold_coupling
+  kind: measured
+  via: null
+  observation_chain: 'arterial blood water magnetically labelled proximally -> transit through the arterial
+    tree -> exchange into tissue -> label decay at T1 of blood -> control-label subtraction -> perfusion-weighted
+    signal -> kinetic-model CBF; simultaneously with neural activity -> neurovascular coupling -> coupled
+    CBF/CBV/CMRO2 change -> deoxyhaemoglobin concentration change -> T2*/T2'' change -> gradient-echo
+    k-space acquisition -> reconstruction -> voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY
+    (PROMPT.md §17): the vascular stage is a modelled state, not a nuisance to be regressed away'
+  confounds:
+  - ASL has much lower SNR than BOLD, so the perfusion estimate is the noisy half
+  - arterial transit time
+  - the dual-echo readout trades SNR in both channels
+  band_hz:
+  - null
+  - null
+absent:
+- vessel_geometry
+- electrophysiology
+- standardised_protocol
+requires:
+- geometry: vascular-products
+  severity: degrading
+  without_it: A perfusion or reactivity map is a voxel field with no vessel attached. It can be used as
+    a voxel-wise measurement, but attributing it to a supplying artery, a draining vein or a microvascular
+    compartment -- which is what makes it evidence about the vascular state rather than about the image
+    -- requires the vascular product.
+  substitute: Voxel-wise use with no vessel attribution, which cannot separate an arterial transit effect
+    from a tissue perfusion change.
+use:
+- calibrate
+- fit
+forbidden:
+- asl-bold-breath-hold-datasets/* -> neural supervision
+- asl-bold-breath-hold-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: asl-bold-breath-hold-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

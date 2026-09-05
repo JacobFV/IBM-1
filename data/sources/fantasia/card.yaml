@@ -1,0 +1,95 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fantasia
+title: Fantasia Database -- ECG and respiration in young and elderly healthy adults
+provider: PhysioNet / Beth Israel Deaconess
+citation: Iyengar et al., Age-related alterations in the fractal scaling of cardiac interbeat interval
+  dynamics. American Journal of Physiology 1996.
+urls:
+- https://physionet.org/content/fantasia/
+access: priority
+licence:
+  name: ODC-BY 1.0 (PhysioNet open access)
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Not verified here.
+binding: unbound
+population:
+  n: 40
+  hierarchy:
+  - participant
+  notes: 20 young and 20 elderly HEALTHY, rigorously screened subjects at supine rest watching the film
+    Fantasia. Small, old, and unusually clean -- the counterweight to MIMIC.
+frames:
+- torso
+streams:
+- name: ecg
+  kind: measured
+  via: null
+  observation_chain: cardiac depolarisation and repolarisation -> torso volume conduction -> electrode
+    pair -> sampled voltage
+  confounds:
+  - sensor placement and contact quality
+  - motion artifact
+  - respiratory-cardiac cross-coupling that makes the two streams non-independent
+  systematic_bias: 'Long, clean, continuous recordings in screened healthy people at rest: the reference
+    condition against which the clinical datasets'' abnormality is defined.'
+  band_hz:
+  - null
+  - null
+  temporal_support: ECG at 250 Hz over 120 minutes continuous; beat annotations verified
+  spatial_support: chest ECG and a respiration belt during quiet supine rest
+- name: heart_rate_variability_by_age
+  kind: measured
+  via: null
+  systematic_bias: the young/elderly contrast in autonomic variability is the dataset's purpose and is
+    a genuine slow-phenotype prior; n=40 bounds it
+  band_hz:
+  - null
+  - null
+- name: respiratory_sinus_arrhythmia
+  kind: measured
+  via: null
+  observation_chain: thoracic/abdominal circumference or airflow -> transducer -> sampled waveform; and
+    the respiratory modulation of heart rate is read from the two channels jointly
+  confounds:
+  - posture, fixed here at supine
+  - the film, which is a stimulus and is not modelled
+  systematic_bias: Cardiorespiratory coupling measured in both directions in a resting healthy state.
+  band_hz:
+  - null
+  - null
+- name: respiration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: beat_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: age_group
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- task_conditions
+- large_n
+- modern_instrumentation
+use:
+- fit
+forbidden:
+- fantasia/* -> cortical state without an explicit carded interaction
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: fantasia
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

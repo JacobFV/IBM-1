@@ -1,0 +1,129 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: single-word-production-dutch-ieeg
+title: SingleWordProductionDutch -- sEEG with synchronised audio during speech production
+provider: Maastricht University / Neural Interfacing Lab, deposited on OSF
+citation: Verwoert et al., Dataset of speech production in intracranial electroencephalography. Scientific
+  Data 9:434, 2022. doi:10.1038/s41597-022-01542-9. Data doi:10.17605/OSF.IO/NRGX6.
+urls:
+- https://doi.org/10.17605/OSF.IO/NRGX6
+- https://github.com/neuralinterfacinglab/SingleWordProductionDutch
+access: priority
+licence:
+  name: CC-BY-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: The OSF node's licence field resolves to CC-By Attribution 4.0 International. The copyright-holder
+    field is empty. An OSF node with a resolved licence is the exception rather than the rule -- three
+    other OSF sources in this registry have node_license null.
+binding: unbound
+population:
+  n: 10
+  hierarchy:
+  - participant
+  - run
+  notes: 5 male, 5 female. 1,317 implanted electrodes of which 1,103 were recorded.
+frames:
+- electrode_contact
+- subject_native
+- MNI152
+streams:
+- name: seeg_during_overt_speech
+  kind: measured
+  via: null
+  observation_chain: 'local post-synaptic and spiking activity within a few millimetres of a contact ->
+    extracellular potential -> potential difference against a reference contact whose own activity is
+    in every number -> amplifier and filter -> sampled microvolts. No skull and no inverse problem. This
+    is PRODUCTION, not perception: the participant''s articulators move, so the recorded neural activity
+    precedes and causes an acoustic output that is measured on the same clock'
+  confounds:
+  - the reference contact's own activity
+  - the epileptogenic zone and interictal discharges, present by definition in a clinical cohort
+  - anti-epileptic medication, often being tapered during monitoring
+  - electrode placement follows a surgical hypothesis, so coverage is not a sample of the brain
+  - 'hospital environment: sleep, arousal and drug state uncontrolled'
+  - articulatory and jaw-muscle artefact contaminates temporal contacts during overt speech and is time-locked
+    to exactly the event of interest
+  - the participant hears their own voice, so auditory feedback is present and inseparable from production
+    by this design alone
+  - single-word reading includes visual word processing on every trial
+  - Dutch only -- nothing here separates language-general from Dutch-specific structure
+  systematic_bias: 'Synchronised audio with intracranial recording during production closes a loop that
+    perception corpora cannot: the boundary variable is the acoustic output and it is measured, not inferred.'
+  band_hz:
+  - null
+  - null
+  temporal_support: 'TWO CLOCKS WITH A HARDWARE RELATION: sEEG at 1024 Hz (originally 1024 or 2048 and
+    downsampled, which is a derived view) and SYNCHRONISED AUDIO AT 48 kHz. The audio is the produced
+    output at nearly fifty times the neural sampling rate, which is the rate ratio the clock graph exists
+    to represent'
+  spatial_support: stereo-EEG depth electrodes -- sampling along a trajectory through the brain rather
+    than over a surface, so coverage is deep and sparse where a grid is superficial and dense
+- name: produced_acoustics
+  kind: imposed
+  via: null
+  systematic_bias: The acoustic waveform terminates at the vocal tract, which is a body interface and
+    not cortex; it may not supervise cortical state directly.
+  band_hz:
+  - null
+  - null
+- name: seeg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: synchronised_audio
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: word_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: electrode_localisation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- continuous_speech
+- scalp_eeg
+- fmri
+- articulatory_kinematics
+- healthy_controls
+- languages_other_than_dutch
+requires:
+- geometry: device-geometry
+  for_streams:
+  - seeg_during_overt_speech
+  severity: blocking
+  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
+    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
+    channel is an index and nothing measured here can be attached to a cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- single-word-production-dutch-ieeg/* -> a continuous-speech claim from single words
+- single-word-production-dutch-ieeg/* -> acoustic output supervising cortical state directly
+split:
+  group_by:
+  - participant
+  - run
+  - stimulus
+  notes: The word list repeats across participants; a participant-only split leaks through it.
+provenance:
+  imported_from: win-registry
+  card: single-word-production-dutch-ieeg
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

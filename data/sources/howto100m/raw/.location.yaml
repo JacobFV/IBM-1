@@ -1,0 +1,5 @@
+# where the bytes for `howto100m` actually live.  never the bytes themselves.
+source_url: "https://www.di.ens.fr/willow/research/howto100m/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

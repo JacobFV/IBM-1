@@ -1,0 +1,144 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: armeni-audiobook-meg
+title: Armeni et al. 10-hour within-participant audiobook MEG
+provider: Donders Institute for Brain, Cognition and Behaviour, Radboud University
+citation: Armeni, Guclu, van Gerven, Schoffelen. A 10-hour within-participant magnetoencephalography narrative
+  dataset to test models of language comprehension. Scientific Data 9:278, 2022. doi:10.1038/s41597-022-01382-7.
+  Data doi:10.34973/5rpw-rn92.
+urls:
+- https://doi.org/10.34973/5rpw-rn92
+- https://doi.org/10.1038/s41597-022-01382-7
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: A data use agreement for identifiable human data, version RU-DI-HD-1.0, is required. The ARTICLE
+    is CC-BY-4.0; a separate data licence distinct from that DUA is unresolved and the article's licence
+    must not be read across to the data.
+binding: unbound
+population:
+  n: 3
+  hierarchy:
+  - participant
+  - session
+  notes: 1 female of 3.
+frames:
+- ctf_device
+- head_cast_fixed_head_coordinate
+- subject_mri
+- screen_coordinates
+streams:
+- name: long_form_narrative_meg
+  kind: measured
+  via: null
+  observation_chain: post-synaptic currents in spatially aligned pyramidal populations, predominantly
+    tangential sources in sulcal walls -> magnetic field outside the head, only weakly distorted by skull
+    conductivity -> SQUID pickup coil flux -> gradiometer or magnetometer channel -> sampled tesla. The
+    forward problem is better conditioned than EEG's; the inverse problem is still ill-posed and a source
+    estimate remains uncertain evidence entering through an observation model, never a label
+  confounds:
+  - environmental magnetic interference and whatever rejection method was applied
+  - head position within the helmet, which differs between and within sessions and is the dominant forward-model
+    error
+  - cardiac magnetic field and ocular artefact
+  - MEG-MRI coregistration error
+  - SQUID sensor noise and channel dropout
+  - the head cast removes head-position variance but fixes any coregistration error that exists at casting
+    time for all ten sessions -- a constant bias replacing a varying one
+  - attention and drowsiness over a one-hour continuous listening session are uncontrolled and drift systematically
+  - acoustic envelope, word frequency and syntactic structure are all correlated in natural speech, so
+    an effect attributed to one is not separated from the others by the design
+  systematic_bias: TEN HOURS PER PARTICIPANT IS THE POINT. Almost every language-neuroscience corpus trades
+    depth for n; this one does the opposite, which is what makes within-subject encoding models identifiable
+    and makes the n=3 a feature rather than a limitation. Nothing here supports a population claim.
+  band_hz:
+  - null
+  - null
+  temporal_support: MEG at 1200 Hz, Eyelink 1000 eye tracking at 1000 Hz, and the audiobook waveform,
+    over ten roughly one-hour sessions per participant. THREE NATIVE CLOCKS with word and phoneme onsets
+    forced-aligned to the audio -- and a forced alignment is a FITTED clock relation with real residual
+    error, not a hardware trigger
+  spatial_support: '275-channel CTF axial gradiometer MEG with INDIVIDUAL HEAD CASTS, plus a structural
+    3T MRI. Head casts are the reason this dataset is unusual: head position -- normally the dominant
+    forward-model error and a drifting one -- is held fixed across ten sessions'
+- name: held_out_session_prediction
+  kind: measured
+  via: null
+  systematic_bias: Ten sessions on the same person permit a leave-one-session-out test, which separates
+    a model that has learned the participant from one that has learned the session.
+  band_hz:
+  - null
+  - null
+- name: meg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: audio_stimulus
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eyetracking
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pupillometry
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: word_and_phoneme_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- fmri
+- population_sample
+- intervention
+- behavioural_comprehension_probes
+requires:
+- geometry: device-geometry
+  for_streams:
+  - long_form_narrative_meg
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- evaluate
+- fit
+forbidden:
+- armeni-audiobook-meg/* -> any population-level claim
+- armeni-audiobook-meg/* -> a forced-aligned onset treated as a hardware-triggered time
+split:
+  group_by:
+  - participant
+  - session
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: armeni-audiobook-meg
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,78 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: marmoset-brain-mapping
+title: Marmoset Brain Mapping and Brain/MINDS marmoset atlases and connectivity
+provider: NIH/NINDS (Marmoset Brain Mapping) and RIKEN CBS Brain/MINDS
+citation: Liu et al., A digital 3D atlas of the marmoset brain based on multi-modal MRI. NeuroImage 2018;
+  Skibbe et al., The Brain/MINDS Marmoset Connectivity Resource. Science Advances 2023.
+urls:
+- https://marmosetbrainmapping.org/
+- https://dataportal.brainminds.jp/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Two separate providers with separate terms; neither read.
+binding: unbound
+population:
+  n: null
+frames:
+- marmoset_template
+- histological_section
+streams:
+- name: tracer_versus_tractography_in_one_species
+  kind: measured
+  via: null
+  systematic_bias: 'CROSS-SPECIES. Its use is the same as markov2014''s: a species-general statement about
+    how tractography relates to tracer-verified connectivity, never an assertion about a human edge. The
+    marmoset''s lissencephalic cortex removes the gyral bias that dominates human tractography error,
+    which makes it a WEAKER model of the human failure mode, not a stronger one.'
+  notes: anterograde tracer measures projections from an injection site; it does not measure synaptic
+    weight and it is directed where tractography is not
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- static anatomy and static tracer maps
+  spatial_support: ex-vivo ultra-high-resolution MRI and histology-derived parcellation, plus anterograde
+    tracer injections registered to that space
+- name: ex_vivo_mri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi_tractography
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: anterograde_tracer_connectivity
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cytoarchitectonic_parcellation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- human_data
+- in_vivo_function
+- individual_variation
+use:
+- prior
+forbidden:
+- marmoset-brain-mapping/* -> any human edge assertion
+- marmoset-brain-mapping/* -> absence of a tracer edge treated as absence of connection
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: marmoset-brain-mapping
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

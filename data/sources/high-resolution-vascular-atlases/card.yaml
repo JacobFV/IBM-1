@@ -1,0 +1,69 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: high-resolution-vascular-atlases
+title: High-resolution arterial and venous atlases
+provider: multiple
+citation: PROMPT.md §52.10, 'high-resolution arterial and venous atlases'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- vascular_tree_graph
+streams:
+- name: arterial_territory_maps
+  kind: measured
+  via: null
+  systematic_bias: An arterial territory atlas is a COVER over the brain organised by blood supply rather
+    than by cytoarchitecture or function -- a genuinely different partition from every atlas in §52.6,
+    and §11's multi-cover argument applies to it identically. Territory boundaries also depend on the
+    individual's Circle of Willis variant, which a population atlas cannot represent.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: population probability maps of arterial and venous anatomy, including ARTERIAL TERRITORY
+    atlases that label which major artery supplies each voxel
+- name: population_vessel_probability
+  kind: measured
+  via: null
+  systematic_bias: vessel position varies far more between people than cortical position does, so a population
+    vessel probability map is diffuse where it matters most
+  band_hz:
+  - null
+  - null
+absent:
+- individual_geometry
+- capillary_scale
+- flow
+- cow_variant_conditioning
+requires:
+- geometry: vascular-products
+  severity: blocking
+  without_it: An angiographic volume is an image of a lumen, not a vessel. Without the vascular product
+    -- a resolved graph carrying radius, topology and territory -- there is no vessel for this evidence
+    to constrain and no way to say which cortical support any of it supplies.
+use:
+- calibrate
+- prior
+forbidden:
+- high-resolution-vascular-atlases/* -> individual vessel geometry
+- high-resolution-vascular-atlases/arterial_territory_maps -> territory assignment without CoW-variant
+  conditioning
+- high-resolution-vascular-atlases/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: high-resolution-vascular-atlases
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

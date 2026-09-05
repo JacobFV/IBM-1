@@ -1,0 +1,147 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nki-rockland
+title: NKI-Rockland Sample (enhanced)
+provider: Nathan Kline Institute / INDI
+citation: 'Nooner et al., The NKI-Rockland Sample: a model for accelerating the pace of discovery science
+  in psychiatry. Frontiers in Neuroscience 2012.'
+urls:
+- http://fcon_1000.projects.nitrc.org/indi/enhanced/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Data usage agreement; phenotypic data access is tiered.
+binding: unbound
+population:
+  n: 1000
+  hierarchy:
+  - participant
+  - session
+  notes: Parent cohort of NM000254/NATVIEW, which is carded separately.
+frames:
+- scanner
+- subject_native
+- fsaverage
+- MNI152
+streams:
+- name: bold_rest_multi_tr
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  systematic_bias: The multi-TR design is a direct handle on what sampling rate destroys -- relevant to
+    §33's native-clock argument and to obj-clock-graph.
+  band_hz:
+  - null
+  - null
+  temporal_support: multiple BOLD protocols with TR 0.645 s, 1.4 s and 2.5 s in the same participants
+    -- a genuinely useful sampling-rate manipulation
+  spatial_support: 1 mm structural; multiband BOLD at several TRs; 64-direction diffusion
+- name: dwi
+  kind: measured
+  via: null
+  observation_chain: water displacement over the diffusion time within and around axons and cells -> gradient-direction-dependent
+    signal attenuation -> reconstructed q-space or orientation distribution; ORIENTATION EVIDENCE, not
+    an observation of a tract
+  confounds:
+  - eddy-current and susceptibility distortion
+  - motion between diffusion directions
+  - partial volume of crossing fibres, which no single-tensor model represents
+  - the fitting model itself (DTI vs. CSD vs. NODDI) is a choice with its own bias
+  band_hz:
+  - null
+  - null
+- name: lifespan_age
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_task
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: asl_perfusion
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: physiology
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: phenotyping
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- meg
+- ieeg
+- pet
+- angiography
+- intervention
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  for_streams:
+  - dwi
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+- geometry: vascular-products
+  severity: degrading
+  without_it: A perfusion or reactivity map is a voxel field with no vessel attached. It can be used as
+    a voxel-wise measurement, but attributing it to a supplying artery, a draining vein or a microvascular
+    compartment -- which is what makes it evidence about the vascular state rather than about the image
+    -- requires the vascular product.
+  substitute: Voxel-wise use with no vessel attribution, which cannot separate an arterial transit effect
+    from a tissue perfusion change.
+use:
+- fit
+- prior
+forbidden:
+- nki-rockland/* -> intervention response parameters
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: nki-rockland
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

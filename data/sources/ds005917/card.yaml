@@ -1,0 +1,166 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds005917
+title: OpenNeuro ds005917 -- NIMH ketamine mechanism-of-action study
+provider: OpenNeuro; National Institute of Mental Health (Zarate group)
+citation: Evans, Nugent, Zarate. NIMH Ketamine Mechanism of Action Study. NIH protocol 04-M-0222, NCT00088699.
+  Dataset doi:10.18112/openneuro.ds005917.v1.1.0.
+urls:
+- https://openneuro.org/datasets/ds005917
+access: priority
+licence:
+  name: CC0 (verbatim License field in dataset_description.json)
+  redistribution: permitted
+  commercial: permitted
+binding: unbound
+population:
+  n: 58
+  hierarchy:
+  - participant
+  - session
+  notes: Nominally five sessions per participant -- baseline, two post-infusion and two interim -- in
+    a double-blind ketamine versus saline crossover. Session completion varies with dropouts and technical
+    failures, so the per-session n is smaller than 58 and must be counted per stream.
+frames:
+- scanner
+- subject_native
+- MNI152
+- mrs_voxel
+streams:
+- name: ketamine_versus_saline_crossover_bold
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away. Ketamine is an NMDA antagonist and a cerebral vasodilator, so
+    the drug moves the vascular stage and the neural stage at once and a BOLD difference is not attributable
+    to either without the other being modelled'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - ketamine's direct cerebrovascular effect
+  - dissociative subjective effects break the double blind for most participants
+  - the clinical groups differ from controls in medication history and in motion
+  - the antidepressant response is measured days later and is not contemporaneous with the scan
+  systematic_bias: A double-blind saline-controlled crossover with a mixed clinical and healthy cohort.
+    The blind fails behaviourally, which is a known and unfixable property of dissociative agents rather
+    than an execution flaw.
+  band_hz:
+  - null
+  - null
+  temporal_support: a session schedule over days around the infusion; the antidepressant response clock
+    is hours to days, far slower than any acquisition clock
+  spatial_support: '3T structural, diffusion, resting and task fMRI (dot-probe, emotional faces, N-back),
+    plus 7T MAGNETIC RESONANCE SPECTROSCOPY of glutamate in pregenual anterior cingulate for a subset.
+    The MRS arm is what makes this unusual: it measures a NEUROCHEMICAL quantity directly rather than
+    inferring it'
+- name: 7t_glutamate_spectroscopy
+  kind: measured
+  via: null
+  observation_chain: 'metabolite proton resonances in a defined voxel -> single-voxel or chemical-shift-imaging
+    spectrum at 7T -> line fitting against a basis set -> a concentration in institutional units referenced
+    to water or creatine. THE FIT IS A MODEL: glutamate and glutamine overlap and their separation depends
+    on field strength, shim quality and the basis set'
+  confounds:
+  - glutamate-glutamine separation depends on the fitting basis
+  - voxel placement differs between sessions and the voxel is large
+  - tissue composition within the voxel (grey, white, CSF) changes the apparent concentration and must
+    be corrected with its own assumptions
+  - referencing to creatine assumes creatine is unchanged, which the drug may not respect
+  systematic_bias: One of very few sources in this registry that measures a neurochemical quantity in
+    a living human. It is one voxel in one region, so it constrains cortical state at a single location
+    and nowhere else.
+  band_hz:
+  - null
+  - null
+- name: clinical_cohort_structure
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_task_dot_probe
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_task_emotional_faces
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_task_nback
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mrs_7t_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- meg
+- eeg
+- measured_drug_concentration
+- whole_brain_spectroscopy
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- fit
+- prior
+forbidden:
+- ds005917/* -> a neural claim from a BOLD change under a vasoactive drug
+- ds005917/* -> a whole-brain neurochemical claim from a single MRS voxel
+split:
+  group_by:
+  - participant
+  - session
+  notes: Diagnostic group must be stratified across folds or a fold becomes a diagnosis.
+provenance:
+  imported_from: win-registry
+  card: ds005917
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

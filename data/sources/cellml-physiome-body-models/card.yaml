@@ -1,0 +1,72 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cellml-physiome-body-models
+title: CellML and Physiome cardiac, respiratory, endocrine and gastrointestinal models
+provider: Physiome Project / Auckland Bioengineering Institute and contributors
+citation: Physiome Model Repository; CellML specification. PROMPT.md §52.15.
+urls:
+- https://models.physiomeproject.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- model_state_space
+streams:
+- name: peripheral_organ_models
+  kind: measured
+  via: null
+  systematic_bias: Candidate implementations of the SLOW BODY INTERACTIONS §52.15 asks for -- and each
+    was fitted to a particular preparation, often a particular species. A cardiac model validated in rabbit
+    ventricular myocytes is a hypothesis about human cardiac dynamics, not a description of it.
+  notes: parameter provenance is frequently a citation chain ending in an animal preparation
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: curated machine-readable models of cardiac electrophysiology and mechanics, respiratory
+    control, endocrine regulation and gastrointestinal motility -- the PERIPHERAL counterpart to the cerebral
+    circulation models carded under §52.11
+- name: endocrine_and_circadian_models
+  kind: measured
+  via: null
+  systematic_bias: hormonal and circadian dynamics operate on hours-to-days timescales, which is the slow
+    end of what B-WIN's native-clock architecture must span; these models are the only structured candidates
+    for those interactions in the registry
+  band_hz:
+  - null
+  - null
+- name: unit_annotated_equations
+  kind: measured
+  via: null
+  systematic_bias: declared units on every variable is the same discipline §57 imposes on native units
+  band_hz:
+  - null
+  - null
+absent:
+- human_parameter_values
+- validation_data
+- uncertainty
+- coupling_to_brain
+use:
+- calibrate
+- prior
+forbidden:
+- cellml-physiome-body-models/* -> observation-role likelihoods
+- cellml-physiome-body-models/* -> cortical state
+- cellml-physiome-body-models/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: cellml-physiome-body-models
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

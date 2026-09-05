@@ -1,0 +1,302 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: aomic-id1000
+title: AOMIC-ID1000 (ds003097) -- the RAW subject tree, derivatives deliberately not held
+provider: University of Amsterdam (NILab), distributed via OpenNeuro as ds003097
+citation: 'Snoek et al., AOMIC: the Amsterdam Open MRI Collection, a set of multimodal MRI datasets for
+  individual difference analyses. Scientific Data 8:85, 2021. doi:10.1038/s41597-021-00870-6. Deposit
+  DOI 10.18112/openneuro.ds003097.v1.2.1.'
+urls:
+- https://openneuro.org/datasets/ds003097
+- https://nilab-uva.github.io/AOMIC.github.io/
+- https://github.com/NILAB-UvA/ID1000
+access: held
+licence:
+  name: CC0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'Read verbatim from the HELD dataset_description.json under this card''s own root, not from the
+    landing page: the field is exactly "License": "CC0". No data-use agreement, no registration, no request
+    form -- the fetch needed nobody''s permission, which is why this deposit was chosen over HCP Young
+    Adult for obj-independent-preprocessing-needs-a-deposit-that-ships-raw-dwi. Rule 7 governs distribution
+    only and never gated the read. LICENCE LINEAGE IS PER ARTIFACT AND THE BLANKET FIELD IS NOT THE WHOLE
+    ANSWER (rule 7). This deposit ships the STIMULUS ITSELF -- stimuli/task-moviewatching_desc-koyaanisqatsi_movie.mp4,
+    71,192,988 bytes, the 1982 feature film Koyaanisqatsi -- and dataset_description.json''s blanket "CC0"
+    cannot be the lineage of a copyrighted film that the depositors did not make. The film''s own rights
+    are UNRESOLVED here and are recorded as unresolved rather than inherited. This gates NOTHING about
+    use: reading, loading, computing with and fitting to it is internal private research and is never
+    gated. The one place it matters is win.licences.release_gate at outward publication, which would otherwise
+    be told the clip is CC0. Every other file under this root is a measurement made by the depositors
+    and the CC0 field is theirs to give.'
+binding: unbound
+population:
+  n: 928
+  hierarchy:
+  - participant
+  - run
+  notes: '928 rows in participants.tsv, 928 unique participant_id values, 928 subject directories, ONE
+    session each. COUNT PEOPLE, NOT DIRECTORIES: checked, and here the two agree -- there is no session
+    entity, no repeated identifier and NO GROUPING COLUMN OF ANY KIND in participants.tsv or participants.json.
+    32 groups of subjects share an identical (age, sex, handedness, BMI, education_level, background_SES)
+    tuple with a maximum multiplicity of 3, which is what 928 people over six coarsely quantised columns
+    produce by coincidence and is NOT evidence of repeats. State it as what it is: no evidence of repeated
+    people, from a table carrying nothing that could reveal them if there were. 925 of the 928 have at
+    least one DWI run -- see corrections. MEASURED FROM THE HELD TREE 2026-08-19, per stream, because
+    a deposit''s coverage is per stream and not per cohort: T1w 2,768 files over 928 people (runs 1/2/3
+    reach 928/926/914); DWI 2,745 volumes with their 2,745 .bval and 2,745 .bvec over 925 people (runs
+    reach 918/923/904); moviewatching BOLD 881 files over 881 people; concurrent respiration-and-cardiac
+    physiology 790 files over 790 people, so 91 people have BOLD with NO physiological trace and rule
+    1 says that is not a flat one. AND 882 IS NOT 881: there are 882 task-moviewatching_bold.json files
+    under this root and only 881 of them belong to a person -- the 882nd is the dataset-level inherited
+    sidecar at the top of the tree. Counting files where the question is people is the ds003670 error
+    in a smaller costume.'
+frames:
+- scanner
+- subject_native
+streams:
+- name: dwi_raw
+  kind: measured
+  via: null
+  observation_chain: 'water displacement over the diffusion time within and around axons and cells ->
+    gradient-direction-dependent signal attenuation -> spin-echo EPI readout -> reconstructed volume per
+    b-vector. ORIENTATION EVIDENCE, not an observation of a tract. THIS IS THE RAW FORM: dataset_description.json
+    carries no DatasetType field, which is BIDS'' definition of raw, and the volumes sit in the subject
+    tree outside any derivatives directory. That is what makes an independent preprocessing term measurable
+    here and exactly zero on tractoinferno.'
+  confounds:
+  - eddy-current distortion, which both preprocessing arms must correct and will correct differently
+  - motion between diffusion directions
+  - susceptibility distortion, which NEITHER arm can correct here -- no fieldmap and no reverse phase-encode
+    exist, so this term is zero by ACQUISITION rather than by deposit policy, and any claim about 'the
+    preprocessing term' must name which stages it covers
+  - partial volume of crossing fibres, which no single-tensor model represents; 32 directions on one shell
+    is a thin basis for anything richer
+  - the fitting model itself is a choice with its own bias
+  - the three runs are three acquisitions of ONE scheme, so their spread is re-acquisition noise and NOT
+    an independent angular sampling
+  - 'the b-vectors are PER-SUBJECT and not a shared device table: exactly 1 of 918 run-1 files matches
+    sub-0001 numerically, and the first gradient direction sits a median 5.43 and up to 19.06 degrees
+    away from it at unit norm -- so they are already in each subject''s own image frame, and a pipeline
+    treating the scheme as fixed would be wrong for 917 of 918 people'
+  systematic_bias: One site, one scanner, one session, one vendor (Philips), one phase-encode direction.
+    Between-site and between-vendor variance is zero by construction and therefore unestimable here.
+  band_hz:
+  - null
+  - null
+  temporal_support: 'TR-sampled BOLD with CONCURRENT RESPIRATION AND CARDIAC recording at the physiological
+    device''s own much faster rate: two clocks per functional run. The DWI repetition time is per-subject
+    AND per-run (6.311 s to 6.521 s) and appears in NO sidecar -- it exists only in participants.tsv columns
+    DWI_TR_run1/2/3, which no BIDS reader looks at.'
+  spatial_support: 'T1w structural at 1.0 mm isotropic, 160x256x256, up to three runs per person. Single-shell
+    DWI at b=1000 with 32 directions and one b=0, 2.0 mm isotropic, 112x112x60x33, up to three runs per
+    person -- READ FROM ALL 2,745 HELD VOLUMES, one dimension and one voxel size across every one of them.
+    Moviewatching BOLD. NO FIELDMAP AND NO REVERSE PHASE-ENCODE ACQUISITION ANYWHERE: PhaseEncodingDirection
+    is j in the only DWI sidecar this deposit has.'
+- name: dwi_repeat_acquisitions
+  kind: measured
+  via: null
+  observation_chain: 'Three DWI runs per person in one session. MEASURED OVER THE HELD BYTES, not sampled:
+    all 2,745 .bval files hash to ONE content (1 x b=0 and 32 x b=1000, 33 volumes) and the .bvec files
+    are byte-identical across runs for 919 of the 925 subjects with DWI. So for those 919 run-2 and run-3
+    are re-acquisitions of the same 32-direction scheme on the same brain in the same session, and their
+    disagreement under ONE pipeline is a re-acquisition floor for the disagreement between TWO. SIX SUBJECTS
+    ARE NOT LIKE THAT -- sub-0148, sub-0211, sub-0271, sub-0278, sub-0493, sub-0719 -- where one run''s
+    b-vectors differ by up to 0.199 in a component, about 11.5 degrees, because the acquisition was re-angulated
+    between runs. For those six the repeat is not a repeat of the same measurement and must be excluded
+    from the floor or reported separately. This card said ''byte-identical'' without qualification for
+    a few hours on 2026-08-19, from ONE subject read over the bucket, and the cohort read from disk contradicted
+    it.'
+  confounds:
+  - six of 925 subjects were re-angulated between runs, so their repeat is not a repeat of the same measurement
+  - within-session head motion and drift make the repeat floor an UPPER bound on pure acquisition noise
+  - scanner heating across three consecutive runs is not measured here
+  - the runs are not counterbalanced in any way the deposit records
+  - coverage is per run -- 918, 923 and 904 subjects -- so 'the repeat' selects a different cohort depending
+    on which pair is taken
+  systematic_bias: A floor built from repeats within one session understates what a between-session repeat
+    would give. It is the floor that exists, not the floor one would design.
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  observation_chain: 3D fast-field echo -> T1-weighted intensity. Up to three runs per person. Used by
+    DWI preprocessing for masking, bias-field estimation and anatomical alignment, which is itself a preprocessing
+    decision the two arms may take differently.
+  confounds:
+  - bias field, which varies with coil loading and is itself something the two preprocessing arms will
+    estimate differently
+  - motion between the three T1w runs, and between any of them and the diffusion series -- the deposit
+    records no timing that would order them
+  - the T1w PhaseEncodingDirection is declared as a two-element list (i-, j-) in the inherited T1w.json,
+    so which run used which is not recoverable from any sidecar
+  - defacing or other anonymisation applied before deposit is not documented anywhere in this deposit,
+    so its effect on skull-stripping is unmeasured
+  systematic_bias: Coverage falls run by run -- 928, 926, 914 subjects for runs 1, 2 and 3 -- so an analysis
+    using 'the T1w' silently selects a different cohort depending on which run it takes.
+  band_hz:
+  - null
+  - null
+- name: bold_with_concurrent_physiology
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away. Respiration and cardiac waveforms were recorded concurrently,
+    so the physiological contribution is OBSERVED rather than inferred from the BOLD itself.'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - the physiological recordings have their own failure modes -- belt slippage, oximeter dropout -- and
+    a missing physio trace is not a flat one, which matters here because only a subset of the cohort has
+    one
+  systematic_bias: 'One site, one scanner, one session. A single naturalistic task (moviewatching) with
+    no rest condition and no task manipulation: nothing here contrasts states.'
+  band_hz:
+  - null
+  - null
+- name: population_representative_sample
+  kind: measured
+  via: null
+  observation_chain: Demographics and psychometrics (IST, NEO-FFI, BIS/BAS, STAI-T, SES, education) per
+    participant in participants.tsv, with participants.json documenting each column.
+  systematic_bias: ID1000 was drawn to be population-representative, which is rare and is the reason this
+    accession was taken rather than PIOP1 or PIOP2. That property is destroyed the moment the three AOMIC
+    cohorts are pooled, and nothing in the pooled data would warn a reader.
+  band_hz:
+  - null
+  - null
+- name: stimulus_video
+  kind: measured
+  via: null
+  observation_chain: 'The film the participants watched, shipped inside the deposit as stimuli/task-moviewatching_desc-koyaanisqatsi_movie.mp4
+    -- 71,192,988 bytes, 16,500 frames, 720x576, 660.016 s at 24.9994 fps as measured from the container
+    by bwin.vision.read_film. IT IS THE INPUT, NOT A MEASUREMENT: nothing about a brain was recorded here,
+    and its role is `observation` only in the sense that what was shown is observed. Declared because
+    the audit found these bytes held_but_undeclared, and a file no evidence entry claims is a file a slice
+    can use without permission.'
+  confounds:
+  - the container runs 660.016 s and stimulus_events annotates 638 s, so 22.016 s are unaccounted for
+    and frame 0 MUST NOT be assumed to be onset 0 when aligning to BOLD
+  - no eye tracking exists anywhere in this deposit, so which part of each frame reached any retina is
+    unmeasured
+  - the deposit records no display geometry, viewing distance or luminance, so the film is not retinal
+    input and cannot be made into it here
+  - this is a re-encode of a 1982 feature film and the deposit does not say what the encoding did
+  systematic_bias: 'One film, shown once, to everyone. The stimulus axis is therefore TOTAL rather than
+    partial: every participant saw the same thing, so no participant split can break the leak through
+    it.'
+  band_hz:
+  - null
+  - null
+- name: stimulus_events
+  kind: measured
+  via: null
+  observation_chain: The dataset-level task-moviewatching_events.tsv, inherited by every functional run.
+    It carries exactly TWO rows -- onset 0.0 duration 638 onset_movie, and onset 638.0 duration 1 end_movie
+    -- so there is no within-film annotation of any kind.
+  confounds:
+  - 'two rows is not an event structure: anything finer than ''the film was on'' has to be derived from
+    the film itself and is then DERIVED, never measured'
+  - the 638 s it declares disagrees with the 660.016 s container by 22.016 s, and the deposit does not
+    say which end the difference sits at
+  - it is a dataset-level file and not a per-run one, so it cannot record a per-participant timing offset
+    even if one existed
+  systematic_bias: Dataset-level and identical for everyone, so it can express no between-participant
+    variation at all.
+  band_hz:
+  - null
+  - null
+- name: bold_task
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cardiac
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: demographics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: psychometrics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: respiration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- clinical_populations
+- eeg
+- eye_tracking
+- fieldmap
+- intervention
+- meg
+- per_scan_dwi_sidecar
+- provider_derivatives
+- reverse_phase_encode_dwi
+- second_session
+- second_site
+- second_vendor
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid the provider happened to ship.
+- geometry: tract-path-products
+  for_streams:
+  - dwi_raw
+  - dwi_repeat_acquisitions
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- fit
+- prior
+forbidden:
+- aomic-id1000/* -> a between-site, between-vendor or between-session generalisation claim
+- aomic-id1000/* -> a missing physiological trace treated as a flat one
+- aomic-id1000/dwi_raw -> a susceptibility-corrected pipeline claim, in either arm; there is nothing to
+  estimate the field from
+- aomic-id1000/dwi_repeat_acquisitions -> a between-session or between-scanner reliability claim
+- aomic-id1000/* -> pooling with PIOP1 or PIOP2, which destroys the population-representative property
+  and mixes three acquisition protocols with no key that could detect an overlapping participant
+split:
+  group_by:
+  - participant
+  - run
+  notes: 'Run must ALSO be grouped for anything measuring pipeline disagreement: the three DWI runs are
+    re-acquisitions of one scheme on one brain, so two runs of the same person on opposite sides of a
+    split leak that person''s anatomy across it. The stimulus is one film shown to everyone, so any BOLD
+    analysis leaks through the stimulus axis under a perfect participant split; group_by does not list
+    ''stimulus'' because there is only one, which makes the leak total rather than partial and unfixable
+    by grouping.'
+provenance:
+  imported_from: win-registry
+  card: aomic-id1000
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

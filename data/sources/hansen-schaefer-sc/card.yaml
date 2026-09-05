@@ -1,0 +1,65 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hansen-schaefer-sc
+title: Hansen structural connectome in the Schaefer parcellation
+provider: Misic lab / Network Neuroscience Lab
+citation: Distributed with Hansen et al. and netneurotools; derived from HCP diffusion.
+urls:
+- https://github.com/netneurolab
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- Schaefer2018
+- fsaverage
+streams:
+- name: consensus_connectome
+  kind: measured
+  via: null
+  systematic_bias: 'A CONSENSUS matrix: edges surviving a group-level thresholding rule. The rule is a
+    choice that determines the network''s density and therefore every graph statistic computed on it,
+    and consensus thresholding systematically favours short connections.'
+  notes: one pipeline's answer, parcellated and thresholded
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: a group consensus structural connectome on the Schaefer parcellation at several resolutions
+absent:
+- provenance
+- path_geometry
+- directionality
+- uncertainty
+requires:
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A connectome matrix is an adjacency over parcel indices. Without the tract product its edges
+    have no path, no length and no supports to terminate on, so it cannot supply a delay, a route or an
+    engineered structural commitment -- only a number per pair of labels.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- hansen-schaefer-sc/* -> measured-connection claims
+- hansen-schaefer-sc/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: hansen-schaefer-sc
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

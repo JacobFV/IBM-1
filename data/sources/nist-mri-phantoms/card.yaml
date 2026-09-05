@@ -1,0 +1,65 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nist-mri-phantoms
+title: NIST and ADNI quantitative MRI system phantoms
+provider: NIST / ISMRM-NIST collaboration and the ADNI phantom programme
+citation: Keenan et al., Multi-site, multi-platform comparison of MRI T1 measurement using the system
+  phantom. PLoS ONE 2021; ADNI phantom programme.
+urls:
+- https://www.nist.gov/programs-projects/quantitative-mri
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- phantom_native
+- scanner
+streams:
+- name: traceable_reference_values
+  kind: measured
+  via: null
+  systematic_bias: '§18 says to treat quantitative MRI observations separately, and the reason a quantitative
+    MR number can be treated as a physical quantity at all is a traceable reference. This is that reference:
+    the ONLY source in the registry with certified values and stated tolerances. Phantom values are at
+    a controlled temperature and in a controlled geometry; tissue is neither.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: 'PHYSICAL phantoms with NIST-TRACEABLE reference values: arrays of samples with certified
+    T1 and T2, and geometric fiducials at certified positions'
+- name: geometric_fiducials
+  kind: measured
+  via: null
+  systematic_bias: GRADIENT NONLINEARITY produces a spatially varying geometric distortion that a fiducial
+    grid measures directly. That distortion field is a systematic error in every coordinate derived from
+    that scanner, and it is otherwise invisible -- the ADNI phantom exists in ADNI precisely to catch
+    it
+  band_hz:
+  - null
+  - null
+absent:
+- biological_tissue
+- physiological_temperature_in_all_uses
+- in_vivo_conditions
+use:
+- calibrate
+forbidden:
+- nist-mri-phantoms/* -> biological interpretation
+- nist-mri-phantoms/* -> in-vivo tissue parameter claims
+- nist-mri-phantoms/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: nist-mri-phantoms
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

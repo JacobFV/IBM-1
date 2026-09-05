@@ -1,0 +1,59 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nilearn
+title: Nilearn -- statistical learning on neuroimaging volumes and surfaces
+provider: Nilearn developers / INRIA
+citation: Abraham et al., Machine learning for neuroimaging with scikit-learn. Frontiers in Neuroinformatics
+  2014.
+urls:
+- https://nilearn.github.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Code licence not read; the atlases Nilearn FETCHES carry their own terms (Harvard-Oxford is non-commercial
+    and is fetched by a one-line call) and a fetcher does not relax them.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- fsaverage
+- subject_native
+streams:
+- name: parcel_averaging_and_masking
+  kind: measured
+  via: null
+  systematic_bias: NiftiLabelsMasker makes 'reduce a volume to a parcel time series' a one-liner, which
+    is exactly the step where a cover becomes an ontology by accident. The averaging is also a derived
+    view whose information loss (within-parcel heterogeneity, partial volume at parcel edges) is never
+    recorded by the call.
+  band_hz:
+  - null
+  - null
+  temporal_support: TR-sampled series as provided
+  spatial_support: label and probabilistic masking over volumes and surfaces; parcel averaging
+- name: atlas_fetchers
+  kind: measured
+  via: null
+  systematic_bias: a fetcher makes an atlas's licence invisible at the call site, which is how a non-commercial
+    atlas ends up on a default path
+  band_hz:
+  - null
+  - null
+absent:
+- measurements
+- uncertainty_propagation
+use:
+- calibrate
+forbidden:
+- nilearn/* -> runtime dependency in a WIN query
+- nilearn/* -> an atlas reaching an artifact without its licence
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: nilearn
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

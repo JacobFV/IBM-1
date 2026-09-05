@@ -1,0 +1,62 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tractogram-formats
+title: TCK, TRK and TRX tractogram formats
+provider: MRtrix3, TrackVis and the TRX working group
+citation: PROMPT.md §55, 'tractogram formats TCK, TRK, and TRX, RETAINING ALGORITHM METADATA OUTSIDE THE
+  BINARY GEOMETRY'.
+urls:
+- https://tee-ar-ex.github.io/trx_python/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- physical_space
+streams:
+- name: streamline_geometry_container
+  kind: measured
+  via: null
+  systematic_bias: '§55''s instruction is precise: RETAIN ALGORITHM METADATA OUTSIDE THE BINARY GEOMETRY.
+    TCK and TRK store curves and essentially nothing about how they were made, which is why §52.8 has
+    to demand that the parent DWI, software version, seeding, response functions, thresholds and bundle
+    definitions travel separately -- the format will not carry them.'
+  notes: TRK's coordinate convention is a documented source of misalignment between tools; a tractogram
+    loaded with the wrong convention is silently displaced
+  band_hz:
+  - null
+  - null
+  temporal_support: no time axis; a streamline is a static curve and is not a trajectory in time
+  spatial_support: sets of polylines in a declared space, with TRX additionally supporting per-streamline
+    and per-point data arrays and a declared reference geometry
+- name: trx_extensibility
+  kind: measured
+  via: null
+  systematic_bias: TRX's per-streamline and per-point arrays are where a SIFT weight, a bundle probability
+    or an arc-length coordinate can actually live -- which §56.2's path ensembles and tractometry profiles
+    need and the older formats cannot provide
+  band_hz:
+  - null
+  - null
+absent:
+- algorithm_provenance
+- uncertainty
+- directionality
+use:
+- calibrate
+forbidden:
+- tractogram-formats/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: tractogram-formats
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

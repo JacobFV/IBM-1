@@ -1,0 +1,5 @@
+# where the bytes for `algonauts-2025` actually live.  never the bytes themselves.
+source_url: "https://algonautsproject.com/2025/challenge.html"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

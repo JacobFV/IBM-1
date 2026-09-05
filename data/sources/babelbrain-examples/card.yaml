@@ -1,0 +1,72 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: babelbrain-examples
+title: BabelBrain example cases
+provider: BabelBrain / Samuel Pichardo and collaborators
+citation: 'Pichardo, BabelBrain: an open-source application for prospective modeling of transcranial focused
+  ultrasound for neuromodulation applications. arXiv:2301.12727.'
+urls:
+- https://github.com/ProteusMRIgHIFU/BabelBrain
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- simulation_grid
+- transducer_frame
+streams:
+- name: skull_to_acoustic_property_conversion
+  kind: measured
+  via: null
+  systematic_bias: §59 reference 42 and §54.2 both single BabelBrain out because it EXPLICITLY MODELS
+    SKULL-INDUCED ACOUSTIC DISTORTION AND THERMAL EXPOSURE FROM SUBJECT IMAGING. The CT-Hounsfield-to-speed-of-sound
+    mapping is an empirical relation with real scatter, and where ZTE or UTE MRI substitutes for CT the
+    conversion is a further inference -- so the individual skull model is derived twice over.
+  notes: acoustic properties of skull are heterogeneous and porous at a scale below the simulation grid;
+    the effective medium is an approximation
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: worked example cases mapping individual SKULL IMAGING to acoustic and thermal simulation
+    outputs, including the CT-to-acoustic-property conversion that the whole pipeline rests on
+- name: thermal_dose_estimation
+  kind: measured
+  via: null
+  systematic_bias: thermal exposure is a SAFETY quantity as well as a physical one; §52.13's separation
+    of requested from delivered matters here in both directions
+  band_hz:
+  - null
+  - null
+absent:
+- measured_in_vivo_fields
+- measured_temperature
+- skull_microstructure
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The acoustic focus is a millimetre-scale volume whose position depends on transducer element
+    geometry, the drive phase and amplitude mapping, and the pose of the transducer against the skull.
+    Without the device product the target is a nominal coordinate and the intended and delivered foci
+    are not distinguishable.
+use:
+- surrogate
+forbidden:
+- babelbrain-examples/* -> measured-field or measured-temperature claims
+- babelbrain-examples/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: babelbrain-examples
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

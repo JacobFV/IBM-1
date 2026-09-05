@@ -1,0 +1,84 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: pcasl-datasets
+title: Pseudo-continuous arterial spin labelling datasets
+provider: multiple -- including HCP-Aging, and consensus-protocol pCASL studies
+citation: PROMPT.md §52.11, 'pCASL datasets'; Alsop et al., Recommended implementation of arterial spin-labeled
+  perfusion MRI. Magnetic Resonance in Medicine 2015.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: cbf_maps
+  kind: measured
+  via: null
+  observation_chain: arterial blood water magnetically labelled proximally -> transit through the arterial
+    tree -> exchange into tissue -> label decay at T1 of blood -> control-label subtraction -> perfusion-weighted
+    signal -> kinetic-model CBF
+  confounds:
+  - arterial transit time, which single-delay pCASL ASSUMES rather than measures and which varies with
+    age, vascular disease and region -- the dominant systematic error
+  - labelling efficiency, assumed at a nominal value unless measured
+  - T1 of blood, assumed from haematocrit
+  - partial volume between grey matter, white matter and CSF at ASL's coarse resolution
+  systematic_bias: ASL gives CBF in ABSOLUTE PHYSIOLOGICAL UNITS, which BOLD never does, and that is what
+    makes it a calibration source rather than another contrast.
+  notes: the kinetic model's assumed transit time is the difference between a perfusion deficit and a
+    delayed arrival, and single-delay acquisitions cannot separate them
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: perfusion-weighted volumes and fitted CBF maps from labelling arterial blood water
+    in the neck; a CONSENSUS PROTOCOL exists, which makes cross-study comparison unusually tractable for
+    a physiological measurement
+- name: multi_delay_transit_time
+  kind: measured
+  via: null
+  systematic_bias: MULTI-DELAY pCASL measures arterial transit time rather than assuming it, and transit
+    time is a geometric property of the arterial tree -- a direct bridge between §52.10's vessel geometry
+    and §52.11's flow physiology
+  band_hz:
+  - null
+  - null
+absent:
+- vessel_geometry
+- venous_side
+- electrophysiology
+- multi_delay_in_most_datasets
+requires:
+- geometry: vascular-products
+  severity: degrading
+  without_it: A perfusion or reactivity map is a voxel field with no vessel attached. It can be used as
+    a voxel-wise measurement, but attributing it to a supplying artery, a draining vein or a microvascular
+    compartment -- which is what makes it evidence about the vascular state rather than about the image
+    -- requires the vascular product.
+  substitute: Voxel-wise use with no vessel attribution, which cannot separate an arterial transit effect
+    from a tissue perfusion change.
+use:
+- calibrate
+- fit
+forbidden:
+- pcasl-datasets/* -> neural supervision
+- pcasl-datasets/cbf_maps -> transit-time-corrected perfusion in single-delay data
+- pcasl-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: pcasl-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

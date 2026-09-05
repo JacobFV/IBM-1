@@ -1,0 +1,5 @@
+# where the bytes for `babelbrain-examples` actually live.  never the bytes themselves.
+source_url: "https://github.com/ProteusMRIgHIFU/BabelBrain"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

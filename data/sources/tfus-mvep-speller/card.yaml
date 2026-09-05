@@ -1,0 +1,137 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tfus-mvep-speller
+title: tFUS-EEG-BCI mVEP speller dataset -- focused ultrasound to V5 with EEG readout
+provider: Figshare (tFUS-EEG-BCI mVEP speller)
+citation: tFUS-EEG-BCI mVEP Speller Dataset for Transcranial Focused Ultrasound to V5 Enhances Human Visual
+  Motion Brain-Computer Interface by Modulating Feature-Based Attention. Figshare.
+urls:
+- https://figshare.com/articles/dataset/tFUS-EEG-BCI_mVEP_Speller_Dataset_for_Transcranial_Focused_Ultrasound_to_V5_Enhances_Human_Visual_Motion_Brain-Computer_Interface_by_Modulating_Feature-Based_Attention_/25583334
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Figshare deposit; stated terms not verified here. Unresolved.
+binding: unbound
+population:
+  n: 25
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 25 participants. §51.4 item 29 describes it as ULTRASOUND-WRITE / EEG-READ evidence -- a non-invasive
+    perturbation with a non-invasive readout, targeting a functionally identified area.
+frames:
+- transducer_frame
+- head
+- subject_native
+- eeg_cap
+- display
+streams:
+- name: eeg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - the auditory confound above, which is the leading alternative explanation for any tFUS effect and
+    requires an explicit control to exclude
+  - expectation and attention effects, since participants can often tell when sonication is on
+  systematic_bias: '§52.13: REQUESTED SETTINGS, DELIVERED PHYSICAL FIELD, PERIPHERAL CO-STIMULATION and
+    CANDIDATE NEURAL RESPONSE are four different things. Collapsing them is how a coil position becomes
+    a claim about cortex. tFUS to a functionally defined visual area with an EEG readout during a visual
+    task is a well-posed perturbation experiment; whether the perturbation was acoustic or auditory is
+    the question the design must answer.'
+  notes: the delivered acoustic field is modelled from skull imaging, and the model's discrepancy against
+    a measurement is unknown here
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at kHz; ultrasound bursts with their own duty cycle; visual stimuli at display
+    rate
+  spatial_support: the ultrasound focus is a millimetre-scale FOCAL VOLUME whose position depends on transducer
+    pose AND on skull-induced aberration -- the skull refracts and attenuates the beam, so the intended
+    and actual focus differ
+- name: targeting_and_parameters
+  kind: measured
+  via: null
+  systematic_bias: §56.4 asks for tFUS element geometry and phase/drive mappings; recorded targeting and
+    drive parameters are the inputs an acoustic simulation needs
+  band_hz:
+  - null
+  - null
+- name: bci_performance
+  kind: imposed
+  via: null
+  systematic_bias: a behavioural endpoint with a real criterion, which is stronger than a difference in
+    an evoked component
+  band_hz:
+  - null
+  - null
+- name: tfus_parameters
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: transducer_targeting
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: visual_stimuli
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- delivered_acoustic_field_measurement
+- skull_ct
+- sham_arm_verification
+- auditory_masking_verification
+- thermal_measurement
+requires:
+- geometry: device-geometry
+  for_streams:
+  - targeting_and_parameters
+  severity: blocking
+  without_it: The acoustic focus is a millimetre-scale volume whose position depends on transducer element
+    geometry, the drive phase and amplitude mapping, and the pose of the transducer against the skull.
+    Without the device product the target is a nominal coordinate and the intended and delivered foci
+    are not distinguishable.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- calibrate
+- fit
+forbidden:
+- tfus-mvep-speller/* -> delivered-field claims without an acoustic model
+- tfus-mvep-speller/eeg -> neuromodulation claims without an auditory confound control
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: tfus-mvep-speller
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

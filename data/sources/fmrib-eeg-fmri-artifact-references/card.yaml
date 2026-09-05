@@ -1,0 +1,80 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fmrib-eeg-fmri-artifact-references
+title: FMRIB and TESA EEG-fMRI and TMS-EEG artifact reference methods
+provider: FMRIB Oxford and the TESA project
+citation: Niazy et al., Removal of FMRI environment artifacts from EEG data using optimal basis sets.
+  NeuroImage 2005; Rogasch et al., TESA. Brain Stimulation 2017. PROMPT.md §54.1.
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+- scanner
+- cardiac_cycle
+streams:
+- name: gradient_artifact_removal
+  kind: measured
+  via: null
+  systematic_bias: Average artifact subtraction and optimal basis sets are the reference methods for the
+    EEG-fMRI cards (nm000254-natview, ds002336, ds002725, ds006033, ds000116, ds003768). The residual
+    after subtraction is CORRELATED WITH THE MR ACQUISITION ITSELF, so it is not independent noise with
+    respect to any joint EEG-fMRI model -- which is a structural point that a preprocessing footnote hides
+    and an observation model must represent.
+  notes: template subtraction assumes the artifact is stationary between repetitions; head motion breaks
+    that assumption and motion is not rare
+  band_hz:
+  - null
+  - null
+  temporal_support: gradient artifact at the slice rate; BCG at the cardiac rate. Both are PHYSIOLOGICALLY
+    OR INSTRUMENTALLY CLOCKED, which is why template subtraction works at all
+  spatial_support: 'the artifacts themselves as objects: the gradient artifact is periodic at the slice
+    repetition rate and is orders of magnitude larger than the EEG; the ballistocardiogram is pulse-locked
+    and varies in shape from beat to beat'
+- name: ballistocardiogram_removal
+  kind: measured
+  via: null
+  systematic_bias: the BCG arises from electrode motion driven by arterial pulsation in the static field
+    -- so it is a VASCULAR signal contaminating a neural one, and §16's vascular state is literally present
+    in the EEG. Removing it discards a real physiological measurement
+  band_hz:
+  - null
+  - null
+- name: tms_artifact_taxonomy
+  kind: measured
+  via: null
+  systematic_bias: see the tesa-reference-data card
+  band_hz:
+  - null
+  - null
+absent:
+- residual_quantification
+- ground_truth_clean_eeg
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: The gradient artifact and the ballistocardiogram are induced in the electrode leads, so
+    their amplitude and topography depend on lead geometry and loop area inside the bore. Without the
+    device product these artifacts can be removed statistically but not modelled physically, and what
+    is removed with them is unaccounted.
+  substitute: Template subtraction and component rejection, which are fitted to the data and therefore
+    remove neural signal correlated with the artifact.
+use:
+- calibrate
+- surrogate
+forbidden:
+- fmrib-eeg-fmri-artifact-references/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: fmrib-eeg-fmri-artifact-references
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

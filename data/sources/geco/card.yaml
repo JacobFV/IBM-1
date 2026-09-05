@@ -1,0 +1,87 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: geco
+title: GECO -- Ghent Eye-tracking Corpus of monolingual and bilingual novel reading
+provider: Ghent University
+citation: 'Cop et al., Presenting GECO: An eyetracking corpus of monolingual and bilingual sentence reading.
+  Behavior Research Methods 2017.'
+urls:
+- https://expsy.ugent.be/downloads/geco/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved; the novel read (an Agatha Christie text) is third-party copyright.
+binding: unbound
+population:
+  n: 33
+  hierarchy:
+  - participant
+  - session
+  notes: 14 English monolinguals and 19 Dutch-English bilinguals reading an entire novel. The bilingual
+    arm is a language-identity manipulation within person.
+frames:
+- eye
+- display
+- text_layout
+streams:
+- name: word_level_reading_times
+  kind: imposed
+  via: null
+  systematic_bias: reading time is a behavioural OUTCOME, not a state observation; §29 keeps it at low
+    authority as evidence about internal linguistic state
+  band_hz:
+  - null
+  - null
+  temporal_support: self-paced over multiple sessions; the NARRATIVE order is preserved, which is unusual
+    for a reading corpus
+  spatial_support: desktop eye tracker; full novel presented page by page
+- name: language_condition
+  kind: imposed
+  via: null
+  systematic_bias: within-person L1/L2 contrast on comparable text is a designed manipulation
+  band_hz:
+  - null
+  - null
+- name: fixation_measures
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: text_materials
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: participant_language_profile
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- audio
+requires:
+- geometry: retinal-world-geometry
+  for_streams:
+  - word_level_reading_times
+  severity: blocking
+  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
+    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
+    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+use:
+- fit
+forbidden:
+- geco/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: geco
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

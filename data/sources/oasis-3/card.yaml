@@ -1,0 +1,163 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: oasis-3
+title: 'OASIS-3: longitudinal neuroimaging, clinical and cognitive data for normal ageing and Alzheimer
+  disease'
+provider: OASIS / Washington University Knight ADRC
+citation: 'LaMontagne et al., OASIS-3: longitudinal neuroimaging, clinical, and cognitive dataset for
+  normal aging and Alzheimer disease. medRxiv 2019.'
+urls:
+- https://www.oasis-brains.org/
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Click-through data use agreement; terms unresolved here.
+binding: unbound
+population:
+  n: 1098
+  hierarchy:
+  - participant
+  - session
+  notes: Longitudinal with amyloid and FDG PET in a subset.
+frames:
+- scanner
+- subject_native
+- fsaverage
+- MNI152
+- pet_scanner
+streams:
+- name: pet_fdg
+  kind: measured
+  via: null
+  observation_chain: glucose transport and hexokinase phosphorylation -> 18F-FDG trapping -> positron
+    emission and annihilation -> coincidence detection -> attenuation and scatter correction -> reconstruction
+    -> activity concentration -> kinetic model of the metabolic rate
+  confounds:
+  - partial-volume effect from atrophy, which mimics hypometabolism
+  - reference-region choice determining every SUVR number
+  - blood glucose at scan time
+  systematic_bias: Atrophy-driven partial volume is the single largest systematic bias in ageing FDG-PET.
+  band_hz:
+  - null
+  - null
+  temporal_support: longitudinal sessions years apart; PET frames on their own dynamic timeline
+  spatial_support: 1 mm structural; PET at its own reconstruction resolution
+- name: asl_perfusion
+  kind: measured
+  via: null
+  observation_chain: arterial blood water magnetically labelled proximally -> transit through the arterial
+    tree -> exchange into tissue -> label decay at T1 of blood -> control-label subtraction -> perfusion-weighted
+    signal -> kinetic-model CBF
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - prolonged arterial transit in vascular disease
+  band_hz:
+  - null
+  - null
+- name: pathology_group
+  kind: measured
+  via: null
+  systematic_bias: a mechanism that predicts identically in Alzheimer and control participants has not
+    learned anything about the mechanism it claims
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pet_amyloid
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pet_tau
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: clinical
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cognition
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- ieeg
+- eye_tracking
+- intervention
+- angiography
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+- geometry: vascular-products
+  for_streams:
+  - asl_perfusion
+  severity: degrading
+  without_it: A perfusion or reactivity map is a voxel field with no vessel attached. It can be used as
+    a voxel-wise measurement, but attributing it to a supplying artery, a draining vein or a microvascular
+    compartment -- which is what makes it evidence about the vascular state rather than about the image
+    -- requires the vascular product.
+  substitute: Voxel-wise use with no vessel attribution, which cannot separate an arterial transit effect
+    from a tissue perfusion change.
+use:
+- control
+- fit
+- prior
+forbidden:
+- oasis-3/* -> healthy population priors without pathology conditioning
+- oasis-3/pathology_group -> instantaneous cortical state
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: oasis-3
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

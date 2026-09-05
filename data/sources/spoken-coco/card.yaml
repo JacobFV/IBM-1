@@ -1,0 +1,79 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: spoken-coco
+title: SpokenCOCO -- spoken captions for COCO images
+provider: MIT CSAIL
+citation: Hsu et al., Text-Free Image-to-Speech Synthesis Using Learned Segmental Units. ACL 2021.
+urls:
+- https://groups.csail.mit.edu/sls/downloads/placesaudio/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Audio recordings and COCO images have separate terms; both unresolved here.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: Crowdworker speakers reading captions aloud; speaker identity is a grouping level and is often
+    ignored, which leaks speaker identity into every split.
+frames:
+- microphone_uncontrolled
+- image_plane
+streams:
+- name: spoken_captions
+  kind: imposed
+  via: null
+  systematic_bias: 'read speech, not spontaneous speech: the prosody and disfluency statistics differ
+    from anything a person hears in the world'
+  band_hz:
+  - null
+  - null
+  temporal_support: audio at 16 kHz; one utterance per caption, no continuous timeline
+  spatial_support: 'crowdsourced recording conditions: uncontrolled microphones and rooms'
+- name: coco_image_pairing
+  kind: imposed
+  via: null
+  systematic_bias: COCO images are shared with NSD and BOLD5000, so this is a cross-dataset stimulus leakage
+    channel
+  band_hz:
+  - null
+  - null
+- name: text_captions
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: coco_image_ids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: forced_alignments
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- speaker_demographics
+- room_acoustics
+use:
+- fit
+forbidden:
+- spoken-coco/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - stimulus
+  notes: speaker AND image; the image axis is shared with fMRI datasets
+provenance:
+  imported_from: win-registry
+  card: spoken-coco
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,69 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: youcook2
+title: YouCook2 -- instructional cooking video with temporally localised descriptions
+provider: University of Michigan
+citation: Zhou et al., Towards Automatic Learning of Procedures from Web Instructional Videos. AAAI 2018.
+urls:
+- http://youcook2.eecs.umich.edu/
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Annotations are distributed; the videos are third-party YouTube content. Annotation licence unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - session
+  notes: 2000 videos across 89 recipes; no human subject.
+frames:
+- camera_uncontrolled
+- world
+streams:
+- name: procedure_segment_annotations
+  kind: imposed
+  via: null
+  systematic_bias: human-written procedure descriptions are a THEORY of the event structure; §29 keeps
+    such abstract structure at low authority until it earns influence
+  band_hz:
+  - null
+  - null
+  temporal_support: human-annotated procedure segments with start and end times -- the annotation is the
+    product, the video is the substrate
+  spatial_support: uncontrolled web video
+- name: video
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: video_ids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: recipe_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- gaze
+- physiology
+- the_video_bytes
+use:
+- fit
+forbidden:
+- youcook2/* -> any cortical state
+split:
+  group_by:
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: youcook2
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

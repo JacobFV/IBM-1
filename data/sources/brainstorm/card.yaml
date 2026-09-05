@@ -1,0 +1,75 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brainstorm
+title: Brainstorm -- MEG/EEG/iEEG analysis application
+provider: University of Southern California and collaborators
+citation: 'Tadel et al., Brainstorm: A User-Friendly Application for MEG/EEG Analysis. Computational Intelligence
+  and Neuroscience 2011.'
+urls:
+- https://neuroimage.usc.edu/brainstorm/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- meg_device
+- eeg_cap
+- source_space
+- fsaverage
+streams:
+- name: vendor_format_ingestion
+  kind: measured
+  via: null
+  systematic_bias: GEOMETRY INGESTION is what §54 names first, and Brainstorm's breadth of vendor MEG
+    and EEG format support -- including SENSOR GEOMETRY, coil integration points and head position information
+    that generic readers drop -- is the practical reason to hold it. A gradiometer's integration-point
+    geometry is not optional for a forward model and is exactly what a naive reader discards.
+  band_hz:
+  - null
+  - null
+  temporal_support: the data's native rate
+  spatial_support: source and sensor spaces with OpenMEEG and analytic solvers behind a GUI, plus extensive
+    vendor-specific file format support
+- name: forward_and_inverse_pipelines
+  kind: measured
+  via: null
+  systematic_bias: another independent pipeline over the same physics; its disagreement with MNE on identical
+    data is an implementation-discrepancy measurement
+  band_hz:
+  - null
+  - null
+absent:
+- matlab_independence
+- measured_conductivities
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'This solver''s input IS the geometry: sensor or electrode positions on one side, a head
+    model on the other. Used as an offline oracle it can produce nothing until the device product supplies
+    the first of those, and a solver run against assumed positions validates an internal implementation
+    against an assumption rather than against physics.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- surrogate
+forbidden:
+- brainstorm/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: brainstorm
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

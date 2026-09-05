@@ -1,0 +1,84 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: channel-adaptation-baselines
+title: 'Channel-adaptation baselines: spherical interpolation, source-space adaptation, convolutional
+  adaptation and channel-token methods'
+provider: multiple -- the EEG transfer-learning literature
+citation: 'PROMPT.md §53.2, ''channel-adaptation baselines: spherical interpolation, source-space adaptation,
+  convolutional adaptation, and channel-token methods''.'
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+- source_space
+- head
+streams:
+- name: spherical_interpolation
+  kind: measured
+  via: null
+  systematic_bias: uses electrode POSITIONS and a spherical head assumption -- physically motivated and
+    physically wrong in detail, since the head is not a sphere. It is the cheapest method that uses geometry
+    at all
+  band_hz:
+  - null
+  - null
+  temporal_support: no time axis of its own; the adaptation acts on whatever epoching the host model imposes
+  spatial_support: 'four DIFFERENT strategies for making a model trained on one montage work on another:
+    interpolate the signal onto a reference montage; project to source space and back; learn a convolutional
+    adapter; or embed channels as tokens. They differ in how much PHYSICS they use'
+- name: source_space_adaptation
+  kind: measured
+  via: null
+  systematic_bias: 'THE PHYSICALLY CORRECT ANSWER, and the one B-WIN''s architecture already implies:
+    project every montage into a common SOURCE space through its own forward model, so montage differences
+    are handled by the physics rather than by a learned adapter. §8''s warning still applies -- an inverse
+    solution is not ground truth -- but the uncertainty is then explicit instead of hidden in an adapter''s
+    weights.'
+  notes: the inverse operator's uncertainty is transferred into the representation and must be carried,
+    not discarded
+  band_hz:
+  - null
+  - null
+- name: convolutional_and_token_adaptation
+  kind: measured
+  via: null
+  systematic_bias: 'learned adapters and channel tokens use NO GEOMETRY: they infer the montage relationship
+    from data. That is the mechanism by which a model learns channel identity as anatomy, and comparing
+    these four families head to head is the direct test §53.2 is asking for'
+  band_hz:
+  - null
+  - null
+absent:
+- a_single_correct_method
+- uncertainty_propagation_in_most_implementations
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: This model's channel axis is a set of names, not a set of positions -- the channel-identity
+    problem exactly. Its representation can be computed without any geometry, but relating it to a cortical
+    support, or transferring it to a montage it was not trained on, requires the electrode or sensor geometry
+    that the name stands in for.
+  substitute: Channel-name matching, which silently asserts that two electrodes sharing a label sat in
+    the same place on two different heads.
+use:
+- calibrate
+- evaluate
+forbidden:
+- channel-adaptation-baselines/* -> observation-role likelihoods
+- channel-adaptation-baselines/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: channel-adaptation-baselines
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

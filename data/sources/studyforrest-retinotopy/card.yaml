@@ -1,0 +1,103 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: studyforrest-retinotopy
+title: StudyForrest retinotopy extension
+provider: StudyForrest project
+citation: Sengupta et al., A studyforrest extension, retinotopic mapping and localization of higher visual
+  areas. Scientific Data 2016.
+urls:
+- https://www.studyforrest.org/data.html
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: 15
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: Same participants as parts of the StudyForrest movie arms -- the reason this extension matters
+    is that it makes the movie responses retinotopically addressable in the SAME people.
+frames:
+- scanner
+- subject_native_surface
+- visual_field_polar
+- display
+streams:
+- name: bold_retinotopy
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - instructed fixation without continuous monitoring in all runs
+  systematic_bias: Within-participant pairing with the movie arms is the value; the sample is small.
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 2 s; clockwise/counterclockwise wedge and expanding/contracting ring runs
+  spatial_support: 7T BOLD on individual surfaces; higher-visual-area localisers alongside the retinotopic
+    runs
+- name: higher_visual_localisers
+  kind: measured
+  via: null
+  systematic_bias: a category localiser defines a functional support by CONTRAST threshold; the threshold
+    is a choice and the resulting patch is not a natural kind
+  band_hz:
+  - null
+  - null
+- name: individual_surfaces
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_apertures
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- peripheral_field
+- vascular
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- calibrate
+- fit
+forbidden:
+- studyforrest-retinotopy/higher_visual_localisers -> hard patch boundaries
+split:
+  group_by:
+  - participant
+  - run
+provenance:
+  imported_from: win-registry
+  card: studyforrest-retinotopy
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,5 @@
+# where the bytes for `willett-handwriting-bci` actually live.  never the bytes themselves.
+source_url: "https://datadryad.org/dataset/doi:10.5061/dryad.wh70rxwmv"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

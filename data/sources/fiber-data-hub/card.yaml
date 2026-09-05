@@ -1,0 +1,98 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fiber-data-hub
+title: Fiber Data Hub -- processed tractograms with retained parent and algorithm lineage
+provider: Fiber Data Hub consortium
+citation: Fiber Data Hub. Nature Methods 2025.
+urls:
+- https://www.nature.com/articles/s41592-025-02762-8
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Per-contribution terms inherited from the parent datasets. Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  notes: n unresolved; an aggregate of processed tractograms from many parent datasets.
+frames:
+- subject_native
+- MNI152
+streams:
+- name: tractograms_with_lineage
+  kind: measured
+  via: null
+  systematic_bias: '§51.3 item 23: USE AS DERIVED EVIDENCE ONLY. Its distinguishing feature is that it
+    keeps the parent dataset and the algorithm attached to the streamlines, which is exactly what §52.8
+    requires and what almost no distributed connectome does. That makes it a model for how obj-tract-path-products
+    should store its own output.'
+  notes: the streamlines are one algorithm's answer; keeping the algorithm attached does not make the
+    answer correct, it makes the answer INTERPRETABLE
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: streamline geometry in the parent dataset's subject space, with the parent and the
+    algorithm recorded
+- name: cross_algorithm_agreement
+  kind: measured
+  via: null
+  systematic_bias: where the same parent DWI has been processed several ways, the disagreement is a measurable
+    model-class uncertainty
+  band_hz:
+  - null
+  - null
+- name: tractograms
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bundle_segmentations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: parent_dataset_lineage
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: algorithm_parameters
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- raw_dwi
+- ground_truth
+- directionality
+requires:
+- geometry: tract-path-products
+  for_streams:
+  - tractograms_with_lineage
+  severity: blocking
+  without_it: 'A streamline set is geometry without endpoints: it terminates in voxels, not in named supports.
+    Without the tract product -- endpoint-density splats, path ensembles and arc-length tractometry --
+    these streamlines cannot become an interaction between two addressable supports.'
+use:
+- evaluate
+- prior
+forbidden:
+- fiber-data-hub/* -> measured-connection claims
+- fiber-data-hub/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: fiber-data-hub
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

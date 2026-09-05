@@ -1,0 +1,73 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: lsl
+title: Lab Streaming Layer and hardware triggers
+provider: Swartz Center for Computational Neuroscience, UCSD
+citation: Kothe et al., The Lab Streaming Layer for synchronized multimodal recording. bioRxiv 2024.
+urls:
+- https://labstreaminglayer.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- device_clock
+- lsl_reference_clock
+- hardware_trigger_line
+streams:
+- name: prospective_clock_synchronisation
+  kind: measured
+  via: null
+  systematic_bias: '§55 names LSL AND HARDWARE TRIGGERS for PROSPECTIVE clock synchronisation, and the
+    word prospective is load-bearing: a clock relation measured DURING acquisition has a residual; one
+    reconstructed afterwards from event markers is a fit with unknown error. The bbbd card''s open question
+    about fitted clock transformations, and the supercognition-longitudinal card''s design commitment,
+    both turn on this.'
+  notes: LSL's software timestamps carry jitter from operating-system scheduling; a HARDWARE TRIGGER LINE
+    is more accurate and less convenient, and the two are different measurements of the same relation
+  band_hz:
+  - null
+  - null
+  temporal_support: each stream keeps its own native rate; LSL does NOT resample. The relation between
+    clocks is estimated by repeated round-trip measurement and stored, which is precisely the clock-graph
+    edge with a residual that §33 and obj-clock-graph require
+  spatial_support: several devices each producing samples with their OWN clock, plus a continuously estimated
+    offset between each device clock and a common reference -- so the clock relation is MEASURED AND RECORDED
+    rather than assumed
+- name: hardware_trigger_lines
+  kind: measured
+  via: null
+  systematic_bias: 'a TTL pulse into an amplifier''s trigger channel is sample-accurate on that amplifier''s
+    own clock, which is the strongest clock relation available and is why `method: hardware_trigger` is
+    a distinct value in the card schema'
+  band_hz:
+  - null
+  - null
+- name: recorded_offsets
+  kind: measured
+  via: null
+  systematic_bias: LSL stores the estimated offsets, so the synchronisation's uncertainty is recoverable
+    after the fact -- which almost no acquisition setup preserves
+  band_hz:
+  - null
+  - null
+absent:
+- retrospective_synchronisation
+- sub_millisecond_guarantees_over_software_paths
+use:
+- calibrate
+forbidden:
+- lsl/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: lsl
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

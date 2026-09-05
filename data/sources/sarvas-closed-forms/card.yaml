@@ -1,0 +1,63 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: sarvas-closed-forms
+title: Sarvas and Heller-van Hulsteyn closed-form solutions
+provider: the analytic bioelectromagnetics literature
+citation: Sarvas, Basic mathematical and electromagnetic concepts of the biomagnetic inverse problem.
+  Physics in Medicine and Biology 1987; Heller and van Hulsteyn, Brain stimulation using electromagnetic
+  sources. Biophysical Journal 1992.
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- analytic_sphere
+- coil_frame
+- source_space
+streams:
+- name: sarvas_meg_forward
+  kind: measured
+  via: null
+  systematic_bias: 'Sarvas''s result is exact and carries a physically decisive consequence: IN A SPHERICAL
+    CONDUCTOR, A RADIAL DIPOLE PRODUCES NO EXTERNAL MAGNETIC FIELD. MEG is therefore blind to radial sources
+    in the spherical approximation, which is not a numerical artifact but a symmetry -- and it is why
+    MEG and EEG are complementary rather than redundant (§15). Any MEG forward implementation that does
+    not reproduce this is wrong.'
+  notes: the real head is not spherical, so radial sources are not exactly silent; the residual is small
+    and is a geometry effect
+  band_hz:
+  - null
+  - null
+  temporal_support: quasi-static
+  spatial_support: 'exact analytic expressions: Sarvas gives the magnetic field of a current dipole in
+    a spherical conductor; Heller and van Hulsteyn give the induced field from an external coil in a sphere'
+- name: heller_van_hulsteyn_tms_field
+  kind: measured
+  via: null
+  systematic_bias: the exact induced field from a coil over a sphere, and the corresponding result that
+    the induced field has NO RADIAL COMPONENT at the sphere's surface. §49.4 records that the predecessor's
+    internal analytic TMS solvers already implement this class of solution -- it is the seed §54 says
+    to internalise from
+  band_hz:
+  - null
+  - null
+absent:
+- realistic_head_geometry
+- conductivity_inhomogeneity
+use:
+- surrogate
+forbidden:
+- sarvas-closed-forms/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: sarvas-closed-forms
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

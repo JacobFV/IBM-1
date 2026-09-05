@@ -1,0 +1,156 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds002336
+title: ds002336 -- simultaneous EEG-fMRI motor-imagery neurofeedback
+provider: OpenNeuro ds002336
+citation: Lioi et al., A multimodal dataset for simultaneous EEG and near-infrared spectroscopy / fMRI
+  neurofeedback. Scientific Data 2020.
+urls:
+- https://openneuro.org/datasets/ds002336
+access: held
+licence:
+  name: CC0-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'Read from the held dataset_description.json, which states "License": "CC0". CC0-1.0 is a public-domain
+    dedication: nothing this source contributes inherits a redistribution, attribution or share-alike
+    constraint. Consent scope is a separate question the file does not answer.'
+binding: unbound
+population:
+  n: 10
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 'HELD: all 10 participants (sub-xp101 .. sub-xp110), measured 2026-08-15. This is the only source
+    in the store held at FULL participant coverage. 5.81 h of raw EEG and 5.23 h of preprocessed EEG,
+    both measured from the BrainVision headers; simultaneous EEG-fMRI throughout.'
+frames:
+- eeg_cap
+- scanner
+- subject_native
+- display
+- MNI152
+streams:
+- name: eeg_64ch
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - gradient-switching artifact in the concurrently recorded EEG
+  - ballistocardiogram artifact from pulse-driven electrode motion in B0
+  - helium-pump and cryo-cooler artifact
+  - increased participant motion in the bore
+  systematic_bias: Simultaneous EEG-fMRI in ten people with individual anatomy, held locally. One of the
+    few sources where fast and slow observations of the same episode are genuinely concurrent.
+  notes: gradient and ballistocardiogram subtraction residuals are correlated with the BOLD acquisition
+    itself
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at 5 kHz (for gradient-artifact subtraction); BOLD at TR 2.0 s exactly -- MEASURED
+    from all 61 held bold sidecars, which agree; the card previously said 'TR ~1 s' and was wrong by a
+    factor of two. Every run states SliceTiming over 32 slices, and the stated spacings run 62.5-65.0
+    ms where a uniform TR/32 model says 62.5 exactly, so the slice clock is measured here rather than
+    modelled. Neurofeedback updates within the trial, which makes this a CLOSED LOOP
+  spatial_support: 64-channel MR-compatible EEG inside the bore; BOLD at 1.98 x 1.98 x 4.0 mm -- ANISOTROPIC,
+    and the card previously said '2 mm BOLD', which was right in plane and silently wrong through plane
+    by a factor of two; 32 slices; individual T1
+- name: bold
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  band_hz:
+  - null
+  - null
+- name: neurofeedback_signal
+  kind: imposed
+  via: null
+  systematic_bias: 'THE FEEDBACK CLOSES THE LOOP: the displayed signal is a function of the participant''s
+    own brain state, so stimulus and response are not independent. Every standard encoding-model assumption
+    fails here, and that is what makes it interesting rather than what makes it unusable'
+  band_hz:
+  - null
+  - null
+- name: motor_imagery_task
+  kind: imposed
+  via: null
+  systematic_bias: imagery compliance is unverified; no EMG
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: task_events
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- emg
+- meg
+- ieeg
+- eye_tracking
+- electrode_digitisation
+- vascular
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg_64ch
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- fit
+forbidden:
+- ds002336/* -> open-loop encoding-model assumptions
+- ds002336/* -> vascular geometry
+- ds002336/*_eeg_pp.dat -> measured EEG (it is a preprocessed derived view whose pipeline is not held)
+split:
+  group_by:
+  - participant
+  - session
+  - run
+provenance:
+  imported_from: win-registry
+  card: ds002336
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

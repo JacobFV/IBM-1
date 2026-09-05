@@ -1,0 +1,10 @@
+# where the bytes for `scatterbrains` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/scatterbrains
+acquired_at: '2026-09-04'
+files: 18
+bytes: 3336850
+gib: 0.0
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://github.com/wumelissa/scatterBrains

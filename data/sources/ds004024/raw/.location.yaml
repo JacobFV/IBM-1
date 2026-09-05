@@ -1,0 +1,10 @@
+# where the bytes for `ds004024` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/ds004024
+acquired_at: '2026-09-04'
+files: 1654
+bytes: 29097535025
+gib: 27.1
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: null

@@ -1,0 +1,83 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cocomac
+title: CoCoMac -- collated macaque tract-tracing connectivity database
+provider: CoCoMac project (Kotter, Bakker et al.)
+citation: Stephan et al., Advanced database methodology for the Collation of Connectivity data on the
+  Macaque brain (CoCoMac). Philosophical Transactions of the Royal Society B 2001; Bakker et al., CoCoMac
+  2.0 and the future of tract-tracing databases. Frontiers in Neuroinformatics 2012.
+urls:
+- http://cocomac.g-node.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Terms not read. The database COLLATES results from hundreds of separately published papers, so
+    a redistribution claim would have to hold for all of them.
+binding: unbound
+population:
+  n: null
+frames:
+- multiple_incompatible_macaque_parcellations
+streams:
+- name: collated_tracer_edges
+  kind: measured
+  via: null
+  systematic_bias: 'CROSS-SPECIES and LITERATURE-DERIVED at once. Strength is ordinal and each level means
+    whatever the reporting author meant by it; combining ordinal judgements from different laboratories,
+    tracers and decades produces a number with no units. Its real value to this substrate is as a worked
+    example of obj-overlap-reconciliation: CoCoMac''s objective relational transformation is a prior attempt
+    at exactly the probabilistic mapping between incompatible covers that B-WIN needs, and its failure
+    modes are documented.'
+  notes: publication bias -- negative results are under-reported, so an absent edge is systematically
+    more likely to be unreported than genuinely absent
+  band_hz:
+  - null
+  - null
+  temporal_support: none
+  spatial_support: named regions in the ORIGINAL papers' own parcellations, related to each other by CoCoMac's
+    objective relational transformation. There is no common space; the mapping between schemes is itself
+    the database's main derived product
+- name: tract_tracing_connectivity
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: parcellation_correspondence
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- human_data
+- quantitative_strength
+- laminar_detail_for_most_entries
+- in_vivo_function
+requires:
+- geometry: tract-path-products
+  severity: blocking
+  without_it: Tracer edges are directed claims between named regions in the injecting paper's own parcellation.
+    Without the tract product there is no path geometry carrying these edges, and without one the connectivity
+    cannot be compared against a tractography-derived claim except by re-labelling.
+- geometry: literature-derived-geometry
+  severity: blocking
+  without_it: 'The geometry this source refers to exists only in its constituent publications: named regions
+    in each paper''s own scheme, with no common space and no distributed coordinates. Until that geometry
+    is reconstructed as a literature-derived product -- constructed, labelled as constructed, and carrying
+    its uncertainty -- there is nothing here that can be addressed.'
+use:
+- prior
+forbidden:
+- cocomac/* -> any human edge assertion
+- cocomac/* -> an unreported edge treated as a measured absence
+split:
+  group_by:
+  - site
+  notes: The grouping level that matters is the source study.
+provenance:
+  imported_from: win-registry
+  card: cocomac
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

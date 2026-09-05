@@ -1,0 +1,110 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: isruc
+title: ISRUC-Sleep -- polysomnographic dataset
+provider: University of Coimbra
+citation: 'Khalighi et al., ISRUC-Sleep: A comprehensive public dataset for sleep researchers. Computer
+  Methods and Programs in Biomedicine 2016.'
+urls:
+- https://sleeptight.isr.uc.pt/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Registration required; terms unresolved.
+binding: unbound
+population:
+  n: 118
+  hierarchy:
+  - participant
+  - session
+  notes: 118 subjects in three subgroups including healthy controls, patients, and a subset with REPEATED
+    recordings -- and it is scored by TWO INDEPENDENT EXPERTS, which makes inter-rater disagreement measurable
+    rather than assumed.
+frames:
+- eeg_cap
+- head
+- torso
+streams:
+- name: polysomnography
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at 200 Hz over whole nights; two independent scorings per epoch
+  spatial_support: six EEG channels in a standard montage
+- name: dual_expert_staging
+  kind: measured
+  via: null
+  systematic_bias: TWO INDEPENDENT SCORERS PER EPOCH. Their disagreement is a direct measurement of the
+    label noise every sleep-staging result is quoted against, and §46's demand for a floor is met here
+    by construction rather than by assumption.
+  band_hz:
+  - null
+  - null
+- name: repeated_sessions_subset
+  kind: measured
+  via: null
+  systematic_bias: night-to-night variability within person is separable from between-person variability
+    only where repeats exist
+  band_hz:
+  - null
+  - null
+- name: respiratory_events
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: patient_and_control_subgroups
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_imaging
+- individual_anatomy
+- large_n
+requires:
+- geometry: device-geometry
+  for_streams:
+  - polysomnography
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- evaluate
+- fit
+forbidden:
+- isruc/* -> cortical state without an explicit carded interaction
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: isruc
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

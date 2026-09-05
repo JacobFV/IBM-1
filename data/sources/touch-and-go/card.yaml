@@ -1,0 +1,87 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: touch-and-go
+title: Touch and Go -- paired visual and tactile data from human collection
+provider: University of Michigan and collaborators
+citation: 'Yang et al., Touch and Go: Learning from Human-Collected Vision and Touch. NeurIPS Datasets
+  and Benchmarks 2022.'
+urls:
+- https://touch-and-go.github.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - session
+  notes: Human collectors touching objects in natural environments with a vision-based tactile sensor.
+    The 'participant' is the collector, not a study subject.
+frames:
+- sensor_contact_patch
+- camera
+- world
+streams:
+- name: tactile_images
+  kind: imposed
+  via: null
+  systematic_bias: A VISION-BASED TACTILE SENSOR IS NOT A HAND. It transduces surface geometry through
+    gel deformation and a camera; human touch involves several mechanoreceptor classes with different
+    adaptation dynamics, plus temperature and nociception. Using this as a model of somatosensory input
+    is an analogy, not a measurement.
+  notes: no correspondence between sensor channels and cutaneous afferent classes exists or is claimed
+  band_hz:
+  - null
+  - null
+  temporal_support: video and tactile frames at camera rate; touches as discrete events
+  spatial_support: the tactile sensor's support is a CONTACT PATCH of about a square centimetre, imaged
+    optically as gel deformation -- it is not a skin mechanoreceptor array and its transduction is completely
+    different
+- name: visuo_tactile_correspondence
+  kind: imposed
+  via: null
+  systematic_bias: paired vision and touch of the same surface is a genuine cross-modal correspondence
+    in the world, independent of how either is transduced
+  band_hz:
+  - null
+  - null
+- name: visual_video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: material_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: touch_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- human_cutaneous_afferents
+- force_vectors
+- temperature
+- proprioception
+use:
+- fit
+forbidden:
+- touch-and-go/* -> any cortical state directly
+- touch-and-go/tactile_images -> human cutaneous afferent state
+split:
+  group_by:
+  - session
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: touch-and-go
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

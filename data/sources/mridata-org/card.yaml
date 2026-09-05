@@ -1,0 +1,65 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mridata-org
+title: mridata.org -- open raw MR datasets
+provider: Stanford / mridata.org
+citation: mridata.org open raw MR data repository. PROMPT.md §52.12.
+urls:
+- http://mridata.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- kspace
+- coil_array
+streams:
+- name: raw_kspace_with_trajectories
+  kind: measured
+  via: null
+  systematic_bias: Non-Cartesian trajectories (radial, spiral) make the k-space TRAJECTORY an explicit
+    object rather than an implicit grid, which is precisely the representation §56.6's MR acquisition
+    objects need. Gradient imperfection means the ACTUAL trajectory differs from the nominal one, and
+    whether a measured trajectory is included is a per-dataset fact.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: raw k-space datasets including non-Cartesian trajectories, with the TRAJECTORY distributed
+    alongside -- which Cartesian-only collections do not need and non-Cartesian reconstruction cannot
+    do without
+- name: multi_vendor_examples
+  kind: measured
+  via: null
+  systematic_bias: vendor differences in raw data conventions are a real interoperability problem and
+    the reason ISMRMRD exists
+  band_hz:
+  - null
+  - null
+absent:
+- biological_annotation
+- large_n
+- measured_trajectories_for_all_datasets
+use:
+- calibrate
+- fit
+forbidden:
+- mridata-org/* -> neural state
+- mridata-org/* -> population claims
+- mridata-org/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: mridata-org
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

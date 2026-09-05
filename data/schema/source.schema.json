@@ -1,0 +1,400 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/JacobFV/IBM-1/data/schema/source.schema.json",
+  "title": "ibm-1 source card",
+  "description": "Which ibm state variables a source realizes, and how. See data/README.md and docs/ARCHITECTURE.md.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "access",
+    "streams",
+    "binding"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3
+    },
+    "provider": {
+      "type": "string"
+    },
+    "citation": {
+      "type": "string"
+    },
+    "urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "access": {
+      "enum": [
+        "held",
+        "priority",
+        "restricted",
+        "watch",
+        "reference"
+      ],
+      "description": "held: bytes acquired. priority: queued. restricted: needs a DUA. watch: not yet released or terms unresolved. reference: never a training source."
+    },
+    "licence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "redistribution": {
+          "enum": [
+            "permitted",
+            "prohibited",
+            "unresolved"
+          ]
+        },
+        "commercial": {
+          "enum": [
+            "permitted",
+            "prohibited",
+            "unresolved"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "binding": {
+      "enum": [
+        "bound",
+        "unbound",
+        "partial"
+      ],
+      "description": "Whether every stream's `constrains` and `via` resolve against the registry. Only `bound` cards may be used for fitting."
+    },
+    "population": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "n": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "species": {
+          "type": "string"
+        },
+        "hierarchy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "frames": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Coordinate frames this source speaks. Every position it reports lives in one of these; the materializer inserts warps."
+    },
+    "streams": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "kind"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "measured",
+              "imposed"
+            ],
+            "description": "measured: contributes a likelihood term. imposed: conditioned on, never modelled as sampled."
+          },
+          "constrains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Registered ibm component ids this stream bears on. Empty while unbound."
+          },
+          "via": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Registered process id producing the observed variable from brain state. Null while unbound."
+          },
+          "observation_chain": {
+            "type": "string",
+            "description": "Prose chain carried over from the source's own documentation, to be replaced by `via`."
+          },
+          "support": {
+            "type": "string"
+          },
+          "frame": {
+            "type": "string"
+          },
+          "units": {
+            "type": "string"
+          },
+          "rate_hz": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "band_hz": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "description": "[lo, hi] temporal band this stream can constrain. Set by sampling rate and by any filtering already applied."
+          },
+          "precision": {
+            "type": [
+              "number",
+              "string",
+              "null"
+            ],
+            "description": "Measurement precision contributed, or 'unresolved'."
+          },
+          "confounds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Alternative explanations of this stream that are not the state of interest."
+          },
+          "systematic_bias": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "temporal_support": {
+            "type": "string",
+            "description": "Prose sampling description carried from the source, pending resolution into rate_hz and band_hz."
+          },
+          "spatial_support": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "absent": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Streams this source does NOT have. Absent is not zero; a missing stream is missing evidence, and the materializer must not read silence as a measurement."
+    },
+    "requires": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "geometry",
+          "severity"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "geometry": {
+            "type": "string"
+          },
+          "for_streams": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "severity": {
+            "enum": [
+              "blocking",
+              "degrading"
+            ]
+          },
+          "without_it": {
+            "type": "string"
+          },
+          "substitute": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Geometry a stream needs before it can be attributed to a support at all \u2014 electrode positions, head models, display geometry."
+    },
+    "use": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "fit",
+          "prior",
+          "evaluate",
+          "control",
+          "distil",
+          "surrogate",
+          "calibrate"
+        ]
+      },
+      "description": "What this source is permitted to do. `fit` is the only one that updates theta from a likelihood."
+    },
+    "forbidden": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Update paths this source must never take, e.g. 'no subject-specific head geometry from a template montage'."
+    },
+    "split": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "group_by": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "imported_from": {
+          "type": "string"
+        },
+        "card": {
+          "type": "string"
+        },
+        "imported_at": {
+          "type": "string"
+        },
+        "index": {
+          "type": "string"
+        }
+      }
+    },
+    "distillation": {
+      "type": "object",
+      "description": "Required when `use` includes `distil`. A teacher writes evidence, so it must declare the precision that evidence carries. See ARCHITECTURE.md, distillation precision.",
+      "additionalProperties": false,
+      "required": [
+        "reported_accuracy",
+        "precision_model"
+      ],
+      "properties": {
+        "reported_accuracy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "metric": {
+              "enum": [
+                "r2",
+                "pearson_r",
+                "accuracy",
+                "auc",
+                "explained_variance",
+                "unresolved"
+              ]
+            },
+            "value": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "on_benchmark": {
+              "type": "string"
+            },
+            "on_streams": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "source": {
+              "type": "string",
+              "description": "Where the figure comes from. A number we did not verify is marked as such."
+            },
+            "verified": {
+              "type": "boolean"
+            }
+          }
+        },
+        "precision_model": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "form": {
+              "enum": [
+                "residual_variance",
+                "flat",
+                "unresolved"
+              ],
+              "description": "residual_variance: dJ = 1 / ((1 - r2) * Var[x]). flat: a declared constant, used only when no accuracy figure exists."
+            },
+            "ood_inflation_prior": {
+              "type": "string",
+              "description": "Prior on the variance inflation applied when used off the benchmark distribution. Not a constant."
+            },
+            "error_rank": {
+              "type": [
+                "integer",
+                "string",
+                "null"
+              ],
+              "description": "Rank q of the shared-error subspace B. With `correlated_fraction` it fixes how much of a teacher's apparent precision survives. A teacher's residuals covary across everything it writes, so a diagonal increment overstates what it knows."
+            },
+            "notes": {
+              "type": "string"
+            },
+            "correlated_fraction": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0.0,
+              "maximum": 1.0,
+              "description": "Fraction rho of the teacher's error variance that is SHARED across the values it writes, rather than independent per value. Residual covariance is modelled as diag((1-rho)*v) + B B^T with B of rank `error_rank`; the precision contributed is that inverted, which by Woodbury is a diagonal MINUS a low-rank correction. The sign is the point: shared error does not add a constraint, it subtracts confidence that correlated values would otherwise appear to supply. At rho=0.9 a teacher writing 10^4 values contributes roughly the precision of one independent measurement. Null means unmeasured, which must be treated as high rather than zero."
+            },
+            "effective_constraints": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Derived, not declared: the number of independent measurements this teacher's contribution is worth, computed from `correlated_fraction` and `error_rank`. Recorded so a materialization can report it rather than leaving a reader to infer it from a rank."
+            }
+          }
+        }
+      }
+    }
+  }
+}

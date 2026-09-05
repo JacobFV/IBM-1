@@ -1,0 +1,76 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: qsm-reconstruction-tools
+title: QSM reconstruction tool family
+provider: multiple -- STI Suite, MEDI, SEPIA, QSMbox and successors
+citation: PROMPT.md §52.10 and §54.3, 'QSM reconstruction tools'.
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- kspace
+streams:
+- name: dipole_inversion_algorithms
+  kind: measured
+  via: null
+  systematic_bias: 'THE DIPOLE INVERSION IS ILL-POSED: the forward operator has a null cone in k-space,
+    so the data cannot determine susceptibility at those orientations and every algorithm fills the gap
+    with a regulariser. §14 wants electromagnetism as internal physical state, and this is the cleanest
+    well-characterised electromagnetic inverse problem available -- with a challenge dataset (qsm-reconstruction-challenge)
+    that measures exactly how much the answer depends on the choice.'
+  notes: algorithm choice changes susceptibility values systematically, especially near large vessels
+    and at tissue boundaries -- which is where the venous geometry of interest is
+  band_hz:
+  - null
+  - null
+  temporal_support: per echo and per acquisition; static output
+  spatial_support: a pipeline of THREE separable inverse problems -- phase unwrapping, background field
+    removal, and dipole inversion -- each with several competing algorithms and each contributing its
+    own error to the final map
+- name: background_field_removal
+  kind: measured
+  via: null
+  systematic_bias: separating the field from tissue inside the brain from the field from air-tissue interfaces
+    outside it is a second ill-posed step, and aggressive removal eats real susceptibility near the cortical
+    surface
+  band_hz:
+  - null
+  - null
+- name: pipeline_variability
+  kind: measured
+  via: null
+  systematic_bias: running several pipelines on identical phase data measures the reconstruction's contribution
+    to any QSM-derived conclusion, including VENAT's geometry and the qsm-oef-datasets' oximetry
+  band_hz:
+  - null
+  - null
+absent:
+- ground_truth_susceptibility
+- in_vivo_validation
+requires:
+- geometry: mr-acquisition-objects
+  severity: blocking
+  without_it: This consumes raw acquisition data and emits images or parameter maps. Run as an offline
+    oracle it needs the acquisition object as its input -- trajectory, coil sensitivities, sequence timing
+    -- and without it there is nothing for the reconstruction to be a reconstruction OF.
+use:
+- calibrate
+- control
+- surrogate
+forbidden:
+- qsm-reconstruction-tools/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: qsm-reconstruction-tools
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

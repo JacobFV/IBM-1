@@ -1,0 +1,59 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bossdb
+title: BossDB -- Brain Observatory Storage Service and Database
+provider: Johns Hopkins University Applied Physics Laboratory, with an AWS Open Data mirror
+citation: 'Hider et al., The Brain Observatory Storage Service and Database (BossDB): a cloud-native approach
+  for petascale neuroscience discovery. Frontiers in Neuroinformatics 16:828787, 2022. doi:10.3389/fninf.2022.828787'
+urls:
+- https://bossdb.org
+- https://registry.opendata.aws/bossdb/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: LICENCE IS PER DATASET, NOT PER REPOSITORY. The AWS Open Data registry entry lists CC-BY-4.0,
+    CC0-1.0 and CC-BY-NC-SA-4.0 across the holdings, so an archive-level licence field would be a fiction.
+    Resolve per collection before any collection reaches an artifact. The API requires SSO or a long-lived
+    token; the S3 mirror is open. Whether a DUA applies is unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- volume_index
+- per_collection_registration
+streams:
+- name: petascale_volumetric_collections
+  kind: measured
+  via: null
+  systematic_bias: This is where the mesoscale connectomics volumes actually live -- the microstructural
+    ground truth against which any reconstructed geometry or diffusion-derived pathway is checked. It
+    is also ex-vivo, single-specimen and species-heterogeneous, so it constrains what tissue LOOKS like
+    and never what any living participant's cortex is doing at time t.
+  notes: segmentation is machine-produced and proofread to varying depth per collection; an annotation
+    is a model output, not a measurement
+  band_hz:
+  - null
+  - null
+  temporal_support: two-photon calcium collections carry an acquisition frame rate; the EM and tomography
+    volumes are static anatomy with no clock
+  spatial_support: petascale volumetric image collections with voxel-level annotations, addressed by a
+    cutout API over chunked cloud storage. Over 30 collections exceeding 100 TB as of the 2022 paper,
+    with around 2 PB of electron microscopy handled
+absent:
+- in_vivo_function
+- individual_human_variation
+- uniform_licensing
+use:
+- prior
+forbidden:
+- bossdb/* -> any living-subject state channel
+- bossdb/* -> an artifact, before the specific collection's licence is resolved
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: bossdb
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

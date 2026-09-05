@@ -1,0 +1,4 @@
+# sha256 manifest for bendr -- DEFERRED
+# 2 files, 628586182 bytes (0.59 GiB) at /home/brandonin/Documents/win-data/bendr
+# hashing this source has not been run; until it has, no derive recipe may claim
+# reproducibility against a specific raw state.

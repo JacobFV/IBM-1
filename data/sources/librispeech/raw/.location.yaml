@@ -1,0 +1,5 @@
+# where the bytes for `librispeech` actually live.  never the bytes themselves.
+source_url: "https://www.openslr.org/12"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

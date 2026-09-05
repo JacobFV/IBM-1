@@ -1,0 +1,1 @@
+# sha256 manifest for language-models-multiscale; written on acquisition

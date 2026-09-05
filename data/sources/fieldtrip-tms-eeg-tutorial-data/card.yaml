@@ -1,0 +1,85 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fieldtrip-tms-eeg-tutorial-data
+title: FieldTrip TMS-EEG tutorial dataset
+provider: FieldTrip / Donders Institute
+citation: FieldTrip TMS-EEG tutorial data.
+urls:
+- https://www.fieldtriptoolbox.org/tutorial/tms-eeg/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Tutorial distribution; terms unresolved.
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - participant
+  - run
+  notes: A single-participant TEACHING FIXTURE. It establishes nothing about people and everything about
+    whether an artifact-handling implementation behaves.
+frames:
+- eeg_cap
+- coil_frame
+- head
+streams:
+- name: tms_artifact_structure
+  kind: measured
+  via: null
+  systematic_bias: The TMS-EEG artifact has a KNOWN structure -- a saturation phase, a capacitor recharge
+    transient, an exponential decay and a muscle component -- and this fixture makes each visible. An
+    artifact-removal implementation that has never been shown to fail on it has not been tested.
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at kHz; TMS pulses as discrete events
+  spatial_support: scalp EEG with TMS pulses delivered during recording
+- name: tutorial_reference_pipeline
+  kind: measured
+  via: null
+  systematic_bias: the tutorial's own pipeline is a reference, not a standard; §46's warning applies that
+    a test written from current output locks the current behaviour in
+  band_hz:
+  - null
+  - null
+- name: tms_eeg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pulse_triggers
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- population
+- individual_anatomy
+- sham_arm
+- delivered_field
+requires:
+- geometry: device-geometry
+  for_streams:
+  - tms_artifact_structure
+  severity: blocking
+  without_it: 'Two device geometries are needed at once and neither can be defaulted: the electrode positions
+    that define the lead field, and the coil winding and pose that determine the induced field. Without
+    both, the pulse is a machine setting and the response is a channel-space waveform, with nothing connecting
+    them at any cortical location.'
+use:
+- calibrate
+- evaluate
+forbidden:
+- fieldtrip-tms-eeg-tutorial-data/* -> any claim about people
+- fieldtrip-tms-eeg-tutorial-data/* -> population priors
+split:
+  group_by:
+  - run
+provenance:
+  imported_from: win-registry
+  card: fieldtrip-tms-eeg-tutorial-data
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

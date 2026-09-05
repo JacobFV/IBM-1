@@ -1,0 +1,68 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fsaverage6
+title: fsaverage6 -- FreeSurfer average surface at ico6 (40,962 vertices per hemisphere)
+provider: Martinos Center / FreeSurfer
+citation: Fischl et al., High-resolution intersubject averaging and a coordinate system for the cortical
+  surface. Human Brain Mapping 1999.
+urls:
+- https://surfer.nmr.mgh.harvard.edu/
+access: held
+licence:
+  name: FreeSurfer Software License
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'Unresolved. §49.2 records that the predecessor''s attribution generator tracked each source''s
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it. LICENCE LINEAGE, NOT A LOOKUP: this reached us inside
+    a FreeSurfer subject directory (bundled in turn by an MNE sample dataset or a nilearn cache), so the
+    terms under which WE received it are the FreeSurfer Software License. READ, not recalled -- the licence
+    text was fetched: it PERMITS COMMERCIAL USE (''any commercialization of the Software is at the sole
+    risk of the party ... engaged in such commercialization''), requires that the licence terms and all
+    attributions and copyright notices be preserved in any copy, and EXPLICITLY DISCLAIMS COPYLEFT --
+    contributors warrant their code ''does not contain any code that requires or prescribes an open source
+    license for derivative works''. No registration or DUA is mentioned; accepting the licence is the
+    only condition of download. This was very nearly recorded as commercial_use prohibited from memory,
+    which would have WRONGLY BLOCKED a legitimate release.'
+binding: unbound
+population:
+  n: null
+frames:
+- fsaverage
+- fsaverage5
+- fsaverage6
+- subject_native_surface
+streams:
+- name: surface
+  kind: measured
+  via: null
+  systematic_bias: A subdivided average surface. Every vertex is an average over 40 people's folding,
+    so a feature narrower than intersubject folding variability is smoothed away before anything is computed
+    on it. At ico6 the vertex spacing is roughly 1.4 mm, which is coarser than the cortical features some
+    queries will ask about.
+  notes: resampling between ico6 and ico7 is an interpolation with its own error, and a result computed
+    on one and reported on the other carries that error silently unless the cover mapping records it
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: 'the fsaverage average surface subdivided to ico6: 40,962 vertices per hemisphere against
+    fsaverage''s ico7 163,842. Same subject-average geometry, one-quarter the sampling.'
+absent:
+- individual_folding
+- registration_residual_distribution
+- subcortex
+use:
+- calibrate
+- prior
+forbidden:
+- fsaverage6/* -> individual cortical geometry
+- fsaverage6/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: fsaverage6
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

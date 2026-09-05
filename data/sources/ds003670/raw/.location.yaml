@@ -1,0 +1,10 @@
+# where the bytes for `ds003670` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/ds003670
+acquired_at: '2026-09-04'
+files: 890
+bytes: 104721294016
+gib: 97.53
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://openneuro.org/datasets/ds003670

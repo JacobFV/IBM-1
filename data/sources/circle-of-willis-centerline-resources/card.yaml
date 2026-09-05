@@ -1,0 +1,52 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: circle-of-willis-centerline-resources
+title: Circle of Willis centreline and mesh resources
+provider: multiple -- TopCoW derivatives, VMTK-processed collections, published CoW model repositories
+citation: PROMPT.md §52.10, 'Circle-of-Willis centerline/mesh resources'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- mesh_native
+- MNI152
+- vascular_tree_graph
+streams:
+- name: cow_centerline_graphs
+  kind: measured
+  via: null
+  systematic_bias: 'Ready-made centreline graphs are directly usable as §56.3''s tube-chain supports,
+    and they are DERIVED GEOMETRY whose generating pipeline usually does not travel with them. §4a: they
+    remain derived forever, and the missing pipeline is a named gap.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: centreline graphs and surface meshes of the Circle of Willis, distributed as GEOMETRY
+    rather than as imaging
+absent:
+- parent_imaging
+- derivation_provenance
+- individual_correspondence
+use:
+- calibrate
+- prior
+forbidden:
+- circle-of-willis-centerline-resources/* -> measured-geometry claims
+- circle-of-willis-centerline-resources/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: circle-of-willis-centerline-resources
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

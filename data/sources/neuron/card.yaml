@@ -1,0 +1,62 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: neuron
+title: NEURON -- simulation environment for morphologically detailed neurons
+provider: Yale University / Duke University
+citation: Hines and Carnevale, The NEURON simulation environment. Neural Computation 1997.
+urls:
+- https://www.neuron.yale.edu/neuron/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- cell_morphology
+- extracellular_space
+streams:
+- name: morphologically_detailed_simulation
+  kind: measured
+  via: null
+  systematic_bias: THE BRIDGE FROM CELLULAR CURRENTS TO MEASURABLE FIELDS. NEURON computes transmembrane
+    current distributed over a real morphology, which is exactly what generates an extracellular potential
+    and hence an LFP, an ECoG signal and ultimately an EEG. §14 wants electromagnetism as internal physical
+    state, and this is where the source term in that physics comes from -- oriented current dipoles produced
+    by dendritic geometry, which is why obj-gsplat requires orientation to be carried.
+  notes: a reconstructed morphology from neuromorpho is truncated and shrunken; channel densities are
+    fitted to a small number of recordings
+  band_hz:
+  - null
+  - null
+  temporal_support: adaptive or fixed timestep, sub-millisecond
+  spatial_support: MULTI-COMPARTMENT neurons with real morphology and distributed channel densities; the
+    cable equation solved along dendrites, with LFP calculable from transmembrane currents
+- name: lfp_forward_calculation
+  kind: measured
+  via: null
+  systematic_bias: the line-source and point-source LFP approximations implemented here are the microscopic
+    end of the same forward problem SimNIBS and OpenMEEG solve at the macroscopic end; a consistent implementation
+    must agree at the boundary
+  band_hz:
+  - null
+  - null
+absent:
+- human_cortical_parameters
+- network_scale
+- in_vivo_validation
+use:
+- surrogate
+forbidden:
+- neuron/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: neuron
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

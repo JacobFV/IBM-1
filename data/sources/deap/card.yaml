@@ -1,0 +1,130 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: deap
+title: DEAP -- Database for Emotion Analysis using Physiological Signals
+provider: Queen Mary University of London and collaborators
+citation: 'Koelstra et al., DEAP: A Database for Emotion Analysis using Physiological Signals. IEEE Transactions
+  on Affective Computing 2012.'
+urls:
+- http://www.eecs.qmul.ac.uk/mmv/datasets/deap/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: End-user licence agreement; the music videos are third-party copyright. Unresolved.
+binding: unbound
+population:
+  n: 32
+  hierarchy:
+  - participant
+  - session
+  notes: 32 participants watching 40 one-minute music videos with 32-channel EEG and peripheral physiology,
+    rating each on valence, arousal, dominance and liking.
+frames:
+- eeg_cap
+- torso
+- finger
+- display
+streams:
+- name: eeg_32ch
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  systematic_bias: One-minute music-video stimuli with simultaneous scalp EEG and autonomic recording.
+    The stimulus is naturalistic-ish and the ratings are per-trial.
+  notes: no individual anatomy and no digitised electrodes; template head model throughout
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at 512 Hz downsampled to 128 Hz in the released preprocessed version -- the DERIVED
+    view is what most users take, and 128 Hz is a resampling, not the acquisition
+  spatial_support: 32-channel scalp EEG plus peripheral sensors; a standard cap montage, positions not
+    digitised
+- name: peripheral_physiology
+  kind: measured
+  via: null
+  observation_chain: pulsatile arterial blood volume -> optical absorption change at the sensor site ->
+    photodetector current -> sampled waveform; with GSR, respiration and temperature on their own body
+    sites
+  confounds:
+  - sensor placement and contact quality
+  - motion artifact
+  - respiratory-cardiac cross-coupling that makes the two streams non-independent
+  systematic_bias: Simultaneous central and peripheral recording during the same stimulus is the brain-body
+    pairing §52.15 wants.
+  band_hz:
+  - null
+  - null
+- name: affect_ratings
+  kind: imposed
+  via: null
+  systematic_bias: '§52.16 states it: AN AFFECT LABEL IS NOT A LIMBIC-STATE OBSERVATION. Self-rated valence
+    and arousal after a one-minute clip is a report, and it is the target most uses of this dataset treat
+    as ground truth'
+  band_hz:
+  - null
+  - null
+- name: music_video_stimuli
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: frontal_face_video_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_imaging
+- individual_anatomy
+- electrode_digitisation
+- large_n
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg_32ch
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- fit
+forbidden:
+- deap/* -> cortical state without an explicit carded interaction
+- deap/affect_ratings -> limbic state observation
+- deap/* -> subject-specific head geometry
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: deap
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

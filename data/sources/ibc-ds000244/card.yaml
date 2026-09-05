@@ -1,0 +1,111 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ibc-ds000244
+title: Individual Brain Charting (IBC) -- ds000244
+provider: NeuroSpin / OpenNeuro ds000244
+citation: Pinho et al., Individual Brain Charting, a high-resolution fMRI dataset for cognitive mapping.
+  Scientific Data 2018.
+urls:
+- https://openneuro.org/datasets/ds000244
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: OpenNeuro-hosted; terms unresolved pending inspection.
+binding: unbound
+population:
+  n: 12
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: Twelve participants across a very large battery of tasks -- the deliberate inverse of a large-n
+    single-task cohort.
+frames:
+- scanner
+- subject_native
+- fsaverage
+- MNI152
+streams:
+- name: bold_task
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  systematic_bias: Task contrasts here are the closest thing to a within-person functional cover across
+    many cognitive domains; they remain functional, not effective (§38).
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 2 s; many sessions per participant, each a different task battery
+  spatial_support: 1.5 mm BOLD; individual surfaces
+- name: task_paradigms
+  kind: measured
+  via: null
+  systematic_bias: the paradigm definitions are unusually complete and are the reusable part
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- ieeg
+- angiography
+- pet
+- intervention
+- naturalistic_video
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- evaluate
+- fit
+forbidden:
+- ibc-ds000244/* -> population covariance priors
+- ibc-ds000244/bold_task -> effective connectivity parameters
+split:
+  group_by:
+  - participant
+  - session
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: ibc-ds000244
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

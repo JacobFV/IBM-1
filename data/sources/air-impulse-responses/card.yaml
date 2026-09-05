@@ -1,0 +1,90 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: air-impulse-responses
+title: AIR -- Aachen Impulse Response database
+provider: RWTH Aachen University
+citation: Jeub et al., A binaural room impulse response database for the evaluation of dereverberation
+  algorithms. DSP 2009.
+urls:
+- https://www.iks.rwth-aachen.de/en/research/tools-downloads/databases/aachen-impulse-response-database/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Academic use stated by the providers; SPDX and redistribution unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - session
+  - device
+  notes: Measured binaural and monaural room impulse responses in real rooms at documented source-receiver
+    geometries, including responses measured on a DUMMY HEAD.
+frames:
+- room
+- dummy_head
+- microphone
+- source_position
+streams:
+- name: binaural_room_impulse_responses
+  kind: measured
+  via: null
+  systematic_bias: A binaural room impulse response IS the acoustic transfer function from a source position
+    to the two eardrums. That is precisely the boundary observation model the auditory side of §56.4 and
+    §56.5 needs, measured rather than simulated -- and it is measured on a DUMMY head, so it carries no
+    individual pinna geometry
+  band_hz:
+  - null
+  - null
+  temporal_support: impulse responses sampled at 48 kHz; no ongoing time series
+  spatial_support: dummy-head and monaural microphones at documented positions in rooms of documented
+    dimensions; the source-receiver geometry IS the data
+- name: room_dimensions
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: monaural_impulse_responses
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: source_receiver_geometry
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: reverberation_times
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- individual_head_geometry
+- individual_hrtf
+- any_neural_measurement
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'The source-receiver arrangement IS the measurement here: an impulse response means nothing
+    without the positions it was measured between. Without a device-geometry object for the room, the
+    sources and the receivers, these recordings cannot serve as the boundary acoustic model they exist
+    to supply.'
+use:
+- calibrate
+- fit
+forbidden:
+- air-impulse-responses/* -> any cortical state directly
+split:
+  group_by:
+  - device
+  - session
+provenance:
+  imported_from: win-registry
+  card: air-impulse-responses
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

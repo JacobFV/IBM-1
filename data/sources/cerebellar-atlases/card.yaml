@@ -1,0 +1,113 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cerebellar-atlases
+title: Diedrichsen lab cerebellar atlas collection (SUIT / Buckner / MDTB / Nettekoven)
+provider: Diedrichsen Lab, Western University
+citation: Diedrichsen J. et al. (2009) NeuroImage 46:39-46 (probabilistic lobular atlas); Diedrichsen
+  J. et al. (2011) NeuroImage 54:1786-1794 (deep nuclei); Buckner R.L. et al. (2011) J Neurophysiol 106:2322-2345;
+  King M. et al. (2019) Nat Neurosci 22:1371-1378 (MDTB); Nettekoven C. et al. (2024) Nat Commun (hierarchical
+  functional atlas); Diedrichsen J., Zhi D. (2022) A collection of atlases for the human cerebellum, v1.0.
+urls:
+- https://github.com/DiedrichsenLab/cerebellar_atlases
+- https://www.diedrichsenlab.org/imaging/propatlas.htm
+access: held
+licence:
+  name: CC-BY-NC-3.0
+  redistribution: unresolved
+  commercial: prohibited
+  notes: 'RESOLVED 2026-08-16 from data/assets/src/cerebellar_atlases/tpl-SUIT/LICENSE, held on disk:
+    ''Creative Commons Attribution-NonCommercial 3.0 Unported'', Diedrichsenlab, Western University. NON-COMMERCIAL,
+    which is the reading that matters: win.licences.release_gate must refuse any outward artifact whose
+    lineage includes this atlas under commercial terms. It is the second non-commercial holding in the
+    store after the Hansen receptor atlas (CC-BY-NC-SA-4.0), and licence lineage is per artifact and computed
+    from contributing sources, so a single SUIT-derived component taints a whole product''s commercial
+    standing. DUA: none. Recorded as dua_required false on the basis of HOW THIS WAS ACTUALLY OBTAINED
+    -- it is held in this store, fetched anonymously over plain HTTP by a script in scripts/ that sends
+    no credential and accepts no terms, from a repository that serves it without an access request. That
+    is evidence about the acquisition rather than an opinion about the deposit''s policy. It says nothing
+    about the LICENCE terms, which are recorded separately and still govern distribution; a non-commercial
+    work with no DUA is an ordinary combination.'
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152NLin6AsymC
+- MNI152NLin2009cSymC
+- SUIT
+streams:
+- name: probabilistic_lobule_maps
+  kind: measured
+  via: null
+  systematic_bias: 'Diedrichsen (2009) atl-Anatom is a genuinely PROBABILISTIC atlas -- 34 compartments
+    hand-traced on 20 participants for the lobules and a different 23 for the deep nuclei, so p(compartment
+    | voxel) is a fraction of tracers, not a fraction of tissue. Two consequences that must not be smoothed
+    away: the maps OVERLAP (they sum past 1 over contested boundaries, measured at 15.2 mm^3 on the MNI
+    release), and the deep nuclei rest on a different and smaller cohort than the lobules, so their probabilities
+    are not commensurable with the lobular ones. The lobular anatomy itself follows Schmahmann et al.
+    (2000), which is one individual cerebellum.'
+  notes: Cerebellar cortex has laminae -- molecular, Purkinje, granular -- and they are not the isocortical
+    six. bwin.geometry.subcortical.layer_probability_at REFUSES for exactly this reason, and these volumes
+    carry no laminar coordinate that would discharge it.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy plus static task contrasts
+  spatial_support: cerebellum-cropped volumes on a 153x103x84 lattice at 1 mm (MNI152NLin6AsymC), with
+    matched crops in MNI152NLin2009cSymC and SUIT space; plus surface projections of the same maps onto
+    the flattened cerebellar sheet
+- name: functional_cerebellar_parcellations
+  kind: measured
+  via: null
+  systematic_bias: 'Buckner 2011, Ji 2019, Xue 2021, King 2019 (MDTB) and Nettekoven 2024 are FUNCTIONAL
+    parcellations: cerebellar voxels labelled by which cerebral network or task domain they correlate
+    with. Functional correlation is not anatomical connectivity -- cortico-cerebellar traffic is polysynaptic
+    through pons and thalamus -- and cerebellar BOLD carries the signal-drop-out and pulsatility problems
+    of the posterior fossa. These are covers to be held beside the anatomical one, never merged into it,
+    and their disagreement with atl-Anatom is the measurement.'
+  band_hz:
+  - null
+  - null
+- name: task_contrast_maps
+  kind: measured
+  via: null
+  systematic_bias: The 47 MDTB condition contrasts are each relative to the mean activity across all tasks
+    in 24 participants, so a value is a difference from an arbitrary baseline that the battery itself
+    defined. They are useful for asking whether two supports behave alike and useless as absolute activity.
+  band_hz:
+  - null
+  - null
+- name: template_transforms
+  kind: measured
+  via: null
+  systematic_bias: 'tpl-*_from-*_xfm.nii are displacement fields between the three cerebellar template
+    crops. They are the collection''s own registration, with no residual reported, so a transform taken
+    from here enters the frame graph with an UNMEASURED residual rather than a zero one. Measured proxy:
+    the same 34 compartments'' centroids sit 1.43 mm apart in RMS (median 1.23, max 2.36) between the
+    MNI and MNISym releases of atl-Anatom, which is a lower bound on what moving between these frames
+    costs.'
+  band_hz:
+  - null
+  - null
+absent:
+- individual_geometry
+- laminar_coordinate
+- boundary_uncertainty_for_the_functional_parcellations
+- brainstem
+- licence
+use:
+- calibrate
+- prior
+forbidden:
+- cerebellar-atlases/functional_cerebellar_parcellations -> anatomical cerebellar boundaries
+- cerebellar-atlases/* -> a merged single cerebellar parcellation
+- cerebellar-atlases/probabilistic_lobule_maps -> laminar structure
+- cerebellar-atlases/* -> observation-role likelihoods
+- cerebellar-atlases/template_transforms -> a frame edge with a zero residual
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: cerebellar-atlases
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

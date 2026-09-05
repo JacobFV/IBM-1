@@ -1,0 +1,94 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mit-bih-arrhythmia
+title: MIT-BIH Arrhythmia Database and the MIT-BIH family
+provider: MIT / Beth Israel Hospital, distributed via PhysioNet
+citation: Moody & Mark, The impact of the MIT-BIH Arrhythmia Database. IEEE Engineering in Medicine and
+  Biology Magazine 2001.
+urls:
+- https://physionet.org/content/mitdb/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: PhysioNet assigns a licence per project; not read for this one.
+binding: unbound
+population:
+  n: 47
+  hierarchy:
+  - participant
+  - run
+  notes: 48 half-hour excerpts from 47 subjects. The selection is DELIBERATELY not representative -- rare
+    arrhythmias were chosen on purpose.
+frames:
+- ambulatory_lead_pair
+streams:
+- name: beat_annotated_ecg
+  kind: measured
+  via: null
+  observation_chain: cardiac depolarisation -> thoracic volume conduction -> ambulatory two-lead recording
+    -> analogue tape, then digitised at 360 Hz. The annotations are independent expert reads reconciled
+    between annotators, which is why this corpus has a measured inter-annotator agreement and most do
+    not
+  confounds:
+  - ambulatory motion artefact, which is the dominant noise and is why the corpus is hard
+  - lead placement differs per record, so morphology is not comparable across records
+  - the recordings are analogue-tape originals; the tape transport introduces its own timing wow
+  systematic_bias: The deliberate over-sampling of rare arrhythmias means the class prior in this corpus
+    is not any population's class prior. An accuracy figure computed on it has a chance level that must
+    be quoted with it.
+  band_hz:
+  - null
+  - null
+  temporal_support: 360 Hz, 30-minute continuous excerpts
+  spatial_support: two ambulatory leads, lead placement varying between records
+- name: inter_annotator_agreement
+  kind: measured
+  via: null
+  systematic_bias: A measured annotator-disagreement rate is a real ceiling on any classifier trained
+    against these labels -- the kind of floor obj-baseline-comparison requires and that most benchmarks
+    never state.
+  band_hz:
+  - null
+  - null
+- name: ecg_two_lead
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: beat_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: rhythm_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- respiration
+- blood_pressure
+- imaging
+- demographics_for_most_records
+- intervention
+use:
+- evaluate
+- fit
+forbidden:
+- mit-bih-arrhythmia/* -> any cortical state channel
+- mit-bih-arrhythmia/* -> a population prevalence claim
+split:
+  group_by:
+  - participant
+  notes: Beats from one record are highly correlated; a beat-level random split inflates every published
+    number and has done so repeatedly.
+provenance:
+  imported_from: win-registry
+  card: mit-bih-arrhythmia
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

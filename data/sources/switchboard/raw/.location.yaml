@@ -1,0 +1,5 @@
+# where the bytes for `switchboard` actually live.  never the bytes themselves.
+source_url: "https://catalog.ldc.upenn.edu/LDC97S62"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

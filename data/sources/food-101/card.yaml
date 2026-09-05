@@ -1,0 +1,62 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: food-101
+title: Food-101 -- food image classification dataset
+provider: ETH Zurich
+citation: Bossard et al., Food-101 -- Mining Discriminative Components with Random Forests. ECCV 2014.
+urls:
+- https://data.vision.ee.ethz.ch/cvl/datasets_extra/food-101/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- image_plane
+streams:
+- name: food_images
+  kind: imposed
+  via: null
+  systematic_bias: A VISION BENCHMARK, not a study of eating. Its relevance to §52.16 is as visual stimulus
+    material with a semantic category that has motivational relevance -- and it says nothing about ingestion,
+    satiety or reward, and the images are curated photographs rather than food as encountered.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: 101,000 food photographs in 101 categories, scraped from a recipe website; the test
+    set is manually cleaned and the training set deliberately is not
+- name: noisy_training_labels
+  kind: measured
+  via: null
+  systematic_bias: 'deliberately noisy training labels with a clean test set is a useful structure: it
+    measures robustness to label noise, which is a real property of every annotated source in this registry'
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- ingestion
+- nutritional_content
+- real_encounter_conditions
+use:
+- control
+- fit
+forbidden:
+- food-101/* -> any cortical state
+- food-101/* -> eating behaviour or reward claims
+- food-101/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: food-101
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

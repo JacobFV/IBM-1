@@ -1,0 +1,101 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mne-somato
+title: MNE-Python somatosensory dataset
+provider: MNE-Python
+citation: MNE-Python somato dataset.
+urls:
+- https://mne.tools/stable/documentation/datasets.html
+access: held
+licence:
+  name: PDDL-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'Read from the held dataset_description.json, which states "License": "PDDL, see: https://opendatacommons.org/licenses/pddl/".
+    The Open Data Commons Public Domain Dedication and Licence is a dedication to the public domain, so
+    nothing derived from this source inherits a constraint. Its share-alike-free status is a property
+    of PDDL 1.0 and not an inference from the file.'
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - participant
+  - run
+  notes: One participant, 0.25 h MEG plus anatomy (§49.3, held locally).
+frames:
+- meg_device
+- head_fiducial
+- subject_native
+streams:
+- name: median_nerve_evoked_response
+  kind: measured
+  via: null
+  systematic_bias: The N20m response has a known latency, a known polarity and a known generator in area
+    3b. That makes it one of the few fixtures where a source estimate can be checked against a physiologically
+    expected answer rather than against itself -- exactly the 'assert against something that is not this
+    code' requirement
+  band_hz:
+  - null
+  - null
+  temporal_support: MEG at 1000 Hz; median-nerve stimulation as discrete events with a very well-characterised
+    early response
+  spatial_support: 306-channel Neuromag MEG with FreeSurfer anatomy
+- name: time_frequency_response
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: meg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: freesurfer_reconstruction
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulation_events
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- population
+- eeg
+- vascular
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- evaluate
+forbidden:
+- mne-somato/* -> population anatomy (n = 1, and the anatomy is reconstructed)
+- mne-somato/* -> population priors
+split:
+  group_by:
+  - run
+provenance:
+  imported_from: win-registry
+  card: mne-somato
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,1 @@
+# sha256 manifest for freesurfer-thalamic-histological; written on acquisition

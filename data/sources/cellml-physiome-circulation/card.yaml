@@ -1,0 +1,64 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cellml-physiome-circulation
+title: CellML and Physiome cerebral circulation and oxygen-transport models
+provider: Physiome Project / Auckland Bioengineering Institute and contributors
+citation: Physiome Model Repository; CellML specification. PROMPT.md §52.11 and §54.3.
+urls:
+- https://models.physiomeproject.org/
+- https://www.cellml.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- model_state_space
+streams:
+- name: published_circulation_models
+  kind: measured
+  via: null
+  systematic_bias: '§52.11''s closing instruction is decisive: these are COMPETING IMPLEMENTATIONS, NOT
+    ONE TRUTH. CellML''s value is that a model arrives as declared equations with declared units, so several
+    can be instantiated side by side and compared on the same data instead of one being adopted by default.'
+  notes: most published circulation models were fitted to specific preparations and species; their parameters
+    are not automatically human cerebral parameters
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: curated, unit-annotated, machine-readable models of cerebral circulation, oxygen transport
+    and autoregulation; the models carry their EQUATIONS and UNITS, not fitted outputs
+- name: unit_annotated_equations
+  kind: measured
+  via: null
+  systematic_bias: CellML's insistence that every variable carries its physical units is the same discipline
+    §57 imposes on native units in a source card, and the machinery for checking it already exists
+  band_hz:
+  - null
+  - null
+absent:
+- human_cerebral_parameter_values
+- validation_data
+- uncertainty
+use:
+- calibrate
+- prior
+forbidden:
+- cellml-physiome-circulation/* -> observation-role likelihoods
+- cellml-physiome-circulation/* -> a single adopted haemodynamic model
+- cellml-physiome-circulation/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: cellml-physiome-circulation
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

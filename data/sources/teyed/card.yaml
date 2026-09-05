@@ -1,0 +1,93 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: teyed
+title: TEyeD -- large-scale eye-tracking dataset with 2D/3D eye landmarks
+provider: University of Tübingen
+citation: 'Fuhl et al., TEyeD: Over 20 million real-world eye images with pupil, eyelid, and iris 2D and
+  3D segmentations, 2D and 3D landmarks, 3D eyeball, gaze vector, and eye movement types. ISMAR 2021.'
+urls:
+- https://www.hci.uni-tuebingen.de/publikationen/datasets/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: 132
+  hierarchy:
+  - participant
+  - session
+  - device
+  notes: Seven different head-mounted eye trackers -- device is a real grouping level and a real domain
+    shift.
+frames:
+- hmd_camera
+- eye
+- eyeball_centre
+streams:
+- name: eyeball_models
+  kind: measured
+  via: null
+  systematic_bias: the 3D eyeball is FITTED from images under a spherical-eye assumption; it is derived
+    geometry with a known idealisation, not a measured eye
+  band_hz:
+  - null
+  - null
+  temporal_support: device-native frame rates; movement-type labels as intervals
+  spatial_support: seven head-mounted devices with different optics and placements
+- name: gaze_vectors
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eye_movement_type_labels
+  kind: imposed
+  via: null
+  systematic_bias: saccade/fixation/smooth-pursuit labels come from a detection ALGORITHM with thresholds;
+    different thresholds give different labels from identical data
+  band_hz:
+  - null
+  - null
+- name: eye_images
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: 2d_3d_landmarks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- world_scene_alignment_for_all_devices
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The quantity of interest is the camera-to-eye transform. Without the near-eye camera geometry
+    -- its pose, optics and relation to the headset frame -- an eye image cannot be turned into an eyeball
+    model and a gaze ray in any external frame.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: Gaze here is a 3D ray in a headset frame, not a point on a screen. Turning it into retinal
+    coordinates over any stimulus requires the eye and world geometry; without it the ray is expressed
+    in a frame no stimulus lives in.
+use:
+- calibrate
+- fit
+forbidden:
+- teyed/* -> any cortical state directly
+- teyed/eyeball_models -> measured-geometry claims
+split:
+  group_by:
+  - participant
+  - device
+provenance:
+  imported_from: win-registry
+  card: teyed
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

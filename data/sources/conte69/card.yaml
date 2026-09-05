@@ -1,0 +1,63 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: conte69
+title: Conte69 population-average cortical surface atlas
+provider: Van Essen lab / HCP
+citation: Van Essen et al., Parcellations and hemispheric asymmetries of human cerebral cortex analyzed
+  on surface-based atlases. Cerebral Cortex 2012.
+urls:
+- https://balsa.wustl.edu/
+access: held
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- fs_LR
+- fsaverage
+streams:
+- name: population_average_surface
+  kind: measured
+  via: null
+  systematic_bias: An AVERAGE surface has no individual's folding pattern and systematically smooths sulcal
+    depth; using it as a geometric substrate for a forward model gives dipole orientations that belong
+    to nobody.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: a 69-subject average midthickness/inflated/very-inflated surface in fs_LR space, with
+    left-right vertex correspondence -- the property that makes hemispheric comparison well-posed
+- name: interhemispheric_vertex_correspondence
+  kind: measured
+  via: null
+  systematic_bias: the left-right correspondence is a genuine and unusual property, and it is what makes
+    asymmetry a measurable rather than a definitional quantity
+  band_hz:
+  - null
+  - null
+absent:
+- individual_folding
+- subcortex
+- cerebellum
+use:
+- calibrate
+- prior
+forbidden:
+- conte69/* -> individual cortical geometry
+- conte69/population_average_surface -> EEG/MEG forward models claiming subject specificity
+- conte69/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: conte69
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

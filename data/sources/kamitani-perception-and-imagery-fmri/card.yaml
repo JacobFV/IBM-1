@@ -1,0 +1,237 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: kamitani-perception-and-imagery-fmri
+title: Kamitani lab generic object decoding fMRI (seen and imagined) -- the lab's own PREPROCESSED release,
+  because the raw BIDS deposit is unreadable
+provider: 'Kyoto University / ATR (Kamitani lab). TWO distributions and only one of them is readable:
+  the RAW BIDS deposit is OpenNeuro ds001246, and what is held here is the lab''s own figshare release
+  10.6084/m9.figshare.7387130 v8.'
+citation: Horikawa & Kamitani, Generic decoding of seen and imagined objects using hierarchical visual
+  features. Nature Communications 8:15037, 2017; Shen, Horikawa, Majima, Kamitani, Deep image reconstruction
+  from human brain activity. PLOS Computational Biology 15(1):e1006633, 2019.
+urls:
+- https://figshare.com/articles/dataset/Generic_Object_Decoding/7387130
+- https://doi.org/10.6084/m9.figshare.7387130.v8
+- https://openneuro.org/datasets/ds001246
+- https://github.com/OpenNeuroDatasets/ds001246
+- https://github.com/KamitaniLab/GenericObjectDecoding
+access: held
+licence:
+  name: CC-BY-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'RESOLVED FROM THE HELD DISTRIBUTION, 2026-08-18. figshare 7387130 declares CC BY 4.0 in its
+    own article metadata. THE TWO DISTRIBUTIONS DO NOT AGREE: ds001246''s dataset_description.json declares
+    CC0, so the raw deposit and the lab''s preprocessed one carry different terms, and a licence quoted
+    for ''the Kamitani dataset'' without saying which distribution is a licence for neither. CC BY is
+    the stricter of the two and is what applies to the bytes on this disk. The natural-image STIMULI are
+    drawn from ImageNet and carry their own separate terms, which are not the response data''s terms and
+    which neither declaration covers; ImageFeatures.h5 is CNN activations COMPUTED FROM those images and
+    its standing is unresolved. Rule 7 gates distribution only and none of this gated the fetch.'
+binding: unbound
+population:
+  n: 5
+  hierarchy:
+  - participant
+  - session
+  - run
+  - pipeline
+  notes: 'A DEEP, NOT WIDE, design: five participants scanned across many sessions with thousands of stimulus
+    presentations each. n=5 supports no population claim and was never meant to; the identifiable quantity
+    is a within-participant encoding or decoding model. COUNTING PEOPLE RATHER THAN DIRECTORIES IS NOT
+    POSSIBLE HERE, and that is worth stating rather than glossing: the raw deposit ships NO participants.tsv
+    at all -- the evidence for five people is five directories and one README sentence, and there is no
+    grouping column to check because there is no table to check it in. That is a weaker answer than ds004514''s,
+    where 12 unique participant_id values back 12 directories. The held figshare release names its files
+    Subject1..Subject5 and carries no participant table either. ''pipeline'' is a real level here: the
+    same acquisition is deposited twice, preprocessed by SPM5 and by fMRIPrep 1.2.1, and the two are separate
+    files.'
+frames:
+- subject_native_t1w
+streams:
+- name: bold_perception
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course -> AND THEN, BEFORE DEPOSIT, motion correction, coregistration, detrending,
+    run-mean normalisation and trial-wise averaging. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is
+    a modelled state, not a nuisance to be regressed away -- and in this release several of those regressions
+    have already happened and cannot be undone.'
+  confounds:
+  - head motion and its spin-history effects -- ALREADY CORRECTED, so this floor is not measurable from
+    the held bytes
+  - scanner drift across the many sessions this design requires -- ALREADY DETRENDED within run
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - fixation is instructed but eye position is not recorded, so the retinal input is not fully known
+  - low-level image statistics (luminance, contrast, spatial frequency) covary with semantic category
+    in natural images, so a 'category' effect is not separated from them by the design alone
+  - attention and arousal differ between the perception and imagery blocks by construction, and so do
+    session, day and scanner state -- imagery is a SEPARATE SESSION here
+  systematic_bias: 'Many repeated presentations per participant give a real per-voxel noise ceiling, which
+    is the floor any decoding number must be quoted against. 3,245 stimulus blocks per participant (1,320
+    training, 1,925 test), measured 2026-08-18 from the raw deposit''s own event tables via the GitHub
+    mirror, since S3 refuses them. MEASURED FROM THE HELD BYTES 2026-08-19 over all five subjects: each
+    Subject[1-5].h5 is 3,450 trials -- 1,200 training, 1,750 perception-test and 500 imagery, identically
+    in all five -- over 4,133 to 4,643 voxels, and every one of those voxels is inside ROI_VC. So THE
+    SPM5 VIEW IS NOT WHOLE BRAIN: it is the visual cortex mask the published analysis used, with Subject1''s
+    V1 1,004 / V2 1,018 / V3 759 / V4 740 / LOC 540 / FFA 568 / PPA 356 / LVC 2,281 / HVC 2,049 inside
+    its 4,466. A whole-brain claim cannot be made from that file; the fMRIPrep files, at 66,525-89,211
+    voxels, are the whole-brain view.'
+  notes: trial-wise averaging over 3 volumes assumes a fixed haemodynamic delay of one TR; that assumption
+    is baked into the deposited values and cannot be varied from these bytes
+  band_hz:
+  - null
+  - null
+  temporal_support: 'TR 3000 ms, TE 30 ms, 3x3x3 mm, 50 slices, whole brain. THE HELD RELEASE IS NOT A
+    TIME SERIES: both pipelines end in TRIAL-WISE AVERAGING -- 3 volumes per image-presentation block
+    and 5 per imagery block -- so what is on this disk is one pattern per trial, not a sampled BOLD course.
+    Anything needing a haemodynamic time constant, a delay or a temporal filter has to go back to the
+    raw deposit, which is unreadable. The imagery trials have NO EXTERNAL STIMULUS TIMELINE at all --
+    only the 3 s cue onset, the 15 s imagery period and the participant''s own vividness rating.'
+  spatial_support: occipito-temporal coverage analysed VOXEL-WISE in each participant's own T1w native
+    space, with retinotopic and category-selective localisers defining the regions rather than a parcellation.
+    NO SPATIAL NORMALISATION WAS APPLIED in either pipeline, so there is no common space across the five
+    participants and a template-space claim cannot be made from these bytes. A per-subject space-defining
+    template image ships alongside each pipeline (Subject[1-5]_SpaceTemplate.nii for SPM5, Subject[1-5]_fMRIPrepSpaceTemplate.nii
+    for fMRIPrep) and is what any voxel index has to be read against.
+- name: bold_mental_imagery
+  kind: measured
+  via: null
+  observation_chain: as bold_perception, and DURING IMAGERY THERE IS NO INPUT. The only evidence that
+    the participant imagined anything, let alone the cued thing, is their own vividness rating -- a behavioural
+    report, which is a different kind of object from a measurement of the imagined content.
+  confounds:
+  - the participant may have imagined nothing, or something else, and the trial is still labelled
+  - the cue is a word naming a synset, so semantic processing of the word is present on every imagery
+    trial and is not separable from imagery of its referent
+  - eye movements during imagery are systematic and unrecorded
+  - effort and difficulty differ between categories and correlate with the label
+  - IMAGERY IS A SEPARATE SESSION, so the perception/imagery contrast is confounded with session, day
+    and scanner state by construction and no run exists that would separate them
+  systematic_bias: 'This is the central case for obj-visual-imagination-prior and it is exactly where
+    authority must start low: the label is a cue, the evidence of compliance is self-report, and a decoder
+    that succeeds has shown that something category-specific happened, not that an image was internally
+    rendered. 500 imagery blocks per participant, 15 s each, 2,500 in all, each carrying a 1-5 vividness
+    rating -- measured 2026-08-18 from the raw deposit''s event tables.'
+  band_hz:
+  - null
+  - null
+- name: cross_condition_generalisation
+  kind: measured
+  via: null
+  systematic_bias: 'Training a decoder on PERCEPTION and testing it on IMAGERY is the control that could
+    fail and is the only test that distinguishes a shared representation from two separately learnable
+    ones. Its published performance is far below the within-perception ceiling, and that gap is the result,
+    not a shortcoming. WHAT IT DOES NOT SEPARATE, and this matters more here than the card said: perception
+    and imagery are in different SESSIONS, so a generalisation failure is a failure across condition AND
+    across day AND across scanner state at once.'
+  band_hz:
+  - null
+  - null
+- name: stimulus_image_features
+  kind: imposed
+  via: null
+  systematic_bias: 'ImageFeatures.h5 and .mat are CNN (AlexNet CNN1-8), HMAX 1-3, GIST and SIFT+BoF activations
+    COMPUTED from the stimulus images by the depositors. They are a DERIVED description of the stimulus,
+    not the stimulus: the images themselves are not in either distribution, and rule 4 says a derived
+    quantity carries its algorithm forever. Reading them as ''the stimulus'' would substitute one network''s
+    representation for the pixels.'
+  band_hz:
+  - null
+  - null
+- name: pipeline_disagreement
+  kind: measured
+  via: null
+  systematic_bias: The same acquisition is deposited twice, through SPM5 and through fMRIPrep 1.2.1, into
+    the same per-subject native space. That is two preprocessing pipelines over one set of scans, which
+    is the shape obj-tract-path-products' pipeline-disagreement arm asks for -- and it is a LOWER BOUND
+    twice over, because both start from the same raw DICOMs (reconstruction is shared and exactly zero
+    by construction) and both end in the same lab post-processing family. It is not two independent end-to-end
+    pipelines and must not be reported as one.
+  band_hz:
+  - null
+  - null
+- name: bold_seen_images
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_imagined_categories
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behavioural_vividness_ratings
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: space_template
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- raw_unpreprocessed_bold
+- bold_time_series
+- stimulus_images
+- retinotopy_and_category_localiser_RUNS
+- participants_table
+- eyetracking
+- eeg
+- meg
+- physiology
+- intervention
+- population_sample
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid the provider happened to ship --
+    which here is each participant's own T1w native space with no normalisation to anything.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: 'The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path. Worse in the held release than in the raw one: the stimulus images are not present at all, only
+    CNN features computed from them.'
+use:
+- evaluate
+- fit
+forbidden:
+- kamitani-perception-and-imagery-fmri/* -> a population-level claim
+- kamitani-perception-and-imagery-fmri/* -> an imagery label treated as a measurement of imagined content
+- kamitani-perception-and-imagery-fmri/* -> redistribution of the ImageNet-derived stimuli
+- kamitani-perception-and-imagery-fmri/* -> a motion, drift or physiological floor, all of which the deposit
+  already removed
+- kamitani-perception-and-imagery-fmri/* -> a claim about the RAW deposit, which is not held
+- kamitani-perception-and-imagery-fmri/stimulus_image_features -> the stimulus itself
+split:
+  group_by:
+  - participant
+  - session
+  - stimulus
+  notes: 'Stimulus is a real leakage axis: the same 50 test images recur 35 times each and across participants,
+    and a session-only split lets a decoder memorise the image set. PIPELINE IS A FOURTH AXIS and it is
+    not in this list on purpose -- the SPM5 and fMRIPrep views are the SAME scans, so putting one in train
+    and the other in test is not a hold-out at all, it is the same trial twice.'
+provenance:
+  imported_from: win-registry
+  card: kamitani-perception-and-imagery-fmri
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

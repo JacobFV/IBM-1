@@ -1,0 +1,1 @@
+# sha256 manifest for naturalistic-neuroimaging-database; written on acquisition

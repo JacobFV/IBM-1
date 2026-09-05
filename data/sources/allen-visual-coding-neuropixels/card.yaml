@@ -1,0 +1,155 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: allen-visual-coding-neuropixels
+title: 'Allen Brain Observatory -- Visual Coding: Neuropixels (mouse)'
+provider: Allen Institute for Brain Science; mirrors on AWS Open Data, DANDI (000021 and 000022) and AllenSDK
+citation: Siegle, Jia, Durand, Gale, Bennett, Graddis, et al. Survey of spiking in the mouse visual system
+  reveals functional hierarchy. Nature 592(7852):86-92, 2021. doi:10.1038/s41586-020-03171-x.
+urls:
+- https://brain-map.org/circuits-behavior/visual-coding-neuropixels
+- https://dandiarchive.org/dandiset/000021
+- https://dandiarchive.org/dandiset/000022
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: prohibited
+  notes: 'TWO DIFFERENT LICENCES FOR THE SAME RECORDINGS DEPENDING ON THE MIRROR, and provenance must
+    record which one the bytes came from. The AWS Open Data registry points at Allen Institute Terms of
+    Use, not a Creative Commons licence and with no SPDX id. Verbatim: use of the Content, including creation
+    of derivative works, must be for research or other noncommercial purposes unless agreed in writing
+    by the Allen Institute; and the Content or Improvements may not be redistributed for commercial purposes
+    without written permission. The Citation Policy additionally requires a citation on the same page
+    where the data or image appears. The DANDI NWB mirror of the same recordings declares CC-BY-4.0. These
+    must not be collapsed: taking the DANDI copy and the Allen copy are different legal acts with different
+    downstream consequences, and the non-commercial reading is recorded here as the conservative one.'
+binding: unbound
+population:
+  n: 58
+  hierarchy:
+  - participant
+  - session
+  - device
+  notes: 58 mice PASSING QC out of 87 entered into recording; the 87-to-58 attrition is not published,
+    so the released set is a quality-selected subset by an undocumented rule. About 5.7 probes per mouse
+    and roughly 100,000 units (682 plus or minus 144 per experiment), of which a much smaller number pass
+    unit QC.
+frames:
+- probe_channel
+- allen_ccf_registered
+- screen_coordinates
+streams:
+- name: simultaneous_multi_area_spiking
+  kind: measured
+  via: null
+  observation_chain: 'spiking of unit populations near each probe site -> threshold detection and spike
+    sorting -> unit spike trains, with the LFP recorded on the same channels. CROSS-SPECIES: this constrains
+    mouse visual cortex, and the mouse-to-human step is not a scaling factor'
+  confounds:
+  - spike sorting is an algorithm; AllenSDK is explicit that these are UNITS and not guaranteed single
+    cells
+  - running state changes visual responses in mouse cortex profoundly and is recorded rather than controlled
+  - pupil size and arousal covary with everything
+  - probe insertion damages tissue along the track
+  - region assignment comes from histological probe-track reconstruction registered to the CCF -- DERIVED,
+    with registration error
+  - 'head-fixed passive viewing: there is no task and no behavioural readout of what the animal attended'
+  systematic_bias: The registry's human intracranial sources have clinically dictated coverage and no
+    ground truth about cell type. This has neither problem and is a different species. Its role is to
+    constrain the FORM of mesoscopic dynamics and inter-areal interaction, never a human state.
+  band_hz:
+  - null
+  - null
+  temporal_support: spike times at sub-millisecond resolution alongside LFP, running wheel and eye tracking
+    at their own much slower rates. Three clocks, hardware-related within a session
+  spatial_support: 'Neuropixels probes (3a with 374 channels and 1.0 with 383) recording SIMULTANEOUSLY
+    across V1, LM, AL, RL, PM, AM, LGN, LP, CA1, CA3 and DG. SIMULTANEOUS MULTI-AREA SPIKING IS THE POINT:
+    it is the only way to observe inter-areal interaction at spike resolution rather than infer it from
+    separate recordings'
+- name: optotagged_cell_types
+  kind: measured
+  via: null
+  systematic_bias: Optotagging in Pvalb, Sst and Vip lines gives GENETICALLY IDENTIFIED interneuron classes
+    with their spiking -- the link between the molecular cell-type atlases in this registry and actual
+    dynamics, which nothing human supplies. Tagging efficiency is partial, so an untagged unit is not
+    a non-expressing one.
+  band_hz:
+  - null
+  - null
+- name: spikes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: lfp
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: running_speed
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eye_and_pupil_tracking
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: optotagging
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_timing
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- human_data
+- task_behaviour
+- connectome_for_the_same_animals
+- morphology
+- the_29_excluded_animals
+requires:
+- geometry: device-geometry
+  for_streams:
+  - simultaneous_multi_area_spiking
+  severity: blocking
+  without_it: 'A penetrating array samples along its own geometry: site pitch, shank trajectory and insertion
+    depth decide which tissue each channel sees. Without that geometry the channel index carries no spatial
+    claim and the recording cannot be placed against any support.'
+- geometry: retinal-world-geometry
+  severity: degrading
+  without_it: The stimulus is presented on a screen at a fixed distance from an eye whose position is
+    tracked only in part of the sessions. Without the display and eye geometry the visual field coordinate
+    of any response is unknown, and retinotopic claims made from screen coordinates carry an uncorrected
+    eye-position error.
+  substitute: Screen coordinates treated as retinal coordinates under an assumption of fixed gaze, which
+    is false during the periods the pupil trace shows movement.
+use:
+- fit
+- prior
+forbidden:
+- allen-visual-coding-neuropixels/* -> any human state channel without an explicit cross-species mapping
+- allen-visual-coding-neuropixels/* -> a commercial artifact under the Allen Terms of Use
+- allen-visual-coding-neuropixels/* -> a licence claim that does not record which mirror the bytes came
+  from
+split:
+  group_by:
+  - participant
+  - session
+  - device
+  - stimulus
+  notes: The stimulus set repeats across animals; a session-only split leaks through it.
+provenance:
+  imported_from: win-registry
+  card: allen-visual-coding-neuropixels
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,97 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: open-humans
+title: Open Humans -- participant-controlled multi-source personal data
+provider: Open Humans Foundation
+citation: 'Greshake Tzovaras et al., Open Humans: a platform for participant-centered research and personal
+  data exploration. GigaScience 2019.'
+urls:
+- https://www.openhumans.org/
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'Per-participant, per-project consent. There is no single licence: each contribution carries
+    its own sharing decision, and that is the whole design. obj-licence-lineage must handle per-record
+    terms here.'
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  notes: n unresolved and inherently changing -- participants join, contribute and withdraw. A snapshot
+    is the only definable unit.
+frames:
+- participant_device
+- world
+streams:
+- name: wearable_streams
+  kind: imposed
+  via: null
+  systematic_bias: uncontrolled devices, uncontrolled placement, uncontrolled firmware
+  band_hz:
+  - null
+  - null
+  temporal_support: per-source; wearables continuous, surveys sparse, genomics static
+  spatial_support: per-participant, heterogeneous; no common support exists and inventing one would be
+    a fiction
+- name: slow_phenotype
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: genomics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: wearables
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: microbiome
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: continuous_glucose
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: self_report
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: imaging_where_contributed
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- controlled_acquisition
+- any_guaranteed_stream
+- neural_measurement
+use:
+- fit
+- prior
+forbidden:
+- open-humans/* -> cortical state
+- open-humans/* -> any population covariance estimate treated as unbiased
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: open-humans
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

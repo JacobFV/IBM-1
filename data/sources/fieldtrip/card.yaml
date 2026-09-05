@@ -1,0 +1,85 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fieldtrip
+title: FieldTrip -- MATLAB toolbox for MEG, EEG and iEEG analysis
+provider: Donders Institute
+citation: 'Oostenveld et al., FieldTrip: Open Source Software for Advanced Analysis of MEG, EEG, and Invasive
+  Electrophysiological Data. Computational Intelligence and Neuroscience 2011.'
+urls:
+- https://www.fieldtriptoolbox.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- electrode_native
+- meg_device
+- eeg_cap
+- source_space
+streams:
+- name: multiple_forward_solvers
+  kind: measured
+  via: null
+  systematic_bias: FieldTrip can drive SEVERAL forward solvers -- single sphere, concentric spheres, BEM,
+    SIMBIO FEM -- through one interface, which makes solver comparison on identical geometry straightforward.
+    That comparison IS the numerical and model-class uncertainty §39 wants, and it is otherwise laborious
+    enough to be skipped.
+  notes: the solvers make different assumptions about anisotropy and inhomogeneity and give different
+    lead fields; which one was used is part of any source estimate
+  band_hz:
+  - null
+  - null
+  temporal_support: the data's native rate
+  spatial_support: source and sensor spaces as in MNE, with additional support for INTRACRANIAL electrode
+    localisation and for several forward-solver back-ends including SIMBIO's finite elements
+- name: intracranial_electrode_pipeline
+  kind: measured
+  via: null
+  systematic_bias: the iEEG localisation protocol -- CT to MRI registration, brain-shift correction, contact
+    assignment -- is documented in detail and is what the ds003688, brain-treebank and ds004194 cards
+    depend on for their electrode positions
+  band_hz:
+  - null
+  - null
+- name: tms_eeg_tutorial_pipeline
+  kind: measured
+  via: null
+  systematic_bias: see the fieldtrip-tms-eeg-tutorial-data card for the fixture
+  band_hz:
+  - null
+  - null
+absent:
+- measured_conductivities
+- matlab_independence
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'This solver''s input IS the geometry: sensor or electrode positions on one side, a head
+    model on the other. Used as an offline oracle it can produce nothing until the device product supplies
+    the first of those, and a solver run against assumed positions validates an internal implementation
+    against an assumption rather than against physics.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- surrogate
+forbidden:
+- fieldtrip/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: fieldtrip
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

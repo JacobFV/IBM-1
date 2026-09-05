@@ -1,0 +1,87 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: onestop-eye-movements
+title: OneStop Eye Movements -- reading eye-tracking over the OneStopEnglish corpus
+provider: Technion / MIT collaboration
+citation: Berzak et al., CELER and OneStop eye-movement corpora for reading research.
+urls:
+- https://github.com/lacclab/OneStop-Eye-Movements
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved; OneStopEnglish source texts carry their own terms.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: n unresolved. Paragraph-level reading with a comprehension-question manipulation, which makes
+    reading GOAL-CONDITIONED rather than neutral.
+frames:
+- eye
+- display
+- text_layout
+streams:
+- name: fixation_sequences
+  kind: imposed
+  via: null
+  systematic_bias: paragraph reading includes return sweeps and regressions that single-sentence corpora
+    do not; the two are not interchangeable
+  band_hz:
+  - null
+  - null
+  temporal_support: eye tracker at 1000 Hz reduced to fixations; self-paced
+  spatial_support: desktop eye tracker; multi-line paragraph layout, so return sweeps and line transitions
+    are part of the data
+- name: difficulty_conditions
+  kind: imposed
+  via: null
+  systematic_bias: the same content at two difficulty levels is a designed interaction-strength manipulation
+    in the §26 sense, on the language side
+  band_hz:
+  - null
+  - null
+- name: reading_measures
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: text_materials
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: comprehension_questions
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- audio
+requires:
+- geometry: retinal-world-geometry
+  for_streams:
+  - fixation_sequences
+  severity: blocking
+  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
+    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
+    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+use:
+- fit
+forbidden:
+- onestop-eye-movements/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: onestop-eye-movements
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

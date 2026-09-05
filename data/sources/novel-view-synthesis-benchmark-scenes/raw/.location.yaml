@@ -1,0 +1,5 @@
+# where the bytes for `novel-view-synthesis-benchmark-scenes` actually live.  never the bytes themselves.
+source_url: "https://jonbarron.info/mipnerf360/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

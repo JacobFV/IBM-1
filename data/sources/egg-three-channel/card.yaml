@@ -1,0 +1,87 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: egg-three-channel
+title: Three-channel surface electrogastrography dataset
+provider: unresolved -- named in PROMPT.md §52.15
+citation: Three-channel surface EGG dataset (named in PROMPT.md §52.15).
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: 'n unresolved. Surface electrogastrography: the gastric slow wave recorded from the abdominal
+    skin.'
+frames:
+- abdomen
+- stomach
+streams:
+- name: surface_egg
+  kind: measured
+  via: null
+  observation_chain: gastric slow-wave smooth-muscle activity -> abdominal volume conduction -> cutaneous
+    electrode -> sampled voltage in the 0.05 Hz band
+  confounds:
+  - respiration and cardiac artifact, both far larger than the 0.05 Hz signal
+  - movement and posture change
+  - electrode position relative to the stomach, which moves with meals and posture
+  - adiposity, which attenuates the signal
+  systematic_bias: The gastric slow wave is a genuine, phase-stable, very slow biological oscillator with
+    a known peripheral generator. §52.15's slow physiological interactions are exactly this, and the timescale
+    is one B-WIN's native-clock architecture must accommodate rather than resample away (§33).
+  notes: surface EGG cannot localise gastric activity; it reports a global frequency, and the relationship
+    between it and gastric motility is indirect
+  band_hz:
+  - null
+  - null
+  temporal_support: the gastric slow wave is about 0.05 Hz (3 cycles per minute) -- TWO ORDERS OF MAGNITUDE
+    SLOWER than the slowest cortical rhythm usually modelled, and it requires recordings of tens of minutes
+    to resolve at all
+  spatial_support: three cutaneous electrodes over the abdomen; the source is the gastric smooth-muscle
+    syncytium, a large distributed sheet rather than a compact generator
+- name: meal_conditions
+  kind: imposed
+  via: null
+  systematic_bias: fasting versus postprandial is a controlled manipulation of a slow interior state
+  band_hz:
+  - null
+  - null
+- name: gastric_frequency_measures
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- gastric_localisation
+- release_verification
+requires:
+- geometry: device-geometry
+  for_streams:
+  - surface_egg
+  severity: degrading
+  without_it: 'This is a body-surface inverse problem with the same structure as EEG''s: the measured
+    potential depends on where each electrode sat relative to the generator sheet. Without a device-geometry
+    object for the array the signal constrains the source''s state but not its location or extent.'
+  substitute: The nominal placement described in the protocol, treated as exact. Between participants
+    the anatomy under a nominally identical placement varies, and that variation is absorbed silently
+    into the estimate.
+use:
+- fit
+forbidden:
+- egg-three-channel/* -> cortical state without an explicit carded interaction
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: egg-three-channel
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

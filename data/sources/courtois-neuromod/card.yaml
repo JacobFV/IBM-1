@@ -1,0 +1,172 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: courtois-neuromod
+title: Courtois NeuroMod (cNeuroMod) -- dense individual naturalistic fMRI
+provider: Courtois NeuroMod project, CRIUGM Montreal
+citation: 'Boyle et al., The Courtois NeuroMod project: quality assessment of the initial data release.
+  2020.'
+urls:
+- https://www.cneuromod.ca/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Registration and data access agreement; stimulus material (films, games) carries THIRD-PARTY
+    copyright that does not transfer. The neural data and the stimulus have different licences, and obj-licence-lineage
+    must keep them apart.
+binding: unbound
+population:
+  n: 6
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: Six participants scanned for hundreds of hours each. Depth, not breadth.
+frames:
+- scanner
+- subject_native
+- display
+- eye
+- MNI152
+streams:
+- name: bold_movie
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  systematic_bias: Hundreds of hours within person is what makes long-range world-context dependence testable
+    at all (§51.1 item 6).
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 1.49 s BOLD; stimulus at its own frame and sample rate; game events at controller
+    rate. FOUR native clocks, and the movie clock is the one that carries world structure
+  spatial_support: 1.6 mm BOLD; individual surfaces; display geometry documented per session
+- name: bold_video_game
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  systematic_bias: 'Closed-loop: the participant''s action changes the stimulus. This is the only stream
+    in the registry where the world is genuinely interactive rather than played back.'
+  band_hz:
+  - null
+  - null
+- name: video_audio_stimulus
+  kind: imposed
+  via: null
+  systematic_bias: the participant sees a gaze-conditioned projection, not the frame buffer
+  band_hz:
+  - null
+  - null
+- name: game_state
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eye_tracking
+  kind: imposed
+  via: null
+  systematic_bias: in-bore tracking is harder than desktop tracking; quality varies by session
+  band_hz:
+  - null
+  - null
+- name: held_out_stimuli
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_things_images
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_audio
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: physiology
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: anatomical
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- ieeg
+- angiography
+- pet
+- intervention
+- population
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - bold_movie
+  - bold_video_game
+  - video_audio_stimulus
+  - eye_tracking
+  - held_out_stimuli
+  severity: blocking
+  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
+    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
+    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+use:
+- evaluate
+- fit
+forbidden:
+- courtois-neuromod/* -> population covariance priors
+- courtois-neuromod/* -> cortical current-source dynamics at millisecond scale
+split:
+  group_by:
+  - participant
+  - stimulus
+  - session
+  notes: 'stimulus grouping is mandatory: the same films recur across participants and across the Algonauts
+    benchmark'
+provenance:
+  imported_from: win-registry
+  card: courtois-neuromod
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

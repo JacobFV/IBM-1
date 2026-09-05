@@ -1,0 +1,79 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tes-solver-reference-fixtures
+title: ROAST and SimNIBS distributed head models -- NOT precomputed field solutions
+provider: ROAST (Parra lab) and SimNIBS (DTU and collaborators)
+citation: 'Huang et al., ROAST: An open-source, fully-automated, realistic volumetric-approach-based simulator
+  for TES. EMBC 2018; Thielscher et al., SimNIBS. EMBC 2015. PROMPT.md §52.13 and §54.1.'
+urls:
+- https://www.parralab.org/roast/
+- https://simnibs.github.io/simnibs/
+access: priority
+licence:
+  name: 'mixed: CC-BY-NC-4.0 for SimNIBS''s Ernie Extended and non-human-primate models; unresolved for
+    the base example dataset and for ROAST''s example inputs'
+  redistribution: unresolved
+  commercial: prohibited
+  notes: 'CC-BY-NC-4.0 on two of the four SimNIBS datasets makes the JOIN non-commercial. Rule 7: this
+    constrains DISTRIBUTION of anything derived from them and constrains nothing about reading, meshing,
+    solving on, or fitting to them. An unresolved redistribution field is recorded, never a reason to
+    leave the data unread.'
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- mesh_native
+- MNI152
+streams:
+- name: reference_field_solutions
+  kind: measured
+  via: null
+  systematic_bias: 'TWO INDEPENDENT SOLVERS with different meshing, different segmentation and different
+    numerical methods. Their disagreement on the same head at the same montage is a measurable numerical
+    and model-class uncertainty (§39), and it is the honest error bar on any computed tES field. §1: these
+    are offline oracles; B-WIN implements the field computation internally.'
+  notes: both solvers assume isotropic conductivity for most tissues and take skull conductivity from
+    the literature; they share that assumption, so agreement between them does not validate it
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: example head models, meshes and computed field solutions distributed with the two main
+    tES field solvers -- the fixtures against which an internal solver is checked
+- name: head_model_meshes
+  kind: measured
+  via: null
+  systematic_bias: the segmented, meshed head models are reusable geometry and are exactly what §54.4's
+    meshing tools produce
+  band_hz:
+  - null
+  - null
+absent:
+- measured_fields
+- individual_conductivity
+- anisotropy_validation
+requires:
+- geometry: device-geometry
+  for_streams:
+  - reference_field_solutions
+  severity: blocking
+  without_it: Transcranial electrical stimulation delivers a current-density field throughout the head,
+    determined by electrode geometry, contact area and the tissue conductivities between them -- not a
+    spot under an electrode. Without the device product a montage is a pair of labels and the delivered
+    dose is unknown.
+use:
+- calibrate
+- surrogate
+forbidden:
+- tes-solver-reference-fixtures/* -> measured-field claims
+- tes-solver-reference-fixtures/* -> runtime dependency in a WIN query
+- tes-solver-reference-fixtures/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: tes-solver-reference-fixtures
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

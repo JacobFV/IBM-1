@@ -1,0 +1,119 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: multi-site-tep-data
+title: Multi-site TMS-evoked potential dataset
+provider: Mendeley Data (multi-site TEP collection)
+citation: Multi-site TMS-evoked potential data. Mendeley Data.
+urls:
+- https://data.mendeley.com/datasets/hzjrks365b/1
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Mendeley Data deposit; the deposit's stated licence has not been verified here. Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - device
+  - session
+  notes: 'n unresolved. The point is MULTI-SITE: the same nominal experiment run with different stimulators,
+    coils, amplifiers and operators.'
+frames:
+- eeg_cap
+- coil_frame
+- head
+- MNI152
+streams:
+- name: tms_eeg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - auditory and somatosensory co-stimulation, handled differently at each site
+  - site-specific artifact rejection applied before release in some cases
+  systematic_bias: '§51.4 item 31 is explicit: useful for SITE-CONDITIONED RESPONSE SHAPE, BUT ONLY WITH
+    EXPLICIT AUDITORY AND SOMATOSENSORY CO-STIMULATION MODELS. Without those, between-site TEP differences
+    are partly differences in how loud the click was.'
+  notes: site is confounded with coil model, targeting method, masking protocol and operator; the dataset
+    cannot separate them
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at kHz; single pulses at long inter-pulse intervals
+  spatial_support: scalp EEG with site-specific montages; coil position over a nominally common target
+    that each site localised its own way
+- name: between_site_variability
+  kind: measured
+  via: null
+  systematic_bias: The between-site spread is a direct measurement of how reproducible a TEP is across
+    laboratories, which is the floor any TEP-based claim must be quoted against (§46). It is also the
+    most useful thing in the dataset.
+  band_hz:
+  - null
+  - null
+- name: site_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulation_parameters
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: coil_targeting
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- delivered_field_measurement
+- sham_arm
+- individual_head_models
+- standardised_masking
+- emg
+requires:
+- geometry: device-geometry
+  for_streams:
+  - tms_eeg
+  severity: blocking
+  without_it: 'Two device geometries are needed at once and neither can be defaulted: the electrode positions
+    that define the lead field, and the coil winding and pose that determine the induced field. Without
+    both, the pulse is a machine setting and the response is a channel-space waveform, with nothing connecting
+    them at any cortical location.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- evaluate
+- fit
+forbidden:
+- multi-site-tep-data/* -> cortical response without a co-stimulation model
+- multi-site-tep-data/* -> delivered-field claims
+split:
+  group_by:
+  - site
+  - participant
+  - device
+provenance:
+  imported_from: win-registry
+  card: multi-site-tep-data
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

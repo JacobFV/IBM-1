@@ -1,0 +1,94 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: recola
+title: RECOLA -- Remote Collaborative and Affective Interactions database
+provider: University of Fribourg
+citation: Ringeval et al., Introducing the RECOLA multimodal corpus of remote collaborative and affective
+  interactions. FG 2013.
+urls:
+- https://diuf.unifr.ch/main/diva/recola/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: End-user licence agreement required. Unresolved.
+binding: unbound
+population:
+  n: 46
+  hierarchy:
+  - participant
+  - session
+  notes: 46 participants in remote collaborative tasks with SPONTANEOUS affect, plus continuous physiological
+    recording -- the property IEMOCAP lacks.
+frames:
+- webcam
+- microphone
+- torso
+- hand
+streams:
+- name: ecg
+  kind: measured
+  via: null
+  observation_chain: cardiac depolarisation and repolarisation -> torso volume conduction -> electrode
+    pair -> sampled voltage
+  confounds:
+  - sensor placement and contact quality
+  - motion artifact
+  - respiratory-cardiac cross-coupling that makes the two streams non-independent
+  systematic_bias: Genuine autonomic measurement during spontaneous social interaction.
+  band_hz:
+  - null
+  - null
+  temporal_support: audio and video at capture rate; physiology at kHz; affect rated CONTINUOUSLY in time
+    by multiple annotators rather than per utterance
+  spatial_support: webcam and headset plus torso ECG and palmar EDA electrodes
+- name: electrodermal_activity
+  kind: measured
+  via: null
+  observation_chain: sympathetic sudomotor drive -> eccrine sweat gland filling -> skin conductance ->
+    applied voltage across two palmar electrodes -> measured current
+  confounds:
+  - ambient temperature and humidity
+  - movement of the hand
+  - electrode gel drying over the session
+  systematic_bias: EDA is one of the few purely sympathetic measures available non-invasively.
+  band_hz:
+  - null
+  - null
+- name: continuous_affect_annotations
+  kind: imposed
+  via: null
+  systematic_bias: continuous ratings by external annotators of what they believe the participant feels;
+    inter-annotator disagreement is large and is the honest uncertainty
+  band_hz:
+  - null
+  - null
+- name: audio
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- respiration
+- eye_tracking
+use:
+- fit
+forbidden:
+- recola/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: recola
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,127 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cneuromod-friends
+title: cNeuroMod Friends -- long-form television fMRI
+provider: Courtois NeuroMod
+citation: Courtois NeuroMod Friends dataset.
+urls:
+- https://docs.cneuromod.ca/en/latest/DATASETS.html
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: cNeuroMod access agreement; the television series is third-party copyright and is not redistributable.
+binding: unbound
+population:
+  n: 6
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: Tens of hours per participant of the same serialised narrative -- the long-horizon world-context
+    source.
+frames:
+- scanner
+- subject_native
+- display
+- episode_timeline
+streams:
+- name: bold_movie
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  systematic_bias: Serialised narrative means context dependence extends across SESSIONS, which is the
+    regime where a reconstruction-sufficient state and a transition-sufficient state come apart (§35).
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 1.49 s; episodes split into runs with documented boundaries; the NARRATIVE clock
+    spans sessions and is the interesting one
+  spatial_support: 1.6 mm BOLD; individual surfaces
+- name: video_audio_stimulus
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: held_out_seasons
+  kind: measured
+  via: null
+  systematic_bias: held-out episodes share characters, sets and voices with training episodes; that is
+    leakage through content even under a clean episode split
+  band_hz:
+  - null
+  - null
+- name: audio
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: physiology
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- ieeg
+- eye_tracking_all_sessions
+- vascular
+- population
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - bold_movie
+  - video_audio_stimulus
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- evaluate
+- fit
+forbidden:
+- cneuromod-friends/* -> population covariance priors
+- cneuromod-friends/* -> millisecond cortical dynamics
+split:
+  group_by:
+  - participant
+  - stimulus
+  - session
+provenance:
+  imported_from: win-registry
+  card: cneuromod-friends
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

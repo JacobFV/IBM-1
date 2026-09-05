@@ -1,0 +1,50 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: arbor
+title: Arbor -- performance-portable multi-compartment neuron simulator
+provider: Julich Supercomputing Centre and collaborators
+citation: Abi Akar et al., Arbor -- A Morphologically-Detailed Neural Network Simulation Library for Contemporary
+  High-Performance Computing Architectures. PDP 2019.
+urls:
+- https://arbor-sim.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- cell_morphology
+streams:
+- name: scalable_detailed_simulation
+  kind: measured
+  via: null
+  systematic_bias: A SECOND independent implementation of morphologically detailed simulation, with a
+    different numerical approach and different hardware targets. Agreement with NEURON on the same NeuroML
+    model is a numerical-discrepancy measurement; disagreement is a finding. Its GPU execution model is
+    also a relevant reference for obj-hybrid-execution.
+  notes: performance portability is achieved by constraining the model set; not everything expressible
+    in NEURON is expressible here
+  band_hz:
+  - null
+  - null
+  temporal_support: fixed timestep, sub-millisecond
+  spatial_support: multi-compartment morphologies at network scale on GPU and many-core hardware
+absent:
+- human_cortical_parameters
+- in_vivo_validation
+use:
+- surrogate
+forbidden:
+- arbor/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: arbor
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

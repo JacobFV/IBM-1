@@ -1,0 +1,64 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nwb
+title: NWB -- Neurodata Without Borders
+provider: NWB community / Allen Institute, Lawrence Berkeley and collaborators
+citation: Rubel et al., The Neurodata Without Borders ecosystem for neurophysiological data science. eLife
+  2022.
+urls:
+- https://www.nwb.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- file_internal_schema
+- session_time
+- electrode_positions
+streams:
+- name: typed_internal_schema
+  kind: measured
+  via: null
+  systematic_bias: NWB's electrode table carries POSITION, GROUP, IMPEDANCE and DEVICE per contact, and
+    its time series carry per-series rates. §57's requirements -- native units, native spatial support,
+    native temporal support, device metadata -- have more of a home here than in any other standard in
+    this section, which is why §51.5 points at DANDI for invasive electrophysiology.
+  notes: a rich schema permits rich metadata and does not require it; most files use a fraction of it
+  band_hz:
+  - null
+  - null
+  temporal_support: EVERY TIME SERIES CARRIES ITS OWN TIMESTAMPS OR RATE, and multiple series with different
+    rates coexist in one file with a shared session start time. That is much closer to §33's native-clock
+    requirement than BIDS's per-run seconds
+  spatial_support: 'a SINGLE-FILE HDF5 container with a typed internal schema: devices, electrode groups,
+    electrodes with POSITIONS, and time series that carry their own sampling rate and unit conversion.
+    The structure is inside the file rather than in the path'
+- name: extensibility
+  kind: measured
+  via: null
+  systematic_bias: neurodata extensions let new types be declared, which is how a standard survives new
+    instruments -- and unregistered extensions are how it fragments
+  band_hz:
+  - null
+  - null
+absent:
+- clock_relations_between_files
+- epistemic_roles
+- uncertainty_representation
+use:
+- calibrate
+forbidden:
+- nwb/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: nwb
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

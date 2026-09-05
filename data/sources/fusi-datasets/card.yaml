@@ -1,0 +1,76 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fusi-datasets
+title: Functional ultrasound imaging (fUSI) datasets
+provider: multiple -- rodent and human intraoperative/neonatal fUSI studies
+citation: PROMPT.md §52.10, 'fUSI datasets as cross-species hemodynamic model tests'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- probe_native
+- animal_brain_native
+- subject_native
+streams:
+- name: power_doppler_cbv
+  kind: measured
+  via: null
+  systematic_bias: §52.10 registers fUSI as a CROSS-SPECIES HAEMODYNAMIC MODEL TEST. It measures cerebral
+    blood VOLUME directly at ~100 micron and ~10 ms resolution, which is far better than BOLD in both
+    axes and measures a different quantity. A haemodynamic model calibrated on BOLD and tested against
+    fUSI is tested against a genuinely independent measurement -- which is what §46 asks for and what
+    BOLD-only validation cannot give.
+  notes: power Doppler is sensitive to blood volume in vessels above a velocity threshold, so the slowest
+    capillary flow is under-represented
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: power-Doppler ultrasound imaging of cerebral blood volume at high spatiotemporal resolution,
+    mostly rodent, with human application limited to intraoperative and neonatal windows
+- name: high_temporal_resolution_dynamics
+  kind: measured
+  via: null
+  systematic_bias: 10 ms resolution resolves the haemodynamic response's onset and shape in a way BOLD
+    at TR 1 s cannot, which constrains the coupling model's time constants
+  band_hz:
+  - null
+  - null
+absent:
+- human_coverage
+- skull_penetration
+- whole_brain_extent
+requires:
+- geometry: vascular-products
+  for_streams:
+  - power_doppler_cbv
+  severity: degrading
+  without_it: A perfusion or reactivity map is a voxel field with no vessel attached. It can be used as
+    a voxel-wise measurement, but attributing it to a supplying artery, a draining vein or a microvascular
+    compartment -- which is what makes it evidence about the vascular state rather than about the image
+    -- requires the vascular product.
+  substitute: Voxel-wise use with no vessel attribution, which cannot separate an arterial transit effect
+    from a tissue perfusion change.
+use:
+- calibrate
+- prior
+forbidden:
+- fusi-datasets/* -> human adult haemodynamics without an explicit transfer assumption
+- fusi-datasets/* -> human observation-role likelihoods
+- fusi-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: fusi-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

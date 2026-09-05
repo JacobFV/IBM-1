@@ -1,0 +1,150 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: calgary-campinas
+title: Calgary-Campinas public brain MR dataset (with raw k-space)
+provider: Vascular Imaging Lab / AI2Lab, University of Calgary, with MICLab, UNICAMP; also distributed
+  through the Canada Open Neuroscience Platform
+citation: Souza et al., An open, multi-vendor, multi-field-strength brain MR dataset and analysis of publicly
+  available skull stripping methods agreement. NeuroImage 170:482-494, 2018.
+urls:
+- https://sites.google.com/view/calgary-campinas-dataset/
+access: priority
+licence:
+  name: CC-BY-ND-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'Verbatim from the download page: Creative Commons Attribution-NoDerivatives 4.0 International
+    Public License. NO-DERIVATIVES IS UNUSUAL AND IS LOAD-BEARING: it restricts distributing modified
+    versions of the data, which is a real constraint on shipping any preprocessed or reconstructed copy.
+    No general DUA; a download form is required for the thalamus and hypothalamus benchmarks.'
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - device
+  notes: '359 T1w volumes across GE, Philips and Siemens at 1.5 T and 3 T. Raw k-space: 35 fully-sampled
+    single-channel datasets (25 train, 10 validation) and 167 multi-channel 3D T1w acquisitions with 12-
+    or 32-channel coils. Silver-standard masks: 359 skull-strip, 357 hippocampus, 12 manual skull-strip,
+    1,381 hypothalamus masks and 1,023 thalamus subjects drawn from HCP. n is left null because the per-benchmark
+    counts differ and the participants are not the same set across them.'
+frames:
+- kspace_sampling_grid
+- scanner
+- subject_native
+streams:
+- name: raw_multi_coil_kspace
+  kind: measured
+  via: null
+  observation_chain: 'transverse magnetisation precessing under applied gradients -> signal induced in
+    each receive coil, weighted by that coil''s spatial sensitivity -> complex samples on a k-space trajectory.
+    THE IMAGE DOES NOT EXIST YET AT THIS POINT: it is produced by a reconstruction, which is a choice
+    with its own regularisation, and reconstruction artefacts are indistinguishable from anatomy in the
+    output'
+  confounds:
+  - coil sensitivity maps are estimated, not measured, and their error propagates into every reconstructed
+    voxel
+  - gradient nonlinearity distorts the k-space trajectory away from the nominal one
+  - B0 inhomogeneity produces phase accrual that reads as displacement
+  - the reconstruction's regularisation determines what the image looks like as much as the tissue does
+  - vendor and field strength differ across the collection and are confounded with site
+  systematic_bias: Raw k-space with a matched reconstruction is the one place a forward MR physics implementation
+    can be checked end to end against a measurement rather than against a simulator.
+  band_hz:
+  - null
+  - null
+  temporal_support: the k-space readout ordering is the only clock; 3D acquisitions carry no physiological
+    time axis
+  spatial_support: RAW MULTI-COIL K-SPACE alongside the reconstructed volumes -- the acquisition before
+    the reconstruction, which is where obj-mr-physics actually lives and which almost no neuroimaging
+    dataset ships
+- name: silver_standard_masks
+  kind: measured
+  via: null
+  systematic_bias: SILVER STANDARD MEANS THE CONSENSUS OF EXISTING AUTOMATED METHODS, not manual truth.
+    Training against it teaches a model to agree with the tools that made it, including where they are
+    jointly wrong, and the 12 manual masks are the only actual reference in the release. This is a case
+    where a plausible label is more dangerous than a missing one.
+  band_hz:
+  - null
+  - null
+- name: multi_vendor_multi_field_comparison
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: raw_kspace_single_channel
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: raw_kspace_multi_channel
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: skull_strip_masks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: hippocampus_masks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: hypothalamus_masks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: thalamus_masks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- mra
+- vessel_data
+- functional_mri
+- dwi
+- clinical_labels
+- travelling_subjects
+requires:
+- geometry: mr-acquisition-objects
+  for_streams:
+  - raw_multi_coil_kspace
+  severity: blocking
+  without_it: Raw k-space is not an image. Without the acquisition object -- scanner frame, sequence timeline,
+    sampling trajectory, coil sensitivities and reconstruction provenance -- these samples cannot be placed
+    in space at all, and a reconstruction produced without them carries none of its own physics.
+use:
+- calibrate
+- evaluate
+- fit
+forbidden:
+- calgary-campinas/* -> distribution of a modified copy (the no-derivatives term)
+- calgary-campinas/* -> a silver-standard mask treated as manual ground truth
+split:
+  group_by:
+  - participant
+  - site
+  - device
+provenance:
+  imported_from: win-registry
+  card: calgary-campinas
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

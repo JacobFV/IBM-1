@@ -1,0 +1,162 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cam-can
+title: Cambridge Centre for Ageing and Neuroscience (Cam-CAN)
+provider: University of Cambridge
+citation: Shafto et al., The Cambridge Centre for Ageing and Neuroscience (Cam-CAN) study protocol. BMC
+  Neurology 2014; Taylor et al., NeuroImage 2017.
+urls:
+- https://camcan-archive.mrc-cbu.cam.ac.uk/dataaccess/
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Registration and data-access request required. SPDX unresolved.
+binding: unbound
+population:
+  n: 700
+  hierarchy:
+  - participant
+  - session
+  notes: Uniform age sampling across the adult lifespan is the design feature that makes this useful for
+    age-conditioned priors.
+frames:
+- meg_device
+- eeg_cap
+- head_fiducial
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: meg_rest
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
+    plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
+    SQUID flux -> sampled channel
+  confounds:
+  - environmental magnetic interference and urban noise
+  - head motion within and between runs
+  - ocular and cardiac fields
+  - muscle artifact at high frequency
+  - SQUID jumps and sensor drift
+  systematic_bias: Head position within the dewar varies between participants and is part of the forward
+    model, not a nuisance to be ignored.
+  notes: the MEG forward model uses this participant's MRI from a DIFFERENT session; the coregistration
+    residual is a real uncertainty component
+  band_hz:
+  - null
+  - null
+  temporal_support: MEG at 1 kHz; MRI volumes at their own TR. MEG and MRI are SEPARATE sessions -- not
+    simultaneous, and the card must not imply otherwise
+  spatial_support: 306-channel Elekta/MEGIN MEG array plus 70-channel EEG; 1 mm structural MRI
+- name: meg_task
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
+    plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
+    SQUID flux -> sampled channel
+  confounds:
+  - environmental magnetic interference and urban noise
+  - head motion within and between runs
+  - ocular and cardiac fields
+  - muscle artifact at high frequency
+  - SQUID jumps and sensor drift
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: age
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eeg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_task
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mt
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cognitive_battery
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- ieeg
+- pet
+- angiography
+- eye_tracking
+- intervention
+requires:
+- geometry: device-geometry
+  for_streams:
+  - meg_rest
+  - meg_task
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- fit
+- prior
+forbidden:
+- cam-can/meg_rest -> effective connectivity parameters
+- cam-can/* -> vascular geometry state
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: cam-can
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

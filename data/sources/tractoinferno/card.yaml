@@ -1,0 +1,113 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tractoinferno
+title: TractoInferno -- multi-site diffusion database for machine-learning tractography
+provider: Universite de Sherbrooke / SCIL
+citation: 'Poulin et al., TractoInferno: A large-scale, open-source, multi-site database for machine learning
+  dMRI tractography. Scientific Data 2022.'
+urls:
+- https://openneuro.org/datasets/ds003900/versions/1.1.1
+- https://github.com/scil-vital/TractoInferno
+- https://www.nature.com/articles/s41597-022-01833-1
+access: held
+licence:
+  name: CC0-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: CC0, stated by the OpenNeuro snapshot's own dataset_description (ds003900 v1.1.1), read from
+    the API rather than from a paper. Supersedes 'unresolved; aggregated from multiple contributors' --
+    the aggregation is real and the depositors released the aggregate under CC0.
+binding: unbound
+population:
+  n: 284
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: '284 participants across SIX sites with different scanners and protocols. The multi-site design
+    is the point: it is the only source in §52.8 built specifically to test cross-pipeline and cross-site
+    generalisation.'
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: dwi
+  kind: measured
+  via: null
+  observation_chain: water displacement over the diffusion time within and around axons and cells -> gradient-direction-dependent
+    signal attenuation -> reconstructed q-space or orientation distribution; ORIENTATION EVIDENCE, not
+    an observation of a tract
+  confounds:
+  - eddy-current and susceptibility distortion
+  - motion between diffusion directions
+  - partial volume of crossing fibres, which no single-tensor model represents
+  - the fitting model itself (DTI vs. CSD vs. NODDI) is a choice with its own bias
+  - site and scanner differences that are large relative to the biological differences of interest
+  systematic_bias: Site is a first-class variable here rather than a nuisance to be harmonised away.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: site-specific voxel sizes and gradient schemes; individual T1 and surfaces; reference
+    bundles per subject
+- name: reference_tractograms
+  kind: measured
+  via: null
+  systematic_bias: The 'reference' bundles are EXPERT-CURATED TRACTOGRAPHY OUTPUT, not anatomy. They define
+    what a good algorithm should reproduce, which makes them a benchmark target and not a ground truth.
+    A method that matches them has matched a convention.
+  band_hz:
+  - null
+  - null
+- name: cross_site_generalisation
+  kind: measured
+  via: null
+  systematic_bias: a site-held-out arm is available here and is the honest generalisation test §46 asks
+    for
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: preprocessed_derivatives
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bundle_segmentations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: site_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- ex_vivo_ground_truth
+- directionality
+- function
+- vascular
+use:
+- evaluate
+- fit
+forbidden:
+- tractoinferno/reference_tractograms -> anatomical ground truth
+- tractoinferno/* -> directed connectivity claims
+split:
+  group_by:
+  - site
+  - participant
+provenance:
+  imported_from: win-registry
+  card: tractoinferno
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

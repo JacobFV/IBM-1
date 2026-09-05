@@ -1,0 +1,5 @@
+# where the bytes for `steinmetz-neuropixels-2019` actually live.  never the bytes themselves.
+source_url: "https://figshare.com/articles/dataset/Distributed_coding_of_choice_action_and_engagement_across_the_mouse_brain/9974357"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

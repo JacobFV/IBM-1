@@ -1,0 +1,5 @@
+# where the bytes for `breath-hold-hypercapnia-cvr-datasets` actually live.  never the bytes themselves.
+source_url: "https://direct.mit.edu/imag/article/doi/10.1162/imag_a_00536/128518/Quantitative-mapping-of-cerebrovascular-reactivity"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

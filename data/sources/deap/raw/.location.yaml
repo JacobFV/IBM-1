@@ -1,0 +1,5 @@
+# where the bytes for `deap` actually live.  never the bytes themselves.
+source_url: "http://www.eecs.qmul.ac.uk/mmv/datasets/deap/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

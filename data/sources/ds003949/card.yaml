@@ -1,0 +1,68 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds003949
+title: ds003949 -- OpenNeuro cerebrovascular imaging dataset
+provider: OpenNeuro ds003949
+citation: OpenNeuro ds003949 (named in PROMPT.md §52.10).
+urls:
+- https://openneuro.org/datasets/ds003949
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: OpenNeuro-hosted; terms unresolved pending inspection.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: n and exact modality content unresolved; audit at file level before use.
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: vascular_imaging
+  kind: measured
+  via: null
+  observation_chain: flow-related enhancement (TOF) or contrast bolus -> vessel-lumen intensity -> reconstruction
+    -> angiographic volume; slow and in-plane flow are systematically under-represented
+  confounds:
+  - acquisition details unverified, so the flow-dependence and resolution limits are unknown
+  - population characteristics unresolved
+  systematic_bias: Authority low until the file-level contents are audited. Carded so the §52.10 line
+    item is registered rather than lost.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: unresolved -- BIDS-organised vascular imaging, contents unverified
+- name: structural_mri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- everything_unverified
+- capillary_scale
+requires:
+- geometry: vascular-products
+  severity: blocking
+  without_it: An angiographic volume is an image of a lumen, not a vessel. Without the vascular product
+    -- a resolved graph carrying radius, topology and territory -- there is no vessel for this evidence
+    to constrain and no way to say which cortical support any of it supplies.
+use:
+- fit
+forbidden:
+- ds003949/* -> anything until the file-level inventory is audited
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: ds003949
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

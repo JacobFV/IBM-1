@@ -1,0 +1,87 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tesa-reference-data
+title: TESA -- TMS-EEG signal analyser example and reference data
+provider: TESA / Monash University
+citation: 'Rogasch et al., Analysing concurrent transcranial magnetic stimulation and electroencephalographic
+  data: A review and introduction to the open-source TESA toolbox. Brain Stimulation 2017.'
+urls:
+- https://nigelrogasch.github.io/TESA/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - run
+  notes: Example datasets accompanying the TESA toolbox. n unresolved; the value is the reference PIPELINE
+    and its documented artifact taxonomy.
+frames:
+- eeg_cap
+- coil_frame
+- head
+streams:
+- name: artifact_taxonomy
+  kind: measured
+  via: null
+  systematic_bias: §54.1 lists TESA among the EEG-fMRI and TMS artifact references. Its contribution is
+    a NAMED TAXONOMY of TMS-EEG artifacts with worked examples, which is what turns 'clean the data' into
+    a set of specific physical processes each of which can be modelled rather than removed.
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at kHz with pulses as events
+  spatial_support: scalp EEG during TMS
+- name: reference_processed_outputs
+  kind: measured
+  via: null
+  systematic_bias: reference outputs are one pipeline's answer and must not become the definition of the
+    correct answer
+  band_hz:
+  - null
+  - null
+- name: tms_eeg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: artifact_component_examples
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- delivered_field
+- sham_arm
+- individual_anatomy
+- population
+requires:
+- geometry: device-geometry
+  for_streams:
+  - artifact_taxonomy
+  severity: blocking
+  without_it: 'Two device geometries are needed at once and neither can be defaulted: the electrode positions
+    that define the lead field, and the coil winding and pose that determine the induced field. Without
+    both, the pulse is a machine setting and the response is a channel-space waveform, with nothing connecting
+    them at any cortical location.'
+use:
+- calibrate
+- evaluate
+forbidden:
+- tesa-reference-data/* -> population priors
+- tesa-reference-data/reference_processed_outputs -> ground truth
+split:
+  group_by:
+  - participant
+  - run
+provenance:
+  imported_from: win-registry
+  card: tesa-reference-data
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

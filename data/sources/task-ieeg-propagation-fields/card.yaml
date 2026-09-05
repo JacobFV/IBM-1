@@ -1,0 +1,77 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: task-ieeg-propagation-fields
+title: Task-specific intracranial propagation fields
+provider: multiple -- iEEG propagation and cortico-cortical evoked potential studies
+citation: PROMPT.md §52.9, 'task-specific iEEG propagation fields'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- electrode_native
+- subject_native
+- MNI152
+streams:
+- name: propagation_latency_fields
+  kind: measured
+  via: null
+  systematic_bias: 'MEASURED LATENCY AND MEASURED DIRECTION between recorded sites -- the closest human
+    evidence to effective connectivity there is, and §38 makes the distinction that matters: this is EFFECTIVE,
+    not structural, and not functional either. Coverage is clinical, so the propagation field is sampled
+    where electrodes happen to be.'
+  notes: propagation between two contacts may be direct or via unrecorded intermediate territory; latency
+    alone cannot distinguish them
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: spatiotemporal maps of how a response propagates across intracranial contacts during
+    a task, or how a cortico-cortical evoked potential spreads after single-pulse stimulation
+- name: cortico_cortical_evoked_potentials
+  kind: measured
+  via: null
+  systematic_bias: single-pulse stimulation gives a directed, causal, latency-resolved response -- and
+    the delivered field at the stimulating contact is modelled, never measured (see the ram-intracranial
+    card)
+  band_hz:
+  - null
+  - null
+absent:
+- whole_brain_coverage
+- healthy_population
+- delivered_field_measurement
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
+    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
+    channel is an index and nothing measured here can be attached to a cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- prior
+forbidden:
+- task-ieeg-propagation-fields/* -> structural connectivity claims
+- task-ieeg-propagation-fields/* -> healthy population priors without pathology conditioning
+- task-ieeg-propagation-fields/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: task-ieeg-propagation-fields
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

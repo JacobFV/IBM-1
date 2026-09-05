@@ -1,0 +1,62 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: human-cell-atlas
+title: Human Cell Atlas
+provider: Human Cell Atlas consortium
+citation: Regev et al., The Human Cell Atlas. eLife 2017.
+urls:
+- https://www.humancellatlas.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- tissue_native
+- cell_taxonomy
+streams:
+- name: peripheral_tissue_cell_references
+  kind: measured
+  via: null
+  systematic_bias: '§52.6 registers HCA for PERIPHERAL AND SLOW PHENOTYPE PRIORS. Its relevance to B-WIN
+    is the body, not the brain: vascular endothelium, immune populations, endocrine tissue. Using it as
+    a brain cell-type reference means preferring it over BICAN and the Allen cell atlas, which would be
+    wrong.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: single-cell reference maps across human tissues and organs; the brain is one tissue
+    among many and is not its focus
+- name: vascular_and_immune_references
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- brain_depth
+- spatial_position
+- dynamics
+- in_vivo_measurement
+use:
+- calibrate
+- prior
+forbidden:
+- human-cell-atlas/* -> brain cell-type claims where BICAN or the Allen cell atlas apply
+- human-cell-atlas/* -> observation-role likelihoods
+- human-cell-atlas/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: human-cell-atlas
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

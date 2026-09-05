@@ -1,0 +1,77 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: vestibular-proprioceptive-datasets
+title: Vestibular and proprioceptive task datasets
+provider: multiple -- vestibular stimulation, balance and proprioceptive perturbation studies
+citation: PROMPT.md §52.14, 'vestibular/proprioceptive task datasets'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- head
+- vestibular_labyrinth
+- support_surface
+- limb_segment_frames
+- eye
+streams:
+- name: vestibular_perturbation
+  kind: measured
+  via: null
+  systematic_bias: 'THE VESTIBULAR SYSTEM IS THE SENSOR THAT DEFINES THE HEAD''S RELATION TO GRAVITY AND
+    TO ITS OWN MOTION, which is exactly the transform §56.5''s retinal/world geometry depends on: gaze
+    in the world requires head pose, and head pose in the world is what the vestibular system estimates.
+    A registry that models the eye and the display and not the head''s inertial sense has a missing edge
+    in its coordinate-frame graph.'
+  notes: galvanic vestibular stimulation delivers a current, not a rotation; what the labyrinth reports
+    is a modelled consequence
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: 'measurements and PERTURBATIONS of the vestibular and proprioceptive senses: caloric
+    and galvanic vestibular stimulation, tendon vibration, platform perturbation, with postural and oculomotor
+    readouts'
+- name: proprioceptive_perturbation
+  kind: measured
+  via: null
+  systematic_bias: tendon vibration produces an ILLUSORY movement percept without any movement, which
+    dissociates the afferent signal from the physical state -- a natural experiment in the difference
+    between a measurement and the thing measured
+  band_hz:
+  - null
+  - null
+- name: vestibulo_ocular_reflex
+  kind: measured
+  via: null
+  systematic_bias: the VOR stabilises gaze against head motion at very short latency; any retinalization
+    model with a moving head must account for it or it will systematically misplace the retinal image
+  band_hz:
+  - null
+  - null
+absent:
+- public_availability
+- neural_measurement
+- standardised_protocols
+use:
+- calibrate
+- fit
+- prior
+forbidden:
+- vestibular-proprioceptive-datasets/* -> cortical state directly
+- vestibular-proprioceptive-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: vestibular-proprioceptive-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

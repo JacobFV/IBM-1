@@ -1,0 +1,138 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bp4d-plus
+title: BP4D+ -- multimodal spontaneous emotion corpus with thermal and physiological data
+provider: Binghamton University and collaborators
+citation: Zhang et al., Multimodal Spontaneous Emotion Corpus for Human Behavior Analysis. CVPR 2016.
+urls:
+- http://www.cs.binghamton.edu/~lijun/Research/3DFE/3DFE_Analysis.html
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Academic licence; identifiable 3D facial data. Unresolved.
+binding: unbound
+population:
+  n: 140
+  hierarchy:
+  - participant
+  - session
+  notes: 140 participants across ten ELICITATION TASKS designed to evoke spontaneous emotion -- not acted,
+    unlike IEMOCAP and MELD. That distinction is the reason it is worth carding alongside them.
+frames:
+- face_surface
+- camera
+- thermal_camera
+- finger
+- torso
+streams:
+- name: dynamic_3d_face
+  kind: measured
+  via: null
+  observation_chain: facial muscle contraction -> skin surface deformation -> structured-light or stereo
+    3D reconstruction -> a time-varying mesh. What is measured is SURFACE GEOMETRY; muscle activity is
+    inferred from it
+  confounds:
+  - reconstruction error at occlusions, hair and the mouth interior
+  - head motion, which must be separated from expression
+  - individual face shape, which the deformation is superimposed on
+  systematic_bias: §52.16's EXPRESSION variable, measured as geometry rather than as a label. That is
+    a substantially stronger measurement than a video classification and is the same measured-versus-inferred
+    distinction the whole registry turns on.
+  notes: surface deformation underdetermines which muscles produced it; FACS coding is an expert's inference,
+    not a measurement
+  band_hz:
+  - null
+  - null
+  temporal_support: 3D and 2D video at 25 fps; physiology at 1 kHz; tasks of minutes
+  spatial_support: DYNAMIC 3D facial geometry at high resolution, plus a thermal camera, plus contact
+    physiology. The 3D geometry is a measured SURFACE, which makes facial expression a kinematic quantity
+    here rather than an image-classification one
+- name: thermal_video
+  kind: measured
+  via: null
+  observation_chain: sympathetically mediated cutaneous vasomotor change and perspiration -> facial skin
+    surface temperature -> infrared emission -> thermal camera
+  confounds:
+  - ambient temperature and air movement
+  - the emissivity assumption, which is close to but not exactly 1 for skin
+  - the several-second lag between vasomotor change and surface temperature
+  systematic_bias: A CONTACTLESS autonomic measure. Facial thermal imaging indexes the same sympathetic
+    vasomotor system as EDA through a different physical channel, which makes the two mutually validating.
+  band_hz:
+  - null
+  - null
+- name: facs_action_units
+  kind: imposed
+  via: null
+  systematic_bias: FACS codes are expert annotations of the video, i.e. a human's reading of the same
+    surface the 3D data measures directly
+  band_hz:
+  - null
+  - null
+- name: contact_physiology
+  kind: measured
+  via: null
+  observation_chain: pulsatile arterial blood volume -> optical absorption change at the sensor site ->
+    photodetector current -> sampled waveform
+  confounds:
+  - sensor placement and contact quality
+  - motion artifact
+  - respiratory-cardiac cross-coupling that makes the two streams non-independent
+  band_hz:
+  - null
+  - null
+- name: 2d_video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eda
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: heart_rate
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: blood_pressure
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: respiration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: self_reports
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- muscle_activity
+- controlled_stimulus_dose
+use:
+- fit
+forbidden:
+- bp4d-plus/* -> limbic or cortical state directly
+- bp4d-plus/facs_action_units -> emotional state observation
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: bp4d-plus
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

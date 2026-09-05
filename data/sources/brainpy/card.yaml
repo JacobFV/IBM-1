@@ -1,0 +1,60 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brainpy
+title: BrainPy -- differentiable brain dynamics programming framework
+provider: Peking University
+citation: Wang et al., BrainPy, a flexible, integrative, efficient, and extensible framework for general-purpose
+  brain dynamics programming. eLife 2023.
+urls:
+- https://brainpy.readthedocs.io/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- arbitrary_state_space
+streams:
+- name: differentiable_dynamics
+  kind: measured
+  via: null
+  systematic_bias: JAX-based differentiability means gradients flow through the SIMULATION, which makes
+    parameter estimation in a mechanistic model tractable. §32 says B-WIN imposes NO UNIVERSAL DIFFERENTIABILITY
+    REQUIREMENT -- interactions may be ODEs, solvers, lookups, event systems, discrete algorithms or networks
+    -- so differentiability is a CAPABILITY to exploit where a module has it, not a constraint to impose
+    everywhere.
+  notes: differentiating through a stiff or chaotic system gives gradients that are numerically correct
+    and practically useless
+  band_hz:
+  - null
+  - null
+  temporal_support: explicit numerical integration at a chosen timestep; the timestep is a numerical parameter
+    with a convergence question attached
+  spatial_support: arbitrary dynamical systems from single neurons to networks, on a JAX backend
+- name: model_composability
+  kind: measured
+  via: null
+  systematic_bias: its composition model -- objects with state and update rules that nest -- is a relevant
+    design reference for obj-module-interfaces
+  band_hz:
+  - null
+  - null
+absent:
+- biological_content
+- validated_parameter_sets
+use:
+- surrogate
+forbidden:
+- brainpy/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: brainpy
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

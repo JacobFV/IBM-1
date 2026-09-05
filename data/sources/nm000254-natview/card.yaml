@@ -1,0 +1,142 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nm000254-natview
+title: NATVIEW / NM000254 — naturalistic viewing with simultaneous EEG-fMRI (NKI/INDI)
+provider: NKI / INDI, exposed through NEMAR
+citation: Telesford et al. An open-access dataset of naturalistic viewing using simultaneous EEG-fMRI.
+  Scientific Data (2023).
+urls:
+- https://www.nature.com/articles/s41597-023-02458-8
+- https://nemar.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+binding: unbound
+population:
+  n: 22
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: Repeated sessions. Conditions include rest, checkerboards, Inscapes, and multiple naturalistic
+    movies.
+frames:
+- eeg_cap
+- scanner_bore
+- subject_native_ras
+- display
+- eye
+streams:
+- name: eeg_scanner_on
+  kind: measured
+  via: null
+  observation_chain: cortical current-source state -> volume conduction -> electrodes -> PLUS gradient-switching
+    and ballistocardiogram artifacts induced by the scanner environment
+  confounds:
+  - gradient artifact
+  - ballistocardiogram
+  - helium pump
+  - ocular
+  - cardiac
+  - muscle
+  - electrode motion in B0
+  systematic_bias: 'The scanner-on/off/outside triad is the point: the SAME participants and montage under
+    three artifact regimes make the artifact model identifiable rather than assumed. Model the artifacts;
+    do not consume artifact-corrected data as if it were clean.'
+  notes: artifact model discrepancy is separable here in a way it is not in any EEG-only source
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at amplifier rate inside and outside the scanner; fMRI at TR; eye tracking at
+    tracker rate; all natively distinct
+  spatial_support: 64-channel scalp EEG; fMRI voxel grid; T1 anatomical; precise display geometry
+- name: bold_fmri
+  kind: measured
+  via: null
+  observation_chain: vascular/metabolic state -> susceptibility -> spin evolution under the sequence ->
+    k-space -> reconstructed voxel over an ACQUISITION WINDOW, not an instant
+  confounds:
+  - head motion
+  - physiological noise (cardiac, respiratory)
+  - drift
+  - susceptibility distortion
+  band_hz:
+  - null
+  - null
+- name: display_geometry
+  kind: measured
+  via: null
+  systematic_bias: Precise display geometry plus a checkerboard calibration condition is exactly what
+    retinalization needs and what most naturalistic datasets omit.
+  band_hz:
+  - null
+  - null
+- name: eeg_64ch
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eye_tracking
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ecg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: respiration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- meg
+- ieeg
+- dwi
+- quantitative_vascular
+- sleep_staging
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg_scanner_on
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- fit
+forbidden:
+- nm000254-natview/* -> structural interactome parameters
+split:
+  group_by:
+  - participant
+  - stimulus
+  notes: 'Repeated sessions per participant: session is a variance component, not an independent sample.'
+provenance:
+  imported_from: win-registry
+  card: nm000254-natview
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

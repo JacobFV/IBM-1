@@ -1,0 +1,114 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds006234
+title: ds006234 -- auditory naming intracranial EEG
+provider: OpenNeuro ds006234
+citation: Auditory naming iEEG dataset (named in PROMPT.md §52.4 and §52.9).
+urls:
+- https://openneuro.org/datasets/ds006234
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. Clinical intracranial recordings.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: n unresolved. Clinical population with clinically determined coverage.
+frames:
+- electrode_native
+- subject_native
+- MNI152
+streams:
+- name: ieeg
+  kind: measured
+  via: null
+  observation_chain: current sources within millimetres of the contact -> local volume conduction over
+    a short path -> contact surface area, impedance and referencing scheme -> sampled voltage; spatial
+    support is the contact neighbourhood, not a parcel
+  confounds:
+  - 'clinical pathology at the electrode: this is a patient population, not a healthy one'
+  - medication state and post-implant recovery
+  - referencing scheme (common average vs. bipolar) reshaping the apparent field
+  - epileptiform activity contaminating putative task responses
+  - 'speech-production artifact: jaw and tongue movement contaminates contacts near the temporalis and
+    at the craniotomy edge'
+  systematic_bias: Overt production means the participant's own voice is in the room and in the record,
+    which is both an opportunity (measured articulation timing) and an artifact source.
+  band_hz:
+  - null
+  - null
+  temporal_support: iEEG at kHz; auditory question, then a spoken response -- a PRODUCTION as well as
+    a comprehension epoch
+  spatial_support: subdural and depth contacts, individually localised
+- name: spoken_responses
+  kind: imposed
+  via: null
+  systematic_bias: the response audio gives production onset directly rather than by inference
+  band_hz:
+  - null
+  - null
+- name: electrode_localisation
+  kind: measured
+  via: null
+  systematic_bias: post-implant brain shift
+  band_hz:
+  - null
+  - null
+- name: auditory_stimuli
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: response_timing
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- scalp_eeg
+- meg
+- fmri
+- articulator_kinematics
+- healthy_controls
+requires:
+- geometry: device-geometry
+  for_streams:
+  - ieeg
+  - electrode_localisation
+  severity: blocking
+  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
+    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
+    channel is an index and nothing measured here can be attached to a cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- ds006234/* -> healthy population priors without pathology conditioning
+- ds006234/* -> whole-cortex state outside contact neighbourhoods
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: ds006234
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

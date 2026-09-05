@@ -1,0 +1,1 @@
+# sha256 manifest for depth-scene-geometry-models; written on acquisition

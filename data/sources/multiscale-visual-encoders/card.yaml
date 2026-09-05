@@ -1,0 +1,82 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: multiscale-visual-encoders
+title: Multiscale visual encoder family
+provider: multiple -- hierarchical vision transformers, feature-pyramid and multi-resolution encoders
+citation: PROMPT.md §53.3, 'multiscale visual encoders'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- image_pyramid
+- model_layer_stack
+streams:
+- name: multiscale_feature_maps
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. §53.3: the required output is NOT one flat embedding.
+    A model must expose MULTISCALE, SPATIAL, TEMPORAL and EVENT-STRUCTURED state suitable for interaction
+    with SPECIFICALLY ADDRESSED cortical supports. A single pooled vector cannot address a support. The
+    scale axis is the point. §21 wants a retinotopic mapping into cortical supports, and different cortical
+    areas have systematically different receptive-field sizes at the same eccentricity -- so a single-scale
+    feature map cannot address V1 and MT appropriately with the same representation. The analogy between
+    network scale and cortical receptive-field size is suggestive and unproven, and the pRF measurements
+    in hcp-7t-retinotopy are what would test it.'
+  notes: network receptive fields grow by architecture; cortical ones grow by eccentricity and by area,
+    and the two need not correspond
+  band_hz:
+  - null
+  - null
+  temporal_support: per frame; no temporal structure of its own in the still-image case
+  spatial_support: feature maps at SEVERAL SPATIAL RESOLUTIONS simultaneously -- coarse maps with large
+    receptive fields and fine maps with small ones, which is structurally analogous to the receptive-field
+    size gradient across the visual hierarchy
+absent:
+- uncertainty
+- eccentricity_dependence
+- gaze_conditioning
+requires:
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: This model's value is that it retains a SPATIAL layout, which is what makes a retinotopic
+    pushforward possible at all. Without the retinal and world geometry there is no map from its patch
+    grid to retinal coordinate, and the features can only be pooled -- which destroys the property they
+    were selected for.
+use:
+- distil
+forbidden:
+- multiscale-visual-encoders/* -> observation-role likelihoods
+- multiscale-visual-encoders/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: multiscale-visual-encoders
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - multiscale_feature_maps
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

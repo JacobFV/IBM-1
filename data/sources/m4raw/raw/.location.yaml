@@ -1,0 +1,10 @@
+# where the bytes for `m4raw` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/m4raw
+acquired_at: '2026-09-04'
+files: 8
+bytes: 17967217976
+gib: 16.73
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://zenodo.org/records/7523691

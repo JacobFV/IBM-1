@@ -1,0 +1,141 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds000116
+title: ds000116 -- auditory and visual oddball simultaneous EEG-fMRI
+provider: OpenNeuro ds000116
+citation: Walz et al., Simultaneous EEG-fMRI reveals temporal evolution of coupling between supramodal
+  cortical attention networks. Journal of Neuroscience 2013.
+urls:
+- https://openneuro.org/datasets/ds000116
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: 17
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: Auditory and visual oddball in the same participants -- a supramodal design that separates modality-specific
+    from modality-general responses.
+frames:
+- eeg_cap
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: eeg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - gradient-switching artifact in the concurrently recorded EEG
+  - ballistocardiogram artifact from pulse-driven electrode motion in B0
+  - helium-pump and cryo-cooler artifact
+  - increased participant motion in the bore
+  systematic_bias: 'A well-characterised, high-amplitude evoked response (P300) in the bore makes this
+    a good CALIBRATION episode for the EEG-in-scanner observation model: the expected signal is known
+    well enough that residual artifact is diagnosable.'
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at 1000 Hz; BOLD at TR 2 s; discrete oddball trials with jittered ISI
+  spatial_support: 43-channel MR-compatible EEG; 3 mm BOLD
+- name: bold
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  band_hz:
+  - null
+  - null
+- name: cross_modal_design
+  kind: measured
+  via: null
+  systematic_bias: auditory and visual oddballs in the same session isolate the supramodal component by
+    subtraction, and subtraction assumes additivity
+  band_hz:
+  - null
+  - null
+- name: button_responses
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: auditory_stimuli
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: visual_stimuli
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- meg
+- ieeg
+- eye_tracking
+- physiology
+- electrode_digitisation
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- fit
+forbidden:
+- ds000116/* -> vascular geometry
+- ds000116/* -> naturalistic world-model claims (this is a trial design)
+split:
+  group_by:
+  - participant
+  - run
+provenance:
+  imported_from: win-registry
+  card: ds000116
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,59 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bart
+title: BART -- Berkeley Advanced Reconstruction Toolbox
+provider: UC Berkeley / Lustig lab
+citation: Uecker et al., Berkeley Advanced Reconstruction Toolbox. ISMRM 2015.
+urls:
+- https://mrirecon.github.io/bart/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- kspace
+- subject_native
+- coil_array
+streams:
+- name: parallel_imaging_reconstruction
+  kind: measured
+  via: null
+  systematic_bias: The reconstruction is a REGULARISED INVERSE PROBLEM, and the regulariser is a prior
+    on the image. Different regularisers give different images from identical k-space, so 'the image'
+    is not a property of the acquisition alone -- which is the whole reason §51.2 item 18 says not to
+    train only on reconstructed volumes.
+  band_hz:
+  - null
+  - null
+  temporal_support: operates per acquisition; no ongoing time series
+  spatial_support: k-space in, image out, with coil sensitivity estimation (ESPIRiT) and regularised parallel
+    imaging reconstruction
+- name: espirit_coil_sensitivity
+  kind: measured
+  via: null
+  systematic_bias: §56.4 lists MR coil sensitivity representations among the device geometries to construct;
+    ESPIRiT estimates them from the data itself and is the reference method
+  band_hz:
+  - null
+  - null
+absent:
+- ground_truth_images
+- uncertainty_on_reconstruction
+use:
+- calibrate
+- surrogate
+forbidden:
+- bart/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: bart
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

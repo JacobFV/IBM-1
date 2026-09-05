@@ -1,0 +1,100 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: studyforrest-eyegaze
+title: StudyForrest eye-gaze extension
+provider: StudyForrest project
+citation: Hanke et al., A studyforrest extension, simultaneous fMRI and eye gaze recordings during prolonged
+  natural stimulation. Scientific Data 2016.
+urls:
+- https://www.studyforrest.org/data.html
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved; the film stimulus remains third-party copyright.
+binding: unbound
+population:
+  n: 15
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: In-scanner and out-of-scanner gaze arms. The out-of-scanner arm is a different viewing geometry
+    and is not interchangeable with it.
+frames:
+- eye
+- display
+- mirror
+- scanner
+- head
+streams:
+- name: gaze
+  kind: imposed
+  via: null
+  systematic_bias: 'in-bore mirror path: the display plane in head coordinates is a REFLECTION and getting
+    its handedness wrong silently mirrors every retinal coordinate'
+  band_hz:
+  - null
+  - null
+  temporal_support: 1000 Hz eye tracker; film at 25 fps; BOLD at TR 2 s -- three native rates
+  spatial_support: monocular in-bore video-oculography through a mirror path; documented screen size and
+    viewing distance
+- name: display_geometry
+  kind: measured
+  via: null
+  systematic_bias: published geometry is nominal; the realised mirror angle per session is unresolved
+  band_hz:
+  - null
+  - null
+- name: pupil
+  kind: imposed
+  via: null
+  systematic_bias: pupil size confounds gaze estimation and also indexes arousal; both readings are live
+    and they are not separable from this stream alone
+  band_hz:
+  - null
+  - null
+- name: saccades
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: fixations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: blinks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- neural_data_in_the_out_of_scanner_arm
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'The optical path runs display to mirror to eye inside a scanner bore, and its handedness
+    is part of the geometry: get the mirror wrong and every retinal coordinate is left-right flipped while
+    everything still runs. Without the device product that path is not represented at all.'
+use:
+- calibrate
+- fit
+forbidden:
+- studyforrest-eyegaze/* -> cortical state without an explicit retinalization interaction
+- studyforrest-eyegaze/out_of_scanner -> any simultaneous neural claim
+split:
+  group_by:
+  - participant
+  - stimulus
+  - session
+provenance:
+  imported_from: win-registry
+  card: studyforrest-eyegaze
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

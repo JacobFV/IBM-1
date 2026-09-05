@@ -1,0 +1,59 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: komamri
+title: KomaMRI -- GPU-accelerated Bloch simulator in Julia
+provider: KomaMRI developers / Pontificia Universidad Catolica de Chile
+citation: 'Castillo-Passi et al., KomaMRI.jl: An open-source framework for general MRI simulations with
+  GPU acceleration. Magnetic Resonance in Medicine 2023.'
+urls:
+- https://juliahealth.org/KomaMRI.jl/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- kspace
+- phantom_native
+- coil_array
+streams:
+- name: bloch_simulation_with_motion
+  kind: measured
+  via: null
+  systematic_bias: A THIRD independent Bloch implementation, and one that models motion and flow -- which
+    matters because a moving object during acquisition is the general case (see the ocmr and speech-rt-mri
+    cards). Three independent simulators of the same physics is what makes simulator discrepancy (§39's
+    `simulator_discrepancy` component) measurable rather than assumed small.
+  band_hz:
+  - null
+  - null
+  temporal_support: the sequence timeline, with the spin object allowed to MOVE during it
+  spatial_support: Bloch simulation with MOTION and FLOW support over a spin object, reading Pulseq sequences
+    and writing MRD
+- name: pulseq_and_mrd_interoperability
+  kind: measured
+  via: null
+  systematic_bias: 'Pulseq in, MRD out: the simulator sits inside the same contract as the scanner, which
+    is what makes the comparison well-posed'
+  band_hz:
+  - null
+  - null
+absent:
+- real_tissue
+- in_vivo_validation
+use:
+- surrogate
+forbidden:
+- komamri/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: komamri
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

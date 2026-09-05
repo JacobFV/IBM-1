@@ -1,0 +1,120 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: invasive-human-array-bci
+title: Invasive human intracortical array recordings for grasp and speech BCI
+provider: multiple -- BrainGate and comparable clinical-trial consortia
+citation: PROMPT.md §52.5, 'invasive human grasp/speech array data'.
+access: restricted
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Clinical-trial data from a very small number of identifiable implanted participants. Consent
+    scope is narrow and per-trial. Redistribution is not available; everything else is unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: A handful of people worldwide. Each is effectively an n=1 study, and the population is defined
+    by the injury or disease that motivated the implant -- which is the opposite of a healthy sample.
+frames:
+- array_native
+- subject_native
+- effector_workspace
+streams:
+- name: threshold_crossings
+  kind: measured
+  via: null
+  observation_chain: transmembrane currents of neurons near the microwire -> extracellular field -> high-pass
+    filtering -> threshold detection -> spike sorting into putative units -> spike train; the sorting
+    step is an inference, not a measurement
+  confounds:
+  - 'clinical pathology at the electrode: this is a patient population, not a healthy one'
+  - medication state and post-implant recovery
+  - referencing scheme (common average vs. bipolar) reshaping the apparent field
+  - epileptiform activity contaminating putative task responses
+  - signal quality degrades over months to years post-implant as glial encapsulation proceeds -- a systematic,
+    monotone drift, not stationary noise
+  - in paralysed participants the 'movement' is ATTEMPTED, never executed, so there is no kinematic ground
+    truth
+  systematic_bias: The finest spatial and temporal resolution available in human cortex, over the smallest
+    and most clinically selected population in the registry.
+  notes: attempted movement without execution means the intended kinematics are inferred from the instruction,
+    not measured -- the label is the cue
+  band_hz:
+  - null
+  - null
+  temporal_support: 30 kHz raw sampling; threshold crossings and sorted units at spike times; decoder
+    output at 20-100 Hz
+  spatial_support: 'Utah-style microelectrode arrays in motor or speech cortex: 96 channels over roughly
+    4 mm x 4 mm, sampling a few hundred microns into layer III/V'
+- name: decoder_outputs
+  kind: imposed
+  via: null
+  systematic_bias: a decoder output is a MODEL's estimate, not a measurement, and in closed loop the participant
+    has adapted to that particular decoder
+  band_hz:
+  - null
+  - null
+- name: array_localisation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: sorted_units
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: lfp
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: attempted_movement_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- healthy_participants
+- whole_brain_coverage
+- executed_kinematics
+- population
+- delivered_field_for_stimulation_arms
+requires:
+- geometry: device-geometry
+  for_streams:
+  - threshold_crossings
+  - array_localisation
+  severity: blocking
+  without_it: 'A penetrating array samples along its own geometry: site pitch, shank trajectory and insertion
+    depth decide which tissue each channel sees. Without that geometry the channel index carries no spatial
+    claim and the recording cannot be placed against any support.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- invasive-human-array-bci/* -> healthy population priors
+- invasive-human-array-bci/* -> whole-cortex state
+- invasive-human-array-bci/decoder_outputs -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: invasive-human-array-bci
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

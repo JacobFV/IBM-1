@@ -1,0 +1,5 @@
+# where the bytes for `multi-site-tep-data` actually live.  never the bytes themselves.
+source_url: "https://data.mendeley.com/datasets/hzjrks365b/1"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

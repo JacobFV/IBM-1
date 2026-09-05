@@ -1,0 +1,75 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: breath-hold-hypercapnia-cvr-datasets
+title: Breath-hold and hypercapnia cerebrovascular reactivity datasets
+provider: multiple -- gas-challenge and breath-hold CVR studies
+citation: PROMPT.md §52.11, 'breath-hold and hypercapnia CVR datasets'; §59 reference 10.
+urls:
+- https://direct.mit.edu/imag/article/doi/10.1162/imag_a_00536/128518/Quantitative-mapping-of-cerebrovascular-reactivity
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: cvr_maps
+  kind: measured
+  via: null
+  systematic_bias: §59 reference 10 addresses precisely the case where END-TIDAL CO2 QUALITY IS LOW, which
+    is the common case for breath-hold protocols. A CVR map whose CO2 trace is poor is a delay map masquerading
+    as an amplitude map, and the published methods for handling that are the reusable content here.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: CVR maps and their parent BOLD from breath-hold or controlled gas-challenge protocols;
+    prospective end-tidal targeting gives a far better-controlled stimulus than breath-holding but requires
+    specialised equipment
+- name: gas_challenge_vs_breath_hold
+  kind: measured
+  via: null
+  systematic_bias: the two protocols give different numbers from the same person; which was used is part
+    of the measurement
+  band_hz:
+  - null
+  - null
+absent:
+- standardised_protocol
+- vessel_geometry
+- electrophysiology
+- public_availability
+requires:
+- geometry: vascular-products
+  for_streams:
+  - cvr_maps
+  severity: degrading
+  without_it: A perfusion or reactivity map is a voxel field with no vessel attached. It can be used as
+    a voxel-wise measurement, but attributing it to a supplying artery, a draining vein or a microvascular
+    compartment -- which is what makes it evidence about the vascular state rather than about the image
+    -- requires the vascular product.
+  substitute: Voxel-wise use with no vessel attribution, which cannot separate an arterial transit effect
+    from a tissue perfusion change.
+use:
+- calibrate
+- prior
+forbidden:
+- breath-hold-hypercapnia-cvr-datasets/* -> neural supervision
+- breath-hold-hypercapnia-cvr-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: breath-hold-hypercapnia-cvr-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

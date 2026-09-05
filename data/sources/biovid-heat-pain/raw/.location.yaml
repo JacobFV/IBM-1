@@ -1,0 +1,5 @@
+# where the bytes for `biovid-heat-pain` actually live.  never the bytes themselves.
+source_url: "https://www.nit.ovgu.de/BioVid.html"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

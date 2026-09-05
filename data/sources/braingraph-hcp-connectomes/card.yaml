@@ -1,0 +1,75 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: braingraph-hcp-connectomes
+title: Braingraph.org HCP connectome collection
+provider: Budapest Reference Connectome / braingraph.org
+citation: Szalkai et al., Parameterizable consensus connectomes from the Human Connectome Project. Brain
+  Imaging and Behavior 2017.
+urls:
+- https://braingraph.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- Desikan2006
+- Lausanne
+- MNI152
+streams:
+- name: parameterisable_consensus
+  kind: measured
+  via: null
+  systematic_bias: 'Exposing the consensus threshold as an explicit parameter is unusually honest: it
+    makes visible that the network''s existence depends on a chosen frequency cutoff. Sweeping that parameter
+    is a direct measurement of edge-existence uncertainty, which is what §39 wants and what a single fixed
+    matrix hides.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: connectomes from 1,015 HCP participants at five parcellation resolutions, plus a PARAMETERISABLE
+    consensus in which the fraction of subjects an edge must appear in is an explicit knob
+- name: multi_resolution_connectomes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- provenance
+- path_geometry
+- directionality
+requires:
+- geometry: tract-path-products
+  for_streams:
+  - multi_resolution_connectomes
+  severity: blocking
+  without_it: A connectome matrix is an adjacency over parcel indices. Without the tract product its edges
+    have no path, no length and no supports to terminate on, so it cannot supply a delay, a route or an
+    engineered structural commitment -- only a number per pair of labels.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- braingraph-hcp-connectomes/* -> measured-connection claims
+- braingraph-hcp-connectomes/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: braingraph-hcp-connectomes
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

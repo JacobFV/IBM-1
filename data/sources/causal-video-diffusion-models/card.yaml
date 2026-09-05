@@ -1,0 +1,91 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: causal-video-diffusion-models
+title: Causal video diffusion and flow-matching models
+provider: multiple -- causal and autoregressive video generative models
+citation: PROMPT.md §53.3, 'causal video diffusion/flow models'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- video_frame_grid
+- diffusion_timestep
+streams:
+- name: causal_generative_dynamics
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. §22''s visual imagination/prediction prior is
+    the reason this family matters: a model that can ROLL FORWARD a visual scene is a candidate for the
+    predictive component, not merely an encoder. Generation quality is not the criterion -- §46 -- and
+    a model that produces beautiful video with a state that does not support prediction of neural responses
+    has failed the only test that counts here.'
+  notes: the diffusion timestep axis is an inference procedure, not a dynamical variable; conflating it
+    with time is a category error the architecture must not make
+  band_hz:
+  - null
+  - null
+  temporal_support: frame rate, with an additional DIFFUSION timestep axis that is not physical time and
+    must not be confused with it
+  spatial_support: generative models with a spatial latent grid; the CAUSAL variants condition only on
+    past frames, which is the property §53.1's strict past-only protocol requires
+- name: forcing_precision
+  kind: measured
+  via: null
+  systematic_bias: '§53.3: the model may represent more detail than a person''s imagery. The LEARNED FORCING
+    PRECISION controls how much of that representation affects the modelled brain -- it is a parameter
+    to be estimated, not a design constant. A generative video model represents FAR more detail than any
+    person''s imagery; the precision parameter is what stops that detail from being imposed on the modelled
+    brain.'
+  band_hz:
+  - null
+  - null
+absent:
+- uncertainty_that_is_not_the_noise_schedule
+- gaze_conditioning
+- biological_plausibility
+requires:
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: This model's value is that it retains a SPATIAL layout, which is what makes a retinotopic
+    pushforward possible at all. Without the retinal and world geometry there is no map from its patch
+    grid to retinal coordinate, and the features can only be pooled -- which destroys the property they
+    were selected for.
+use:
+- distil
+forbidden:
+- causal-video-diffusion-models/* -> observation-role likelihoods
+- causal-video-diffusion-models/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: causal-video-diffusion-models
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - causal_generative_dynamics
+    - forcing_precision
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

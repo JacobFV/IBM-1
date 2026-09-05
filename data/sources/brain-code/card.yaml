@@ -1,0 +1,55 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brain-code
+title: Brain-CODE -- Ontario Brain Institute informatics platform
+provider: Ontario Brain Institute with Indoc Research, across roughly 40 Canadian institutions
+citation: 'Vaccarino et al., Brain-CODE: a secure neuroinformatics platform for management, federation,
+  sharing and analysis of multi-dimensional neuroscience data. Frontiers in Neuroinformatics 12:28, 2018.
+  doi:10.3389/fninf.2018.00028; Behan et al., Brain-CODE: a modern platform for neuroscience data. Frontiers
+  in Neuroinformatics 17:1158378, 2023.'
+urls:
+- https://www.braincode.ca
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'UNRESOLVED FROM THE PROVIDER: braincode.ca presented an EXPIRED TLS CERTIFICATE on 2026-08-14
+    and could not be fetched. A third-party registry describes the terms as restrictive; that is a curator''s
+    classification, not a licence. Access is by account request; Public datasets need no approval, Controlled
+    datasets need a Data Access Request, Data Access Committee review, institutional REB approval and
+    an executed DUA with the OBI.'
+binding: unbound
+population:
+  n: null
+frames:
+- per_study
+streams:
+- name: disease_program_multimodal_holdings
+  kind: measured
+  via: null
+  systematic_bias: Organised around disease programmes, so the cohorts are clinical and the controls are
+    programme-specific. Its distinguishing feature is holding EEG, MRI and molecular data on the same
+    participants, which is rare.
+  band_hz:
+  - null
+  - null
+  temporal_support: per-modality; EDF+ carries per-signal rates
+  spatial_support: clinical and demographic data, MRI (structural, functional, diffusion, spectral) through
+    an XNAT-based store, EEG/ECG/MEG in EDF+, behavioural and sensorimotor measures, genotyping, sequencing
+    and proteomics. As of March 2018 the platform reported data from more than 17,000 human participants
+    and 1,500 animal subjects
+absent:
+- verified_terms
+- public_inventory
+use:
+- prior
+forbidden:
+- brain-code/* -> an artifact, before the terms are read from a reachable provider page
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: brain-code
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

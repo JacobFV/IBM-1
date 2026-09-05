@@ -1,0 +1,77 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: dbs-ieeg-stimulation-datasets
+title: DBS and intracranial stimulation datasets
+provider: multiple -- DBS centres and intracranial stimulation studies, where governance permits
+citation: PROMPT.md §52.13, 'DBS/iEEG stimulation datasets where governance permits'.
+access: restricted
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Institutional review board approval and data-use agreements per centre. Identifiable implanted
+    patients.
+binding: unbound
+population:
+  n: null
+frames:
+- electrode_native
+- subject_native
+- MNI152
+- ACPC
+streams:
+- name: direct_stimulation_with_recording
+  kind: measured
+  via: null
+  systematic_bias: DIRECT SUBCORTICAL STIMULATION, which no non-invasive method reaches. The population
+    is defined by the disorder that justified the implant, and the target nucleus is chosen clinically
+    -- so both the site and the tissue state are non-random. §52.13's 'where governance permits' is the
+    binding constraint and is not a formality.
+  notes: the delivered current density depends on contact geometry, encapsulation tissue impedance (which
+    changes over months post-implant) and local conductivity; none is measured
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: chronic or intraoperative stimulation through implanted electrodes with local field
+    potential recording, in patients with movement or psychiatric disorders
+- name: stimulation_parameters
+  kind: measured
+  via: null
+  systematic_bias: programmed amplitude, pulse width, frequency and active contacts are known exactly;
+    what they deliver is not
+  band_hz:
+  - null
+  - null
+absent:
+- healthy_population
+- delivered_field_measurement
+- public_availability
+- encapsulation_state
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: Both the recording contacts and the stimulating contacts are devices with an extent and
+    a pose, and the delivered field is set by their geometry and the tissue between them. Without the
+    device product the stimulation is a parameter row and the recorded response cannot be located.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- prior
+forbidden:
+- dbs-ieeg-stimulation-datasets/* -> healthy population priors without pathology conditioning
+- dbs-ieeg-stimulation-datasets/* -> delivered-field claims
+- dbs-ieeg-stimulation-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: dbs-ieeg-stimulation-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,85 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hcp-task-vision-maps
+title: HCP task-fMRI visual and category contrast maps
+provider: WU-Minn HCP Consortium
+citation: 'Barch et al., Function in the human connectome: task-fMRI and individual differences in behavior.
+  NeuroImage 2013.'
+urls:
+- https://www.humanconnectome.org/study/hcp-young-adult
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: HCP Open Access Data Use Terms.
+binding: unbound
+population:
+  n: 1200
+  hierarchy:
+  - participant
+  - family
+  - session
+  - run
+  notes: Group and individual contrast maps over the HCP task battery.
+frames:
+- MSMAll_32k_fs_LR
+- grayordinates
+- MNI152
+streams:
+- name: task_contrast_maps
+  kind: measured
+  via: null
+  systematic_bias: 'A contrast map is a GLM output under a canonical HRF, not a state observation. §38:
+    this is a FUNCTIONAL association and may never be substituted for structural or effective connectivity.'
+  notes: the canonical HRF and linear-additivity assumptions are the model discrepancy and they are exactly
+    what §17 says must become a modelled stage
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 0.72 s underlying; the contrast maps themselves have no time axis
+  spatial_support: grayordinate CIFTI over the 32k fs_LR mesh
+- name: category_contrasts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: individual_glm_outputs
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: task_paradigms
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- raw_timeseries_in_the_map_products
+- uncertainty_per_vertex
+- eeg
+- meg
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- evaluate
+- prior
+forbidden:
+- hcp-task-vision-maps/* -> observation-role likelihoods
+- hcp-task-vision-maps/* -> effective connectivity parameters
+split:
+  group_by:
+  - family
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: hcp-task-vision-maps
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

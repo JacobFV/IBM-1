@@ -1,0 +1,62 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nemo-archive
+title: NeMO Archive -- Neuroscience Multi-Omic Archive
+provider: Institute for Genome Sciences, University of Maryland School of Medicine, with a Google Cloud
+  mirror
+citation: 'Ament et al., The Neuroscience Multi-Omic Archive: a BRAIN Initiative resource for single-cell
+  genomic and epigenomic data from the mammalian brain. Nucleic Acids Research 51(D1):D1075-D1085, 2023.
+  doi:10.1093/nar/gkac962. RRIDs SCR_002001 and SCR_015820.'
+urls:
+- https://nemoarchive.org
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'No data licence is stated on any provider page. Access is governed by CONSENT-BASED DATA USE
+    LIMITATIONS rather than a licence: General Research Use, Health/Medical/Biomedical, Brain Health and
+    Disease, and not-for-profit restrictions. Three tiers: Public (open), Embargo (held to a release date),
+    Restricted (approved users only). Restricted access runs through the NIMH Data Archive with an institutional
+    email, an active Federalwide Assurance, a Data Access Request, a signed Data Use Certification from
+    investigator and signing official, NIH Data Access Committee review and annual reapproval. Downloads
+    need a GCP account with a matching institutional email and billing.'
+binding: unbound
+population:
+  n: null
+frames:
+- dissociated_no_coordinates
+- spatial_section_for_merfish_and_slide_seq
+streams:
+- name: single_cell_multi_omic_atlases
+  kind: measured
+  via: null
+  systematic_bias: Cell-type composition per region is the strongest available prior on WHAT a local population
+    is made of, and therefore on which interaction classes are physically available there. Dissociation
+    destroys spatial context, dissociated counts are compositional, and a cell type is a clustering decision
+    rather than a discovered category.
+  notes: cell-type labels are cluster assignments whose granularity is chosen; two atlases of the same
+    tissue disagree on the number of types
+  band_hz:
+  - null
+  - null
+  temporal_support: none for the assays themselves; developmental stage is the only ordering variable
+  spatial_support: 383.1 TB in 1,216,873 files from 289,707 biological samples, about 57.5 million cells
+    across 20 species (mouse 40.2M, human 10.5M, marmoset 1.7M, macaque 579K). Spatial transcriptomics
+    entries carry tissue coordinates; the dissociated assays carry none
+absent:
+- function
+- in_vivo_dynamics
+- individual_living_participants
+use:
+- prior
+forbidden:
+- nemo-archive/* -> any state channel at time t
+- nemo-archive/* -> a cell-type proportion treated as unbiased
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: nemo-archive
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

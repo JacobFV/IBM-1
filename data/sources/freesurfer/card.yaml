@@ -1,0 +1,84 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: freesurfer
+title: FreeSurfer -- cortical surface reconstruction and segmentation
+provider: Martinos Center for Biomedical Imaging
+citation: Fischl, FreeSurfer. NeuroImage 2012; Dale et al., Cortical surface-based analysis. NeuroImage
+  1999.
+urls:
+- https://surfer.nmr.mgh.harvard.edu/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- subject_native_surface
+- fsaverage
+- MNI305
+streams:
+- name: cortical_surface_reconstruction
+  kind: measured
+  via: null
+  systematic_bias: '§56.1 asks for subject-native white, pial, midthickness and inflated surfaces with
+    LOCAL NORMAL AND TANGENT FRAMES -- and the surface normal is what sets a cortical dipole''s orientation,
+    which sets EEG polarity. That is why obj-gsplat requires orientation to be carried and why a surface
+    reconstruction error is an electromagnetic error, not a cosmetic one. Reconstruction fails in characteristic
+    places: near lesions, in low-contrast tissue, and where a sulcus is tight enough for the surfaces
+    to touch.'
+  notes: the pial surface systematically bleeds into vessels and dura in some regions; the white surface
+    is more reliable than the pial and thickness inherits both errors
+  band_hz:
+  - null
+  - null
+  temporal_support: static anatomy; longitudinal streams process repeated scans jointly
+  spatial_support: WHITE, PIAL and inflated cortical surfaces as triangle meshes in the subject's own
+    space, plus a spherical parameterisation used for inter-subject registration. The surface is the substrate
+    §56.1's cortical support bank is built on
+- name: spherical_registration
+  kind: measured
+  via: null
+  systematic_bias: folding-driven registration to fsaverage is the hub edge of the cortical frame graph
+    (see the fsaverage card); its residual is shared by nearly every cross-source surface comparison in
+    this registry and is nearly never propagated
+  band_hz:
+  - null
+  - null
+- name: subcortical_segmentation
+  kind: measured
+  via: null
+  systematic_bias: aseg's subcortical labels are coarse relative to CIT168, THOMAS or the FreeSurfer histological
+    thalamic atlas, and should not be preferred where those apply
+  band_hz:
+  - null
+  - null
+- name: processing_time_and_failure_modes
+  kind: measured
+  via: null
+  systematic_bias: hours per subject and a real failure rate; which subjects failed is a censoring mechanism
+    and belongs in missingness
+  band_hz:
+  - null
+  - null
+absent:
+- measured_geometry
+- per_vertex_uncertainty
+- pathological_anatomy
+use:
+- calibrate
+- surrogate
+forbidden:
+- freesurfer/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: freesurfer
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

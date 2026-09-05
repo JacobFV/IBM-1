@@ -1,0 +1,85 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: haemodynamic-model-families
+title: Published haemodynamic and oxygen-transport model families
+provider: the literature -- Buxton balloon, Davis calibration, Windkessel, oxygen-transport and vascular-control
+  models
+citation: Buxton et al., Magnetic Resonance in Medicine 1998; Davis et al., PNAS 1998; Friston et al.,
+  NeuroImage 2000; and successors. PROMPT.md §52.11.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- model_state_space
+streams:
+- name: competing_model_families
+  kind: measured
+  via: null
+  systematic_bias: '§52.11 says it outright: AS COMPETING IMPLEMENTATIONS, NOT ONE TRUTH. §43 adds that
+    the predecessor''s balloon state becomes an OPTIONAL BASELINE rather than the foundation. Registering
+    the family rather than picking a member is the whole point, and §37 makes model-class uncertainty
+    a first-class quantity rather than a modelling preference.'
+  notes: the balloon model's parameters were estimated in specific cortical regions under specific stimuli;
+    its transfer function is not universal and its failure regime -- sustained stimulation, unusual vascular
+    states -- is documented
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: the named model families themselves -- balloon, Windkessel, Davis calibration, oxygen-transport
+    and vascular-control -- as a set of COMPETING candidate implementations of the vascular stage
+- name: davis_calibration_model
+  kind: measured
+  via: null
+  systematic_bias: every calibrated-BOLD CMRO2 number depends on the Davis model's alpha and beta exponents,
+    which are usually fixed at literature values rather than estimated -- so the model family is not merely
+    a modelling choice, it is inside the data (see the ds004873 card)
+  band_hz:
+  - null
+  - null
+- name: balloon_model_as_baseline
+  kind: measured
+  via: null
+  systematic_bias: §46 requires an equal-capacity alternative that could have won; the balloon model is
+    that alternative for the vascular stage and it must be implemented well enough to be a fair comparison
+    rather than a strawman
+  band_hz:
+  - null
+  - null
+absent:
+- parameter_identifiability
+- human_in_vivo_validation
+- vascular_geometry_dependence
+requires:
+- geometry: vascular-products
+  severity: degrading
+  without_it: These model families describe a vascular stage -- compliance, transit, oxygen extraction
+    -- whose parameters are properties of a vessel bed. Without the vascular product they can be fitted
+    to a signal but cannot be attached to any vessel, so a fitted parameter is a curve shape rather than
+    a claim about the circulation.
+  substitute: Fitting on a lumped, unlocalised compartment, which makes the parameters non-comparable
+    between regions and between people.
+use:
+- calibrate
+- evaluate
+- prior
+forbidden:
+- haemodynamic-model-families/* -> observation-role likelihoods
+- haemodynamic-model-families/* -> a single adopted vascular stage
+- haemodynamic-model-families/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: haemodynamic-model-families
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

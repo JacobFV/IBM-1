@@ -1,0 +1,88 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cerebral-artery-atlas-mouches2019
+title: Statistical atlas of cerebral arteries from multi-centre MRA (Mouches 2019)
+provider: University of Calgary -- Pauline Mouches and Nils D. Forkert, Medical Image Processing and Machine
+  Learning Laboratory
+citation: Mouches P, Forkert ND. A statistical atlas of cerebral arteries generated using multi-center
+  MRA datasets from healthy subjects. Scientific Data 6:29 (2019). doi:10.1038/s41597-019-0034-5
+urls:
+- https://doi.org/10.6084/m9.figshare.c.4215089
+- https://doi.org/10.1038/s41597-019-0034-5
+- https://ucalgary.ca/labs/miplab/downloads
+access: held
+licence:
+  name: CC0-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: Read from the figshare API record of each of the four articles in collection 4215089, all four
+    of which state CC0. The metadata is held beside the payloads under meta/ so the claim is checkable
+    from the bytes rather than from this sentence. CC0 imposes nothing on distribution; rule 7 is not
+    engaged either way.
+binding: unbound
+population:
+  n: 603
+  hierarchy:
+  - participant
+  - site
+  - device
+  notes: 603 healthy subjects pooled across multiple centres and scanners. A DIFFERENT COHORT AND A DIFFERENT
+    CONTRAST from arterial-territory-atlas-liu2023, which is 1,298 stroke patients through DWI lesion
+    distributions -- which is the whole reason the two can be used on opposite sides of one comparison.
+    The site and device levels are declared because the deposit is explicitly multi-centre; per-file labels
+    for them are not shipped.
+frames:
+- MNI152
+streams:
+- name: population_vessel_probability
+  kind: measured
+  via: null
+  systematic_bias: 'Vessel position varies far more between people than cortical position does, so a population
+    vessel probability map is diffuse exactly where it matters. MEASURED ON THE HELD BYTES: 5,262,854
+    voxels carry a non-zero probability and only 21,997 of them reach 50 per cent, so the map is a broad
+    haze around a thin core of trunks. It also inherits time-of-flight''s own bias -- inflow enhancement,
+    so slow and in-plane flow is under-represented and the vessels the atlas misses are systematically
+    the small and slow ones. And it is a probability of OCCURRENCE across registered subjects, so a low
+    value confounds ''this vessel is rare'' with ''this vessel moves'', which no field in the deposit
+    separates.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: population probability, mean radius and radius standard deviation of the cerebral ARTERIES
+    on a 364x436x364 lattice at 0.5 mm, which is the FSL MNI152 1 mm grid subdivided by two
+- name: vessel_radius_statistics
+  kind: measured
+  via: null
+  systematic_bias: A MEAN radius over 603 non-linearly registered subjects at a voxel that is only sometimes
+    a vessel. The maximum anywhere in the volume is 3.96 mm, which is smaller than a real internal carotid
+    artery, because averaging across imperfectly aligned trees shrinks calibre the way it smooths position.
+    Usable as a RANKING of which trunk is larger; not usable as a measurement of any vessel's radius,
+    and rule 4 makes that permanent. The standard-deviation volume is shipped beside it and is the thing
+    to quote if a width is wanted.
+  band_hz:
+  - null
+  - null
+absent:
+- cow_variant_conditioning
+- individual_geometry
+- vessel_identity
+- topology
+- flow
+- veins
+use:
+- prior
+forbidden:
+- cerebral-artery-atlas-mouches2019/* -> individual vessel geometry
+- cerebral-artery-atlas-mouches2019/vessel_radius_statistics -> a radius measurement on any vessel
+- cerebral-artery-atlas-mouches2019/* -> vessel identity or branch topology
+- cerebral-artery-atlas-mouches2019/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  - site
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: cerebral-artery-atlas-mouches2019
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

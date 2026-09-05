@@ -1,0 +1,90 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brain-jepa
+title: Brain-JEPA -- joint-embedding predictive architecture for brain dynamics
+provider: National University of Singapore and collaborators
+citation: 'Dong et al., Brain-JEPA: Brain Dynamics Foundation Model with Gradient Positioning and Spatiotemporal
+  Masking. NeurIPS 2024.'
+urls:
+- https://github.com/Eric-LRL/Brain-JEPA
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- Schaefer2018
+- gradient_coordinate
+- common_tr_grid
+streams:
+- name: gradient_positional_encoding
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. Its positional scheme is the interesting part:
+    using a CONTINUOUS cortical gradient coordinate instead of a parcel index is a step toward §5''s continuous
+    supports, taken inside an otherwise parcellated model. It inherits every caveat of the margulies2016-gradients
+    card -- a gradient is an embedding of a correlation matrix, not an anatomical axis.'
+  band_hz:
+  - null
+  - null
+  temporal_support: TR-gridded fMRI
+  spatial_support: parcellated fMRI time series with GRADIENT-BASED positional encoding -- position in
+    the embedding is a cortical gradient coordinate rather than an arbitrary parcel index
+- name: predictive_embedding_objective
+  kind: measured
+  via: null
+  systematic_bias: a JEPA objective predicts in REPRESENTATION space rather than reconstructing the signal,
+    which is closer to transition-sufficiency than to reconstruction-sufficiency (§35) and is the reason
+    this family is worth extracting from
+  band_hz:
+  - null
+  - null
+absent:
+- native_geometry
+- native_clocks
+- uncertainty
+- electrophysiology
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- distil
+- prior
+forbidden:
+- brain-jepa/* -> observation-role likelihoods
+- brain-jepa/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: brain-jepa
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - gradient_positional_encoding
+    - predictive_embedding_objective
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

@@ -1,0 +1,60 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: pulseq
+title: Pulseq -- open vendor-neutral pulse sequence format and toolchain
+provider: Pulseq developers / University of Freiburg and collaborators
+citation: 'Layton et al., Pulseq: A rapid and hardware-independent pulse sequence prototyping framework.
+  Magnetic Resonance in Medicine 2017.'
+urls:
+- https://pulseq.github.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- kspace
+streams:
+- name: explicit_sequence_timeline
+  kind: measured
+  via: null
+  systematic_bias: §19 asks B-WIN to eventually model actual MRI acquisition physics, and §56.6 asks for
+    sequence timelines with RF and gradient events as constructed objects. Pulseq is that object, already
+    standardised and already executable on real hardware -- which means a simulated sequence and a scanned
+    sequence can be THE SAME OBJECT, and the simulator's discrepancy becomes measurable rather than theoretical.
+  band_hz:
+  - null
+  - null
+  temporal_support: 'the SEQUENCE TIMELINE at microsecond resolution: exactly the temporal object §56.6
+    calls the sequence timeline with its RF and gradient events'
+  spatial_support: a sequence is an explicit, timed LIST OF RF, GRADIENT AND ADC EVENTS -- the sequence
+    itself as data rather than as vendor source code
+- name: hardware_executability
+  kind: measured
+  via: null
+  systematic_bias: the same file drives a simulator and a scanner, which closes the loop between simulated
+    and measured acquisition physics
+  band_hz:
+  - null
+  - null
+absent:
+- the_spins
+- tissue_parameters
+use:
+- calibrate
+- surrogate
+forbidden:
+- pulseq/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: pulseq
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,5 @@
+# where the bytes for `aneumo` actually live.  never the bytes themselves.
+source_url: "https://arxiv.org/abs/2505.14717"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

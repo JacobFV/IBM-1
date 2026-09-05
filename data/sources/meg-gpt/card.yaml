@@ -1,0 +1,113 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: meg-gpt
+title: MEG-GPT -- autoregressive model of MEG data
+provider: Oxford Centre for Human Brain Activity (OHBA) and Oxford Centre for Integrative Neuroimaging,
+  University of Oxford
+citation: 'Huang, Cho, Gohil, Parker Jones and Woolrich, MEG-GPT: A transformer-based foundation model
+  for magnetoencephalography data. arXiv:2510.18080 (2025-10-20).'
+urls:
+- https://arxiv.org/abs/2510.18080
+access: watch
+licence:
+  name: unresolved -- paper is CC-BY-4.0 on arXiv; WEIGHTS licence unread
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. The arXiv paper is CC BY 4.0; that governs the PAPER
+    only. A further unresolved question specific to this model: it is trained on Cam-CAN-derived parcel
+    time courses, and Cam-CAN''s own access agreement may travel with a derived artifact. Rule 7: this
+    governs distribution only and never gates reading or fitting.'
+binding: unbound
+population:
+  n: null
+frames:
+- source_space
+streams:
+- name: autoregressive_generation
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. An AUTOREGRESSIVE objective on electrophysiology
+    is the closest analogue in §53.2 to §53.1''s transition-learning result, at three orders of magnitude
+    finer temporal resolution. Whether it operates on native-rate data or on a resampled grid determines
+    whether it can represent conduction delays at all (§33).'
+  band_hz:
+  - null
+  - null
+  temporal_support: 250 Hz -- a DERIVED view, downsampled from the 1 kHz native acquisition of both datasets
+    (Elekta Neuromag Vectorview). §33.
+  spatial_support: 'RESOLVED 2026-08-17 and it is the decisive fact about this model: NOT sensors. The
+    input is 52 anatomical-parcel time courses obtained by RHINO coregistration, a volumetric LCMV beamformer
+    on an 8 mm isotropic grid, first-principal-component parcellation, symmetric multivariate leakage
+    correction (which REMOVES ALL ZERO-LAG CORRELATION between parcels), and greedy cross-subject sign
+    flipping. §8: AN INVERSE SOLUTION IS NOT GROUND TRUTH. This model is trained on uncertain evidence
+    that has already passed through an observation model, and it inherits that model''s head geometry,
+    coregistration, covariance estimate and regularisation with no way to state them. It has no montage
+    problem because the beamformer consumed the montage before the model started.'
+- name: free_rollout_behaviour
+  kind: measured
+  via: null
+  systematic_bias: long-horizon drift in an autoregressive model of an oscillatory signal is the diagnostic
+    §53.1 asks for
+  band_hz:
+  - null
+  - null
+absent:
+- sensor_level_signal
+- absolute_amplitude
+- zero_lag_coupling
+- uncertainty
+- weights_licence
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'CORRECTED 2026-08-17 after reading the paper: this model has no channel axis over sensors
+    at all, so the channel-identity sentence inherited from the other §53.2 cards was wrong here. Device
+    geometry is required UPSTREAM of the model -- RHINO coregistration and the LCMV beamformer need the
+    sensor array, a structural MRI and digitised headshape points -- and once that is done the model itself
+    never sees a device. So handing MEG-GPT a recording from a different scanner is not a transfer question
+    about the model; it is a question about whether the beamformer pipeline can be re-run, and what transfers
+    is then a property of osl-ephys as much as of the weights.'
+  substitute: None that preserves the claim. A template head model and no digitised headshape would still
+    produce parcel time courses, but they would be a DERIVED quantity of a different derivation class,
+    and nothing downstream of the beamformer records which was used.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- distil
+- evaluate
+forbidden:
+- meg-gpt/* -> observation-role likelihoods
+- meg-gpt/* -> B-WIN's state ontology or support definitions
+- meg-gpt/parcel_time_courses -> anything treated as a measurement of cortical state
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: meg-gpt
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - autoregressive_generation
+    - free_rollout_behaviour
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

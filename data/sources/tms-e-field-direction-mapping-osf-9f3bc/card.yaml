@@ -1,0 +1,102 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tms-e-field-direction-mapping-osf-9f3bc
+title: Effects of electric field direction on TMS-based motor cortex mapping (OSF 9f3bc)
+provider: Max Planck Institute for Human Cognitive and Brain Sciences / OSF node 9f3bc
+citation: Jing, Numssen, Weise, Knosche, Hartwigsen. Effects of electric field direction on TMS-based
+  motor cortex mapping. Imaging Neuroscience, doi:10.1162/IMAG.a.1211; preprint doi:10.1101/2024.12.10.627753.
+urls:
+- https://osf.io/9f3bc/
+- https://doi.org/10.1162/IMAG.a.1211
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: node_license is null and there is no embedded licence. Public, unlicensed.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  notes: 'THE SOURCES DISAGREE and neither is authoritative over the other: the OSF node holds 10 subject
+    folders under validation_MEP (sub-01..sub-10), while the paper abstract describes fourteen subjects.
+    n is left null rather than picking one. The node has an EMPTY description, no tags and no wiki, so
+    nothing on it explains the difference.'
+frames:
+- unresolved -- not documented on the node
+streams:
+- name: mep_versus_field_direction
+  kind: measured
+  via: null
+  observation_chain: 'coil current -> induced electric field in the head, whose magnitude and direction
+    at the cortical target are NOT measured but computed from a head model -> depolarisation of some unknown
+    mixture of interneurons and corticospinal cells -> descending volley -> spinal motoneuron pool, whose
+    excitability is a separate uncontrolled state -> muscle fibre action potentials -> surface EMG ->
+    rectified peak-to-peak amplitude. FOUR DISTINCT THINGS get conflated here: the requested machine setting,
+    the delivered physical field, peripheral co-stimulation, and the candidate neural response. Field
+    DIRECTION is the manipulated variable, which is the one axis a fixed-orientation corpus cannot address
+    at all'
+  confounds:
+  - spinal motoneuron excitability, which varies over minutes and is never measured
+  - background voluntary EMG, which multiplies MEP amplitude and is often only loosely controlled
+  - coil-to-scalp distance and scalp/skull thickness, which change the delivered field without changing
+    the machine setting
+  - 'peripheral co-stimulation: the click, the scalp sensation and the twitch itself are salient sensory
+    events with their own evoked responses'
+  - the head model used to compute the field is derived geometry with its own error, and its output is
+    routinely reported as if measured
+  - attention, arousal and time of day
+  systematic_bias: Direction-dependence of the MEP is the strongest available evidence that the relevant
+    quantity is a VECTOR field interacting with oriented neural elements, not a scalar dose. That distinction
+    is the substance of obj-tms-field.
+  band_hz:
+  - null
+  - null
+  temporal_support: per-pulse; the raw .cfs traces carry their own acquisition rate
+  spatial_support: motor cortex mapping with the E-FIELD DIRECTION as the manipulated variable, which
+    is the point of the study
+- name: mep_emg_raw
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: regression_data
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- per_pulse_coil_pose
+- structural_mri
+- head_meshes
+- eeg
+- sham_arm
+- documentation
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The delivered quantity is an induced electric field throughout the head, set by the coil's
+    winding geometry and its pose relative to the anatomy. Without the device product the stimulation
+    is recorded as a machine setting rather than as a dose at any cortical location, and the four stages
+    of an intervention collapse into one.
+- geometry: literature-derived-geometry
+  severity: blocking
+  without_it: 'The spatial arrangement this source depends on is described in its paper and figures rather
+    than distributed with the data: the navigation frame, the target definition or the pose convention
+    is not in the repository. It has to be reconstructed from the publication, as a derived product that
+    says so, before any number here can be placed.'
+use:
+- fit
+forbidden:
+- tms-e-field-direction-mapping-osf-9f3bc/* -> any artifact, until a licence is resolved
+- tms-e-field-direction-mapping-osf-9f3bc/* -> a per-pulse pose claim (poses are absent)
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: tms-e-field-direction-mapping-osf-9f3bc
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

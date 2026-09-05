@@ -1,0 +1,23 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: vectorview-306-array-geometry
+title: Elekta Neuromag VectorView 306 sensor geometry, read from a real array and completed from the specification
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+binding: unbound
+population:
+  n: null
+streams:
+- name: unspecified
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+provenance:
+  imported_from: win-registry
+  card: vectorview-306-array-geometry
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,64 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: synthseg
+title: SynthSeg -- contrast-agnostic brain segmentation
+provider: MIT and University College London
+citation: 'Billot et al., SynthSeg: Segmentation of brain MRI scans of any contrast and resolution without
+  retraining. Medical Image Analysis 2023.'
+urls:
+- https://github.com/BBillot/SynthSeg
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- MNI152
+streams:
+- name: contrast_agnostic_segmentation
+  kind: measured
+  via: null
+  systematic_bias: 'Its training strategy is the interesting part and is directly relevant to §36: by
+    generating training images from a GENERATIVE MODEL OF MR CONTRAST rather than collecting them, it
+    becomes invariant to acquisition. That is ''pretrain the physical module on physical truth'' applied
+    to segmentation, and it is why the same network works on clinical scans, low-resolution scans and
+    unusual contrasts where FreeSurfer fails.'
+  notes: invariance to contrast is bought by discarding contrast information, so it cannot use the tissue-parameter
+    detail a quantitative acquisition provides
+  band_hz:
+  - null
+  - null
+  temporal_support: static anatomy
+  spatial_support: brain structure labels from an image of ANY contrast and resolution, achieved by training
+    on SYNTHETIC images generated from label maps with randomised contrast -- so the network never sees
+    a real MRI during training
+- name: robustness_to_clinical_scans
+  kind: measured
+  via: null
+  systematic_bias: makes the fastmri-brain, tuh-eeg-adjacent and clinical-archive cards' heterogeneous
+    imaging processable at all, which is otherwise a hard blocker
+  band_hz:
+  - null
+  - null
+absent:
+- cortical_surfaces
+- per_voxel_uncertainty
+- fine_subcortical_detail
+use:
+- calibrate
+- surrogate
+forbidden:
+- synthseg/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: synthseg
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

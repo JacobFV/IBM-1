@@ -1,0 +1,60 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: open3d
+title: Open3D -- library for 3D data processing
+provider: Intel Intelligent Systems Lab and contributors
+citation: 'Zhou et al., Open3D: A Modern Library for 3D Data Processing. arXiv 2018.'
+urls:
+- https://www.open3d.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- arbitrary_point_cloud
+- camera_frame
+streams:
+- name: point_cloud_processing
+  kind: measured
+  via: null
+  systematic_bias: §4's support primitives are closer to an oriented point set than to a mesh, and a point
+    cloud WITH NORMALS is exactly an unstructured set of oriented elements. The scanned scene geometry
+    in hd-epic and project-aria arrives this way, and so does anything reconstructed by the depth models
+    in §53.3.
+  notes: estimated normals have a sign ambiguity that propagates directly into any orientation-dependent
+    physics
+  band_hz:
+  - null
+  - null
+  temporal_support: static; supports RGBD sequences
+  spatial_support: POINT CLOUDS as a first-class type, with normals, registration and surface reconstruction
+    -- the representation that scanned and reconstructed geometry arrives in, as distinct from an authored
+    mesh
+- name: registration_algorithms
+  kind: measured
+  via: null
+  systematic_bias: ICP and its variants align point clouds and converge to local optima like every other
+    registration
+  band_hz:
+  - null
+  - null
+absent:
+- physical_semantics
+- uncertainty
+use:
+- calibrate
+forbidden:
+- open3d/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: open3d
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

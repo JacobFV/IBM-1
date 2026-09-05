@@ -1,0 +1,5 @@
+# where the bytes for `templateflow` actually live.  never the bytes themselves.
+source_url: "https://www.templateflow.org/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

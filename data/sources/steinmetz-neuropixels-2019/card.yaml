@@ -1,0 +1,154 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: steinmetz-neuropixels-2019
+title: Steinmetz et al. 2019 -- distributed coding of choice, action and engagement (mouse Neuropixels)
+provider: UCL Cortexlab (Steinmetz, Carandini, Harris), deposited on figshare
+citation: Steinmetz, Zatka-Haas, Carandini, Harris. Distributed coding of choice, action and engagement
+  across the mouse brain. Nature 576(7786):266-273, 2019. doi:10.1038/s41586-019-1787-x.
+urls:
+- https://figshare.com/articles/dataset/Distributed_coding_of_choice_action_and_engagement_across_the_mouse_brain/9974357
+- https://github.com/nsteinme/steinmetz-et-al-2019
+access: priority
+licence:
+  name: CC-BY-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: CC-BY-4.0 verified on all items through figshare's API. Anonymous download, no account and no
+    terms acceptance. THIS IS THE ONLY ONE OF THE THREE MOUSE ELECTROPHYSIOLOGY RESOURCES IN THIS REGISTRY
+    THAT PERMITS COMMERCIAL USE -- the Allen releases carry a non-commercial Terms of Use, and that difference
+    decides which of them can reach a commercial artifact.
+binding: unbound
+population:
+  n: 10
+  hierarchy:
+  - participant
+  - session
+  - device
+  notes: 10 mice, 39 sessions, 92 insertions, 29,134 neurons recorded of which 22,458 are localised to
+    a region, across 42 brain regions. 6,676 units -- 23% -- HAVE NO REGION ASSIGNMENT, and an analysis
+    over 'all recorded neurons' silently drops or mislabels them.
+frames:
+- probe_channel
+- allen_ccf_registered
+- camera_pixel
+- wheel_angle
+streams:
+- name: simultaneous_multi_region_spiking_with_choice
+  kind: measured
+  via: null
+  observation_chain: spiking of unit populations near each probe site -> spike sorting -> unit trains,
+    during a visual contrast discrimination task reported by wheel turning. CROSS-SPECIES
+  confounds:
+  - spike sorting is an algorithm and its yield differs by region and by probe
+  - region labels are histology-derived and reconstructed, and 23% of units have none
+  - movement variables explain much of the variance attributed to choice, which is the paper's own central
+    caution
+  - engagement drifts across a session and is itself one of the coded variables
+  - 10 animals, so between-animal variance is thin
+  systematic_bias: The reference dataset for the claim that choice and action signals are DISTRIBUTED
+    rather than localised, which is directly the argument against a single global brain latent and for
+    many simultaneous local supports. Its companion finding -- that movement explains much of what looks
+    like decision coding -- is a control that fired.
+  band_hz:
+  - null
+  - null
+  temporal_support: spike times at sub-millisecond resolution; LFP AT 2500 Hz on 385 channels; frontal
+    and body video at 40 Hz and a right-eye close-up at 100 Hz; wheel and lick signals at their own rates.
+    FIVE NATIVE CLOCKS in one experiment, which is exactly the case obj-clock-graph exists for
+  spatial_support: Neuropixels Phase3A Option 3 probes, 385 channels, across 42 regions in simultaneous
+    multi-area recordings
+- name: lfp_alongside_spikes
+  kind: measured
+  via: null
+  observation_chain: the same extracellular potential low-pass filtered, giving the field that a mesoscopic
+    state variable should predict, recorded on the SAME probe as the spikes that generate it. The spike-to-field
+    relation is measured here rather than assumed, which is what a mesoscopic-state observation model
+    needs
+  confounds:
+  - LFP is spatially non-local and mixes contributions over hundreds of micrometres to millimetres
+  - the external reference mode used here puts the reference's own signal into every channel
+  - probe insertion damage alters the local field near the track
+  systematic_bias: The LFP is a separate 577 GB deposit, so the headline download does not contain it
+    and a pipeline built on the main archive will silently have no field data.
+  band_hz:
+  - null
+  - null
+- name: spikes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: lfp_2500hz
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behavioural_video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pupil_tracking
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: wheel_position
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: lick_timing
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_and_choice_variables
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- human_data
+- optotagging
+- cell_type_labels
+- region_labels_for_23_percent_of_units
+- morphology
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'A penetrating array samples along its own geometry: site pitch, shank trajectory and insertion
+    depth decide which tissue each channel sees. Without that geometry the channel index carries no spatial
+    claim and the recording cannot be placed against any support.'
+- geometry: retinal-world-geometry
+  severity: degrading
+  without_it: The stimulus is presented on a screen at a fixed distance from an eye whose position is
+    tracked only in part of the sessions. Without the display and eye geometry the visual field coordinate
+    of any response is unknown, and retinotopic claims made from screen coordinates carry an uncorrected
+    eye-position error.
+  substitute: Screen coordinates treated as retinal coordinates under an assumption of fixed gaze, which
+    is false during the periods the pupil trace shows movement.
+use:
+- fit
+- prior
+forbidden:
+- steinmetz-neuropixels-2019/* -> any human state channel without an explicit cross-species mapping
+- steinmetz-neuropixels-2019/* -> a region-resolved claim over units with no region assignment
+- steinmetz-neuropixels-2019/* -> merging the raw-format and ONE-format copies (they are the same content
+  twice)
+split:
+  group_by:
+  - participant
+  - session
+  - device
+provenance:
+  imported_from: win-registry
+  card: steinmetz-neuropixels-2019
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

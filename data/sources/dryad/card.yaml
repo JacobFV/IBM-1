@@ -1,0 +1,49 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: dryad
+title: Dryad
+provider: Dryad, a not-for-profit 501(c)(3) membership organisation
+citation: No platform-level citation is requested; data publications carry their own DOIs.
+urls:
+- https://datadryad.org
+access: reference
+licence:
+  name: CC0-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'REPOSITORY-WIDE, NOT PER DEPOSIT, and this is the unusual case worth knowing: by submitting,
+    the depositor grants Dryad irrevocable permission to make the dataset available under a CC0 instrument,
+    and Dryad does not accept files whose licensing terms are incompatible with the CC0 waiver. There
+    is no depositor choice and no default question. As of 2026 the platform reports over 65,000 data publications.'
+binding: unbound
+population:
+  n: null
+frames:
+- described_by_reference
+streams:
+- name: cc0_data_publications
+  kind: measured
+  via: null
+  systematic_bias: A uniform CC0 grant removes the per-deposit licence question entirely, which makes
+    Dryad the cheapest archive in this registry to compute licence lineage over. CC0 is a waiver of copyright
+    and does not waive the consent constraints on human-subject data, which are a separate matter the
+    waiver cannot settle.
+  band_hz:
+  - null
+  - null
+  temporal_support: publication and version dates
+  spatial_support: a general research-data archive, up to 10 GB per file and 2 TB per data publication
+    through the web interface
+absent:
+- measurements
+use:
+- prior
+forbidden:
+- dryad/* -> a consent claim inferred from the CC0 waiver
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: dryad
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,5 @@
+# where the bytes for `speech-rt-mri` actually live.  never the bytes themselves.
+source_url: "https://sail.usc.edu/span/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

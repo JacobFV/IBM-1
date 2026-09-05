@@ -1,0 +1,53 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ome-ngff
+title: OME-NGFF / OME-Zarr -- next-generation file format for bioimaging
+provider: Open Microscopy Environment consortium
+citation: 'Moore et al., OME-NGFF: a next-generation file format for expanding bioimaging data-access
+  strategies. Nature Methods 2021.'
+urls:
+- https://ngff.openmicroscopy.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Specification and reference implementations carry separate terms; neither read.
+binding: unbound
+population:
+  n: null
+frames:
+- array_index
+- declared_physical_axes
+streams:
+- name: multiscale_chunked_arrays
+  kind: measured
+  via: null
+  systematic_bias: The axis metadata carries physical units per axis, which is exactly the native-support
+    statement a source card requires and which most imaging containers leave implicit in an affine.
+  notes: a multiscale pyramid is a set of DERIVED downsamplings; reading level 3 and calling it the measurement
+    is the derived-is-not-measured error in a format
+  band_hz:
+  - null
+  - null
+  temporal_support: a time axis is declarable with its own unit, but there is no clock-relation concept
+    between two datasets
+  spatial_support: chunked n-dimensional arrays with an explicit AXES list carrying names, types (space/time/channel)
+    and physical units, plus a multiscale pyramid. This is the format under which whole-brain electron
+    microscopy, light-sheet vasculature and cleared-tissue volumes are actually distributed at petabyte
+    scale
+absent:
+- clock_relations_between_datasets
+- epistemic_roles
+- uncertainty_representation
+use:
+- calibrate
+forbidden:
+- ome-ngff/* -> any state channel
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: ome-ngff
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

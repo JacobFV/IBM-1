@@ -1,0 +1,63 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ppg-benchmark-collections
+title: PPG benchmark collections
+provider: multiple -- PhysioNet, IEEE Signal Processing Cup and wearable-validation collections
+citation: PROMPT.md §52.15, 'PPG benchmark collections'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- wrist
+- finger
+- torso
+streams:
+- name: ppg_with_reference
+  kind: measured
+  via: null
+  systematic_bias: THE POINT IS THE PAIRED REFERENCE. A PPG-derived heart rate without a simultaneous
+    ECG is an estimate with an unknown error; these collections are where that error is characterised,
+    usually under motion where it is largest. Wrist PPG error during vigorous movement is large enough
+    to change any physiological conclusion drawn from a consumer wearable.
+  notes: PPG measures blood volume pulse, not electrical cardiac activity; even a perfect estimate is
+    of a different quantity than the ECG reference
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: photoplethysmography with a simultaneous ECG or contact reference, typically during
+    motion, for validating heart-rate and variability estimation from wearables
+- name: motion_artifact_characterisation
+  kind: measured
+  via: null
+  systematic_bias: deliberately included motion segments are the failure condition every wearable physiology
+    claim must be quoted against
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- standardised_protocol
+- population_diversity
+use:
+- calibrate
+- fit
+forbidden:
+- ppg-benchmark-collections/* -> cortical state
+- ppg-benchmark-collections/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: ppg-benchmark-collections
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

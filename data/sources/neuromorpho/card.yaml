@@ -1,0 +1,74 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: neuromorpho
+title: NeuroMorpho.Org -- curated digital neuronal morphology reconstructions
+provider: George Mason University
+citation: 'Ascoli et al., NeuroMorpho.Org: a central resource for neuronal morphologies. Journal of Neuroscience
+  2007.'
+urls:
+- https://neuromorpho.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- cell_native
+- slice_native
+streams:
+- name: morphology_reconstructions
+  kind: measured
+  via: null
+  systematic_bias: 'Every reconstruction is DERIVED GEOMETRY: a human or algorithm tracing a stained cell
+    in a slice, with shrinkage, truncation at the slice boundary and subjective branch decisions. §56.7
+    lists neuron/population morphology from NeuroMorpho reconstructions as something to actively reconstruct,
+    and its derived status is permanent.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: over 100,000 digitally reconstructed neuronal morphologies as SWC trees, across many
+    species, brain regions, laboratories and reconstruction methods
+- name: morphology_statistics
+  kind: measured
+  via: null
+  systematic_bias: branch lengths, radii and tortuosity distributions are usable as priors over the support
+    kernels §4 requires -- and §4 also says the kernel need NOT be gaussian, which these tree structures
+    illustrate concretely
+  band_hz:
+  - null
+  - null
+- name: human_subset
+  kind: measured
+  via: null
+  systematic_bias: the human fraction of NeuroMorpho is small and mostly from surgical or post-mortem
+    tissue; most reconstructions are rodent
+  band_hz:
+  - null
+  - null
+absent:
+- in_vivo_geometry
+- complete_arbors
+- population
+- consistent_methodology
+use:
+- calibrate
+- prior
+forbidden:
+- neuromorpho/* -> measured in-vivo morphology
+- neuromorpho/morphology_reconstructions -> complete arbor claims
+- neuromorpho/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: neuromorpho
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

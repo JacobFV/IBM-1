@@ -1,0 +1,54 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nidm
+title: NIDM -- Neuroimaging Data Model
+provider: INCF Neuroimaging Data Sharing task force
+citation: Maumet et al., Sharing brain mapping statistical results with the neuroimaging data model. Scientific
+  Data 2016.
+urls:
+- http://nidm.nidash.org/
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Specification licence not read; the spec repositories and the tool implementations carry separate
+    terms and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- described_by_reference
+streams:
+- name: nidm_results_provenance
+  kind: measured
+  via: null
+  systematic_bias: 'NIDM is the closest existing standard to what this registry''s preprocessing_lineage
+    field wants: a machine-readable statement of which software, which version and which parameters stand
+    between the scanner and the number. It describes a PIPELINE, not a state, and it is silent about the
+    epistemic role of the result it describes.'
+  notes: adoption is thin; most published results have no NIDM export, so absence of a NIDM record is
+    not evidence about the pipeline
+  band_hz:
+  - null
+  - null
+  temporal_support: no acquisition clock; NIDM describes a processing history, whose only time axis is
+    the order of operations
+  spatial_support: not an image container -- an RDF/OWL description OF results and of the processing that
+    produced them, keyed to the images by reference
+absent:
+- measurements
+- native_clocks
+- epistemic_roles
+- uncertainty
+use:
+- calibrate
+forbidden:
+- nidm/* -> any state channel (a provenance vocabulary is not evidence)
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: nidm
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

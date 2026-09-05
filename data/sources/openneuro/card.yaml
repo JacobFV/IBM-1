@@ -1,0 +1,53 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: openneuro
+title: OpenNeuro -- BIDS-native open neuroimaging archive
+provider: Stanford Center for Reproducible Neuroscience
+citation: Markiewicz et al., The OpenNeuro resource for sharing of neuroscience data. eLife 2021.
+urls:
+- https://openneuro.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: PER-DATASET, declared in each dataset_description.json and frequently absent or ambiguous there.
+    The archive does not impose one licence, so 'hosted on OpenNeuro' says nothing about permission.
+binding: unbound
+population:
+  n: null
+frames:
+- none
+streams:
+- name: dataset_index
+  kind: measured
+  via: null
+  systematic_bias: most ds00xxxx cards in this registry point here. The accession number is stable but
+    the CONTENT is versioned, so a card that names ds003688 without a version names a moving target
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series; datasets carry VERSIONS and a dataset can change under a stable
+    accession number, which is a reproducibility hazard worth recording
+  spatial_support: an index over BIDS datasets; the datasets have their own supports
+- name: bids_validation
+  kind: measured
+  via: null
+  systematic_bias: BIDS-valid means structurally well-formed, not scientifically sound
+  band_hz:
+  - null
+  - null
+absent:
+- licence_resolution
+- version_pinning_in_most_cards
+use:
+- prior
+forbidden:
+- openneuro/* -> any evidence role for the datasets it indexes
+split:
+  group_by:
+  - site
+provenance:
+  imported_from: win-registry
+  card: openneuro
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

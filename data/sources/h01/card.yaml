@@ -1,0 +1,113 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: h01
+title: H01 -- petavoxel electron-microscopy reconstruction of a human cortical fragment
+provider: Harvard Lichtman lab and Google Research
+citation: Shapson-Coe et al., A petavoxel fragment of human cerebral cortex reconstructed at nanoscale
+  resolution. Science 2024.
+urls:
+- https://research.google/pubs/a-connectomic-study-of-a-petascale-fragment-of-human-cerebral-cortex/
+- https://h01-release.storage.googleapis.com/landing.html
+access: priority
+licence:
+  name: CC BY 4.0 (stated for the H01 release; not independently verified here)
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'Stated by the providers. The dataset is over a petabyte, so §51.3 item 24''s instruction stands:
+    ingest selected derived geometry and statistics first rather than attempting a full local mirror.'
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - participant
+  notes: ONE cubic millimetre from ONE patient's temporal cortex, removed to access a hippocampal lesion.
+    The tissue is human, adult, and came from someone with epilepsy.
+frames:
+- h01_native
+streams:
+- name: cell_segmentation
+  kind: measured
+  via: null
+  observation_chain: fixed and stained tissue -> serial sectioning -> electron microscopy -> alignment
+    -> automated segmentation and proofreading -> a reconstruction whose errors are merge/split errors,
+    not gaussian noise
+  confounds:
+  - automated segmentation MERGE and SPLIT errors, which are the dominant error mode and are not gaussian;
+    only proofread subsets are reliable at the level of an individual neuron
+  - fixation and staining artifacts
+  - the tissue is from a patient with epilepsy and was resected for clinical reasons
+  - one cubic millimetre is smaller than many single neurons' arbors, so almost every cell is truncated
+    at the volume boundary
+  systematic_bias: The densest structural measurement of human cortex that exists. Its errors are topological,
+    which means an unproofread connectivity claim can be wrong in a way that averaging does not fix.
+  notes: boundary truncation makes every connectivity statistic a lower bound conditioned on the volume's
+    extent
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- a single fixed instant of one tissue block
+  spatial_support: 4 nm x 4 nm x 33 nm voxels over roughly one cubic millimetre; 57,000 cells, 150 million
+    synapses and the vasculature within that volume
+- name: vascular_reconstruction
+  kind: measured
+  via: null
+  observation_chain: fixed and stained tissue -> serial sectioning -> electron microscopy -> alignment
+    -> automated segmentation and proofreading -> a reconstruction whose errors are merge/split errors,
+    not gaussian noise
+  confounds:
+  - fixation-induced vessel collapse, which alters lumen diameter systematically
+  - segmentation errors at vessel branch points
+  systematic_bias: §52.10 lists H01 vessel reconstructions under human vascular imaging. It supplies capillary-scale
+    geometry -- density, radius, orientation, branching -- that no in-vivo modality can reach, and §56.3's
+    stochastic microvascular ensembles need exactly these statistics as their conditioning.
+  notes: fixed and collapsed vessels are not perfused vessels; a lumen radius here is not an in-vivo radius
+  band_hz:
+  - null
+  - null
+- name: synapse_annotations
+  kind: measured
+  via: null
+  systematic_bias: synapse counts per connection constrain the plausible strength distribution of a local
+    interaction, which is model-class evidence, not a measured weight
+  band_hz:
+  - null
+  - null
+- name: cell_type_classifications
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: em_volume
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: proofread_subsets
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- population
+- function
+- dynamics
+- long_range_connectivity
+- healthy_tissue
+- whole_brain
+use:
+- fit
+- prior
+forbidden:
+- h01/* -> whole-brain connectivity claims
+- h01/* -> observation-role likelihoods about a living participant
+- h01/vascular_reconstruction -> in-vivo vessel calibre without a fixation-shrinkage correction
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: h01
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

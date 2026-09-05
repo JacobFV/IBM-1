@@ -1,0 +1,5 @@
+# where the bytes for `brainlm` actually live.  never the bytes themselves.
+source_url: "https://github.com/vandijklab/BrainLM"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

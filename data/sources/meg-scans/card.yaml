@@ -1,0 +1,91 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: meg-scans
+title: MEG-SCANS -- MEG with graded acoustic and speech conditions
+provider: unresolved
+citation: MEG-SCANS (named in PROMPT.md §51.1 item 10 and §52.4).
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved; release details not verified.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: n unresolved. §51.1 item 10 identifies its distinctive contribution as GRADED acoustic and speech
+    conditions -- a designed complexity ladder rather than a single naturalistic condition.
+frames:
+- meg_device
+- head_fiducial
+- stimulus_timeline
+streams:
+- name: meg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
+    plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
+    SQUID flux -> sampled channel
+  confounds:
+  - environmental magnetic interference and urban noise
+  - head motion within and between runs
+  - ocular and cardiac fields
+  - muscle artifact at high frequency
+  - SQUID jumps and sensor drift
+  systematic_bias: Authority medium pending verification of the release.
+  band_hz:
+  - null
+  - null
+  temporal_support: MEG at kHz sampling; graded stimulus conditions as blocks
+  spatial_support: whole-head MEG; details unresolved
+- name: graded_audio_conditions
+  kind: imposed
+  via: null
+  systematic_bias: 'A graded acoustic/linguistic ladder is the audio analogue of BBBD''s attention manipulation:
+    it varies interaction strength by design (§26), which is what makes a forcing-precision parameter
+    identifiable rather than merely fitted'
+  band_hz:
+  - null
+  - null
+- name: transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- fmri
+- eeg
+- eye_tracking
+- vascular
+- unresolved_release_details
+requires:
+- geometry: device-geometry
+  for_streams:
+  - meg
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- meg-scans/* -> vascular or metabolic state
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: meg-scans
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,5 @@
+# `hansen-receptors` is vendored inside an installed package, not acquired as bytes.
+local_root: null
+vendored_in: neuromaps
+note: resolved at import time from the package's own data directory; the version of
+  that package is therefore part of this source's provenance.

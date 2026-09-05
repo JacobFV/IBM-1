@@ -1,0 +1,73 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: librispeech
+title: LibriSpeech -- read English speech from LibriVox audiobooks
+provider: Johns Hopkins University
+citation: 'Panayotov et al., Librispeech: An ASR corpus based on public domain audio books. ICASSP 2015.'
+urls:
+- https://www.openslr.org/12
+access: priority
+licence:
+  name: CC BY 4.0 (stated by the providers; not independently verified here)
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Source LibriVox audio is public domain; the corpus packaging states CC BY 4.0. Not verified here.
+binding: unbound
+population:
+  n: 2484
+  hierarchy:
+  - participant
+  - session
+  notes: 1,000 hours of READ speech from public-domain audiobooks, with clean and noisy partitions. The
+    parent material for LibriBrain's stimuli.
+frames:
+- microphone_uncontrolled
+- audiobook_timeline
+streams:
+- name: read_speech_audio
+  kind: imposed
+  via: null
+  systematic_bias: 'READ speech: prosody, disfluency and planning statistics differ systematically from
+    spontaneous speech, and a model fitted here will be wrong about conversation'
+  band_hz:
+  - null
+  - null
+  temporal_support: audio at 16 kHz; utterance segments of up to ~35 s
+  spatial_support: 'volunteer home recordings: microphone and room vary by reader and are not documented'
+- name: clean_and_other_partitions
+  kind: measured
+  via: null
+  systematic_bias: the clean/other split is by ASR difficulty, which is a proxy for recording quality
+    and accent together -- two confounded factors in one label
+  band_hz:
+  - null
+  - null
+- name: transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: speaker_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- video
+- room_acoustics
+- spontaneous_speech
+use:
+- calibrate
+- fit
+forbidden:
+- librispeech/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: librispeech
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

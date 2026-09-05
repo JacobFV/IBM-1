@@ -1,0 +1,5 @@
+# where the bytes for `msp-podcast` actually live.  never the bytes themselves.
+source_url: "https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

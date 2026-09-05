@@ -1,0 +1,73 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: gaze-social-egocentric-datasets
+title: Gaze and social egocentric interaction datasets
+provider: multiple -- Ego4D social benchmarks, EgoCom, dyadic interaction corpora
+citation: PROMPT.md §52.16, 'gaze/social egocentric datasets'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- camera_egocentric
+- eye
+- head
+- world
+- interlocutor_frame
+streams:
+- name: mutual_gaze_and_joint_attention
+  kind: imposed
+  via: null
+  systematic_bias: 'Social gaze is a TWO-PERSON variable: whether gaze is mutual depends on where the
+    OTHER person is looking, which is annotated from the wearer''s camera and is therefore an observer''s
+    inference about a second person''s state. That is a longer inferential chain than any single-person
+    gaze measure, and §29''s low starting authority for abstract social variables applies squarely.'
+  notes: the interlocutor's gaze is estimated from the wearer's view; the interlocutor's own eye tracking
+    essentially never exists
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: egocentric recordings of SOCIAL interaction where the annotated variable is the relationship
+    between the wearer's attention and another person's -- mutual gaze, joint attention, addressee status
+- name: egocentric_social_scene
+  kind: imposed
+  via: null
+  systematic_bias: a face-to-face conversation is a closed loop between two people, so neither person's
+    behaviour is an exogenous input to the other -- the same non-independence that makes the ds002336
+    neurofeedback card interesting
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- interlocutor_eye_tracking
+- dual_recording
+requires:
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: The egocentric frame moves with the head, which is the entire point of the recording. Without
+    the world and eye geometry -- rig pose in the world, gaze ray, scene depth -- the frames are video
+    from a moving camera and nothing recovers what was foveated.
+use:
+- fit
+forbidden:
+- gaze-social-egocentric-datasets/* -> any cortical state
+- gaze-social-egocentric-datasets/mutual_gaze_and_joint_attention -> the interlocutor's attentional state
+  as observed
+- gaze-social-egocentric-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: gaze-social-egocentric-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

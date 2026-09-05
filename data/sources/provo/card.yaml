@@ -1,0 +1,81 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: provo
+title: Provo Corpus -- eye-tracking with cloze predictability norms
+provider: Brigham Young University
+citation: 'Luke and Christianson, The Provo Corpus: A large eye-tracking corpus with predictability norms.
+  Behavior Research Methods 2018.'
+urls:
+- https://osf.io/sjefs/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: 84
+  hierarchy:
+  - participant
+  notes: 84 readers over 55 paragraphs, PLUS separately collected cloze predictability norms from ~470
+    raters. Two populations in one release.
+frames:
+- eye
+- display
+- text_layout
+streams:
+- name: cloze_predictability_norms
+  kind: imposed
+  via: null
+  systematic_bias: Human next-word predictability, measured behaviourally in a DIFFERENT population from
+    the readers. It is the closest thing to a human prediction distribution over language and is directly
+    relevant to §22's prediction prior -- but it is a group statistic, not the reader's own prediction
+  band_hz:
+  - null
+  - null
+  temporal_support: self-paced reading; cloze norms have no time axis at all
+  spatial_support: desktop eye tracking; paragraph layout
+- name: fixation_measures
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: text_materials
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: part_of_speech_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- audio
+- per_reader_predictability
+requires:
+- geometry: retinal-world-geometry
+  for_streams:
+  - fixation_measures
+  severity: blocking
+  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
+    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
+    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+use:
+- fit
+forbidden:
+- provo/cloze_predictability_norms -> an individual reader's predictive state
+- provo/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: provo
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

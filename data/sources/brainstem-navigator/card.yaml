@@ -1,0 +1,64 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brainstem-navigator
+title: Brainstem Navigator -- in-vivo probabilistic brainstem nuclei atlas
+provider: Martinos Center / Bianciardi lab
+citation: Bianciardi et al., Toward an in vivo neuroimaging template of human brainstem nuclei of the
+  ascending arousal, autonomic and motor systems. Brain Connectivity 2015 and successors.
+urls:
+- https://www.nitrc.org/projects/brainstemnavig/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- brainstem_native
+streams:
+- name: brainstem_nucleus_probabilities
+  kind: measured
+  via: null
+  systematic_bias: '7T-derived, small samples, and brainstem nuclei are millimetre-scale structures adjacent
+    to large pulsatile arteries and CSF spaces. §51.3 item 26 puts it plainly: B-WIN should not leave
+    every noncortical structure as one two-node family, and this is the source that makes the arousal
+    and autonomic nuclei addressable at all.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: probabilistic labels for dozens of brainstem nuclei from 7T multi-contrast MRI -- arousal,
+    autonomic and motor nuclei that whole-brain atlases leave as undifferentiated brainstem
+- name: arousal_system_nuclei
+  kind: measured
+  via: null
+  systematic_bias: locus coeruleus, raphe and related nuclei are the anatomical substrate of the neuromodulatory
+    terms that would otherwise be a global scalar
+  band_hz:
+  - null
+  - null
+absent:
+- individual_geometry
+- histological_validation_for_all_nuclei
+- function
+- 3t_applicability
+use:
+- calibrate
+- prior
+forbidden:
+- brainstem-navigator/* -> reliable individual nucleus geometry at 3T
+- brainstem-navigator/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: brainstem-navigator
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

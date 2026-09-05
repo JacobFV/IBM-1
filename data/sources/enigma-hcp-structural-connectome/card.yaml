@@ -1,0 +1,70 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: enigma-hcp-structural-connectome
+title: ENIGMA-HCP group structural connectome
+provider: ENIGMA Consortium / ENIGMA Toolbox
+citation: Distributed with the ENIGMA Toolbox; derived from HCP diffusion data.
+urls:
+- https://enigma-toolbox.readthedocs.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- Desikan2006
+- Schaefer2018
+streams:
+- name: group_connectome_matrix
+  kind: measured
+  via: null
+  systematic_bias: A GROUP AVERAGE OF A TRACTOGRAPHY OUTPUT projected onto a parcellation, distributed
+    without its seeding, response function or thresholds. It fails §52.8's provenance requirement on every
+    count, and it is nevertheless one of the most reused objects in network neuroscience. Registered so
+    that its reuse is a recorded choice.
+  notes: parcel-wise aggregation destroys path geometry, endpoint density, dispersion and delay -- everything
+    obj-tract-path-products exists to preserve
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: a group-averaged structural connectivity matrix over Desikan and Schaefer parcellations,
+    derived from HCP diffusion tractography
+absent:
+- provenance
+- path_geometry
+- individual_matrices
+- directionality
+- uncertainty
+requires:
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A connectome matrix is an adjacency over parcel indices. Without the tract product its edges
+    have no path, no length and no supports to terminate on, so it cannot supply a delay, a route or an
+    engineered structural commitment -- only a number per pair of labels.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- enigma-hcp-structural-connectome/* -> measured-connection claims
+- enigma-hcp-structural-connectome/* -> the interactome's structural commitments
+- enigma-hcp-structural-connectome/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: enigma-hcp-structural-connectome
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

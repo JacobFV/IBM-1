@@ -1,0 +1,4 @@
+# sha256 manifest for studyforrest-ds000113 -- DEFERRED
+# 393 files, 4169001898 bytes (3.88 GiB) at /home/brandonin/Documents/win-data/ds000113
+# hashing this source has not been run; until it has, no derive recipe may claim
+# reproducibility against a specific raw state.

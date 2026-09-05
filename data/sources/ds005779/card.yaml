@@ -1,0 +1,100 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds005779
+title: OpenNeuro ds005779 -- real-time personalised brain-state-dependent TMS
+provider: OpenNeuro; University of Texas at Austin (Hussain lab)
+citation: Khatri, Pulliam, Manesiya, Cortez, Millan, Hussain. Personalized whole-brain activity patterns
+  predict human corticospinal tract activation in real-time. Brain Stimulation, 2024. Dataset doi:10.18112/openneuro.ds005779.v1.0.1.
+urls:
+- https://openneuro.org/datasets/ds005779
+access: priority
+licence:
+  name: CC0 (verbatim string in dataset_description.json)
+  redistribution: permitted
+  commercial: permitted
+binding: unbound
+population:
+  n: 19
+  hierarchy:
+  - participant
+  - run
+frames:
+- channel_label
+streams:
+- name: state_dependent_tms_eeg
+  kind: measured
+  via: null
+  observation_chain: coil current -> induced electric field computed rather than measured -> cortical
+    activation -> post-synaptic currents in aligned pyramidal populations -> volume conduction to scalp
+    -> electrode potential -> amplifier that has just been driven into saturation by the pulse -> a recovery
+    transient overlapping the response of interest. Conditions are labelled by decoded pre-pulse state
+    (low/high) and by intensity (110% and 120% RMT), so the intensity IS referenced to threshold here,
+    unlike ds002094
+  confounds:
+  - amplifier saturation and recovery artefact, which occupies the first tens of milliseconds -- exactly
+    the window the early TEP components live in
+  - the auditory evoked potential from the coil click, which is large, reproducible and looks like a TEP
+  - the somatosensory evoked potential from scalp afferents
+  - muscle artefact from direct stimulation of scalp musculature, largest at lateral targets
+  - electrode movement and the electrode-skin polarisation transient
+  - the sham arm, where present, controls some of these and not others, and which ones is rarely stated
+  - the decoder selects moments, so the 'low' and 'high' conditions differ in every property correlated
+    with the decoded feature, not only in the intended one
+  - 'regression to the mean: selecting extreme pre-pulse states guarantees a post-pulse move towards the
+    mean with no stimulation effect at all -- the random-timing arm is the control that could fail, and
+    it exists here'
+  systematic_bias: The presence of a testing-random arm alongside the testing-low and testing-high arms
+    is what makes state dependence separable from regression to the mean. That is a control that could
+    have failed, and it is the reason this dataset is worth more than its size suggests.
+  band_hz:
+  - null
+  - null
+  temporal_support: 'BrainVision native rate. THE INTERESTING CLOCK IS THE CLOSED LOOP: the pulse time
+    is chosen ONLINE from the decoded EEG state, so pulse timing is not independent of the signal it is
+    measured against and cannot be treated as an exogenous event'
+  spatial_support: BrainVision scalp montage; channel count per channels.tsv
+- name: eeg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: tms
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- emg
+- mep
+- structural_mri
+- coil_pose
+- e_field
+- sham_arm
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'Two device geometries are needed at once and neither can be defaulted: the electrode positions
+    that define the lead field, and the coil winding and pose that determine the induced field. Without
+    both, the pulse is a machine setting and the response is a channel-space waveform, with nothing connecting
+    them at any cortical location.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- ds005779/* -> an MEP or corticospinal claim (the MEPs are not in the release)
+- ds005779/* -> treating pulse times as exogenous events
+split:
+  group_by:
+  - participant
+  - run
+provenance:
+  imported_from: win-registry
+  card: ds005779
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

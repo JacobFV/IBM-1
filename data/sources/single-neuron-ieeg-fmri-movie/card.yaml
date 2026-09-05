@@ -1,0 +1,160 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: single-neuron-ieeg-fmri-movie
+title: Multimodal single-neuron, intracranial EEG and fMRI movie dataset
+provider: Scientific Data 2024
+citation: Multimodal single-neuron, intracranial EEG, and fMRI movie dataset. Scientific Data 2024.
+urls:
+- https://www.nature.com/articles/s41597-024-03029-1
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. Human single-unit recordings from implanted patients -- consent scope and redistribution
+    are governance questions, not defaults.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: n unresolved pending file-level audit.
+frames:
+- microwire_native
+- electrode_native
+- subject_native
+- scanner
+- display
+- eye
+streams:
+- name: single_units
+  kind: measured
+  via: null
+  observation_chain: transmembrane currents of neurons near the microwire -> extracellular field -> high-pass
+    filtering -> threshold detection -> spike sorting into putative units -> spike train; the sorting
+    step is an inference, not a measurement
+  confounds:
+  - 'clinical pathology at the electrode: this is a patient population, not a healthy one'
+  - medication state and post-implant recovery
+  - referencing scheme (common average vs. bipolar) reshaping the apparent field
+  - epileptiform activity contaminating putative task responses
+  - 'spike sorting is an inference: unit identity, stability and isolation quality are all estimates'
+  - the recorded units are a yield-biased sample of large, active neurons
+  systematic_bias: '§51.1 item 8: this anchors the relation between microscopic/event state, local fields
+    and larger-scale observations -- the only source in the registry that spans all three at once.'
+  notes: the mapping from sorted units to a mesoscopic state variable is exactly the model discrepancy
+    B-WIN needs to estimate rather than assume
+  band_hz:
+  - null
+  - null
+  temporal_support: spikes at 30 kHz sampling before sorting; LFP at kHz; BOLD at TR seconds; movie at
+    its frame rate
+  spatial_support: 'Behnke-Fried microwires within depth macroelectrodes: the microwire support is tens
+    of microns, the macrocontact support is millimetres, and the BOLD voxel is millimetres -- THREE spatial
+    scales in one dataset'
+- name: lfp
+  kind: measured
+  via: null
+  observation_chain: current sources within millimetres of the contact -> local volume conduction over
+    a short path -> contact surface area, impedance and referencing scheme -> sampled voltage; spatial
+    support is the contact neighbourhood, not a parcel
+  confounds:
+  - 'clinical pathology at the electrode: this is a patient population, not a healthy one'
+  - medication state and post-implant recovery
+  - referencing scheme (common average vs. bipolar) reshaping the apparent field
+  - epileptiform activity contaminating putative task responses
+  band_hz:
+  - null
+  - null
+- name: bold_movie
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  band_hz:
+  - null
+  - null
+- name: eye_tracking
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: film_stimulus
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ieeg_macro
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: electrode_localisation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- scalp_eeg
+- meg
+- vascular
+- whole_brain_unit_coverage
+requires:
+- geometry: device-geometry
+  for_streams:
+  - single_units
+  - lfp
+  severity: blocking
+  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
+    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
+    channel is an index and nothing measured here can be attached to a cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - bold_movie
+  - eye_tracking
+  - film_stimulus
+  severity: blocking
+  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
+    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
+    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+use:
+- fit
+forbidden:
+- single-neuron-ieeg-fmri-movie/single_units -> whole-cortex state
+- single-neuron-ieeg-fmri-movie/* -> healthy population priors without pathology conditioning
+split:
+  group_by:
+  - participant
+  - stimulus
+  - session
+provenance:
+  imported_from: win-registry
+  card: single-neuron-ieeg-fmri-movie
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

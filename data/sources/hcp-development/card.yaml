@@ -1,0 +1,145 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hcp-development
+title: HCP Development (HCP-D) -- Lifespan 5-21
+provider: Lifespan HCP / NIMH Data Archive
+citation: Somerville et al., The Lifespan Human Connectome Project in Development. NeuroImage 2018.
+urls:
+- https://www.humanconnectome.org/study/hcp-lifespan-development
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: NDA data-use certification required. Terms unresolved here.
+binding: unbound
+population:
+  n: 1300
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: Multi-site. Site is a device+protocol confound and must be a split axis.
+frames:
+- scanner
+- subject_native
+- fsaverage
+- MNI152
+- site_specific_scanner
+streams:
+- name: t1w
+  kind: measured
+  via: null
+  observation_chain: tissue proton density and T1 -> sequence-specific contrast -> k-space acquisition
+    -> reconstruction -> voxel intensity; intensity is not a tissue parameter until an explicit relaxometry
+    model is applied
+  confounds:
+  - B1+ transmit inhomogeneity
+  - B0 off-resonance
+  - the fitted signal model's own misspecification
+  - motion between the volumes that enter one fit
+  systematic_bias: Developmental head size and motion covary with age; an uncorrected age effect is partly
+    a motion effect.
+  band_hz:
+  - null
+  - null
+  temporal_support: TR ~0.8 s multiband BOLD; cross-sectional across age
+  spatial_support: 0.8 mm structural; 1.5 mm diffusion; 2 mm BOLD
+- name: asl_perfusion
+  kind: measured
+  via: null
+  observation_chain: arterial blood water magnetically labelled proximally -> transit through the arterial
+    tree -> exchange into tissue -> label decay at T1 of blood -> control-label subtraction -> perfusion-weighted
+    signal -> kinetic-model CBF
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - arterial transit time varying with age, which biases a fixed-transit kinetic model
+  band_hz:
+  - null
+  - null
+- name: age
+  kind: measured
+  via: null
+  systematic_bias: '§52.1: developmental cohorts are usable only AFTER explicit age conditioning'
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_task
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- ieeg
+- angiography
+- pet
+- intervention
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+- geometry: vascular-products
+  for_streams:
+  - asl_perfusion
+  severity: degrading
+  without_it: A perfusion or reactivity map is a voxel field with no vessel attached. It can be used as
+    a voxel-wise measurement, but attributing it to a supplying artery, a draining vein or a microvascular
+    compartment -- which is what makes it evidence about the vascular state rather than about the image
+    -- requires the vascular product.
+  substitute: Voxel-wise use with no vessel attribution, which cannot separate an arterial transit effect
+    from a tissue perfusion change.
+use:
+- fit
+- prior
+forbidden:
+- hcp-development/* -> adult population priors without explicit age conditioning
+- hcp-development/* -> intervention response parameters
+split:
+  group_by:
+  - participant
+  - site
+  - session
+provenance:
+  imported_from: win-registry
+  card: hcp-development
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

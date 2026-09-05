@@ -1,0 +1,77 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: julich-brain
+title: Julich-Brain cytoarchitectonic probabilistic maps
+provider: Forschungszentrum Julich / EBRAINS
+citation: 'Amunts et al., Julich-Brain: A 3D probabilistic atlas of the human brain''s cytoarchitecture.
+  Science 2020.'
+urls:
+- https://julich-brain-atlas.de/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- MNI_Colin27
+- fsaverage
+- bigbrain_native
+streams:
+- name: probabilistic_area_maps
+  kind: measured
+  via: null
+  systematic_bias: The one atlas in the registry that is NATIVELY probabilistic rather than thresholded.
+    That makes it the natural reference implementation of §11's requirement that region mappings be rendered
+    probabilistically -- but the probability is over ten donor brains and is therefore a small-sample
+    estimate of population variability.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: voxel-wise PROBABILITY maps in MNI space, built from observer-independent cytoarchitectonic
+    mapping in ten post-mortem brains. The probability is over DONORS, not over anatomical certainty within
+    a person
+- name: cytoarchitectonic_criteria
+  kind: measured
+  via: null
+  systematic_bias: areal boundaries are defined by observer-independent laminar profile analysis, which
+    is a specific and contestable operationalisation of what an area is
+  band_hz:
+  - null
+  - null
+- name: maximum_probability_map
+  kind: measured
+  via: null
+  systematic_bias: the MPM is a WINNER-TAKE-ALL thresholding of the probability maps and discards exactly
+    the information that makes this atlas valuable; it exists for convenience and should not be the thing
+    that is used
+  band_hz:
+  - null
+  - null
+absent:
+- individual_subject_geometry
+- function
+- connectivity
+- donor_diversity
+use:
+- calibrate
+- prior
+forbidden:
+- julich-brain/maximum_probability_map -> hard support boundaries
+- julich-brain/* -> subject-specific measured geometry
+- julich-brain/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: julich-brain
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

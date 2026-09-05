@@ -1,0 +1,63 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: 3d-slicer
+title: 3D Slicer -- medical image computing platform
+provider: Brigham and Women's Hospital and collaborators
+citation: Fedorov et al., 3D Slicer as an image computing platform for the Quantitative Imaging Network.
+  Magnetic Resonance Imaging 2012.
+urls:
+- https://www.slicer.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- physical_space
+- arbitrary_mesh
+streams:
+- name: interactive_segmentation_and_correction
+  kind: measured
+  via: null
+  systematic_bias: '§52.10 names its VASCULAR MODULES specifically. Its distinctive contribution across
+    the registry is INTERACTIVE CORRECTION: where automatic segmentation fails -- vessel branch points,
+    thin skull tables, lesioned anatomy -- a human fixes it, and that human judgement is a derivation
+    step with its own operator-dependent uncertainty that §4a says must be recorded rather than absorbed.'
+  notes: manual correction is not reproducible; two operators produce different geometry from the same
+    image and neither is measured
+  band_hz:
+  - null
+  - null
+  temporal_support: static; supports 4D sequences
+  spatial_support: an application over ITK and VTK with INTERACTIVE segmentation, registration and measurement,
+    plus modules for vascular analysis and stereotactic planning
+- name: stereotactic_and_fiducial_tooling
+  kind: measured
+  via: null
+  systematic_bias: fiducial placement and frame registration are the same operations electrode localisation
+    and TMS navigation need
+  band_hz:
+  - null
+  - null
+absent:
+- reproducibility_of_manual_steps
+- uncertainty
+use:
+- calibrate
+- surrogate
+forbidden:
+- 3d-slicer/interactive_segmentation_and_correction -> geometry treated as measured
+- 3d-slicer/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: 3d-slicer
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

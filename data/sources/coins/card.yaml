@@ -1,0 +1,51 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: coins
+title: COINS -- Collaborative Informatics and Neuroimaging Suite
+provider: TReNDS Center (Georgia State, Georgia Tech, Emory); originally the Mind Research Network
+citation: 'Scott et al., COINS: an innovative informatics and neuroimaging tool suite built for large
+  heterogeneous datasets. Frontiers in Neuroinformatics 5:33, 2011. doi:10.3389/fninf.2011.00033; Landis
+  et al., COINS Data Exchange: an open platform for compiling, curating, and disseminating neuroimaging
+  data. NeuroImage 124:1084-1088, 2016.'
+urls:
+- https://coins.trendscenter.org
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'Unresolved: the public endpoint serves only a login shell and neither paper states a repository
+    licence. Each study defines its own DUA; an account is required and some studies need administrator
+    approval.'
+binding: unbound
+population:
+  n: null
+frames:
+- per_study
+streams:
+- name: multi_study_holdings
+  kind: measured
+  via: null
+  systematic_bias: One of the few archives holding MEG alongside MRI and genetics for the same participants,
+    which is what a multi-modal card needs and what most archives cannot supply.
+  band_hz:
+  - null
+  - null
+  temporal_support: study visit structure; per-modality acquisition clocks are not exposed at the catalogue
+    level
+  spatial_support: MRI, MEG, EEG, genetics and clinical assessments across many studies. The 2011 paper
+    reports 334 studies, 14,386 subjects, 19,190 imaging sessions and about 75 TB; the 2016 Data Exchange
+    paper reports about 16,000 fMRI from 4,100 participants. Current figures are unresolved
+absent:
+- public_inventory
+use:
+- prior
+forbidden:
+- coins/* -> an artifact, before the specific study's DUA is resolved
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: coins
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

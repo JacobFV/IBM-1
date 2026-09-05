@@ -1,0 +1,102 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: allen-human-brain-atlas
+title: Allen Human Brain Atlas -- microarray gene expression with spatial sampling
+provider: Allen Institute for Brain Science
+citation: Hawrylycz et al., An anatomically comprehensive atlas of the adult human brain transcriptome.
+  Nature 2012.
+urls:
+- https://human.brain-map.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Allen Institute terms of use; citation required, commercial terms unresolved.
+binding: unbound
+population:
+  n: 6
+  hierarchy:
+  - participant
+  - site
+  notes: SIX donor brains, and only two sampled in both hemispheres. Every 'human brain transcriptome'
+    statement from this source rests on six people, and the spatial samples are irregular.
+frames:
+- donor_native
+- MNI152
+- fsaverage
+streams:
+- name: microarray_expression
+  kind: measured
+  via: null
+  observation_chain: dissected tissue block -> RNA extraction -> microarray hybridisation -> normalised
+    intensity per probe. The measurement is of a BULK TISSUE SAMPLE, so it mixes every cell type in the
+    block in unknown proportion
+  confounds:
+  - donor post-mortem interval and tissue pH, which affect RNA integrity
+  - 'dissection accuracy: the recorded coordinate is the intended sample site'
+  - probe cross-hybridisation and batch effects between donors
+  - cell-type composition varying between samples, which drives much of the apparent regional expression
+    difference
+  systematic_bias: Six donors, scattered samples, bulk tissue. It is real measurement and it is thin.
+  notes: bulk expression is a composition-weighted mixture; deconvolving it requires the cell-type references
+    in allen-brain-cell-atlas and bican, and the deconvolution is a model
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: roughly 3,700 spatially distinct tissue SAMPLES across the six brains, each a few cubic
+    millimetres of dissected tissue at a recorded MRI coordinate. The native support is a scattered point
+    cloud, NOT a volume -- every published 'expression map' is an interpolation
+- name: sample_coordinates
+  kind: measured
+  via: null
+  systematic_bias: §52.6 asks for the raw spatial samples; the coordinates are what make them usable as
+    a scattered support rather than as a parcel average
+  band_hz:
+  - null
+  - null
+- name: regional_expression_prior
+  kind: measured
+  via: null
+  systematic_bias: n=6; interpolation across unsampled territory is the dominant uncertainty
+  band_hz:
+  - null
+  - null
+- name: rnaseq_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: donor_mri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: histology
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- population
+- cell_type_resolution
+- spatial_completeness
+- dynamics
+- right_hemisphere_in_four_donors
+use:
+- fit
+- prior
+forbidden:
+- allen-human-brain-atlas/interpolated_expression_volumes -> measured expression at unsampled locations
+- allen-human-brain-atlas/* -> individual living participants' state
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: allen-human-brain-atlas
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

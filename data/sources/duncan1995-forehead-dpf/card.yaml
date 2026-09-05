@@ -1,0 +1,50 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: duncan1995-forehead-dpf
+title: Adult forehead differential pathlength factor, Duncan et al. 1995
+provider: Duncan et al., University College London
+citation: Duncan et al., Optical pathlength measurements on adult head, calf and forearm and the head
+  of the newborn infant using phase resolved optical spectroscopy. Phys. Med. Biol. 40:295, 1995. Adult
+  forehead DPF 6.51 at 690 nm and 5.86 at 832 nm.
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved and RECORDED. Rule 7 governs distribution only; reading two published constants and
+    scoring against them is never gated.
+binding: unbound
+population:
+  n: null
+streams:
+- name: differential_pathlength_factor
+  kind: measured
+  via: null
+  systematic_bias: 'TWO ANCHORS AT TWO WAVELENGTHS, and everything between them is INTERPOLATED -- so
+    a DPF quoted at any other wavelength is DERIVED and carries the interpolant, rule 4. `bwin.optical.duncan_dpf`
+    refuses wavelengths outside the anchors rather than extrapolating. Measured on the ADULT FOREHEAD:
+    age, pigmentation and site all move it, and none of that variation is in these two numbers.'
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- a static optical property
+  spatial_support: ADULT FOREHEAD ONLY -- not a whole-head field
+absent:
+- age_dependence
+- site_dependence
+- per_participant_dpf
+use:
+- calibrate
+- prior
+forbidden:
+- duncan1995-forehead-dpf/* -> a per-participant pathlength
+- duncan1995-forehead-dpf/* -> DPF outside the two measured anchors
+split:
+  group_by:
+  - participant
+  notes: 'Two published constants: held out of nothing and trusted for nothing on their own. `group_by`
+    names participant only because the schema requires a non-empty list.'
+provenance:
+  imported_from: win-registry
+  card: duncan1995-forehead-dpf
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

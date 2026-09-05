@@ -1,0 +1,68 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: musan
+title: MUSAN -- music, speech and noise corpus
+provider: Johns Hopkins University
+citation: 'Snyder et al., MUSAN: A Music, Speech, and Noise Corpus. arXiv 2015.'
+urls:
+- https://www.openslr.org/17/
+access: priority
+licence:
+  name: CC BY 4.0 (stated by the providers for the compilation)
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Compilation stated CC BY 4.0; constituent files have mixed origins. Unresolved at the file level.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - session
+  notes: ~109 hours of music, speech and noise, assembled specifically as an AUGMENTATION and interference
+    source rather than as a corpus to model.
+frames:
+- uncontrolled_recording
+streams:
+- name: noise
+  kind: measured
+  via: null
+  systematic_bias: its purpose is to be an INTERFERENCE source with known category. That makes it a nuisance-model
+    calibration resource rather than evidence about the world
+  band_hz:
+  - null
+  - null
+  temporal_support: continuous files by category; no event structure
+  spatial_support: mixed provenance; mono 16 kHz
+- name: music_and_speech
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: music
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: speech
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- recording_conditions
+- spatial_audio
+use:
+- calibrate
+- fit
+forbidden:
+- musan/* -> any cortical state directly
+split:
+  group_by:
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: musan
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,76 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: neurosynth
+title: Neurosynth -- automated coordinate-based meta-analysis of the fMRI literature
+provider: Tal Yarkoni and collaborators
+citation: Yarkoni et al., Large-scale automated synthesis of human functional neuroimaging data. Nature
+  Methods 2011.
+urls:
+- https://neurosynth.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+streams:
+- name: term_association_maps
+  kind: measured
+  via: null
+  systematic_bias: 'registry/README states it exactly: A NEUROSYNTH MAP SAYS ''PAPERS REPORTING THIS TERM
+    ALSO REPORT COORDINATES NEAR HERE''. It does not say what any participant''s cortex is doing at time
+    t. The unit of analysis is the ARTICLE, the feature is a word in an abstract, and the coordinates
+    are peak locations from thresholded maps -- three layers of publication-process filtering between
+    the tissue and the number.'
+  notes: publication bias, thresholding at the source studies, and the term-extraction step are all in
+    the estimator and none is modelled
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: voxel-wise association maps between a TERM appearing in an article's abstract and coordinates
+    reported in that article; roughly 14,000 studies
+- name: reverse_inference_maps
+  kind: measured
+  via: null
+  systematic_bias: the posterior-probability maps invite reverse inference ('this activation implies this
+    process') and the base rates that would make that valid are the literature's, not the brain's
+  band_hz:
+  - null
+  - null
+- name: decoding_as_negative_control
+  kind: measured
+  via: null
+  systematic_bias: if a learned map decodes to a term profile indistinguishable from a random map's, that
+    is a failure worth catching
+  band_hz:
+  - null
+  - null
+absent:
+- participant_level_data
+- unthresholded_source_maps
+- task_detail
+- population
+use:
+- calibrate
+- prior
+forbidden:
+- neurosynth/* -> observation-role likelihoods
+- neurosynth/* -> instantaneous subject state
+- neurosynth/* -> reverse inference about cognitive process without stated base rates
+- neurosynth/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: neurosynth
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

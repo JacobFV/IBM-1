@@ -1,0 +1,61 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: vggsound
+title: VGGSound -- audio-visual correspondence dataset
+provider: University of Oxford VGG
+citation: 'Chen et al., VGGSound: A Large-scale Audio-Visual Dataset. ICASSP 2020.'
+urls:
+- https://www.robots.ox.ac.uk/~vgg/data/vggsound/
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Annotations distributed for research; underlying video third-party. Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - session
+  notes: ~200,000 10-second clips where the sound source is VISIBLE in frame -- the audio-visual correspondence
+    is verified rather than assumed.
+frames:
+- uncontrolled_recording
+streams:
+- name: audio_visual_correspondence
+  kind: imposed
+  via: null
+  systematic_bias: verified visible sound sources make this usable for CROSS-MODAL correspondence, which
+    is a genuine world-structure fact rather than an annotation convention
+  band_hz:
+  - null
+  - null
+  temporal_support: 10-second clips; single class label per clip
+  spatial_support: uncontrolled web video; distributed as identifiers
+- name: class_labels
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: video_ids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- the_video_itself
+- onset_times
+- spatial_audio
+use:
+- fit
+forbidden:
+- vggsound/* -> any cortical state directly
+split:
+  group_by:
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: vggsound
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

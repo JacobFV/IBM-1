@@ -1,0 +1,10 @@
+# where the bytes for `bbbd` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/bbbd
+acquired_at: '2026-09-04'
+files: 126
+bytes: 26973320945
+gib: 25.12
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://zenodo.org/records/19241964

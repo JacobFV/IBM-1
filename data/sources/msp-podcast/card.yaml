@@ -1,0 +1,78 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: msp-podcast
+title: MSP-Podcast -- naturalistic emotional speech from podcast recordings
+provider: University of Texas at Dallas
+citation: Lotfian and Busso, Building naturalistic emotionally balanced speech corpus by retrieving emotional
+  speech from existing podcast recordings. IEEE Transactions on Affective Computing 2019.
+urls:
+- https://ecs.utdallas.edu/research/researchlabs/msp-lab/MSP-Podcast.html
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Academic licence agreement. Source podcast rights are a separate and unresolved question.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: n unresolved and growing across releases. Segments retrieved from existing podcasts and then
+    crowd-annotated -- the speech is natural but the SELECTION is emotion-biased by construction.
+frames:
+- microphone_uncontrolled
+streams:
+- name: speech_segments
+  kind: imposed
+  via: null
+  systematic_bias: 'post-produced audio: compression, EQ and loudness normalisation have already altered
+    the acoustics in ways that correlate with production budget, not with speaker state'
+  band_hz:
+  - null
+  - null
+  temporal_support: audio at 16 kHz; segments of a few seconds with no continuous timeline
+  spatial_support: 'uncontrolled podcast recording conditions: unknown microphones, rooms and post-production'
+- name: emotion_labels
+  kind: imposed
+  via: null
+  systematic_bias: crowd annotation of perceived emotion; the corpus is deliberately emotion-balanced
+    by retrieval, so the label distribution is a sampling artefact and not a base rate
+  band_hz:
+  - null
+  - null
+- name: categorical_emotion_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: valence_arousal_dominance_ratings
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: speaker_ids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- physiology
+- video
+- recording_conditions
+use:
+- fit
+forbidden:
+- msp-podcast/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: msp-podcast
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

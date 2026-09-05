@@ -1,0 +1,124 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: project-aria
+title: Project Aria -- egocentric multi-sensor glasses datasets
+provider: Meta Reality Labs Research
+citation: 'Engel et al., Project Aria: A New Tool for Egocentric Multi-Modal AI Research. arXiv 2023.'
+urls:
+- https://www.projectaria.com/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Aria dataset licence agreements, per-dataset. Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - device
+  notes: 'Value here is the CALIBRATION quality, not the participant count: the device ships full factory
+    intrinsics and extrinsics.'
+frames:
+- device_rig
+- rgb_camera
+- slam_camera
+- eye
+- imu
+- world_slam
+streams:
+- name: device_calibration
+  kind: measured
+  via: null
+  systematic_bias: 'THE reason to card this source: a complete, published, multi-sensor rig calibration
+    and clock graph is a worked example of what §56.4 asks B-WIN to manufacture for every device it models'
+  band_hz:
+  - null
+  - null
+  temporal_support: per-sensor native rates, all timestamped on the device clock -- one of the few sources
+    with a genuinely well-documented clock graph
+  spatial_support: multi-camera rig with published intrinsics/extrinsics; eye cameras giving a 3D gaze
+    ray rather than a screen point
+- name: eye_tracking
+  kind: imposed
+  via: null
+  systematic_bias: a 3D gaze ray in device coordinates, not a screen point -- the representation obj-retinal-world-geometry
+    actually wants
+  band_hz:
+  - null
+  - null
+- name: rgb_video
+  kind: imposed
+  via: null
+  systematic_bias: fisheye and rolling shutter; the distortion model is published and must be applied
+  band_hz:
+  - null
+  - null
+- name: slam_trajectories
+  kind: measured
+  via: null
+  systematic_bias: SLAM output is DERIVED head pose with its own drift, not measured pose
+  band_hz:
+  - null
+  - null
+- name: slam_cameras
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: imu
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: audio
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: magnetometer
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: barometer
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: gps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: point_clouds
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- physiology
+use:
+- calibrate
+- fit
+forbidden:
+- project-aria/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - device
+  - session
+provenance:
+  imported_from: win-registry
+  card: project-aria
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

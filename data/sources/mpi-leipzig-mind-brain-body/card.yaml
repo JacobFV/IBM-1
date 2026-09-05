@@ -1,0 +1,246 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mpi-leipzig-mind-brain-body
+title: 'MPI-Leipzig Mind-Brain-Body: ds000221 and LEMON'
+provider: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig; ds000221 via OpenNeuro,
+  LEMON via NITRC/INDI
+citation: Mendes et al., A functional connectome phenotyping dataset including cognitive state and personality
+  measures. Scientific Data 6:180307, 2019; Babayan et al., A mind-brain-body dataset of MRI, EEG, cognition,
+  emotion, and peripheral physiology in young and old adults. Scientific Data 6:180308, 2019.
+urls:
+- https://openneuro.org/datasets/ds000221
+- https://fcon_1000.projects.nitrc.org/indi/retro/MPI_LEMON.html
+access: priority
+licence:
+  name: 'ds000221: CC0 (verbatim). LEMON: PDDL (Open Data Commons Public Domain Dedication and Licence,
+    SPDX PDDL-1.0)'
+  redistribution: permitted
+  commercial: permitted
+  notes: TWO RELEASES WITH TWO DIFFERENT LICENCES, both read from their own distribution points. The ds000221
+    imaging is CC0; the Scientific Data paper additionally requires agreeing that phenotypic data will
+    not be used to identify individuals, and SENSITIVE BEHAVIOURAL MEASURES NEED ADDITIONAL LICENSING
+    FORMS -- a licence condition attached to a subset of streams, which is exactly the per-stream granularity
+    a card-level licence field cannot express and this note therefore has to carry.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: 'ds000221: n=194 (94 female) with five appointments over two years, though the combined NITRC
+    record says 321 and the current snapshot count is unresolved. LEMON: the distribution page says 228
+    (young 154, elderly 74) and the paper says 227 (young 153) -- a one-subject discrepancy. n is left
+    null; count at acquisition.'
+frames:
+- scanner
+- subject_native
+- MNI152
+- channel_label
+streams:
+- name: quantitative_t1
+  kind: measured
+  via: null
+  observation_chain: tissue longitudinal relaxation -> MP2RAGE's two inversion-time readouts -> a ratio
+    image designed to cancel receive-field and proton-density modulation -> a T1 map IN MILLISECONDS.
+    This is one of the few MR measurements in this registry with a physical unit rather than an arbitrary
+    intensity, which is what makes cross-site comparison meaningful at all
+  confounds:
+  - B1+ transmit inhomogeneity, which biases T1 spatially and is not fully removed by the MP2RAGE ratio
+  - iron and myelin both shorten T1 and are not separable by T1 alone
+  - motion between the two inversion readouts corrupts the ratio
+  - the T1 value depends on field strength, so a 3T map is not a 7T map
+  band_hz:
+  - null
+  - null
+  temporal_support: ds000221 has four 15.5-minute resting runs per participant; LEMON records cardiovascular
+    measures CONTINUOUSLY DURING the resting fMRI, and the EEG is a separate session at its own rate with
+    no hardware relation to the scanner clock
+  spatial_support: MP2RAGE quantitative T1 alongside T1w, T2w, FLAIR, DWI, fieldmaps, SWI/QSM and resting
+    BOLD, plus a 62-channel resting EEG in LEMON
+- name: resting_eeg_and_resting_bold_same_participants
+  kind: measured
+  via: null
+  observation_chain: 'post-synaptic currents in aligned pyramidal populations -> volume conduction to
+    scalp -> electrode potential -> amplifier -> microvolts; and separately the BOLD chain in a different
+    session. SAME PEOPLE, DIFFERENT SESSIONS: this is NOT simultaneous, and treating a between-session
+    EEG-BOLD relation as a within-episode one is the error the distinction exists to prevent'
+  confounds:
+  - ocular, muscle and cardiac artefact in the EEG
+  - the reference choice
+  - state differs between the EEG and MRI sessions -- time of day, arousal, caffeine -- and nothing measures
+    the difference
+  - the usual BOLD nuisances
+  band_hz:
+  - null
+  - null
+- name: continuous_cardiovascular_during_rest
+  kind: measured
+  via: null
+  observation_chain: cardiac ejection -> arterial pressure wave -> peripheral device transduction -> continuous
+    waveform, recorded during the resting scan
+  confounds:
+  - cuff or finger-device artefact and calibration drift
+  - posture and the supine scanner position change baseline pressure
+  - the device's own filter delays the waveform relative to the cardiac event
+  systematic_bias: 'Continuous cardiovascular recording DURING resting fMRI is uncommon and is directly
+    what obj-vascular-metabolic-state needs: it makes the vascular term an observed state rather than
+    a regressor to be discarded.'
+  band_hz:
+  - null
+  - null
+- name: deep_phenotyping
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: qt1_mp2rage
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: flair
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: swi_qsm
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: fieldmaps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eeg_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cardiovascular
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: anthropometrics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: blood
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: urine_drug_tests
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: questionnaires
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cognitive_tasks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mind_wandering_probes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- simultaneous_eeg_fmri
+- meg
+- ieeg
+- intervention
+- clinical_populations
+requires:
+- geometry: device-geometry
+  for_streams:
+  - resting_eeg_and_resting_bold_same_participants
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+- geometry: vascular-products
+  severity: blocking
+  without_it: An angiographic volume is an image of a lumen, not a vessel. Without the vascular product
+    -- a resolved graph carrying radius, topology and territory -- there is no vessel for this evidence
+    to constrain and no way to say which cortical support any of it supplies.
+- geometry: mr-acquisition-objects
+  for_streams:
+  - quantitative_t1
+  severity: blocking
+  without_it: A quantitative parameter map is a FITTED field, and its value depends on the sequence, the
+    timing and the field maps that produced it. Without the acquisition object those are not carried,
+    and the number is a fit output rather than a measurement of tissue.
+use:
+- fit
+- prior
+forbidden:
+- mpi-leipzig-mind-brain-body/* -> a within-episode EEG-BOLD coupling claim (the sessions are separate)
+- mpi-leipzig-mind-brain-body/* -> use of gated behavioural measures without the additional licence
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: mpi-leipzig-mind-brain-body
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

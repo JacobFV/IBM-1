@@ -1,0 +1,51 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brain-dit
+title: Brain-DiT -- diffusion transformer for brain data
+provider: unresolved -- named in PROMPT.md §53.1
+citation: Brain-DiT, arXiv:2604.12683. Identified 2026-08-17 from NeuroWorld's bibliography rather than
+  by a name search; the method and what was ruled out are in notes/literature/brain-dit.md.
+urls:
+- https://arxiv.org/abs/2604.12683
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- unresolved
+streams:
+- name: generative_diffusion_architecture
+  kind: measured
+  via: null
+  systematic_bias: 'PROMPT.md itself attaches the qualifier: ''watch/evaluate ONCE PUBLIC ARTIFACTS ARE
+    VERIFIED''. That qualifier is the card''s content. A generative model that can sample plausible brain
+    data has not thereby demonstrated that its state is transition-sufficient, and §46''s no-toy-validation
+    rule applies with force to generative claims.'
+  band_hz:
+  - null
+  - null
+  temporal_support: unresolved
+  spatial_support: unresolved -- a diffusion-transformer architecture applied to brain data
+absent:
+- public_artifacts
+- everything_unverified
+use:
+- prior
+forbidden:
+- brain-dit/* -> anything until public artifacts are verified
+- brain-dit/* -> observation-role likelihoods
+- brain-dit/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: brain-dit
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

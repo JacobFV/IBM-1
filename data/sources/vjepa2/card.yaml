@@ -1,0 +1,86 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: vjepa2
+title: V-JEPA 2 — causal/predictive video representation
+provider: Meta AI
+citation: 'Assran et al., V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and
+  Planning. Meta AI, 2025.'
+urls:
+- https://huggingface.co/facebook/vjepa2-vitl-fpc64-256
+- https://github.com/facebookresearch/vjepa2
+access: reference
+licence:
+  name: unresolved -- check the checkpoint licence, which may differ from the code licence
+  redistribution: unresolved
+  commercial: unresolved
+binding: unbound
+population:
+  n: null
+frames:
+- video_frame
+streams:
+- name: multiscale_visual_features
+  kind: measured
+  via: null
+  systematic_bias: A learned video representation is NOT an observation of anyone's visual cortex. It
+    is a discrepancy-aware forcing candidate whose influence is governed by a learned lambda and must
+    be earned on held-out prediction. It may be a far better imaginer than the participant; that is fine,
+    and it is what lambda is for (§22).
+  notes: teacher-representation vs. neural-representation discrepancy -- the whole content of the abstract-cognition
+    caution in §29, applied to vision where it is much better grounded
+  band_hz:
+  - null
+  - null
+  temporal_support: frame-rate feature sequence with a strict causal window
+  spatial_support: patch grid over video frames -- must be exposed as a FIELD over retinal coordinate,
+    not pooled
+- name: latent_prediction
+  kind: measured
+  via: null
+  systematic_bias: Predicts in representation space rather than pixels, so it never has to render the
+    parts of a scene that do not matter -- which is both the reason it is cheap and the reason its errors
+    are invisible in any pixel metric. A latent it declines to predict well is not a latent it got wrong;
+    it is one it decided not to represent.
+  notes: the predictor is trained against its own teacher's representation, so its target moves with the
+    encoder and is not an external standard
+  band_hz:
+  - null
+  - null
+requires:
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: This model's value is that it retains a SPATIAL layout, which is what makes a retinotopic
+    pushforward possible at all. Without the retinal and world geometry there is no map from its patch
+    grid to retinal coordinate, and the features can only be pooled -- which destroys the property they
+    were selected for.
+use:
+- distil
+forbidden:
+- vjepa2/* -> any subject likelihood term (a teacher is never automatically a likelihood)
+split:
+  group_by:
+  - stimulus
+  notes: 'Strict causal access: features at time t may use frames up to t only. The future-stimulus leakage
+    positive control (obj-materialization-controls #7) exists because this is the failure that makes a
+    result look excellent and mean nothing.'
+provenance:
+  imported_from: win-registry
+  card: vjepa2
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - multiscale_visual_features
+    - latent_prediction
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

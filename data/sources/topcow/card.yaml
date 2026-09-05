@@ -1,0 +1,98 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: topcow
+title: TopCoW -- Topology-aware anatomical segmentation of the Circle of Willis
+provider: TopCoW challenge / University of Zurich and collaborators
+citation: Yang et al., Benchmarking the CoW with the TopCoW Challenge. 2023.
+urls:
+- https://topcow23.grand-challenge.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Challenge terms; unresolved.
+binding: unbound
+population:
+  n: 200
+  hierarchy:
+  - participant
+  - device
+  notes: Paired MRA and CTA in the same participants for part of the cohort -- the same anatomy through
+    two different physical measurements, which makes modality-induced geometric bias measurable.
+frames:
+- scanner
+- subject_native
+- vascular_tree_graph
+streams:
+- name: multiclass_vessel_labels
+  kind: measured
+  via: null
+  observation_chain: flow-related enhancement (TOF) or contrast bolus -> vessel-lumen intensity -> reconstruction
+    -> angiographic volume; slow and in-plane flow are systematically under-represented
+  confounds:
+  - 'modality: CTA and MRA disagree on apparent lumen calibre for the same vessel'
+  - a hypoplastic or absent communicating artery is a NORMAL VARIANT, not a segmentation failure, and
+    the two are hard to distinguish automatically
+  - clinical population
+  systematic_bias: The Circle of Willis variant is a first-order determinant of how blood reaches each
+    territory, and it varies enormously between healthy people. A vascular model using a textbook complete
+    CoW is wrong for most individuals.
+  notes: paired MRA/CTA in the same person quantifies the modality's contribution to the reconstructed
+    geometry, which is otherwise assumed to be zero
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: 3D angiographic volumes with multi-class labels for each Circle of Willis component;
+    the CoW is the anastomotic ring that determines collateral supply and its ANATOMICAL VARIANT differs
+    between people
+- name: topology_evaluation_metrics
+  kind: measured
+  via: null
+  systematic_bias: the challenge scores TOPOLOGY, not only overlap. §57 requires every generated product
+    to record its validation fixtures, and this is the fixture for a vessel graph's connectivity
+  band_hz:
+  - null
+  - null
+- name: cow_variant_annotations
+  kind: measured
+  via: null
+  systematic_bias: variant prevalence from a clinical cohort is not variant prevalence in the population
+  band_hz:
+  - null
+  - null
+- name: mra_volumes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cta_volumes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- distal_vessels
+- venous_tree
+- flow
+- capillary_scale
+- healthy_cohort
+use:
+- calibrate
+- evaluate
+- fit
+forbidden:
+- topcow/* -> distal or capillary vascular geometry
+- topcow/* -> flow or pressure state
+- topcow/cow_variant_annotations -> population variant prevalence
+split:
+  group_by:
+  - participant
+  - device
+provenance:
+  imported_from: win-registry
+  card: topcow
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

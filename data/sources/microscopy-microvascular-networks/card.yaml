@@ -1,0 +1,60 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: microscopy-microvascular-networks
+title: Microscopy-derived microvascular network reconstructions
+provider: multiple -- two-photon, light-sheet and cleared-tissue microvascular studies
+citation: PROMPT.md §52.10, 'microscopy-derived microvascular networks'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- tissue_block_native
+streams:
+- name: capillary_network_geometry
+  kind: measured
+  via: null
+  systematic_bias: §56.3 names STATISTICAL DESCRIPTIONS as an acceptable input -- 'no existing mesh is
+    required'. Microscopy studies typically publish DISTRIBUTIONS (density, radius, segment length, orientation
+    anisotropy) rather than networks, and those distributions are exactly what a stochastic ensemble is
+    conditioned on. Tissue clearing and fixation shrink vessels, and the shrinkage factor is often unreported.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: microvascular networks reconstructed from optical microscopy in cortical tissue blocks,
+    human and animal, at capillary resolution
+- name: orientation_anisotropy
+  kind: measured
+  via: null
+  systematic_bias: capillary orientation anisotropy relative to the cortical surface normal matters for
+    susceptibility modelling and therefore for BOLD, which is why it is registered separately from density
+  band_hz:
+  - null
+  - null
+absent:
+- human_coverage
+- in_vivo_calibre
+- whole_brain_extent
+- flow
+use:
+- calibrate
+- prior
+forbidden:
+- microscopy-microvascular-networks/* -> in-vivo vessel calibre without a shrinkage correction
+- microscopy-microvascular-networks/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: microscopy-microvascular-networks
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

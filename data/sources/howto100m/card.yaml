@@ -1,0 +1,74 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: howto100m
+title: HowTo100M -- narrated instructional video at web scale
+provider: INRIA / Willow
+citation: 'Miech et al., HowTo100M: Learning a Text-Video Embedding by Watching Hundred Million Narrated
+  Video Clips. ICCV 2019.'
+urls:
+- https://www.di.ens.fr/willow/research/howto100m/
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Distributed as VIDEO IDENTIFIERS, not video. The underlying videos are third-party copyright,
+    availability decays over time, and the ASR transcripts are machine-generated. Redistribution of content
+    is not available; other terms unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - session
+  notes: 'No participants: this is web video with no human subject in the measurement sense.'
+frames:
+- camera_uncontrolled
+- world
+streams:
+- name: asr_transcripts
+  kind: imposed
+  via: null
+  systematic_bias: MACHINE-GENERATED transcripts with real error rates; treating them as ground-truth
+    language is a derived-is-not-measured violation
+  band_hz:
+  - null
+  - null
+  temporal_support: video at source frame rates; ASR timings at word or segment level
+  spatial_support: 'uncontrolled web video: arbitrary cameras, framings and edits'
+- name: video
+  kind: imposed
+  via: null
+  systematic_bias: 'edited, third-person, cut web video: nothing about its statistics resembles what a
+    retina receives'
+  band_hz:
+  - null
+  - null
+- name: video_ids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: task_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- gaze
+- physiology
+- the_video_bytes
+use:
+- fit
+forbidden:
+- howto100m/* -> any cortical state
+- howto100m/asr_transcripts -> ground-truth language structure
+split:
+  group_by:
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: howto100m
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

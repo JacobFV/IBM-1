@@ -1,0 +1,10 @@
+# where the bytes for `ds002336` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/ds002336
+acquired_at: '2026-09-04'
+files: 546
+bytes: 19012914056
+gib: 17.71
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://openneuro.org/datasets/ds002336

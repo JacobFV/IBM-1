@@ -1,0 +1,58 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: biomodels
+title: BioModels -- repository of curated quantitative biological models
+provider: EMBL-EBI
+citation: Malik-Sheriff et al., BioModels -- 15 years of sharing computational models in life science.
+  Nucleic Acids Research 2020.
+urls:
+- https://www.ebi.ac.uk/biomodels/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- arbitrary_state_space
+streams:
+- name: curated_and_reproduced_models
+  kind: measured
+  via: null
+  systematic_bias: Curation here means SOMEONE RAN THE MODEL AND CHECKED IT REPRODUCES THE PAPER'S FIGURES,
+    which is a far stronger guarantee than archival and is rare. Its relevance to B-WIN is metabolic and
+    signalling dynamics -- glycolysis, oxidative phosphorylation, calcium signalling -- which are the
+    intracellular processes underneath §16's metabolic state.
+  notes: most models are cellular or subcellular and were fitted to in-vitro preparations; scaling them
+    to tissue-level metabolic state is an unaddressed step
+  band_hz:
+  - null
+  - null
+  temporal_support: declares dynamics; per-model
+  spatial_support: curated systems-biology models -- metabolic, signalling and regulatory networks --
+    in SBML, many of them MANUALLY CURATED AND VERIFIED to reproduce the figures of their source paper
+- name: sbml_standard
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- neural_models
+- human_tissue_parameters
+- spatial_extent
+use:
+- prior
+forbidden:
+- biomodels/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: biomodels
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

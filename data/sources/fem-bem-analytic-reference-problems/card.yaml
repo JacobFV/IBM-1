@@ -1,0 +1,59 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fem-bem-analytic-reference-problems
+title: Finite-element and boundary-element analytic reference problems
+provider: the numerical bioelectromagnetics literature
+citation: PROMPT.md §54.1, 'finite-element/BEM analytic reference problems'.
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- analytic_geometry
+- source_space
+streams:
+- name: closed_form_validation_problems
+  kind: measured
+  via: null
+  systematic_bias: THE ONLY PLACE IN THE ELECTROMAGNETIC CHAIN WHERE TRUTH IS AVAILABLE. Everything else
+    -- BEM against FEM, MNE against Brainstorm, ROAST against SimNIBS -- compares approximations. §46
+    demands a control that could fail and evidence that is not this code; an analytic solution is both.
+    The standard RDM and MAG error measures give a tolerance, so a validation fixture here has a pass
+    criterion rather than a vibe.
+  notes: a sphere is not a head; passing the analytic test bounds numerical error and says nothing about
+    geometric or conductivity error
+  band_hz:
+  - null
+  - null
+  temporal_support: static
+  spatial_support: geometries with CLOSED-FORM solutions -- concentric spheres, half-spaces, layered slabs
+    -- against which a numerical solver's error can be computed exactly rather than estimated
+- name: convergence_behaviour
+  kind: measured
+  via: null
+  systematic_bias: error versus mesh resolution establishes convergence, which is a claim most numerical
+    results assert rather than demonstrate
+  band_hz:
+  - null
+  - null
+absent:
+- realistic_geometry
+- biological_content
+use:
+- calibrate
+- surrogate
+forbidden:
+- fem-bem-analytic-reference-problems/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: fem-bem-analytic-reference-problems
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

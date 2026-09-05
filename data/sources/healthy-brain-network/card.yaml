@@ -1,0 +1,158 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: healthy-brain-network
+title: Child Mind Institute Healthy Brain Network (HBN)
+provider: Child Mind Institute
+citation: Alexander et al., An open resource for transdiagnostic research in pediatric mental health and
+  learning disorders. Scientific Data 2017.
+urls:
+- http://fcon_1000.projects.nitrc.org/indi/cmi_healthy_brain_network/
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Data usage agreement required; minors with psychiatric diagnoses.
+binding: unbound
+population:
+  n: 10000
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: Deliberately NOT a healthy sample despite the name -- it is a help-seeking, transdiagnostic cohort.
+    Using it as a normative prior is a category error.
+frames:
+- eeg_cap
+- display
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: eeg_128ch
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - developmental skull thickness and conductivity change with age
+  - high motion in a paediatric clinical sample
+  systematic_bias: Electrode positions are cap-template unless digitised; that is a stated assumption,
+    not a default.
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at 500 Hz; naturalistic video and resting paradigms
+  spatial_support: 128-channel high-density EEG; 1 mm structural; multi-site
+- name: bold_movie
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  band_hz:
+  - null
+  - null
+- name: phenotyping
+  kind: measured
+  via: null
+  systematic_bias: clinical labels here are dimensional research assessments, not diagnoses of record
+  band_hz:
+  - null
+  - null
+- name: eye_tracking
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: actigraphy
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- meg
+- ieeg
+- pet
+- angiography
+- intervention
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg_128ch
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+- geometry: retinal-world-geometry
+  for_streams:
+  - bold_movie
+  severity: blocking
+  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
+    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
+    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+use:
+- fit
+- prior
+forbidden:
+- healthy-brain-network/* -> normative adult priors
+- healthy-brain-network/phenotyping -> instantaneous cortical state
+split:
+  group_by:
+  - participant
+  - site
+  - stimulus
+  notes: the same naturalistic videos recur across participants
+provenance:
+  imported_from: win-registry
+  card: healthy-brain-network
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

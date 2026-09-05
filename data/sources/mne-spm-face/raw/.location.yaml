@@ -1,0 +1,10 @@
+# where the bytes for `mne-spm-face` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/mne-spm-face
+acquired_at: '2026-09-04'
+files: 579
+bytes: 1592215881
+gib: 1.48
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://mne.tools/stable/documentation/datasets.html

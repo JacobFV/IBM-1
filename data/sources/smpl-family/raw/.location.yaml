@@ -1,0 +1,5 @@
+# where the bytes for `smpl-family` actually live.  never the bytes themselves.
+source_url: "https://smpl.is.tue.mpg.de/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

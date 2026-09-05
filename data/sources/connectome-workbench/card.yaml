@@ -1,0 +1,58 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: connectome-workbench
+title: Connectome Workbench and the CIFTI grayordinate convention
+provider: Washington University / HCP
+citation: Marcus et al., Informatics and data mining tools and strategies for the Human Connectome Project.
+  Frontiers in Neuroinformatics 2011; Glasser et al., The minimal preprocessing pipelines for the Human
+  Connectome Project. NeuroImage 2013.
+urls:
+- https://www.humanconnectome.org/software/connectome-workbench
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Software licence not read; the bundled fsLR surfaces and HCP-derived files carry HCP open-access
+    data-use terms, which is a separate question.
+binding: unbound
+population:
+  n: null
+frames:
+- fsLR_32k
+- fsLR_164k
+- MNI152_subcortical_voxels
+streams:
+- name: grayordinate_support_definition
+  kind: measured
+  via: null
+  systematic_bias: 'CIFTI mixes a surface support and a volume support in a single index. That is the
+    right move and it is also a canonical parcellation smuggled in as a file format: fsLR-32k is a CHOICE
+    of cover, and everything indexed by it inherits that choice. B-WIN retains covers side by side and
+    must not adopt this one as the ontology.'
+  notes: grayordinate resampling from a subject's native surface loses vertex-level individual geometry
+    that the native surface still holds
+  band_hz:
+  - null
+  - null
+  temporal_support: series indexed by TR; no native clock beyond it
+  spatial_support: 'the GRAYORDINATE: surface vertices for cortex plus voxels for subcortical and cerebellar
+    structures, in one indexed object. This is a support algebra shipped as a file format, and it is the
+    closest existing thing to what obj-support-mapping-algebra needs -- and it is one FIXED cover, not
+    a family of them'
+absent:
+- native_subject_geometry_after_resampling
+- uncertainty
+- alternative_covers
+use:
+- calibrate
+forbidden:
+- connectome-workbench/* -> adoption of fsLR-32k as a canonical parcellation
+- connectome-workbench/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: connectome-workbench
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

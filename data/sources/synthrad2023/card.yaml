@@ -1,0 +1,187 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: synthrad2023
+title: SynthRAD2023 Task 1 brain -- paired head CT and T1w MRI in 180 people
+provider: SynthRAD2023 Grand Challenge, organised from UMC Utrecht, Radboudumc and UMC Groningen; deposited
+  on Zenodo
+citation: 'Thummerer et al., SynthRAD2023 Grand Challenge dataset: Generating synthetic CT for radiotherapy.
+  Medical Physics 50(7):4664-4674, 2023. doi:10.1002/mp.16529. Dataset DOI 10.5281/zenodo.7260705 (concept
+  DOI 10.5281/zenodo.7260704).'
+urls:
+- https://doi.org/10.5281/zenodo.7260705
+- https://synthrad2023.grand-challenge.org/
+access: held
+licence:
+  name: CC-BY-NC-4.0
+  redistribution: unresolved
+  commercial: prohibited
+  notes: 'READ FROM THE RECORD, NOT FROM A PAPER: the Zenodo API reports `access_right: open` and `license:
+    cc-by-nc-4.0` for record 7260705, and the fetch script ASSERTS both and refuses to run if either ever
+    changes. There is NO account, NO click-through and NO data use agreement -- which is precisely why
+    this deposit was taken and `tcia` was not. THE NON-COMMERCIAL TERM BINDS DISTRIBUTION ONLY. Rule 7:
+    reading, loading, computing with, fitting to and training on these bytes is internal private research
+    and is never gated; the one refusal is win.licences.release_gate at the point of outward publication.
+    A derived skull model published from these bytes inherits NC and cannot be released commercially.'
+binding: unbound
+population:
+  n: 180
+  hierarchy:
+  - participant
+  - site
+  - device
+  notes: 'PEOPLE COUNTED, NOT DIRECTORIES. 180 subject directories, 180 distinct ids, and the CT sheet
+    and the MR sheet of the deposit''s own overview workbook carry the SAME 180 ids with no repeat in
+    either -- checked as a set equality and a duplicate count, not assumed from the directory listing.
+    That check exists because ds003670 shipped 26 participants.tsv rows and 25 directories for 19 people.
+    Exactly 60 people per centre (id prefixes 1BA, 1BB, 1BC), so `site` is a balanced grouping level rather
+    than a nuisance. THREE PEOPLE CARRY A FLAG the depositors wrote in a `Note` column and no publication
+    repeats: one is annotated ''Big part of the skull is removed'' -- a craniectomy, which for a skull-aberration
+    model is either the most interesting subject here or the one that must be excluded, and either way
+    must not be averaged in silently; one has a ''water equivalent block on CT, not on MRI''; one a ''High
+    HU intensity structure in the CT''.'
+frames:
+- scanner
+- subject_native
+streams:
+- name: skull_acoustic_properties_for_tfus
+  kind: measured
+  via: null
+  observation_chain: 'X-ray attenuation through the head -> filtered back-projection or iterative reconstruction
+    -> Hounsfield units referenced to water and air, which is a calibrated scale -> `skull_from_hounsfield`''s
+    published empirical mapping to speed of sound, density and acoustic attenuation, carrying CT_ACOUSTIC_MAPPING_UNCERTAINTY
+    (280 m/s of between-published-fit spread plus 90 m/s of between-subject). THE CHAIN STOPS AT A PROPERTY
+    FIELD, NOT AT A PRESSURE: this source supplies the medium, and a delivered field additionally needs
+    a transducer pose, which this deposit does not have.'
+  confounds:
+  - 'THE HU CEILING IS A TRAP FOR HU_max SPECIFICALLY. `skull_from_hounsfield` requires an `hu_max` and
+    a free-text `hu_max_convention` because, in its own words, the number alone does not say how it was
+    chosen. On this deposit the two obvious choices behave completely differently: taking THIS SCAN''S
+    OWN MAXIMUM yields exactly 3000 for most subjects, which is the clip and not the densest bone, and
+    reads as a reassuringly consistent per-subject calibration while being the same artefact repeated;
+    taking Aubry''s fixed 2000 sits BELOW the clip and is unaffected by it, at the cost that every voxel
+    above 2000 gets a non-positive porosity and needs an explicit decision. Neither is wrong; recording
+    which one was used is mandatory here rather than merely good practice.'
+  - beam hardening across the skull raises apparent HU at the inner table and is not corrected here
+  - metal artefact from dental work and from the 'High HU intensity structure' one subject is flagged
+    for; three centres, two of which used iMAR metal-artefact reduction in the series description, so
+    the artefact handling is NOT uniform across the cohort
+  - the depositors' resampling to 1 mm isotropic partial-volumes the diploe for the 25 subjects acquired
+    at 2 or 3 mm, and a porosity read off those is biased toward the mean of the two tables
+  - reconstruction kernel differs between the Philips and SIEMENS arms and changes apparent bone density
+    at fixed anatomy
+  - the HU-to-acoustic mapping is empirical, its scatter is large, and it is routinely applied without
+    it
+  - one subject has a craniectomy; a between-person skull statistic that includes it is not a statistic
+    about intact skulls
+  systematic_bias: The cohort is brain-radiotherapy patients, so it is neither a healthy population nor
+    a random one, and post-surgical skulls are present rather than excluded. For the acoustic question
+    that matters less than it would for a functional one -- a skull's speed of sound does not know why
+    its owner was scanned -- but it does mean the age and pathology distribution is an oncology distribution,
+    and diploe porosity varies with age.
+  notes: the imaging-to-acoustic-property mapping is empirical and its scatter propagates directly into
+    predicted focal position and pressure; the deposit's own resampling adds a second, subject-dependent
+    discrepancy that is 0 for the 155 subjects acquired at 1 mm and largest for the 4 acquired at 3 mm
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- this is static anatomy, one CT and one MRI per person, with no time series
+    anywhere in the deposit
+  spatial_support: cranial radiotherapy planning CT and a co-registered 3D T1-weighted MRI per person,
+    each a single volume covering the whole head including the cranial vault. NATIVE CT acquisition is
+    512x512 in-plane at 0.66-0.86 mm pixel spacing with SliceThickness 1 mm for 155 of 180 subjects, 2
+    mm for 21 and 3 mm for 4 -- read per subject from the deposit's own overview workbook, which carries
+    KVP, exposure, CTDIvol, filter, reconstruction diameter, manufacturer and model for every subject.
+- name: paired_ct_and_t1_mri_in_the_same_person
+  kind: measured
+  via: null
+  systematic_bias: 'THIS IS THE STREAM THAT MAKES A CT-VERSUS-MRI SKULL COMPARISON POSSIBLE AT ALL, and
+    it is also the stream most easily over-read. The MRI here is T1-weighted, NOT ZTE or UTE. Cortical
+    bone is signal-void on T1 and the pairing therefore measures how much of a skull a conventional structural
+    scan CAN NOT see -- which is a real and useful quantity, and is NOT the radiation-free substitute
+    obj-tfus-acoustics ultimately wants. Rule 6: a T1 skull estimate and a ZTE skull estimate are different
+    things and must never be silently substituted for one another. What this pairing supports is the discrepancy
+    between a CT-derived skull and any MRI-derived skull proxy, in the same head, on the same grid, in
+    180 people.'
+  notes: MR and CT were rigidly registered by the depositors and the residual registration error is not
+    published per subject, so any voxelwise CT-versus-MR skull discrepancy contains a registration term
+    that is not separately measured here
+  band_hz:
+  - null
+  - null
+- name: between_person_skull_variation
+  kind: measured
+  via: null
+  systematic_bias: 180 people is the point of this card. One skull is a template by another name, and
+    CT_ACOUSTIC_MAPPING_UNCERTAINTY's 90 m/s between-subject term is currently a literature number that
+    nothing in this repository has ever measured against a cohort. This deposit is the first thing held
+    that could. It is a PRIOR and not an observation because a spread measured over one oncology cohort
+    at three Dutch centres is not a spread over people.
+  band_hz:
+  - null
+  - null
+- name: ct
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mr_t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: body_mask
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- zte_or_ute_mri
+- measured_acoustic_properties
+- transducer_geometry
+- age
+- sex
+- functional_imaging
+- eeg
+- meg
+- raw_dicom
+- native_resolution_volumes
+requires:
+- geometry: device-geometry
+  for_streams:
+  - skull_acoustic_properties_for_tfus
+  severity: blocking
+  without_it: the skull's acoustic property field can be built per subject and its between-person spread
+    measured, but NO focal position and NO delivered pressure can be predicted, because there is no transducer
+    pose for a field to be solved against. `predict_tfus` already raises rather than defaulting, so the
+    failure is loud; what this deposit changes is that the skull argument stops being population_derived,
+    not that a field becomes predictable.
+  substitute: 'none, and deliberately none: there is no population transducer pose anywhere in this path,
+    and inventing one would put a fitted-looking number on an unchosen geometry.'
+use:
+- calibrate
+- fit
+- prior
+forbidden:
+- 'synthrad2023/* -> any neural state channel, at all: this deposit contains no functional measurement
+  of any kind and a T1 and a CT constrain anatomy'
+- synthrad2023/* -> a Hounsfield-to-acoustic-property claim without CT_ACOUSTIC_MAPPING_UNCERTAINTY attached
+- 'synthrad2023/* -> a skull property labelled `measured` at native resolution: the held volumes are the
+  depositors'' 1 mm isotropic derived view and carry that class forever'
+- 'synthrad2023/* -> a ZTE/UTE skull claim: the MRI here is T1-weighted and rule 6 forbids the substitution'
+- synthrad2023/* -> a between-person skull spread quoted as a population spread without naming the cohort
+  as brain-radiotherapy patients at three Dutch centres
+- synthrad2023/* -> any re-identification attempt
+split:
+  group_by:
+  - participant
+  - site
+  notes: There is exactly one CT and one MRI per person and no session or run axis, so participant is
+    the only within-deposit repetition risk and it is nil -- which is the easy case, and is why the site
+    level is the one worth naming.
+provenance:
+  imported_from: win-registry
+  card: synthrad2023
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,65 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: thomas-thalamic
+title: THOMAS -- thalamic nuclei segmentation from white-matter-nulled MRI
+provider: University of Arizona / THOMAS project
+citation: 'Su et al., Thalamus Optimized Multi Atlas Segmentation (THOMAS): fast, fully automated segmentation
+  of thalamic nuclei from structural MRI. NeuroImage 2019.'
+urls:
+- https://github.com/thalamicseg/thomas_new
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- MNI152
+- thalamus_native
+streams:
+- name: thalamic_nucleus_labels
+  kind: measured
+  via: null
+  systematic_bias: Requires a WMn-MPRAGE acquisition that most datasets do not have. Applying THOMAS to
+    conventional T1 is possible but is a different and weaker inference, and which input was used must
+    be recorded per subject.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: twelve thalamic nuclei per side, segmented from WHITE-MATTER-NULLED MPRAGE -- a sequence
+    chosen specifically because it makes intrathalamic lamellae visible, which conventional T1 does not
+- name: multi_atlas_segmentation_procedure
+  kind: measured
+  via: null
+  systematic_bias: multi-atlas label fusion produces a label per voxel and a fusion confidence; the confidence
+    is the part that should survive downstream and usually does not
+  band_hz:
+  - null
+  - null
+absent:
+- conventional_t1_applicability
+- histological_validation
+- cortex
+- brainstem
+use:
+- calibrate
+- prior
+forbidden:
+- thomas-thalamic/* -> thalamic claims from conventional T1 without recording the input contrast
+- thomas-thalamic/* -> a merged single subcortical parcellation
+- thomas-thalamic/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: thomas-thalamic
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

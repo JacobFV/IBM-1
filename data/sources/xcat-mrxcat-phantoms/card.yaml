@@ -1,0 +1,81 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: xcat-mrxcat-phantoms
+title: XCAT and MRXCAT -- 4D anatomical phantom and its MR simulation extension
+provider: Duke University Center for Virtual Imaging Trials, licensed through the Duke Office of Translation
+  and Commercialization (XCAT); Institute for Biomedical Engineering, University and ETH Zurich (MRXCAT)
+citation: 'Segars, Sturgeon, Mendonca, Grimes, Tsui. 4D XCAT phantom for multimodality imaging research.
+  Medical Physics 37(9):4902-4915, 2010. doi:10.1118/1.3480985; Wissmann, Santelli, Segars, Kozerke. MRXCAT:
+  realistic numerical phantoms for cardiovascular magnetic resonance. Journal of Cardiovascular Magnetic
+  Resonance 16(1):63, 2014. doi:10.1186/s12968-014-0063-3.'
+urls:
+- https://cvit.duke.edu/resource/xcat-phantom-program/
+- https://biomed.ee.ethz.ch/mrxcat.html
+- https://gitlab.ethz.ch/ibt-cmr-public/mrxcat-2.0
+access: restricted
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: 'TWO LICENCE LAYERS STACK AND BOTH ARE PROBLEMATIC. XCAT: no licence text is publicly readable
+    -- both Duke licensing pages sit behind a bot wall -- and access is through a REDCap request form,
+    i.e. a technology-transfer licence rather than an open one. A fee is implied and its amount is unresolved;
+    Duke states that over 400 groups including several manufacturers have access, so a commercial track
+    exists. MRXCAT 1.0: a custom non-commercial, non-redistribution grant with no SPDX id -- verbatim,
+    anyone is allowed to use the original and/or modified software for non-commercial purposes, and code
+    derived from MRXCAT is not to be shared without permission of the authors. MRXCAT 2.0''s licence is
+    unresolved. The net effect is that no MRXCAT-derived pipeline can be redistributed.'
+binding: unbound
+population:
+  n: null
+frames:
+- phantom_native
+streams:
+- name: parameterised_anatomy_with_known_ground_truth
+  kind: measured
+  via: null
+  systematic_bias: 'The anatomy is SPECIFIED before the image is simulated, so segmentation and motion-correction
+    methods can be scored against truth rather than against another method. XCAT IS A PHANTOM GENERATOR,
+    NOT AN IMAGING SIMULATOR: it produces attenuation and activity maps, and image formation requires
+    a separate simulator, so a claim of ''validated on XCAT'' says nothing until the imaging chain is
+    named.'
+  notes: XCAT 3.0's virtual-patient library is CT-derived, so its tissue boundaries carry CT's contrast
+    behaviour and not MR's; and MRXCAT supplies MR tissue parameters from tables rather than from the
+    same subject
+  band_hz:
+  - null
+  - null
+  temporal_support: 4D cardiac contraction and 4D respiration as parameterised motion, sampled at whatever
+    phase the user requests
+  spatial_support: NURBS and subdivision-surface definitions of highly detailed male and female anatomies
+    with thousands of defined structures including muscles and blood vessels, voxelised at the user's
+    chosen resolution -- so there is NO NATIVE VOXEL SIZE, which is unusual and is the point of a surface-defined
+    phantom. XCAT 3.0 adds a library of over 2,500 virtual patients with about 140 segmented structures
+    each
+- name: cardiac_and_respiratory_motion_model
+  kind: measured
+  via: null
+  systematic_bias: Parameterised physiological motion is exactly the controlled nuisance a motion-robustness
+    claim needs, and it is a MODEL of motion whose realism is an assumption, not a measurement.
+  band_hz:
+  - null
+  - null
+absent:
+- measurements
+- brain_detail
+- dielectric_and_conductivity_properties
+- diffusion_and_fibre_information
+- readable_licence
+use:
+- surrogate
+forbidden:
+- xcat-mrxcat-phantoms/* -> runtime dependency in a WIN query
+- xcat-mrxcat-phantoms/* -> redistribution of any XCAT or MRXCAT-derived pipeline
+- xcat-mrxcat-phantoms/* -> a 'validated on XCAT' claim that does not name the imaging simulator
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: xcat-mrxcat-phantoms
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,61 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hubmap
+title: HuBMAP -- Human BioMolecular Atlas Program
+provider: NIH HuBMAP consortium
+citation: HuBMAP Consortium, The human body at cellular resolution. Nature 2019.
+urls:
+- https://hubmapconsortium.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- tissue_block_native
+- organ_common_coordinate_framework
+streams:
+- name: organ_common_coordinate_framework
+  kind: measured
+  via: null
+  systematic_bias: HuBMAP's per-organ common coordinate frameworks are a worked example of registering
+    heterogeneous tissue samples into a shared addressable space -- the same problem §3 and §56 solve
+    for the brain, solved for other organs, and worth reading rather than reinventing
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: SPATIALLY RESOLVED molecular maps of human tissues with a common coordinate framework
+    per organ -- the spatial framework is the part that generalises
+- name: spatial_molecular_maps
+  kind: measured
+  via: null
+  systematic_bias: peripheral tissue; brain coverage is limited
+  band_hz:
+  - null
+  - null
+absent:
+- brain_coverage
+- dynamics
+- population
+use:
+- calibrate
+- prior
+forbidden:
+- hubmap/* -> brain state claims
+- hubmap/* -> observation-role likelihoods
+- hubmap/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: hubmap
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,1 @@
+# sha256 manifest for physiological-etco2-recordings; written on acquisition

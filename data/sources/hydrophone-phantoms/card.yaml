@@ -1,0 +1,70 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hydrophone-phantoms
+title: Hydrophone measurements and acoustic phantoms
+provider: multiple -- transducer characterisation laboratories and standards bodies
+citation: PROMPT.md §52.13 and §54.2, 'hydrophone phantoms' and 'hydrophone measurements'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- tank_frame
+- transducer_frame
+- phantom_native
+streams:
+- name: measured_free_field_pressure
+  kind: measured
+  via: null
+  systematic_bias: THE GROUND TRUTH FOR A TRANSDUCER'S OWN FIELD, and the only measured acoustic quantity
+    in the whole tFUS section. A simulated transducer that does not reproduce its measured free-field
+    beam is wrong before any skull is involved -- the same argument as coil-probe-measurements makes for
+    TMS.
+  notes: free field in water is not the field in a head; skull aberration is the second stage and is where
+    the difficulty is
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: the acoustic pressure field of a real transducer, MEASURED point by point with a calibrated
+    hydrophone in a water tank or in a tissue-mimicking phantom
+- name: tissue_mimicking_phantom_measurements
+  kind: measured
+  via: null
+  systematic_bias: phantoms with skull-mimicking layers measure aberration directly and are the closest
+    available analogue of transcranial propagation
+  band_hz:
+  - null
+  - null
+- name: acoustic_property_measurements
+  kind: measured
+  via: null
+  systematic_bias: speed of sound, density and attenuation of tissue-mimicking materials are the inputs
+    an acoustic solver needs; real tissue values are a separate and less certain question
+  band_hz:
+  - null
+  - null
+absent:
+- in_vivo_fields
+- individual_skull_properties
+- thermal_in_vivo
+use:
+- calibrate
+forbidden:
+- hydrophone-phantoms/* -> in-vivo delivered-field claims
+- hydrophone-phantoms/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: hydrophone-phantoms
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

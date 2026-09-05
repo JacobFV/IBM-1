@@ -1,0 +1,111 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ami-meeting-corpus
+title: AMI Meeting Corpus
+provider: AMI Consortium / University of Edinburgh
+citation: 'Carletta et al., The AMI Meeting Corpus: A Pre-announcement. MLMI 2005.'
+urls:
+- https://groups.inf.ed.ac.uk/ami/corpus/
+access: priority
+licence:
+  name: CC BY 4.0 (stated by the providers; not independently verified here)
+  redistribution: unresolved
+  commercial: unresolved
+  notes: The AMI Consortium states a permissive Creative Commons licence. Recorded with the caveat that
+    it has not been verified against the distribution.
+binding: unbound
+population:
+  n: 189
+  hierarchy:
+  - participant
+  - session
+  - device
+  notes: 100 hours of multi-party meetings, both scenario-driven and natural, with synchronised close-talk
+    and far-field microphones and multiple cameras.
+frames:
+- headset_mic
+- array_mic
+- room
+- camera
+- meeting_timeline
+streams:
+- name: multi_microphone_audio
+  kind: imposed
+  via: null
+  systematic_bias: the same source recorded at several known positions in a known room is effectively
+    a measured room impulse response per talker -- usable for the acoustic boundary geometry §56.4 asks
+    for
+  band_hz:
+  - null
+  - null
+  temporal_support: audio at 16 kHz; video at 25 fps; annotations as intervals. All streams hardware-synchronised
+    at capture
+  spatial_support: MULTIPLE simultaneous microphone positions -- headset, lapel, tabletop array and far-field
+    -- recording the SAME acoustic event from different points in a known room. That multi-position sampling
+    of one sound field is the unusual and valuable property
+- name: room_geometry
+  kind: measured
+  via: null
+  systematic_bias: published room and array geometry; realised positions per meeting are less certain
+  band_hz:
+  - null
+  - null
+- name: dialogue_acts
+  kind: imposed
+  via: null
+  systematic_bias: annotator-assigned speech-act categories are a theory of the interaction
+  band_hz:
+  - null
+  - null
+- name: video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: head_pose
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: hand_gesture_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- physiology
+- gaze
+requires:
+- geometry: device-geometry
+  for_streams:
+  - multi_microphone_audio
+  - room_geometry
+  severity: blocking
+  without_it: 'The source-receiver arrangement IS the measurement here: an impulse response means nothing
+    without the positions it was measured between. Without a device-geometry object for the room, the
+    sources and the receivers, these recordings cannot serve as the boundary acoustic model they exist
+    to supply.'
+use:
+- calibrate
+- fit
+forbidden:
+- ami-meeting-corpus/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - session
+  - device
+provenance:
+  imported_from: win-registry
+  card: ami-meeting-corpus
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

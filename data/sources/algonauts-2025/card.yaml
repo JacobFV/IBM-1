@@ -1,0 +1,102 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: algonauts-2025
+title: Algonauts Project 2025 Challenge -- multimodal movie fMRI encoding benchmark
+provider: Algonauts Project, over Courtois NeuroMod data
+citation: Algonauts Project 2025 Challenge.
+urls:
+- https://algonautsproject.com/2025/challenge.html
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Challenge terms plus the underlying cNeuroMod agreement plus third-party stimulus copyright.
+    Three layers; unresolved.
+binding: unbound
+population:
+  n: 4
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: Built ON cNeuroMod participants. This is not an independent sample, and treating an Algonauts
+    score as independent of a cNeuroMod-trained model is circular.
+frames:
+- fsaverage
+- scanner
+- episode_timeline
+streams:
+- name: held_out_test_stimuli
+  kind: measured
+  via: null
+  systematic_bias: an out-of-distribution held-out set is the point; it is still four people
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 1.49 s; stimulus at native frame and sample rate
+  spatial_support: parcellated and surface responses as distributed by the challenge
+- name: stimulus_video_audio
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_movie_responses
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_audio
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- raw_bold
+- individual_surfaces
+- eeg
+- meg
+- physiology
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- evaluate
+- fit
+forbidden:
+- algonauts-2025/* -> model updates (this is an evaluation source)
+- algonauts-2025/challenge_parcellated_responses -> state representation design
+split:
+  group_by:
+  - participant
+  - stimulus
+  notes: 'shares participants with courtois-neuromod: a model trained on cNeuroMod and evaluated here
+    is NOT participant-held-out'
+provenance:
+  imported_from: win-registry
+  card: algonauts-2025
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,128 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brantley-full-body-mobi
+title: Full-body mobile brain/body imaging during unconstrained locomotion on stairs, ramps and level
+  ground
+provider: University of Houston (Contreras-Vidal lab), deposited on figshare
+citation: Brantley, Luu, Nakagome, Zhu, Contreras-Vidal. Full body mobile brain-body imaging data during
+  unconstrained locomotion on stairs, ramps, and level ground. Scientific Data 5:180133, 2018. doi:10.1038/sdata.2018.133.
+  Data doi:10.6084/m9.figshare.5616109.v5.
+urls:
+- https://doi.org/10.6084/m9.figshare.5616109.v5
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: UNRESOLVED. The figshare API response exposed only the file listing with no licence field. The
+    article text is reported to state a CC BY 4.0 licence, but that cannot be separated from the ARTICLE's
+    own licence, so it is not recorded here as the data's licence. Re-check the figshare record page before
+    use.
+binding: unbound
+population:
+  n: 10
+  hierarchy:
+  - participant
+  - run
+  notes: 5 male, 5 female.
+frames:
+- channel_label
+- imu_segment_frames
+- world
+streams:
+- name: eeg_during_unconstrained_locomotion
+  kind: measured
+  via: null
+  observation_chain: post-synaptic currents -> volume conduction to scalp -> electrode potential -> amplifier
+    -> microvolts, recorded while the participant walks over stairs and ramps, where head acceleration
+    is largest exactly at the transitions of interest
+  confounds:
+  - gait- and transition-locked motion artefact, worse on stairs than on a treadmill
+  - neck and scalp EMG during postural control
+  - cable and electrode movement
+  - vestibular and somatosensory afferents from the terrain change are inseparable from any central terrain
+    representation by this design alone
+  - no structural MRI, so no subject-specific forward model
+  systematic_bias: Overground locomotion over varying terrain is the ecologically valid case and also
+    the worst artefact case; the full-body IMU record is what makes the artefact modellable rather than
+    merely deplorable.
+  band_hz:
+  - null
+  - null
+  temporal_support: 'TWO DIFFERENT CLOCKS: EEG and EMG at 1000 Hz, IMUs at 30 or 60 Hz. The resampling
+    required to relate them is a real clock-graph edge with a real residual, and it is the kind of relation
+    that must be stored rather than resampled away'
+  spatial_support: 60-channel scalp EEG plus 4 EOG channels, 6 bilateral lower-limb EMG sites (tibialis
+    anterior, gastrocnemius, rectus femoris, vastus lateralis, biceps femoris longus, semitendinosus)
+    and 17 WIRELESS IMUs giving full-body motion capture. Stairs, ramps and level ground -- UNCONSTRAINED
+    OVERGROUND, which ds001971's treadmill design is not
+- name: full_body_kinematics_and_emg
+  kind: imposed
+  via: null
+  systematic_bias: 17 IMUs give segment orientations, not joint centres; a skeleton fitted to them is
+    derived geometry with a calibration-dependent error, and the sampling-rate mismatch with the EEG must
+    be carried as a clock relation.
+  band_hz:
+  - null
+  - null
+- name: eeg_60ch
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eog
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: emg_bilateral_lower_limb
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: imu_full_body_17_sensors
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- structural_mri
+- digitised_electrode_positions
+- force_plates
+- optical_motion_capture
+- bids_organisation
+- resolved_licence
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg_during_unconstrained_locomotion
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- brantley-full-body-mobi/* -> an artifact, until the figshare record's licence is read
+- brantley-full-body-mobi/* -> an assumed common clock between the IMU and electrophysiology streams
+split:
+  group_by:
+  - participant
+  - run
+provenance:
+  imported_from: win-registry
+  card: brantley-full-body-mobi
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

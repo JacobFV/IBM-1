@@ -1,0 +1,62 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: neuroml
+title: NeuroML -- declarative model description language for computational neuroscience
+provider: NeuroML editorial board / Open Source Brain
+citation: 'Cannon et al., LEMS: a language for expressing complex biological models in concise and hierarchical
+  form. Frontiers in Neuroinformatics 2014; Gleeson et al., NeuroML. PLoS Computational Biology 2010.'
+urls:
+- https://neuroml.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- cell_morphology
+- network_specification
+streams:
+- name: simulator_independent_model_description
+  kind: measured
+  via: null
+  systematic_bias: THE SAME MODEL RUN ON DIFFERENT SIMULATORS is what makes numerical discrepancy measurable
+    -- §39's `numerical` uncertainty component made operational. NeuroML exists precisely so that a model
+    is not defined by the code that runs it, which is the same separation §55 wants between a source format
+    and the internal ontology.
+  notes: declarative expressiveness is bounded; models outside NeuroML's component set cannot be described
+    in it
+  band_hz:
+  - null
+  - null
+  temporal_support: no clock of its own; the description is simulator-independent and the timestep belongs
+    to whatever runs it
+  spatial_support: a DECLARATIVE description of neurons, channels, synapses and networks -- morphology,
+    biophysics and connectivity as data rather than as simulator code
+- name: unit_annotated_declarations
+  kind: measured
+  via: null
+  systematic_bias: declared units on every quantity, like CellML; §57's native-units requirement has existing
+    machinery here
+  band_hz:
+  - null
+  - null
+absent:
+- parameter_values_for_human_cortex
+- validation_data
+use:
+- calibrate
+- prior
+forbidden:
+- neuroml/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: neuroml
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

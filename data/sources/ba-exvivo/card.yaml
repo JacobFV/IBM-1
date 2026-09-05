@@ -1,0 +1,71 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ba-exvivo
+title: Ex vivo Brodmann area labels from ten histologically sectioned hemispheres
+provider: Martinos Center / FreeSurfer, shipped inside each recon-all subject directory
+citation: Fischl et al., Cortical folding patterns and predicting cytoarchitecture. Cerebral Cortex 2008.
+urls:
+- https://surfer.nmr.mgh.harvard.edu/fswiki/BrodmannAreaMaps
+access: held
+licence:
+  name: FreeSurfer Software License
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'Unresolved. Rule 7 gates DISTRIBUTION only; this is read and computed with freely. It is written
+    into a subject directory by FreeSurfer and inherits whatever FreeSurfer carries. LICENCE LINEAGE,
+    NOT A LOOKUP: this reached us inside a FreeSurfer subject directory (bundled in turn by an MNE sample
+    dataset or a nilearn cache), so the terms under which WE received it are the FreeSurfer Software License.
+    READ, not recalled -- the licence text was fetched: it PERMITS COMMERCIAL USE (''any commercialization
+    of the Software is at the sole risk of the party ... engaged in such commercialization''), requires
+    that the licence terms and all attributions and copyright notices be preserved in any copy, and EXPLICITLY
+    DISCLAIMS COPYLEFT -- contributors warrant their code ''does not contain any code that requires or
+    prescribes an open source license for derivative works''. No registration or DUA is mentioned; accepting
+    the licence is the only condition of download. This was very nearly recorded as commercial_use prohibited
+    from memory, which would have WRONGLY BLOCKED a legitimate release.'
+binding: unbound
+population:
+  n: null
+frames:
+- subject_surface_ras
+streams:
+- name: cytoarchitectonic_labels
+  kind: measured
+  via: null
+  systematic_bias: Built from TEN ex vivo hemispheres that were actually sectioned and stained, then predicted
+    onto a new subject from folding alone. So the histology is real -- which is why this outranks pals-b12's
+    projected Brodmann drawings -- but the transfer to any individual is a PREDICTION FROM FOLDING, and
+    the areas whose boundaries do not follow sulci (much of association cortex) are exactly where that
+    prediction is weakest. The relationship between folding and cytoarchitecture is the paper's subject,
+    not its assumption, and it is not equally good everywhere.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- static anatomy
+  spatial_support: 'per-vertex annotations on an individual subject''s surface, per hemisphere, in two
+    variants: the full probabilistic labelling and a `.thresh` version thresholded to a maximum-probability
+    assignment'
+absent:
+- all_brodmann_areas
+- subcortex
+- laminar_detail
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: Per-vertex labels need the subject's own surface to mean anything. Unlike the fsaverage-published
+    covers this one is already written on the individual, so it needs no spherical transfer -- and that
+    difference is worth carrying, because it means this cover has no registration residual where the others
+    do.
+use:
+- prior
+forbidden:
+- ba-exvivo/cytoarchitectonic_labels -> a claim that this subject's cytoarchitecture was measured
+- ba-exvivo/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a population prior applied per subject: held out of nothing. The ten ex vivo hemispheres are
+    not ours and are not in any split.'
+provenance:
+  imported_from: win-registry
+  card: ba-exvivo
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

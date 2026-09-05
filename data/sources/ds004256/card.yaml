@@ -1,0 +1,110 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds004256
+title: ds004256 -- EEG during sound-source elevation localisation
+provider: OpenNeuro ds004256
+citation: Sound-source elevation EEG dataset (named in PROMPT.md §52.4).
+urls:
+- https://openneuro.org/datasets/ds004256
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: n unresolved.
+frames:
+- eeg_cap
+- head
+- auditory_space_spherical
+streams:
+- name: eeg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at kHz; discrete spatialised sound trials
+  spatial_support: scalp EEG; the STIMULUS has a spatial support -- a direction in a head-centred frame
+    -- which is unusual and valuable
+- name: spatialised_audio_stimuli
+  kind: imposed
+  via: null
+  systematic_bias: Elevation localisation depends on individual pinna filtering. If a GENERIC HRTF was
+    used rather than an individualised one, the delivered spatial cue differs from the intended one for
+    every participant -- the auditory analogue of a template head model, and it must be recorded rather
+    than assumed
+  band_hz:
+  - null
+  - null
+- name: head_centred_direction
+  kind: measured
+  via: null
+  systematic_bias: requires head pose to be fixed or tracked; if neither, the direction is nominal
+  band_hz:
+  - null
+  - null
+- name: elevation_conditions
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: localisation_responses
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- individualised_hrtf
+- head_tracking
+- fmri
+- meg
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- fit
+forbidden:
+- ds004256/* -> auditory spatial claims without recording which HRTF was used
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: ds004256
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

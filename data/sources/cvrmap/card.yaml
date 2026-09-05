@@ -1,0 +1,71 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cvrmap
+title: CVRmap -- BIDS post-processing toolbox for cerebrovascular reactivity mapping
+provider: Universite Libre de Bruxelles
+citation: Bertrand et al., CVRmap -- a complete cerebrovascular reactivity mapping post-processing BIDS
+  toolbox. Scientific Reports 2024.
+urls:
+- https://www.nature.com/articles/s41598-024-57572-3
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- MNI152
+streams:
+- name: cvr_estimation
+  kind: measured
+  via: null
+  systematic_bias: A REFERENCE IMPLEMENTATION for turning a breath-hold BOLD series plus a CO2 trace into
+    amplitude and delay maps, with BIDS-derivative provenance. B-WIN implements the vascular stage internally
+    (§1); CVRmap is what that implementation is checked against.
+  notes: the delay search range is a parameter, and a true delay outside it is silently clipped to the
+    boundary
+  band_hz:
+  - null
+  - null
+  temporal_support: BOLD TR for the input; the delay map is estimated by cross-correlation over a lag
+    range that the user chooses, and that range bounds every delay it can report
+  spatial_support: voxel-wise CVR amplitude and delay from a BOLD series and a CO2 trace, in the subject's
+    space
+- name: delay_estimation
+  kind: measured
+  via: null
+  systematic_bias: 'the DELAY map is the part most often discarded and is the more diagnostic of the two:
+    a delayed response and a weak response are different vascular facts'
+  band_hz:
+  - null
+  - null
+absent:
+- co2_recording
+- vessel_geometry
+- neural_measurement
+requires:
+- geometry: vascular-products
+  severity: degrading
+  without_it: These model families describe a vascular stage -- compliance, transit, oxygen extraction
+    -- whose parameters are properties of a vessel bed. Without the vascular product they can be fitted
+    to a signal but cannot be attached to any vessel, so a fitted parameter is a curve shape rather than
+    a claim about the circulation.
+  substitute: Fitting on a lumped, unlocalised compartment, which makes the parameters non-comparable
+    between regions and between people.
+use:
+- calibrate
+- surrogate
+forbidden:
+- cvrmap/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: cvrmap
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

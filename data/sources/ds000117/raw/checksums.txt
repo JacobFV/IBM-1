@@ -1,0 +1,4 @@
+# sha256 manifest for ds000117 -- DEFERRED
+# 2095 files, 94130982522 bytes (87.67 GiB) at /home/brandonin/Documents/win-data/ds000117
+# hashing this source has not been run; until it has, no derive recipe may claim
+# reproducibility against a specific raw state.

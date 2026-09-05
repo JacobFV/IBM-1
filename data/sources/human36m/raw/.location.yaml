@@ -1,0 +1,5 @@
+# where the bytes for `human36m` actually live.  never the bytes themselves.
+source_url: "http://vision.imar.ro/human3.6m/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

@@ -1,0 +1,49 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: focus-subcortical
+title: FOCUS 100 micron subcortical atlas
+provider: unresolved -- named in PROMPT.md §51.3 item 26 and §52.7
+citation: FOCUS subcortical atlas (named in PROMPT.md §52.7).
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- atlas_native
+streams:
+- name: high_resolution_subcortical_labels
+  kind: measured
+  via: null
+  systematic_bias: Authority low because the source has not been verified. At 100 microns the spatial
+    detail would exceed every other in-vivo subcortical atlas in the registry, which is why it is worth
+    resolving rather than dropping.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: a 100 micron subcortical reference; the acquisition modality and donor count are unresolved
+    and are not guessed here
+absent:
+- everything_unverified
+use:
+- calibrate
+- prior
+forbidden:
+- focus-subcortical/* -> anything until the release is identified and verified
+- focus-subcortical/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: focus-subcortical
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

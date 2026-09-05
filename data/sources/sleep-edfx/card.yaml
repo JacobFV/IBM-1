@@ -1,0 +1,138 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: sleep-edfx
+title: Sleep-EDF Expanded (Sleep-EDFx) -- polysomnography with expert sleep staging
+provider: PhysioNet
+citation: Kemp et al., Analysis of a sleep-dependent neuronal feedback loop. IEEE TBME 2000; PhysioNet
+  Sleep-EDF Expanded.
+urls:
+- https://physionet.org/content/sleep-edfx/1.0.0/
+access: held
+licence:
+  name: ODbL 1.0 (PhysioNet states an open licence)
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'PhysioNet states an open database licence; share-alike implications not independently verified
+    here. Resolved from the named licence''s own terms: ODbL 1.0 PERMITS COMMERCIAL USE and requires share-alike,
+    which was already recorded. The share-alike is the operative term for us -- a released derivative
+    of this database carries it. dua_required false because this is an open-access PhysioNet database,
+    not a credentialed one, and it is held here from an anonymous fetch.'
+binding: unbound
+population:
+  n: 78
+  hierarchy:
+  - participant
+  - session
+  notes: 'HELD: the sleep-cassette arm only -- 153 PSG recordings from 78 participants, 3,470.20 h, measured
+    2026-08-15 from the EDF headers (records x record duration). That re-derives the predecessor''s 3,470.24
+    h from the files themselves. By hours it is the largest held source in the store by two orders of
+    magnitude.'
+frames:
+- eeg_electrode_pair
+- head
+- torso
+streams:
+- name: eeg_2ch
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - sweat artifact and electrode drift over a full night
+  - sleep-position changes altering electrode contact
+  systematic_bias: Two channels give essentially no spatial information. What this source supplies is
+    very long, slowly-varying STATE trajectories -- the slow axis §52.15 cares about.
+  notes: no head model, no montage geometry; a source-space interpretation is not available
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at 100 Hz; sleep stages annotated in 30-second epochs. The 30 s epoch is a SCORING
+    convention, not a property of sleep, and it discretises a continuous process
+  spatial_support: TWO EEG channels only (Fpz-Cz and Pz-Oz). The spatial support is essentially nil --
+    this source constrains state, not location
+- name: expert_hypnograms
+  kind: measured
+  via: null
+  systematic_bias: human expert scoring with known inter-rater agreement around 80-90 percent. The hypnogram
+    is a LABEL produced by a person applying a rulebook, not a measurement, and it is the ceiling of any
+    model fitted to it
+  band_hz:
+  - null
+  - null
+- name: respiration_and_temperature
+  kind: measured
+  via: null
+  observation_chain: thoracic/abdominal circumference or airflow -> transducer -> sampled waveform
+  confounds:
+  - sensor placement and contact quality
+  - motion artifact
+  - respiratory-cardiac cross-coupling that makes the two streams non-independent
+  systematic_bias: Slow physiological state across a whole night, which pairs with §52.15.
+  band_hz:
+  - null
+  - null
+- name: eog_emg
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eog
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: emg_chin
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: respiration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: body_temperature
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: event_markers
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- fmri
+- meg
+- high_density_eeg
+- individual_anatomy
+- ecg_in_all_records
+- world_stimulus
+use:
+- evaluate
+- fit
+forbidden:
+- sleep-edfx/* -> any spatially resolved cortical state
+- sleep-edfx/expert_hypnograms -> a ground-truth state label
+- sleep-edfx/* -> world-model forcing parameters
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: sleep-edfx
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

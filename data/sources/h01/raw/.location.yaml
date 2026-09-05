@@ -1,0 +1,5 @@
+# where the bytes for `h01` actually live.  never the bytes themselves.
+source_url: "https://research.google/pubs/a-connectomic-study-of-a-petascale-fragment-of-human-cerebral-cortex/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

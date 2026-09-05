@@ -1,0 +1,86 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: epic-kitchens
+title: EPIC-KITCHENS-100 -- egocentric kitchen activity video
+provider: University of Bristol and partners
+citation: 'Damen et al., Rescaling Egocentric Vision: Collection, Pipeline and Challenges for EPIC-KITCHENS-100.
+  IJCV 2022.'
+urls:
+- https://epic-kitchens.github.io/
+access: priority
+licence:
+  name: CC BY-NC 4.0 (stated by the providers; not independently verified here)
+  redistribution: unresolved
+  commercial: prohibited
+  notes: The providers state a non-commercial Creative Commons licence. Recorded with the caveat that
+    it has not been verified against the distribution itself.
+binding: unbound
+population:
+  n: 45
+  hierarchy:
+  - participant
+  - session
+  notes: 100 hours, 45 participants, unscripted kitchen activity in their own homes.
+frames:
+- camera_egocentric
+- head
+- world
+streams:
+- name: egocentric_video
+  kind: imposed
+  via: null
+  systematic_bias: 'no gaze at all: head pose is the only proxy for where the person is looking, and in
+    manual tasks head and gaze decouple strongly'
+  band_hz:
+  - null
+  - null
+  temporal_support: video at 50-60 fps; narrations and action segments as timed intervals
+  spatial_support: head-mounted camera, no gaze
+- name: hand_object_annotations
+  kind: imposed
+  via: null
+  systematic_bias: annotations are human-labelled inferences about intent, not measured kinematics
+  band_hz:
+  - null
+  - null
+- name: action_annotations
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: audio
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: object_masks_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- gaze
+- body_pose
+- physiology
+requires:
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: The egocentric frame moves with the head, which is the entire point of the recording. Without
+    the world and eye geometry -- rig pose in the world, gaze ray, scene depth -- the frames are video
+    from a moving camera and nothing recovers what was foveated.
+use:
+- fit
+forbidden:
+- epic-kitchens/* -> any cortical state directly
+- epic-kitchens/action_annotations -> intention state
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: epic-kitchens
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

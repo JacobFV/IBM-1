@@ -1,0 +1,60 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: afni
+title: AFNI -- Analysis of Functional NeuroImages
+provider: NIMH Scientific and Statistical Computing Core
+citation: 'Cox, AFNI: software for analysis and visualization of functional magnetic resonance neuroimages.
+  Computers and Biomedical Research 1996.'
+urls:
+- https://afni.nimh.nih.gov/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Distributed by a US federal laboratory; the licence file and the terms on individual bundled
+    atlases differ and neither has been read.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- TT_N27
+- MNI152
+streams:
+- name: physiological_noise_regression
+  kind: measured
+  via: null
+  systematic_bias: AFNI's RETROICOR/RVT implementation is a reference for cardiac and respiratory contributions
+    to BOLD. In WIN these are MODELLED STATES, not nuisance to be regressed away; the value of the reference
+    is that it quantifies how large the physiological term is, not that it removes it.
+  band_hz:
+  - null
+  - null
+  temporal_support: TR-sampled functional series; slice-timing is an explicit per-slice offset rather
+    than an assumption, which is the acquisition-clock fact most pipelines lose
+  spatial_support: voxel grids in the input's own space; surface support via SUMA
+- name: slice_timing_and_alignment
+  kind: measured
+  via: null
+  systematic_bias: Slice acquisition order is a real sub-TR clock structure that a volume-level TR representation
+    destroys.
+  band_hz:
+  - null
+  - null
+absent:
+- measurements
+- electromagnetic_forward_model
+use:
+- calibrate
+- surrogate
+forbidden:
+- afni/* -> runtime dependency in a WIN query
+- afni/* -> any subject likelihood term
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: afni
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

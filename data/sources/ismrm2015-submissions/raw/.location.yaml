@@ -1,0 +1,10 @@
+# where the bytes for `ismrm2015-submissions` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/ismrm2015-submissions
+acquired_at: '2026-09-04'
+files: 99
+bytes: 38968819489
+gib: 36.29
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://zenodo.org/records/840086

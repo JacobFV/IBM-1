@@ -1,0 +1,56 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: veinseg
+title: VeinSeg -- QSM vein probability segmentation
+provider: veinseg-qsm developers
+citation: veinseg-qsm (PyPI); PROMPT.md §52.10 and §59 reference 37.
+urls:
+- https://pypi.org/project/veinseg-qsm/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+streams:
+- name: vein_probability_maps
+  kind: measured
+  via: null
+  systematic_bias: Emits PROBABILITIES rather than a binary mask, which is the right form and is unusual.
+    Its probabilities are a model's confidence, not an anatomical probability, and the distinction matters
+    when they are propagated into a BOLD observation model.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: voxel-wise vein probability maps from QSM volumes in subject space
+- name: qsm_vein_reference
+  kind: measured
+  via: null
+  systematic_bias: B-WIN's own vein segmentation is validated against this offline; it is never called
+    during a query
+  band_hz:
+  - null
+  - null
+absent:
+- arterial_segmentation
+- ground_truth
+- capillary_scale
+use:
+- calibrate
+- surrogate
+forbidden:
+- veinseg/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: veinseg
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

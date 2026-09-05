@@ -1,0 +1,49 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: sg-mind
+title: SG-MIND -- naturalistic multimodal neural dataset
+provider: unresolved
+citation: SG-MIND (named in PROMPT.md §52.2).
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved; release and access unverified.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: Named in the source material without a resolvable reference in §59. Everything about it is unresolved
+    and this card says so rather than inventing plausible detail.
+frames:
+- unresolved
+streams:
+- name: unresolved_streams
+  kind: measured
+  via: null
+  observation_chain: unresolved -- the observation chain cannot be written until the modality is known,
+    and writing a plausible one would be fabrication
+  confounds:
+  - unresolved
+  systematic_bias: Nothing verified.
+  band_hz:
+  - null
+  - null
+  temporal_support: unresolved
+  spatial_support: unresolved
+absent:
+- everything_unverified
+use:
+- fit
+forbidden:
+- sg-mind/* -> anything, until the source is identified and verified
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: sg-mind
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

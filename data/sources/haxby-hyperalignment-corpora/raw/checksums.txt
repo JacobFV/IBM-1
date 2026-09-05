@@ -1,0 +1,1 @@
+# sha256 manifest for haxby-hyperalignment-corpora; written on acquisition

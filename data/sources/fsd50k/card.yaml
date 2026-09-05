@@ -1,0 +1,69 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fsd50k
+title: FSD50K -- Freesound Dataset 50k
+provider: Universitat Pompeu Fabra Music Technology Group
+citation: 'Fonseca et al., FSD50K: An Open Dataset of Human-Labeled Sound Events. IEEE/ACM TASLP 2022.'
+urls:
+- https://zenodo.org/records/4060432
+access: priority
+licence:
+  name: CC (mixed per clip -- CC0, CC BY, CC BY-NC, CC Sampling+)
+  redistribution: unresolved
+  commercial: unresolved
+  notes: PER-CLIP licences differ within the dataset. A licence union over the whole set is exactly the
+    'fact about a pile' the registry README warns against; lineage must be computed per clip actually
+    used.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - session
+  notes: 51,197 Freesound clips with 200 AudioSet-ontology classes. Unlike AudioSet the AUDIO ITSELF is
+    distributed, which makes it reproducible.
+frames:
+- uncontrolled_recording
+streams:
+- name: audio
+  kind: imposed
+  via: null
+  systematic_bias: the audio is actually distributed, so unlike AudioSet this is reproducible across time
+  band_hz:
+  - null
+  - null
+  temporal_support: clips of 0.3 to 30 s; clip-level labels
+  spatial_support: 'Freesound uploads: variable quality, deliberately so'
+- name: event_labels
+  kind: imposed
+  via: null
+  systematic_bias: clip-level, no onsets
+  band_hz:
+  - null
+  - null
+- name: ontology_mapping
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- onset_times
+- spatial_audio
+use:
+- fit
+forbidden:
+- fsd50k/* -> any cortical state directly
+split:
+  group_by:
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: fsd50k
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

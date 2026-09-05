@@ -1,0 +1,58 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: getdp
+title: GetDP -- general environment for the treatment of discrete problems
+provider: University of Liege
+citation: Dular et al., A general environment for the treatment of discrete problems and its application
+  to the finite element method. IEEE Transactions on Magnetics 1998.
+urls:
+- https://getdp.info/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- arbitrary_mesh
+streams:
+- name: declarative_pde_solving
+  kind: measured
+  via: null
+  systematic_bias: 'GENERAL rather than bioelectromagnetics-specific, which is precisely its value: EEG
+    forward modelling, tES field computation and magnetostatics are the SAME class of problem with different
+    coefficients and boundary conditions, and a declarative solver makes that shared structure explicit
+    rather than reimplementing it three times. §15''s requirement to keep distinct magnetic mechanisms
+    distinct is easier to satisfy when the formulations are written out rather than hidden.'
+  notes: generality costs the domain-specific validation the specialised solvers have
+  band_hz:
+  - null
+  - null
+  temporal_support: static, harmonic or transient as declared
+  spatial_support: a general finite-element solver in which the WEAK FORMULATION is written declaratively
+    -- the PDE, its function spaces and its constraints are data, not solver internals
+- name: gmsh_integration
+  kind: measured
+  via: null
+  systematic_bias: pairs with Gmsh, so mesh generation and solution share a geometry description
+  band_hz:
+  - null
+  - null
+absent:
+- domain_validation
+- bio_specific_defaults
+use:
+- surrogate
+forbidden:
+- getdp/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: getdp
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

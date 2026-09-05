@@ -1,0 +1,56 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nibs-bids
+title: NIBS-BIDS (BEP037) -- BIDS extension for non-invasive brain stimulation
+provider: BIDS community, BEP037; lead author Bertazzoli; reference implementation nigelrogasch/nibs-bids
+citation: 'Bertazzoli et al., NIBS-BIDS: an extension to the brain imaging data structure for non-invasive
+  brain stimulation. Zenodo, doi:10.5281/zenodo.19337642 (v3, 2026-03-30).'
+urls:
+- https://zenodo.org/records/19337642
+- https://github.com/nigelrogasch/nibs-bids/
+access: priority
+licence:
+  name: CC-BY-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: Creative Commons Attribution 4.0 International, as stated on the Zenodo record.
+binding: unbound
+population:
+  n: null
+frames:
+- described_by_reference
+streams:
+- name: stimulation_metadata_schema
+  kind: measured
+  via: null
+  systematic_bias: 'This is the closest existing standard to the four-stage separation an interventional
+    card requires -- requested setting, delivered field, peripheral co-stimulation, candidate neural response.
+    It gives the first and the fourth a home. It does NOT give the delivered field a home, because no
+    metadata schema can: the delivered field is either measured or computed, and the schema records which
+    without supplying either.'
+  notes: adoption is early. ds008037 already declares the NIBS-BIDS keyword while deliberately omitting
+    the NIBS folder and folding the metadata into EEG sidecars -- so the keyword's presence does not imply
+    the structure's presence
+  band_hz:
+  - null
+  - null
+  temporal_support: event-level synchronisation between the stimulation train and the recorded streams,
+    which is the clock relation that TMS-EEG and TMS-fMRI datasets almost universally leave implicit
+  spatial_support: a metadata schema for where the stimulator was and what it was pointed at -- coil or
+    electrode geometry and spatial targeting as FIRST-CLASS FIELDS rather than as a sentence in a methods
+    section
+absent:
+- measurements
+- delivered_field
+- peripheral_costimulation_measurement
+use:
+- calibrate
+forbidden:
+- nibs-bids/* -> any state channel (a schema is not evidence)
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: nibs-bids
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

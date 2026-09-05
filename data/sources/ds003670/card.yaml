@@ -1,0 +1,151 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds003670
+title: 'ds003670 -- transcranial electrical stimulation dataset: 19 participants, 62 sessions, nine montages'
+provider: OpenNeuro ds003670 / NEMAR on003670
+citation: Gebodh N, Esmaeilpour Z, Datta A, Bikson M. Dataset of concurrent EEG, ECG, and behavior with
+  multiple doses of transcranial electrical stimulation. Scientific Data (2021). OpenNeuro ds003670 v1.1.0,
+  DOI 10.18112/openneuro.ds003670.v1.1.0; raw form on Zenodo, DOI 10.5281/zenodo.3837212.
+urls:
+- https://openneuro.org/datasets/ds003670
+- https://nemar.org/dataset/on003670
+- https://zenodo.org/record/4456079
+- https://github.com/ngebodh/GX_tES_EEG_Physio_Behavior
+access: held
+licence:
+  name: CC0 (verbatim string in dataset_description.json)
+  redistribution: permitted
+  commercial: permitted
+  notes: 'Read UNRESOLVED until 2026-08-18, and it was resolved by fetching the deposit: dataset_description.json
+    says ''License'': ''CC0''. Rule 7 is why the unresolved value never gated anything -- it governs distribution
+    only, and reading, loading, fitting and training were never in question. What it did gate is release,
+    and that is now open.'
+binding: unbound
+population:
+  n: 19
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: '19 participants, 62 sessions, NINE MONTAGES and THREE WAVEFORMS. The montage sweep is what makes
+    it a field-calibration source rather than a single-condition experiment: the same head, many current
+    paths.'
+frames:
+- eeg_cap
+- scalp
+- head
+- subject_native
+- MNI152
+streams:
+- name: montage_sweep
+  kind: measured
+  via: null
+  systematic_bias: '§51.4 item 28: useful for EXTERNAL ELECTRIC-FIELD AND MONTAGE-RESPONSE CALIBRATION.
+    Nine montages in the same participants is a designed sweep over current paths, which constrains a
+    head conduction model far more than any single montage can -- the same forward problem that governs
+    EEG, driven rather than observed. That reciprocity is the reason this dataset matters beyond stimulation
+    research.'
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at kHz; stimulation over minutes at DC or at a specified frequency; three waveform
+    types
+  spatial_support: scalp electrode pairs or arrays; the delivered quantity is a CURRENT DENSITY FIELD
+    throughout the head, determined by electrode geometry and tissue conductivity -- not a spot under
+    an electrode
+- name: eeg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - the stimulation artifact is orders of magnitude larger than the EEG and, for alternating current,
+    sits exactly in the band of interest
+  - cutaneous sensation, which is itself a stimulus with its own evoked response
+  systematic_bias: EEG recorded during tES is dominated by the stimulation artifact; what survives removal
+    is a modelling question, not a measurement.
+  notes: artifact removal at the stimulation frequency also removes any genuine entrainment at that frequency,
+    which is usually the effect being sought
+  band_hz:
+  - null
+  - null
+- name: impedance_records
+  kind: measured
+  via: null
+  systematic_bias: §52.13 lists electrode impedance and contact models explicitly; measured impedance
+    constrains the contact term that otherwise has to be assumed
+  band_hz:
+  - null
+  - null
+- name: ecg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eog
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulation_parameters
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: montage_definitions
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- t1w
+- delivered_field_measurement
+- sham_arm
+- individual_conductivity
+- intracranial_recording
+- measured_electrode_positions
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: Transcranial electrical stimulation delivers a current-density field throughout the head,
+    determined by electrode geometry, contact area and the tissue conductivities between them -- not a
+    spot under an electrode. Without the device product a montage is a pair of labels and the delivered
+    dose is unknown.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- fit
+forbidden:
+- ds003670/* -> delivered-field claims without an explicit head model
+- ds003670/eeg -> entrainment claims at the stimulation frequency without an artifact model
+split:
+  group_by:
+  - participant
+  - session
+  notes: montage is the within-participant design variable and must not be split across
+provenance:
+  imported_from: win-registry
+  card: ds003670
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,66 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: simvascular
+title: SimVascular -- image-based cardiovascular modelling and blood-flow simulation
+provider: SimVascular / Stanford and Berkeley
+citation: 'Updegrove et al., SimVascular: An Open Source Pipeline for Cardiovascular Simulation. Annals
+  of Biomedical Engineering 2017.'
+urls:
+- https://simvascular.github.io/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- mesh_native
+- subject_native
+streams:
+- name: blood_flow_simulation
+  kind: measured
+  via: null
+  systematic_bias: Solves the flow equations under IMPOSED boundary conditions -- inlet waveform and outlet
+    impedances -- which are the modelling assumption and are rarely measured in the individual. The solution
+    is exact for the problem posed; whether the problem is the person's is a separate question.
+  notes: rigid-wall versus deformable-wall and Newtonian versus non-Newtonian blood are model choices
+    with different answers
+  band_hz:
+  - null
+  - null
+  temporal_support: cardiac-cycle-resolved simulation time steps -- a SIMULATED clock
+  spatial_support: patient-specific vessel models from imaging, meshed and solved for blood flow with
+    physiological boundary conditions
+- name: model_construction_pipeline
+  kind: measured
+  via: null
+  systematic_bias: the image-to-model pipeline is a worked example of what §56.3 asks B-WIN to build,
+    and B-WIN implements it rather than calling it
+  band_hz:
+  - null
+  - null
+absent:
+- measured_flow
+- boundary_condition_measurements
+- microvasculature
+requires:
+- geometry: vascular-products
+  severity: blocking
+  without_it: The solver's domain is a vessel lumen. Its geometry is always derived from a segmentation
+    and never measured, so running this as an offline oracle requires the vascular product to supply the
+    lumen -- and to carry the segmentation's uncertainty into the flow result rather than dropping it.
+use:
+- surrogate
+forbidden:
+- simvascular/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: simvascular
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

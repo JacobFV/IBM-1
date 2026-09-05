@@ -1,0 +1,91 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: objaverse
+title: Objaverse and Objaverse-XL -- large-scale 3D object collections
+provider: Allen Institute for AI, with collaborators; objects sourced from Sketchfab and other repositories
+citation: 'Deitke et al., Objaverse: a universe of annotated 3D objects. CVPR 2023; Deitke et al., Objaverse-XL:
+  a universe of 10M+ 3D objects. NeurIPS 2023.'
+urls:
+- https://objaverse.allenai.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: UNRESOLVED AND PER OBJECT. The collection aggregates third-party assets whose individual licences
+    differ -- several Creative Commons variants including non-commercial and no-derivatives ones -- and
+    the per-object licence field travels with each asset. A collection-level licence would be a fiction,
+    and any artifact must compute its licence from the objects that actually contributed to it. This is
+    precisely the per-artifact licence lineage rule with the granularity made unavoidable.
+binding: unbound
+population:
+  n: null
+frames:
+- object_local
+streams:
+- name: object_geometry_and_appearance
+  kind: imposed
+  via: null
+  systematic_bias: 'Object diversity at a scale nothing else reaches, and it is a diversity of what artists
+    choose to model: over-represented in vehicles, weapons, furniture and characters, and with a stylistic
+    distribution that is not the world''s. Without physical scale, an object rendered to a retinal coordinate
+    has no defined angular size until a scale is assumed -- and an assumed scale is a modelling choice
+    that must be recorded as one.'
+  notes: artist-authored geometry has clean topology and idealised materials that real surfaces do not
+  band_hz:
+  - null
+  - null
+  temporal_support: a subset carries rigged animation; the bulk is static
+  spatial_support: textured triangle meshes of individual objects, with metadata and tags. Objects are
+    ARTIST-AUTHORED, so the geometry is a model of a thing and not a scan of one
+- name: meshes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: textures
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: materials
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: metadata_tags
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: animations_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- physical_scale
+- scene_context
+- real_photometry
+- human_observer
+- neural_data
+use:
+- fit
+forbidden:
+- objaverse/* -> any brain state channel
+- objaverse/* -> an artifact, before the contributing objects' individual licences are resolved
+- objaverse/* -> an angular-size claim without a recorded scale assumption
+split:
+  group_by:
+  - stimulus
+  notes: The object is the grouping level; near-duplicate assets are common and a random split puts copies
+    of the same model on both sides.
+provenance:
+  imported_from: win-registry
+  card: objaverse
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,57 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fsl-probtrackx
+title: FSL ProbtrackX -- probabilistic tractography
+provider: FMRIB Oxford
+citation: 'Behrens et al., Probabilistic diffusion tractography with multiple fibre orientations: What
+  can we gain? NeuroImage 2007.'
+urls:
+- https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FDT
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- MNI152
+streams:
+- name: probabilistic_streamline_sampling
+  kind: measured
+  via: null
+  systematic_bias: 'Samples from a posterior over fibre orientation at each voxel, so its output is a
+    DISTRIBUTION rather than a set of curves. The sample count is routinely reported as if it were a connection
+    strength, which it is not: it is a function of distance, branching and seed size as much as of connectivity.'
+  notes: path probability decays with distance by construction; comparing counts between targets at different
+    distances compares geometry, not connectivity
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: voxel-wise distributions of connection probability from a seed, in subject space
+- name: crossing_fibre_model
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- ground_truth
+- distance_correction
+use:
+- surrogate
+forbidden:
+- fsl-probtrackx/connectivity_distribution -> connection-strength claims
+- fsl-probtrackx/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: fsl-probtrackx
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,79 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: k-wave
+title: k-Wave -- acoustic and ultrasound simulation toolbox
+provider: University College London and Brno University of Technology
+citation: 'Treeby and Cox, k-Wave: MATLAB toolbox for the simulation and reconstruction of photoacoustic
+  wave fields. Journal of Biomedical Optics 2010.'
+urls:
+- http://www.k-wave.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- simulation_grid
+- subject_native
+- transducer_frame
+streams:
+- name: pseudospectral_acoustic_simulation
+  kind: measured
+  via: null
+  systematic_bias: 'THE reference transcranial acoustic solver. §1 applies with full force: the acoustic
+    propagation matters during a tFUS query, so B-WIN implements it and validates against k-Wave rather
+    than calling it. Grid resolution, absorbing boundary treatment and the nonlinearity model all change
+    the predicted focal pressure, and a converged solution is a claim to demonstrate rather than assume
+    (see kwave-reference-problems).'
+  notes: the skull is porous and heterogeneous below the grid scale; the effective medium is an approximation
+    whose error is largest exactly where the aberration is
+  band_hz:
+  - null
+  - null
+  temporal_support: explicit time stepping at a CFL-limited timestep; the grid spacing must resolve the
+    shortest wavelength, which is what makes transcranial simulation expensive
+  spatial_support: a regular grid over a heterogeneous acoustic medium; the skull is represented as spatially
+    varying speed of sound, density and absorption derived from CT
+- name: thermal_module
+  kind: measured
+  via: null
+  systematic_bias: the bioheat solution gives temperature rise and thermal dose, which is a SAFETY quantity
+    as well as a physical one -- and safety limits are why the delivered-field question in §52.13 is not
+    academic
+  band_hz:
+  - null
+  - null
+- name: photoacoustic_reconstruction
+  kind: measured
+  via: null
+  systematic_bias: the toolbox's original purpose; not directly relevant to B-WIN
+  band_hz:
+  - null
+  - null
+absent:
+- measured_in_vivo_fields
+- skull_microstructure
+- individual_acoustic_properties
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The acoustic focus is a millimetre-scale volume whose position depends on transducer element
+    geometry, the drive phase and amplitude mapping, and the pose of the transducer against the skull.
+    Without the device product the target is a nominal coordinate and the intended and delivered foci
+    are not distinguishable.
+use:
+- surrogate
+forbidden:
+- k-wave/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: k-wave
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

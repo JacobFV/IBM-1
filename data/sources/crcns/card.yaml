@@ -1,0 +1,55 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: crcns
+title: CRCNS.org -- Collaborative Research in Computational Neuroscience data sharing
+provider: Redwood Center for Theoretical Neuroscience, UC Berkeley (Teeters and Sommer); NSF-funded
+citation: Teeters et al., Data sharing for computational neuroscience. Neuroinformatics, 2008. doi:10.1007/s12021-008-9009-y.
+urls:
+- https://crcns.org
+access: reference
+licence:
+  name: no SPDX licence; a scientific-use-only grant with redistribution prohibited
+  redistribution: prohibited
+  commercial: unresolved
+  notes: 'Verbatim: data is made available only for scientific purposes, and redistribution of the data
+    is not permitted except to direct collaborators working with you on the data or to students in your
+    classroom. A free account is required to download, and the downloader''s name and email may be shared
+    with the data contributors. REDISTRIBUTION PROHIBITED is the operative fact: nothing derived from
+    CRCNS bytes can ship those bytes.'
+binding: unbound
+population:
+  n: null
+frames:
+- per_experiment
+- electrode_array_geometry
+streams:
+- name: single_unit_and_lfp_recordings
+  kind: measured
+  via: null
+  systematic_bias: This is where the spike-resolution evidence lives, including the Gallant lab human
+    fMRI sets and a large body of animal electrophysiology. Spikes and the mesoscopic state B-WIN models
+    are separated by a population-averaging step that is a modelling assumption, not a measurement.
+  band_hz:
+  - null
+  - null
+  temporal_support: spike-resolution clocks (tens of kHz) alongside LFP and behavioural clocks in the
+    same experiments; some datasets are distributed in NWB, where the per-series rates survive
+  spatial_support: electrophysiology across sensory and memory systems -- visual, auditory, prefrontal,
+    hippocampus, thalamus, retina, LGN, brainstem, cerebellum, cochlea -- plus eye movements, across 27
+    dataset categories and many species
+absent:
+- human_data_for_most_sets
+- whole_brain_coverage
+- redistribution_rights
+use:
+- prior
+forbidden:
+- crcns/* -> redistribution of any CRCNS bytes
+- crcns/* -> a human state channel from an animal recording without an explicit mapping
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: crcns
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,71 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: von-economo
+title: von Economo and Koskinas cytoarchitectonic atlas
+provider: von Economo and Koskinas, digitised by later authors
+citation: von Economo and Koskinas, Die Cytoarchitektonik der Hirnrinde des erwachsenen Menschen. 1925;
+  digital versions by Scholtens et al. 2018.
+urls:
+- https://github.com/lianneh/von-economo-atlas
+access: held
+licence:
+  name: CC-BY-NC-SA-4.0
+  redistribution: unresolved
+  commercial: prohibited
+  notes: 'Unresolved. §49.2 records that the predecessor''s attribution generator tracked each source''s
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it. RESOLVED FROM A LICENCE FILE WE HOLD, not from a page:
+    data/assets/cache/netneurotools/atl-voneconomo_koskinas/LICENSE states ''This work is licensed under
+    the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License''. That is the
+    copy of this atlas in this store, shipped beside the data it licenses. NON-COMMERCIAL and SHARE-ALIKE;
+    attribution required; no DUA, fetched anonymously as part of the netneurotools cache. It reaches us
+    as a parent of netneurotools, which declares the edge.'
+binding: unbound
+population:
+  n: null
+frames:
+- fsaverage
+- MNI152
+streams:
+- name: cytoarchitectonic_types
+  kind: measured
+  via: null
+  systematic_bias: A century-old atlas, digitised by projecting hand-drawn boundaries onto a modern template.
+    The laminar thickness and cell-density TABLES are the durable part; the spatial projection is a reconstruction
+    with large and unquantified error.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: a digitised transcription of a 1925 histological atlas onto a modern surface; the ORIGINAL
+    measurements are laminar thicknesses and cell densities from post-mortem sections, and the surface
+    projection is a later reconstruction
+- name: laminar_quantitative_tables
+  kind: measured
+  via: null
+  systematic_bias: quantitative laminar measurements from the original work are usable as priors over
+    mesoscopic composition and are exactly the kind of literature-derived quantity §56.7 says to reconstruct
+    explicitly rather than ignore
+  band_hz:
+  - null
+  - null
+absent:
+- modern_measurement
+- spatial_precision
+- population
+- uncertainty
+use:
+- calibrate
+- prior
+forbidden:
+- von-economo/* -> precise spatial claims
+- von-economo/cytoarchitectonic_types -> hard support boundaries
+- von-economo/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: von-economo
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

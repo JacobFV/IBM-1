@@ -1,0 +1,63 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fastsurfer
+title: FastSurfer -- deep-learning cortical surface pipeline
+provider: German Center for Neurodegenerative Diseases and Harvard
+citation: Henschel et al., FastSurfer -- A fast and accurate deep learning based neuroimaging pipeline.
+  NeuroImage 2020.
+urls:
+- https://deep-mi.org/research/fastsurfer/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- subject_native_surface
+- fsaverage
+streams:
+- name: learned_segmentation_and_surfaces
+  kind: measured
+  via: null
+  systematic_bias: TRAINED TO REPRODUCE FREESURFER'S OUTPUT, which means it inherits FreeSurfer's biases
+    by construction AND may fail differently on anatomy unlike its training distribution. Agreement with
+    FreeSurfer is therefore not independent validation -- it is the training objective. Where they DISAGREE
+    is the informative case, because at least one is wrong and the disagreement is measurable.
+  notes: a network trained on one distribution of anatomy and scanners degrades silently outside it, whereas
+    FreeSurfer's classical pipeline fails loudly
+  band_hz:
+  - null
+  - null
+  temporal_support: static anatomy
+  spatial_support: the same surface and segmentation products as FreeSurfer, produced by a network in
+    minutes rather than hours
+- name: throughput
+  kind: measured
+  via: null
+  systematic_bias: speed makes it feasible to run BOTH pipelines on every subject, which turns a choice
+    into a measurement
+  band_hz:
+  - null
+  - null
+absent:
+- independent_ground_truth
+- per_vertex_uncertainty
+- distribution_shift_detection
+use:
+- surrogate
+forbidden:
+- fastsurfer/* -> independent validation of FreeSurfer
+- fastsurfer/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: fastsurfer
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

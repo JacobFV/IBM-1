@@ -1,0 +1,87 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: gazebase
+title: GazeBase -- large longitudinal eye-movement database
+provider: Texas State University
+citation: Griffith et al., GazeBase, a large-scale, multi-stimulus, longitudinal eye movement dataset.
+  Scientific Data 2021.
+urls:
+- https://figshare.com/articles/dataset/GazeBase_Data_Repository/12912257
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the Figshare deposit terms.
+binding: unbound
+population:
+  n: 322
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 322 participants over nine rounds across three years -- the longitudinal axis is what distinguishes
+    it. Oculomotor properties are person-stable, which is why this doubles as an identifiability risk.
+frames:
+- eye
+- display
+- head_restraint
+streams:
+- name: gaze_1000hz
+  kind: imposed
+  via: null
+  systematic_bias: 'head-restrained laboratory recording: the oculomotor dynamics are clean precisely
+    because the head is not free, so these statistics do NOT transfer to free viewing'
+  band_hz:
+  - null
+  - null
+  temporal_support: 1000 Hz eye tracking; seven task types including random saccade, reading, video viewing
+    and fixation
+  spatial_support: high-grade tower-mounted eye tracker with a bite bar in some rounds; monocular
+- name: calibration_records
+  kind: measured
+  via: null
+  systematic_bias: explicit per-session calibration data is what makes this a calibration source rather
+    than only a behavioural one
+  band_hz:
+  - null
+  - null
+- name: longitudinal_stability
+  kind: imposed
+  via: null
+  systematic_bias: oculomotor signatures are person-identifying across years; treat participant identity
+    as sensitive
+  band_hz:
+  - null
+  - null
+- name: task_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: participant_ids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- pupil_in_all_rounds
+- free_head_movement
+- natural_scenes_in_most_tasks
+use:
+- calibrate
+- fit
+forbidden:
+- gazebase/* -> any cortical state directly
+- gazebase/* -> free-viewing oculomotor priors
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: gazebase
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

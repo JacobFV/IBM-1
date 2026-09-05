@@ -1,0 +1,77 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ismrm2015-submissions
+title: 'ISMRM 2015 Tractography Challenge: the 96 submitted tractograms'
+provider: Sherbrooke Connectivity Imaging Lab (SCIL), via Zenodo record 840086
+citation: Tractography Challenge ISMRM 2015 Submissions, Zenodo 840086. Maier-Hein et al. 2017, Nature
+  Communications, 'The challenge of mapping the human connectome based on diffusion tractography'.
+urls:
+- https://zenodo.org/records/840086
+- https://tractometer.org/ismrm2015/submission_results
+access: held
+licence:
+  name: CC-BY-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'Stated by the Zenodo record itself. NOTE THAT THIS DIFFERS FROM THE CHALLENGE DATA it was computed
+    from: ismrm2015-tractography-challenge is served from scil.usherbrooke.ca with no licence statement
+    anywhere and is recorded unresolved. Two artifacts of one challenge under two licences is why these
+    are two cards rather than one -- licence lineage is per artifact and computed from contributing sources,
+    so a product derived from both takes the stricter reading of each. DUA: none. Recorded as dua_required
+    false on the basis of HOW THIS WAS ACTUALLY OBTAINED -- it is held in this store, fetched anonymously
+    over plain HTTP by a script in scripts/ that sends no credential and accepts no terms, from a repository
+    that serves it without an access request. That is evidence about the acquisition rather than an opinion
+    about the deposit''s policy. It says nothing about the LICENCE terms, which are recorded separately
+    and still govern distribution; a non-commercial work with no DUA is an ordinary combination.'
+binding: unbound
+population:
+  n: 0
+  hierarchy:
+  - pipeline
+  - run
+  notes: 'NO PARTICIPANTS. There is no subject: every tractogram here was fitted to one simulated acquisition.
+    The hierarchy is 20 teams and 96 submissions, and submissions from one team are NOT independent of
+    each other -- they are usually one algorithm at different parameters, which is a different question
+    from two algorithms.'
+frames:
+- ismrm2015-phantom
+streams:
+- name: submitted_tractograms
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: streamlines in the ISMRM 2015 phantom frame, 90 x 108 x 90 at 2 mm
+- name: cross_pipeline_disagreement
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: tractography
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- algorithm_parameters
+- software_version
+- seeding_scheme
+- response_functions
+- coordinate_convention_per_submission
+use:
+- control
+- evaluate
+split:
+  group_by:
+  - pipeline
+  notes: GROUP BY TEAM, NOT BY SUBMISSION. The 96 submissions come from 20 teams and several submissions
+    from one team are usually one algorithm at different settings. Treating them as 96 independent pipelines
+    would overstate the sample by nearly five times.
+provenance:
+  imported_from: win-registry
+  card: ismrm2015-submissions
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

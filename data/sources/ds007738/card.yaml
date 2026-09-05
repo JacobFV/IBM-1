@@ -1,0 +1,123 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds007738
+title: ds007738 -- whole-head fNIRS with eye tracking during a cocktail-party task
+provider: OpenNeuro ds007738
+citation: Whole-head cocktail-party fNIRS with eye tracking (named in PROMPT.md §52.4 and §52.5).
+urls:
+- https://openneuro.org/datasets/ds007738
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: n unresolved. WHOLE-HEAD fNIRS coverage rather than a regional montage is the distinguishing
+    feature.
+frames:
+- nirs_optode_array
+- head
+- eye
+- display
+- auditory_space_spherical
+streams:
+- name: fnirs_whole_head
+  kind: measured
+  via: null
+  observation_chain: neural activity -> haemodynamics -> HbO/HbR concentration change -> wavelength-dependent
+    attenuation along a curved, partial-volume-weighted photon path through scalp, skull, CSF and cortex
+    -> source-detector channel intensity -> modified Beer-Lambert concentration estimate
+  confounds:
+  - extracerebral scalp haemodynamics, which dominate the short channels and leak into long ones
+  - systemic blood pressure, heart rate and Mayer waves
+  - optode-scalp coupling and hair-induced attenuation
+  - differential pathlength factor assumed rather than measured
+  systematic_bias: Whole-head coverage makes the extracerebral component estimable across the scalp rather
+    than assumed constant.
+  notes: channel sensitivity depends on individual head geometry and hair; without a photon-transport
+    model over the individual head, channel-to-cortex mapping is nominal
+  band_hz:
+  - null
+  - null
+  temporal_support: fNIRS at ~10 Hz; eye tracker at its own rate; continuous multi-talker audio
+  spatial_support: whole-head optode array; each channel's sensitivity is a banana-shaped volume between
+    one source and one detector, not a point
+- name: attention_instruction
+  kind: imposed
+  via: null
+  systematic_bias: 'SAME acoustic input, different attended talker: an interaction-strength manipulation
+    in the §26 sense on the auditory side, exactly parallel to BBBD''s visual attention arm'
+  band_hz:
+  - null
+  - null
+- name: eye_tracking
+  kind: imposed
+  via: null
+  systematic_bias: gaze during an auditory task indexes covert attention only indirectly
+  band_hz:
+  - null
+  - null
+- name: multi_talker_audio
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: optode_montage
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- fmri
+- individual_anatomy
+- short_separation_channels_unresolved
+requires:
+- geometry: device-geometry
+  for_streams:
+  - fnirs_whole_head
+  severity: blocking
+  without_it: An fNIRS channel's support is the curved photon path between one source optode and one detector,
+    not a point. Without optode geometry the channel has no spatial support at all and its sensitivity
+    profile cannot be formed.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - eye_tracking
+  severity: blocking
+  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
+    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
+    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+use:
+- fit
+forbidden:
+- ds007738/fnirs -> cortical state without a photon-transport model
+- ds007738/* -> millisecond dynamics
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: ds007738
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

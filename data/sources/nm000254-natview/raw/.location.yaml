@@ -1,0 +1,5 @@
+# where the bytes for `nm000254-natview` actually live.  never the bytes themselves.
+source_url: "https://www.nature.com/articles/s41597-023-02458-8"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

@@ -1,0 +1,5 @@
+# where the bytes for `wav2vec-bert-2.0` actually live.  never the bytes themselves.
+source_url: "https://huggingface.co/facebook/w2v-bert-2.0"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

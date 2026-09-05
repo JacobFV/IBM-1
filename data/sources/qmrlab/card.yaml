@@ -1,0 +1,64 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: qmrlab
+title: qMRLab -- quantitative MRI analysis and simulation toolbox
+provider: NeuroPoly / Polytechnique Montreal
+citation: 'Karakuzu et al., qMRLab: Quantitative MRI analysis, under one umbrella. Journal of Open Source
+  Software 2020.'
+urls:
+- https://qmrlab.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+streams:
+- name: quantitative_fitting_models
+  kind: measured
+  via: null
+  systematic_bias: '§18''s requirement that quantitative MRI observations be treated separately needs
+    an implementation of the signal models, and qMRLab supplies many of them side by side. Its SIMULATION
+    side is the more valuable half: it can show how a parameter estimate moves when the assumed model
+    is wrong, which is a model-discrepancy measurement rather than a fit.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series; operates on multi-contrast acquisitions
+  spatial_support: fits quantitative parameters under a chosen signal model, and SIMULATES the same models
+    to study their sensitivity and bias
+- name: protocol_sensitivity_simulation
+  kind: measured
+  via: null
+  systematic_bias: simulating a protocol's sensitivity before acquiring it is how a qMRI measurement gets
+    an uncertainty rather than a value
+  band_hz:
+  - null
+  - null
+absent:
+- ground_truth
+- traceable_calibration
+requires:
+- geometry: mr-acquisition-objects
+  severity: blocking
+  without_it: This consumes raw acquisition data and emits images or parameter maps. Run as an offline
+    oracle it needs the acquisition object as its input -- trajectory, coil sensitivities, sequence timing
+    -- and without it there is nothing for the reconstruction to be a reconstruction OF.
+use:
+- calibrate
+- surrogate
+forbidden:
+- qmrlab/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: qmrlab
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

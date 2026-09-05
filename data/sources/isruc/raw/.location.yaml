@@ -1,0 +1,5 @@
+# where the bytes for `isruc` actually live.  never the bytes themselves.
+source_url: "https://sleeptight.isr.uc.pt/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

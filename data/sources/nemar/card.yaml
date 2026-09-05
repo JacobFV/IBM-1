@@ -1,0 +1,61 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nemar
+title: NEMAR -- NeuroElectroMagnetic data Archive and tools Resource
+provider: UCSD SCCN / NEMAR
+citation: 'Delorme et al., NEMAR: an open access data, tools and compute resource operating on neuroelectromagnetic
+  data. Database 2022.'
+urls:
+- https://nemar.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Per-dataset terms inherited from OpenNeuro; the portal itself is not the licensor.
+binding: unbound
+population:
+  n: null
+frames:
+- none
+streams:
+- name: bids_hed_metadata
+  kind: measured
+  via: null
+  systematic_bias: NEMAR is where NM000254 and NM000253 are exposed, and the §50.1 correction (ds003768
+    is NOT the naturalistic EEG-fMRI dataset) was found by reading NEMAR's record rather than the old
+    card. A discovery connector's real value is catching that kind of error
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: an archive view over human EEG, MEG, iEEG and EMG BIDS datasets
+- name: quality_views
+  kind: measured
+  via: null
+  systematic_bias: automated quality figures are a triage aid, not a measurement of data quality
+  band_hz:
+  - null
+  - null
+- name: hed_event_semantics
+  kind: measured
+  via: null
+  systematic_bias: HED gives event annotations a controlled vocabulary, which is what makes cross-dataset
+    event comparison possible at all
+  band_hz:
+  - null
+  - null
+absent:
+- licence_resolution
+- file_level_inventory
+use:
+- prior
+forbidden:
+- nemar/* -> any evidence role for the datasets it indexes
+split:
+  group_by:
+  - site
+provenance:
+  imported_from: win-registry
+  card: nemar
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,104 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: openaps
+title: OpenAPS Data Commons -- continuous glucose and insulin from closed-loop users
+provider: OpenAPS community / Open Humans
+citation: Lewis et al., Real-world use of open source artificial pancreas systems. Journal of Diabetes
+  Science and Technology 2016.
+urls:
+- https://openaps.org/outcomes/data-commons/
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Donated through Open Humans under per-participant consent; per-record terms. Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - device
+  - session
+  notes: 'n unresolved and self-selected. People with type 1 diabetes running open-source closed-loop
+    insulin delivery, donating their own data. THE LOOP IS CLOSED: insulin dosing is a function of measured
+    glucose, so the two streams are not independent.'
+frames:
+- subcutaneous_tissue
+- pump_device
+- participant_body
+streams:
+- name: continuous_glucose
+  kind: measured
+  via: null
+  observation_chain: interstitial fluid glucose -> enzymatic electrochemical sensor -> current -> calibrated
+    glucose estimate. Interstitial glucose LAGS blood glucose by several minutes and the lag grows when
+    glucose is changing fast
+  confounds:
+  - sensor calibration drift over its wear period
+  - compression artifact when the wearer lies on the sensor -- a well-known, reproducible false low
+  - the interstitial-to-blood lag, which is not constant
+  - self-reported carbohydrate entries, which are estimates
+  systematic_bias: Glucose is the brain's principal substrate. A months-long continuous record of it is
+    the slow metabolic boundary condition §16 and §52.15 are pointing at, and nothing else supplies it
+    at this duration.
+  notes: the closed loop means glucose and insulin are mutually determined; neither can be treated as
+    an exogenous input to the other
+  band_hz:
+  - null
+  - null
+  temporal_support: continuous glucose at 5-minute resolution over months to YEARS per person -- among
+    the longest continuous physiological records in the registry, on a genuinely slow metabolic clock
+  spatial_support: a subcutaneous continuous glucose sensor and an insulin pump on one person; interstitial
+    glucose, not blood glucose, with a physiological lag
+- name: closed_loop_control
+  kind: imposed
+  via: null
+  systematic_bias: an ALGORITHM is in the loop, and different users run different algorithms with different
+    settings; the observed dynamics are of the person-plus-controller system
+  band_hz:
+  - null
+  - null
+- name: insulin_delivery
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: carbohydrate_entries
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: algorithm_state
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: device_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- healthy_population
+- blood_glucose_reference
+- representative_sampling
+use:
+- fit
+forbidden:
+- openaps/* -> cortical state without an explicit carded interaction
+- openaps/* -> healthy metabolic priors
+- openaps/continuous_glucose -> blood glucose without a lag model
+split:
+  group_by:
+  - participant
+  - device
+provenance:
+  imported_from: win-registry
+  card: openaps
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

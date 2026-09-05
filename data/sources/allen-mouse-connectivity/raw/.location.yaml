@@ -1,0 +1,5 @@
+# where the bytes for `allen-mouse-connectivity` actually live.  never the bytes themselves.
+source_url: "https://connectivity.brain-map.org/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

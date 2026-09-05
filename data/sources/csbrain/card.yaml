@@ -1,0 +1,93 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: csbrain
+title: CSBrain -- cross-scale EEG representation model
+provider: Shanghai Artificial Intelligence Laboratory; Sun Yat-sen University; The Chinese University
+  of Hong Kong; Karlsruher Institut fur Technologie
+citation: 'Zhou, Wu, Ren, Yao, Lu, Peng, Zheng, Song, Ouyang and Gou, CSBrain: A Cross-scale Spatiotemporal
+  Brain Foundation Model for EEG Decoding. arXiv:2506.23075 (2025-06-29).'
+urls:
+- https://arxiv.org/abs/2506.23075
+access: watch
+licence:
+  name: unresolved -- paper is CC-BY-4.0 on arXiv; WEIGHTS licence unread
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. The arXiv paper is CC BY 4.0; that governs the PAPER
+    only. Pretrained on TUEG, whose own data-use agreement may travel with a model trained on it -- unresolved.
+    Rule 7: licence governs distribution only and never gates reading or fitting.'
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+streams:
+- name: cross_scale_representation
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. §53.2: the test is NOT leaderboard accuracy.
+    It is whether a representation survives new montages, devices, subjects, tasks and physically different
+    observation supports WITHOUT SILENTLY LEARNING CHANNEL IDENTITY AS ANATOMY. Release unverified. The
+    multiscale claim is what makes it worth resolving: §53.3 says the required output is NOT one flat
+    embedding but multiscale, spatial, temporal and event-structured state.'
+  band_hz:
+  - null
+  - null
+  temporal_support: 200 Hz -- a DERIVED view. Pretraining resamples TUEG (mostly 256 Hz) to 200 Hz in
+    30-second segments, and every downstream protocol resamples to 200 Hz as well. §33.
+  spatial_support: 'RESOLVED 2026-08-17. Scalp EEG electrodes, grouped into regions by NAME: the method
+    divides electrodes into a set of brain regions ''based on the 10-20 system, where each region comprises
+    spatially adjacent electrodes'', and multi-scale spatial convolutions run within those groups. So
+    the ''anatomically defined brain regions'' are derived from an ELECTRODE NAMING CONVENTION and adjacency
+    is asserted from labels rather than measured from positions. Two consequences: a montage without 10-20
+    names has NO region assignment at all (the grouping is a precondition, not a graceful degradation),
+    and two caps sharing labels get identical regions regardless of where the electrodes sat -- ds008037,
+    held here, carries three distinct coordinate arrays across 109 participants under one declared standard-10-5-cap385
+    cap. This is invariant 2 (no canonical parcellation) violated inside the tokeniser, where nothing
+    downstream can see or swap it.'
+absent:
+- absolute_amplitude
+- periocular_and_reference_channels
+- region_partition_definition
+- weights_licence
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: This model's channel axis is a set of names, not a set of positions -- the channel-identity
+    problem exactly. Its representation can be computed without any geometry, but relating it to a cortical
+    support, or transferring it to a montage it was not trained on, requires the electrode or sensor geometry
+    that the name stands in for.
+  substitute: Channel-name matching, which silently asserts that two electrodes sharing a label sat in
+    the same place on two different heads.
+use:
+- distil
+forbidden:
+- csbrain/* -> observation-role likelihoods
+- csbrain/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: csbrain
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - cross_scale_representation
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

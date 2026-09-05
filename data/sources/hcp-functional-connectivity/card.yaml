@@ -1,0 +1,79 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hcp-functional-connectivity
+title: HCP group and individual resting functional connectivity
+provider: WU-Minn HCP Consortium
+citation: Smith et al., Resting-state fMRI in the Human Connectome Project. NeuroImage 2013.
+urls:
+- https://www.humanconnectome.org/study/hcp-young-adult
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MSMAll_32k_fs_LR
+- grayordinates
+streams:
+- name: dense_connectome
+  kind: measured
+  via: null
+  systematic_bias: A CORRELATION MATRIX OF BOLD TIME SERIES at TR 0.72 s after a specific denoising pipeline.
+    Global-signal handling alone changes the sign of many edges, and the choice is not recoverable from
+    the matrix. Correlation is symmetric, so no direction is available even in principle.
+  notes: the haemodynamic response function differs between regions, so a lag in BOLD correlation is a
+    vascular fact as much as a neural one -- §17's argument applied to connectivity
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: dense grayordinate connectomes and group-ICA components over 1,000+ participants on
+    the fs_LR 32k mesh
+- name: group_ica_components
+  kind: measured
+  via: null
+  systematic_bias: ICA components are a decomposition with a chosen dimensionality; a 'network' at d=15
+    and at d=200 are different objects with the same name
+  band_hz:
+  - null
+  - null
+- name: individual_connectomes
+  kind: measured
+  via: null
+  systematic_bias: individual matrices are more useful than the group average and carry the same denoising
+    dependence
+  band_hz:
+  - null
+  - null
+absent:
+- directionality
+- denoising_provenance_in_the_product
+- electrophysiological_correspondence
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- hcp-functional-connectivity/* -> structural connectivity claims
+- hcp-functional-connectivity/* -> effective connectivity parameters
+- hcp-functional-connectivity/* -> observation-role likelihoods
+- hcp-functional-connectivity/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: hcp-functional-connectivity
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

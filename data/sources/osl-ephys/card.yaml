@@ -1,0 +1,75 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: osl-ephys
+title: OSL-ephys -- OHBA Software Library for electrophysiology
+provider: Oxford Centre for Human Brain Activity
+citation: OSL-ephys / OHBA Software Library.
+urls:
+- https://osl-ephys.readthedocs.io/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- meg_device
+- source_space
+- fsaverage
+- parcel_network
+streams:
+- name: source_leakage_correction
+  kind: measured
+  via: null
+  systematic_bias: 'SOURCE LEAKAGE is the reason MEG source-space connectivity is hard: the inverse operator
+    spreads one source across neighbours, creating spurious zero-lag coupling. Symmetric orthogonalisation
+    removes it AND removes any genuine zero-lag coupling with it, so corrected and uncorrected estimates
+    are wrong in known opposite directions. That is a bounded, statable uncertainty rather than an unknown,
+    which is the best available position (see hcp-meg-maps).'
+  notes: no leakage correction can distinguish true zero-lag synchrony from leakage; the problem is structural
+  band_hz:
+  - null
+  - null
+  temporal_support: the data's native rate; sliding windows for connectivity
+  spatial_support: MEG/EEG preprocessing through to source-space PARCEL time courses, with explicit LEAKAGE
+    CORRECTION -- the step that distinguishes a source-space connectivity estimate from an artifact
+- name: hmm_state_inference
+  kind: measured
+  via: null
+  systematic_bias: hidden Markov models over source-space data infer DISCRETE recurring network states,
+    which is a specific and strong hypothesis about the state space's structure -- a model-class control
+    in §37's sense rather than a discovery
+  band_hz:
+  - null
+  - null
+absent:
+- physical_leakage_free_estimation
+- individual_conductivities
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- surrogate
+forbidden:
+- osl-ephys/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: osl-ephys
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

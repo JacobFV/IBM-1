@@ -1,0 +1,143 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hbcd
+title: HEALthy Brain and Child Development Study (HBCD)
+provider: NIH HBCD Consortium / NIMH Data Archive
+citation: Volkow et al., The HEALthy Brain and Child Development Study. Developmental Cognitive Neuroscience
+  2021.
+urls:
+- https://hbcdstudy.org/
+access: restricted
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: NDA Data Use Certification; infant participants.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: 'n unresolved -- releases are ongoing. Infant MRI is a different physical regime: tissue contrast
+    inverts over the first year.'
+frames:
+- scanner
+- subject_native
+- fsaverage
+- MNI152
+- eeg_cap
+- site_specific_scanner
+streams:
+- name: t1w
+  kind: measured
+  via: null
+  observation_chain: tissue proton density and T1 -> sequence-specific contrast -> k-space acquisition
+    -> reconstruction -> voxel intensity; intensity is not a tissue parameter until an explicit relaxometry
+    model is applied
+  confounds:
+  - B1+ transmit inhomogeneity
+  - B0 off-resonance
+  - the fitted signal model's own misspecification
+  - motion between the volumes that enter one fit
+  - myelination-driven contrast inversion over the first year, which every adult segmentation tool gets
+    wrong
+  systematic_bias: Adult tissue-segmentation priors are actively wrong here.
+  band_hz:
+  - null
+  - null
+  temporal_support: unresolved -- protocol is age-banded and still releasing
+  spatial_support: infant-optimised structural, diffusion and BOLD; multi-site
+- name: eeg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - fontanelle and unfused skull sutures make adult skull conductivity assumptions invalid
+  systematic_bias: Infant skull conductivity differs by roughly an order of magnitude from adult; a forward
+    model using adult conductivity is not approximately right, it is wrong.
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: biospecimens
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- meg
+- ieeg
+- pet
+- angiography
+- intervention
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- fit
+- prior
+forbidden:
+- hbcd/* -> adult population priors
+- hbcd/eeg -> forward models using adult skull conductivity
+split:
+  group_by:
+  - participant
+  - site
+  - session
+provenance:
+  imported_from: win-registry
+  card: hbcd
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

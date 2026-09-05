@@ -1,0 +1,89 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: multimodal-audiovisual-models
+title: Multimodal audiovisual model family
+provider: multiple -- audiovisual contrastive and fusion models
+citation: PROMPT.md §53.3, 'multimodal audiovisual models'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- video_frame_grid
+- audio_waveform
+- joint_embedding_space
+streams:
+- name: joint_audiovisual_representation
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. §30''s finding is the specific hazard: A WEAKLY
+    WEIGHTED MODALITY DIES IN A SHARED TRUNK. Run 4 of the predecessor programme demonstrated strong gradients
+    through a shared trunk destroying a weak modality''s representation entirely WHILE THE LOSS WENT DOWN.
+    A joint audiovisual embedding is a shared trunk by construction, so the ablation §53.1 asks for is
+    not optional here -- it is the only way to find out whether both modalities are actually present in
+    the representation.'
+  notes: cross-modal alignment learns the correlations between modalities, which is not the same as representing
+    each faithfully
+  band_hz:
+  - null
+  - null
+  temporal_support: the two modalities' native rates are typically resampled to a common grid before fusion
+    -- which is the §33 objection in miniature and is where the temporal detail goes
+  spatial_support: a SHARED representation space for video and audio, learned by aligning the two
+- name: audiovisual_correspondence
+  kind: measured
+  via: null
+  systematic_bias: the correspondence itself is a real world-structure fact (see vggsound) and is what
+    makes the joint space learnable
+  band_hz:
+  - null
+  - null
+absent:
+- per_modality_fidelity
+- native_clocks
+- uncertainty
+requires:
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: This model's value is that it retains a SPATIAL layout, which is what makes a retinotopic
+    pushforward possible at all. Without the retinal and world geometry there is no map from its patch
+    grid to retinal coordinate, and the features can only be pooled -- which destroys the property they
+    were selected for.
+use:
+- distil
+forbidden:
+- multimodal-audiovisual-models/* -> observation-role likelihoods
+- multimodal-audiovisual-models/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: multimodal-audiovisual-models
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - joint_audiovisual_representation
+    - audiovisual_correspondence
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

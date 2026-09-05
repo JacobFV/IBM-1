@@ -1,0 +1,57 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: gadgetron
+title: Gadgetron -- streaming medical image reconstruction framework
+provider: Gadgetron developers / NIH and collaborators
+citation: 'Hansen and Sorensen, Gadgetron: An open source framework for medical image reconstruction.
+  Magnetic Resonance in Medicine 2013.'
+urls:
+- https://gadgetron.github.io/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- kspace
+- subject_native
+streams:
+- name: streaming_reconstruction_pipeline
+  kind: measured
+  via: null
+  systematic_bias: 'Its architectural interest exceeds its scientific interest: a reconstruction expressed
+    as a chain of typed transformations over a stream, with provenance, is close to what obj-hybrid-execution
+    needs for heterogeneous computation over native-clock streams. Registered as an offline oracle and
+    as a design reference.'
+  band_hz:
+  - null
+  - null
+  temporal_support: 'streaming: readouts are processed as they arrive rather than after the acquisition
+    completes'
+  spatial_support: a streaming reconstruction pipeline consuming MRD and emitting images, deployable next
+    to a scanner
+absent:
+- ground_truth
+- uncertainty
+requires:
+- geometry: mr-acquisition-objects
+  severity: blocking
+  without_it: This consumes raw acquisition data and emits images or parameter maps. Run as an offline
+    oracle it needs the acquisition object as its input -- trajectory, coil sensitivities, sequence timing
+    -- and without it there is nothing for the reconstruction to be a reconstruction OF.
+use:
+- surrogate
+forbidden:
+- gadgetron/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: gadgetron
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

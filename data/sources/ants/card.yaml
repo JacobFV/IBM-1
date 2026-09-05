@@ -1,0 +1,73 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ants
+title: ANTs -- Advanced Normalization Tools
+provider: University of Pennsylvania and collaborators
+citation: Avants et al., A reproducible evaluation of ANTs similarity metric performance in brain image
+  registration. NeuroImage 2011.
+urls:
+- https://github.com/ANTsX/ANTs
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- MNI152
+- template_space
+- arbitrary_image_pair
+streams:
+- name: diffeomorphic_registration
+  kind: measured
+  via: null
+  systematic_bias: 'THE EDGES OF THE COORDINATE-FRAME GRAPH ARE MOSTLY ANTs TRANSFORMS. Diffeomorphism
+    guarantees invertibility and topology preservation, which is what lets §11''s probabilistic mappings
+    between covers be constructed at all. What it does NOT give is a residual: a registration converges
+    to a local optimum of a similarity metric, and the distance between the result and the truth is unknown
+    and unreported.'
+  notes: different similarity metrics and regularisation strengths give different correspondences from
+    identical images, and none is the correct one
+  band_hz:
+  - null
+  - null
+  temporal_support: static; longitudinal and template-building modes process several images jointly
+  spatial_support: 'DEFORMATION FIELDS between images: a dense displacement per voxel, invertible in the
+    diffeomorphic formulation, which is what makes a frame-graph edge composable and reversible'
+- name: template_construction
+  kind: measured
+  via: null
+  systematic_bias: unbiased template building is how a population-average space is made without privileging
+    one subject; the templates in templateflow were built this way
+  band_hz:
+  - null
+  - null
+- name: jacobian_determinants
+  kind: measured
+  via: null
+  systematic_bias: local volume change from the deformation field is used as a morphometric measure and
+    inherits the registration's arbitrariness entirely
+  band_hz:
+  - null
+  - null
+absent:
+- registration_residual
+- correspondence_ground_truth
+use:
+- calibrate
+- surrogate
+forbidden:
+- ants/* -> geometry treated as measured after transformation
+- ants/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: ants
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

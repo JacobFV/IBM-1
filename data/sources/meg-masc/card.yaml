@@ -1,0 +1,128 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: meg-masc
+title: MEG-MASC -- MEG during naturalistic story listening over the MASC corpus
+provider: NYU Abu Dhabi / Meta AI
+citation: 'Gwilliams et al., MEG-MASC: a high-quality magneto-encephalography dataset for evaluating natural
+  speech processing. Scientific Data 2023.'
+urls:
+- https://osf.io/ag3kj/
+- https://osf.io/h2tzn/
+- https://osf.io/u5327/
+- https://osf.io/dr4wy/
+- https://www.nature.com/articles/s41597-023-02752-5
+- https://github.com/kingjr/meg-masc
+access: held
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. The MASC corpus texts and the recorded narration have separate terms.
+binding: unbound
+population:
+  n: 27
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 27 participants, two sessions each, ~2 h of listening per participant over four short stories.
+    Population breadth rather than per-person depth.
+frames:
+- meg_device
+- head_fiducial
+- subject_native
+- story_timeline
+streams:
+- name: meg_208ch
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
+    plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
+    SQUID flux -> sampled channel
+  confounds:
+  - environmental magnetic interference and urban noise
+  - head motion within and between runs
+  - ocular and cardiac fields
+  - muscle artifact at high frequency
+  - SQUID jumps and sensor drift
+  - speech-envelope-locked responses that are not separable from linguistic responses without an explicit
+    acoustic model
+  systematic_bias: The acoustic and the linguistic explanation of the same MEG response are collinear
+    in natural speech; separating them requires modelling the acoustic stage rather than regressing it
+    out.
+  notes: forward model uses individual anatomy where present and a template otherwise; which one applies
+    per participant must be recorded, not averaged over
+  band_hz:
+  - null
+  - null
+  temporal_support: MEG at 1000 Hz; audio at 22.05 kHz; forced-aligned phoneme and word onsets at millisecond
+    resolution -- the PHONEME clock and the MEG clock are the pairing that matters
+  spatial_support: 208-channel axial gradiometer KIT system; head position from marker coils; individual
+    anatomy where available
+- name: word_and_phoneme_alignments
+  kind: imposed
+  via: null
+  systematic_bias: FORCED ALIGNMENT is an algorithm's output, not a measurement of when a phoneme occurred;
+    its error is systematic at word boundaries
+  band_hz:
+  - null
+  - null
+- name: audio_stimuli
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: story_transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: head_position
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- fmri
+- eeg
+- eye_tracking
+- vascular
+- visual_stimulus
+requires:
+- geometry: device-geometry
+  for_streams:
+  - meg_208ch
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- meg-masc/* -> vascular or metabolic state
+- meg-masc/word_and_phoneme_alignments -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  - stimulus
+  - session
+  notes: the same four stories across all participants
+provenance:
+  imported_from: win-registry
+  card: meg-masc
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

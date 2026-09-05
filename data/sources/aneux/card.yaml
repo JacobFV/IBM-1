@@ -1,0 +1,82 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: aneux
+title: Aneux -- intracranial aneurysm imaging and morphology database
+provider: Aneux consortium (Swiss)
+citation: Aneux aneurysm database (named in PROMPT.md §52.10).
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved; clinical imaging with governance requirements.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  notes: n and release contents unresolved; carded so the §52.10 line item is not silently dropped.
+frames:
+- scanner
+- subject_native
+- mesh_native
+streams:
+- name: vessel_geometry
+  kind: measured
+  via: null
+  observation_chain: flow-related enhancement (TOF) or contrast bolus -> vessel-lumen intensity -> reconstruction
+    -> angiographic volume; slow and in-plane flow are systematically under-represented
+  confounds:
+  - clinical selection
+  - unverified acquisition and reconstruction details
+  systematic_bias: Authority low pending verification of the release.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: unresolved -- angiographic volumes and derived morphology, details unverified
+- name: morphological_descriptors
+  kind: measured
+  via: null
+  systematic_bias: derived shape descriptors whose definitions and computation are unresolved
+  band_hz:
+  - null
+  - null
+- name: angiography
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: vessel_meshes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- everything_unverified
+- healthy_cohort
+- capillary_scale
+requires:
+- geometry: vascular-products
+  for_streams:
+  - vessel_geometry
+  severity: blocking
+  without_it: An angiographic volume is an image of a lumen, not a vessel. Without the vascular product
+    -- a resolved graph carrying radius, topology and territory -- there is no vessel for this evidence
+    to constrain and no way to say which cortical support any of it supplies.
+use:
+- calibrate
+- fit
+forbidden:
+- aneux/* -> anything until the release and licence are verified
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: aneux
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

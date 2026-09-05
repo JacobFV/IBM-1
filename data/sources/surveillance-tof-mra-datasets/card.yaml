@@ -1,0 +1,59 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: surveillance-tof-mra-datasets
+title: Surveillance TOF-MRA vessel datasets
+provider: multiple clinical surveillance cohorts
+citation: PROMPT.md §52.10, 'surveillance TOF-MRA vessel datasets'.
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- subject_native
+streams:
+- name: longitudinal_vessel_imaging
+  kind: measured
+  via: null
+  systematic_bias: Repeat imaging of the same vessels in the same person is a direct measurement of SCAN-RESCAN
+    GEOMETRIC REPRODUCIBILITY -- how much a reconstructed vessel graph changes when nothing anatomical
+    has changed. That is a measurement-variance component in §39's sense and it is otherwise unobtainable.
+    Surveillance cohorts are selected for vascular pathology risk.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: repeated TOF-MRA in individuals followed over time for vascular surveillance; the LONGITUDINAL
+    axis is what distinguishes this class from single-timepoint angiography
+absent:
+- healthy_cohort
+- capillary_scale
+- flow
+- public_availability
+requires:
+- geometry: vascular-products
+  severity: blocking
+  without_it: An angiographic volume is an image of a lumen, not a vessel. Without the vascular product
+    -- a resolved graph carrying radius, topology and territory -- there is no vessel for this evidence
+    to constrain and no way to say which cortical support any of it supplies.
+use:
+- calibrate
+- prior
+forbidden:
+- surveillance-tof-mra-datasets/* -> healthy population vascular priors
+- surveillance-tof-mra-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: surveillance-tof-mra-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

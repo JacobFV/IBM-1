@@ -1,0 +1,60 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: transducer-calibration-datasets
+title: Focused ultrasound transducer calibration datasets
+provider: multiple -- manufacturers and the ITRUSST/standards community
+citation: PROMPT.md §52.13, 'transducer calibration datasets'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- transducer_frame
+streams:
+- name: element_geometry_and_drive_mapping
+  kind: measured
+  via: null
+  systematic_bias: '§56.4 asks explicitly for tFUS ELEMENT GEOMETRY AND PHASE/DRIVE MAPPINGS as a constructed
+    object. For a phased array the drive mapping IS the steering, so it is not device trivia: it determines
+    where the focus is. Element positions and phase calibration are often proprietary or only nominally
+    specified.'
+  notes: nominal element positions differ from manufactured ones, and the difference defocuses the beam
+    in a way that only measurement reveals
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: per-transducer element geometry, drive-to-pressure calibration and, for arrays, the
+    element-wise PHASE AND AMPLITUDE mapping that steers the focus
+- name: drive_to_pressure_calibration
+  kind: measured
+  via: null
+  systematic_bias: the mapping from electrical drive to acoustic output is transducer-specific and drifts
+    with temperature and age
+  band_hz:
+  - null
+  - null
+absent:
+- public_availability
+- manufactured_versus_nominal_geometry
+- in_situ_calibration
+use:
+- calibrate
+forbidden:
+- transducer-calibration-datasets/* -> exact field claims from nominal geometry
+- transducer-calibration-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: transducer-calibration-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,67 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: demand
+title: DEMAND -- Diverse Environments Multichannel Acoustic Noise Database
+provider: INRIA / Universite de Sherbrooke
+citation: Thiemann et al., The Diverse Environments Multi-channel Acoustic Noise Database (DEMAND). ICA
+  2013.
+urls:
+- https://zenodo.org/records/1227121
+access: priority
+licence:
+  name: CC BY-SA 3.0 (stated by the providers)
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Share-alike stated by the providers; SPDX and commercial terms not verified here.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - session
+  - device
+  notes: Real environmental noise recorded with a 16-microphone planar ARRAY in 18 real environments.
+    The multichannel array is what makes it a sound-FIELD measurement rather than a noise clip.
+frames:
+- microphone_array
+- room
+streams:
+- name: multichannel_noise_recordings
+  kind: measured
+  via: null
+  systematic_bias: synchronous multichannel recording with known array geometry means the spatial structure
+    of the noise field is recoverable -- relevant to §56.4's room and microphone geometry products
+  band_hz:
+  - null
+  - null
+  temporal_support: audio at 48 kHz and 16 kHz, 5 minutes per environment, all channels synchronous
+  spatial_support: 16-element planar microphone array with published geometry, placed in real rooms and
+    outdoor environments
+- name: environment_metadata
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: array_geometry
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- speech_content
+- head_related_transfer_functions
+use:
+- calibrate
+- fit
+forbidden:
+- demand/* -> any cortical state directly
+split:
+  group_by:
+  - device
+  - session
+provenance:
+  imported_from: win-registry
+  card: demand
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

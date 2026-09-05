@@ -1,0 +1,77 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: metabolomics-resources
+title: Human metabolomics resources
+provider: multiple -- Human Metabolome Database, MetaboLights, Metabolomics Workbench
+citation: PROMPT.md §52.15, 'metabolomics resources'; Wishart et al., HMDB. Nucleic Acids Research 2022.
+urls:
+- https://hmdb.ca/
+- https://www.ebi.ac.uk/metabolights/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- blood
+- urine
+- csf
+- tissue
+streams:
+- name: reference_metabolite_concentrations
+  kind: measured
+  via: null
+  systematic_bias: PERIPHERAL BLOOD IS NOT BRAIN. The blood-brain barrier makes plasma concentration a
+    poor proxy for brain concentration for most metabolites, and the transport is molecule-specific. Glucose
+    and lactate are the exceptions that matter for §16, and even those have a measurable arteriovenous
+    difference across the brain.
+  notes: the barrier's transport kinetics are the missing model between this source and any cerebral state
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: reference concentrations and study-level measurements of small molecules in blood,
+    urine and cerebrospinal fluid; CSF is the compartment with any direct bearing on brain chemistry and
+    it is the least sampled
+- name: csf_measurements
+  kind: measured
+  via: null
+  systematic_bias: CSF composition is closer to brain interstitial fluid than plasma is, and it is still
+    a mixed, delayed and spatially averaged compartment
+  band_hz:
+  - null
+  - null
+- name: assay_reference_ranges
+  kind: measured
+  via: null
+  systematic_bias: reference ranges are population statistics from specific assays; cross-assay comparison
+    is unreliable
+  band_hz:
+  - null
+  - null
+absent:
+- brain_tissue_concentrations
+- spatial_resolution
+- dynamics
+- blood_brain_transport_models
+use:
+- calibrate
+- prior
+forbidden:
+- metabolomics-resources/* -> cerebral metabolite concentrations
+- metabolomics-resources/* -> any cortical state
+- metabolomics-resources/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: metabolomics-resources
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,59 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: dabi
+title: DABI -- Data Archive for the BRAIN Initiative
+provider: USC Stevens Neuroimaging and Informatics Institute (LONI)
+citation: Duncan et al., Data Archive for the BRAIN Initiative (DABI). Scientific Data 10:83, 2023. doi:10.1038/s41597-023-01972-z.
+  RRID SCR_017114.
+urls:
+- https://dabi.loni.usc.edu
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: NO REPOSITORY-WIDE LICENCE. The NITRC record states the content carries various licences depending
+    on the data provider, and providers create their own DUAs and control access. An account is required.
+    Resolve per project. The site currently displays a notice that the repository is under review for
+    potential modification in compliance with administration directives, which is a real availability
+    risk for anything depending on it.
+binding: unbound
+population:
+  n: 1640
+  hierarchy:
+  - participant
+  - site
+  notes: 1,640 participants across 123 projects and about 11 TB, read from the homepage counters on 2026-08-14.
+    These counters move; re-read them at acquisition.
+frames:
+- per_project
+streams:
+- name: invasive_neurophysiology_holdings
+  kind: measured
+  via: null
+  systematic_bias: DABI is the BRAIN Initiative's home for INVASIVE human recordings, which is the one
+    class of evidence that sees cortical state without passing through the skull's low-pass filter and
+    the inverse problem. Every such recording comes from a clinical population implanted for a clinical
+    reason, and the electrode is where the surgeon needed it, never where the experiment wanted it.
+  band_hz:
+  - null
+  - null
+  temporal_support: per-project acquisition rates; invasive recordings run from hundreds of Hz to tens
+    of kHz and the distinction matters for anything spectral
+  spatial_support: invasive human and animal neurophysiology -- EEG, ECoG, LFP and single-unit -- with
+    electrode locations where the contributing project supplied them
+absent:
+- healthy_invasive_recordings
+- whole_brain_coverage
+- uniform_licensing
+use:
+- prior
+forbidden:
+- dabi/* -> an artifact, before the specific project's DUA and licence are resolved
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: dabi
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

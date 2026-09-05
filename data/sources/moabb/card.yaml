@@ -1,0 +1,62 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: moabb
+title: MOABB -- Mother of All BCI Benchmarks
+provider: MOABB contributors / Inria and collaborators
+citation: 'Jayaram and Barachant, MOABB: trustworthy algorithm benchmarking for BCIs. Journal of Neural
+  Engineering 2018.'
+urls:
+- https://moabb.neurotechx.com/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+streams:
+- name: standardised_evaluation_protocol
+  kind: measured
+  via: null
+  systematic_bias: '§46 and §53.2 both point here: MOABB fixes the evaluation so that reported numbers
+    are comparable, and its repeated finding is that classical pipelines remain competitive with deep
+    models on most BCI paradigms. That is the FLOOR every representation claim in §53.2 must be quoted
+    against, and quoting it is what ''a number without its floor is not a result'' means in this domain.'
+  notes: the benchmark's paradigms are laboratory BCI tasks, so success on them says little about naturalistic
+    or physical generality
+  band_hz:
+  - null
+  - null
+  temporal_support: per-dataset native rates handled by the harness
+  spatial_support: a standardised evaluation harness over dozens of public EEG datasets with fixed pipelines
+    and fixed cross-validation schemes -- the point is the PROTOCOL, not any model
+- name: within_versus_cross_session_evaluation
+  kind: measured
+  via: null
+  systematic_bias: MOABB separates within-session, cross-session and cross-subject evaluation, and the
+    three give very different numbers; reporting only the easiest is the common failure
+  band_hz:
+  - null
+  - null
+absent:
+- naturalistic_paradigms
+- physical_observation_model
+- mechanism
+use:
+- evaluate
+forbidden:
+- moabb/* -> observation-role likelihoods
+- moabb/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: moabb
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

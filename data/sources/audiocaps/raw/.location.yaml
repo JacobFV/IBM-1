@@ -1,0 +1,5 @@
+# where the bytes for `audiocaps` actually live.  never the bytes themselves.
+source_url: "https://audiocaps.github.io/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

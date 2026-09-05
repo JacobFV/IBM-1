@@ -1,0 +1,109 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds005498
+title: OpenNeuro ds005498 -- concurrent single-pulse TMS/fMRI
+provider: OpenNeuro; Stanford University (Saggar and Etkin groups)
+citation: 'Glick, Gajawelli, Sun, Badami, Saggar, Etkin. Concurrent single-pulse (sp) TMS/fMRI to reveal
+  the causal connectome in healthy and patient populations. bioRxiv 2024, doi:10.1101/2024.09.25.614833.
+  Dataset doi:10.18112/openneuro.ds005498.v2.0.0. Ethics: Stanford IRB-31244.'
+urls:
+- https://openneuro.org/datasets/ds005498
+access: held
+licence:
+  name: CC0 (verbatim string in dataset_description.json)
+  redistribution: permitted
+  commercial: permitted
+binding: unbound
+population:
+  n: 152
+  hierarchy:
+  - participant
+  - session
+  notes: 152 subject directories. Coverage is ragged between subjects and sessions.
+frames:
+- scanner
+- subject_native
+- target_coordinate_in_filename
+streams:
+- name: concurrent_tms_bold
+  kind: measured
+  via: null
+  observation_chain: coil current -> induced electric field (computed, not measured, and here not computed
+    at all) -> cortical activation at and downstream of the target -> neurovascular coupling -> BOLD change
+    -> EPI volume. The remote BOLD response to a local pulse is the closest thing to a causal, directed,
+    whole-brain measurement that exists non-invasively in humans
+  confounds:
+  - the coil and its leads distort B0 and the RF field, producing signal dropout that is co-localised
+    with the target -- the artefact is exactly where the effect should be
+  - the click and scalp sensation drive auditory and somatosensory cortex on every pulse
+  - the muscle twitch, where present, drives somatosensory and motor cortex
+  - head motion time-locked to the pulse
+  - vascular reactivity differences between participants change the BOLD amplitude without changing the
+    neural response
+  systematic_bias: 152 participants with concurrent TMS/fMRI is a large perturbational corpus by any standard,
+    and the causal direction it supplies is what obj-structural-effective-functional needs to separate
+    effective from functional connectivity rather than assuming the separation.
+  notes: no sham arm and no auditory-masking arm, so the transcranial and peripheral routes are not separable
+    within the dataset
+  band_hz:
+  - null
+  - null
+  temporal_support: TR-sampled BOLD interleaved with TMS pulses. The pulse-to-volume timing is the critical
+    clock and it exists ONLY in a single root-level task-stim_events.tsv shared across every subject,
+    not per run
+  spatial_support: whole-brain EPI with the TMS coil inside the bore; the stimulation TARGET is encoded
+    as a coordinate triple inside the task label string (task-stim46x26x38), which is the only record
+    of where the coil was pointed
+- name: bold_tms_concurrent
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- emg
+- mep
+- per_run_events
+- readme
+- coil_pose_beyond_a_filename
+- stimulation_intensity
+- sham_arm
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The delivered quantity is an induced electric field throughout the head, set by the coil's
+    winding geometry and its pose relative to the anatomy. Without the device product the stimulation
+    is recorded as a machine setting rather than as a dose at any cortical location, and the four stages
+    of an intervention collapse into one.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- ds005498/* -> a delivered-field claim (no head model, no intensity, no pose beyond a filename)
+- ds005498/* -> a clinical-group contrast (the cohort prefixes are undefined in the release)
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: ds005498
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

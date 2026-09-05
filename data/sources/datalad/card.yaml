@@ -1,0 +1,70 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: datalad
+title: DataLad and git-annex -- versioned management of large files
+provider: DataLad team / Julich and Dartmouth
+citation: 'Halchenko et al., DataLad: distributed system for joint management of code, data, and their
+  relationship. Journal of Open Source Software 2021.'
+urls:
+- https://www.datalad.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- file_system
+- content_hash
+streams:
+- name: content_addressed_versioning
+  kind: measured
+  via: null
+  systematic_bias: 'registry/README''s opening line is that the card is what this repository commits while
+    THE BYTES USUALLY LIVE ELSEWHERE UNDER A LICENCE THAT DOES NOT PERMIT REDISTRIBUTION. That is precisely
+    git-annex''s model: track the hash and the location, not the content. The `hashes` field on both card
+    schemas is where that connection would be made concrete.'
+  notes: a hash pins content and says nothing about whether the content is what its card claims -- which
+    is what registry-audit is for
+  band_hz:
+  - null
+  - null
+  temporal_support: commit history gives dataset state over time; `datalad run` records the command that
+    produced a change
+  spatial_support: git for code and metadata with git-annex holding the LARGE FILE CONTENT elsewhere,
+    addressed by hash -- so a repository can describe a petabyte it does not contain, which is exactly
+    this registry's situation
+- name: run_provenance
+  kind: measured
+  via: null
+  systematic_bias: '`datalad run` captures the command, inputs and outputs of a derivation, which is the
+    same content §4a requires of a generator record'
+  band_hz:
+  - null
+  - null
+- name: subdataset_composition
+  kind: measured
+  via: null
+  systematic_bias: nested datasets with pinned versions is how a composite artifact's exact inputs stay
+    identifiable over time
+  band_hz:
+  - null
+  - null
+absent:
+- licence_enforcement
+- content_validation
+use:
+- calibrate
+forbidden:
+- datalad/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: datalad
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

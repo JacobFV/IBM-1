@@ -1,0 +1,73 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: common-voice
+title: Mozilla Common Voice -- crowdsourced multilingual read speech
+provider: Mozilla Foundation
+citation: 'Ardila et al., Common Voice: A Massively-Multilingual Speech Corpus. LREC 2020.'
+urls:
+- https://commonvoice.mozilla.org/
+access: priority
+licence:
+  name: CC0 1.0 (stated by the provider; not independently verified here)
+  redistribution: permitted
+  commercial: unresolved
+  notes: Mozilla states a public-domain dedication for the corpus. Recorded with the caveat that it has
+    not been verified against the release used.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - device
+  notes: n unresolved and growing; over 100 languages. Contributors record through a browser on their
+    own devices, so device is a first-class grouping level.
+frames:
+- microphone_uncontrolled
+streams:
+- name: read_speech_audio
+  kind: imposed
+  via: null
+  systematic_bias: crowd-recorded read sentences; codec artefacts vary per contributor and are not documented
+    per clip
+  band_hz:
+  - null
+  - null
+  temporal_support: utterance-level clips of a few seconds; no continuous timeline
+  spatial_support: 'browser recording on arbitrary consumer devices: sample rate, codec and room all vary'
+- name: self_reported_demographics
+  kind: imposed
+  via: null
+  systematic_bias: self-reported, optional and therefore missing NOT at random
+  band_hz:
+  - null
+  - null
+- name: transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: validation_votes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- video
+- recording_conditions
+- complete_demographics
+use:
+- fit
+forbidden:
+- common-voice/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - device
+provenance:
+  imported_from: win-registry
+  card: common-voice
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

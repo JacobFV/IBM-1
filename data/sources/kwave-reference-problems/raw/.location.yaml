@@ -1,0 +1,5 @@
+# where the bytes for `kwave-reference-problems` actually live.  never the bytes themselves.
+source_url: "http://www.k-wave.org/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

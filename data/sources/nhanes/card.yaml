@@ -1,0 +1,104 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nhanes
+title: NHANES -- National Health and Nutrition Examination Survey
+provider: US CDC National Center for Health Statistics
+citation: National Health and Nutrition Examination Survey.
+urls:
+- https://www.cdc.gov/nchs/nhanes/
+access: priority
+licence:
+  name: US Government public domain for public-use files
+  redistribution: permitted
+  commercial: permitted
+  notes: Public-use files are US Government works; RESTRICTED-USE files require a research data centre
+    agreement and are a separate matter.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: A nationally REPRESENTATIVE survey with a complex probability sampling design -- weights, strata
+    and clusters. Analysing it as a simple random sample gives wrong standard errors and wrong population
+    estimates, which is the single most common error made with it.
+frames:
+- participant_body
+- wrist
+- population_sampling_frame
+streams:
+- name: laboratory_biomarkers
+  kind: measured
+  via: null
+  systematic_bias: POPULATION-REPRESENTATIVE reference distributions for glucose, lipids, inflammatory
+    markers and more. Almost nothing else in this registry is representative of anything -- every cohort
+    here is a volunteer, clinical or convenience sample -- so NHANES's value is precisely as the distribution
+    against which those samples' bias can be estimated.
+  band_hz:
+  - null
+  - null
+  temporal_support: cross-sectional by survey cycle, with 7-day accelerometry in some cycles at 80 Hz
+    raw or 1-minute epochs
+  spatial_support: the PERSON is the unit; measurements are blood, urine, body measures and accelerometry.
+    There is no spatial support in the imaging sense
+- name: accelerometry
+  kind: imposed
+  via: null
+  systematic_bias: wrist-worn, so it measures wrist motion; the population-representative sampling is
+    what makes it useful rather than the sensor
+  band_hz:
+  - null
+  - null
+- name: survey_weights
+  kind: measured
+  via: null
+  systematic_bias: the weights ARE the representativeness; discarding them turns a representative survey
+    into an unrepresentative convenience sample with extra steps
+  band_hz:
+  - null
+  - null
+- name: physical_examination
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dietary_recall
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: questionnaires
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mortality_linkage
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- imaging
+- longitudinal_within_person
+- brain_relevant_measures
+use:
+- fit
+- prior
+forbidden:
+- nhanes/* -> cortical state without an explicit carded interaction
+- nhanes/* -> any cortical state
+- nhanes/* -> population estimates computed without the survey weights
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: nhanes
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,57 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: qsiprep
+title: QSIPrep -- preprocessing and reconstruction pipeline for diffusion MRI
+provider: PennLINC
+citation: 'Cieslak et al., QSIPrep: an integrative platform for preprocessing and reconstructing diffusion
+  MRI data. Nature Methods 2021.'
+urls:
+- https://qsiprep.readthedocs.io/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- MNI152
+streams:
+- name: preprocessing_pipeline
+  kind: measured
+  via: null
+  systematic_bias: Motion, eddy-current and susceptibility correction all RESAMPLE the data, and every
+    resampling smooths. The corrections are necessary and they are not free; §57's preprocessing_lineage
+    field exists so that which corrections were applied is recoverable from any product.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: BIDS in, BIDS-derivatives out, in the subject's native space and optionally a template
+- name: bids_derivatives_provenance
+  kind: measured
+  via: null
+  systematic_bias: QSIPrep writes a machine-readable provenance record, which is what §52.8's requirement
+    looks like when a pipeline takes it seriously
+  band_hz:
+  - null
+  - null
+absent:
+- ground_truth
+- uncertainty_on_corrections
+use:
+- calibrate
+- surrogate
+forbidden:
+- qsiprep/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: qsiprep
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

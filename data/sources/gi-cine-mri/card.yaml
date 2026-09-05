@@ -1,0 +1,96 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: gi-cine-mri
+title: Gastrointestinal cine-MRI and pan-alimentary MRI
+provider: multiple -- University of Nottingham and collaborators
+citation: PROMPT.md §52.15, 'gastrointestinal cine-MRI and pan-alimentary MRI'.
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: 'n unresolved. MRI of the gut in motion: gastric emptying, small-bowel motility and colonic volumes,
+    imaged dynamically.'
+frames:
+- scanner
+- abdomen
+- stomach
+- bowel
+streams:
+- name: gastric_and_bowel_volumes
+  kind: measured
+  via: null
+  observation_chain: gut wall and content geometry -> MR contrast between lumen content, wall and surrounding
+    tissue -> segmented volume over time. The measured quantity is GEOMETRY, changing on a timescale of
+    minutes
+  confounds:
+  - breathing motion, which displaces the abdominal organs by centimetres
+  - segmentation of a deformable organ with variable content, where the boundary is often ambiguous
+  - meal composition, which changes the contrast as well as the physiology
+  systematic_bias: The interior body as a MOVING GEOMETRIC OBJECT on a slow clock. §52.15's slow physiological
+    interactions have a spatial substrate here rather than being a scalar state, which is what makes it
+    worth carding as geometry rather than as a signal.
+  notes: manual or semi-automatic segmentation of deformable organs carries a large operator-dependent
+    error
+  band_hz:
+  - null
+  - null
+  temporal_support: cine sequences over seconds to minutes; transit measurements over hours; gastric emptying
+    over a meal
+  spatial_support: abdominal MR imaging with the ORGAN ITSELF as the moving support -- the stomach and
+    bowel change shape and position continuously, which is the same acquisition problem OCMR poses for
+    the heart
+- name: transit_times
+  kind: imposed
+  via: null
+  systematic_bias: transit time integrates over the whole gut and cannot localise where a delay arose
+  band_hz:
+  - null
+  - null
+- name: cine_mri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: gastric_volumes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: small_bowel_motility
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: colonic_volumes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- public_availability
+- standardised_protocols
+use:
+- fit
+forbidden:
+- gi-cine-mri/* -> cortical state without an explicit carded interaction
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: gi-cine-mri
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

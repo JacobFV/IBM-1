@@ -1,0 +1,120 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bold5000
+title: BOLD5000 -- 5000-image fMRI dataset
+provider: Carnegie Mellon University
+citation: Chang et al., BOLD5000, a public fMRI dataset while viewing 5000 visual images. Scientific Data
+  2019.
+urls:
+- https://bold5000.github.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved; source images come from COCO, ImageNet and SUN, each with its own terms.
+binding: unbound
+population:
+  n: 4
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: Four participants, ~5000 images each across 15 sessions.
+frames:
+- scanner
+- subject_native
+- display
+- MNI152
+streams:
+- name: bold_images
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  systematic_bias: '3T at 2 mm and TR 2 s: coarser than NSD in every axis, which makes it a useful resolution-degradation
+    control rather than a redundant copy.'
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 2 s; 1 s image presentation in a slow event design
+  spatial_support: 2 mm 3T BOLD; individual surfaces; functional localisers
+- name: source_images
+  kind: imposed
+  via: null
+  systematic_bias: mixes COCO, ImageNet and SUN; the three have different statistics and the mixture is
+    itself a design choice
+  band_hz:
+  - null
+  - null
+- name: localisers
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour_ratings
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- video
+- eye_tracking
+- vascular
+- population
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- fit
+forbidden:
+- bold5000/* -> population covariance priors
+- bold5000/* -> retinal geometry without an explicit assumed-fixation note
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: bold5000
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,181 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: chbmp
+title: CHBMP -- the Cuban Human Brain Mapping Project (EEG, MRI and cognition)
+provider: Cuban Neuroscience Center; distributed on Synapse (syn22324937) and on a LORIS instance
+citation: Valdes-Sosa, Galan-Garcia, Bosch-Bayard, et al. The Cuban Human Brain Mapping Project, a young
+  and middle age population-based EEG, MRI, and cognition dataset. Scientific Data 8:45, 2021. doi:10.1038/s41597-021-00829-7.
+urls:
+- https://www.synapse.org/Synapse:syn22324937
+- https://chbmp-open.loris.ca/
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'UNRESOLVED FOR THE DATA AND VERIFIED-ABSENT ON BOTH HOSTS. The Synapse wiki carries only join-the-team
+    instructions -- no licence text, no terms document, no DUA text. The LORIS portal footer shows GPL-3.0,
+    which is the LORIS PLATFORM''s software licence and not the dataset''s; reading it as the data licence
+    would be a category error. Access is moderated team membership rather than a signed legal agreement:
+    create an account, identify yourself and your institution, state the intended use and purpose, and
+    an administrator answers within about 48 working hours. The Scientific Data article is CC-BY-4.0 with
+    CC0 metadata and does not transfer.'
+binding: unbound
+population:
+  n: 282
+  hierarchy:
+  - participant
+  - site
+  notes: '87 female, 195 male, acquired 2004-2008, a subset of a STRATIFIED RANDOM SAMPLE of 2,019 from
+    La Lisa, Havana -- population-based sampling, which almost nothing else in this registry is. PER-MODALITY
+    COVERAGE DIFFERS SHARPLY AND MUST BE QUOTED PER STREAM: 203 of 282 have usable MRI, 156 have MMSE,
+    167 have WAIS-III, 56 have go/no-go reaction time. EEG splits 170 at 64 channels and 80 at 120 channels.'
+frames:
+- channel_label
+- scanner
+- subject_native
+streams:
+- name: population_based_resting_eeg
+  kind: measured
+  via: null
+  observation_chain: post-synaptic currents in spatially aligned pyramidal populations -> volume conduction
+    through brain, CSF, skull and scalp -> potential difference between an electrode and a reference ->
+    amplifier gain, filtering and group delay -> sampled voltage
+  confounds:
+  - ocular and blink artefact
+  - muscle (EMG) contamination
+  - cardiac field and pulse artefact
+  - electrode impedance drift and movement artefact
+  - the reference choice, which is a montage operator and not a property of the brain
+  - line noise and its harmonics
+  - 1.5T MRI at 12 diffusion directions gives a coarse individual head model, so the forward operator
+    is better than a template and worse than a modern acquisition
+  - the four conditions differ in arousal and in arterial CO2, not only in eye state
+  - a single site and a single amplifier means device variance is zero and unestimable here
+  systematic_bias: A STRATIFIED RANDOM POPULATION SAMPLE with EEG is close to unique. Every other large
+    EEG corpus in this registry is a convenience or clinical sample, so this is the one that can say what
+    a population's resting EEG distribution actually looks like -- for one Havana municipality, in 2004-2008.
+  band_hz:
+  - null
+  - null
+  temporal_support: 'at least 30 minutes of resting EEG per participant at 200 Hz across four conditions
+    -- eyes closed, eyes open, hyperventilation and recovery. THE HYPERVENTILATION CONDITION IS THE UNUSUAL
+    ONE: it is a controlled respiratory and therefore cerebrovascular manipulation recorded simultaneously
+    with EEG, which makes it a direct handle on the vascular-neural separation'
+  spatial_support: resting EEG at 64 or 120 channels, and 1.5T MRI with 1 mm isotropic MPRAGE, 12-direction
+    DWI and field maps
+- name: hyperventilation_condition
+  kind: measured
+  via: null
+  observation_chain: voluntary hyperventilation -> fall in arterial CO2 -> cerebral vasoconstriction and
+    reduced cerebral blood flow -> altered cortical excitability -> change in the scalp EEG, observed
+    through the usual volume-conduction chain. A CONTROLLED VASCULAR PERTURBATION WITH SIMULTANEOUS ELECTROPHYSIOLOGY
+  confounds:
+  - arterial CO2 was not measured, so the delivered stimulus is a behaviour and not a quantity
+  - hyperventilation produces muscle and movement artefact
+  - effort and compliance vary between participants
+  - the accompanying subjective symptoms change arousal independently
+  systematic_bias: The registry has breath-hold CVR datasets with fMRI and this is the electrophysiological
+    counterpart -- a vascular manipulation observed electrically rather than haemodynamically, which is
+    the pairing obj-neurovascular-coupling needs and rarely gets.
+  band_hz:
+  - null
+  - null
+- name: psychometrics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eeg_rest_four_conditions
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w_mprage
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi_12dir
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: field_maps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mmse
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: wais_iii
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: go_no_go_reaction_time
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: demographics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- fmri
+- meg
+- task_eeg
+- arterial_co2_measurement
+- licence
+- mri_for_79_participants
+- psychometrics_for_most_participants
+requires:
+- geometry: device-geometry
+  for_streams:
+  - population_based_resting_eeg
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- fit
+- prior
+forbidden:
+- chbmp/* -> a cohort-level n quoted for a per-modality stream
+- chbmp/* -> an artifact, until the terms are obtained from the providers
+- chbmp/* -> a hyperventilation dose claim (arterial CO2 was not measured)
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: chbmp
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

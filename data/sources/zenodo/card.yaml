@@ -1,0 +1,51 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: zenodo
+title: Zenodo
+provider: CERN with OpenAIRE, EC-funded
+citation: Zenodo, doi:10.25495/7GXK-RD71. European Organization for Nuclear Research and OpenAIRE, CERN,
+  2013.
+urls:
+- https://zenodo.org
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'PER DEPOSIT AND MANDATORY FOR OPEN FILES: users must specify a licence for all publicly available
+    files, and licences for closed-access files may be given in the description. There is no default.
+    METADATA is licensed CC0 except for email addresses -- so a metadata harvest and a data download carry
+    different terms. Anyone may register and deposit content for which they hold the rights, which means
+    a Zenodo record''s licence is an assertion by the depositor, not a verification by CERN.'
+binding: unbound
+population:
+  n: null
+frames:
+- described_by_reference
+streams:
+- name: archived_research_artifacts
+  kind: measured
+  via: null
+  systematic_bias: 'The mandatory-licence rule makes Zenodo records materially safer to depend on than
+    OSF nodes. A CONCEPT DOI is not a version pin: citing one and downloading later gets different bytes,
+    which is the unversioned-mutable-download failure.'
+  band_hz:
+  - null
+  - null
+  temporal_support: versioned records with publication dates; concept DOIs resolve to the latest version
+  spatial_support: a general research-artifact archive across all fields, with a 50 GB per-record file
+    limit. Several sources in this registry are distributed this way
+absent:
+- measurements
+- licence_verification
+use:
+- prior
+forbidden:
+- zenodo/* -> a concept DOI used as a version pin
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: zenodo
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

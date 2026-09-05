@@ -1,0 +1,5 @@
+# where the bytes for `neurolm` actually live.  never the bytes themselves.
+source_url: "https://github.com/935963004/NeuroLM"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

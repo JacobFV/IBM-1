@@ -1,0 +1,61 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mrzero
+title: MRzero -- differentiable MR sequence simulation and automated sequence discovery
+provider: University of Erlangen-Nurnberg / Zaiss lab
+citation: Loktyushin et al., MRzero -- Automated discovery of MRI sequences using supervised learning.
+  Magnetic Resonance in Medicine 2021.
+urls:
+- https://github.com/MRsources/MRzero-Core
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- kspace
+- phantom_native
+streams:
+- name: differentiable_bloch_simulation
+  kind: measured
+  via: null
+  systematic_bias: 'THE closest existing thing to what §19 and §23 describe: a forward measurement physics
+    that is differentiable end to end, so an internal representation can be learned THROUGH the acquisition
+    rather than against a reconstructed image. §32''s no-universal-differentiability rule cuts the other
+    way here -- differentiability is not required everywhere, and where a module already has it, that
+    is a capability to exploit.'
+  notes: the virtual phantom is a simplified spin system; diffusion, flow, motion and off-resonance are
+    included only to the extent the simulator models them
+  band_hz:
+  - null
+  - null
+  temporal_support: the sequence timeline, differentiably
+  spatial_support: a DIFFERENTIABLE Bloch simulation over a virtual phantom, so gradients flow from the
+    reconstructed image back to the RF and gradient events that produced it
+- name: pulseq_interoperability
+  kind: measured
+  via: null
+  systematic_bias: it exports Pulseq, so a discovered sequence can be executed on hardware -- the simulated
+    and the real acquisition are the same object
+  band_hz:
+  - null
+  - null
+absent:
+- real_tissue
+- in_vivo_validation
+use:
+- surrogate
+forbidden:
+- mrzero/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: mrzero
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

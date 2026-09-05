@@ -1,0 +1,5 @@
+# where the bytes for `margulies2016-gradients` actually live.  never the bytes themselves.
+source_url: "https://github.com/NeuroanatomyAndConnectivity/gradient_analysis"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

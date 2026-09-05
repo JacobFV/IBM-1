@@ -1,0 +1,122 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mimic-waveforms
+title: MIMIC-III and MIMIC-IV waveform databases
+provider: MIT Laboratory for Computational Physiology / PhysioNet
+citation: Johnson et al., MIMIC-IV, a freely accessible electronic health record dataset. Scientific Data
+  2023; Moody et al., MIMIC-III Waveform Database.
+urls:
+- https://physionet.org/content/mimic4wdb/
+access: restricted
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: 'PhysioNet credentialed access: CITI training plus a data use agreement. Redistribution prohibited.'
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: 'n unresolved and large. INTENSIVE CARE patients: every physiological value is measured in people
+    who are critically ill and frequently on vasoactive drugs, sedation and mechanical ventilation. The
+    population is the confound.'
+frames:
+- torso
+- finger
+- artery
+- airway
+streams:
+- name: arterial_blood_pressure
+  kind: measured
+  via: null
+  observation_chain: intra-arterial catheter -> fluid-filled transducer -> pressure waveform. This is
+    a DIRECT pressure measurement, unlike every cuff or finger-based estimate
+  confounds:
+  - catheter damping and resonance, which distort the waveform's shape
+  - vasoactive drug infusions, which are the reason many of these patients have an arterial line
+  - transducer height relative to the heart, which offsets the whole trace
+  systematic_bias: Continuous invasive arterial pressure at scale exists essentially nowhere else. Cerebral
+    autoregulation operates on this variable, so it is directly relevant to §16's vascular state -- in
+    a population whose autoregulation may be impaired.
+  notes: critical illness alters every coupling this data could be used to estimate
+  band_hz:
+  - null
+  - null
+  temporal_support: continuous waveforms at 62.5-500 Hz with frequent gaps, alongside numeric trends at
+    1/60 Hz. The GAPS are informative -- a disconnected sensor means something happened
+  spatial_support: 'bedside monitor channels: chest electrodes, finger pulse oximeter, arterial line,
+    ventilator circuit. Every channel is a different body-surface or intravascular location'
+- name: ecg_and_ppg
+  kind: measured
+  via: null
+  observation_chain: cardiac depolarisation and repolarisation -> torso volume conduction -> electrode
+    pair -> sampled voltage; and pulsatile arterial blood volume -> optical absorption change at the sensor
+    site -> photodetector current -> sampled waveform
+  confounds:
+  - motion and lead disconnection
+  - arrhythmia
+  - peripheral vasoconstriction altering the PPG morphology independently of cardiac output
+  systematic_bias: The ECG-to-PPG delay is pulse transit time, which is a systemic vascular property.
+  band_hz:
+  - null
+  - null
+- name: clinical_events
+  kind: imposed
+  via: null
+  systematic_bias: events are recorded for clinical, not scientific, purposes and their timestamps are
+    when they were CHARTED, not when they happened
+  band_hz:
+  - null
+  - null
+- name: ecg_waveforms
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ppg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: respiration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: numeric_trends
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: linked_ehr
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- healthy_population
+- controlled_conditions
+- gaps_are_not_random
+use:
+- fit
+forbidden:
+- mimic-waveforms/* -> cortical state without an explicit carded interaction
+- mimic-waveforms/* -> healthy population priors without clinical conditioning
+split:
+  group_by:
+  - participant
+  - site
+  - session
+provenance:
+  imported_from: win-registry
+  card: mimic-waveforms
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

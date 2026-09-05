@@ -1,0 +1,71 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: frequency-resolved-source-association
+title: Frequency-resolved EEG/MEG source-space association maps
+provider: multiple -- MEG/EEG connectivity literature
+citation: PROMPT.md §52.9, 'frequency-resolved EEG/MEG source association'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- fsaverage
+- source_space
+- MNI152
+streams:
+- name: frequency_band_connectivity
+  kind: measured
+  via: null
+  systematic_bias: 'Computed on an INVERSE SOLUTION, so every value inherits the source estimate''s uncertainty
+    and its leakage structure. §8: an inverse solution is not ground truth, and training cortical state
+    against one as if it were a label is the category error the architecture exists to prevent -- a connectivity
+    map is that same estimate, squared.'
+  notes: the choice of inverse operator (MNE, dSPM, beamformer, eLORETA) changes the connectivity map
+    substantially and is rarely varied
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: source-space connectivity between cortical locations, resolved by frequency band and
+    in some measures by lag
+- name: lag_resolved_measures
+  kind: measured
+  via: null
+  systematic_bias: 'LAG is the quantity §52.9 requires and that a correlation matrix cannot carry. Phase-lag
+    and Granger-style measures do carry it, and the predecessor''s native-clock result is why: delay is
+    what separates a pathway claim from a correlation'
+  band_hz:
+  - null
+  - null
+absent:
+- ground_truth
+- leakage_free_estimates
+- individual_anatomy_in_many_studies
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- frequency-resolved-source-association/* -> observation-role likelihoods
+- frequency-resolved-source-association/* -> structural connectivity claims
+- frequency-resolved-source-association/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: frequency-resolved-source-association
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,52 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: reprolake
+title: ReproLake or an equivalent immutable object and data-lineage layer
+provider: unresolved -- named in PROMPT.md §55
+citation: PROMPT.md §55, 'ReproLake or an equivalent immutable object/data lineage layer'.
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- content_hash
+- lineage_graph
+streams:
+- name: immutable_lineage_layer
+  kind: measured
+  via: null
+  systematic_bias: 'registry/README rule 4 is the requirement this would serve: AN ARTIFACT''S LICENCE
+    IS COMPUTED FROM THE SOURCES THAT ACTUALLY CONTRIBUTED TO IT -- meaning ENTERED A CODE PATH THAT PRODUCED
+    THOSE BYTES, NOT MERELY APPEARED IN A CONFIG. That distinction is only computable if the lineage graph
+    is recorded at the object level, which is what an immutable lineage layer is for. §55 explicitly says
+    ''OR AN EQUIVALENT'', so the requirement is the capability, not the product.'
+  notes: lineage recorded at object level still cannot distinguish a source that contributed meaningfully
+    from one that contributed a single unused array
+  band_hz:
+  - null
+  - null
+  temporal_support: objects are immutable, so history is append-only and a past state is always reconstructible
+  spatial_support: an IMMUTABLE object store where every artifact is content-addressed and every derivation
+    records which objects it consumed and produced -- so the lineage graph is a property of the store
+    rather than a convention
+absent:
+- a_verified_implementation
+- everything_unverified
+use:
+- calibrate
+forbidden:
+- reprolake/* -> a tooling commitment before the capability is specified
+- reprolake/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: reprolake
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

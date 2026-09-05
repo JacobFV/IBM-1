@@ -1,0 +1,5 @@
+# where the bytes for `pulseq` actually live.  never the bytes themselves.
+source_url: "https://pulseq.github.io/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

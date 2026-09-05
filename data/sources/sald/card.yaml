@@ -1,0 +1,136 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: sald
+title: SALD -- Southwest University Adult Lifespan Dataset
+provider: Southwest University, distributed by NITRC/INDI and mirrored on AWS S3
+citation: Wei et al., Structural and functional brain scans from the cross-sectional Southwest University
+  adult lifespan dataset. Scientific Data 5:180134, 2018. doi:10.1038/sdata.2018.134.
+urls:
+- https://fcon_1000.projects.nitrc.org/indi/retro/sald.html
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: prohibited
+  notes: 'The distribution page states verbatim: Creative Commons License: Attribution - Non-Commercial.
+    NO VERSION IS GIVEN, so no SPDX identifier is asserted -- the version determines the actual terms
+    and guessing one would be inventing a fact. Non-commercial and attribution are established; everything
+    else about the grant is not.'
+binding: unbound
+population:
+  n: 494
+  hierarchy:
+  - participant
+  notes: '494 participants, 187 male and 307 female. CROSS-SECTIONAL: the lifespan curve is assembled
+    from different people at different ages, so it is a between-person age difference and never a within-person
+    ageing rate.'
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: lifespan_structural_and_resting_bold
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away. Across a 19-80 age range the vascular stage itself changes with
+    age -- compliance, reactivity and transit time -- so an age effect in BOLD is a vascular effect until
+    something separates them'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift and between-session hardware change
+  - age-related change in cerebrovascular reactivity, which produces an age effect in BOLD with no change
+    in neural activity at all
+  - age-related head motion, which increases with age and is confounded with it
+  - atrophy changing partial-volume composition per voxel across the age range
+  systematic_bias: A single site and a single scanner across the whole age range is the right design for
+    an age question and removes the site confound that dominates the INDI aggregates. The vascular-versus-neural
+    confound remains and is not addressable without a reactivity measure, which this dataset does not
+    have.
+  band_hz:
+  - null
+  - null
+  temporal_support: a single ~8-minute resting run; nothing here bounds within-session or between-session
+    variance
+  spatial_support: 3D T1w MPRAGE plus one gradient-echo EPI resting run per participant
+- name: cross_sectional_age_prior
+  kind: measured
+  via: null
+  systematic_bias: A cross-sectional age slope confounds ageing with cohort. It is a difference between
+    people born in different decades as much as a change within a person.
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: age
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: sex
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: handedness
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: qa_metrics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- dwi
+- task_fmri
+- eeg
+- meg
+- asl
+- cvr_measure
+- longitudinal_follow_up
+- intervention
+- detailed_cognition
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+- prior
+forbidden:
+- sald/* -> a within-person ageing rate claim
+- sald/* -> a commercial artifact (non-commercial term)
+split:
+  group_by:
+  - participant
+  notes: Age must be stratified across folds or a fold becomes an age band.
+provenance:
+  imported_from: win-registry
+  card: sald
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

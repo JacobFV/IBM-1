@@ -1,0 +1,79 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: but-reverbdb
+title: BUT ReverbDB -- real room impulse responses and noise
+provider: Brno University of Technology
+citation: Szoke et al., Building and Evaluation of a Real Room Impulse Response Dataset. IEEE JSTSP 2019.
+urls:
+- https://speech.fit.vutbr.cz/software/but-speech-fit-reverb-database
+access: priority
+licence:
+  name: CC BY 4.0 (stated by the providers)
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Stated by the providers; not verified here.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - session
+  - device
+  notes: Impulse responses and background noise measured at many microphone positions in real rooms including
+    offices, lecture halls and stairwells.
+frames:
+- room
+- microphone
+- source_position
+streams:
+- name: room_impulse_responses
+  kind: measured
+  via: null
+  systematic_bias: dense position sampling within each room makes the SPATIAL VARIATION of the transfer
+    function measurable, not just one response per room
+  band_hz:
+  - null
+  - null
+  temporal_support: impulse responses plus continuous background-noise recordings
+  spatial_support: multiple microphone positions per room with documented coordinates; room geometry recorded
+- name: background_noise
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: room_geometry
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: microphone_positions
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- individual_head_geometry
+- any_neural_measurement
+- binaural_measurements
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'The source-receiver arrangement IS the measurement here: an impulse response means nothing
+    without the positions it was measured between. Without a device-geometry object for the room, the
+    sources and the receivers, these recordings cannot serve as the boundary acoustic model they exist
+    to supply.'
+use:
+- calibrate
+- fit
+forbidden:
+- but-reverbdb/* -> any cortical state directly
+split:
+  group_by:
+  - device
+  - session
+provenance:
+  imported_from: win-registry
+  card: but-reverbdb
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

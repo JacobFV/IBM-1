@@ -1,0 +1,76 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bridge2ai-voice
+title: Bridge2AI-Voice -- voice as a biomarker of health
+provider: NIH Bridge2AI Voice consortium
+citation: 'Bensoussan et al., Bridge2AI-Voice: an ethically sourced voice dataset for health.'
+urls:
+- https://b2ai-voice.org/
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Controlled access with health data governance. Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: n unresolved and releasing in waves. Clinically ascertained participants across several disease
+    categories, with a protocol designed for reuse -- the ethics and provenance documentation is unusually
+    complete and is part of what makes it worth carding.
+frames:
+- microphone_protocolised
+- clinical_site
+streams:
+- name: protocolised_voice_tasks
+  kind: imposed
+  via: null
+  systematic_bias: voice production is a MOTOR output of the larynx and vocal tract; treating it as evidence
+    about laryngeal and respiratory motor state is defensible, treating it as evidence about cortical
+    state is not
+  band_hz:
+  - null
+  - null
+  temporal_support: 'protocolised tasks: sustained vowels, reading passages, spontaneous speech. Longitudinal
+    in part'
+  spatial_support: standardised acquisition protocol across sites with a documented recording setup --
+    unusual for a voice corpus and the reason it can support a health claim at all
+- name: clinical_diagnoses
+  kind: imposed
+  via: null
+  systematic_bias: clinically ascertained, so the disease base rates are by design and not epidemiological
+  band_hz:
+  - null
+  - null
+- name: questionnaires
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: demographics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- imaging
+- articulator_kinematics
+use:
+- fit
+forbidden:
+- bridge2ai-voice/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: bridge2ai-voice
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

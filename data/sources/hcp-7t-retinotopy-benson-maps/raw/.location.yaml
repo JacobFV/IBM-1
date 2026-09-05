@@ -1,0 +1,5 @@
+# where the bytes for `hcp-7t-retinotopy-benson-maps` actually live.  never the bytes themselves.
+source_url: "https://osf.io/bw9ec/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

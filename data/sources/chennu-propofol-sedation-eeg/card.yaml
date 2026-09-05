@@ -1,0 +1,105 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: chennu-propofol-sedation-eeg
+title: Chennu et al. propofol sedation high-density EEG
+provider: University of Cambridge Data Repository (Apollo)
+citation: Chennu et al., Brain connectivity dissociates responsiveness from drug exposure during propofol-induced
+  transitions of consciousness. PLOS Computational Biology, 2016. doi:10.1371/journal.pcbi.1004669. Data
+  doi:10.17863/CAM.68959.
+urls:
+- https://www.repository.cam.ac.uk/handle/1810/252736
+access: priority
+licence:
+  name: 'CC-BY-2.0-UK (record states: Attribution 2.0 UK: England and Wales)'
+  redistribution: unresolved
+  commercial: permitted
+  notes: Read from the repository record. Open download, no registration.
+binding: unbound
+population:
+  n: 20
+  hierarchy:
+  - participant
+  - session
+  notes: Four conditions per participant -- baseline, mild sedation, moderate sedation, recovery -- about
+    7 minutes each. 3.44 GB total.
+frames:
+- channel_label
+streams:
+- name: graded_sedation_eeg
+  kind: measured
+  via: null
+  observation_chain: post-synaptic currents in spatially aligned pyramidal populations -> volume conduction
+    through brain, CSF, skull and scalp -> potential difference between an electrode and a reference ->
+    amplifier gain, filtering and group delay -> sampled voltage. The manipulated variable is plasma propofol
+    concentration, which acts on GABA-A receptors throughout cortex and thalamus -- a PHARMACOLOGICAL
+    perturbation of global state, which is a different class of intervention from a focal field and is
+    the only graded one available non-invasively in healthy humans
+  confounds:
+  - ocular and blink artefact
+  - muscle (EMG) contamination
+  - cardiac field and pulse artefact
+  - electrode impedance drift and movement artefact
+  - the reference choice, which is a montage operator and not a property of the brain
+  - line noise and its harmonics
+  - propofol has direct cerebrovascular and metabolic effects independent of any change in neural dynamics
+  - behavioural responsiveness and drug concentration DISSOCIATE -- that is the paper's own result --
+    so a condition label is neither a dose nor a state
+  - the released epochs are already filtered and cleaned, so any spectral or complexity measure inherits
+    the preprocessing choices
+  - individual sensitivity to propofol varies severalfold at the same target concentration
+  systematic_bias: Only the preprocessed data are distributed. Every quantity computed from them carries
+    a preprocessing lineage that cannot be varied, which rules out any claim that depends on the raw signal.
+  band_hz:
+  - null
+  - null
+  temporal_support: '10-second epochs in the RELEASED form. The continuous recording clock is gone: what
+    is distributed is epoched, filtered 0.5-45 Hz, artefact-cleaned and average-referenced, which is a
+    DERIVED VIEW and not the native acquisition'
+  spatial_support: 91-channel scalp EEG
+- name: eeg_preprocessed
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: sedation_condition_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- raw_continuous_eeg
+- fmri
+- meg
+- individual_head_model
+- digitised_electrode_positions
+- verified_plasma_concentration_in_the_archive
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- chennu-propofol-sedation-eeg/* -> a raw-signal claim
+- chennu-propofol-sedation-eeg/* -> a sedation label treated as a measured drug concentration
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: chennu-propofol-sedation-eeg
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

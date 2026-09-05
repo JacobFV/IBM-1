@@ -1,0 +1,5 @@
+# where the bytes for `cneuromod-friends` actually live.  never the bytes themselves.
+source_url: "https://docs.cneuromod.ca/en/latest/DATASETS.html"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

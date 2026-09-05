@@ -1,0 +1,69 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hill2010-evolutionary-expansion
+title: Hill cortical evolutionary and developmental expansion maps
+provider: Van Essen lab
+citation: Hill et al., Similar patterns of cortical expansion during human development and evolution.
+  PNAS 2010.
+urls:
+- https://balsa.wustl.edu/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- fs_LR
+- fsaverage
+- macaque_surface
+streams:
+- name: expansion_maps
+  kind: measured
+  via: null
+  systematic_bias: The expansion ratio is entirely determined by the CROSS-SPECIES SURFACE REGISTRATION
+    used to compute it, which is landmark-constrained and therefore assumes the homology it is measuring.
+    That circularity is inherent to the method and is the reason this enters at low authority.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: surface maps of areal expansion between macaque and human, and between infant and adult
+    human, computed from landmark-constrained surface registration
+- name: cross_species_correspondence
+  kind: measured
+  via: null
+  systematic_bias: 'relevant to §52.6''s cross-species operator priors: it is the map that says which
+    macaque territory corresponds to which human territory, with all the caveats that implies'
+  band_hz:
+  - null
+  - null
+absent:
+- registration_uncertainty
+- individual_variation
+- ground_truth_homology
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- hill2010-evolutionary-expansion/* -> measured homology claims
+- hill2010-evolutionary-expansion/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: hill2010-evolutionary-expansion
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

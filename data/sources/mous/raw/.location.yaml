@@ -1,0 +1,5 @@
+# where the bytes for `mous` actually live.  never the bytes themselves.
+source_url: "https://data.ru.nl/collections/di/dccn/DSC_3011020.09_236"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

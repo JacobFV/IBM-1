@@ -1,0 +1,5 @@
+# where the bytes for `vggsound` actually live.  never the bytes themselves.
+source_url: "https://www.robots.ox.ac.uk/~vgg/data/vggsound/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

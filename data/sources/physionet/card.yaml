@@ -1,0 +1,108 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: physionet
+title: PhysioNet -- physiological signal archive and the PhysioBank collections
+provider: MIT Laboratory for Computational Physiology
+citation: Goldberger et al., PhysioBank, PhysioToolkit, and PhysioNet. Circulation 2000.
+urls:
+- https://physionet.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: PER-DATABASE licences ranging from open (ODC-BY, CC0) to credentialed access requiring training
+    and a data-use agreement. A single licence statement for 'PhysioNet' would be false.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: An archive, not a study. Its EEG and PSG holdings are what §52.5 points at; its waveform holdings
+    are what §52.15 points at.
+frames:
+- per_database
+streams:
+- name: eeg_and_psg_databases
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - sensor placement and contact quality
+  - motion artifact
+  - respiratory-cardiac cross-coupling that makes the two streams non-independent
+  systematic_bias: 'Authority low at the ARCHIVE level: an archive is not a source. Each constituent database
+    that is actually used must be promoted to its own card with its own observation process and its own
+    licence.'
+  band_hz:
+  - null
+  - null
+  temporal_support: per-database sampling rates; WFDB carries the rate per signal explicitly, which is
+    one of the reasons this archive is usable at all
+  spatial_support: per-database; the WFDB record format is the common container, not a common spatial
+    support
+- name: wfdb_annotation_conventions
+  kind: measured
+  via: null
+  systematic_bias: the WFDB format's explicit per-signal units and rates are a good example of what §57's
+    native-units requirement looks like in practice
+  band_hz:
+  - null
+  - null
+- name: eeg_databases
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: psg_databases
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ecg_databases
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: waveform_databases
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: annotation_sets
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- a_single_licence
+- a_single_population
+- a_single_protocol
+use:
+- fit
+- prior
+forbidden:
+- physionet/* -> any evidence role at the archive level; only promoted per-database cards may carry one
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: physionet
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

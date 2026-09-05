@@ -1,0 +1,4 @@
+# sha256 manifest for eegmmidb -- DEFERRED
+# 3060 files, 3616824885 bytes (3.37 GiB) at /home/brandonin/Documents/win-data/eegmmidb
+# hashing this source has not been run; until it has, no derive recipe may claim
+# reproducibility against a specific raw state.

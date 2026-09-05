@@ -1,0 +1,5 @@
+# where the bytes for `adam` actually live.  never the bytes themselves.
+source_url: "http://adam.isi.uu.nl/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

@@ -1,0 +1,94 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hd-epic
+title: HD-EPIC -- highly detailed egocentric kitchen dataset with 3D and gaze
+provider: University of Bristol and partners
+citation: 'HD-EPIC: A Highly-Detailed Egocentric Video Dataset. CVPR 2025.'
+urls:
+- https://hd-epic.github.io/
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved; the EPIC-KITCHENS family terms may or may not carry over.
+binding: unbound
+population:
+  n: 9
+  hierarchy:
+  - participant
+  - session
+  notes: Fewer participants than EPIC-KITCHENS but far denser annotation, including digital twins of the
+    kitchens and gaze.
+frames:
+- device_rig
+- eye
+- head
+- kitchen_scan_frame
+streams:
+- name: 3d_scene_scans
+  kind: measured
+  via: null
+  systematic_bias: a scanned world frame lets the gaze ray be intersected with real geometry -- the closest
+    any boundary corpus comes to what §56.5 asks for per episode
+  band_hz:
+  - null
+  - null
+  temporal_support: video at device rate; gaze at device rate; annotations as intervals
+  spatial_support: Aria-class glasses plus a scanned 3D model of each kitchen -- the world geometry is
+    MEASURED here rather than inferred
+- name: gaze
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: hand_pose
+  kind: imposed
+  via: null
+  systematic_bias: estimated from video, therefore derived, not measured
+  band_hz:
+  - null
+  - null
+- name: egocentric_video
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: audio
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: object_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: recipe_steps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- physiology
+- full_body_pose
+use:
+- calibrate
+- fit
+forbidden:
+- hd-epic/* -> any cortical state directly
+- hd-epic/hand_pose -> measured-kinematics claims
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: hd-epic
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

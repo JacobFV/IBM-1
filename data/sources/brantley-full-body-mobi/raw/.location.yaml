@@ -1,0 +1,5 @@
+# where the bytes for `brantley-full-body-mobi` actually live.  never the bytes themselves.
+source_url: "https://doi.org/10.6084/m9.figshare.5616109.v5"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

@@ -1,0 +1,1 @@
+# sha256 manifest for bci-competition-datasets; written on acquisition

@@ -1,0 +1,146 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: corr-reliability
+title: CoRR -- Consortium for Reliability and Reproducibility
+provider: INDI, distributed on NITRC and through the COINS Data Exchange
+citation: Zuo et al., An open science resource for establishing reliability and reproducibility in functional
+  connectomics. Scientific Data 1:140049, 2014. doi:10.1038/sdata.2014.49.
+urls:
+- http://fcon_1000.projects.nitrc.org/indi/CoRR/html/index.html
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'UNRESOLVED FOR THE IMAGING DATA AND VERIFIED-ABSENT: no licence appears on the index, Data Description,
+    Downloads or Data Citation pages. The paper states that the METADATA are released under the CC0 waiver
+    -- metadata only, explicitly not the scans. A NITRC login plus INDI registration (or a COINS login)
+    is required, and a Data Citation Procedure applies.'
+binding: unbound
+population:
+  n: 1629
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: 1,629 individuals across 33 datasets. The distribution page and the paper disagree on the number
+    of contributing sites (the paper says 18 sites and 40 test-retest datasets received from 36 groups);
+    both figures are recorded rather than reconciled.
+frames:
+- scanner_per_site
+- MNI152
+streams:
+- name: test_retest_bold
+  kind: measured
+  via: null
+  systematic_bias: This is the single most useful source in this registry for the 'a number without its
+    floor is not a result' rule. A derived measure's test-retest reliability is the ceiling on any between-subject
+    effect it can support, and CoRR is where that ceiling is measurable rather than cited. It also separates
+    within-session, between-session and between-site variance, which almost nothing else does.
+  band_hz:
+  - null
+  - null
+  temporal_support: 'THE POINT OF THIS DATASET IS THE SESSION AXIS: every participant is scanned more
+    than once, with intervals from minutes to over a year, so within-subject between-session variance
+    is MEASURED rather than assumed'
+  spatial_support: 3,357 anatomical, 5,093 resting functional, 1,302 diffusion and 300 CBF/ASL scans across
+    the collection
+- name: resting_state_bold
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift and between-session hardware change
+  - site, which is confounded with cohort because each site contributed its own participants
+  - scanner vendor, field strength, coil and sequence differ between sites
+  - head-motion distributions differ systematically between diagnostic groups and inflate every connectivity
+    contrast in the direction of the group that moves more
+  - 'the retest interval itself: a participant scanned twice in one hour is in a more similar physiological
+    state than one scanned a year apart, and the interval is not randomised'
+  band_hz:
+  - null
+  - null
+- name: reliability_as_a_control
+  kind: measured
+  via: null
+  systematic_bias: a measure with near-zero test-retest reliability cannot support a between-subject claim,
+    and this dataset is what makes that a measurement rather than a caveat
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: asl_cbf
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- task_fmri
+- meg
+- eeg
+- intervention
+- deep_phenotyping
+- imaging_licence
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+- geometry: vascular-products
+  severity: degrading
+  without_it: A perfusion or reactivity map is a voxel field with no vessel attached. It can be used as
+    a voxel-wise measurement, but attributing it to a supplying artery, a draining vein or a microvascular
+    compartment -- which is what makes it evidence about the vascular state rather than about the image
+    -- requires the vascular product.
+  substitute: Voxel-wise use with no vessel attribution, which cannot separate an arterial transit effect
+    from a tissue perfusion change.
+use:
+- calibrate
+- evaluate
+- fit
+forbidden:
+- corr-reliability/* -> an artifact, until the imaging licence is resolved
+- corr-reliability/* -> a between-subject effect claim exceeding the measured test-retest ceiling
+split:
+  group_by:
+  - participant
+  - site
+  - session
+  notes: Sessions from one participant are the whole point and must never straddle a fold.
+provenance:
+  imported_from: win-registry
+  card: corr-reliability
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,71 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brainmap
+title: BrainMap -- curated coordinate database of functional and structural neuroimaging
+provider: Research Imaging Institute, UT Health San Antonio
+citation: 'Laird et al., BrainMap: the social evolution of a human brain mapping database. Neuroinformatics
+  2005; Fox and Lancaster, Nature Reviews Neuroscience 2002.'
+urls:
+- https://www.brainmap.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Registration and licence agreement for database access; terms unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- Talairach
+- MNI152
+streams:
+- name: curated_coordinate_database
+  kind: measured
+  via: null
+  systematic_bias: 'Coordinates, like Neurosynth, but MANUALLY CURATED with a real experimental taxonomy
+    instead of abstract word counts. That taxonomy is the reason to hold it: it records paradigm and modality,
+    which is most of what §52.9 requires an association source to retain and which Neurosynth cannot supply.'
+  notes: curation is slower and therefore covers less of the literature; the coverage bias differs from
+    Neurosynth's and is not obviously smaller
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: MANUALLY CURATED coordinates with a structured taxonomy of experimental design -- paradigm
+    class, behavioural domain, stimulus modality, response type
+- name: experimental_taxonomy
+  kind: measured
+  via: null
+  systematic_bias: a structured vocabulary for what an experiment WAS, which is reusable independently
+    of the coordinates
+  band_hz:
+  - null
+  - null
+- name: talairach_coordinates
+  kind: measured
+  via: null
+  systematic_bias: much of the database is in TALAIRACH space; the Talairach-to-MNI conversion is approximate
+    and its error is systematic and spatially varying
+  band_hz:
+  - null
+  - null
+absent:
+- participant_level_data
+- unthresholded_maps
+- complete_literature_coverage
+use:
+- calibrate
+- prior
+forbidden:
+- brainmap/* -> observation-role likelihoods
+- brainmap/* -> instantaneous subject state
+- brainmap/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: brainmap
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

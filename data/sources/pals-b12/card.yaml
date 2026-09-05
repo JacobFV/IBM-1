@@ -1,0 +1,74 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: pals-b12
+title: 'PALS-B12 surface atlas: Brodmann, lobes, visuotopic and orbitofrontal label sets, on fsaverage'
+provider: Van Essen lab / FreeSurfer, shipped inside the fsaverage subject directory
+citation: Van Essen, A Population-Average, Landmark- and Surface-based (PALS) atlas of human cerebral
+  cortex. NeuroImage 2005.
+urls:
+- https://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation
+access: held
+licence:
+  name: FreeSurfer Software License
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'Unresolved, and unresolved is a thing to record rather than a reason to leave it unread: rule
+    7 gates DISTRIBUTION only. These files travel with FreeSurfer''s fsaverage and inherit whatever that
+    carries; nothing in them states a licence. LICENCE LINEAGE, NOT A LOOKUP: this reached us inside a
+    FreeSurfer subject directory (bundled in turn by an MNE sample dataset or a nilearn cache), so the
+    terms under which WE received it are the FreeSurfer Software License. READ, not recalled -- the licence
+    text was fetched: it PERMITS COMMERCIAL USE (''any commercialization of the Software is at the sole
+    risk of the party ... engaged in such commercialization''), requires that the licence terms and all
+    attributions and copyright notices be preserved in any copy, and EXPLICITLY DISCLAIMS COPYLEFT --
+    contributors warrant their code ''does not contain any code that requires or prescribes an open source
+    license for derivative works''. No registration or DUA is mentioned; accepting the licence is the
+    only condition of download. This was very nearly recorded as commercial_use prohibited from memory,
+    which would have WRONGLY BLOCKED a legitimate release. Residual question this does NOT settle: the
+    atlas itself originates outside the FreeSurfer project and its authors'' own terms may be broader
+    or narrower. That matters only for a copy obtained from the originating project; the copy we hold
+    came through FreeSurfer and carries FreeSurfer''s terms.'
+binding: unbound
+population:
+  n: null
+frames:
+- fsaverage
+streams:
+- name: surface_parcellation
+  kind: measured
+  via: null
+  systematic_bias: THE BRODMANN SET IS NOT MEASURED CYTOARCHITECTURE. It is Brodmann's 1909 published
+    drawings projected onto a surface-based average of twelve postmortem hemispheres. So it inherits both
+    Brodmann's own interpretation and the projection's registration error, and it must never be treated
+    as an observation of any individual's cytoarchitecture -- ba-exvivo is the card that has actual histology
+    behind it, and the two disagree in ways worth keeping. The visuotopic set is likewise a summary of
+    published maps rather than this subject's retinotopy.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- static anatomy projected onto a surface average
+  spatial_support: 'per-vertex annotations on the 163,842-vertex fsaverage surface, per hemisphere, in
+    four separate label sets: Brodmann areas, lobes, visuotopic areas and orbitofrontal subdivisions'
+absent:
+- per_vertex_confidence
+- individual_variability
+- subcortex
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A label set is a COVER over a carrier; alone it is 163,842 integers with no geometry. It
+    reaches a subject only through the spherical registration to fsaverage, whose residual must be carried.
+use:
+- prior
+forbidden:
+- pals-b12/surface_labels -> any claim about an individual's cytoarchitecture
+- pals-b12/* -> observation-role likelihoods
+- pals-b12/surface_labels -> retinotopic mapping of a subject who was not retinotopically mapped
+split:
+  group_by:
+  - participant
+  notes: 'a population atlas: held out of nothing, trusted for nothing on its own. Its twelve hemispheres
+    are not ours.'
+provenance:
+  imported_from: win-registry
+  card: pals-b12
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

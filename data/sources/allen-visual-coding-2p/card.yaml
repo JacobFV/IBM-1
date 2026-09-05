@@ -1,0 +1,156 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: allen-visual-coding-2p
+title: 'Allen Brain Observatory -- Visual Coding: two-photon calcium imaging (mouse)'
+provider: Allen Institute for Brain Science; AWS Open Data and AllenSDK
+citation: de Vries, Lecoq, Buice, Groblewski, Ocker, Oliver, et al. A large-scale standardized physiological
+  survey reveals functional organization of the mouse visual cortex. Nature Neuroscience 23(1):138-151,
+  2020. doi:10.1038/s41593-019-0550-9.
+urls:
+- https://brain-map.org/our-research/circuits-behavior/visual-coding
+- https://observatory.brain-map.org/visualcoding
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: prohibited
+  notes: 'Allen Institute Terms of Use, not a Creative Commons licence and with no SPDX id. Verbatim:
+    use of the Content, including creation of derivative works, must be for research or other noncommercial
+    purposes unless agreed in writing by the Allen Institute; and the Content or Improvements may not
+    be redistributed for commercial purposes without written permission. The Citation Policy additionally
+    requires a citation on the same page where the data or image appears. UNLIKE the Neuropixels release,
+    NO DANDI MIRROR WAS FOUND for this dataset, so the CC-BY-4.0 alternative that exists for the Neuropixels
+    recordings does not apply here and whether one exists is unresolved. The Allen Terms of Use are the
+    only terms available.'
+binding: unbound
+population:
+  n: 243
+  hierarchy:
+  - participant
+  - session
+  - device
+  notes: 'TWO FIGURES, BOTH REPORTED, AND THE GAP IS RELEASE GROWTH RATHER THAN AN ERROR: the paper analysed
+    243 mice and 59,610 neurons across 432 experiments, while the portal reports 63,251 neurons and 14
+    transgenic lines. The mouse count for the released set is unresolved. An ''experiment'' here is one
+    mouse at one depth in one area, over three one-hour sessions.'
+frames:
+- imaging_field
+- cortical_depth
+- screen_coordinates
+streams:
+- name: cellular_resolution_visual_responses
+  kind: measured
+  via: null
+  observation_chain: calcium influx following spiking -> GCaMP6f fluorescence with slow rise and decay
+    -> two-photon detection -> ROI extraction -> dF/F, and then OPTIONALLY event detection which INFERS
+    spiking. THE MEASUREMENT IS FLUORESCENCE, NOT SPIKES, and every spike-like quantity here is a deconvolution
+    output
+  confounds:
+  - indicator kinetics and expression level differ per cell and per transgenic line, so dF/F amplitude
+    is not comparable across cells
+  - neuropil contamination of the ROI signal, corrected by a model with its own assumptions
+  - the depth-band layer assignment is a rule of thumb and misassigns cells near the boundaries
+  - running state and arousal change responses strongly
+  - known sensitivity of the published functional classifications to the inclusion criteria (documented
+    in a subsequent eNeuro re-analysis)
+  - passive viewing, no task
+  systematic_bias: Same stimuli and same laboratory as the Neuropixels release but a completely different
+    observation process, which makes the pair a genuine test of whether a conclusion is about the visual
+    system or about the recording modality. Cortex only -- no thalamus or hippocampus, unlike the Neuropixels
+    arm.
+  band_hz:
+  - null
+  - null
+  temporal_support: 'calcium imaging frame rate. THE INDICATOR''S KINETICS ARE THE TEMPORAL RESOLUTION:
+    GCaMP6f rises and decays over hundreds of milliseconds, so spike timing is inferred and is NOT comparable
+    to the Neuropixels release''s sub-millisecond spike times even though the two share stimuli'
+  spatial_support: 'two-photon imaging of GCaMP6f in VISp, VISl, VISal, VISpm, VISam and VISrl at depths
+    of 175 to 435 micrometres, with per-cell ROI masks. LAYER ASSIGNMENT IS BY DEPTH BAND, verbatim: above
+    250 um layer 2/3, between 250 and 365 um layer 4, between 375 and 500 um layer 5, at 550 um layer
+    6 -- a depth rule, not a histological determination'
+- name: transgenic_line_specificity
+  kind: measured
+  via: null
+  systematic_bias: Twelve to fourteen Cre lines give layer- and type-specific populations imaged under
+    identical conditions -- a controlled cell-class comparison that no human recording can provide. A
+    Cre line labels a population, not a cell type, and the two are routinely conflated.
+  band_hz:
+  - null
+  - null
+- name: df_over_f_traces
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: roi_masks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: event_detected_traces
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: max_projections
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: running_speed
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eye_tracking_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_timing
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- human_data
+- spike_times
+- subcortical_recordings
+- task_behaviour
+- released_animal_count
+requires:
+- geometry: retinal-world-geometry
+  for_streams:
+  - cellular_resolution_visual_responses
+  severity: degrading
+  without_it: The stimulus is presented on a screen at a fixed distance from an eye whose position is
+    tracked only in part of the sessions. Without the display and eye geometry the visual field coordinate
+    of any response is unknown, and retinotopic claims made from screen coordinates carry an uncorrected
+    eye-position error.
+  substitute: Screen coordinates treated as retinal coordinates under an assumption of fixed gaze, which
+    is false during the periods the pupil trace shows movement.
+use:
+- fit
+- prior
+forbidden:
+- allen-visual-coding-2p/* -> any human state channel without an explicit cross-species mapping
+- allen-visual-coding-2p/* -> a commercial artifact under the Allen Terms of Use
+- allen-visual-coding-2p/* -> a deconvolved event treated as a measured spike
+- allen-visual-coding-2p/* -> a spike-timing comparison with the Neuropixels release
+split:
+  group_by:
+  - participant
+  - session
+  - device
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: allen-visual-coding-2p
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

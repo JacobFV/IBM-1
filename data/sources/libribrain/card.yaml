@@ -1,0 +1,124 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: libribrain
+title: LibriBrain -- deep within-person MEG during audiobook listening
+provider: Oxford / LibriBrain benchmark
+citation: 'LibriBrain: a large within-subject MEG dataset for naturalistic speech (named in PROMPT.md
+  §51.1 item 10 and §52.4).'
+urls:
+- https://huggingface.co/datasets/pnpl/LibriBrain
+- https://huggingface.co/datasets/pnpl/LibriBrain2
+- https://arxiv.org/abs/2506.02098
+- https://arxiv.org/abs/2506.10165
+access: held
+licence:
+  name: CC-BY-NC-4.0
+  redistribution: unresolved
+  commercial: prohibited
+  notes: 'Stated by the Hugging Face dataset card''s own licence tag. NON-COMMERCIAL, and that is the
+    reading that matters: licence lineage is per artifact and computed from contributing sources, so any
+    product with a LibriBrain-derived component takes the non-commercial term. It joins the Hansen receptor
+    atlas (CC-BY-NC-SA-4.0), the SUIT cerebellar atlases (CC-BY-NC-3.0) and von Economo-Koskinas (CC-BY-NC-SA-4.0)
+    as the fourth non-commercial holding this registry knows about. It gates DISTRIBUTION only and never
+    reading, loading, computing with or fitting to the data. DUA: none. Recorded as dua_required false
+    on the basis of HOW THIS WAS ACTUALLY OBTAINED -- it is held in this store, fetched anonymously over
+    plain HTTP by a script in scripts/ that sends no credential and accepts no terms, from a repository
+    that serves it without an access request. That is evidence about the acquisition rather than an opinion
+    about the deposit''s policy. It says nothing about the LICENCE terms, which are recorded separately
+    and still govern distribution; a non-commercial work with no DUA is an ordinary combination.'
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - session
+  - run
+  notes: 'Very many hours in ONE participant. §51.1 item 10: together with MEG-MASC and MEG-SCANS this
+    separates PERSON DEPTH from population breadth, and that separation is the reason to hold all three.'
+frames:
+- meg_device
+- head_fiducial
+- subject_native
+- audiobook_timeline
+streams:
+- name: meg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
+    plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
+    SQUID flux -> sampled channel
+  confounds:
+  - environmental magnetic interference and urban noise
+  - head motion within and between runs
+  - ocular and cardiac fields
+  - muscle artifact at high frequency
+  - SQUID jumps and sensor drift
+  - session-to-session head repositioning within the same person
+  systematic_bias: 'One person means one head model: the between-subject variance that dominates MEG group
+    analyses is absent, so within-person model discrepancy becomes visible.'
+  band_hz:
+  - null
+  - null
+  temporal_support: MEG at its acquisition rate; audiobook chapters as continuous listening blocks across
+    many sessions
+  spatial_support: whole-head MEG; a single participant's head geometry throughout, which removes between-subject
+    forward-model variance entirely
+- name: held_out_splits
+  kind: measured
+  via: null
+  systematic_bias: a within-person held-out split tests generalisation across sessions and material, NOT
+    across people; the two claims are different and must not be conflated
+  band_hz:
+  - null
+  - null
+- name: audio_stimuli
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: alignments
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- population
+- fmri
+- eeg
+- eye_tracking
+- vascular
+requires:
+- geometry: device-geometry
+  for_streams:
+  - meg
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- evaluate
+- fit
+forbidden:
+- libribrain/* -> population covariance priors
+- libribrain/* -> between-participant generalisation claims
+split:
+  group_by:
+  - session
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: libribrain
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

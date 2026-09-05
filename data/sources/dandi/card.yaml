@@ -1,0 +1,56 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: dandi
+title: DANDI -- Distributed Archives for Neurophysiology Data Integration
+provider: DANDI Archive / NIH BRAIN Initiative
+citation: DANDI Archive.
+urls:
+- https://dandiarchive.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Per-dandiset, declared in the dandiset metadata; commonly CC0 or CC-BY but NOT uniformly, and
+    not verified per set here.
+binding: unbound
+population:
+  n: null
+frames:
+- none
+streams:
+- name: dandiset_index
+  kind: measured
+  via: null
+  systematic_bias: '§51.5 item 34: use for LOCAL/CELLULAR PRIORS, invasive recordings and cross-species
+    model tests. The cross-species holdings are model-class evidence about what kinds of state and interaction
+    are plausible, never observations of a human brain'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: an index over NWB neurophysiology, optical physiology, behaviour and microscopy datasets
+    -- much of it non-human
+- name: nwb_schema_conformance
+  kind: measured
+  via: null
+  systematic_bias: NWB carries device, electrode and subject metadata in a structured form, which is closer
+    to what a source card needs than BIDS is for electrophysiology
+  band_hz:
+  - null
+  - null
+absent:
+- human_coverage
+- licence_resolution
+use:
+- prior
+forbidden:
+- dandi/* -> any evidence role for the datasets it indexes
+- dandi/* -> human observation-role likelihoods
+split:
+  group_by:
+  - site
+provenance:
+  imported_from: win-registry
+  card: dandi
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,5 @@
+# where the bytes for `air-impulse-responses` actually live.  never the bytes themselves.
+source_url: "https://www.iks.rwth-aachen.de/en/research/tools-downloads/databases/aachen-impulse-response-database/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

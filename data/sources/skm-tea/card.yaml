@@ -1,0 +1,131 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: skm-tea
+title: SKM-TEA -- Stanford Knee MRI Multi-Task Evaluation dataset
+provider: Stanford AIMI / Stanford MIMI Lab
+citation: 'Desai et al., SKM-TEA: a dataset for accelerated MRI reconstruction with dense image labels
+  for quantitative clinical evaluation. NeurIPS Datasets and Benchmarks Track, 2021. arXiv:2203.06823.'
+urls:
+- https://stanfordaimi.azurewebsites.net/datasets/4aaeafb9-c6e6-4e3c-9188-3aaaf0e0a9e7
+- https://github.com/StanfordMIMI/skm-tea
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: prohibited
+  notes: The CODE is MIT. The DATA are governed by the Stanford University Dataset Research Use Agreement
+    -- non-commercial research use only -- and an SPDX identifier for the data is unresolved. Requires
+    a Stanford AIMI account and acceptance of the agreement. CODE LICENCE AND DATA LICENCE DIFFER HERE
+    AND MUST NOT BE CONFLATED.
+binding: unbound
+population:
+  n: 155
+  hierarchy:
+  - participant
+  - device
+  notes: About 25,000 slices from 155 patients per the arXiv abstract; the dataset's own documentation
+    page does not restate the patient count. 160 slices per scan, two echoes. 900 GB compressed, 1.6 TB
+    expanded. Two 3 T GE MR750 scanners at Stanford Health Care.
+frames:
+- kspace_sampling_grid
+- scanner
+- subject_native
+streams:
+- name: kspace_to_quantitative_map_to_clinical_finding
+  kind: measured
+  via: null
+  observation_chain: qDESS acquisition -> two echoes -> coil-weighted complex k-space -> reconstruction
+    -> echo ratio -> T2 IN MILLISECONDS -> tissue segmentation -> a radiologist's finding. Every stage
+    of the chain is in the release, so the propagation of reconstruction error into a quantitative map
+    and then into a clinical decision is MEASURABLE rather than assumed
+  confounds:
+  - the qDESS T2 estimate depends on flip angle, diffusion weighting and B1+, none of which are uniform
+    across the field of view
+  - sensitivity maps are estimated and their error enters the T2 map
+  - the bounding boxes come from radiology reports, so they are a reader's judgement recorded from a different
+    viewing setup
+  - two scanners of the same model still differ
+  systematic_bias: NOT BRAIN DATA. It is carded because the k-space-to-quantitative-map-to-decision chain
+    is the exact structure obj-qmri-observation needs and because no brain dataset in this registry ships
+    all of it. The anatomy is a knee and nothing here constrains any brain state.
+  band_hz:
+  - null
+  - null
+  temporal_support: two echoes within the qDESS acquisition, from which T2 is computed; no physiological
+    time axis
+  spatial_support: raw qDESS k-space with calibration and sensitivity maps, the scanner DICOM images for
+    both echoes, NIfTI tissue segmentations and radiologist-derived pathology bounding boxes -- the WHOLE
+    CHAIN from k-space to clinical finding in one release, which is what makes it unusual
+- name: downstream_task_evaluation
+  kind: measured
+  via: null
+  systematic_bias: The dataset's own argument is that reconstruction quality metrics do not predict downstream
+    task performance. That is a control that could fail and did -- and it generalises directly to every
+    derived-view claim in this registry.
+  band_hz:
+  - null
+  - null
+- name: raw_kspace_qdess
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: sensitivity_maps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dicom_echo1
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dicom_echo2
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: tissue_segmentations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pathology_bounding_boxes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- brain_anatomy
+- functional_imaging
+- physiological_signals
+- healthy_controls
+requires:
+- geometry: mr-acquisition-objects
+  for_streams:
+  - kspace_to_quantitative_map_to_clinical_finding
+  severity: blocking
+  without_it: Raw k-space is not an image. Without the acquisition object -- scanner frame, sequence timeline,
+    sampling trajectory, coil sensitivities and reconstruction provenance -- these samples cannot be placed
+    in space at all, and a reconstruction produced without them carries none of its own physics.
+use:
+- evaluate
+- fit
+forbidden:
+- skm-tea/* -> any brain state channel
+- skm-tea/* -> a commercial artifact (the data agreement is non-commercial)
+- skm-tea/* -> the code's MIT terms applied to the data
+split:
+  group_by:
+  - participant
+  - device
+provenance:
+  imported_from: win-registry
+  card: skm-tea
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

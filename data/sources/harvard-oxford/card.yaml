@@ -1,0 +1,73 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: harvard-oxford
+title: Harvard-Oxford cortical and subcortical structural atlases
+provider: Harvard Center for Morphometric Analysis / FSL
+citation: Desikan et al. 2006 and Makris et al. 2006, distributed with FSL.
+urls:
+- https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Atlases
+access: held
+licence:
+  name: FSL Licence (non-commercial)
+  redistribution: unresolved
+  commercial: prohibited
+  notes: 'Unresolved. §49.2 records that the predecessor''s attribution generator tracked each source''s
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it. LICENCE LINEAGE: held from the FSL distribution via a
+    nilearn cache (data/assets/cache/nilearn/fsl), so FSL''s terms are the ones under which we received
+    it. FSL IS NON-COMMERCIAL and this is the operative constraint: the library is ''distributed AS IS
+    under a licence solely for non-commercial use'', and ''use for which any financial return is received
+    shall be defined as commercial use''. Redistribution without financial return is permitted provided
+    the conditions of the licence are IMPOSED UPON THE RECEIVER and source is included -- a propagating
+    condition, recorded as share_alike required. Commercial use requires a separate licence from Oxford
+    University Innovation (fsl@innovation.ox.ac.uk, project 9564). No DUA or registration to download.
+    NOTE the direction: FreeSurfer permits commercial use and FSL forbids it, so a single ''neuroimaging
+    atlas'' intuition gets one of the two wrong whichever way it leans.'
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+streams:
+- name: probabilistic_structure_maps
+  kind: measured
+  via: null
+  systematic_bias: Probabilistic over 37 manually labelled brains, which is a small sample; the commonly-used
+    thresholded versions discard the probability entirely. Its subcortical coverage is coarse compared
+    to CIT168, THOMAS or Tian and should not be preferred where those exist.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: probabilistic maps in MNI152 space from 37 manually segmented T1 volumes, cortical
+    and subcortical
+- name: manual_segmentation_protocol
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- individual_geometry
+- fine_subcortical_structure
+- modern_sample_size
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- harvard-oxford/* -> fine subcortical support definitions where a better atlas exists
+- harvard-oxford/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: harvard-oxford
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

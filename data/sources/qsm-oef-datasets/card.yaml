@@ -1,0 +1,82 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: qsm-oef-datasets
+title: QSM-based oxygen extraction fraction datasets
+provider: multiple -- susceptibility-based oximetry studies
+citation: PROMPT.md §52.11, 'QSM/OEF data'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- subject_native
+- venous_tree_graph
+streams:
+- name: venous_susceptibility_oximetry
+  kind: measured
+  via: null
+  observation_chain: tissue magnetic susceptibility -> field perturbation -> phase accrual over TE ->
+    phase unwrapping, background-field removal and an ill-posed dipole inversion -> susceptibility map.
+    The inversion is regularised and its regularisation is a choice; and then susceptibility -> venous
+    oxygenation via the known susceptibility difference between oxy- and deoxyhaemoglobin, given haematocrit
+  confounds:
+  - haematocrit, assumed unless measured from blood
+  - 'partial volume: only veins large enough to resolve give a reliable susceptibility'
+  - vessel orientation relative to B0, which the dipole inversion must handle correctly
+  - background-field removal, which can absorb real susceptibility near large vessels
+  systematic_bias: In LARGE VEINS this is close to a direct oximetry measurement, which makes it the natural
+    validation target for the model-based OEF estimates in qBOLD. Its spatial coverage is limited to resolvable
+    veins, so it is accurate where it applies and silent elsewhere.
+  notes: restricting to resolvable veins means the measurement samples the venous tree non-randomly, biased
+    toward large drainage territories
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: oxygen extraction estimated from the magnetic susceptibility of blood in identifiable
+    veins; unlike qBOLD this measures susceptibility in a RESOLVED vessel rather than inferring it from
+    the surrounding field perturbation
+- name: vein_specific_measurement
+  kind: measured
+  via: null
+  systematic_bias: a per-vein oxygenation attached to an identified vessel is exactly the state variable
+    §56.3's oxygenation initial-condition priors need, attached to the geometry rather than to a voxel
+  band_hz:
+  - null
+  - null
+absent:
+- small_vessel_coverage
+- haematocrit
+- arterial_side
+- electrophysiology
+requires:
+- geometry: vascular-products
+  severity: degrading
+  without_it: 'An oxygenation estimate is about blood in vessels, and its meaning depends on which vessels:
+    an OEF from a resolved vein and an OEF inferred from the field perturbation around unresolved capillaries
+    are different measurements. Without the vascular product they cannot be told apart.'
+  substitute: A voxel-wise map treated as a single compartment, which absorbs the venous bias into the
+    tissue estimate.
+use:
+- calibrate
+- fit
+forbidden:
+- qsm-oef-datasets/* -> neural supervision
+- qsm-oef-datasets/* -> capillary oxygenation
+- qsm-oef-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: qsm-oef-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

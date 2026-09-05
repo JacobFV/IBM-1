@@ -1,0 +1,78 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: roast
+title: ROAST -- Realistic vOlumetric Approach to Simulate Transcranial electric stimulation
+provider: City College of New York / Parra lab
+citation: 'Huang et al., ROAST: An open-source, fully-automated, realistic volumetric-approach-based simulator
+  for TES. EMBC 2018.'
+urls:
+- https://www.parralab.org/roast/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- volume_mesh
+- scalp
+streams:
+- name: automated_tes_field_simulation
+  kind: measured
+  via: null
+  systematic_bias: Fully automated from a T1, which is what makes individualised field modelling practical
+    at cohort scale. §52.13's separation of requested from delivered field requires exactly this computation,
+    and the computation's dominant uncertainty is SKULL CONDUCTIVITY, taken from the literature and uncertain
+    by roughly a factor of three. Automation removes the operator's variability and not the physics's.
+  notes: automatic segmentation errors at the skull and CSF boundaries propagate directly into the field,
+    and CSF's high conductivity makes its segmentation especially load-bearing
+  band_hz:
+  - null
+  - null
+  temporal_support: static, or per-frequency for alternating current in the quasi-static regime
+  spatial_support: an automatically segmented and meshed individual head volume with scalp electrodes
+    as boundary conditions; the output is a FIELD throughout the head
+- name: roast_versus_simnibs_comparison
+  kind: measured
+  via: null
+  systematic_bias: two independent pipelines from the same T1 to a field; their disagreement is the honest
+    error bar and it is the control §46 asks for. See tes-solver-reference-fixtures
+  band_hz:
+  - null
+  - null
+absent:
+- measured_conductivities
+- in_vivo_field_validation
+- anisotropy
+requires:
+- geometry: device-geometry
+  for_streams:
+  - automated_tes_field_simulation
+  severity: blocking
+  without_it: Transcranial electrical stimulation delivers a current-density field throughout the head,
+    determined by electrode geometry, contact area and the tissue conductivities between them -- not a
+    spot under an electrode. Without the device product a montage is a pair of labels and the delivered
+    dose is unknown.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- control
+- surrogate
+forbidden:
+- roast/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: roast
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

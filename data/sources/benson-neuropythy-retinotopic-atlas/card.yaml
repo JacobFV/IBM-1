@@ -1,0 +1,70 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: benson-neuropythy-retinotopic-atlas
+title: Benson/neuropythy anatomically-defined retinotopic atlas
+provider: Noah Benson / neuropythy
+citation: Benson et al., Correction of distortion in flattened representations of the cortical surface
+  allows prediction of V1-V3 functional organization from anatomy. PLoS Computational Biology 2014.
+urls:
+- https://github.com/noahbenson/neuropythy
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Code and atlas data may differ; unresolved pending review.
+binding: unbound
+population:
+  n: null
+frames:
+- fsaverage
+- subject_native_surface
+- visual_field_polar
+streams:
+- name: predicted_retinotopy
+  kind: measured
+  via: null
+  systematic_bias: 'This PREDICTS retinotopy from anatomy. It is a prior, never an observation: applying
+    it to a subject and then treating the result as that subject''s measured map is precisely the derived-is-not-measured
+    violation. Its error against measured pRFs is published and must travel with it.'
+  notes: prediction error against measured pRF is largest exactly where individual variation is largest,
+    i.e. at the V2/V3 boundaries that matter most
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: fsaverage surface vertices; a template prediction transferable to any subject with
+    a FreeSurfer surface
+- name: visual_area_labels
+  kind: measured
+  via: null
+  systematic_bias: hard categorical labels; §5 requires these to enter as one COVER among several, mapped
+    probabilistically, not as the brain's own partition
+  band_hz:
+  - null
+  - null
+absent:
+- measured_subject_retinotopy
+- peripheral_field
+- higher_visual_areas
+- uncertainty_per_vertex
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- benson-neuropythy-retinotopic-atlas/* -> observation-role likelihoods
+- benson-neuropythy-retinotopic-atlas/* -> subject-specific measured geometry
+split:
+  group_by:
+  - participant
+  notes: 'a template: it must be held out of nothing and trusted for nothing'
+provenance:
+  imported_from: win-registry
+  card: benson-neuropythy-retinotopic-atlas
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

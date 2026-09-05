@@ -1,0 +1,73 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: sea-hero-quest
+title: Sea Hero Quest -- global spatial navigation behavioural dataset
+provider: University College London / Deutsche Telekom
+citation: Coutrot et al., Global determinants of navigation ability. Current Biology 2018; Spiers et al.,
+  Nature 2022.
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- game_world
+- participant_device
+streams:
+- name: navigation_trajectories
+  kind: imposed
+  via: null
+  systematic_bias: UNPRECEDENTED N, AND ENTIRELY BEHAVIOURAL, IN A VIRTUAL WORLD, ON A PHONE. There is
+    no vestibular input, no proprioception and no self-motion -- the components that make real navigation
+    what it is are all absent, and the control interface differs by device. A trajectory here is a report
+    of a decision, not a measurement of a navigational state.
+  notes: virtual navigation without self-motion engages a demonstrably different set of mechanisms from
+    real navigation; the transfer is an assumption
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: navigation TRAJECTORIES from a mobile game played by millions of people across 200+
+    countries, with self-reported demographics. The support is a virtual environment, not a real one
+- name: population_scale_demographics
+  kind: measured
+  via: null
+  systematic_bias: millions of players makes population comparisons statistically powerful and self-selection,
+    device access and app-store availability make them biased in ways no n can fix
+  band_hz:
+  - null
+  - null
+- name: self_reported_demographics
+  kind: imposed
+  via: null
+  systematic_bias: unverified self-report
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- vestibular_input
+- proprioception
+- real_world_navigation
+- individual_data_availability
+use:
+- fit
+- prior
+forbidden:
+- sea-hero-quest/* -> any cortical state
+- sea-hero-quest/* -> real-world navigation claims
+- sea-hero-quest/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: sea-hero-quest
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

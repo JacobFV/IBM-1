@@ -1,0 +1,75 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: neurovault
+title: NeuroVault -- repository of unthresholded statistical brain maps
+provider: Krzysztof Gorgolewski and collaborators
+citation: 'Gorgolewski et al., NeuroVault.org: a web-based repository for collecting and sharing unthresholded
+  statistical maps of the human brain. Frontiers in Neuroinformatics 2015.'
+urls:
+- https://neurovault.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- fsaverage
+streams:
+- name: unthresholded_statistical_maps
+  kind: measured
+  via: null
+  systematic_bias: '§51.5 item 35: use as LOW-AUTHORITY empirical association fields or evaluation maps,
+    NEVER instantaneous subject labels. The decisive quality is that maps are UNTHRESHOLDED, which is
+    far better than a coordinate table -- but the metadata (task, contrast, n, smoothing, statistic type)
+    is user-supplied and frequently wrong or missing, so §52.9''s provenance requirement often cannot
+    be met from the record alone.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: tens of thousands of user-uploaded whole-brain statistical maps in MNI space, mostly
+    group-level
+- name: map_collections_as_evaluation
+  kind: measured
+  via: null
+  systematic_bias: a held-out map from an independent study is a real out-of-sample test, provided its
+    provenance is verified rather than assumed
+  band_hz:
+  - null
+  - null
+- name: uploader_metadata
+  kind: measured
+  via: null
+  systematic_bias: 'the metadata''s unreliability is itself the control: a pipeline that cannot tell a
+    mislabelled map from a correct one has not validated anything'
+  band_hz:
+  - null
+  - null
+absent:
+- reliable_metadata
+- raw_data
+- participant_level_data
+- uniform_statistic_type
+use:
+- calibrate
+- prior
+forbidden:
+- neurovault/* -> observation-role likelihoods
+- neurovault/* -> instantaneous subject state
+- neurovault/* -> structural or effective connectivity claims
+- neurovault/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: neurovault
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

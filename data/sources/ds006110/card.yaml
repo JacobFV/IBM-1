@@ -1,0 +1,149 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds006110
+title: 'OpenNeuro ds006110 -- PsiConnect: psilocybin with multi-echo fMRI, diffusion and EEG'
+provider: OpenNeuro; the PsiConnect study team
+citation: Novelli et al., 2025. doi:10.1101/2025.04.11.643415 (preprint). Dataset doi:10.18112/openneuro.ds006110.v1.2.0.
+urls:
+- https://openneuro.org/datasets/ds006110
+access: priority
+licence:
+  name: CC0 (verbatim License field in dataset_description.json)
+  redistribution: permitted
+  commercial: permitted
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: participants.tsv has 65 rows across two id series (PC001-032 and PC201-233) while the README
+    states 62 enrolled. The two disagree, so n is left null. participants.tsv carries ONLY the id column
+    -- demographics live elsewhere, so the released table is not a phenotype source.
+frames:
+- scanner
+- subject_native
+- channel_label
+- MNI152
+streams:
+- name: psilocybin_multimodal
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away, and in a separate session post-synaptic currents in spatially
+    aligned pyramidal populations -> volume conduction through brain, CSF, skull and scalp -> potential
+    difference between an electrode and a reference -> amplifier gain, filtering and group delay -> sampled
+    voltage'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - ocular and blink artefact
+  - muscle (EMG) contamination
+  - cardiac field and pulse artefact
+  - electrode impedance drift and movement artefact
+  - the reference choice, which is a montage operator and not a property of the brain
+  - line noise and its harmonics
+  - the meditation-training arm is a second, slow intervention interacting with the drug arm
+  - the naturalistic conditions (music, movie) impose their own shared stimulus structure
+  - blinding fails
+  - one-year follow-up introduces every life event between the sessions as an unmodelled variable
+  systematic_bias: A pharmacological state change measured with BOTH electrophysiology and haemodynamics
+    on the same people, under naturalistic conditions, at a cohort size that supports between-participant
+    inference -- which the precision-mapping designs cannot. The two modalities are in separate sessions,
+    so nothing here supports a within-episode coupling claim.
+  band_hz:
+  - null
+  - null
+  temporal_support: conditions are rest, guided meditation, music listening and movie watching, with follow-ups
+    to one year. The EEG and MRI sessions have their own clocks and there is no hardware relation between
+    them
+  spatial_support: multi-echo functional, structural and diffusion MRI, PLUS EEG on the same participants
+    -- the electrophysiological and haemodynamic arms of the same pharmacological manipulation
+- name: multi_echo_bold
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: structural_mri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eeg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behavioural_battery
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: self_report
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: one_year_follow_up
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- simultaneous_eeg_fmri
+- demographics_in_participants_tsv
+- measured_drug_concentration
+- peer_reviewed_descriptor
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- fit
+forbidden:
+- ds006110/* -> a within-episode EEG-BOLD coupling claim (the sessions are separate)
+- ds006110/* -> a participant count taken from participants.tsv
+split:
+  group_by:
+  - participant
+  - session
+  notes: The meditation-training arm is a between-participant factor; a split ignoring it can put all
+    of one arm in one fold.
+provenance:
+  imported_from: win-registry
+  card: ds006110
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,90 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bendr
+title: BENDR -- BErt-inspired Neural Data Representations
+provider: University of Toronto and collaborators
+citation: 'Kostas et al., BENDR: Using Transformers and a Contrastive Self-Supervised Learning Task to
+  Learn from Massive Amounts of EEG Data. Frontiers in Human Neuroscience 2021.'
+urls:
+- https://github.com/SPOClab-ca/BENDR
+access: held
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+streams:
+- name: contrastive_pretraining
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. An early and influential instance of the wav2vec
+    recipe transferred to EEG, pretrained on TUH. It handles montage variation by SELECTING A FIXED CHANNEL
+    SUBSET and interpolating -- an explicit, honest, and limiting choice that later models hide inside
+    a learned channel embedding.'
+  band_hz:
+  - null
+  - null
+  temporal_support: resampled to 256 Hz
+  spatial_support: a fixed 20-channel EEG subset resampled to a common rate -- the CHANNEL SET IS FIXED
+    BY CONSTRUCTION, which makes montage generality a preprocessing problem rather than a model property
+- name: tuh_pretraining_corpus
+  kind: measured
+  via: null
+  systematic_bias: pretrained on TUH-EEG, a clinical hospital population; see the tuh-eeg card for what
+    that population is and is not
+  band_hz:
+  - null
+  - null
+absent:
+- montage_generality
+- electrode_geometry
+- forward_model
+- uncertainty
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: This model's channel axis is a set of names, not a set of positions -- the channel-identity
+    problem exactly. Its representation can be computed without any geometry, but relating it to a cortical
+    support, or transferring it to a montage it was not trained on, requires the electrode or sensor geometry
+    that the name stands in for.
+  substitute: Channel-name matching, which silently asserts that two electrodes sharing a label sat in
+    the same place on two different heads.
+use:
+- distil
+- prior
+forbidden:
+- bendr/* -> observation-role likelihoods
+- bendr/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: bendr
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - contrastive_pretraining
+    - tuh_pretraining_corpus
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

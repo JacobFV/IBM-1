@@ -1,0 +1,88 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: iemocap
+title: IEMOCAP -- Interactive Emotional Dyadic Motion Capture database
+provider: University of Southern California SAIL
+citation: 'Busso et al., IEMOCAP: interactive emotional dyadic motion capture database. Language Resources
+  and Evaluation 2008.'
+urls:
+- https://sail.usc.edu/iemocap/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Academic licence agreement required. Unresolved.
+binding: unbound
+population:
+  n: 10
+  hierarchy:
+  - participant
+  - session
+  notes: 10 ACTORS in dyadic sessions, scripted and improvised, with facial marker motion capture. The
+    emotion is PERFORMED, not felt, and that is the single most important fact about this corpus.
+frames:
+- capture_room
+- face_marker_set
+- microphone
+streams:
+- name: facial_motion_capture
+  kind: imposed
+  via: null
+  systematic_bias: measured marker kinematics, which is genuinely kinematic evidence about articulation
+    and expression
+  band_hz:
+  - null
+  - null
+  temporal_support: audio at 48 kHz; motion capture at 120 Hz; per-utterance emotion annotations
+  spatial_support: head-mounted facial markers plus cameras in a motion-capture room
+- name: categorical_emotion_labels
+  kind: imposed
+  via: null
+  systematic_bias: '§52.16 states it directly: AN AFFECT LABEL IS NOT A LIMBIC-STATE OBSERVATION. Here
+    the label describes a portrayal by an actor, rated by annotators -- two inferential steps away from
+    any internal state'
+  band_hz:
+  - null
+  - null
+- name: audio
+  kind: imposed
+  via: null
+  systematic_bias: 'acted speech: prosody is exaggerated relative to spontaneous emotional speech'
+  band_hz:
+  - null
+  - null
+- name: video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: valence_arousal_dominance_ratings
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- physiology
+- spontaneous_emotion
+use:
+- fit
+forbidden:
+- iemocap/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: iemocap
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,10 @@
+# where the bytes for `kamitani-perception-and-imagery-fmri` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/kamitani-perception-and-imagery-fmri
+acquired_at: '2026-09-04'
+files: 38
+bytes: 23881069166
+gib: 22.24
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://figshare.com/articles/dataset/Generic_Object_Decoding/7387130

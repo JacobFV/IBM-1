@@ -1,0 +1,127 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: neuromaps
+title: neuromaps -- curated brain-map collection and transformation toolbox
+provider: Network Neuroscience Lab / Misic lab
+citation: 'Markello et al., neuromaps: structural and functional interpretation of brain maps. Nature
+  Methods 2022.'
+urls:
+- https://netneurolab.github.io/neuromaps/
+access: held
+licence:
+  name: BSD-3-Clause (the toolbox); per-annotation source terms for the maps
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'Read from data/assets/MANIFEST.json. neuromaps is a CURATED COLLECTION: each annotation carries
+    the terms of the study that produced it, and the toolbox licence covers none of them. An artifact
+    built from a neuromaps annotation inherits that annotation''s terms, which have to be resolved one
+    at a time. WHY THIS STAYS UNRESOLVED, EVIDENCED RATHER THAN ASSUMED. Every file under the held cache
+    whose name begins LICENSE, LICENCE or COPYING was enumerated: there is exactly ONE, atlases/MNI152/COPYING,
+    a permissive MNI grant (''permission to use, copy, modify, and distribute ... for any purpose and
+    without fee''). It covers the MNI152 template and nothing else. The annotations neuromaps caches come
+    from many separate publications and ship NO licence file, so their terms are not present in what we
+    hold and cannot be read off it. The toolbox''s BSD-3-Clause covers code we are not redistributing.
+    Discharged by resolving the per-annotation source terms -- which is a lineage computation over the
+    contributing sources, exactly what win.licences was built for, and NOT a single value to type into
+    this field. Contrast netneurotools, whose cache DOES ship licence files and which resolved to CC-BY-NC-SA-4.0
+    on that evidence.
+
+
+    THE CONTRIBUTING SOURCES ARE MEASURABLE FROM THE HELD FILENAMES, and they are the reason this card
+    cannot be resolved by reading neuromaps'' own page. Every annotation is named BIDS-style with a source-
+    token; extracted over all 43 held annotation files it gives EIGHT contributing sources: hcps1200 (18
+    files), raichle (8), margulies2016 (6), xu2020 (4), hill2010 (2), mueller2013 (2), sydnor2021 (2),
+    neurosynth (1).
+
+
+    EIGHTEEN OF THE FORTY-THREE DERIVE FROM HCP S1200, and this registry already holds nine HCP cards
+    carrying dua_required true. That does NOT settle it, and the reason is a distinction the registry
+    has been making consistently without ever stating it as a rule: across fourteen HCP-related cards,
+    every kind=dataset card (subject-level data: hcp-young-adult, hcp-aging, hcp-development, hcp-meg,
+    hcp-7t-diffusion, hcp-7t-retinotopy, hcp-movie-7t, hcp-task-vision-maps, dhcp) carries dua_required
+    true, and every kind=atlas card (GROUP-AVERAGE derived maps: hcp-s1200-maps, hcp-meg-maps, hcp-functional-connectivity,
+    braingraph-hcp-connectomes, enigma-hcp-structural-connectome) leaves it unresolved. Fourteen for fourteen.
+
+
+    The neuromaps annotations are group-average maps, so they fall on the unresolved side. THE OPEN QUESTION
+    IS EXACTLY ONE: does the ConnectomeDB Open Access Data Use Agreement, which governs downloading HCP
+    SUBJECT DATA, follow a GROUP-AVERAGE MAP redistributed by a third party? Answering it discharges the
+    dua field on SIX cards at once -- the five above and this one -- and would turn an implicit fourteen-card
+    pattern into a stated rule. That is an outward-distribution question and it is the operator''s to
+    decide, not one to settle by picking the comfortable value.
+
+
+    redistribution, commercial_use and share_alike stay unresolved separately: seven of the eight contributing
+    sources ship no licence file in the held tree, so their terms are not present in what we hold.
+
+
+    SIX OF THE EIGHT CONTRIBUTORS ARE NOW DECLARED AS `parents`, so the licence COMPUTES rather than being
+    typed: win.registry.lineage.attribution_of takes the transitive closure and reports which parent drove
+    each constraint. TWO CANNOT BE DECLARED BECAUSE THEY HAVE NO CARD -- source-xu2020 (4 files, desc-devexp
+    and desc-FChomology) and source-mueller2013 (2 files, desc-intersubjvar). A source_id resolving to
+    no card is an error rather than an absent constraint, so those edges are left undeclared and named
+    here instead. The lineage is therefore INCOMPLETE BY SIX FILES and says so, which is the honest state;
+    carding those two discharges it.'
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- fsaverage
+- fs_LR
+- civet
+streams:
+- name: map_collection
+  kind: measured
+  via: null
+  systematic_bias: 'A collection of maps from many studies, each with its own population, modality and
+    processing. §52.9''s rule applies: each association source must retain modality, task, preprocessing,
+    frequency, lag and population, and a curated collection makes it unusually easy to forget that they
+    differ.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: a curated collection of published brain maps PLUS a transformation system between MNI152,
+    fsaverage, fs_LR and CIVET spaces. The transformations are the durable contribution
+- name: space_transformations
+  kind: measured
+  via: null
+  systematic_bias: the volume-to-surface and surface-to-surface transforms are reusable machinery and
+    are the part worth internalising
+  band_hz:
+  - null
+  - null
+- name: spatial_null_models
+  kind: measured
+  via: null
+  systematic_bias: neuromaps ships spatial autocorrelation-preserving null models. §46 demands a control
+    that could have failed, and for any map-to-map correlation claim THIS is that control -- brain maps
+    are smooth, so naive correlations between any two are inflated
+  band_hz:
+  - null
+  - null
+absent:
+- raw_data_behind_the_maps
+- per_map_uncertainty
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- control
+- prior
+forbidden:
+- neuromaps/map_collection -> observation-role likelihoods
+- neuromaps/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: neuromaps
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

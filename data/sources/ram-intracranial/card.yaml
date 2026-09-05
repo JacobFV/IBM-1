@@ -1,0 +1,127 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ram-intracranial
+title: RAM -- DARPA Restoring Active Memory intracranial recording and stimulation dataset
+provider: DARPA RAM / University of Pennsylvania
+citation: Kahana et al., DARPA Restoring Active Memory (RAM) project data release.
+urls:
+- http://memory.psych.upenn.edu/RAM
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Data-use agreement; clinical intracranial records with stimulation. Registered but never held
+    in the predecessor (§49.3).
+binding: unbound
+population:
+  n: 250
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: Multi-site, hundreds of patients, with both recording and DIRECT ELECTRICAL STIMULATION arms.
+    The stimulation arm is what makes it a §58.5 perturbational source rather than only an observational
+    one.
+frames:
+- electrode_native
+- subject_native
+- MNI152
+- Talairach
+streams:
+- name: ieeg
+  kind: measured
+  via: null
+  observation_chain: current sources within millimetres of the contact -> local volume conduction over
+    a short path -> contact surface area, impedance and referencing scheme -> sampled voltage; spatial
+    support is the contact neighbourhood, not a parcel
+  confounds:
+  - 'clinical pathology at the electrode: this is a patient population, not a healthy one'
+  - medication state and post-implant recovery
+  - referencing scheme (common average vs. bipolar) reshaping the apparent field
+  - epileptiform activity contaminating putative task responses
+  systematic_bias: Hundreds of patients is large for intracranial work; coverage remains clinically determined.
+  band_hz:
+  - null
+  - null
+  temporal_support: iEEG at 500 Hz-2 kHz; free-recall and other memory tasks as discrete events; stimulation
+    pulses on their own timeline
+  spatial_support: subdural and depth contacts, individually localised on the patient's own MRI/CT
+- name: direct_stimulation_records
+  kind: measured
+  via: null
+  observation_chain: programmed current between two contacts -> current density field in tissue determined
+    by contact geometry and local conductivity -> membrane polarisation of nearby elements -> propagated
+    response recorded at other contacts. §52.13's four stages are all present here and only the first
+    and last are measured
+  confounds:
+  - stimulation artifact that is orders of magnitude larger than the response
+  - afterdischarge activity that is pathological rather than physiological
+  - the patient's awareness of stimulation at some sites
+  systematic_bias: 'DIRECT causal perturbation with recording at known locations: the cleanest available
+    evidence for effective connectivity in humans (§38), and still not a measurement of the delivered
+    field.'
+  notes: the delivered current density is modelled, never measured -- the gap between requested settings
+    and delivered field is exactly what §52.13 insists on separating
+  band_hz:
+  - null
+  - null
+- name: memory_task_behaviour
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: electrode_localisation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ct
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- delivered_field_measurement
+- healthy_controls
+- scalp_eeg
+- meg
+- fmri_during_stimulation
+- sham_arm
+requires:
+- geometry: device-geometry
+  for_streams:
+  - ieeg
+  severity: blocking
+  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
+    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
+    channel is an index and nothing measured here can be attached to a cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- ram-intracranial/direct_stimulation_records -> delivered-field claims without an explicit field model
+- ram-intracranial/* -> healthy population priors without pathology conditioning
+split:
+  group_by:
+  - participant
+  - site
+  - session
+provenance:
+  imported_from: win-registry
+  card: ram-intracranial
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

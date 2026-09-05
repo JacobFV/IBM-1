@@ -1,0 +1,256 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds004873
+title: 'ds004873 -- quantitative fMRI: BOLD, T2, T2*, CBF, CBV, OEF and CMRO2 under controlled tasks'
+provider: OpenNeuro ds004873
+citation: Epp et al., quantitative fMRI dataset behind 'BOLD signal changes can oppose oxygen metabolism
+  across the human cortex' (PROMPT.md §17-18, §59).
+urls:
+- https://openneuro.org/datasets/ds004873
+access: held
+licence:
+  name: CC0-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'RESOLVED 2026-08-16 FROM THE HELD BYTES, not from the portal page: data/ds004873/dataset_description.json
+    states License ''CC0''. Read off the deposit itself because that is the copy we hold and the copy
+    any artifact would be derived from. Contrast studyforrest-ds000113, whose License field in the same
+    position is the EMPTY STRING -- the two look identical to a loader and only one of them is a licence.
+    DUA: none. Recorded as dua_required false on the basis of HOW THIS WAS ACTUALLY OBTAINED -- it is
+    held in this store, fetched anonymously over plain HTTP by a script in scripts/ that sends no credential
+    and accepts no terms, from a repository that serves it without an access request. That is evidence
+    about the acquisition rather than an opinion about the deposit''s policy. It says nothing about the
+    LICENCE terms, which are recorded separately and still govern distribution; a non-commercial work
+    with no DUA is an ordinary combination.'
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 'n unresolved pending file-level audit. §51.2 item 11: this should REPLACE THE ASSUMPTION THAT
+    ONE BOLD HEAD IS SUFFICIENT.'
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: bold
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  systematic_bias: Here BOLD arrives ALONGSIDE the physiological quantities it is a function of, which
+    is what makes the §17 argument testable rather than rhetorical.
+  band_hz:
+  - null
+  - null
+  temporal_support: TR seconds for the BOLD series; the quantitative parameters are fitted over multi-echo
+    or multi-condition acquisitions and have their own effective temporal support, which is coarser than
+    the BOLD series
+  spatial_support: standard BOLD resolution; each quantitative map is a FITTED PARAMETER FIELD over the
+    same voxels, not an independent measurement -- they share the underlying acquisitions and their errors
+    are correlated
+- name: cmro2
+  kind: measured
+  via: null
+  observation_chain: 'oxygen delivery and extraction -> venous oxygenation -> combined CBF and OEF estimates
+    -> CMRO2 computed from the Fick relation. This is a DERIVED quantity: no scanner measures CMRO2, and
+    its error is the propagated error of everything upstream'
+  confounds:
+  - the calibration model (Davis or a variant) determines the numbers and is a choice
+  - M-value estimation from a hypercapnia or hyperoxia calibration, which is itself noisy
+  - arterial oxygenation assumed rather than measured in most protocols
+  - flow-metabolism coupling assumptions inside the calibration model
+  systematic_bias: The headline result behind this dataset -- that BOLD changes can OPPOSE oxygen metabolism
+    across cortex -- is the sharpest available demonstration that a BOLD-to-activity mapping with a single
+    sign is wrong. §17 rests on this.
+  notes: CMRO2 is a model output, and different calibration models give different CMRO2 from identical
+    data; the model must travel with the number
+  band_hz:
+  - null
+  - null
+- name: cbf
+  kind: measured
+  via: null
+  observation_chain: arterial blood water magnetically labelled proximally -> transit through the arterial
+    tree -> exchange into tissue -> label decay at T1 of blood -> control-label subtraction -> perfusion-weighted
+    signal -> kinetic-model CBF
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - arterial transit time assumed by the kinetic model
+  band_hz:
+  - null
+  - null
+- name: oef
+  kind: measured
+  via: null
+  observation_chain: venous deoxyhaemoglobin content -> T2 or T2* dependence -> fitted oxygen extraction
+    fraction under an assumed vascular geometry and haematocrit
+  confounds:
+  - haematocrit assumed rather than measured
+  - the assumed venous blood volume fraction
+  - vessel orientation relative to B0, which changes the susceptibility effect
+  systematic_bias: OEF is where the assumed VASCULAR GEOMETRY enters the physiology explicitly, which
+    is why §16 wants vascular structure to be first-class rather than parameterised away.
+  band_hz:
+  - null
+  - null
+- name: multi_parameter_joint_fit
+  kind: measured
+  via: null
+  systematic_bias: having BOLD, CBF, CBV, OEF and CMRO2 in the same voxels at the same time is what makes
+    the coupling model IDENTIFIABLE rather than merely fitted -- a single BOLD series cannot separate
+    flow from metabolism at all
+  band_hz:
+  - null
+  - null
+- name: T2map
+  kind: measured
+  via: null
+  observation_chain: multi-echo spin-echo decay -> per-voxel T2 fit
+  confounds:
+  - the fitting model (mono- vs multi-exponential)
+  - stimulated-echo contamination in the MESE train
+  - B1 inhomogeneity at 3T
+  systematic_bias: 'The least derived quantity in this deposit and the one the others are built on: R2prime
+    is 1/T2* - 1/T2, oef comes from R2prime, and cmro2 from oef. An error here propagates to all three
+    and does not average out, which is why it is carried as its own stream rather than folded into them.'
+  band_hz:
+  - null
+  - null
+- name: T2Smap
+  kind: measured
+  via: null
+  observation_chain: multi-echo gradient-echo decay -> per-voxel T2* fit
+  confounds:
+  - macroscopic field inhomogeneity, which is indistinguishable from tissue T2* in a voxel
+  - the echo set's dynamic range at long TE
+  systematic_bias: T2* mixes tissue susceptibility with macroscopic field gradients, and no per-voxel
+    fit separates them. Near air-tissue boundaries the fitted value is shortened by geometry rather than
+    by physiology -- which is exactly where the orbitofrontal and temporal signal this deposit reports
+    is weakest.
+  band_hz:
+  - null
+  - null
+- name: R2prime
+  kind: measured
+  via: null
+  observation_chain: 1/T2* - 1/T2, per voxel
+  confounds:
+  - both parent fits' errors, which enter as a DIFFERENCE and therefore add in quadrature rather than
+    cancelling
+  - any misregistration between the MESE and MEGRE series
+  systematic_bias: A difference of two reciprocals of two separate fits on two separate acquisitions.
+    It is the noisiest quantity in the chain and the one every oxygenation number downstream rests on,
+    and it inherits T2*'s boundary artefact with the opposite sign to T2's.
+  band_hz:
+  - null
+  - null
+- name: cbv
+  kind: measured
+  via: null
+  observation_chain: dynamic susceptibility contrast bolus -> tracer kinetics -> cerebral blood volume
+  confounds:
+  - the arterial input function, which is measured in a voxel that is not the artery
+  - bolus dispersion between the AIF voxel and the tissue
+  - contrast leakage where the barrier is not intact
+  systematic_bias: DSC gives RELATIVE blood volume unless an absolute calibration is supplied, and the
+    arterial input function is the single largest source of error in it. oef divides by cbv, so an AIF
+    error propagates into every oxygenation number with the reciprocal's sensitivity.
+  band_hz:
+  - null
+  - null
+- name: t2_mapping
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2star_mapping
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: asl_cbf
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: task_paradigms
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- vessel_geometry
+- naturalistic_stimulus
+- arterial_blood_gas
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: mr-acquisition-objects
+  for_streams:
+  - cmro2
+  - cbf
+  - oef
+  - multi_parameter_joint_fit
+  severity: blocking
+  without_it: A quantitative parameter map is a FITTED field, and its value depends on the sequence, the
+    timing and the field maps that produced it. Without the acquisition object those are not carried,
+    and the number is a fit output rather than a measurement of tissue.
+- geometry: vascular-products
+  for_streams:
+  - cmro2
+  - oef
+  severity: degrading
+  without_it: 'An oxygenation estimate is about blood in vessels, and its meaning depends on which vessels:
+    an OEF from a resolved vein and an OEF inferred from the field perturbation around unresolved capillaries
+    are different measurements. Without the vascular product they cannot be told apart.'
+  substitute: A voxel-wise map treated as a single compartment, which absorbs the venous bias into the
+    tissue estimate.
+use:
+- calibrate
+- fit
+forbidden:
+- ds004873/* -> cortical current-source dynamics
+- ds004873/cmro2 -> a measured quantity (it is derived under a calibration model)
+split:
+  group_by:
+  - participant
+  - session
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: ds004873
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

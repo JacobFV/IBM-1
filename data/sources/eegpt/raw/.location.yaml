@@ -1,0 +1,5 @@
+# where the bytes for `eegpt` actually live.  never the bytes themselves.
+source_url: "https://github.com/BINE022/EEGPT"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

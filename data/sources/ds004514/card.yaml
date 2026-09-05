@@ -1,0 +1,221 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds004514
+title: 'ds004514 -- simultaneous EEG-fNIRS: a cue image, then visual, auditory, tactile and silent-naming
+  imagery of the same object'
+provider: OpenNeuro ds004514
+citation: Rybar, M., Poli, R. and Daly, I., 2024. Using data from cue presentations results in grossly
+  overestimating semantic BCI performance. Scientific Reports 14(1), p.28003. Also Rybar, Poli and Daly,
+  2021, Journal of Neural Engineering 18(4), p.046035; and Rybar, 2023, doctoral dissertation, University
+  of Essex. Named in PROMPT.md 52.4, 52.5 and 58.4.
+urls:
+- https://openneuro.org/datasets/ds004514
+- https://doi.org/10.18112/openneuro.ds004514.v1.1.2
+access: held
+licence:
+  name: CC0-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'RESOLVED FROM THE HELD FILES, 2026-08-18. dataset_description.json declares "License": "CC0"
+    and nothing in the tree qualifies it. The card read ''unresolved'' in all four fields until then.
+    NOTE rule 7: this never gated the fetch and never could -- reading, loading and fitting are internal
+    private research. What it changes is that win.licences.release_gate will pass this source at the point
+    of outward publication. The STIMULI are 36 object PNGs whose provenance the deposit does not state;
+    they are covered by the deposit''s own CC0 declaration as deposited, and that is the depositor''s
+    claim rather than an independent one.'
+binding: unbound
+population:
+  n: 12
+  hierarchy:
+  - participant
+  - run
+  notes: 'MEASURED FROM DISK 2026-08-18, and it is PEOPLE, not directories: participants.tsv holds 12
+    unique participant_id values against 12 subject directories, with NO grouping column, no repeated
+    id and no note of a repeated participant. That question is asked because ds003670 answered it the
+    other way -- 26 rows and 25 directories for 19 people, because a RepeatParticipants field grouped
+    ids and a participant_id hold-out leaked 21 per cent of its cohort. Ages 20-57, 9 F and 3 M, all right-handed.
+    The table opens with a UTF-8 BOM, so it must be read encoding="utf-8-sig"; with plain utf-8 the key
+    column reads as an empty name and every lookup silently returns a default. There is ONE run per participant
+    per modality and NO session level: the whole 70-minute protocol is one continuous BioSemi recording
+    and one continuous NIRx recording. n=12 supports no population claim; the identifiable quantity is
+    within-participant.'
+frames:
+- eeg_cap
+- nirs_optode_array
+- head
+streams:
+- name: eeg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials -- and NO channel is labelled EOG here, so this
+    floor is not subtracted the way BBBD''s six periocular electrodes allow. Eight EXG channels exist,
+    of which the README names only EXG1 and EXG2 (earlobe references); the remaining six are typed MISC
+    and described ''Miscellaneous'', so whether any of them faces an eye is UNKNOWN from the deposit'
+  - 'cardiac: a plethysmograph channel (Plet) IS recorded, so pulse is measurable rather than assumed'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise at 50 Hz and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - the imagery cue is a WORD-free picture but the naming task is explicit, so speech-motor preparation
+    is present on a fifth of trials by design
+  systematic_bias: 'DEPOSITED RAW, which is rare and is worth a line of its own. eeg.json declares SoftwareFilters
+    n/a and EEGReference n/a, and every one of 960 channel rows across 12 participants is status ''good''
+    -- unflagged, which is not the same as verified clean. Nothing has been notched, referenced, ICA-cleaned
+    or interpolated before deposit, so the CLAUDE.md hazard about a preprocessed deposit reporting a floor
+    it already removed does not apply to this source: 50 Hz line noise and drift are still IN these bytes
+    and a filter''s effect can be measured rather than assumed. THAT IS NOT THE SAME AS SAYING AN ENVIRONMENTAL
+    FLOOR CAN BE QUOTED, and the difference is the one MEG-MASC''s floor turns on: an environmental floor
+    is a variance share explained by REFERENCE CHANNELS that face the room and not the head, and this
+    deposit has none -- 8 EXG, 2 GSR, a respiration belt, a plethysmograph and a temperature channel all
+    face the person. So the environmental floor is absent here too, by KIND rather than by removal, which
+    is the distinction notes/questions/2026-08-17-a-floor-that-was-removed-and-a-floor-that-does-not-exist.md
+    draws.'
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at 2048 Hz (BioSemi ActiveTwo) and fNIRS at 7.8125 Hz (NIRx NIRScoutXP continuous
+    wave) -- MEASURED from the sidecars; the card said 'EEG at kHz; fNIRS at ~10 Hz' before 2026-08-18.
+    Two native clocks and two physical processes with different time constants, over one ~72-minute session
+    per participant. 14.60 h of EEG in total, 4232-4870 s per participant; fNIRS runs 4266-4903 s. Imagery
+    periods are 3 s, cue images 0.6 s.
+  spatial_support: 'co-registered EEG electrodes and fNIRS optodes on ONE NIRx NIRScap, and the two have
+    DIFFERENT spatial supports -- a point contact against a banana-shaped photon path between one source
+    and one detector -- so treating them as co-located is wrong. TWO POSITION FACTS MEASURED FROM DISK
+    2026-08-18. (1) There is NO EEG electrode geometry in this deposit at all: zero _electrodes.tsv and
+    zero EEG _coordsystem.json in 201 files, and the depositor''s own code/read_eeg.py calls mne.channels.make_standard_montage(''biosemi64'').
+    So EEG positions here are a TEMPLATE supplied by the consumer, and rule 1 applies -- absent positions
+    are unmeasured positions, not a default head. (2) fNIRS optode positions ARE present, in CapTrak metres
+    with NAS/LPA/RPA fiducials, and they are a per-montage template rather than a per-head digitisation:
+    sub-01..sub-06 share one byte-identical optodes.tsv and sub-07..sub-12 share another, so the coordinates
+    do not vary between six different heads.'
+- name: fnirs
+  kind: measured
+  via: null
+  observation_chain: neural activity -> haemodynamics -> HbO/HbR concentration change -> wavelength-dependent
+    attenuation along a curved, partial-volume-weighted photon path through scalp, skull, CSF and cortex
+    -> source-detector channel intensity at 785 and 830 nm -> DEPOSITED HERE AS RAW CONTINUOUS-WAVE AMPLITUDE
+    IN VOLTS. The modified Beer-Lambert step has NOT been applied by the depositor, so the differential-pathlength
+    assumption is the consumer's to make and to declare.
+  confounds:
+  - extracerebral scalp haemodynamics, which dominate short channels and leak into long ones -- and there
+    are NO short channels here, so this cannot be separated
+  - systemic blood pressure, heart rate and Mayer waves
+  - optode-scalp coupling and hair-induced attenuation
+  - differential pathlength factor not measured and not applied
+  systematic_bias: 'Cortical haemodynamics OUTSIDE a scanner, simultaneously with electrophysiology. That
+    combination is rare and is exactly the neurovascular-coupling evidence 16-17 need without the MR environment''s
+    artifacts. TWO MONTAGES, NOT ONE, measured from disk 2026-08-18: sub-01..sub-06 carry 28 channels
+    from 8 sources and 4 detectors, and sub-07..sub-12 carry 22 channels from 7 sources and 4 detectors.
+    The fNIRS side is therefore SIX AND SIX with different spatial supports, not a cohort of twelve, and
+    any statistic pooled across all twelve fNIRS participants is pooling two montages. The card declared
+    one montage until 2026-08-18.'
+  notes: the modified Beer-Lambert model assumes a differential pathlength factor that is not measured
+    here and not applied here; that assumption is the dominant model discrepancy and it is deferred to
+    the consumer rather than baked into the deposit
+  band_hz:
+  - null
+  - null
+- name: imagery_cues
+  kind: imposed
+  via: null
+  systematic_bias: 'the cue is known, the imagined content is not observed, and there is NO vividness
+    or compliance report anywhere in this deposit -- so unlike kamitani-perception-and-imagery-fmri there
+    is not even a self-report that the participant complied. FOUR IMAGERY TASKS PER TRIAL, measured from
+    the events 2026-08-18: visual, auditory and tactile imagery of the object plus silent naming, in that
+    trial''s own randomised order, 3 s each. 1,080 animal and 1,080 tool trials, exactly 180 per task
+    per participant, 12 of 12 participants, none short. The non-visual arms are the control this makes
+    possible: same object, same cue, seconds apart, imagined in a modality that is not vision.'
+  band_hz:
+  - null
+  - null
+- name: stimulus_images
+  kind: imposed
+  via: null
+  systematic_bias: 'The cue picture IS held -- 36 PNGs, 18 animals and 18 tools, named in every events
+    row''s stim_file. So this deposit has a PERCEPTION event whose pixels are known, which BBBD does not.
+    It is a thin perception condition and must be described as one: 0.6 s of a single masked object photograph
+    on a 2560x1440 screen, not free viewing. ScreenDistance and ScreenSize are both ''n/a'' in the events
+    sidecar, so THERE IS NO VISUAL-ANGLE AXIS in this deposit and a retinotopically addressed path cannot
+    be entered from it without an assumed viewing distance.'
+  band_hz:
+  - null
+  - null
+- name: autonomic
+  kind: measured
+  via: null
+  observation_chain: autonomic effector state -> skin conductance at two left-hand electrodes, thoracic
+    circumference at a respiration belt, peripheral blood volume at a finger plethysmograph and skin temperature
+    -> the SAME BioSemi ActiveTwo amplifier as the EEG, at 2048 Hz, on the same clock. These are peripheral
+    measurements standing in for a systemic state, not measurements of that state.
+  confounds:
+  - movement of the hand moves the GSR electrodes and the plethysmograph, and the imagery tasks include
+    a tactile one
+  - the respiration belt measures thoracic circumference, which is posture as well as breathing
+  - electrodermal response has a latency of seconds and cannot be aligned to a 3 s imagery period without
+    a model
+  - skin temperature drifts with room temperature over a 72-minute session and is not a brain signal
+  systematic_bias: Two GSR electrodes on the left hand, a respiration belt, a plethysmograph and a temperature
+    channel ride on the EEG amplifier at 2048 Hz. Not published as a modality by the depositor and found
+    in channels.tsv; they are what makes the systemic component of the fNIRS signal measurable rather
+    than assumed, which matters more here than usual because there are no short channels.
+  band_hz:
+  - null
+  - null
+- name: optode_montage
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg_electrode_positions
+- short_separation_fnirs_channels
+- eog
+- vividness_or_compliance_report
+- screen_distance_and_size
+- individual_anatomy
+- fmri
+- meg
+- eye_tracking
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg
+  - fnirs
+  severity: blocking
+  without_it: 'The EEG electrodes and the fNIRS optodes sit on one cap and have completely different spatial
+    supports -- a point contact against a banana-shaped photon path between one source and one detector.
+    Without a device-geometry object holding both, the two streams cannot be co-registered and treating
+    them as co-located is wrong. Sharper here than the card knew: the fNIRS side holds TWO montages of
+    different channel count, and the EEG side holds NO positions at all.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- ds004514/fnirs -> cortical haemodynamic state without an explicit extracerebral component
+- ds004514/imagery_cues -> imagined content as if observed
+- ds004514/fnirs -> a statistic pooled across all 12 participants as if one montage
+- ds004514/eeg -> a source estimate on a template montage described as measured geometry
+- ds004514/stimulus_images -> a retinotopic support without an assumed viewing distance declared as assumed
+split:
+  group_by:
+  - participant
+  - stimulus
+  notes: 'Stimulus is a real leakage axis: 36 images are each presented 60 times across the cohort, so
+    a participant-only split still lets a model memorise the image set. fNIRS MONTAGE is a third axis
+    and is not in this list because it is perfectly nested in participant -- but a fold that happens to
+    put all six of one montage on one side is not a montage-balanced fold, and nothing in a participant-grouped
+    split prevents that.'
+provenance:
+  imported_from: win-registry
+  card: ds004514
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

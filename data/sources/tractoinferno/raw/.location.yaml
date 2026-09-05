@@ -1,0 +1,10 @@
+# where the bytes for `tractoinferno` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/tractoinferno
+acquired_at: '2026-09-04'
+files: 1031
+bytes: 34449365361
+gib: 32.08
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://openneuro.org/datasets/ds003900/versions/1.1.1

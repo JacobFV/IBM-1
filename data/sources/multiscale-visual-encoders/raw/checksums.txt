@@ -1,0 +1,1 @@
+# sha256 manifest for multiscale-visual-encoders; written on acquisition

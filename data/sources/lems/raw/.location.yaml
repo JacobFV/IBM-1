@@ -1,0 +1,5 @@
+# where the bytes for `lems` actually live.  never the bytes themselves.
+source_url: "https://lems.github.io/LEMS/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

@@ -1,0 +1,180 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ppmi
+title: PPMI -- Parkinson's Progression Markers Initiative
+provider: Michael J. Fox Foundation; hosted by the LONI Image and Data Archive
+citation: Marek et al., The Parkinson Progression Marker Initiative (PPMI). Progress in Neurobiology 95(4):629-635,
+  2011. doi:10.1016/j.pneurobio.2011.09.005.
+urls:
+- https://www.ppmi-info.org/
+- https://ida.loni.usc.edu/
+access: restricted
+licence:
+  name: no licence of any kind; access is contract-gated
+  redistribution: prohibited
+  commercial: unresolved
+  notes: 'There is NO LICENCE in the PPMI DUA v5.0 or on the download page. Access is by signed agreement
+    plus a reviewed data-use application, a Publications Policy and a Conflict of Interest Statement.
+    Verbatim: I will not further disclose these data beyond the uses outlined in this agreement and my
+    data use application. AI/ML CONSTRAINT THAT MUST NOT BE DISCOVERED LATE: DUA paragraph 3 prohibits
+    AI tools that do not guarantee containment of data inputs, and Appendix A permits AI tools only where
+    they explicitly prevent sharing data with others -- locally run or institution-internal -- and states
+    that an opt-out clause does not constitute sufficient protection. Uploading PPMI data to non-compliant
+    third-party platforms is prohibited. For this substrate that rules out any hosted-inference path over
+    PPMI bytes.'
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: 'The programme targets roughly 5,500+ participants across about 50 sites (approximately 1,700
+    PD, 300 healthy controls, 3,000 prodromal and 100 SWEDD/genetic); the 2011 paper describes 400 de
+    novo PD and 200 controls at 21 sites. n left null: the cohort is enrolling and the figure moves.'
+frames:
+- scanner
+- subject_native
+- MNI152
+- striatal_roi
+streams:
+- name: datscan_dopamine_transporter
+  kind: measured
+  via: null
+  observation_chain: 'presynaptic dopamine transporter density in striatum -> radioligand binding -> gamma
+    emission -> SPECT reconstruction -> striatal binding ratio against a reference region. A RATIO, not
+    a density: the reference region is assumed transporter-free and its own signal enters every number'
+  confounds:
+  - reference-region choice and its own specific binding
+  - partial-volume effects from striatal atrophy, which bias the ratio downwards independently of transporter
+    loss
+  - camera and reconstruction differences between the ~50 sites
+  - medication and other transporter-active drugs at the time of scan
+  - head motion during a long SPECT acquisition
+  systematic_bias: One of very few molecular-imaging measures in this registry with a longitudinal within-person
+    arm. It is a striatal measure and constrains subcortical state only.
+  band_hz:
+  - null
+  - null
+  temporal_support: a longitudinal VISIT schedule spanning years -- the disease-progression clock, which
+    is unrelated to any acquisition clock. Digital wearable data add a continuous stream whose specific
+    channels are unresolved
+  spatial_support: DaTSCAN SPECT of the dopamine transporter, MRI with imaging sub-studies, and biofluid
+    assays from DNA, RNA, serum, plasma, whole blood, CSF, urine, skin biopsy and post-mortem tissue
+- name: longitudinal_autonomic_and_sleep
+  kind: measured
+  via: null
+  observation_chain: autonomic and sleep questionnaires and clinical assessments administered at scheduled
+    visits -- INSTRUMENT SCORES, which are reports about physiology rather than recordings of it
+  confounds:
+  - self-report bias and recall over the reporting window
+  - medication effects on autonomic function
+  - assessment differs between sites and raters
+  band_hz:
+  - null
+  - null
+- name: prodromal_cohort
+  kind: measured
+  via: null
+  systematic_bias: A prospectively followed prodromal cohort is the only way to observe a trajectory before
+    diagnosis; enrolment is by risk criteria, so the cohort is selected on the very features one might
+    want to test.
+  band_hz:
+  - null
+  - null
+- name: datscan_spect
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: clinical_motor
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: neurobehavioural
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: autonomic
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: olfactory
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: sleep
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: patient_reported_outcomes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: genetics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: biofluids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: digital_wearable
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- ieeg
+- task_fmri_at_most_sites
+- intervention
+- alpha_synuclein_saa_for_prodromal_and_controls
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+- prior
+forbidden:
+- ppmi/* -> any hosted or third-party inference endpoint (DUA v5.0 Appendix A)
+- ppmi/* -> redistribution of any PPMI bytes or derived data outside the approved application
+- ppmi/* -> a striatal binding ratio treated as a transporter density
+split:
+  group_by:
+  - participant
+  - site
+  - session
+provenance:
+  imported_from: win-registry
+  card: ppmi
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

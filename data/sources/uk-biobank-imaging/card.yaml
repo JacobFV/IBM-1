@@ -1,0 +1,176 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: uk-biobank-imaging
+title: UK Biobank Brain Imaging
+provider: UK Biobank
+citation: Miller et al., Multimodal population brain imaging in the UK Biobank prospective epidemiological
+  study. Nature Neuroscience 2016.
+urls:
+- https://www.ukbiobank.ac.uk/
+access: restricted
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Application, approved research purpose and a material transfer agreement. Bytes are non-redistributable;
+    commercial terms and SPDX unresolved.
+binding: unbound
+population:
+  n: 100000
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: 'The healthy-volunteer selection bias is documented and is a systematic bias, not noise: this
+    cohort is not the general population.'
+frames:
+- scanner
+- subject_native
+- fsaverage
+- MNI152
+- wrist_device
+streams:
+- name: t1w
+  kind: measured
+  via: null
+  observation_chain: tissue proton density and T1 -> sequence-specific contrast -> k-space acquisition
+    -> reconstruction -> voxel intensity; intensity is not a tissue parameter until an explicit relaxometry
+    model is applied
+  confounds:
+  - B1+ transmit inhomogeneity
+  - B0 off-resonance
+  - the fitted signal model's own misspecification
+  - motion between the volumes that enter one fit
+  systematic_bias: Three scanners at three sites; site effects are large relative to many effects of interest.
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 0.735 s BOLD; accelerometry at 100 Hz over one week; longitudinal repeat imaging
+    in a subset
+  spatial_support: 1 mm structural; 2 mm diffusion; 2.4 mm BOLD; three-site harmonised protocol
+- name: swi
+  kind: measured
+  via: null
+  observation_chain: tissue magnetic susceptibility -> field perturbation -> phase accrual over TE ->
+    phase unwrapping, background-field removal and an ill-posed dipole inversion -> susceptibility map.
+    The inversion is regularised and its regularisation is a choice
+  confounds:
+  - B1+ transmit inhomogeneity
+  - B0 off-resonance
+  - the fitted signal model's own misspecification
+  - motion between the volumes that enter one fit
+  - venous vs. iron ambiguity in susceptibility contrast
+  systematic_bias: SWI/QSM sees veins and iron together; separating them is a modelling problem, not a
+    threshold.
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  observation_chain: water displacement over the diffusion time within and around axons and cells -> gradient-direction-dependent
+    signal attenuation -> reconstructed q-space or orientation distribution; ORIENTATION EVIDENCE, not
+    an observation of a tract
+  confounds:
+  - eddy-current and susceptibility distortion
+  - motion between diffusion directions
+  - partial volume of crossing fibres, which no single-tensor model represents
+  - the fitting model itself (DTI vs. CSD vs. NODDI) is a choice with its own bias
+  band_hz:
+  - null
+  - null
+- name: accelerometry
+  kind: imposed
+  via: null
+  systematic_bias: 'wrist-worn: a proxy for whole-body movement, not a measurement of it'
+  band_hz:
+  - null
+  - null
+- name: population_covariance
+  kind: measured
+  via: null
+  systematic_bias: healthy-volunteer selection
+  band_hz:
+  - null
+  - null
+- name: t2flair
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_task
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: biomarkers
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: genetics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: health_records
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- ieeg
+- pet
+- intervention
+- eye_tracking
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  for_streams:
+  - dwi
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+- geometry: vascular-products
+  for_streams:
+  - swi
+  severity: blocking
+  without_it: An angiographic volume is an image of a lumen, not a vessel. Without the vascular product
+    -- a resolved graph carrying radius, topology and territory -- there is no vessel for this evidence
+    to constrain and no way to say which cortical support any of it supplies.
+use:
+- evaluate
+- fit
+- prior
+forbidden:
+- uk-biobank-imaging/* -> cortical current-source dynamics
+- uk-biobank-imaging/* -> intervention response parameters
+- uk-biobank-imaging/accelerometry -> cortical state
+split:
+  group_by:
+  - participant
+  - site
+  - session
+provenance:
+  imported_from: win-registry
+  card: uk-biobank-imaging
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

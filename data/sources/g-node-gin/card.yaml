@@ -1,0 +1,49 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: g-node-gin
+title: GIN -- G-Node Infrastructure
+provider: German Neuroinformatics Node, LMU Munich; storage at LMU and the Leibniz-Rechenzentrum
+citation: Per-repository DOIs under the prefix 10.12751/g-node.*; no platform-level citation is requested.
+urls:
+- https://gin.g-node.org
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: The PLATFORM imposes no licence -- it is per repository. A licence is MANDATORY when a repository
+    is published with a DOI, and the platform recommends CC0 first, lists CC0, CC BY, CC BY-SA, ODbL,
+    ODC-By and PDDL, and explicitly discourages CC BY-NC and CC BY-ND. Terms state that use of G-Node
+    services is permitted solely for scientific work. Public repositories and DOI datasets are downloadable
+    without an account; hosting requires one.
+binding: unbound
+population:
+  n: null
+frames:
+- described_by_reference
+streams:
+- name: doi_published_repositories
+  kind: measured
+  via: null
+  systematic_bias: GIN's mandatory-licence-at-DOI rule means a DOI-published GIN dataset has a resolved
+    licence by construction, which is the opposite of OSF's default and is worth knowing when choosing
+    where to look.
+  band_hz:
+  - null
+  - null
+  temporal_support: repository commit history; the data's own clocks are whatever the depositor stored
+  spatial_support: versioned file hosting over Git plus git-annex, with no format restriction; the NIX
+    and odML formats originate here. WAND is hosted this way
+absent:
+- measurements
+use:
+- prior
+forbidden:
+- g-node-gin/* -> any state channel
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: g-node-gin
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

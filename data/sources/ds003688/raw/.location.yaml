@@ -1,0 +1,10 @@
+# where the bytes for `ds003688` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/ds003688
+acquired_at: '2026-09-04'
+files: 1632
+bytes: 16423373220
+gib: 15.3
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://nemar.org/dataset/on003688

@@ -1,0 +1,95 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds003768
+title: ds003768 — simultaneous EEG-fMRI during sleep and wakefulness
+provider: OpenNeuro
+citation: unresolved
+urls:
+- https://openneuro.org/datasets/ds003768
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+binding: unbound
+population:
+  n: 33
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: Sleep and wakefulness in the same participants. The state transition is the design; there is
+    no naturalistic viewing condition.
+frames:
+- eeg_cap
+- scanner_bore
+- subject_native_ras
+streams:
+- name: eeg
+  kind: measured
+  via: null
+  observation_chain: cortical current-source state -> volume conduction -> electrodes, inside the scanner
+    environment
+  confounds:
+  - gradient artifact
+  - ballistocardiogram
+  - ocular
+  - muscle
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at amplifier rate; fMRI at TR; sleep staging on 30 s epochs
+  spatial_support: scalp EEG montage; fMRI voxel grid
+- name: bold_fmri
+  kind: measured
+  via: null
+  observation_chain: vascular/metabolic state -> susceptibility -> acquisition -> reconstructed voxel
+    over an acquisition window
+  confounds:
+  - motion
+  - physiological noise
+  - drift
+  systematic_bias: Sleep/wake transitions change baseline vascular state, which is precisely the regime
+    §17 says alters neurovascular coupling. That is what this dataset is FOR.
+  band_hz:
+  - null
+  - null
+- name: sleep_staging
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- naturalistic_movie_stimulus
+- eye_tracking
+- gaze
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- ds003768/* -> visual world-model coupling parameters
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: ds003768
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,76 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: smpl-family
+title: SMPL, SMPL-H and SMPL-X parametric body models
+provider: Max Planck Institute for Intelligent Systems
+citation: 'Loper et al., SMPL: A Skinned Multi-Person Linear Model. SIGGRAPH Asia 2015; Romero et al.,
+  MANO/SMPL-H, SIGGRAPH Asia 2017; Pavlakos et al., SMPL-X, CVPR 2019.'
+urls:
+- https://smpl.is.tue.mpg.de/
+- https://smpl-x.is.tue.mpg.de/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: prohibited
+  notes: Non-commercial research licence stated by the providers for the model parameters; commercial
+    licences are separate. Redistribution unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- smpl_body_frame
+- smplx_body_frame
+streams:
+- name: parametric_body_model
+  kind: measured
+  via: null
+  systematic_bias: 'A LEARNED SURFACE MODEL, not an anatomical one. Its ''joints'' are regression targets
+    fitted to surface data, NOT anatomical joint centres, and its shape space represents the scanned population.
+    §52.14 lists it among body MODELS for a reason: it is the body''s boundary geometry, useful for where
+    the body is in the world, and it contains no muscles, no bones and no dynamics.'
+  notes: SMPL joint locations differ from anatomical joint centres by centimetres, which matters as soon
+    as a torque or a moment arm is computed
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: 'a learned parametric body SURFACE model: a shape space, a kinematic tree and pose-dependent
+    blend shapes, fitted to thousands of body scans. SMPL-X adds hands and face'
+- name: shape_space
+  kind: measured
+  via: null
+  systematic_bias: the shape space is a population prior over body geometry and inherits the scanned population's
+    demographics
+  band_hz:
+  - null
+  - null
+- name: mesh_topology
+  kind: measured
+  via: null
+  systematic_bias: a fixed vertex topology across all bodies makes correspondence trivial, which is why
+    it became the field's interchange format -- the same role fsaverage plays for cortex
+  band_hz:
+  - null
+  - null
+absent:
+- anatomical_joints
+- muscles
+- internal_structure
+- dynamics
+- population_diversity_in_the_shape_space
+use:
+- calibrate
+- prior
+forbidden:
+- smpl-family/* -> anatomical joint-centre claims
+- smpl-family/* -> musculoskeletal dynamics
+- smpl-family/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: smpl-family
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

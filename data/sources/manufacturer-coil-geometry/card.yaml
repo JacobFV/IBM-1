@@ -1,0 +1,62 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: manufacturer-coil-geometry
+title: Manufacturer TMS coil and waveform specifications
+provider: multiple -- MagVenture, Magstim, Deymed, Nexstim and others
+citation: PROMPT.md §52.13, 'manufacturer waveform/coil geometry'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- coil_frame
+streams:
+- name: nominal_coil_geometry
+  kind: measured
+  via: null
+  systematic_bias: 'NOMINAL specifications from a datasheet, frequently incomplete: exact winding paths
+    and casing offsets are commonly proprietary, so a published ''figure-of-eight, 70 mm'' underdetermines
+    the field. §56.4''s device geometry is a construction from whatever is specified plus whatever is
+    measured, and its uncertainty is the gap between them.'
+  notes: an approximated winding reproduces the far field better than the near field, and the near field
+    is where the cortex is
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: published or supplied descriptions of coil winding geometry, casing dimensions and
+    pulse current waveforms, per coil model
+- name: current_waveform
+  kind: measured
+  via: null
+  systematic_bias: the waveform determines dB/dt and therefore the induced field's time course, which
+    determines which neural elements are recruited
+  band_hz:
+  - null
+  - null
+absent:
+- exact_winding_paths
+- casing_offsets
+- unit_to_unit_variation
+- public_availability
+use:
+- calibrate
+forbidden:
+- manufacturer-coil-geometry/* -> exact field claims
+- manufacturer-coil-geometry/* -> geometry treated as measured
+- manufacturer-coil-geometry/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: manufacturer-coil-geometry
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

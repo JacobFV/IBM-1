@@ -1,0 +1,5 @@
+# where the bytes for `chang-lab-ecog-cv-syllables` actually live.  never the bytes themselves.
+source_url: "https://figshare.com/collections/Human_ECoG_speaking_consonant-vowel_syllables/4617263"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

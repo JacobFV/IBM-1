@@ -1,0 +1,103 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: swec-ethz-ieeg
+title: SWEC-ETHZ iEEG Database
+provider: Sleep-Wake-Epilepsy-Center, Inselspital Bern, with the Integrated Systems Laboratory, ETH Zurich
+citation: 'Citation for the database itself is unresolved. The verified Hugging Face mirror requests:
+  Carzaniga, Hersche, Sebastian, Schindler, Rahimi. A foundation model with multi-variate parallel attention
+  to generate neuronal activity. arXiv:2506.20354, 2025.'
+urls:
+- https://huggingface.co/datasets/NeuroTec/SWEC_iEEG_Dataset
+- https://mb-neuro.medical-blocks.ch/public_access/databases/ieeg/swec_ieeg
+access: priority
+licence:
+  name: CDLA-Permissive-2.0
+  redistribution: permitted
+  commercial: permitted
+  notes: Community Data License Agreement - Permissive, Version 2.0, as stated on the Hugging Face mirror.
+    The canonical ETH host could not be reached to confirm that the same terms apply there, so this is
+    the MIRROR's stated licence and the parent's is unverified. No registration was observed on the mirror.
+binding: unbound
+population:
+  n: 68
+  hierarchy:
+  - participant
+  - run
+  - device
+  notes: 68 subjects, 9,328 hours of signal and 704 annotated ictal events on the verified mirror. Figures
+    circulating for the two original subsets (16 patients with 100 recordings short-term; 18 patients
+    with 116 seizures over 2,656 hours long-term) come from search snippets rather than a fetched primary
+    page and are not recorded as fact.
+frames:
+- channel_index_only
+streams:
+- name: continuous_long_term_ieeg
+  kind: measured
+  via: null
+  observation_chain: local post-synaptic and spiking activity within a few millimetres of a contact ->
+    extracellular potential -> potential difference against a reference contact whose own activity is
+    in every number -> amplifier and filter -> sampled microvolts. NO SKULL AND NO INVERSE PROBLEM, which
+    is what makes it the strongest direct evidence about cortical state that exists in humans
+  confounds:
+  - the reference contact's own activity, which is subtracted from every channel and is not zero
+  - the epileptogenic zone and interictal discharges, present in a clinical population by definition
+  - anti-epileptic medication, frequently being tapered during monitoring
+  - electrode placement is determined by a surgical hypothesis, so coverage is not a sample of the brain
+  - the recording is in a hospital bed over days, with sleep, arousal and drug state uncontrolled
+  systematic_bias: 9,328 hours of continuous human intracranial recording is the largest openly-licensed
+    such corpus found in this survey, and continuous long-term recording is what makes a STATE TRANSITION
+    observable rather than inferred from averaged trials. The seizure is a spontaneous large-amplitude
+    transition in a system that is otherwise only nudged -- which is directly what obj-transition-sufficient-state
+    is about, and is also a pathological transition and not a normal one.
+  band_hz:
+  - null
+  - null
+  temporal_support: 512 Hz or 1024 Hz depending on subject -- a TWOFOLD RATE DIFFERENCE inside one dataset,
+    which means any spectral feature above 256 Hz exists for some subjects and not others. Recordings
+    are continuous over days
+  spatial_support: multi-channel intracranial EEG; channel count varies by subject and the contact positions
+    are not part of the release
+- name: annotated_ictal_events
+  kind: measured
+  via: null
+  systematic_bias: 704 annotated events give a real prediction target with an unambiguous chance level,
+    and the long inter-ictal baseline means a naive always-negative predictor scores extremely well --
+    the floor that any seizure-prediction number must be quoted against.
+  band_hz:
+  - null
+  - null
+- name: ieeg_continuous
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: seizure_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- contact_localisation
+- mri
+- scalp_eeg
+- healthy_controls
+- behaviour
+- sleep_staging
+use:
+- evaluate
+- fit
+forbidden:
+- swec-ethz-ieeg/* -> any anatomically localised claim (there are no contact coordinates)
+- swec-ethz-ieeg/* -> a normal-brain state prior
+split:
+  group_by:
+  - participant
+  - run
+  notes: Segments from one recording are heavily autocorrelated; a segment-level random split produces
+    near-perfect and meaningless seizure prediction.
+provenance:
+  imported_from: win-registry
+  card: swec-ethz-ieeg
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

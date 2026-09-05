@@ -1,0 +1,5 @@
+# where the bytes for `bp4d-plus` actually live.  never the bytes themselves.
+source_url: "http://www.cs.binghamton.edu/~lijun/Research/3DFE/3DFE_Analysis.html"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

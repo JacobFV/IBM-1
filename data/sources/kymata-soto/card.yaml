@@ -1,0 +1,119 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: kymata-soto
+title: Kymata SOTO -- MEG/EEG transform mapping of the language processing hierarchy
+provider: Kymata Atlas, MRC Cognition and Brain Sciences Unit
+citation: Kymata Atlas SOTO dataset (named in PROMPT.md §52.4).
+urls:
+- https://kymata.org/
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved; the Kymata Atlas distributes derived transform maps whose terms differ from the underlying
+    recordings.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  notes: n unresolved. The distinctive product is a mapping from candidate computational TRANSFORMS to
+    cortical locations and latencies.
+frames:
+- meg_device
+- eeg_cap
+- fsaverage
+- source_space
+streams:
+- name: meg_eeg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
+    plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
+    SQUID flux -> sampled channel
+  confounds:
+  - environmental magnetic interference and urban noise
+  - head motion within and between runs
+  - ocular and cardiac fields
+  - muscle artifact at high frequency
+  - SQUID jumps and sensor drift
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  systematic_bias: Authority low pending verification of release and access.
+  band_hz:
+  - null
+  - null
+  temporal_support: MEG/EEG at kHz; latencies reported in milliseconds relative to stimulus
+  spatial_support: source-space vertices with an explicit latency axis
+- name: transform_expression_maps
+  kind: measured
+  via: null
+  systematic_bias: These maps say 'a model of transform T correlates with source activity here at latency
+    L'. That is an ASSOCIATION between a hypothesised computation and a source estimate, and it inherits
+    the inverse solution's uncertainty entirely. §8's warning that an inverse solution is not ground truth
+    applies with full force.
+  band_hz:
+  - null
+  - null
+- name: meg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eeg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: latency_maps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_audio
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- raw_recordings_where_only_maps_are_released
+- individual_anatomy
+- unresolved_release_details
+requires:
+- geometry: device-geometry
+  for_streams:
+  - meg_eeg
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+- prior
+forbidden:
+- kymata-soto/transform_expression_maps -> observation-role likelihoods
+- kymata-soto/* -> anything until release and licence are verified
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: kymata-soto
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

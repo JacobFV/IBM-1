@@ -1,0 +1,5 @@
+# where the bytes for `sherlock-merlin-princeton` actually live.  never the bytes themselves.
+source_url: "https://dataspace.princeton.edu/handle/88435/dsp01nz8062179"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

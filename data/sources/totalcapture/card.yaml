@@ -1,0 +1,94 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: totalcapture
+title: TotalCapture -- synchronised multi-view video, IMU and mocap
+provider: University of Surrey
+citation: 'Trumble et al., Total Capture: 3D Human Pose Estimation Fusing Video and Inertial Sensors.
+  BMVC 2017.'
+urls:
+- https://cvssp.org/data/totalcapture/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Academic licence; unresolved.
+binding: unbound
+population:
+  n: 5
+  hierarchy:
+  - participant
+  - session
+  notes: 'Five subjects, but with THREE SIMULTANEOUS MEASUREMENT MODALITIES of the same motion: optical
+    mocap, 13 IMUs and 8 calibrated cameras.'
+frames:
+- capture_room
+- camera
+- imu_segment_frames
+- body_frame
+streams:
+- name: multimodal_synchronised_capture
+  kind: measured
+  via: null
+  systematic_bias: THREE INDEPENDENT MEASUREMENTS OF THE SAME MOTION, hardware-synchronised. That makes
+    the observation model for each modality checkable against the others -- an IMU's drift, a camera's
+    depth ambiguity and a marker's soft-tissue artifact are all measurable here rather than assumed. It
+    is the body-side analogue of ds000117's simultaneous MEG and EEG, and it is valuable for the same
+    reason.
+  band_hz:
+  - null
+  - null
+  temporal_support: mocap at 60 Hz; IMU at 60 Hz; video at 60 fps; hardware-synchronised across all three
+  spatial_support: 'three sensor systems with three different spatial supports measuring one body: markers
+    on the skin surface, IMUs on body segments, and cameras observing from outside'
+- name: imu_streams
+  kind: imposed
+  via: null
+  systematic_bias: IMU orientation drifts over minutes; the mocap here measures that drift directly
+  band_hz:
+  - null
+  - null
+- name: marker_mocap
+  kind: imposed
+  via: null
+  systematic_bias: skin-mounted markers move relative to bone (soft-tissue artifact), which is the systematic
+    error in all optical mocap and is never zero
+  band_hz:
+  - null
+  - null
+- name: multi_view_video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: camera_calibration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ground_truth_pose
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- muscle_activity
+- contact_forces
+- gaze
+use:
+- calibrate
+- fit
+forbidden:
+- totalcapture/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: totalcapture
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

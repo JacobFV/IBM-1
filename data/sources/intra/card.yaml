@@ -1,0 +1,91 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: intra
+title: IntrA -- 3D intracranial aneurysm dataset with vessel meshes
+provider: IntrA project
+citation: 'Yang et al., IntrA: 3D Intracranial Aneurysm Dataset for Deep Learning. CVPR 2020.'
+urls:
+- https://github.com/intra3d2019/IntrA
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved; clinical-derived 3D models.
+binding: unbound
+population:
+  n: 103
+  hierarchy:
+  - participant
+  notes: 103 reconstructed 3D vessel models plus 1,909 blood-vessel segments. The distributed product
+    is MESHES, not volumes -- already one derivation step from the imaging.
+frames:
+- mesh_native
+streams:
+- name: vessel_meshes
+  kind: measured
+  via: null
+  observation_chain: reconstructed 3D vessel SURFACE derived from clinical angiography by segmentation
+    and meshing, distributed without the parent volume. What is measured is upstream and not supplied;
+    what is distributed is a surface with an unrecorded reconstruction pipeline
+  confounds:
+  - the segmentation and meshing pipeline is not distributed, so its bias is unknown
+  - mesh smoothing during reconstruction alters local curvature systematically
+  - clinical population
+  systematic_bias: '§4a applies squarely: this is DERIVED GEOMETRY presented as data. It is useful and
+    it must never be treated as a measured surface.'
+  notes: no access to the parent imaging means the derivation cannot be audited or redone
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: triangle MESHES of reconstructed vessel surfaces with per-vertex annotation. There
+    is no imaging volume here, so the segmentation that produced the mesh is not inspectable
+- name: vessel_segment_geometry
+  kind: measured
+  via: null
+  systematic_bias: 1,909 individually labelled vessel segments are a usable prior over branch geometry,
+    radius and bifurcation angle -- statistics §56.3's stochastic microvascular ensembles need
+  band_hz:
+  - null
+  - null
+- name: generated_negative_samples
+  kind: measured
+  via: null
+  systematic_bias: the dataset ships generated non-aneurysm samples as controls, which is the right shape
+    for a control even though they are synthetic
+  band_hz:
+  - null
+  - null
+- name: complete_vessel_models
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: annotated_vessel_segments
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- parent_imaging
+- segmentation_provenance
+- healthy_cohort
+- flow
+- capillary_scale
+use:
+- calibrate
+- evaluate
+- fit
+forbidden:
+- intra/* -> measured-geometry claims
+- intra/* -> healthy population vascular priors without conditioning
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: intra
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

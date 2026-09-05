@@ -1,0 +1,142 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds003688
+title: ds003688 -- open multimodal iEEG-fMRI dataset from naturalistic audiovisual film
+provider: OpenNeuro ds003688 / NEMAR on003688
+citation: Berezutskaya et al., Open multimodal iEEG-fMRI dataset from naturalistic stimulation with a
+  short audiovisual film. Scientific Data 2022.
+urls:
+- https://nemar.org/dataset/on003688
+access: held
+licence:
+  name: CC0-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'Read from the HELD dataset_description.json, which states "License": "CC0". It read `unresolved`
+    on this card until 2026-08-18, when the deposit was fetched and the file could be read -- the licence
+    was never in doubt, it was merely unmeasured, and CLAUDE.md rule 7 is why that never gated the fetch:
+    a licence governs DISTRIBUTION only and must never stand between us and a dataset. CC0-1.0 is a public-domain
+    dedication, so nothing this source contributes inherits a redistribution, attribution or share-alike
+    constraint. Consent scope is a separate question the file does not answer.'
+binding: unbound
+population:
+  n: 63
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 'HELD AND MEASURED 2026-08-18 from the deposit''s own participants.tsv: 63 participants, of whom
+    51 have iEEG, 30 have the movie fMRI, and 18 have BOTH. THIS FIELD READ 51 UNTIL 2026-08-18, WHICH
+    IS THE iEEG COUNT UNDER THE NOUN ''participants'' -- a right value under a wrong noun, which is the
+    defect CLAUDE.md §8 names. The directory agrees with the table: 51 `ses-iemu` directories and 18 participants
+    with both `ses-iemu` and a `ses-mri3t/func`. Ages 5 to 55, so this population includes minors. TWO
+    POPULATIONS, ONE STIMULUS: the iEEG participants are epilepsy surgery patients and the fMRI-only participants
+    are not, so any cross-modal inference crosses a population boundary and must say so.'
+frames:
+- electrode_native
+- subject_native
+- scanner
+- MNI152
+- film_timeline
+streams:
+- name: ieeg
+  kind: measured
+  via: null
+  observation_chain: current sources within millimetres of the contact -> local volume conduction over
+    a short path -> contact surface area, impedance and referencing scheme -> sampled voltage; spatial
+    support is the contact neighbourhood, not a parcel
+  confounds:
+  - 'clinical pathology at the electrode: this is a patient population, not a healthy one'
+  - medication state and post-implant recovery
+  - referencing scheme (common average vs. bipolar) reshaping the apparent field
+  - epileptiform activity contaminating putative task responses
+  systematic_bias: '§51.1 item 7: this supplies SPATIALLY LOCAL electrical evidence that scalp EEG cannot.
+    Coverage is dictated by clinical need and is therefore non-random over the cortex.'
+  notes: contact coverage is a clinically-chosen, spatially biased sample; treating it as a random sample
+    of cortex overstates what it constrains
+  band_hz:
+  - null
+  - null
+  temporal_support: iEEG at 512 Hz-2 kHz; BOLD at TR ~2 s; the 6.5-minute film as the world clock
+  spatial_support: subdural grids/strips and depth electrodes with individually localised contacts; 3
+    mm BOLD
+- name: electrode_localisation
+  kind: measured
+  via: null
+  systematic_bias: post-implant brain shift means the CT-derived contact position and the pre-op surface
+    disagree by millimetres; the correction applied is a modelling choice
+  band_hz:
+  - null
+  - null
+- name: bold_movie
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  band_hz:
+  - null
+  - null
+- name: film_stimulus
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg_scalp
+- meg
+- eye_tracking
+- vascular
+- simultaneous_ieeg_and_fmri
+requires:
+- geometry: device-geometry
+  for_streams:
+  - ieeg
+  - electrode_localisation
+  severity: blocking
+  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
+    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
+    channel is an index and nothing measured here can be attached to a cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - bold_movie
+  - film_stimulus
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- fit
+forbidden:
+- ds003688/ieeg -> healthy population priors without pathology conditioning
+- ds003688/* -> any joint iEEG-fMRI likelihood treating them as one session
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: ds003688
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

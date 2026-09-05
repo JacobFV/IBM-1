@@ -1,0 +1,1 @@
+# sha256 manifest for scanner-field-maps-and-gradient-phantoms; written on acquisition

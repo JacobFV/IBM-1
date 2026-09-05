@@ -1,0 +1,93 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: studentlife
+title: StudentLife -- continuous smartphone sensing and mental-health study
+provider: Dartmouth College
+citation: 'Wang et al., StudentLife: assessing mental health, academic performance and behavioral trends
+  of college students using smartphones. UbiComp 2014.'
+urls:
+- https://studentlife.cs.dartmouth.edu/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Terms unresolved; human-subject behavioural data with identifiability risk.
+binding: unbound
+population:
+  n: 48
+  hierarchy:
+  - participant
+  - session
+  notes: Ten weeks of continuous passive sensing per participant.
+frames:
+- phone_device
+- world_gps
+streams:
+- name: accelerometry
+  kind: imposed
+  via: null
+  systematic_bias: phone-carried, so it measures the phone's motion and only sometimes the person's
+  band_hz:
+  - null
+  - null
+  temporal_support: continuous over 10 weeks at device-specific rates; surveys as sparse events
+  spatial_support: one wearable/phone per participant; no brain measurement at all
+- name: sleep_inference
+  kind: measured
+  via: null
+  systematic_bias: 'INFERRED, not measured: this stream is already a model output and inherits its errors'
+  band_hz:
+  - null
+  - null
+- name: ema_surveys
+  kind: imposed
+  via: null
+  systematic_bias: self-report at a sampled moment; §52.16's rule that a report is a separate variable
+    from the state applies directly
+  band_hz:
+  - null
+  - null
+- name: audio_inference
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: location
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: conversation_inference
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: academic_outcomes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- physiology
+- imaging
+use:
+- fit
+- prior
+forbidden:
+- studentlife/* -> any cortical state
+- studentlife/* -> any neural interaction parameter
+- studentlife/sleep_inference -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: studentlife
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

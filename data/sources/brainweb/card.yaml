@@ -1,0 +1,105 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brainweb
+title: BrainWeb -- Simulated Brain Database
+provider: McConnell Brain Imaging Centre, McGill University
+citation: 'Cocosco et al., BrainWeb: online interface to a 3D MRI simulated brain database. NeuroImage
+  5(4) part 2/4:S425, 1997; Collins et al., Design and construction of a realistic digital brain phantom.
+  IEEE Transactions on Medical Imaging 1998; Aubert-Broche et al., Twenty new digital brain phantoms for
+  creation of validation image data bases. IEEE Transactions on Medical Imaging 25(11):1410-1416, 2006.'
+urls:
+- https://brainweb.bic.mni.mcgill.ca/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'UNRESOLVED AND VERIFIED-ABSENT: no licence or terms-of-use statement was found anywhere on the
+    site. Long and universal use in the literature is not a grant.'
+binding: unbound
+population:
+  n: null
+frames:
+- phantom_native
+- MNI_talairach_aligned
+streams:
+- name: simulated_mri_with_known_ground_truth
+  kind: measured
+  via: null
+  systematic_bias: BrainWeb is the case where the ANSWER IS KNOWN because the anatomy was specified before
+    the image was simulated. That makes it the right fixture for checking a segmentation or a reconstruction,
+    and it is why every such method reports on it. The simulator embodies a particular MR signal model;
+    a method tuned on BrainWeb is tuned to that model's idealisations -- no motion, no physiological noise,
+    no real coil, no susceptibility -- and its BrainWeb score is an upper bound that real data never reaches.
+  notes: the phantom is ONE anatomy (plus twenty), so anatomical variability is represented by twenty
+    samples and not by a population
+  band_hz:
+  - null
+  - null
+  temporal_support: none
+  spatial_support: a digital anatomical phantom plus 20 further anatomical models, from which T1-, T2-
+    and PD-weighted volumes are simulated at chosen slice thickness, noise level and intensity non-uniformity
+- name: controlled_noise_and_inhomogeneity_sweep
+  kind: measured
+  via: null
+  systematic_bias: Noise and intensity non-uniformity are SET rather than estimated, so a method's degradation
+    curve against them is measured and not inferred. This is the cheapest available way to put a floor
+    under a robustness claim.
+  band_hz:
+  - null
+  - null
+- name: ms_lesion_phantoms
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: simulated_t1
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: simulated_t2
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: simulated_pd
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ground_truth_tissue_maps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- real_measurement
+- physiological_noise
+- motion
+- coil_sensitivity
+- susceptibility_effects
+- individual_variability
+- licence
+use:
+- calibrate
+- evaluate
+- surrogate
+forbidden:
+- brainweb/* -> runtime dependency in a WIN query
+- brainweb/* -> a robustness claim about real data
+- brainweb/* -> an artifact, until the terms are resolved
+split:
+  group_by:
+  - participant
+  notes: Twenty phantoms is the entire between-anatomy sample; a split over them is not a population generalisation
+    test.
+provenance:
+  imported_from: win-registry
+  card: brainweb
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

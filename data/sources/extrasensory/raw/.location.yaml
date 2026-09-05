@@ -1,0 +1,5 @@
+# where the bytes for `extrasensory` actually live.  never the bytes themselves.
+source_url: "http://extrasensory.ucsd.edu/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

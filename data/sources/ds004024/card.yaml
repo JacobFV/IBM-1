@@ -1,0 +1,118 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds004024
+title: ds004024 — bifocal TMS-EEG ccPAS
+provider: OpenNeuro
+access: held
+licence:
+  name: CC0-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'Read from the held dataset_description.json, which states "License": "CC0". CC0-1.0 is a public-domain
+    dedication: nothing this source contributes inherits a redistribution, attribution or share-alike
+    constraint. Consent scope is a separate question the file does not answer.'
+binding: unbound
+population:
+  n: 13
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 13 participants have a directory, electrodes and events. EEG RECORDINGS ARE HELD FOR 2 OF THEM
+    (sub-CON001 and sub-CON006, 14 recordings, 1.46 h measured from the BrainVision headers). The other
+    11 have sidecars, events and electrode positions and no signal. n_participants stays 13 because that
+    is the cohort the events and montages describe; the EEG stream carries its own n_participants of 2,
+    and they are different numbers on purpose.
+frames:
+- eeg_cap
+- subject_native_ras
+- tms_coil
+streams:
+- name: eeg
+  kind: measured
+  via: null
+  observation_chain: cortical current-source state -> volume conduction -> electrodes, with a large TMS-induced
+    artifact at pulse onset
+  confounds:
+  - TMS pulse artifact and amplifier recovery
+  - auditory evoked response to the coil click
+  - somatosensory evoked response to the scalp twitch
+  - muscle (facial/temporalis) response to direct stimulation
+  - ocular
+  - cardiac
+  systematic_bias: A TEP that is largely auditory and somatosensory is a real measurement of the wrong
+    thing. Co-stimulation models are ENABLED BY DEFAULT for any prediction from this source (obj-tms-field);
+    disabling them is an explicit ablation.
+  notes: delivered field is not recorded in the held bytes -- see intervention below
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at amplifier rate; TMS pulses as discrete events
+  spatial_support: scalp EEG montage; T1 volumes
+- name: fmri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: coil_pose
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pulse_timing
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- fmri
+- dwi
+- coil_pose
+- sham
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'Two device geometries are needed at once and neither can be defaulted: the electrode positions
+    that define the lead field, and the coil winding and pose that determine the induced field. Without
+    both, the pulse is a machine setting and the response is a channel-space waveform, with nothing connecting
+    them at any cortical location.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- calibrate
+- fit
+forbidden:
+- ds004024/* -> vascular state
+- ds004024/* -> delivered-field parameters (the evidence is not held)
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: ds004024
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,129 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds001971
+title: OpenNeuro ds001971 -- high-density mobile brain/body imaging during auditory gait pacing
+provider: OpenNeuro; TU Berlin and collaborators
+citation: Wagner et al., High-density EEG mobile brain/body imaging data recorded during a challenging
+  auditory gait pacing task. Scientific Data, 2019. doi:10.1038/s41597-019-0223-2. Dataset doi:10.18112/openneuro.ds001971.v1.1.1.
+urls:
+- https://openneuro.org/datasets/ds001971
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'dataset_description.json says literally "Creative commons" with NO VERSION AND NO VARIANT. That
+    names a family, not a licence: it does not settle non-commercial, share-alike or no-derivatives. Recorded
+    as unresolved rather than upgraded to CC-BY.'
+binding: unbound
+population:
+  n: 20
+  hierarchy:
+  - participant
+  - run
+  notes: 9 female, 11 male.
+frames:
+- channel_label
+- body_segment_joint_angles
+streams:
+- name: eeg_during_cued_treadmill_gait
+  kind: measured
+  via: null
+  observation_chain: post-synaptic currents in aligned pyramidal populations -> volume conduction to scalp
+    -> electrode potential -> amplifier -> sampled microvolts, RECORDED DURING WALKING, where the electrode-scalp
+    interface is mechanically disturbed on every heel strike
+  confounds:
+  - gait-cycle-locked motion artefact, which is periodic at exactly the frequency of the effect of interest
+    and is the single reason mobile EEG is hard
+  - neck and scalp EMG, which increases with walking speed
+  - cable sway and electrode movement
+  - the auditory cue produces its own evoked response on every step
+  - the released data are already filtered (0.1 Hz high-pass, 256 Hz low-pass, 50 Hz notch), so they are
+    a derived view and not the raw recording
+  systematic_bias: 'Treadmill walking with rhythmic auditory cueing, not overground: the biomechanics
+    and the optic flow both differ from natural locomotion, and the cue imposes a periodicity that is
+    not the participant''s own.'
+  band_hz:
+  - null
+  - null
+  temporal_support: every stream at 512 Hz -- EEG, EMG, pressure and goniometer on one clock, which is
+    a hardware relation and removes the fitted-alignment problem that most body-plus-brain corpora carry
+  spatial_support: 108-channel scalp EEG with 4-channel bilateral tibialis anterior EMG, heel pressure
+    sensors and three goniometer channels at hip, knee and ankle. THE BODY IS INSTRUMENTED ALONGSIDE THE
+    BRAIN, which is what makes it usable for a motor forcing interaction rather than only for a cortical
+    one
+- name: emg_pressure_and_joint_angles
+  kind: imposed
+  via: null
+  systematic_bias: Peripheral measurement on the SAME 512 Hz clock as the EEG makes the muscle artefact
+    measurable rather than assumed -- the EMG is simultaneously the boundary signal of interest and the
+    best available regressor for the contamination it causes.
+  band_hz:
+  - null
+  - null
+- name: eeg_108ch
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: emg_bilateral_tibialis
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: heel_pressure
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: goniometry
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: auditory_cue_events
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- full_body_motion_capture
+- overground_walking
+- raw_unfiltered_eeg
+- structural_mri
+- digitised_electrode_positions
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg_during_cued_treadmill_gait
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- ds001971/* -> an overground-locomotion claim
+- ds001971/* -> lead field construction (no MRI, no digitisation)
+split:
+  group_by:
+  - participant
+  - run
+provenance:
+  imported_from: win-registry
+  card: ds001971
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

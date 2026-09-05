@@ -1,0 +1,61 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: coil-probe-measurements
+title: TMS coil field probe measurements
+provider: multiple -- laboratory and manufacturer coil characterisation
+citation: PROMPT.md §52.13, 'coil-probe measurements'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- coil_frame
+- probe_position
+streams:
+- name: measured_coil_field
+  kind: measured
+  via: null
+  systematic_bias: '§56.4 asks for TMS WINDING/CURRENT GEOMETRY as a constructed object, and a probe measurement
+    is how that construction is validated: a modelled coil that does not reproduce the measured field
+    in air is wrong before any head model is involved. Manufacturer winding geometry is often proprietary,
+    so the measured field may be the only ground truth available.'
+  notes: a field measured in air is not the field in a head; the head's conductivity changes it, and that
+    second stage is the modelled one
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: the field produced by a real coil, MEASURED with a probe in air or in a conducting
+    medium at known positions -- the coil's own physics, independent of any head
+- name: waveform_characterisation
+  kind: measured
+  via: null
+  systematic_bias: monophasic and biphasic pulses have different dB/dt shapes and different physiological
+    effects at the same nominal intensity
+  band_hz:
+  - null
+  - null
+absent:
+- in_head_field
+- realistic_conductivity
+- public_availability
+use:
+- calibrate
+forbidden:
+- coil-probe-measurements/* -> in-head delivered-field claims without a head model
+- coil-probe-measurements/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: coil-probe-measurements
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

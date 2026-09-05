@@ -1,0 +1,5 @@
+# where the bytes for `studyforrest-meg-ds003633` actually live.  never the bytes themselves.
+source_url: "https://nemar.org/dataset/on003633"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

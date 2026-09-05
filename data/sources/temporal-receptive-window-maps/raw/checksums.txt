@@ -1,0 +1,1 @@
+# sha256 manifest for temporal-receptive-window-maps; written on acquisition

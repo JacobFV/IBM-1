@@ -1,0 +1,64 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tian2020
+title: Tian subcortical functional parcellation (Melbourne Subcortex Atlas)
+provider: Melbourne Neuropsychiatry Centre
+citation: Tian et al., Topographic organization of the human subcortex unveiled with functional connectivity
+  gradients. Nature Neuroscience 2020.
+urls:
+- https://github.com/yetianmed/subcortex
+access: held
+licence:
+  name: Melbourne Subcortex Atlas License
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'Read from data/assets/MANIFEST.json: permission to use, copy, modify, merge, publish and distribute
+    the atlas without restriction, subject to the SINGLE condition that any publication using it cites
+    Tian Y. et al. (2020) Nat Neurosci 23:1421-1432. Attribution required and nothing else; it is not
+    an SPDX identifier.'
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+streams:
+- name: hierarchical_parcellation
+  kind: measured
+  via: null
+  systematic_bias: 'FUNCTIONALLY derived from BOLD in subcortical structures, where BOLD is noisiest:
+    small structures, strong physiological pulsatility from adjacent vessels and CSF, and susceptibility
+    gradients near air spaces. A functional subcortical boundary is a weaker claim than a cytoarchitectonic
+    or histological one, and Tian should be one cover in the stack rather than the reference.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: a four-scale hierarchical subcortical parcellation in MNI space derived from resting-state
+    functional connectivity GRADIENTS, with parcel boundaries placed at gradient reversals
+- name: gradient_coordinates
+  kind: measured
+  via: null
+  systematic_bias: the underlying continuous gradients are more faithful to §5 than the derived parcels
+  band_hz:
+  - null
+  - null
+absent:
+- histological_validation
+- individual_geometry
+- boundary_uncertainty
+- brainstem_detail
+use:
+- calibrate
+- prior
+forbidden:
+- tian2020/hierarchical_parcellation -> hard subcortical support boundaries
+- tian2020/* -> a merged single subcortical parcellation
+- tian2020/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: tian2020
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

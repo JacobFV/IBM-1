@@ -1,0 +1,114 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brain-harmony
+title: BrainHarmonix (Brain Harmony) -- multimodal brain foundation model unifying morphology and function
+  into 1D tokens
+provider: Zijian Dong, Ruilin Li, Joanna Su Xian Chong, Niousha Dehestani, Yinghui Teng, Yi Lin, Zhizhou
+  Li, Yichi Zhang, Yapei Xie, Leon Qi Rong Ooi, B. T. Thomas Yeo, Juan Helen Zhou (NUS and collaborators)
+citation: 'Dong et al., Brain Harmony: A Multimodal Foundation Model Unifying Morphology and Function
+  into 1D Tokens. arXiv:2509.24693. Cited by NeuroWorld (arXiv:2608.01773, ref [13]) as Advances in Neural
+  Information Processing Systems vol. 38, pp. 122100-122127, 2026; a NeurIPS 2025 poster page also exists.
+  The two are probably the same item under proceedings-year conventions and that is NOT verified here
+  -- see notes/literature/brainharmonix.md.'
+urls:
+- https://arxiv.org/abs/2509.24693
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved. Note also that the pretraining corpora (structural
+    MRI at 64,594 volumes and fMRI at 70,933 time series) are not enumerated in the abstract, so the upstream
+    consent scope is unknown.
+binding: unbound
+population:
+  n: null
+frames:
+- unresolved
+- cortical_surface
+- one_dimensional_token_index
+streams:
+- name: heterogeneous_tr_handling
+  kind: measured
+  via: null
+  systematic_bias: This is the reason the card exists. Every other fMRI model in NeuroWorld's cluster
+    converts to one TR grid; this one engineers around heterogeneous TR, which is independent outside
+    evidence that the predecessor programme's measured lesson -- coarse resampling destroys delay information
+    -- is a real enough cost to design against. It is evidence about the PROBLEM, not an endorsement of
+    the mechanism, which is unverified.
+  band_hz:
+  - null
+  - null
+  temporal_support: HETEROGENEOUS TR, handled inside the model rather than resampled to a common grid
+    -- NeuroWorld's related work names the mechanism Temporal Adaptive Patch Embedding. Whether that scales
+    patch extent in SECONDS (a native-clock treatment) or conditions a fixed patch count on TR (a resampling
+    with the TR whispered to the model) is NOT determinable from the abstract and is the whole value of
+    the idea.
+  spatial_support: unresolved -- cortical surface morphology plus parcellated or gridded fMRI, collapsed
+    into a modality-shared 1D token sequence; the token index is not a spatial address
+- name: modality_specific_pretraining_then_hub_token_fusion
+  kind: measured
+  via: null
+  systematic_bias: 'Single-modality training with geometric pre-alignment BEFORE fusion through shared
+    brain hub tokens is the ordering run 4 of the predecessor programme argues for: a weak modality dies
+    in a shared trunk, and giving each modality its own gradients first is the mitigation. Recorded as
+    a design precedent, not as a result -- no modality ablation is reported that would show whether the
+    morphology stream survives fusion.'
+  band_hz:
+  - null
+  - null
+- name: unified_morphology_function_representation
+  kind: measured
+  via: null
+  systematic_bias: 'TEACHER IS NOT OBSERVATION. Representations enter as discrepancy-aware forcing candidates
+    with low authority earned through held-out prediction, never automatically as a subject likelihood.
+    The specific hazard here is invariant 6: this model FUSES structural morphology and functional dynamics
+    into one latent, so a downstream quantity read off it cannot be attributed to structure or to function
+    separately, and ''function follows structure'' -- the model''s own stated premise -- becomes unstatable
+    rather than measurable. Downstream evaluation is on STATIC subject-level labels (disorder classification,
+    cognition), which are predictable from stable morphology and cohort structure and therefore cannot
+    separate a model of dynamics from a model of demographics.'
+  band_hz:
+  - null
+  - null
+absent:
+- native_geometry
+- uncertainty
+- electrophysiology
+- stimulus_conditioning
+- modality_ablation
+use:
+- distil
+- prior
+forbidden:
+- brainharmonix/* -> observation-role likelihoods
+- brainharmonix/* -> B-WIN's state ontology or support definitions
+- brainharmonix/* -> any structural-versus-functional attribution, because the representation fuses the
+  two and cannot separate them (invariant 6)
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: brain-harmony
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - heterogeneous_tr_handling
+    - modality_specific_pretraining_then_hub_token_fusion
+    - unified_morphology_function_representation
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

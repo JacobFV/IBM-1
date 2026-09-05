@@ -1,0 +1,47 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: iavs
+title: IAVS -- intracranial arterial and venous structure resource (unreleased)
+provider: unresolved
+citation: IAVS, 'when released' (PROMPT.md §52.10).
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- unresolved
+streams:
+- name: unresolved_streams
+  kind: measured
+  via: null
+  systematic_bias: PROMPT.md §52.10 lists this with the qualifier 'when released'. Nothing exists to evaluate.
+    The card exists so that the intention is registered and the release is watched for, which is precisely
+    what §48's `watch` status is for.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: unresolved -- PROMPT.md names it explicitly as NOT YET RELEASED
+absent:
+- everything_it_does_not_exist_yet
+use:
+- calibrate
+- prior
+forbidden:
+- iavs/* -> anything, until the resource is released and verified
+- iavs/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: iavs
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

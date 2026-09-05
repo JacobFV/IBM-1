@@ -1,0 +1,65 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cit168-pauli
+title: CIT168 / Pauli high-resolution probabilistic subcortical atlas
+provider: Caltech Brain Imaging Center
+citation: Pauli et al., A high-resolution probabilistic in vivo atlas of human subcortical brain nuclei.
+  Scientific Data 2018.
+urls:
+- https://www.nature.com/articles/sdata201863
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- CIT168
+streams:
+- name: probabilistic_nucleus_maps
+  kind: measured
+  via: null
+  systematic_bias: Built from IN-VIVO MRI, so the nuclei are defined by MR contrast, not by cytoarchitecture.
+    Where MR contrast and cytoarchitectonic boundaries differ -- which they do for several brainstem nuclei
+    -- this atlas follows the contrast. That is a real and stateable limitation, not a defect.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: probabilistic maps of subcortical nuclei built from 168 HCP participants' high-resolution
+    T1 and T2 images, including nuclei that lower-resolution atlases merge -- substantia nigra, subthalamic
+    nucleus, red nucleus, ventral tegmental area
+- name: multi_contrast_definition
+  kind: measured
+  via: null
+  systematic_bias: using T1 and T2 together separates iron-rich from myelin-rich structures better than
+    either alone
+  band_hz:
+  - null
+  - null
+absent:
+- cytoarchitectonic_validation
+- individual_geometry
+- cortex
+- cerebellum
+use:
+- calibrate
+- prior
+forbidden:
+- cit168-pauli/* -> cytoarchitectonic claims
+- cit168-pauli/* -> a merged single subcortical parcellation
+- cit168-pauli/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: cit168-pauli
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

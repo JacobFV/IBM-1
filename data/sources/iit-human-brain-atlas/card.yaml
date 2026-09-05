@@ -1,0 +1,133 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: iit-human-brain-atlas
+title: IIT Human Brain Atlas v5.0 -- DTI/HARDI templates, probabilistic labels and connectome
+provider: Illinois Institute of Technology (Zhang and Arfanakis), distributed on NITRC project iit
+citation: No dataset DOI. NITRC names PMID 29414497 (diffusion resources) and PMID 33075560 (grey/white-matter
+  labels and connectome); the licence additionally requires citing the regionconnect paper.
+urls:
+- https://www.nitrc.org/projects/iit/
+- https://www5.iit.edu/~mri/License.html
+access: restricted
+licence:
+  name: IIT Human Brain Template License (bespoke; no SPDX identifier)
+  redistribution: prohibited
+  commercial: prohibited
+  notes: 'THIS LICENCE IS DIRECTLY HOSTILE TO AN INGEST-AND-RE-REPRESENT SUBSTRATE AND THE CARD EXISTS
+    PARTLY TO SAY SO. Verbatim: the licence is for non-commercial educational and research purposes; you
+    may not alter, transform, adapt or build upon the information, images or data; you may not post the
+    information, images and data on any website, electronic bulletin board or any other electronic medium
+    without express written permission of IIT; use for any commercial purposes is strictly prohibited
+    without express written consent. ON A LITERAL READING a resampled, reprojected or otherwise derived
+    copy is OUTSIDE the grant -- which is exactly what a support-mapping algebra produces. Commercial
+    requests go to mri@illinoistech.edu.'
+binding: unbound
+population:
+  n: null
+frames:
+- ICBM152
+streams:
+- name: probabilistic_grey_and_white_matter_labels
+  kind: measured
+  via: null
+  systematic_bias: 'Probabilistic multi-layer white-matter labels are unusual and are directly what a
+    support-overlap calculation wants: they state where a bundle probably is rather than asserting where
+    it is. Built from 72 volunteers aged 20-40 with Turboprop diffusion, so the population is narrow and
+    the acquisition is one lab''s.'
+  notes: the connectome edges come from probabilistic tractography on a TEMPLATE, so they are a property
+    of the averaged brain and of the tracking algorithm, and no individual has this connectome
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- static templates
+  spatial_support: 'templates normalised into ICBM-152 space: a T1 template, mean and median DTI templates
+    with parameter maps, a HARDI template, PROBABILISTIC grey-matter labels (Desikan-Killiany, 84 regions),
+    probabilistic MULTI-LAYER white-matter labels, major fibre bundles, and an 84-region structural connectome
+    with 6,972 edges. The probabilistic labelling is the valuable part: it retains the boundary uncertainty
+    that a maximum-probability atlas throws away'
+- name: diffusion_templates
+  kind: measured
+  via: null
+  systematic_bias: Desikan-Killiany only -- one cover, and a coarse gyral one at that.
+  band_hz:
+  - null
+  - null
+- name: t1_template
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dti_templates
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: hardi_template
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: probabilistic_gm_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: probabilistic_wm_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: fibre_bundles
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: structural_connectome
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: regionconnect_software
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- subject_level_scans
+- time_series
+- functional_data
+- alternative_parcellations
+- redistribution_rights
+- derivative_rights
+requires:
+- geometry: tract-path-products
+  severity: blocking
+  without_it: 'A streamline set is geometry without endpoints: it terminates in voxels, not in named supports.
+    Without the tract product -- endpoint-density splats, path ensembles and arc-length tractometry --
+    these streamlines cannot become an interaction between two addressable supports.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- prior
+forbidden:
+- iit-human-brain-atlas/* -> any derived or resampled copy leaving this machine
+- iit-human-brain-atlas/* -> any commercial artifact
+- iit-human-brain-atlas/* -> an artifact, until written permission covers the derivative
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: iit-human-brain-atlas
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

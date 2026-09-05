@@ -1,0 +1,5 @@
+# where the bytes for `monash-fdg-pet-fmri` actually live.  never the bytes themselves.
+source_url: "https://pubmed.ncbi.nlm.nih.gov/34654823/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

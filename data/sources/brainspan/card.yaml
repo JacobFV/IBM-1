@@ -1,0 +1,136 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brainspan
+title: BrainSpan -- Atlas of the Developing Human Brain
+provider: Allen Institute for Brain Science, with Yale, USC, Harvard Medical School/MIT, UCLA and UT Southwestern;
+  funded by NIMH
+citation: Governed by the Allen Institute Citation Policy, which requires citation of the primary publication
+  where one exists. A single canonical dataset citation string is unresolved.
+urls:
+- https://www.brainspan.org/
+- https://alleninstitute.org/citation-policy/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: prohibited
+  notes: 'No SPDX identifier. Allen Institute Terms of Use, verbatim: you may use, copy, distribute, publicly
+    perform, publicly display, or create derivative works of the Content for research or other noncommercial
+    purposes; you may not redistribute the Content or Improvements for commercial purposes without written
+    permission. NON-COMMERCIAL IS ESTABLISHED. No registration for the open web resource. A CONTROLLED-ACCESS
+    counterpart exists at EGA and dbGaP (phs000755) whose terms were not verified.'
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  notes: The developmental transcriptome is reported in secondary sources as 196 tissue samples from 13
+    donors; that figure was NOT confirmed on a fetched Allen page and is not recorded as fact. The prenatal
+    LMD microarray covers 4 brain specimens at 15-21 post-conceptual weeks across about 300 structures.
+    Fibre-tract annotations cover 22 major tracts across 8 developmental stages (14, 17, 19 and 37 post-conceptual
+    weeks, then 3, 8, 15 and 32 years). DONOR COUNTS ARE TINY AND THE DEVELOPMENTAL AXIS IS SAMPLED, NOT
+    TRACKED.
+frames:
+- structure_ontology
+- specimen_native
+- developmental_reference_atlas
+streams:
+- name: developmental_regional_transcriptome
+  kind: measured
+  via: null
+  systematic_bias: Regional and developmental expression constrains which molecular machinery -- and therefore
+    which interaction classes -- is available where and when. With roughly a dozen donors, between-donor
+    variance is essentially unestimable and any regional difference is confounded with donor. Post-mortem
+    interval, agonal state and RNA integrity vary and all affect measured expression.
+  notes: bulk tissue expression is a mixture over cell types, and a regional difference in a bulk sample
+    is frequently a difference in cellular composition rather than in per-cell expression
+  band_hz:
+  - null
+  - null
+  temporal_support: 'DEVELOPMENTAL STAGE IS THE ONLY TIME AXIS and it is cross-sectional: each donor contributes
+    one point, so a developmental trajectory here is assembled from different individuals'
+  spatial_support: structure-level sampling by laser microdissection and by dissection, plus in situ hybridisation
+    images, MRI and DTI, and 3D fibre-tract annotations. THE SAMPLING UNIT IS A DISSECTED STRUCTURE, so
+    expression is an average over whatever tissue the dissection captured
+- name: developmental_fibre_tract_annotations
+  kind: measured
+  via: null
+  systematic_bias: Hand-annotated tract geometry at eight developmental stages is a rare constraint on
+    when a pathway exists at all. It is DERIVED GEOMETRY from a handful of specimens and is labelled derived
+    forever.
+  band_hz:
+  - null
+  - null
+- name: rna_seq
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: exon_microarray
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: lmd_microarray
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: in_situ_hybridisation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: mri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dti
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dna_methylation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: microrna
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: fibre_tract_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- function
+- in_vivo_data
+- individual_trajectories
+- single_cell_resolution
+- adult_dense_sampling
+use:
+- prior
+forbidden:
+- brainspan/* -> a commercial artifact (Allen non-commercial terms)
+- brainspan/* -> a within-individual developmental trajectory
+- brainspan/* -> a per-cell expression claim from bulk tissue
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: brainspan
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,5 @@
+# where the bytes for `food-101` actually live.  never the bytes themselves.
+source_url: "https://data.vision.ee.ethz.ch/cvl/datasets_extra/food-101/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

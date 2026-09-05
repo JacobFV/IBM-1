@@ -1,0 +1,53 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: dipy
+title: DIPY -- Diffusion Imaging in Python
+provider: DIPY developers / Garyfallidis lab
+citation: Garyfallidis et al., Dipy, a library for the analysis of diffusion MRI data. Frontiers in Neuroinformatics
+  2014.
+urls:
+- https://dipy.org/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+streams:
+- name: multiple_reconstruction_models
+  kind: measured
+  via: null
+  systematic_bias: DIPY implements MANY orientation models -- DTI, CSD, CSA, SFM, DKI, free water -- in
+    one place. That makes it the natural instrument for measuring how much a result depends on the reconstruction
+    model, which §37 says is an open uncertainty rather than a settled choice.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: voxel-grid operations and streamline geometry in subject space
+- name: registration_and_bundle_tools
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- ground_truth
+- uncertainty_propagation
+use:
+- surrogate
+forbidden:
+- dipy/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: dipy
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

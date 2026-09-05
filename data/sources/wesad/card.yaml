@@ -1,0 +1,129 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: wesad
+title: WESAD -- Wearable Stress and Affect Detection dataset
+provider: Bosch and University of Siegen
+citation: Schmidt et al., Introducing WESAD, a Multimodal Dataset for Wearable Stress and Affect Detection.
+  ICMI 2018.
+urls:
+- https://ubicomp.eti.uni-siegen.de/home/datasets/icmi18/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Academic use agreement; unresolved.
+binding: unbound
+population:
+  n: 15
+  hierarchy:
+  - participant
+  - session
+  notes: 15 participants through a PROTOCOLISED stress induction (Trier Social Stress Test), amusement
+    and meditation, with chest and wrist devices simultaneously.
+frames:
+- torso
+- wrist
+streams:
+- name: electrodermal_activity
+  kind: measured
+  via: null
+  observation_chain: 'sympathetic sudomotor drive -> eccrine sweat gland activity -> skin conductance
+    -> applied voltage across two electrodes -> measured current. EDA is essentially PURELY SYMPATHETIC,
+    which makes it unusual: most autonomic measures mix branches'
+  confounds:
+  - ambient temperature and humidity
+  - movement of the electrode site
+  - gel drying over the session, which drifts the baseline monotonically
+  - chest and wrist EDA differ in gland density and are not interchangeable
+  systematic_bias: 'A designed, validated stress induction with simultaneous multi-site autonomic recording.
+    The protocol is the value: the arousal state was CAUSED, not observed.'
+  notes: chest and wrist measure different skin sites and give systematically different signals for the
+    same central drive
+  band_hz:
+  - null
+  - null
+  temporal_support: chest sensors at 700 Hz; wrist sensors at 4-64 Hz; protocol blocks of minutes; self-reports
+    at block boundaries
+  spatial_support: a chest-worn research device and a wrist-worn consumer device recording the SAME physiological
+    events at two body locations with two sensor qualities
+- name: chest_versus_wrist
+  kind: measured
+  via: null
+  systematic_bias: the same events measured by research-grade and consumer-grade devices at once, which
+    quantifies what a wearable's convenience costs
+  band_hz:
+  - null
+  - null
+- name: affect_self_reports
+  kind: imposed
+  via: null
+  systematic_bias: '§52.16: an affect label is not a limbic-state observation, and a self-report after
+    a block is a report about a remembered state'
+  band_hz:
+  - null
+  - null
+- name: chest_ecg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: chest_eda
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: chest_emg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: respiration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: skin_temperature
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: wrist_bvp
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: wrist_eda
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: accelerometry
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- large_n
+- ecological_validity
+use:
+- fit
+forbidden:
+- wesad/* -> cortical state without an explicit carded interaction
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: wesad
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

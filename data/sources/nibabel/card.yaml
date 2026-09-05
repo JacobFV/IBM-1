@@ -1,0 +1,48 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: nibabel
+title: NiBabel -- read/write access to neuroimaging file formats
+provider: Nipy community
+citation: Brett et al., nipy/nibabel. Zenodo (software release series).
+urls:
+- https://nipy.org/nibabel/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Code licence not read.
+binding: unbound
+population:
+  n: null
+frames:
+- array_index
+- scanner_anatomical_via_affine
+streams:
+- name: affine_and_header_semantics
+  kind: measured
+  via: null
+  systematic_bias: The qform/sform distinction, and the fact that a NIfTI can carry two DIFFERENT affines
+    with different codes, is the single most common source of a silently misplaced volume. nibabel exposes
+    both rather than picking one, which is why it is the right thing to read a frame graph from.
+  band_hz:
+  - null
+  - null
+  temporal_support: the container's own -- typically a TR in the NIfTI pixdim, which several writers leave
+    at zero
+  spatial_support: 'whatever the container declares: NIfTI, MGH, GIFTI, CIFTI, MINC, PAR/REC, ECAT, AFNI
+    BRIK'
+absent:
+- measurements
+- acquisition_parameters_beyond_the_header
+use:
+- calibrate
+forbidden:
+- nibabel/* -> any state channel
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: nibabel
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

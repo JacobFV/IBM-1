@@ -1,0 +1,91 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: openeds
+title: OpenEDS -- open eye dataset for semantic segmentation of eye images
+provider: Meta Reality Labs
+citation: 'Garbin et al., OpenEDS: Open Eye Dataset. arXiv 2019.'
+urls:
+- https://research.facebook.com/downloads/openeds-challenge/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Challenge licence agreement; terms unresolved here.
+binding: unbound
+population:
+  n: 152
+  hierarchy:
+  - participant
+  - session
+  notes: Near-eye IR camera images with pixel-level annotation of sclera, iris and pupil. The product
+    is EYE GEOMETRY, not gaze behaviour.
+frames:
+- hmd_camera
+- eye
+- head
+streams:
+- name: eye_region_segmentation
+  kind: measured
+  via: null
+  systematic_bias: §56.4 asks B-WIN to manufacture eye-tracker camera geometry; this is measured evidence
+    about the eye-to-camera relationship that such a construction needs
+  band_hz:
+  - null
+  - null
+  temporal_support: video at 200 Hz in parts; annotations per selected frame
+  spatial_support: near-eye camera on a head-mounted display; the camera-to-eye transform is the geometry
+    of interest
+- name: pupil_geometry
+  kind: imposed
+  via: null
+  systematic_bias: 'pupil shape in the image is a projection: apparent ellipticity varies with gaze angle
+    and is not pupil size'
+  band_hz:
+  - null
+  - null
+- name: eye_images
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pixel_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: point_clouds_of_eye_region
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- gaze_ground_truth_in_world_coordinates
+- scene_video
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The quantity of interest is the camera-to-eye transform. Without the near-eye camera geometry
+    -- its pose, optics and relation to the headset frame -- an eye image cannot be turned into an eyeball
+    model and a gaze ray in any external frame.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: Gaze here is a 3D ray in a headset frame, not a point on a screen. Turning it into retinal
+    coordinates over any stimulus requires the eye and world geometry; without it the ray is expressed
+    in a frame no stimulus lives in.
+use:
+- calibrate
+- fit
+forbidden:
+- openeds/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: openeds
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

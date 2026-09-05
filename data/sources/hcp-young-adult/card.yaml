@@ -1,0 +1,169 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hcp-young-adult
+title: Human Connectome Project Young Adult (S1200)
+provider: WU-Minn HCP Consortium
+citation: 'Van Essen et al., The WU-Minn Human Connectome Project: an overview. NeuroImage 2013.'
+urls:
+- https://www.humanconnectome.org/study/hcp-young-adult
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: HCP Open Access Data Use Terms are a click-through agreement; restricted-access elements require
+    a separate application. SPDX identifier and redistribution class unresolved.
+binding: unbound
+population:
+  n: 1200
+  hierarchy:
+  - participant
+  - family
+  - session
+  - run
+  notes: Twin and sibling structure is the reason `family` is in the hierarchy. A participant-only split
+    leaks through relatedness.
+frames:
+- scanner
+- subject_native
+- fsaverage
+- MNI152
+- MSMAll_32k_fs_LR
+- grayordinates
+streams:
+- name: t1w_t2w
+  kind: measured
+  via: null
+  observation_chain: tissue proton density and T1 -> sequence-specific contrast -> k-space acquisition
+    -> reconstruction -> voxel intensity; intensity is not a tissue parameter until an explicit relaxometry
+    model is applied
+  confounds:
+  - B1+ transmit inhomogeneity
+  - B0 off-resonance
+  - the fitted signal model's own misspecification
+  - motion between the volumes that enter one fit
+  systematic_bias: 3T single-vendor acquisition; intensity is not a tissue parameter
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 0.72 s multiband BOLD; diffusion and structural are not time series
+  spatial_support: 0.7 mm structural, 1.25 mm diffusion, 2 mm BOLD; native subject surfaces and the grayordinate
+    CIFTI representation
+- name: dwi
+  kind: measured
+  via: null
+  observation_chain: water displacement over the diffusion time within and around axons and cells -> gradient-direction-dependent
+    signal attenuation -> reconstructed q-space or orientation distribution; ORIENTATION EVIDENCE, not
+    an observation of a tract
+  confounds:
+  - eddy-current and susceptibility distortion
+  - motion between diffusion directions
+  - partial volume of crossing fibres, which no single-tensor model represents
+  - the fitting model itself (DTI vs. CSD vs. NODDI) is a choice with its own bias
+  systematic_bias: Tractography from this is DERIVED evidence about pathway geometry, never a measured
+    connection.
+  notes: the orientation model and the tracking algorithm are both model choices with discrepancy
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  systematic_bias: Resting functional connectivity is a FUNCTIONAL claim only; §38 forbids substituting
+    it for structural or effective connectivity.
+  band_hz:
+  - null
+  - null
+- name: myelin_maps
+  kind: measured
+  via: null
+  systematic_bias: the T1w/T2w ratio is a myelin PROXY, sensitive to iron and to receive-coil bias
+  band_hz:
+  - null
+  - null
+- name: surfaces
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: family_structure
+  kind: measured
+  via: null
+  systematic_bias: declared so that grouped splits can use it; undeclared relatedness is the classic silent
+    inflation
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_task
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: meg_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: genetics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- vascular_angiography
+- metabolic_pet
+- ieeg
+- intervention
+- eeg_scalp
+use:
+- calibrate
+- fit
+- prior
+forbidden:
+- hcp-young-adult/* -> vascular geometry state
+- hcp-young-adult/* -> intervention response parameters
+- hcp-young-adult/bold_rest -> effective connectivity parameters
+split:
+  group_by:
+  - family
+  - participant
+  - site
+  notes: Family FIRST. The twin/sibling design means a participant-level split leaks heritable anatomy
+    across the boundary.
+provenance:
+  imported_from: win-registry
+  card: hcp-young-adult
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

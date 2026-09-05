@@ -1,0 +1,94 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: capnobase
+title: CapnoBase -- capnography, PPG and ECG benchmark dataset
+provider: University of British Columbia
+citation: Karlen et al., Multiparameter respiratory rate estimation from the photoplethysmogram. IEEE
+  TBME 2013.
+urls:
+- http://www.capnobase.org/
+access: priority
+licence:
+  name: CC BY 4.0 (stated by the providers)
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Not verified here.
+binding: unbound
+population:
+  n: 42
+  hierarchy:
+  - participant
+  - session
+  notes: 42 cases from paediatric and adult surgery with EXPERT-VERIFIED breath and beat annotations,
+    and deliberately included artifact segments.
+frames:
+- airway
+- finger
+- torso
+streams:
+- name: capnography
+  kind: measured
+  via: null
+  observation_chain: expired CO2 partial pressure measured at the airway -> end-tidal value read at the
+    plateau. End-tidal CO2 is the vasoactive stimulus that drives cerebrovascular reactivity, measured
+    at the mouth rather than in the artery
+  confounds:
+  - end-tidal to arterial CO2 gradient, which is not zero and widens with lung disease
+  - sampling line delay and mixing
+  - ventilation mode in anaesthetised cases
+  systematic_bias: §52.11's whole vascular-calibration argument runs on end-tidal CO2, and this dataset
+    is where the measurement itself is characterised against expert annotation.
+  notes: the end-tidal reading is a proxy for arterial CO2 and the gradient is a person-specific unknown
+  band_hz:
+  - null
+  - null
+  temporal_support: waveforms at 300 Hz; expert annotations per breath and per beat
+  spatial_support: airway capnograph, finger PPG, chest ECG
+- name: artifact_labels
+  kind: measured
+  via: null
+  systematic_bias: 'deliberately included and LABELLED artifact segments: an algorithm that reports confident
+    values there has been falsified, which is the control §46 asks for'
+  band_hz:
+  - null
+  - null
+- name: ppg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ecg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: expert_breath_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: expert_beat_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- healthy_awake_population
+- large_n
+use:
+- fit
+forbidden:
+- capnobase/* -> cortical state without an explicit carded interaction
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: capnobase
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

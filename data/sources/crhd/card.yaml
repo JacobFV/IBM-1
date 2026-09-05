@@ -1,0 +1,141 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: crhd
+title: CRHD -- Connectomes Related to Human Disease
+provider: NIH-funded; Connectome Coordination Facility at Washington University, with distribution split
+  between the NIMH Data Archive and humanconnectome.org
+citation: No umbrella marker paper exists -- CRHD is a programme of separately published studies and each
+  project must be cited individually. Programme notice NOT-MH-21-175.
+urls:
+- https://www.humanconnectome.org/disease-studies
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'NO LICENCE IS STATED ANYWHERE; access is by agreement. Two distinct channels with different
+    agreements. Through ConnectomeDB: the WU-Minn HCP Consortium Open Access Data Use Terms, a custom
+    research agreement that is EXPLICITLY NOT a Creative Commons licence and that is SHARE-ALIKE IN EFFECT
+    -- redistribution of original or derived data is permitted only under the same Data Use Terms -- plus
+    a mandated acknowledgement string; sensitive variables sit under separate Restricted Data Use Terms.
+    Through the NDA: a Data Use Certification with Data Access Committee review, requiring an eRA Commons-registered
+    institution with an active OHRP Federalwide Assurance, or individual sponsorship. The programme notice
+    strongly encourages computing inside the NDA cloud environment rather than downloading. Note the NDA
+    specifics come from search excerpts of policy PDFs because nda.nih.gov is JS-rendered and returned
+    no readable content.'
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: 'THE SOURCES DISAGREE on how many projects exist: humanconnectome.org lists 13 studies and the
+    NIH notice NOT-MH-21-175 tabulates 16. Per-project participant counts are unresolved. The 13 named
+    studies: Alzheimer''s Disease Connectome Project; Amish Connectome Project; BANDA (anxiety and depression);
+    visual cortical connectivity after central visual field loss; familial and sporadic frontotemporal
+    degeneration; brain aging and dementia; anxious misery; epilepsy connectome project; early psychosis;
+    low vision, blindness and sight restoration; HCP disordered emotional states; psychotic psychopathology;
+    treatment-resistant depression.'
+frames:
+- scanner
+- subject_native
+- fsLR_32k
+- MNI152
+streams:
+- name: protocol_matched_disease_cohorts
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away. The value of the programme is that the acquisition is intended
+    to match the healthy HCP protocol, which turns a case-control comparison into something other than
+    a cross-protocol comparison'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift and between-session hardware change
+  - each project ran at its own site with its own scanner despite the shared protocol, so site and cohort
+    remain confounded
+  - medication is near-universal in most of these cohorts and is not randomised
+  - the protocol-comparability claim is asserted at programme level and unverified per project
+  systematic_bias: 'The Epilepsy Connectome Project and the visual-loss projects are the two most directly
+    relevant here: the first pairs whole-brain imaging with a population that also receives intracranial
+    recording, and the second is a natural experiment in retinotopic reorganisation that no intervention
+    could ethically produce.'
+  band_hz:
+  - null
+  - null
+  temporal_support: per-project; HCP-style implies fast multiband BOLD but this is not confirmed at programme
+    level
+  spatial_support: asserted to be HCP-style and protocol-comparable with the healthy HCP and Lifespan
+    cohorts, but NO PAGE ENUMERATES THE SEQUENCES, so the comparability claim is the programme's and not
+    a verified fact. Resolve per project
+- name: hcp_style_comparability
+  kind: measured
+  via: null
+  systematic_bias: comparability is a design intention here, not a measured property; treat it as a hypothesis
+    until a travelling-subject or protocol audit supports it
+  band_hz:
+  - null
+  - null
+- name: bold
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: structural_mri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: clinical_and_behavioural_assessments
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- verified_per_project_protocols
+- meg_for_most_projects
+- intervention
+- programme_level_inventory
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- fit
+- prior
+forbidden:
+- crhd/* -> redistribution outside the WU-Minn Open Access Data Use Terms (share-alike in effect)
+- crhd/* -> a case-control claim resting on unverified protocol comparability
+split:
+  group_by:
+  - participant
+  - site
+  - session
+provenance:
+  imported_from: win-registry
+  card: crhd
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

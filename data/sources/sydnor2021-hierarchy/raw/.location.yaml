@@ -1,0 +1,5 @@
+# where the bytes for `sydnor2021-hierarchy` actually live.  never the bytes themselves.
+source_url: "https://github.com/PennLINC/S-A_ArchetypalAxis"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

@@ -1,0 +1,140 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: massive-brain-dataset
+title: MASSIVE -- Multiple Acquisitions for Standardization of Structural Imaging Validation and Evaluation
+provider: UMC Utrecht (Image Sciences Institute), files distributed from a lab site via Google Drive
+citation: 'Froeling, Tax, Vos, Luijten, Leemans. MASSIVE brain dataset: multiple acquisitions for standardization
+  of structural imaging validation and evaluation. Magnetic Resonance in Medicine 77(5):1797-1809, 2017.
+  doi:10.1002/mrm.26259.'
+urls:
+- https://www.massive-data.org/
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'UNRESOLVED AND VERIFIED-ABSENT. No licence, terms or SPDX statement appears anywhere on the
+    site; the only expressed condition is a request to cite the paper. The ARTICLE is CC BY-NC 4.0 per
+    Crossref and that is the article''s licence, which does not transfer to the data. WATCH ALSO: the
+    site''s ''Non-registered data'' and ''Registered data'' headings mean IMAGE REGISTRATION, not user
+    registration -- a reader who mistakes them will draw the wrong conclusion about access.'
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - participant
+  - session
+  notes: 'n=1 across 18 scan sessions and 22.5 hours of acquisition. This is a methods-validation resource:
+    it has no population variance and is not intended to.'
+frames:
+- scanner
+- subject_native
+- registered_t1w_target
+streams:
+- name: exhaustively_sampled_q_space
+  kind: measured
+  via: null
+  observation_chain: 'water displacement over the diffusion time -> attenuation across 8,000 acquisitions
+    covering q-space far more densely than any protocol a study could run per subject -> a near-complete
+    empirical diffusion signal. THIS IS THE REFERENCE AGAINST WHICH A SPARSE PROTOCOL''S MODEL CAN BE
+    TESTED: subsample it and ask what the model would have concluded'
+  confounds:
+  - 18 sessions means 18 head positions and 18 shim settings; the release ships drift-corrected and motion-corrected
+    variants because the correction is not optional at this scale
+  - signal drift within and between sessions, which the release quantifies rather than hides
+  - eddy currents and gradient nonlinearity at b=9000
+  - SNR at the highest b-values is low by construction, so the densest part of q-space is the noisiest
+  - 'n=1: any conclusion is about this brain and this scanner'
+  systematic_bias: The registry has tractography evaluation (ISMRM 2015 challenge, Tractometer) and population
+    diffusion (HCP, WAND) but nothing that answers 'what does the sparse protocol destroy?'. This does,
+    by having acquired the dense version once.
+  band_hz:
+  - null
+  - null
+  temporal_support: 18 sessions over time; the only clock that matters is the session index and the within-session
+    drift the release explicitly provides a correction for
+  spatial_support: 2.5 mm isotropic diffusion, 3T Philips, with FIVE SHELLS to b=4000 and two Cartesian
+    q-space grids to b=9000 s/mm^2 -- 8,000 diffusion-weighted volumes on ONE brain. Plus ten 3D FLAIR,
+    T1w and T2w acquisitions, face-stripped
+- name: noise_maps_and_repeat_sessions
+  kind: measured
+  via: null
+  systematic_bias: Explicit noise maps and eighteen repeats of the same anatomy give a MEASURED noise
+    floor and a measured between-session variance, which almost every diffusion dataset estimates from
+    a model instead.
+  band_hz:
+  - null
+  - null
+- name: dwi_multishell
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi_cartesian_grid
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: b0_field_maps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: noise_maps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: flair
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- population_sample
+- functional_mri
+- eeg
+- meg
+- physiology
+- licence
+- data_doi
+requires:
+- geometry: tract-path-products
+  for_streams:
+  - exhaustively_sampled_q_space
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- calibrate
+- fit
+forbidden:
+- massive-brain-dataset/* -> an artifact, until the terms are resolved with the provider
+- massive-brain-dataset/* -> the article's CC BY-NC terms recorded as the data's licence
+- massive-brain-dataset/* -> any population-level claim
+split:
+  group_by:
+  - session
+  notes: 'n=1: sessions are the only grouping level, and a within-session split measures nothing.'
+provenance:
+  imported_from: win-registry
+  card: massive-brain-dataset
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

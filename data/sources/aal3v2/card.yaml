@@ -1,0 +1,54 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: aal3v2
+title: AAL3v2 -- Automated Anatomical Labelling atlas, version 3
+provider: GIN-IMN / Neurofunctional Imaging Group, Bordeaux
+citation: Rolls et al., Automated anatomical labelling atlas 3. NeuroImage 2020; extending Tzourio-Mazoyer
+  et al. 2002.
+urls:
+- https://www.gin.cnrs.fr/en/tools/aal/
+access: held
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Distributed for academic use from the GIN site; the shipped archive carries a user guide PDF
+    and no SPDX licence file, so the terms are unresolved rather than assumed. Governs DISTRIBUTION only
+    -- reading, loading and computing with it is internal research and is not gated.
+binding: unbound
+population:
+  n: null
+frames:
+- mni152
+streams:
+- name: parcellation
+  kind: measured
+  via: null
+  systematic_bias: 'A single-subject anatomical labelling propagated to a template, not a population probability
+    map. Its boundaries are one brain''s sulci, so a region''s extent carries no uncertainty and reads
+    as if it had none. The architecture''s rule applies with full force here: this is a COVER, one of
+    several retained side by side, and never an element of the brain''s ontology.'
+  notes: region indices are not comparable across AAL, AAL2 and AAL3 -- the same integer names different
+    tissue -- so a mapping between them is a lookup that must be carried, not assumed
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- a static parcellation
+  spatial_support: a volumetric parcellation on the MNI single-subject template, shipped at 1 mm and at
+    2 mm. Version 3 subdivides the orbitofrontal cortex and ADDS thalamic nuclei and the nucleus accumbens,
+    so its region count differs from AAL and AAL2 and the three are not interchangeable label sets.
+absent:
+- probability_map
+- intersubject_variability
+use:
+- prior
+forbidden:
+- aal3v2/* -> any claim that a region boundary is measured rather than propagated
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: aal3v2
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

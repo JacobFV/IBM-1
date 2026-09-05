@@ -1,0 +1,62 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: emg-kinematic-rehabilitation-datasets
+title: EMG and kinematic rehabilitation datasets
+provider: multiple -- clinical rehabilitation and movement-disorder studies
+citation: PROMPT.md §52.14, 'EMG/kinematic rehabilitation datasets'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- limb_segment_frames
+- electrode_array
+- capture_room
+streams:
+- name: clinical_emg_kinematics
+  kind: measured
+  via: null
+  systematic_bias: 'Clinical populations where the motor system is DAMAGED, which makes them informative
+    about what the intact system contributes -- a lesion is an intervention nobody chose -- and simultaneously
+    makes them unusable as a healthy prior. §52.16''s rule that dose, physiology, expression, report and
+    behaviour are separate variables applies: a clinical score is a report, not a motor state.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: surface or intramuscular EMG with kinematics in clinical populations -- stroke, spinal
+    cord injury, movement disorders -- during rehabilitation tasks
+- name: abnormal_muscle_synergies
+  kind: measured
+  via: null
+  systematic_bias: post-stroke synergies constrain what a motor control model must be able to produce
+    when parts of the descending pathway are removed
+  band_hz:
+  - null
+  - null
+absent:
+- healthy_controls_in_most_studies
+- neural_measurement
+- public_availability
+use:
+- fit
+- prior
+forbidden:
+- emg-kinematic-rehabilitation-datasets/* -> healthy motor priors without clinical conditioning
+- emg-kinematic-rehabilitation-datasets/* -> cortical state directly
+- emg-kinematic-rehabilitation-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: emg-kinematic-rehabilitation-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

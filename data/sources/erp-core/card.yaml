@@ -1,0 +1,149 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: erp-core
+title: ERP CORE -- ERP Compendium of Open Resources and Experiments
+provider: UC Davis (Luck lab), on OSF node thsqg
+citation: 'Kappenman, Farrens, Zhang, Stewart, Luck. ERP CORE: an open resource for human event-related
+  potential research. NeuroImage 225:117465, 2020. doi:10.1016/j.neuroimage.2020.117465. Data doi:10.18115/D5JW4R.'
+urls:
+- https://doi.org/10.18115/D5JW4R
+- https://osf.io/thsqg/
+- https://github.com/lucklab/ERP_CORE
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'CONFLICTING AND UNRECONCILED. The OSF repository metadata states CC-By Attribution 4.0 International;
+    the authors'' own homepage at erpinfo.org/erp-core states verbatim that the material is shared under
+    CC BY-SA 4.0. THE SHARE-ALIKE TERM IS THE RISK: if the homepage is authoritative, everything derived
+    from these data inherits share-alike. Recorded as unresolved on that axis rather than taking the more
+    permissive reading.'
+binding: unbound
+population:
+  n: 40
+  hierarchy:
+  - participant
+  - run
+  notes: '25 female, 15 male, all at UC Davis. A deliberately homogeneous sample: it is a measurement
+    standard, not a population study.'
+frames:
+- channel_label
+streams:
+- name: seven_standard_erp_components
+  kind: measured
+  via: null
+  observation_chain: post-synaptic currents in spatially aligned pyramidal populations -> volume conduction
+    through brain, CSF, skull and scalp -> potential difference between an electrode and a reference ->
+    amplifier gain, filtering and group delay -> sampled voltage
+  confounds:
+  - ocular and blink artefact
+  - muscle (EMG) contamination
+  - cardiac field and pulse artefact
+  - electrode impedance drift and movement artefact
+  - the reference choice, which is a montage operator and not a property of the brain
+  - line noise and its harmonics
+  - an ERP component is defined by a measurement window and a channel subset chosen by the analyst, so
+    'the N170' is partly an analysis decision
+  - 'component overlap: adjacent components sum in the average and are not separable without a model'
+  - the same 40 people did all six paradigms, so participant effects are shared across components
+  systematic_bias: 'Six paradigms yielding seven components (N170, MMN, N2pc, N400, P3b, LRP, ERN) on
+    the SAME 40 people with the SAME hardware. That is a standard measurement fixture: an observation
+    model that cannot reproduce these components on this data has failed a test that could have been passed.'
+  band_hz:
+  - null
+  - null
+  temporal_support: 1024 Hz acquisition. The distributed processed ERPs are averages over trials and are
+    a DERIVED VIEW that has destroyed the single-trial clock entirely
+  spatial_support: 30-channel scalp montage
+- name: reference_pipelines_and_published_effects
+  kind: measured
+  via: null
+  systematic_bias: The published effect sizes and the shipped EEGLAB/ERPLAB pipelines together give a
+    reproducible target. A reimplementation that lands elsewhere has a defect, and that is the cheapest
+    end-to-end check available for an EEG path.
+  band_hz:
+  - null
+  - null
+- name: held_out_component_reproduction
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eeg_raw
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eeg_bids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: event_codes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behavioural_responses
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eeglab_erplab_pipelines
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: processed_erps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- mri
+- digitised_electrode_positions
+- source_model
+- meg
+- fmri
+- clinical_or_age_diversity
+requires:
+- geometry: device-geometry
+  for_streams:
+  - seven_standard_erp_components
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- evaluate
+- fit
+forbidden:
+- erp-core/* -> lead field construction from a template head recorded as subject-specific
+- erp-core/* -> an artifact, until the CC-BY versus CC-BY-SA conflict is resolved
+split:
+  group_by:
+  - participant
+  - run
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: erp-core
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

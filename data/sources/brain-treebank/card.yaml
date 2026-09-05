@@ -1,0 +1,121 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brain-treebank
+title: Brain Treebank / NM000253 -- movie-aligned iEEG with syntactic annotation
+provider: Brain Treebank / NEMAR NM000253
+citation: 'Wang et al., Brain Treebank: large-scale intracranial recordings from naturalistic language
+  stimuli. arXiv:2411.08343.'
+urls:
+- https://arxiv.org/abs/2411.08343
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. Film stimuli are third-party copyright and separable from the neural data; the transcripts
+    are a derived product of them.
+binding: unbound
+population:
+  n: 10
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: ~43 h of movie-aligned iEEG across roughly 1,688 electrodes.
+frames:
+- electrode_native
+- subject_native
+- MNI152
+- film_timeline
+streams:
+- name: ieeg
+  kind: measured
+  via: null
+  observation_chain: current sources within millimetres of the contact -> local volume conduction over
+    a short path -> contact surface area, impedance and referencing scheme -> sampled voltage; spatial
+    support is the contact neighbourhood, not a parcel
+  confounds:
+  - 'clinical pathology at the electrode: this is a patient population, not a healthy one'
+  - medication state and post-implant recovery
+  - referencing scheme (common average vs. bipolar) reshaping the apparent field
+  - epileptiform activity contaminating putative task responses
+  systematic_bias: '§51.1 item 9: one of the strongest bridges between world events, language structure
+    and LOCAL cortical electrophysiology.'
+  notes: electrode coverage is clinical and per-patient; a group-level map from this is an aggregation
+    over incompatible supports
+  band_hz:
+  - null
+  - null
+  temporal_support: iEEG at kHz sampling; word onsets at manually corrected millisecond precision; film
+    at its frame rate
+  spatial_support: 1,688 depth and surface contacts across 10 patients, individually localised; coverage
+    differs completely between patients
+- name: word_timings
+  kind: imposed
+  via: null
+  systematic_bias: manually corrected -- among the most accurate stimulus timing in the registry, which
+    is precisely why the residual matters
+  band_hz:
+  - null
+  - null
+- name: dependency_parses
+  kind: imposed
+  via: null
+  systematic_bias: a parse is a THEORY of the sentence, not a property of the acoustic signal; §29 says
+    abstract-linguistic forcing starts at low authority and earns influence
+  band_hz:
+  - null
+  - null
+- name: film_stimuli
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: electrode_localisation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- scalp_eeg
+- meg
+- fmri
+- eye_tracking
+- vascular
+- uniform_coverage
+requires:
+- geometry: device-geometry
+  for_streams:
+  - ieeg
+  severity: blocking
+  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
+    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
+    channel is an index and nothing measured here can be attached to a cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- brain-treebank/dependency_parses -> observation-role likelihoods
+- brain-treebank/* -> whole-cortex state outside contact neighbourhoods
+split:
+  group_by:
+  - participant
+  - stimulus
+  notes: films recur across patients; both axes required
+provenance:
+  imported_from: win-registry
+  card: brain-treebank
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

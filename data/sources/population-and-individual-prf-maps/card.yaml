@@ -1,0 +1,80 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: population-and-individual-prf-maps
+title: Published population and individual pRF map collections
+provider: multiple -- HCP, NSD, StudyForrest and standalone pRF studies
+citation: PROMPT.md §52.3, 'population and individual pRF maps'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Per-study and unresolved. This card exists so the class is registered; each concrete map collection
+    that is actually ingested gets promoted to its own card with its own licence, per registry/README
+    rule on discovery proposals.
+binding: unbound
+population:
+  n: null
+frames:
+- fsaverage
+- MNI152
+- subject_native_surface
+- visual_field_polar
+streams:
+- name: prf_parameter_maps
+  kind: measured
+  via: null
+  systematic_bias: every collection used a different pRF model, stimulus aperture, fixation control and
+    fitting package; pooling them without recording which is how a model-choice artefact becomes a population
+    fact
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: surface or volume, per study; there is no common support and asserting one would be
+    false
+- name: cross_study_agreement
+  kind: measured
+  via: null
+  systematic_bias: disagreement between independently fitted maps of the same area is a direct estimate
+    of the model-class uncertainty component
+  band_hz:
+  - null
+  - null
+absent:
+- raw_bold
+- stimulus_definitions
+- fitting_provenance
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+- geometry: retinal-world-geometry
+  severity: degrading
+  without_it: 'A receptive field expressed in degrees of visual angle presupposes a display geometry:
+    the stimulus aperture is in screen units and the conversion is the geometry. Without it the fitted
+    parameters are in pixels wearing the units of visual angle.'
+  substitute: The viewing distance and screen size reported in the parent study's methods, carried as
+    an exact number when it is a nominal one.
+- geometry: literature-derived-geometry
+  severity: blocking
+  without_it: 'The geometry this source refers to exists only in its constituent publications: named regions
+    in each paper''s own scheme, with no common space and no distributed coordinates. Until that geometry
+    is reconstructed as a literature-derived product -- constructed, labelled as constructed, and carrying
+    its uncertainty -- there is nothing here that can be addressed.'
+use:
+- evaluate
+- prior
+forbidden:
+- population-and-individual-prf-maps/* -> observation-role likelihoods
+- population-and-individual-prf-maps/* -> subject-specific geometry
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: population-and-individual-prf-maps
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,90 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: wan2.2-i2v-a14b
+title: Wan2.2-I2V-A14B -- mixture-of-experts image-to-video diffusion model
+provider: Alibaba Wan team
+citation: 'Wan Team, Wan: Open and Advanced Large-Scale Video Generative Models. Wan2.2 release, 2025.'
+urls:
+- https://huggingface.co/Wan-AI/Wan2.2-I2V-A14B
+- https://github.com/Wan-Video/Wan2.2
+access: priority
+licence:
+  name: Apache-2.0
+  redistribution: permitted
+  commercial: permitted
+  notes: Apache-2.0 on the model page; NOT yet read off a shipped LICENSE file, because the weights are
+    not held. Recorded as declared rather than verified -- the ti2v-5b card's terms were read from disk
+    and these were not, and that difference is the kind the registry exists to keep visible.
+binding: unbound
+population:
+  n: null
+frames:
+- image_plane
+streams:
+- name: video_prediction
+  kind: measured
+  via: null
+  systematic_bias: 'Same generative-prior caution as the 5B, with one addition that matters for its role
+    as comparator: the two models share a training lineage, so agreement between them is much weaker evidence
+    than agreement between independent families. It is a capacity comparator, not an independent second
+    opinion.'
+  notes: diffusion sampling is stochastic, so two runs from one conditioning disagree; the disagreement
+    is a usable spread and is never zero
+  band_hz:
+  - null
+  - null
+  temporal_support: 24 fps generated clips of a few seconds
+  spatial_support: 'generated video frames at 480p and 720p. A mixture-of-experts denoiser: separate high-noise
+    and low-noise experts over the diffusion timestep, so the active parameter count is smaller than the
+    total.'
+- name: video_latents
+  kind: measured
+  via: null
+  systematic_bias: The VAE latent is a compression basis chosen for reconstruction, not a representation
+    with any claim on cortical coding. Treating latent axes as feature dimensions with meaning is the
+    channel-identity error in a different modality.
+  band_hz:
+  - null
+  - null
+absent:
+- retinal_geometry
+- cortical_support
+- participant_state
+requires:
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: Model features live on an image plane with no eccentricity, so relating them to cortical
+    drive requires the retinal sampling that turns a pixel grid into a visual field. Without it the features
+    can still be computed and compared to each other, and nothing about a participant can be said.
+  substitute: Uniform pixel weighting, which asserts the fovea and the far periphery are sampled alike
+    -- false by two orders of magnitude.
+use:
+- distil
+forbidden:
+- wan2.2-i2v-a14b/* -> observation-role likelihoods
+- wan2.2-i2v-a14b/* -> B-WIN's state ontology or support definitions
+- wan2.2-i2v-a14b/* -> any cortical state treated as a label
+split:
+  group_by:
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: wan2.2-i2v-a14b
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - video_prediction
+    - video_latents
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null

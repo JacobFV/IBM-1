@@ -1,0 +1,122 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ninapro
+title: Ninapro -- non-invasive adaptive hand prosthetics EMG and kinematics database
+provider: Ninapro consortium
+citation: Atzori et al., Electromyography data for non-invasive naturally-controlled robotic hand prostheses.
+  Scientific Data 2014.
+urls:
+- https://ninapro.hevs.ch/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Registration and licence agreement; includes amputee participants. Unresolved.
+binding: unbound
+population:
+  n: 100
+  hierarchy:
+  - participant
+  - session
+  - device
+  notes: Ten databases with different electrode counts, sampling rates and acquisition hardware. 'Ninapro'
+    is a family, not one dataset, and the amputee arm is a different population from the intact-limb arm.
+frames:
+- forearm_electrode_array
+- hand_joint_frame
+- wrist
+streams:
+- name: surface_emg
+  kind: measured
+  via: null
+  observation_chain: motor-unit action potentials -> muscle and subcutaneous volume conduction -> surface
+    or intramuscular electrode -> sampled voltage
+  confounds:
+  - 'CROSS-TALK between adjacent muscles, which is the dominant limitation of surface EMG: a channel over
+    one muscle records its neighbours too'
+  - electrode shift between sessions, which changes the channel-to-muscle mapping entirely
+  - skin impedance and sweat over a session
+  - in amputees there is no distal limb, so the 'movement' is IMAGINED OR ATTEMPTED and has no kinematic
+    ground truth at all
+  systematic_bias: 'The most direct measurement of MOTOR OUTPUT in the registry: motor-unit activity at
+    the muscle, one synapse from the periphery. §28''s body/motor interactions terminate here.'
+  notes: the mapping from sEMG channels to individual muscles is not one-to-one and is not identifiable
+    from surface recordings alone
+  band_hz:
+  - null
+  - null
+  temporal_support: sEMG at 100 Hz to 2 kHz depending on the database; glove kinematics at ~25 Hz. The
+    rate mismatch between the electrical and kinematic streams is substantial and is a real clock-graph
+    edge
+  spatial_support: surface EMG electrodes on the forearm at fixed anatomical positions; each channel's
+    support is the volume of muscle within its pickup range, which OVERLAPS between adjacent channels
+    and does not correspond to single muscles
+- name: hand_kinematics
+  kind: imposed
+  via: null
+  systematic_bias: a data glove measures the GLOVE's joint angles; its calibration to the hand is per-participant
+    and drifts
+  band_hz:
+  - null
+  - null
+- name: amputee_arm
+  kind: imposed
+  via: null
+  systematic_bias: 'attempted movement of an absent limb: the label is the instruction, and there is no
+    physical event to verify it against -- the same structural problem as ds006033''s inner speech and
+    invasive-human-array-bci''s attempted movement'
+  band_hz:
+  - null
+  - null
+- name: force
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: movement_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: participant_clinical_data
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- intramuscular_emg
+- individual_muscle_identification
+- contact_forces_in_most_databases
+requires:
+- geometry: device-geometry
+  for_streams:
+  - surface_emg
+  - hand_kinematics
+  severity: degrading
+  without_it: 'This is a body-surface inverse problem with the same structure as EEG''s: the measured
+    potential depends on where each electrode sat relative to the generator sheet. Without a device-geometry
+    object for the array the signal constrains the source''s state but not its location or extent.'
+  substitute: The nominal placement described in the protocol, treated as exact. Between participants
+    the anatomy under a nominally identical placement varies, and that variation is absorbed silently
+    into the estimate.
+use:
+- fit
+forbidden:
+- ninapro/* -> cortical state directly
+- ninapro/surface_emg -> individual muscle activation claims
+- ninapro/amputee_arm -> verified motor intention
+split:
+  group_by:
+  - participant
+  - session
+  - device
+  notes: 'device matters: the ten databases used different acquisition hardware'
+provenance:
+  imported_from: win-registry
+  card: ninapro
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

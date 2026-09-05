@@ -1,0 +1,49 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: figshare
+title: figshare
+provider: Figshare LLP, a Digital Science solution
+citation: No platform-level citation is requested; items carry their own DOIs.
+urls:
+- https://figshare.com
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: PER DEPOSIT FROM A CLOSED LIST, MANDATORY FOR PUBLIC ITEMS. On the free figshare.com instance,
+    data must be CC0 or CC-BY (or GPL, MIT or Apache for code); the list varies on institutional and publisher
+    instances. The policies page states datasets are published under CC0 BY DEFAULT while the how-to-choose
+    page states no default -- the two disagree and the item's own licence field is the only authority.
+    Metadata are CC0. Public content downloads without an account.
+binding: unbound
+population:
+  n: null
+frames:
+- described_by_reference
+streams:
+- name: hosted_research_outputs
+  kind: measured
+  via: null
+  systematic_bias: 'The instance matters: the same platform enforces different licence sets on figshare.com,
+    on institutional instances and on publisher instances, so ''hosted on figshare'' says nothing about
+    terms.'
+  band_hz:
+  - null
+  - null
+  temporal_support: versioned items with publication dates
+  spatial_support: a general research-output host, including non-traditional outputs such as figures,
+    theses and supplementary material
+absent:
+- measurements
+use:
+- prior
+forbidden:
+- figshare/* -> a licence assumed from the platform rather than read from the item
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: figshare
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

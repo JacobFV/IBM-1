@@ -1,0 +1,70 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: intersubject-correlation-maps
+title: Naturalistic intersubject correlation maps
+provider: multiple -- Hasson lab and the naturalistic imaging literature
+citation: Hasson et al., Intersubject synchronization of cortical activity during natural vision. Science
+  2004; PROMPT.md §52.9.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- fsaverage
+streams:
+- name: intersubject_correlation
+  kind: measured
+  via: null
+  systematic_bias: ISC measures STIMULUS-LOCKED SHARED RESPONSE. High ISC means a region's activity is
+    driven by something in the stimulus that is common across people; LOW ISC IS AMBIGUOUS -- it can mean
+    idiosyncratic processing, no response at all, or a response at a timescale the analysis window cannot
+    see. The asymmetry between what high and low ISC license is the main thing to carry forward.
+  notes: ISC is computed at a chosen temporal window and a chosen filter band; both determine the map
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: cortical maps of how strongly participants' responses to the SAME naturalistic stimulus
+    correlate with each other
+- name: isc_as_noise_ceiling
+  kind: measured
+  via: null
+  systematic_bias: ISC is a principled UPPER BOUND on what any stimulus-driven encoding model can predict
+    in a region, which is exactly the floor-and-ceiling §46 demands and is usually the honest denominator
+    for an encoding-model score
+  band_hz:
+  - null
+  - null
+absent:
+- individual_processing
+- directionality
+- stimulus_independent_activity
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- intersubject-correlation-maps/* -> observation-role likelihoods
+- intersubject-correlation-maps/low_isc -> absence-of-response claims
+- intersubject-correlation-maps/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: intersubject-correlation-maps
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

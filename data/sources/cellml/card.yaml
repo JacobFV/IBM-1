@@ -1,0 +1,59 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cellml
+title: CellML -- markup language for mathematical models of biological processes
+provider: Auckland Bioengineering Institute
+citation: Cuellar et al., An overview of CellML 1.1, a biological model description language. Simulation
+  2003.
+urls:
+- https://www.cellml.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- arbitrary_state_space
+streams:
+- name: mandatory_unit_annotation
+  kind: measured
+  via: null
+  systematic_bias: 'CellML makes units MANDATORY and checkable, and makes component interfaces explicit.
+    §57 requires native units on every source card for the same reason: a quantity without its units is
+    not a measurement, and a model without unit checking will eventually add a millivolt to a millisecond.
+    The machinery exists and is worth adopting rather than reinventing.'
+  notes: CellML's component model is continuous-dynamics-shaped, like LEMS's, and §32 requires accommodating
+    event systems, lookups and discrete algorithms too
+  band_hz:
+  - null
+  - null
+  temporal_support: declares dynamics, not a timestep
+  spatial_support: hierarchical, unit-annotated mathematical models with explicit component interfaces;
+    components connect through declared variable mappings rather than through shared globals
+- name: hierarchical_composition
+  kind: measured
+  via: null
+  systematic_bias: explicit interfaces between nested components is the property obj-module-interfaces
+    needs and is easy to lose
+  band_hz:
+  - null
+  - null
+absent:
+- biological_content
+- human_parameter_values
+use:
+- calibrate
+forbidden:
+- cellml/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: cellml
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

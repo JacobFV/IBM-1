@@ -1,0 +1,83 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bidmc
+title: BIDMC PPG and Respiration Dataset
+provider: PhysioNet / University of Oxford
+citation: Pimentel et al., Toward a robust estimation of respiratory rate from pulse oximeters. IEEE TBME
+  2017.
+urls:
+- https://physionet.org/content/bidmc/
+access: priority
+licence:
+  name: ODC-BY 1.0 (PhysioNet open access)
+  redistribution: unresolved
+  commercial: unresolved
+  notes: PhysioNet open access; SPDX and commercial terms not verified here.
+binding: unbound
+population:
+  n: 53
+  hierarchy:
+  - participant
+  notes: 53 recordings extracted from MIMIC-II with MANUALLY ANNOTATED breaths -- the annotation is what
+    makes it a benchmark rather than a sample.
+frames:
+- finger
+- torso
+streams:
+- name: ppg
+  kind: measured
+  via: null
+  observation_chain: pulsatile arterial blood volume -> optical absorption change at the sensor site ->
+    photodetector current -> sampled waveform
+  confounds:
+  - motion artifact
+  - peripheral perfusion state
+  - sensor pressure on the finger
+  systematic_bias: Respiratory modulation of the PPG (baseline wander, amplitude and frequency modulation)
+    is a real physiological coupling between two systems, visible in one channel.
+  band_hz:
+  - null
+  - null
+  temporal_support: waveforms at 125 Hz; manual breath annotations at breath resolution
+  spatial_support: finger PPG, chest impedance and ECG electrodes
+- name: manual_breath_annotations
+  kind: measured
+  via: null
+  systematic_bias: human-annotated breath onsets give an actual reference against which an algorithm can
+    fail, which is what §46 requires and what most physiological datasets lack
+  band_hz:
+  - null
+  - null
+- name: impedance_respiration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ecg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: numerics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- healthy_population
+- large_n
+use:
+- fit
+forbidden:
+- bidmc/* -> cortical state without an explicit carded interaction
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: bidmc
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,76 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: openeds2020
+title: OpenEDS2020 -- eye-tracking sequences for gaze prediction and sparse segmentation
+provider: Meta Reality Labs
+citation: 'Palmero et al., OpenEDS2020: Open Eyes Dataset. arXiv 2020.'
+urls:
+- https://research.facebook.com/downloads/openeds-2020/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Challenge licence agreement; unresolved.
+binding: unbound
+population:
+  n: 90
+  hierarchy:
+  - participant
+  - session
+  notes: Adds temporal sequences and 3D gaze vectors, which OpenEDS2019 lacked.
+frames:
+- hmd_camera
+- eye
+- head
+streams:
+- name: 3d_gaze_vectors
+  kind: imposed
+  via: null
+  systematic_bias: a 3D ray in the camera frame; converting it to a world ray requires the head pose,
+    which is not in this dataset
+  band_hz:
+  - null
+  - null
+  temporal_support: 100 Hz image sequences
+  spatial_support: near-eye camera; gaze expressed as a 3D ray, not a screen point
+- name: eye_image_sequences
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: sparse_segmentation
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- head_pose
+- scene_video
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The quantity of interest is the camera-to-eye transform. Without the near-eye camera geometry
+    -- its pose, optics and relation to the headset frame -- an eye image cannot be turned into an eyeball
+    model and a gaze ray in any external frame.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: Gaze here is a 3D ray in a headset frame, not a point on a screen. Turning it into retinal
+    coordinates over any stimulus requires the eye and world geometry; without it the ray is expressed
+    in a frame no stimulus lives in.
+use:
+- calibrate
+- fit
+forbidden:
+- openeds2020/* -> any cortical state directly
+- openeds2020/3d_gaze_vectors -> world gaze rays without head pose
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: openeds2020
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

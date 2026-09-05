@@ -1,0 +1,151 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tms-localization-example-osf-myrqn
+title: Precise TMS motor mapping -- example data (OSF myrqn, Numssen et al. Nature Protocols)
+provider: Max Planck Institute for Human Cognitive and Brain Sciences / OSF node myrqn, with the bytes
+  on an ownCloud provider
+citation: Numssen, Weise, Kalloch, Zier, Thielscher, Haueisen, Hartwigsen, Knosche. Precise motor mapping
+  with transcranial magnetic stimulation. Nature Protocols, doi:10.1038/s41596-022-00776-6.
+urls:
+- https://osf.io/myrqn/
+- https://doi.org/10.1038/s41596-022-00776-6
+- https://gitlab.gwdg.de/tms-localization/papers/tmsloc_proto
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'The OSF API returns node_license: null and the license relationship is null. The node is PUBLIC,
+    and public is not licensed -- there is no grant to rely on. The SCRIPTS repository carries its own
+    licence, which is a different artifact and does not cover the data. Status is ''watch'' rather than
+    ''p0'' for exactly this reason: the data are excellent and the permission to use them is absent.'
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: subject_0 is the only complete participant published. The value here is depth, not n.
+frames:
+- neuronavigation_tracker
+- subject_mri
+- head_mesh
+- mni
+streams:
+- name: per_pulse_pose_field_and_mep
+  kind: measured
+  via: null
+  observation_chain: 'coil current -> induced electric field in the head, whose magnitude and direction
+    at the cortical target are NOT measured but computed from a head model -> depolarisation of some unknown
+    mixture of interneurons and corticospinal cells -> descending volley -> spinal motoneuron pool, whose
+    excitability is a separate uncontrolled state -> muscle fibre action potentials -> surface EMG ->
+    rectified peak-to-peak amplitude. FOUR DISTINCT THINGS get conflated here: the requested machine setting,
+    the delivered physical field, peripheral co-stimulation, and the candidate neural response'
+  confounds:
+  - spinal motoneuron excitability, which varies over minutes and is never measured
+  - background voluntary EMG, which multiplies MEP amplitude and is often only loosely controlled
+  - coil-to-scalp distance and scalp/skull thickness, which change the delivered field without changing
+    the machine setting
+  - 'peripheral co-stimulation: the click, the scalp sensation and the twitch itself are salient sensory
+    events with their own evoked responses'
+  - the head model used to compute the field is derived geometry with its own error, and its output is
+    routinely reported as if measured
+  - attention, arousal and time of day
+  systematic_bias: This is the only public object found that holds the COMPLETE triple -- MRI, per-pulse
+    6-DOF coil pose, and raw MEP -- for the same head. Every other MEP corpus surveyed drops at least
+    one leg, usually the pose. One participant with the complete chain is worth more to a forward-model
+    validation than a hundred participants with the pose collapsed to a scalar.
+  band_hz:
+  - null
+  - null
+  temporal_support: per-pulse event series; the raw EMG traces carry the acquisition sampling rate, which
+    is not stated in the release metadata
+  spatial_support: per-pulse coil pose against a subject-specific segmented head mesh, with the region
+    of interest defined on the cortical surface
+- name: head_mesh_and_coil_models
+  kind: measured
+  via: null
+  systematic_bias: The meshes and coil geometries make the E-field computation reproducible, which is
+    what turns a simulated field from an assertion into a checkable derivation. It remains DERIVED GEOMETRY
+    and is labelled so forever.
+  band_hz:
+  - null
+  - null
+- name: mep_emg_raw
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: per_pulse_coil_pose
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: structural_mri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: head_mesh
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: simulated_e_field
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: roi_definition
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: coil_models
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- second_participant
+- sham_arm
+- delivered_field_measurement
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: The delivered quantity is an induced electric field throughout the head, set by the coil's
+    winding geometry and its pose relative to the anatomy. Without the device product the stimulation
+    is recorded as a machine setting rather than as a dose at any cortical location, and the four stages
+    of an intervention collapse into one.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- fit
+forbidden:
+- tms-localization-example-osf-myrqn/* -> any artifact, until a licence is resolved
+- tms-localization-example-osf-myrqn/* -> a delivered-field claim (the field is simulated)
+split:
+  group_by:
+  - participant
+  - session
+  - run
+  notes: 'n=1: there is no participant-level split. Any evaluation on this source is within-subject and
+    must say so.'
+provenance:
+  imported_from: win-registry
+  card: tms-localization-example-osf-myrqn
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,99 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: aneumo
+title: AneuMo -- large-scale synthetic aneurysm geometry and CFD dataset
+provider: AneuMo (arXiv 2505.14717)
+citation: 'AneuMo: a large-scale multimodal aneurysm dataset with computational fluid dynamics simulations.
+  arXiv:2505.14717.'
+urls:
+- https://arxiv.org/abs/2505.14717
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  notes: SYNTHETIC geometries with simulated flow. There are no participants in the measurement sense,
+    and treating simulated cases as a sample of people would be a category error.
+frames:
+- mesh_native
+streams:
+- name: cfd_solutions
+  kind: measured
+  via: null
+  systematic_bias: '§51.2 item 17 is explicit: use STRICTLY as vascular solver/surrogate supervision and
+    RARE-GEOMETRY STRESS TESTING. The CFD solution is ground truth for the equations that were solved,
+    under the boundary conditions that were imposed -- and the boundary conditions are the modelling assumption,
+    not a measurement. It is truth about a simulation.'
+  notes: the Navier-Stokes solution is exact for the assumed rigid walls, Newtonian blood and imposed
+    inlet waveform; real vessels are compliant and blood is not Newtonian at small calibre
+  band_hz:
+  - null
+  - null
+  temporal_support: CFD time steps within a cardiac cycle -- a SIMULATED clock, not an acquisition clock
+  spatial_support: generated vessel geometries with computational fluid dynamics solutions on them; the
+    flow field is defined everywhere in the lumen, which no measurement achieves
+- name: rare_geometries
+  kind: measured
+  via: null
+  systematic_bias: synthetic geometries can cover configurations no clinical cohort contains, which is
+    exactly what a stress test needs and exactly why the results do not transfer as prevalence
+  band_hz:
+  - null
+  - null
+- name: synthetic_geometries
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cfd_velocity_fields
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pressure_fields
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: wall_shear_stress
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: boundary_conditions
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- real_tissue
+- measured_flow
+- compliant_walls
+- population
+- non_newtonian_effects
+use:
+- evaluate
+- surrogate
+forbidden:
+- aneumo/* -> observation-role likelihoods
+- aneumo/* -> prevalence or population claims
+- aneumo/cfd_solutions -> measured flow
+split:
+  group_by:
+  - run
+  notes: 'synthetic: participant splits do not apply'
+provenance:
+  imported_from: win-registry
+  card: aneumo
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

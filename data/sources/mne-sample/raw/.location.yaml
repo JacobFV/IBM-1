@@ -1,0 +1,10 @@
+# where the bytes for `mne-sample` actually live.  never the bytes themselves.
+local_root: /home/brandonin/Documents/win-data/mne-sample
+acquired_at: '2026-09-04'
+files: 621
+bytes: 2951099650
+gib: 2.75
+checksums: deferred -- see checksums.txt
+note: bytes live outside the repository and are never committed; this file records
+  where they are.
+source_url: https://mne.tools/stable/documentation/datasets.html

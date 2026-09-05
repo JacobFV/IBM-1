@@ -1,0 +1,5 @@
+# where the bytes for `magic-memory-curiosity` actually live.  never the bytes themselves.
+source_url: "https://openneuro.org/datasets/ds004182"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

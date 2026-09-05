@@ -1,0 +1,60 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: dwi-phantoms
+title: Diffusion MRI physical phantoms
+provider: multiple -- Fibrecup, HARDI phantoms, NIST diffusion phantoms and successors
+citation: PROMPT.md §52.8, 'DWI phantoms'; §52.12, 'NIST/ADNI phantoms'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- phantom_native
+- scanner
+streams:
+- name: known_geometry_phantoms
+  kind: measured
+  via: null
+  systematic_bias: 'A PHYSICAL phantom differs from a simulated one in exactly the way that matters: it
+    carries real eddy currents, real gradient nonlinearity and real noise, with a known answer. That combination
+    is unavailable from either simulation or biological tissue, and it is what separates an acquisition-physics
+    error from a tractography error.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: PHYSICAL objects with known fibre geometry (textile or capillary bundles) or known
+    diffusivity (temperature-controlled liquids), scanned on real scanners with real artifacts
+- name: known_diffusivity_phantoms
+  kind: measured
+  via: null
+  systematic_bias: 'isotropic diffusivity standards at controlled temperature are a scanner CALIBRATION
+    object: they measure the instrument, not the sample'
+  band_hz:
+  - null
+  - null
+absent:
+- biological_realism
+- cellular_structure
+- population
+use:
+- calibrate
+- surrogate
+forbidden:
+- dwi-phantoms/* -> biological interpretation claims
+- dwi-phantoms/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: dwi-phantoms
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

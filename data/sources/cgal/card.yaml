@@ -1,0 +1,67 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cgal
+title: CGAL -- Computational Geometry Algorithms Library
+provider: CGAL project / INRIA and collaborators
+citation: The CGAL Project, CGAL User and Reference Manual.
+urls:
+- https://www.cgal.org/
+access: reference
+licence:
+  name: GPL-3.0 and LGPL-3.0 by package (stated by the project); commercial licences available
+  redistribution: unresolved
+  commercial: unresolved
+  notes: MIXED per package. Obligations depend on which components are used.
+binding: unbound
+population:
+  n: null
+frames:
+- arbitrary_mesh
+streams:
+- name: exact_geometric_predicates
+  kind: measured
+  via: null
+  systematic_bias: §11's support-overlap operators and §56.1's overlap operators between every admitted
+    cover are BOOLEAN AND INTERSECTION operations on geometry, and floating-point predicates fail on degenerate
+    configurations in ways that produce invalid results rather than inaccurate ones. Exact predicates
+    are the difference between an overlap operator that works and one that occasionally produces a non-manifold
+    output.
+  notes: exactness costs performance, and the exact/filtered kernel choice is a real trade
+  band_hz:
+  - null
+  - null
+  temporal_support: static
+  spatial_support: 'computational geometry with EXACT PREDICATES: orientation and intersection tests that
+    are provably correct rather than floating-point approximate, which is what prevents the topological
+    failures that break mesh algorithms'
+- name: 3d_mesh_generation_from_images
+  kind: measured
+  via: null
+  systematic_bias: CGAL's image-to-mesh pipeline produces multi-domain meshes directly from labelled volumes,
+    which is the head-model construction path
+  band_hz:
+  - null
+  - null
+- name: licence_review_requirement
+  kind: measured
+  via: null
+  systematic_bias: mixed GPL/LGPL by package with commercial licences available; which packages are used
+    determines the obligation, so lineage must be computed per component
+  band_hz:
+  - null
+  - null
+absent:
+- biological_content
+- uncertainty
+use:
+- calibrate
+- surrogate
+forbidden:
+- cgal/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: cgal
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

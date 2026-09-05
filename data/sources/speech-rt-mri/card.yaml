@@ -1,0 +1,91 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: speech-rt-mri
+title: Real-time speech MRI with synchronised audio and raw multicoil data
+provider: University of Southern California SPAN and collaborators
+citation: Lim et al., A multispeaker dataset of raw and reconstructed speech production real-time MRI
+  video and 3D volumetric images. Scientific Data 2021.
+urls:
+- https://sail.usc.edu/span/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- kspace
+- vocal_tract_midsagittal
+- microphone
+streams:
+- name: synchronised_articulation_and_audio
+  kind: measured
+  via: null
+  observation_chain: vocal-tract configuration -> real-time spiral MRI sampling during continuous motion
+    -> reconstructed video; and simultaneously the acoustic output at a microphone, noise-cancelled against
+    the scanner's gradient acoustics
+  confounds:
+  - scanner acoustic noise contaminating the audio, removed by an imperfect noise-cancellation model
+  - reconstruction temporal blurring of fast articulator motion
+  - supine posture, which changes tongue and velum position relative to natural speech
+  - the midsagittal plane misses lateral tongue configuration entirely
+  systematic_bias: MEASURED ARTICULATOR KINEMATICS paired with the acoustics they produce. §52.4's boundary
+    corpora stop at the acoustic port; this source goes one stage upstream to the motor configuration
+    that generated it, which is what a body/motor forcing interaction actually needs.
+  notes: real-time reconstruction trades temporal for spatial resolution, so fast consonantal gestures
+    are systematically smoothed
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: real-time midsagittal MRI of the VOCAL TRACT during speech, with SYNCHRONISED AUDIO
+    and the raw spiral k-space; the imaged object is the articulatory apparatus, not the brain
+- name: raw_spiral_kspace
+  kind: measured
+  via: null
+  systematic_bias: 'a continuously moving object sampled on a spiral trajectory: the same acquisition
+    stress test as OCMR, in a structure with direct relevance to speech production'
+  band_hz:
+  - null
+  - null
+- name: audio_kspace_synchronisation
+  kind: measured
+  via: null
+  systematic_bias: a hardware-synchronised acoustic and imaging clock pair, which is rare and is a worked
+    example of the clock relation obj-clock-graph must record
+  band_hz:
+  - null
+  - null
+absent:
+- brain_imaging
+- 3d_articulation_in_the_realtime_arm
+- natural_posture
+requires:
+- geometry: mr-acquisition-objects
+  for_streams:
+  - raw_spiral_kspace
+  - audio_kspace_synchronisation
+  severity: blocking
+  without_it: Raw k-space is not an image. Without the acquisition object -- scanner frame, sequence timeline,
+    sampling trajectory, coil sensitivities and reconstruction provenance -- these samples cannot be placed
+    in space at all, and a reconstruction produced without them carries none of its own physics.
+use:
+- calibrate
+- fit
+forbidden:
+- speech-rt-mri/* -> cortical state directly
+- speech-rt-mri/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: speech-rt-mri
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,5 @@
+# where the bytes for `wand-cubric` actually live.  never the bytes themselves.
+source_url: "https://doi.gin.g-node.org/10.12751/g-node.5mv3bf"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

@@ -1,0 +1,5 @@
+# where the bytes for `modeldb` actually live.  never the bytes themselves.
+source_url: "https://modeldb.science/"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

@@ -1,0 +1,112 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hcp-7t-retinotopy
+title: HCP 7T retinotopy -- population receptive field mapping in 181 participants
+provider: WU-Minn HCP Consortium
+citation: 'Benson et al., The Human Connectome Project 7 Tesla retinotopy dataset: description and population
+  receptive field analysis. Journal of Vision 2018.'
+urls:
+- https://www.humanconnectome.org/study/hcp-young-adult/article/first-release-of-7t-mr-image-data
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: HCP Open Access Data Use Terms. SPDX and redistribution unresolved.
+binding: unbound
+population:
+  n: 181
+  hierarchy:
+  - participant
+  - family
+  - session
+  - run
+  notes: The largest individual-level retinotopy sample available. Twin structure inherited from HCP-YA.
+frames:
+- scanner
+- subject_native_surface
+- MSMAll_32k_fs_LR
+- visual_field_polar
+- display
+streams:
+- name: bold_retinotopy
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - fixation is instructed and only partially monitored; eye movement during mapping smears the estimated
+    pRF
+  systematic_bias: The stimulus is defined in visual-field coordinates, so this is the one source that
+    directly observes the retina-to-cortex map rather than assuming it.
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 1 s; six retinotopic mapping runs of bar, wedge and ring apertures
+  spatial_support: 1.6 mm 7T BOLD on individual cortical surfaces; the pRF parameters live on vertices,
+    not in a volume
+- name: prf_parameters
+  kind: measured
+  via: null
+  systematic_bias: pRF parameters are MODEL FITS assuming an isotropic gaussian receptive field; a different
+    pRF model gives different numbers from the same BOLD. Derived, not measured.
+  notes: the gaussian pRF model is one of several; the fit's variance-explained map is the honest weighting
+    and travels with the parameters
+  band_hz:
+  - null
+  - null
+- name: individual_boundary_variation
+  kind: measured
+  via: null
+  systematic_bias: '§51.1 item 5: build PROBABILISTIC retinal-coordinate-to-cortical-support mappings
+    from this, not an atlas label lookup'
+  band_hz:
+  - null
+  - null
+- name: individual_surfaces
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_apertures
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: variance_explained
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- eye_tracking_during_mapping
+- vascular
+- peripheral_visual_field
+use:
+- calibrate
+- fit
+- prior
+forbidden:
+- hcp-7t-retinotopy/prf_parameters -> measured-geometry claims
+- hcp-7t-retinotopy/group_average_retinotopy -> subject patch definition
+split:
+  group_by:
+  - family
+  - participant
+provenance:
+  imported_from: win-registry
+  card: hcp-7t-retinotopy
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

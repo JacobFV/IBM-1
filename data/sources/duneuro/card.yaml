@@ -1,0 +1,89 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: duneuro
+title: DUNEuro -- finite element forward modelling for EEG, MEG and tES
+provider: University of Munster and collaborators
+citation: Nussing et al., duneuro -- A software toolbox for forward modeling in bioelectromagnetism. PLoS
+  ONE 2019.
+urls:
+- https://www.medizin.uni-muenster.de/duneuro/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- volume_mesh
+- source_space
+- eeg_cap
+- meg_device
+streams:
+- name: anisotropic_fem_forward
+  kind: measured
+  via: null
+  systematic_bias: THE PLACE WHERE THE STRUCTURAL AND THE ELECTROMAGNETIC HALVES OF THIS REGISTRY MEET.
+    White-matter conductivity is anisotropic along fibres, and the fibre orientation comes from diffusion
+    imaging -- so §52.8's orientation evidence becomes an input to §14's electromagnetic state through
+    a conductivity tensor. Whether that anisotropy matters enough to change a source estimate is an empirical
+    question this solver makes answerable and BEM makes unaskable.
+  notes: the mapping from diffusion tensors to conductivity tensors uses an assumed scaling relationship
+    that is not measured in vivo
+  band_hz:
+  - null
+  - null
+  temporal_support: static operator
+  spatial_support: a VOLUME MESH of the head in which conductivity can vary per element AND be ANISOTROPIC
+    -- so white-matter fibre direction from diffusion imaging can enter the forward model as a conductivity
+    tensor, which no BEM can represent
+- name: source_singularity_treatments
+  kind: measured
+  via: null
+  systematic_bias: a point current dipole is a singularity in a finite element mesh, and the several treatments
+    (Venant, subtraction, partial integration) give different answers near the source; the differences
+    are documented and are a numerical uncertainty component
+  band_hz:
+  - null
+  - null
+- name: shared_solver_for_eeg_and_tes
+  kind: measured
+  via: null
+  systematic_bias: the SAME quasi-static conduction problem governs EEG forward modelling and tES field
+    computation, differing only in boundary conditions -- so one internal implementation serves both,
+    which is an argument for building it once properly
+  band_hz:
+  - null
+  - null
+absent:
+- measured_anisotropy
+- in_vivo_validation
+- measured_conductivities
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'This solver''s input IS the geometry: sensor or electrode positions on one side, a head
+    model on the other. Used as an offline oracle it can produce nothing until the device product supplies
+    the first of those, and a solver run against assumed positions validates an internal implementation
+    against an assumption rather than against physics.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- surrogate
+forbidden:
+- duneuro/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: duneuro
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

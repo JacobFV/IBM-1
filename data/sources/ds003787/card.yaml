@@ -1,0 +1,164 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds003787
+title: OpenNeuro ds003787 -- NYU Retinotopy Dataset (3T pRF mapping)
+provider: OpenNeuro; New York University (Winawer and Carrasco labs)
+citation: Himmelberg, Kurzawski, Benson, Pelli, Carrasco, Winawer. Cross-dataset reproducibility of human
+  retinotopic maps. Dataset doi:10.18112/openneuro.ds003787.v1.0.0.
+urls:
+- https://openneuro.org/datasets/ds003787
+access: held
+licence:
+  name: CC0-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'RESOLVED 2026-08-16 FROM THE HELD BYTES: dataset_description.json states License ''CC0''. That
+    file was ABSENT until today -- see the note below -- so this card carried an unresolved licence for
+    a deposit that states its own, purely because the acquisition filter dropped it. DUA: none. Recorded
+    as dua_required false on the basis of HOW THIS WAS ACTUALLY OBTAINED -- it is held in this store,
+    fetched anonymously over plain HTTP by a script in scripts/ that sends no credential and accepts no
+    terms, from a repository that serves it without an access request. That is evidence about the acquisition
+    rather than an opinion about the deposit''s policy. It says nothing about the LICENCE terms, which
+    are recorded separately and still govern distribution; a non-commercial work with no DUA is an ordinary
+    combination.'
+binding: unbound
+population:
+  n: 44
+  hierarchy:
+  - participant
+  - session
+  notes: 44 sub-wlsubj directories matching 44 rows in participants.tsv. The derivatives tree contains
+    two additional non-human 'subjects' -- a group average and a median solution -- which are DERIVED
+    products and must not be counted as participants.
+frames:
+- scanner
+- subject_native
+- fsnative
+- fsaverage
+- visual_field_polar
+streams:
+- name: population_receptive_field_estimates
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away. The pRF parameters are then obtained by FITTING a receptive-field
+    model to the response of each vertex against the known stimulus aperture sequence. THE PARAMETERS
+    ARE MODEL OUTPUTS: a pRF size is a property of the fitted model, and it absorbs BOLD spatial blur,
+    vascular point spread and eye movement along with any neural receptive-field extent'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - eye movements enlarge and displace the estimated pRF and are not recorded in this release
+  - the vascular point-spread function sets a floor on estimable pRF size that is not neural
+  - the pRF model form (Gaussian, difference-of-Gaussians, compressive nonlinearity) changes the estimates
+    and is a choice
+  - attention shifts the pRF centre, a well-documented effect, and attention is not controlled here
+  systematic_bias: 44 participants with per-vertex pRF parameters on their own surfaces is the population
+    sample that a PROBABILISTIC retinal-to-cortical mapping needs. A single atlas label lookup is what
+    this replaces.
+  band_hz:
+  - null
+  - null
+  temporal_support: TR-sampled BOLD during rotating-wedge and expanding-ring stimulus sweeps; the stimulus
+    apertures are shipped, so the forward stimulus timeline is recoverable
+  spatial_support: 3T whole-brain EPI analysed on the SUBJECT'S OWN SURFACE (fsnative) as well as fsaverage,
+    with pRF parameters estimated per vertex and V1/V2/V3/hV4 ROIs drawn on those surfaces. The retinotopic
+    map is a coordinate system in the VISUAL FIELD attached to cortical locations -- which is the mapping
+    obj-retinotopic-mapping needs, and it is estimated, never measured
+- name: cross_dataset_reproducibility
+  kind: measured
+  via: null
+  systematic_bias: The dataset exists to be compared against the HCP 7T retinotopy release. Two independent
+    measurements of the same quantity in different people on different scanners is the only way to separate
+    estimation error from individual variation, and it is exactly the overlap-reconciliation case.
+  band_hz:
+  - null
+  - null
+- name: bold_retinotopy
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: freesurfer_surfaces
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: fmriprep_derivatives
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: vistasoft_prf_parameters
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: visual_area_rois
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bayesian_inferred_maps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_apertures
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eyetracking
+- diffusion
+- eeg
+- meg
+- physiology
+- 7t_comparison_within_subject
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  severity: blocking
+  without_it: The stimulus was presented on a screen at a particular size and distance, and the participant
+    saw a gaze-dependent projection of it rather than the frames themselves. Without the display geometry
+    there is no visual-angle axis here at all, so the stimulus stream cannot enter a retinotopically addressed
+    path.
+use:
+- calibrate
+- fit
+forbidden:
+- ds003787/* -> a pRF size treated as a neural receptive-field size
+- ds003787/* -> the derivative group-average 'subjects' counted as participants
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: ds003787
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

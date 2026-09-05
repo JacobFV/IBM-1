@@ -1,0 +1,77 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: raichle-metabolism
+title: Raichle aerobic glycolysis and resting metabolism maps
+provider: Raichle lab / Washington University
+citation: Vaishnavi et al., Regional aerobic glycolysis in the human brain. PNAS 2010; Raichle and Mintun,
+  Brain work and brain imaging. Annual Review of Neuroscience 2006.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- fsaverage
+streams:
+- name: resting_metabolism_maps
+  kind: measured
+  via: null
+  systematic_bias: Quantitative PET in ABSOLUTE PHYSIOLOGICAL UNITS, which is rare and is what makes these
+    maps useful as a prior over resting metabolic state. Small groups of healthy young adults; the numbers
+    are population means with real between-person spread that is not distributed with them.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: PET-derived group maps of resting cerebral blood flow, oxygen metabolism and glucose
+    metabolism, and the oxygen-glucose index derived from them
+- name: oxygen_glucose_index
+  kind: measured
+  via: null
+  systematic_bias: aerobic glycolysis is regionally non-uniform, which is direct evidence against any
+    model that treats metabolism as a fixed multiple of activity -- relevant to §17's insistence that
+    BOLD's metabolic stage is a modelled state
+  band_hz:
+  - null
+  - null
+absent:
+- individual_variation
+- task_states
+- temporal_dynamics
+- uncertainty
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+- geometry: vascular-products
+  severity: degrading
+  without_it: A perfusion or reactivity map is a voxel field with no vessel attached. It can be used as
+    a voxel-wise measurement, but attributing it to a supplying artery, a draining vein or a microvascular
+    compartment -- which is what makes it evidence about the vascular state rather than about the image
+    -- requires the vascular product.
+  substitute: Voxel-wise use with no vessel attribution, which cannot separate an arterial transit effect
+    from a tissue perfusion change.
+use:
+- calibrate
+- prior
+forbidden:
+- raichle-metabolism/* -> individual metabolic state
+- raichle-metabolism/* -> observation-role likelihoods
+- raichle-metabolism/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: raichle-metabolism
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

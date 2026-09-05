@@ -1,0 +1,221 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: studyforrest-ds000113
+title: StudyForrest core -- ds000113, audio-visual Forrest Gump fMRI
+provider: StudyForrest project / OpenNeuro ds000113
+citation: Hanke et al., A high-resolution 7-Tesla fMRI dataset from complex natural stimulation with an
+  audio movie. Scientific Data 2014; Hanke et al., Scientific Data 2016.
+urls:
+- https://www.studyforrest.org/
+- https://openneuro.org/datasets/ds000113
+access: held
+licence:
+  name: PDDL-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'The held dataset_description.json carries an EMPTY License field -- "License": "". That is not
+    CC0: the three other OpenNeuro datasets in this store (ds000117, ds002336, ds004024) all state "CC0"
+    explicitly, so the blank is a real gap in the upstream metadata and not a house style. The FILM ITSELF
+    is third-party copyright and is NOT redistributable under any project licence; obj-licence-lineage
+    must keep stimulus and response lineage separate. In this snapshot the point is moot in one direction
+    -- the film is not held. The HELD dataset_description.json declares License as an EMPTY STRING --
+    present and blank, so the deposit itself states nothing and the field cannot be read off the bytes.
+    The project states the terms: studyforrest.org says the data is ''liberally licensed (PDDL)'', linking
+    opendatacommons.org/licenses/pddl/1-0/. PDDL 1.0 is a public-domain dedication: redistribution permitted,
+    commercial use permitted, no share-alike, no attribution condition (attribution is requested as a
+    norm, not required as a term). No DUA; held here from an anonymous OpenNeuro fetch. NOTE the site''s
+    own CC-BY-SA applies to the WEBSITE TEXT and not to the data -- two different licences on one page,
+    and taking the more visible one would have been wrong.'
+binding: unbound
+population:
+  n: 4
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 'HELD: 4 participants (sub-01 .. sub-04), measured 2026-08-15. The participants.tsv in the same
+    directory has 37 rows and the README describes 20 for the movie arm; n_participants is the HELD number
+    because that is what a slice can draw on. Audio-description version for the 3T/7T audio-movie arm;
+    audio-visual version for the movie arm. They are DIFFERENT stimuli and different participant sets.
+    CORRECTED 2026-08-16: of those 37 rows, ONE IS A SCANNER PHANTOM (''phantom'', n/a in every other
+    column), so the table describes 36 people.'
+frames:
+- scanner
+- subject_native
+- display
+- eye
+- fsaverage
+- MNI152
+streams:
+- name: bold_movie
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  systematic_bias: 7T at 1.4 mm reaches laminar-adjacent scales in some regions; the draining-vein bias
+    is correspondingly more, not less, important.
+  band_hz:
+  - null
+  - null
+  temporal_support: TR 2 s BOLD; film at 25 fps; audio at 44.1 kHz; eight run segments with known overlaps
+    -- the segment boundaries are a real discontinuity in the world clock
+  spatial_support: 1.4 mm 7T BOLD in the audio-movie arm; 3T for the audio-visual arm; individual surfaces;
+    documented display and projector geometry
+- name: film_stimulus
+  kind: imposed
+  via: null
+  systematic_bias: '§51.1 item 3: use the same film as a cross-instrument WORLD TRAJECTORY. It does NOT
+    follow that the fMRI and MEG recordings are simultaneous -- they are not, and treating them as one
+    episode is the error this note exists to prevent.'
+  band_hz:
+  - null
+  - null
+- name: stimulus_narration_transcript
+  kind: imposed
+  via: null
+  systematic_bias: 'HELD and read: stimuli/annotations/german_audio_description.csv, 573 timed segments,
+    6414 words, spanning 1.3-7084.3 s of the film. Three facts a consumer needs and no publication states.
+    (1) It covers 27.5% of the timeline; the other 72.5% is UN-NARRATED FILM, which is neither silence
+    nor the absence of language -- it is the absence of an annotation, and bwin.audio.narration_at returns
+    MISSING there rather than zero. (2) Segments carry start, end and text and NO word onsets, so anything
+    at word or phoneme resolution is derived, not measured. (3) This is the audio-description narration,
+    a separate speaker describing the scene; it is NOT a transcript of the film''s own dialogue, and treating
+    it as one would attribute a describer''s syntax to Tom Hanks.'
+  band_hz:
+  - null
+  - null
+- name: stimulus_scene_annotation
+  kind: imposed
+  via: null
+  systematic_bias: 'HELD and read: stimuli/annotations/scenes.csv, 198 scene onsets from 17.0 to 6944.0
+    s with location, time-of-day and interior/exterior. Onsets only -- a scene''s extent is the next onset,
+    which makes the final scene''s end unstated rather than equal to the film''s.'
+  band_hz:
+  - null
+  - null
+- name: angiography
+  kind: measured
+  via: null
+  observation_chain: flow-related enhancement (TOF) or contrast bolus -> vessel-lumen intensity -> reconstruction
+    -> angiographic volume; slow and in-plane flow are systematically under-represented
+  confounds:
+  - slow-flow and in-plane-flow suppression in TOF
+  - partial volume at small vessel calibre
+  systematic_bias: 'An underused stream: StudyForrest published angiography alongside the functional data,
+    which makes it one of the few naturalistic datasets with any vessel geometry at all.'
+  band_hz:
+  - null
+  - null
+- name: physiology
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eye_tracking
+  kind: imposed
+  via: null
+  systematic_bias: the eye-gaze extension is a separate release with its own participants -- see studyforrest-eyegaze
+  band_hz:
+  - null
+  - null
+- name: bold_audio_movie
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: susceptibility
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- ieeg
+- intervention
+- pet
+- respiration
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: retinal-world-geometry
+  for_streams:
+  - bold_movie
+  - film_stimulus
+  - eye_tracking
+  severity: blocking
+  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
+    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
+    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+- geometry: vascular-products
+  for_streams:
+  - angiography
+  severity: blocking
+  without_it: An angiographic volume is an image of a lumen, not a vessel. Without the vascular product
+    -- a resolved graph carrying radius, topology and territory -- there is no vessel for this evidence
+    to constrain and no way to say which cortical support any of it supplies.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- fit
+forbidden:
+- studyforrest-ds000113/* -> millisecond cortical dynamics
+- studyforrest-ds000113/film_stimulus -> retinal input without a gaze model
+- studyforrest-ds000113/* -> white-matter microstructure or tract geometry (no diffusion volumes are held)
+- studyforrest-ds000113/* -> any claim about the acoustic or visual stimulus (the film is not held)
+- studyforrest-ds000113/angiography -> venous geometry, and studyforrest-ds000113/susceptibility_venography
+  -> arterial geometry (TOF is inflow-enhanced and venography is susceptibility-weighted; each is blind
+  to the other's vessels by construction, so neither may stand in for it)
+split:
+  group_by:
+  - participant
+  - stimulus
+  - run
+  notes: 'one film across all participants: the stimulus axis is fully shared and a participant-only split
+    leaks completely'
+provenance:
+  imported_from: win-registry
+  card: studyforrest-ds000113
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

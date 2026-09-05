@@ -1,0 +1,91 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: adam
+title: ADAM -- Aneurysm Detection And segMentation challenge (TOF-MRA)
+provider: ADAM challenge / UMC Utrecht
+citation: 'Timmins et al., Comparing methods of detecting and segmenting unruptured intracranial aneurysms
+  on TOF-MRAs: The ADAM challenge. NeuroImage 2021.'
+urls:
+- http://adam.isi.uu.nl/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Challenge registration; clinical imaging. Unresolved.
+binding: unbound
+population:
+  n: 254
+  hierarchy:
+  - participant
+  notes: '§51.2 item 16: use the HEALTHY SURROUNDING VASCULATURE and the labelled vessel geometry, NOT
+    the disease label itself. These are geometry and segmentation sources; the pathology is the reason
+    the scan exists and is a selection mechanism, not a target.'
+frames:
+- scanner
+- subject_native
+streams:
+- name: tof_mra
+  kind: measured
+  via: null
+  observation_chain: flow-related enhancement (TOF) or contrast bolus -> vessel-lumen intensity -> reconstruction
+    -> angiographic volume; slow and in-plane flow are systematically under-represented
+  confounds:
+  - 'TOF flow-dependence: slow and in-plane flow under-represented'
+  - clinical cohort selected for aneurysm suspicion
+  - annotation covers the aneurysm only, so the normal tree is unlabelled rather than absent
+  systematic_bias: The value here is the UNANNOTATED healthy arterial tree filling most of every volume,
+    which is training and validation material for general vessel segmentation.
+  notes: using an aneurysm-annotation dataset for general vessel geometry means the labels do not supervise
+    what we want; the images do
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series
+  spatial_support: TOF-MRA volumes with expert aneurysm annotation; the SURROUNDING NORMAL ARTERIAL TREE
+    is present in every volume and is unannotated
+- name: aneurysm_annotations
+  kind: measured
+  via: null
+  systematic_bias: a segmentation method that misses aneurysms is also likely to mishandle other non-tubular
+    vascular geometry, so this is a stress test rather than a target
+  band_hz:
+  - null
+  - null
+- name: structural_mri
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: clinical_metadata
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- healthy_cohort
+- venous_tree
+- capillary_scale
+- flow
+- normal_vessel_annotations
+requires:
+- geometry: vascular-products
+  severity: blocking
+  without_it: An angiographic volume is an image of a lumen, not a vessel. Without the vascular product
+    -- a resolved graph carrying radius, topology and territory -- there is no vessel for this evidence
+    to constrain and no way to say which cortical support any of it supplies.
+use:
+- evaluate
+- fit
+forbidden:
+- adam/aneurysm_annotations -> disease-prevalence claims
+- adam/* -> healthy population vascular priors without clinical conditioning
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: adam
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

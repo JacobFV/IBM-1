@@ -1,0 +1,121 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: neurotycho
+title: Neurotycho -- macaque and marmoset ECoG
+provider: Laboratory for Adaptive Intelligence, RIKEN Brain Science Institute
+citation: No citation format is stated on the landing page; cite the per-task dataset pages and their
+  associated publications.
+urls:
+- http://neurotycho.org/
+access: priority
+licence:
+  name: CC0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'Verbatim from the site: neurotycho.org has waived all copyright and related or neighboring rights
+    to downloadable dataset in Project Tycho. Whether registration is required is not stated on the landing
+    page and is unresolved.'
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - device
+  notes: 'Per-dataset subject counts are not on the landing page and are left unresolved. Twelve task
+    datasets are listed: visual grating, social competition, emotional movie, food-tracking (two variants),
+    sleep, anaesthesia, auditory oddball, fixation, simultaneous EEG/ECoG, and an ECoG-array spatial map.'
+frames:
+- array_index
+- species_template
+streams:
+- name: simultaneous_eeg_and_ecog
+  kind: measured
+  via: null
+  observation_chain: the same cortical currents observed twice at once -- once at the pial surface by
+    an ECoG contact and once outside the skull by a scalp electrode. THIS IS THE FORWARD PROBLEM WITH
+    BOTH ENDS MEASURED, which is the only way to check a volume-conduction model against something other
+    than another model
+  confounds:
+  - the craniotomy and the implanted array themselves change the volume conductor, so the measured forward
+    operator is not the intact one
+  - 'CROSS-SPECIES: macaque skull thickness, conductivity and geometry are not human'
+  - reference choice on both the ECoG and the EEG side
+  - anaesthesia in some sessions changes the sources being related
+  systematic_bias: A simultaneous intracranial-and-scalp dataset under a CC0 waiver is rare and is directly
+    the validation fixture obj-eeg-meg-observation needs. Cross-species and post-craniotomy, so it validates
+    the METHOD rather than any human number.
+  band_hz:
+  - null
+  - null
+  temporal_support: per-dataset acquisition rates, not stated on the landing page. The sleep and anaesthesia
+    datasets carry the slow state axis that the task datasets do not
+  spatial_support: epidural and subdural ECoG arrays with a released spatial map of the array; whole-hemisphere
+    coverage of a kind unobtainable in humans because it is not clinically constrained
+- name: anaesthesia_and_sleep_state_transitions
+  kind: measured
+  via: null
+  observation_chain: local post-synaptic and spiking activity within a few millimetres of a contact ->
+    extracellular potential -> potential difference against a reference contact whose own activity is
+    in every number -> amplifier and filter -> sampled microvolts. NO SKULL AND NO INVERSE PROBLEM, which
+    is what makes it the strongest direct evidence about cortical state that exists in humans, recorded
+    across graded pharmacological and natural changes of global state
+  confounds:
+  - anaesthetic agent has direct vascular and metabolic effects independent of any state change
+  - depth is titrated by the experimenter and is not an independent variable
+  - CROSS-SPECIES
+  systematic_bias: Graded anaesthesia is a controlled global-state manipulation with whole-hemisphere
+    electrophysiological coverage, which is not obtainable in humans at this resolution.
+  band_hz:
+  - null
+  - null
+- name: ecog
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: anaesthesia_state
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: sleep
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- human_data
+- mri_for_most_datasets
+- vascular
+- single_unit_for_most_datasets
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'A penetrating array samples along its own geometry: site pitch, shank trajectory and insertion
+    depth decide which tissue each channel sees. Without that geometry the channel index carries no spatial
+    claim and the recording cannot be placed against any support.'
+use:
+- fit
+- prior
+forbidden:
+- neurotycho/* -> any human state channel without an explicit cross-species mapping
+- neurotycho/* -> a human head-model validation treated as complete (the skull is a macaque's, and it
+  has a craniotomy)
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: neurotycho
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

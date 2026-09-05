@@ -1,0 +1,5 @@
+# where the bytes for `demand` actually live.  never the bytes themselves.
+source_url: "https://zenodo.org/records/1227121"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

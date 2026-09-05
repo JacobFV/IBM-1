@@ -1,0 +1,140 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds007554
+title: ds007554 -- concurrent EEG, fNIRS, ECG and EMG during cognitive-motor tasks
+provider: OpenNeuro ds007554
+citation: Concurrent EEG/fNIRS/ECG/EMG cognitive-motor dataset (named in PROMPT.md §52.4, §52.5 and §58.4).
+urls:
+- https://openneuro.org/datasets/ds007554
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: n unresolved. FOUR simultaneous physiological modalities out of the scanner -- cortical electrical,
+    cortical haemodynamic, cardiac and muscular -- is the reason to hold this.
+frames:
+- eeg_cap
+- nirs_optode_array
+- torso
+- limb
+- head
+streams:
+- name: eeg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG/EMG/ECG at kHz; fNIRS at ~10 Hz. The rate mismatch between the electrical and
+    the haemodynamic streams is a factor of a hundred and is the physics, not a sampling choice
+  spatial_support: EEG cap plus fNIRS optodes plus torso and limb electrodes; four different spatial supports
+    on one body
+- name: fnirs
+  kind: measured
+  via: null
+  observation_chain: neural activity -> haemodynamics -> HbO/HbR concentration change -> wavelength-dependent
+    attenuation along a curved, partial-volume-weighted photon path through scalp, skull, CSF and cortex
+    -> source-detector channel intensity -> modified Beer-Lambert concentration estimate
+  confounds:
+  - extracerebral scalp haemodynamics, which dominate the short channels and leak into long ones
+  - systemic blood pressure, heart rate and Mayer waves
+  - optode-scalp coupling and hair-induced attenuation
+  - differential pathlength factor assumed rather than measured
+  systematic_bias: Simultaneous electrical and haemodynamic cortical observation is the direct evidence
+    for the neurovascular-coupling interaction rather than an inference across sessions.
+  band_hz:
+  - null
+  - null
+- name: ecg
+  kind: measured
+  via: null
+  observation_chain: cardiac depolarisation and repolarisation -> torso volume conduction -> electrode
+    pair -> sampled voltage
+  confounds:
+  - sensor placement and contact quality
+  - motion artifact
+  - respiratory-cardiac cross-coupling that makes the two streams non-independent
+  systematic_bias: Cardiac state drives both the ballistocardiogram-style EEG artifact and genuine systemic
+    haemodynamics; here both readings are available and separable in principle.
+  band_hz:
+  - null
+  - null
+- name: emg
+  kind: measured
+  via: null
+  observation_chain: motor-unit action potentials -> muscle and subcutaneous volume conduction -> surface
+    or intramuscular electrode -> sampled voltage
+  confounds:
+  - sensor placement and contact quality
+  - motion artifact
+  - respiratory-cardiac cross-coupling that makes the two streams non-independent
+  - cross-talk between adjacent muscles
+  band_hz:
+  - null
+  - null
+- name: task_events
+  kind: imposed
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behaviour
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- fmri
+- meg
+- eye_tracking
+- individual_anatomy
+- respiration
+requires:
+- geometry: device-geometry
+  for_streams:
+  - eeg
+  - fnirs
+  severity: blocking
+  without_it: The EEG electrodes and the fNIRS optodes sit on one cap and have completely different spatial
+    supports -- a point contact against a banana-shaped photon path between one source and one detector.
+    Without a device-geometry object holding both, the two streams cannot be co-registered and treating
+    them as co-located is wrong.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- ds007554/emg -> cortical state directly
+- ds007554/fnirs -> cortical haemodynamics without an extracerebral component
+split:
+  group_by:
+  - participant
+  - run
+provenance:
+  imported_from: win-registry
+  card: ds007554
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

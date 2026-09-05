@@ -1,0 +1,98 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mne-spm-face
+title: MNE-Python SPM faces dataset
+provider: MNE-Python / SPM
+citation: MNE-Python spm-face dataset, derived from the SPM MEG faces tutorial data.
+urls:
+- https://mne.tools/stable/documentation/datasets.html
+access: held
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'Tutorial distribution derived from SPM materials; terms unresolved. UNRESOLVED for the same
+    reason as mne-sample and with less to go on: MNE''s datasets page names the FIL as the source and
+    states no licence, no terms of use and no data-use agreement, and no LICENSE, LICENCE or COPYING file
+    ships in the held tree. Discharged by obtaining terms from the FIL, not by reading a page that does
+    not carry them. Licence gates distribution only, so nothing about our use of it changes; an artifact
+    derived from it cannot pass release_gate.'
+binding: unbound
+population:
+  n: 1
+  hierarchy:
+  - participant
+  - run
+  notes: One participant, 0.36 h MEG (§49.3, held locally).
+frames:
+- meg_device_ctf
+- head_fiducial
+- subject_native
+streams:
+- name: ctf_sensor_geometry
+  kind: measured
+  via: null
+  systematic_bias: 'CTF axial gradiometers with synthetic higher-order gradient compensation: a genuinely
+    different forward-model configuration from Neuromag planar gradiometers. A lead-field implementation
+    that only works on one vendor''s geometry is not validated, and this fixture is how that gets caught'
+  band_hz:
+  - null
+  - null
+  temporal_support: MEG at 1200 Hz; face and scrambled-face events
+  spatial_support: CTF 275-channel MEG -- a DIFFERENT sensor topology from the Neuromag systems in mne-sample
+    and mne-somato, which is precisely its value as a fixture
+- name: face_evoked_response
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: meg_ctf
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: stimulus_events
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- population
+- eeg
+- vascular
+requires:
+- geometry: device-geometry
+  for_streams:
+  - ctf_sensor_geometry
+  severity: blocking
+  without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
+    be attributed to any cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- evaluate
+forbidden:
+- mne-spm-face/* -> population anatomy (n = 1, and the anatomy is reconstructed)
+- mne-spm-face/* -> population priors
+split:
+  group_by:
+  - run
+provenance:
+  imported_from: win-registry
+  card: mne-spm-face
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

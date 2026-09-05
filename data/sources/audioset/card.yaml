@@ -1,0 +1,74 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: audioset
+title: AudioSet -- ontology and human-labelled sound events from YouTube
+provider: Google Research
+citation: 'Gemmeke et al., AudioSet: An ontology and human-labeled dataset for audio events. ICASSP 2017.'
+urls:
+- https://research.google.com/audioset/
+access: priority
+licence:
+  name: CC BY 4.0 for the labels (stated by the provider)
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Labels are stated CC BY 4.0; the underlying audio is third-party YouTube content and is not distributed.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - session
+  notes: 'No human participants: this is web audio. Over 2 million 10-second clips across a 632-class
+    ontology.'
+frames:
+- uncontrolled_recording
+streams:
+- name: weak_event_labels
+  kind: imposed
+  via: null
+  systematic_bias: 'WEAK labels without onsets: the temporal support of the label is the whole clip, which
+    makes them useless for any timing claim'
+  band_hz:
+  - null
+  - null
+  temporal_support: 10-second clips; labels are clip-level and WEAK, i.e. they say a sound occurs somewhere
+    in the clip and not when
+  spatial_support: uncontrolled web audio; the distribution is embeddings plus video identifiers, not
+    audio
+- name: ontology
+  kind: measured
+  via: null
+  systematic_bias: a human-designed sound taxonomy; useful as a vocabulary, not as a claim about auditory
+    categories in the brain
+  band_hz:
+  - null
+  - null
+- name: vggish_embeddings
+  kind: imposed
+  via: null
+  systematic_bias: the distributed embeddings are a FIXED MODEL'S output; using them is inheriting that
+    model's inductive bias, and §53.3 requires that to be an explicit choice
+  band_hz:
+  - null
+  - null
+- name: video_ids
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- the_audio_itself
+- onset_times
+- recording_conditions
+use:
+- fit
+- prior
+forbidden:
+- audioset/* -> any cortical state directly
+split:
+  group_by:
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: audioset
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

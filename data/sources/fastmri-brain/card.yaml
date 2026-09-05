@@ -1,0 +1,133 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fastmri-brain
+title: fastMRI brain -- raw multicoil k-space
+provider: NYU Langone Health / Meta AI
+citation: 'Knoll et al., fastMRI: A Publicly Available Raw k-Space and DICOM Dataset of Knee Images for
+  Accelerated MR Image Reconstruction Using Machine Learning. Radiology: Artificial Intelligence 2020.'
+urls:
+- https://fastmri.med.nyu.edu/
+- https://registry.opendata.aws/nyu-fastmri/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: fastMRI data-sharing agreement with a click-through and a no-re-identification clause. Clinical
+    brain imaging. Terms otherwise unresolved.
+binding: unbound
+population:
+  n: 6970
+  hierarchy:
+  - participant
+  - site
+  - device
+  - session
+  notes: Roughly 7,000 clinical brain examinations as RAW MULTICOIL K-SPACE, across several scanner models
+    and field strengths. Device is a first-class grouping level because coil geometry differs between
+    systems and is part of the measurement.
+frames:
+- scanner
+- kspace
+- coil_array
+- subject_native
+streams:
+- name: multicoil_kspace
+  kind: measured
+  via: null
+  observation_chain: spin magnetisation under an explicit RF/gradient timeline -> per-coil received signal
+    sampled along a k-space trajectory -> complex multicoil raw data BEFORE any reconstruction. This is
+    the level at which MR acquisition physics is observable (PROMPT.md §19)
+  confounds:
+  - motion during the readout, which corrupts k-space in a structured, phase-dependent way rather than
+    adding noise to an image
+  - coil sensitivity profiles, which are not distributed and must be estimated from the data
+  - receive-chain noise correlated between coils
+  - clinical population with pathology present in an unknown fraction
+  - off-resonance and B0 inhomogeneity encoded in the phase
+  systematic_bias: §56.6 asks B-WIN to MANUFACTURE MR acquisition objects -- scanner geometry, sequence
+    timeline, RF and gradient events, k-space trajectory, coil sensitivity, reconstruction provenance.
+    This is the source against which such an object is validated, because it is the only place the acquisition
+    is still visible.
+  notes: the relationship between k-space and image is a specific reconstruction algorithm; a different
+    one gives a different image from identical data, and that gap is the measurable model discrepancy
+  band_hz:
+  - null
+  - null
+  temporal_support: 'the ACQUISITION TIMELINE: k-space lines are sampled sequentially over the readout,
+    so different parts of the same ''image'' are measured at different times. That temporal structure
+    is destroyed by reconstruction and is exactly what §33 says not to throw away'
+  spatial_support: K-SPACE, not image space. The native support is the sampled spatial-frequency domain
+    per receive coil, and each coil has its own spatial sensitivity profile -- so the raw data is a set
+    of differently-weighted views of the same object
+- name: coil_and_acquisition_parameters
+  kind: measured
+  via: null
+  systematic_bias: §56.4 lists MR receive/transmit coil sensitivity representations among the device geometries
+    to construct; sensitivity maps are ESTIMATED from these data, not shipped
+  band_hz:
+  - null
+  - null
+- name: acceleration_benchmarks
+  kind: measured
+  via: null
+  systematic_bias: the retrospective undersampling masks are a controlled degradation with a known ground
+    truth, which makes reconstruction error measurable
+  band_hz:
+  - null
+  - null
+- name: single_coil_emulated_kspace
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: reconstructed_volumes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: acquisition_parameters
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pathology_labels_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- functional_timeseries
+- diffusion
+- healthy_cohort
+- coil_geometry_specifications
+- field_maps
+requires:
+- geometry: mr-acquisition-objects
+  for_streams:
+  - multicoil_kspace
+  - coil_and_acquisition_parameters
+  severity: blocking
+  without_it: Raw k-space is not an image. Without the acquisition object -- scanner frame, sequence timeline,
+    sampling trajectory, coil sensitivities and reconstruction provenance -- these samples cannot be placed
+    in space at all, and a reconstruction produced without them carries none of its own physics.
+use:
+- calibrate
+- fit
+forbidden:
+- fastmri-brain/* -> neural state of any kind
+- fastmri-brain/* -> healthy population priors without clinical conditioning
+- fastmri-brain/reconstructed_dicom_volumes -> acquisition-physics training
+split:
+  group_by:
+  - participant
+  - site
+  - device
+provenance:
+  imported_from: win-registry
+  card: fastmri-brain
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

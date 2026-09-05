@@ -1,0 +1,91 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds008037
+title: Neural dynamics of working memory and transcranial magnetic stimulation -- TMS-EEG at four sites
+  including a SHOULDER control
+provider: Mana Biabani and Nigel C. Rogasch, via OpenNeuro
+citation: 'Biabani M, Rogasch NC. Neural dynamics of working memory and transcranial magnetic stimulation.
+  OpenNeuro doi:10.18112/openneuro.ds008037.v1.0.0. Related: Biabani et al., Characterising the contribution
+  of auditory and somatosensory inputs to TMS-evoked potentials following stimulation of prefrontal, premotor,
+  and parietal cortex, Imaging Neuroscience, doi:10.1162/imag_a_00349.'
+urls:
+- https://openneuro.org/datasets/ds008037
+access: held
+licence:
+  name: CC0-1.0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'RESOLVED 2026-08-16 FROM THE HELD BYTES: data/ds008037/dataset_description.json states License
+    ''CC0''. Read from the deposit rather than the portal, as with ds004873 -- and note that studyforrest''s
+    field in the same position is the EMPTY STRING, so the two look identical to a loader and only one
+    is a licence. DUA: none. Recorded as dua_required false on the basis of HOW THIS WAS ACTUALLY OBTAINED
+    -- it is held in this store, fetched anonymously over plain HTTP by a script in scripts/ that sends
+    no credential and accepts no terms, from a repository that serves it without an access request. That
+    is evidence about the acquisition rather than an opinion about the deposit''s policy. It says nothing
+    about the LICENCE terms, which are recorded separately and still govern distribution; a non-commercial
+    work with no DUA is an ordinary combination.'
+binding: unbound
+population:
+  n: null
+frames:
+- scalp montage
+streams:
+- name: tms_eeg_four_sites
+  kind: measured
+  via: null
+  observation_chain: A TMS pulse induces an E-field in cortex; the evoked current flow produces a scalp
+    potential through the head's volume conductor, measured differentially against a reference by the
+    EEG amplifier. The recorded waveform is that neural response SUMMED WITH the amplifier's recovery
+    from the pulse artifact, cranial muscle activation, and the evoked response to the click and the scalp
+    sensation -- which is why this deposit carries a control site at all.
+  confounds:
+  - auditory evoked potential from the coil click
+  - somatosensory evoked potential from scalp stimulation
+  - cranial and facial muscle activation
+  - amplifier saturation and recovery artifact
+  - eye movement and blink
+  band_hz:
+  - null
+  - null
+  temporal_support: continuous EEG with TMS pulse events
+  spatial_support: scalp EEG electrodes; TMS delivered at four sites
+- name: shoulder_control_condition
+  kind: measured
+  via: null
+  observation_chain: The same EEG measurement with the coil discharging over the SHOULDER rather than
+    the head, so the click and a somatosensory input are delivered while no E-field reaches cortex. What
+    it records is the sum of the peripheral responses alone.
+  confounds:
+  - residual cortical activation from a distant field
+  - differences in click loudness or scalp contact between the control and the cortical sites
+  - subject knowledge of which condition is running
+  band_hz:
+  - null
+  - null
+- name: eeg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: tms
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- delivered_field
+- coil_pose
+use:
+- control
+- fit
+split:
+  group_by:
+  - participant
+  notes: the same participants are stimulated at every site, so a split must group by participant or the
+    control leaks
+provenance:
+  imported_from: win-registry
+  card: ds008037
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

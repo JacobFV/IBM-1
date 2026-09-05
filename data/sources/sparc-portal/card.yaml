@@ -1,0 +1,56 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: sparc-portal
+title: SPARC Portal -- Stimulating Peripheral Activity to Relieve Conditions
+provider: SPARC Data and Resource Center, NIH Common Fund, with an AWS Open Data mirror
+citation: 'Osanlouy et al., The SPARC DRC: building a resource for the autonomic nervous system community.
+  Frontiers in Physiology 12:693735, 2021. doi:10.3389/fphys.2021.693735.'
+urls:
+- https://sparc.science
+- https://registry.opendata.aws/sparc/
+access: reference
+licence:
+  name: CC-BY-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'CC-BY-4.0 is stated on the SPARC AWS Open Data entry, which the SPARC DRC manages. CAVEAT: the
+    SPARC documentation says each item carries its own DOI, licence and landing page without naming one,
+    so the per-dataset licence must still be read from the landing page before that dataset reaches an
+    artifact. Public data need no account; embargoed datasets require an early-access request.'
+binding: unbound
+population:
+  n: null
+frames:
+- organ_anatomical
+- species_specific_scaffold
+streams:
+- name: peripheral_and_autonomic_anatomy_and_physiology
+  kind: measured
+  via: null
+  systematic_bias: SPARC is the only systematic open resource for the AUTONOMIC INTERFACE -- the vagal,
+    sympathetic and enteric pathways that carry the body's state to the brain. Most of it is animal, most
+    of it is acute preparation, and both facts limit transfer to a living human's ongoing regulation.
+  notes: the portal ships computational models alongside data; a model output on the same landing page
+    as a measurement is exactly the confusion the derived-is-not-measured rule exists to prevent
+  band_hz:
+  - null
+  - null
+  temporal_support: per-preparation acquisition clocks; the autonomic timescales of interest run from
+    milliseconds (nerve traffic) to hours (organ regulation)
+  spatial_support: peripheral nervous system anatomy and organ innervation, as 3D anatomical models and
+    as molecular, imaging and timeseries data across human, rat, mouse, cat and pig
+absent:
+- human_in_vivo_autonomic_recording_at_scale
+- brain_data
+use:
+- prior
+forbidden:
+- sparc-portal/* -> any cortical state channel
+- sparc-portal/* -> a computational model output recorded as a measurement
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: sparc-portal
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

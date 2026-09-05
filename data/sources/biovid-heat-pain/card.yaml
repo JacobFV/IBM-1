@@ -1,0 +1,123 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: biovid-heat-pain
+title: BioVid Heat Pain Database
+provider: University of Ulm and Otto von Guericke University Magdeburg
+citation: 'Walter et al., The BioVid Heat Pain Database: Data for the advancement and systematic validation
+  of an automated pain recognition system. IEEE CYBCONF 2013.'
+urls:
+- https://www.nit.ovgu.de/BioVid.html
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Academic licence agreement; identifiable facial video. Unresolved.
+binding: unbound
+population:
+  n: 90
+  hierarchy:
+  - participant
+  - session
+  notes: '90 participants receiving CALIBRATED thermal stimuli at four individually-determined intensity
+    levels between their own pain threshold and tolerance. The individual calibration is the design''s
+    strength: dose is expressed relative to the person, not in absolute degrees.'
+frames:
+- forearm_thermode
+- face
+- torso
+- camera
+streams:
+- name: thermal_stimulus_log
+  kind: measured
+  via: null
+  systematic_bias: §52.16's FIRST separate variable -- STIMULUS DOSE -- and here it is genuinely measured
+    rather than nominal. That makes this dataset a clean instance of the five-variable separation the
+    section demands.
+  band_hz:
+  - null
+  - null
+  temporal_support: thermal stimuli of 4 s with pauses; physiology at 512 Hz; video at 25 fps; ratings
+    after blocks
+  spatial_support: a thermode on the forearm delivering a known temperature to a known skin area; facial
+    EMG at named muscles; a frontal camera. FIVE different body locations measuring five different things
+    about one event
+- name: electrodermal_activity
+  kind: measured
+  via: null
+  observation_chain: nociceptive input -> sympathetic arousal -> eccrine sweat gland activity -> skin
+    conductance response, with a latency of one to three seconds
+  confounds:
+  - ambient temperature, which the thermal stimulus itself perturbs locally
+  - habituation of the arousal response over trials while the stimulus stays constant
+  - movement
+  - EDA responds to arousal generally, not to pain specifically
+  systematic_bias: §52.16's SECOND variable -- PHYSIOLOGY. EDA indexes sympathetic arousal, which pain
+    causes and which many other things also cause.
+  notes: no measure here is specific to nociception; all of them respond to arousal
+  band_hz:
+  - null
+  - null
+- name: facial_emg
+  kind: measured
+  via: null
+  observation_chain: motor-unit action potentials -> muscle and subcutaneous volume conduction -> surface
+    or intramuscular electrode -> sampled voltage
+  confounds:
+  - voluntary facial movement, speech and swallowing
+  - cross-talk between adjacent facial muscles
+  - 'social display rules: facial expression is partly under voluntary control and is modulated by being
+    observed'
+  systematic_bias: §52.16's THIRD variable -- EXPRESSION. Corrugator activity is the classic pain-related
+    facial action and it is also a general negative-affect response.
+  band_hz:
+  - null
+  - null
+- name: pain_ratings
+  kind: imposed
+  via: null
+  systematic_bias: §52.16's FOURTH variable -- REPORT. The rating is what the participant said, after
+    the fact, on a scale the experimenter chose. It is the closest thing to a pain measurement that exists
+    and it is still a report
+  band_hz:
+  - null
+  - null
+- name: individual_calibration
+  kind: measured
+  via: null
+  systematic_bias: per-participant threshold and tolerance make the dose comparable across people in perceptual
+    terms while making it incomparable in physical terms; both framings are needed and they are different
+  band_hz:
+  - null
+  - null
+- name: ecg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: frontal_video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- nociceptor_activation
+- clinical_pain
+- spontaneous_pain
+use:
+- fit
+forbidden:
+- biovid-heat-pain/* -> cortical or limbic state directly
+- biovid-heat-pain/pain_ratings -> a pain state observation
+- biovid-heat-pain/* -> clinical pain claims
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: biovid-heat-pain
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,61 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: 7t-qsm-venograms
+title: 7T QSM and SWI venograms
+provider: multiple 7T imaging centres
+citation: PROMPT.md §52.10, '7T QSM venograms'.
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- subject_native
+streams:
+- name: individual_venous_geometry
+  kind: measured
+  via: null
+  systematic_bias: 'INDIVIDUAL rather than atlas venous geometry is what a subject-specific BOLD observation
+    model actually needs: the draining-vein displacement is a property of this person''s veins, not of
+    a population average. §4a''s derivation_class distinction is exactly this -- subject_specific outranks
+    population_derived for this purpose.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: sub-millimetre venous imaging by susceptibility contrast at 7T in individual participants,
+    as distinct from the VENAT population atlas
+- name: susceptibility_values
+  kind: measured
+  via: null
+  systematic_bias: susceptibility in a vein is a function of oxygenation and haematocrit, so it is a physiological
+    measurement wearing a geometric one's clothes
+  band_hz:
+  - null
+  - null
+absent:
+- arterial_tree
+- capillary_scale
+- standardised_acquisition
+- public_availability
+use:
+- calibrate
+- prior
+forbidden:
+- 7t-qsm-venograms/* -> arterial geometry
+- 7t-qsm-venograms/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: 7t-qsm-venograms
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

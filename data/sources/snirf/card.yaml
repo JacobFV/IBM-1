@@ -1,0 +1,63 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: snirf
+title: SNIRF -- Shared Near Infrared Spectroscopy Format
+provider: Society for functional Near Infrared Spectroscopy
+citation: Tucker et al., Introduction to the shared near infrared spectroscopy format. Neurophotonics
+  2023.
+urls:
+- https://github.com/fNIRS/snirf
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- nirs_optode_array
+- head
+- file_internal_schema
+streams:
+- name: optode_geometry_and_channel_definition
+  kind: measured
+  via: null
+  systematic_bias: The ds004514, ds007738 and ds007554 cards all depend on knowing WHERE the optodes were,
+    because an fNIRS channel's sensitivity is a banana-shaped volume between one source and one detector
+    and its depth depends on their separation. SNIRF makes that geometry a required part of the file rather
+    than a lab note, which is what makes a photon-transport model possible at all.
+  notes: optode positions relative to the head are usually digitised coarsely or taken from a cap template,
+    so the recorded geometry is often nominal
+  band_hz:
+  - null
+  - null
+  temporal_support: per-channel sampling with declared time bases
+  spatial_support: SOURCE AND DETECTOR POSITIONS in 3D plus the channel list pairing them -- so a channel's
+    spatial support is defined by two points and the curved photon path between them, which is the physically
+    correct description and is what a channel index alone destroys
+- name: short_separation_channel_declaration
+  kind: measured
+  via: null
+  systematic_bias: short-separation channels sample scalp haemodynamics and are the ONLY way to separate
+    extracerebral from cortical signal; whether they exist is recoverable from the geometry, which is
+    why the ds004514 card lists their presence as unresolved rather than assumed
+  band_hz:
+  - null
+  - null
+absent:
+- individual_head_geometry
+- photon_transport_model
+use:
+- calibrate
+forbidden:
+- snirf/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: snirf
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,70 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: gtex
+title: GTEx -- Genotype-Tissue Expression project
+provider: GTEx Consortium / NIH
+citation: GTEx Consortium, The GTEx Consortium atlas of genetic regulatory effects across human tissues.
+  Science 2020.
+urls:
+- https://gtexportal.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- tissue_sample
+- brain_region_label
+streams:
+- name: brain_region_expression
+  kind: measured
+  via: null
+  systematic_bias: BULK tissue from 13 coarsely defined brain regions in post-mortem donors with variable
+    post-mortem interval. Coarser than the Allen atlas spatially and deeper genetically; §52.6 registers
+    it under peripheral and SLOW phenotype priors and that is the right reading.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: bulk RNA sequencing across 54 tissues from nearly a thousand post-mortem donors, including
+    13 brain regions, with matched genotypes
+- name: eqtl_effects
+  kind: measured
+  via: null
+  systematic_bias: genetic regulation of expression is a slow constitutional constraint, several removes
+    from any state at time t
+  band_hz:
+  - null
+  - null
+- name: peripheral_tissue_expression
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- spatial_resolution
+- cell_type_resolution
+- dynamics
+- in_vivo_measurement
+use:
+- calibrate
+- prior
+forbidden:
+- gtex/* -> instantaneous state of any kind
+- gtex/* -> observation-role likelihoods
+- gtex/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: gtex
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

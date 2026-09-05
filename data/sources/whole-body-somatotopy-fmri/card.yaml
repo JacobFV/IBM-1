@@ -1,0 +1,102 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: whole-body-somatotopy-fmri
+title: Whole-body somatotopy fMRI in 62 participants
+provider: Scientific Data 2022
+citation: Whole-body somatotopy fMRI dataset. Scientific Data 2022.
+urls:
+- https://www.nature.com/articles/s41597-022-01644-4
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved.
+binding: unbound
+population:
+  n: 62
+  hierarchy:
+  - participant
+  - session
+  - run
+  notes: 62 participants moving many body parts in one session -- WHOLE-BODY coverage rather than the
+    usual hand-and-foot-and-tongue triple.
+frames:
+- scanner
+- subject_native
+- MNI152
+- body_surface
+- skeletal_frame
+streams:
+- name: bold_somatotopy
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
+    modelled state, not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - 'movement of one body part is rarely isolated: adjacent muscles co-activate and the cue itself is
+    a visual or auditory event'
+  systematic_bias: §56.1 asks for SOMATOTOPIC OVERLAYS on the cortical support bank alongside retinotopic
+    and tonotopic ones. This is the source that makes a whole-body somatotopic coordinate available rather
+    than a handful of landmark parts.
+  notes: no EMG, so which muscles actually moved is inferred from the instruction
+  band_hz:
+  - null
+  - null
+  temporal_support: TR seconds; blocked movement of each body part
+  spatial_support: standard BOLD resolution; the stimulus support is a BODY PART, so the cortical map's
+    coordinate is a position on the body surface and in the musculoskeletal tree
+- name: body_part_to_cortex_mapping
+  kind: measured
+  via: null
+  systematic_bias: the body-surface coordinate is discrete (a named part), not continuous; a continuous
+    somatotopic coordinate analogous to visual eccentricity is not available from a blocked design
+  band_hz:
+  - null
+  - null
+- name: movement_cues
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: derived_somatotopic_maps
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- emg
+- kinematics
+- eeg
+- meg
+- continuous_body_coordinate
+use:
+- calibrate
+- fit
+forbidden:
+- whole-body-somatotopy-fmri/* -> measured muscle activation
+- whole-body-somatotopy-fmri/* -> millisecond dynamics
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: whole-body-somatotopy-fmri
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

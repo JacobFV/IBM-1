@@ -1,0 +1,88 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: cmu-mosei
+title: CMU-MOSEI -- Multimodal Opinion Sentiment and Emotion Intensity
+provider: Carnegie Mellon University
+citation: 'Zadeh et al., Multimodal Language Analysis in the Wild: CMU-MOSEI Dataset and Interpretable
+  Dynamics Fusion Graph. ACL 2018.'
+urls:
+- http://multicomp.cs.cmu.edu/resources/cmu-mosei-dataset/
+access: priority
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Features and annotations distributed; source YouTube video is third-party. Unresolved.
+binding: unbound
+population:
+  n: 1000
+  hierarchy:
+  - participant
+  - session
+  notes: ~23,500 monologue video segments from 1,000 YouTube speakers, annotated for sentiment and emotion
+    intensity.
+frames:
+- webcam_uncontrolled
+streams:
+- name: sentiment_annotations
+  kind: imposed
+  via: null
+  systematic_bias: annotator-perceived sentiment about opinions the speaker is expressing on purpose to
+    a camera; the performance context is not incidental
+  band_hz:
+  - null
+  - null
+  temporal_support: segment-level; no continuous world timeline
+  spatial_support: 'uncontrolled webcam monologue: single speaker to camera, unknown room and microphone'
+- name: audio_video
+  kind: imposed
+  via: null
+  systematic_bias: 'monologue to camera: neither conversational nor a natural visual scene'
+  band_hz:
+  - null
+  - null
+- name: audio
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: video
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: transcripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: emotion_intensity_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: extracted_features
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- physiology
+- dialogue
+use:
+- fit
+forbidden:
+- cmu-mosei/* -> any cortical state directly
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: cmu-mosei
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

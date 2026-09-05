@@ -1,0 +1,131 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: kai-miller-ecog-library
+title: A library of human electrocorticographic data and analyses (Miller)
+provider: Stanford Digital Repository
+citation: Miller, A library of human electrocorticographic data and analyses. Nature Human Behaviour 3(11),
+  2019.
+urls:
+- https://purl.stanford.edu/zk881ps0522
+- https://www.nature.com/articles/s41562-019-0678-3
+access: priority
+licence:
+  name: CC-BY-SA-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: Creative Commons Attribution Share Alike 4.0 International, as stated on the Stanford Digital
+    Repository record, with an additional use-and-reproduction note that content will not be used to identify
+    or otherwise infringe the privacy or confidentiality rights of individuals. SHARE-ALIKE PROPAGATES.
+    No registration was observed. This is one of very few openly-licensed human intracranial corpora in
+    this registry.
+binding: unbound
+population:
+  n: 34
+  hierarchy:
+  - participant
+  - run
+  notes: 204 individual datasets from 34 patients across 16 behavioural experiments. ALL RECORDED ON THE
+    SAME AMPLIFIERS AT THE SAME SETTINGS -- which removes the device variance component that makes most
+    multi-site intracranial pooling uninterpretable.
+frames:
+- subject_cortical_surface
+- MNI152
+- electrode_grid_index
+streams:
+- name: task_ecog_with_localisation
+  kind: measured
+  via: null
+  observation_chain: local post-synaptic and spiking activity within a few millimetres of a contact ->
+    extracellular potential -> potential difference against a reference contact whose own activity is
+    in every number -> amplifier and filter -> sampled microvolts. NO SKULL AND NO INVERSE PROBLEM, which
+    is what makes it the strongest direct evidence about cortical state that exists in humans. Subdural
+    grids sit on the pial surface, so the recorded potential is dominated by the cortex directly beneath
+    a contact -- the spatial specificity that makes ECoG the reference against which a scalp source estimate
+    can be checked
+  confounds:
+  - the reference contact's own activity, which is subtracted from every channel and is not zero
+  - the epileptogenic zone and interictal discharges, present in a clinical population by definition
+  - anti-epileptic medication, frequently being tapered during monitoring
+  - electrode placement is determined by a surgical hypothesis, so coverage is not a sample of the brain
+  - the recording is in a hospital bed over days, with sleep, arousal and drug state uncontrolled
+  - grid placement over a suspected epileptogenic region means the recorded cortex is more likely than
+    average to be abnormal
+  - the craniotomy and the grid itself alter the volume conductor for any simultaneous scalp recording
+  systematic_bias: Sixteen behavioural experiments on one recording setup with localised electrodes and
+    published analysis code is the most reusable human intracranial resource surveyed here. It is also
+    34 people with abnormal brains and clinically dictated coverage, and no amount of experimental variety
+    fixes that.
+  band_hz:
+  - null
+  - null
+  temporal_support: task-structured runs on a single amplifier configuration across every experiment and
+    every patient
+  spatial_support: subdural electrode grids with POSITIONS REGISTERED TO BRAIN ANATOMY -- the combination
+    that SWEC lacks and that makes an anatomically located claim possible at all
+- name: published_analyses_as_baselines
+  kind: measured
+  via: null
+  systematic_bias: Fully commented analysis scripts shipped with the data mean the published result is
+    reproducible and therefore a real baseline to beat, rather than a number in a paper.
+  band_hz:
+  - null
+  - null
+- name: ecog
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: electrode_positions
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: task_events
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: analysis_scripts
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- healthy_controls
+- whole_brain_coverage
+- simultaneous_scalp_eeg
+- simultaneous_fmri
+- intervention
+requires:
+- geometry: device-geometry
+  for_streams:
+  - task_ecog_with_localisation
+  severity: blocking
+  without_it: A contact's position IS its spatial support. Until the localisation is carried into a device-geometry
+    object -- contact extent, pose in a named frame and the tissue interface, not just a label -- each
+    channel is an index and nothing measured here can be attached to a cortical location.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- evaluate
+- fit
+forbidden:
+- kai-miller-ecog-library/* -> an artifact that does not carry the share-alike term
+- kai-miller-ecog-library/* -> any re-identification attempt
+- kai-miller-ecog-library/* -> a whole-brain claim from grid coverage
+split:
+  group_by:
+  - participant
+  - run
+provenance:
+  imported_from: win-registry
+  card: kai-miller-ecog-library
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

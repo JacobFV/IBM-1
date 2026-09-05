@@ -1,0 +1,137 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mass
+title: MASS -- Montreal Archive of Sleep Studies
+provider: Universite de Montreal
+citation: 'O''Reilly et al., Montreal Archive of Sleep Studies: an open-access resource for instrument
+  benchmarking and exploratory research. Journal of Sleep Research 2014.'
+urls:
+- http://ceams-carsm.ca/mass/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Registration and data use agreement. Unresolved.
+binding: unbound
+population:
+  n: 200
+  hierarchy:
+  - participant
+  - session
+  notes: 200 whole-night polysomnograms in healthy adults with HIGH-DENSITY EEG (up to 20 channels) and
+    expert scoring, plus micro-event annotations (spindles, K-complexes) that most sleep datasets lack.
+frames:
+- eeg_cap
+- head
+- torso
+streams:
+- name: high_density_eeg
+  kind: measured
+  via: null
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
+    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
+    filtered, sampled voltage
+  confounds:
+  - 'ocular: blink and saccade corneo-retinal potentials'
+  - 'cardiac: ECG contamination and pulse artifact'
+  - 'muscle: temporalis, frontalis and neck EMG'
+  - electrode impedance drift, motion and bridging
+  - line noise and amplifier drift
+  - reference-electrode activity, which is never inactive
+  - overnight electrode drift and sweat
+  - position changes
+  systematic_bias: Whole nights of multi-channel EEG through the full range of cortical states -- from
+    waking through slow-wave sleep to REM -- which is the widest excursion of cortical dynamics obtainable
+    without pharmacology.
+  notes: no individual anatomy, so source-space interpretation uses a template head
+  band_hz:
+  - null
+  - null
+  temporal_support: EEG at 256 Hz over whole nights; stages per epoch; spindles and K-complexes as discrete
+    annotated events with millisecond onsets
+  spatial_support: up to 20 EEG channels in a standard montage -- an order of magnitude more spatial information
+    than Sleep-EDFx's two channels, though still far from source-localisable
+- name: spindle_annotations
+  kind: measured
+  via: null
+  observation_chain: thalamocortical spindle oscillation -> volume conduction -> scalp EEG -> expert visual
+    detection against published criteria
+  confounds:
+  - expert detectors disagree substantially on spindle boundaries; inter-rater agreement is the ceiling
+    on any automatic detector
+  - spindle density varies with age, sleep pressure and prior learning
+  systematic_bias: Spindles are a THALAMOCORTICAL event with a known generator mechanism, annotated at
+    millisecond resolution. That makes them one of the few named, mechanistically understood events in
+    scalp EEG and a natural target for §9's mesoscopic dynamics.
+  band_hz:
+  - null
+  - null
+- name: expert_sleep_staging
+  kind: measured
+  via: null
+  systematic_bias: scoring is a rulebook applied by a human; agreement between scorers is the ceiling
+  band_hz:
+  - null
+  - null
+- name: polysomnography
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: k_complex_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: respiration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ecg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_imaging
+- individual_anatomy
+- task
+- stimulus
+requires:
+- geometry: device-geometry
+  for_streams:
+  - high_density_eeg
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- evaluate
+- fit
+forbidden:
+- mass/* -> cortical state without an explicit carded interaction
+- mass/* -> world-model forcing parameters
+- mass/expert_sleep_staging -> a ground-truth state label
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: mass
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,61 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: fcp-indi
+title: FCP/INDI -- 1000 Functional Connectomes Project and the International Neuroimaging Data-sharing
+  Initiative
+provider: INDI, on NITRC infrastructure; Child Mind Institute credited
+citation: Biswal et al., Toward discovery science of human brain function. PNAS 107(10):4734-4739, 2010.
+  doi:10.1073/pnas.0911855107.
+urls:
+- https://fcon_1000.projects.nitrc.org
+- https://registry.opendata.aws/fcp-indi/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: PER COLLECTION, and the collections genuinely differ. ABIDE I states Creative Commons Attribution-NonCommercial
+    on its own page; ABIDE II, ADHD-200 and CoRR state NOTHING on theirs, which is verified-absent rather
+    than unfetched. The FCP classic table page carries no licence at all, only a disclaimer that data
+    are provided without assurance of quality. Downloading requires a NITRC login and registration with
+    the FCP/INDI project; some collections ship encrypted files whose password requires a usage agreement.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner_per_site
+- MNI152
+streams:
+- name: aggregated_resting_state_collections
+  kind: measured
+  via: null
+  systematic_bias: SITE IS THE DOMINANT VARIANCE COMPONENT in every INDI aggregate and it is confounded
+    with cohort, since each site contributed its own participants. Any group difference here is partly
+    a scanner difference, and no harmonisation method removes a confound that is perfectly aligned with
+    the grouping.
+  band_hz:
+  - null
+  - null
+  temporal_support: per-site TRs spanning several-fold; a pooled analysis silently mixes sampling clocks,
+    which is the coarse-resampling problem distributed across sites
+  spatial_support: resting-state and anatomical MRI aggregated across dozens of independently acquired
+    site collections. The FCP classic release is 1,200+ resting scans from 33 sites; the marker paper
+    describes 1,414 volunteers across 35 centres with a main analysis of 1,093
+absent:
+- harmonised_protocol
+- meg
+- ieeg
+- intervention
+- uniform_licensing
+use:
+- prior
+forbidden:
+- fcp-indi/* -> a group contrast that does not carry site as a modelled term
+- fcp-indi/* -> an artifact, before the specific collection's licence is resolved
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: fcp-indi
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

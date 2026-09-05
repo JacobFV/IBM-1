@@ -1,0 +1,71 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: margulies2016-gradients
+title: Margulies principal cortical connectivity gradients
+provider: Margulies and colleagues
+citation: Margulies et al., Situating the default-mode network along a principal gradient of macroscale
+  cortical organization. PNAS 2016.
+urls:
+- https://github.com/NeuroanatomyAndConnectivity/gradient_analysis
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- fsaverage
+- fs_LR
+- MNI152
+streams:
+- name: connectivity_gradients
+  kind: measured
+  via: null
+  systematic_bias: 'A GRADIENT IS AN EMBEDDING OF A CORRELATION MATRIX. It is a compressed description
+    of resting functional connectivity, three inferential steps from anatomy: BOLD, then correlation,
+    then diffusion-map embedding. It is a useful low-dimensional coordinate for organising supports and
+    it is not a measured axis of the cortex.'
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: low-dimensional embeddings of the resting-state functional connectivity matrix, expressed
+    per vertex on a standard surface
+- name: gradient_coordinate
+  kind: measured
+  via: null
+  systematic_bias: usable as a continuous coordinate along which to interpolate priors, which is closer
+    to §5's continuous-support view than a parcellation is
+  band_hz:
+  - null
+  - null
+absent:
+- anatomical_ground_truth
+- individual_gradients_in_the_group_release
+- uncertainty
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without
+    the support bank there is nothing for these labels to be a cover OVER, and using them as if they were
+    the supports themselves is precisely the canonical-parcellation commitment the architecture refuses.
+use:
+- calibrate
+- prior
+forbidden:
+- margulies2016-gradients/* -> anatomical or effective connectivity claims
+- margulies2016-gradients/* -> observation-role likelihoods
+- margulies2016-gradients/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: margulies2016-gradients
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

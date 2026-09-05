@@ -1,0 +1,93 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: topbrain
+title: TopBrain -- annotated intracranial arterial anatomy from MRA and CTA
+provider: TopBrain (medRxiv 2026)
+citation: 'TopBrain: annotated intracranial arterial anatomy. medRxiv 2026.'
+urls:
+- https://www.medrxiv.org/content/10.64898/2026.05.28.26354312v1.full
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. Clinical angiographic imaging; governance is a fact to establish, not to assume from
+    a preprint being open access.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - site
+  notes: n unresolved. §51.2 item 14 pairs it with TopCoW as a high-value source for vessel-graph extraction
+    and TOPOLOGICAL validation.
+frames:
+- scanner
+- subject_native
+- MNI152
+- vascular_tree_graph
+streams:
+- name: vessel_class_annotations
+  kind: measured
+  via: null
+  observation_chain: flow-related enhancement (TOF) or contrast bolus -> vessel-lumen intensity -> reconstruction
+    -> angiographic volume; slow and in-plane flow are systematically under-represented
+  confounds:
+  - TOF angiography under-represents slow flow and flow parallel to the imaging plane, so a vessel absent
+    from the image may be present and merely slow
+  - voxel size sets a hard lower bound on detectable calibre; everything smaller is invisible
+  - annotator disagreement at branch points and on small distal segments
+  - 'clinical population: vessels may be stenosed, occluded or surgically altered'
+  systematic_bias: One of the few sources giving LABELLED arterial anatomy rather than a binary vessel
+    mask. The class labels are what make a vessel graph anatomically interpretable rather than merely
+    topological.
+  notes: an annotation is a human's reading of an image; the vessel is neither the annotation nor the
+    intensity
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- a single acquisition per participant
+  spatial_support: 3D angiographic volumes with voxel-level vessel-class annotation; the annotated support
+    is the VESSEL LUMEN, and the labels carry arterial-tree TOPOLOGY rather than only presence
+- name: arterial_topology_labels
+  kind: measured
+  via: null
+  systematic_bias: '§51.2 item 14 names TOPOLOGICAL VALIDATION explicitly: a reconstructed vessel graph
+    can be scored on whether it has the right connectivity, not merely the right voxels, and topology
+    is where automatic methods fail in ways a Dice score does not see'
+  band_hz:
+  - null
+  - null
+- name: mra_volumes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cta_volumes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- capillary_scale_vessels
+- venous_tree
+- flow_velocity
+- healthy_cohort
+- temporal_dynamics
+use:
+- calibrate
+- fit
+forbidden:
+- topbrain/* -> capillary or arteriolar geometry
+- topbrain/* -> flow or pressure state
+- topbrain/* -> healthy population priors without clinical conditioning
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: topbrain
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

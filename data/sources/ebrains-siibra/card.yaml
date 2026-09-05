@@ -1,0 +1,72 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ebrains-siibra
+title: EBRAINS siibra and openMINDS spatial anchoring
+provider: EBRAINS / Human Brain Project
+citation: 'siibra: software interface for interacting with brain atlases; openMINDS metadata models with
+  SANDS spatial anchoring.'
+urls:
+- https://siibra-python.readthedocs.io/
+- https://github.com/HumanBrainProject/openMINDS
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- MNI_Colin27
+- bigbrain_native
+- fsaverage
+streams:
+- name: spatial_anchoring_model
+  kind: measured
+  via: null
+  systematic_bias: §55 singles openMINDS out because it can describe datasets, models, workflows AND spatial
+    anchoring rather than only file layout. SANDS is the closest existing standard to what §3's fully
+    qualified state address needs, and adopting its vocabulary is cheaper than inventing one.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: a programmatic interface over multiple atlas versions and spaces, with openMINDS/SANDS
+    describing HOW a dataset is anchored in space rather than only where it lives
+- name: versioned_parcellation_access
+  kind: measured
+  via: null
+  systematic_bias: siibra exposes atlas VERSIONS explicitly, which is what makes 'the Julich atlas' a
+    resolvable rather than an ambiguous reference
+  band_hz:
+  - null
+  - null
+- name: bundled_feature_data
+  kind: measured
+  via: null
+  systematic_bias: receptor, cell-density and connectivity features reachable through siibra each carry
+    their own provenance and licence, which the uniform interface makes easy to lose
+  band_hz:
+  - null
+  - null
+absent:
+- licence_uniformity
+- uncertainty_on_transforms
+use:
+- calibrate
+- prior
+forbidden:
+- ebrains-siibra/* -> any evidence role for the datasets it exposes
+- ebrains-siibra/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: ebrains-siibra
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

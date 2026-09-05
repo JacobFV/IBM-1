@@ -1,0 +1,77 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tes-montage-field-validation-data
+title: tES montage and field validation measurements
+provider: multiple -- intracranial field measurement studies in patients and cadavers
+citation: PROMPT.md §52.13, 'montage/field validation data'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- electrode_native
+- subject_native
+- scalp
+streams:
+- name: intracranial_field_measurement
+  kind: measured
+  via: null
+  systematic_bias: THE ONLY DIRECT EVIDENCE ABOUT DELIVERED FIELD IN A HUMAN HEAD. Everything else in
+    §52.13 computes it. These measurements are what a head-conduction model must reproduce, and published
+    comparisons show real discrepancies between measured and simulated fields -- which is precisely why
+    §52.13 insists on separating requested settings from delivered field.
+  notes: measurements come from patients with implanted electrodes and craniotomies, or from cadavers
+    with altered tissue conductivity; neither is an intact healthy head
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: 'the RARE case where the delivered field IS measured: intracranial electrodes recording
+    the voltage produced by scalp stimulation, in epilepsy patients or in cadaver preparations'
+- name: skull_conductivity_constraint
+  kind: measured
+  via: null
+  systematic_bias: these measurements are the main empirical constraint on skull conductivity, the parameter
+    that dominates every EEG forward model and every tES field estimate
+  band_hz:
+  - null
+  - null
+absent:
+- intact_healthy_heads
+- spatial_coverage
+- public_availability
+requires:
+- geometry: device-geometry
+  for_streams:
+  - intracranial_field_measurement
+  severity: blocking
+  without_it: Transcranial electrical stimulation delivers a current-density field throughout the head,
+    determined by electrode geometry, contact area and the tissue conductivities between them -- not a
+    spot under an electrode. Without the device product a montage is a pair of labels and the delivered
+    dose is unknown.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+forbidden:
+- tes-montage-field-validation-data/* -> intact-head field claims without stating the preparation
+- tes-montage-field-validation-data/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: tes-montage-field-validation-data
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

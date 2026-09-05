@@ -1,0 +1,66 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: hippunfold
+title: HippUnfold -- topological unfolding of the hippocampus
+provider: Khan lab / Western University
+citation: DeKraker et al., Automated hippocampal unfolding for morphometry and subfield segmentation with
+  HippUnfold. eLife 2022.
+urls:
+- https://hippunfold.readthedocs.io/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- hippocampal_unfolded_space
+streams:
+- name: unfolded_coordinate_system
+  kind: measured
+  via: null
+  systematic_bias: THIS IS THE §5 ARGUMENT IMPLEMENTED. HippUnfold replaces a discrete subfield parcellation
+    with a continuous intrinsic coordinate system, so a support becomes a region of a coordinate space
+    rather than a label -- which is exactly what B-WIN wants everywhere and has, for the hippocampus,
+    already been built. It should be read as a design precedent, not only as a tool.
+  notes: the unfolding assumes a sheet topology; where the hippocampus deviates (the uncal region, dentate
+    infolding) the coordinate system is stretched
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: a CONTINUOUS unfolded coordinate system over the hippocampus rather than discrete subfield
+    labels -- the hippocampus is treated as a folded sheet and flattened, so position is given by two
+    continuous coordinates
+- name: subfield_labels_derived
+  kind: measured
+  via: null
+  systematic_bias: HippUnfold can emit conventional subfield labels from the coordinates, and those are
+    a derived convenience view -- the coordinates are the primary product
+  band_hz:
+  - null
+  - null
+absent:
+- histological_validation_per_subject
+- population_uncertainty
+- cortex
+use:
+- calibrate
+- prior
+forbidden:
+- hippunfold/subfield_labels_derived -> measured subfield boundaries
+- hippunfold/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: hippunfold
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

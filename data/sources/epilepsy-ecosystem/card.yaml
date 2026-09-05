@@ -1,0 +1,120 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: epilepsy-ecosystem
+title: Epilepsyecosystem.org -- long-term human iEEG for seizure prediction
+provider: epilepsyecosystem.org (Kuhlmann et al.); NeuroVista Seizure Advisory System trial data; My Seizure
+  Gauge supported by the Epilepsy Foundation of America
+citation: 'Kuhlmann et al., Epilepsyecosystem.org: crowd-sourcing reproducible seizure prediction with
+  long-term human intracranial EEG. Brain 141(9):2619, 2018. doi:10.1093/brain/awy210.'
+urls:
+- https://www.epilepsyecosystem.org/
+- https://www.epilepsyecosystem.org/terms-and-conditions
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: prohibited
+  notes: NOT A SINGLE LICENCE -- THREE DATASETS, THREE SETS OF TERMS, and registering accepts all three
+    at once. The Melbourne-University AES-MathWorks-NIH Seizure Prediction Challenge data can only be
+    used for non-commercial purposes and publications require Dr Levin Kuhlmann as co-author at his discretion
+    -- AN AUTHORSHIP CONDITION, which is a term this registry has not encountered elsewhere and which
+    no SPDX identifier can express. The Melbourne Seizure Prediction Trial and My Seizure Gauge data carry
+    Creative Commons-style non-commercial, attribution and share-alike terms, with derivative works required
+    to be distributed under a Creative Commons or equivalent licence EXPLICITLY INCLUDING TRAINED NEURAL
+    NETWORKS, CLASSIFIERS AND MODELS. A model trained on these data is a derivative work by the licence's
+    own words.
+binding: unbound
+population:
+  n: 3
+  hierarchy:
+  - participant
+  - device
+  notes: The Brain 2018 paper describes 3 patients with 559, 393 and 374 days of continuous recording
+    and 231, 186 and 216 lead seizures (633 total). My Seizure Gauge adds further participants and wearable
+    streams whose specifics are unresolved.
+frames:
+- contact_index
+streams:
+- name: year_scale_continuous_ieeg
+  kind: measured
+  via: null
+  observation_chain: local post-synaptic and spiking activity within a few millimetres of a contact ->
+    extracellular potential -> potential difference against a reference contact whose own activity is
+    in every number -> amplifier and filter -> sampled microvolts. NO SKULL AND NO INVERSE PROBLEM, which
+    is what makes it the strongest direct evidence about cortical state that exists in humans. Recorded
+    from an ambulatory implanted device during ordinary life, so the state being observed is a freely
+    behaving human's over months rather than a hospitalised one's over days
+  confounds:
+  - the reference contact's own activity, which is subtracted from every channel and is not zero
+  - the epileptogenic zone and interictal discharges, present in a clinical population by definition
+  - anti-epileptic medication, frequently being tapered during monitoring
+  - electrode placement is determined by a surgical hypothesis, so coverage is not a sample of the brain
+  - the recording is in a hospital bed over days, with sleep, arousal and drug state uncontrolled
+  - device electronics, telemetry dropout and battery state over a year of implantation
+  - electrode encapsulation changes impedance progressively over months, so a slow trend in the signal
+    is a slow trend in the interface
+  - medication adherence and dose changes across a year, unrecorded at the sample level
+  - sleep-wake and circadian phase, which drive the strongest observable rhythm in the data
+  systematic_bias: Year-scale continuous human intracranial recording exists essentially nowhere else.
+    It is the only source in this registry on which a MULTIDIEN clock could be estimated at all, and obj-clock-graph
+    currently has nothing at that timescale.
+  band_hz:
+  - null
+  - null
+  temporal_support: '400 Hz continuous over MORE THAN A YEAR PER PATIENT. That duration is the whole point:
+    circadian and multidien cycles in seizure risk are only observable over months, and every short recording
+    in this registry is blind to them'
+  spatial_support: 16 subdural platinum-iridium contacts per patient from an implanted ambulatory advisory
+    device -- far sparser than a clinical monitoring montage, and recorded during ordinary life rather
+    than in a hospital bed
+- name: seizure_prediction_benchmark
+  kind: measured
+  via: null
+  systematic_bias: 'A crowd-sourced benchmark with a published leaderboard and an extreme class imbalance:
+    the chance level and the always-negative baseline must be quoted with any number, and this dataset''s
+    literature is exactly where that lesson was learned.'
+  band_hz:
+  - null
+  - null
+- name: ieeg_continuous_ambulatory
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: seizure_annotations
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: wearable_biosignals
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- contact_localisation
+- mri
+- healthy_controls
+- scalp_eeg
+- task_conditions
+use:
+- evaluate
+- fit
+forbidden:
+- epilepsy-ecosystem/* -> a commercial artifact (non-commercial across all three datasets)
+- epilepsy-ecosystem/* -> a model released under terms other than the share-alike required of derivative
+  works, which the licence states includes trained classifiers
+- epilepsy-ecosystem/* -> a telemetry gap treated as a recorded seizure-free interval
+split:
+  group_by:
+  - participant
+  - device
+  notes: 'Temporal blocking is mandatory: adjacent segments leak, and the published failures on this benchmark
+    are mostly leakage failures.'
+provenance:
+  imported_from: win-registry
+  card: epilepsy-ecosystem
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

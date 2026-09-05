@@ -1,0 +1,74 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: imaging-container-formats
+title: NIfTI, GIfTI, CIfTI, MGH/MGZ, NRRD and DICOM imaging containers
+provider: multiple -- NIfTI DFWG, HCP, FreeSurfer, Kitware, NEMA
+citation: PROMPT.md §55, 'NIfTI, GIfTI, CIfTI, MGH/MGZ, NRRD, and DICOM as native imaging containers'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- physical_space
+- surface_vertex_space
+- grayordinate_space
+- scanner
+streams:
+- name: affine_and_axis_semantics
+  kind: measured
+  via: null
+  systematic_bias: THE AFFINE IS THE FRAME EDGE. A NIfTI without a correct affine is an array in no space,
+    and the qform/sform ambiguity -- two affines that may disagree -- is a well-known source of silent
+    left-right flips. §3's fully qualified address requires the frame to be unambiguous, and these containers
+    make it merely usually unambiguous.
+  notes: NIfTI permits two affines that can disagree; NRRD lets axis meaning be declared arbitrarily;
+    DICOM's geometry is spread across several tags
+  band_hz:
+  - null
+  - null
+  temporal_support: NIfTI's fourth dimension has a declared time unit; DICOM carries acquisition timestamps
+    per slice, which is the only container here that preserves WHEN each part of a volume was acquired
+  spatial_support: 'SIX containers with different spatial models: NIfTI holds a volume with a voxel-to-world
+    affine; GIfTI holds surface geometry and per-vertex arrays; CIfTI holds GRAYORDINATES -- surface vertices
+    and subcortical voxels in one indexed space; MGZ is FreeSurfer''s volume format; NRRD carries arbitrary
+    axis semantics; DICOM carries the acquisition''s own metadata'
+- name: cifti_grayordinates
+  kind: measured
+  via: null
+  systematic_bias: CIfTI's grayordinate model is a MIXED support -- surface vertices for cortex, voxels
+    for subcortex -- indexed as one array. That is a real design decision about what a brain location
+    is, adopted by HCP and inherited by everything built on it, and it is a cover in §11's sense rather
+    than a neutral container
+  band_hz:
+  - null
+  - null
+- name: dicom_acquisition_metadata
+  kind: measured
+  via: null
+  systematic_bias: §56.6's MR acquisition objects need sequence parameters and per-slice timing, and DICOM
+    is where they survive; converting to NIfTI discards most of it, which is why the fastmri-brain and
+    ismrmrd cards matter
+  band_hz:
+  - null
+  - null
+absent:
+- clock_relations
+- uncertainty_fields
+- provenance
+use:
+- calibrate
+forbidden:
+- imaging-container-formats/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: imaging-container-formats
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

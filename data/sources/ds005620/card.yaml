@@ -1,0 +1,133 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds005620
+title: OpenNeuro ds005620 -- repeated-awakening propofol sedation EEG with dream report
+provider: OpenNeuro; University of Oslo
+citation: Bajwa, Nilsen, Skukies, Aamodt, Ernst, Storm, Juel. A repeated awakening study exploring the
+  capacity of complexity measures to capture dreaming during propofol sedation. Dataset doi:10.18112/openneuro.ds005620.v1.0.0.
+urls:
+- https://openneuro.org/datasets/ds005620
+access: priority
+licence:
+  name: CC0 (verbatim License field in dataset_description.json)
+  redistribution: permitted
+  commercial: permitted
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - run
+  notes: 21 rows in participants.tsv, with columns awakenings, TMS, tms_count, excluded and bad_after_preprocessing.
+    n is left null because two of those columns are exclusion flags and the analysable count is smaller
+    than the row count; read it at acquisition. TMS-EVOKED DATA IS PRESENT FOR SOME SUBJECTS, which makes
+    this a perturbational source as well as a pharmacological one.
+frames:
+- channel_label
+streams:
+- name: sedation_eeg_with_awakening_report
+  kind: measured
+  via: null
+  observation_chain: post-synaptic currents in spatially aligned pyramidal populations -> volume conduction
+    through brain, CSF, skull and scalp -> potential difference between an electrode and a reference ->
+    amplifier gain, filtering and group delay -> sampled voltage. The label of interest -- whether the
+    participant was experiencing anything -- comes from a RETROSPECTIVE VERBAL REPORT after awakening
+    from sedation, which is the weakest link in the chain and is several inferential steps from the recorded
+    signal
+  confounds:
+  - ocular and blink artefact
+  - muscle (EMG) contamination
+  - cardiac field and pulse artefact
+  - electrode impedance drift and movement artefact
+  - the reference choice, which is a montage operator and not a property of the brain
+  - line noise and its harmonics
+  - report failure under sedation is not the same as absence of experience, and the design cannot distinguish
+    them
+  - memory consolidation is itself impaired by propofol, so a no-report trial may be an amnesia trial
+  - the awakening procedure changes state before the report is given
+  - propofol's direct effects on EEG spectra dominate any content-related difference
+  systematic_bias: 'This is the sharpest instance of the abstract-cognition authority problem in the registry:
+    the label is a report about a state the reporter could not observe, obtained after the state ended,
+    from a drug condition that impairs the reporting mechanism.'
+  band_hz:
+  - null
+  - null
+  temporal_support: sedation epochs punctuated by SCHEDULED AWAKENINGS, each followed by a verbal report.
+    The report's clock is the participant's recollection of a period they were not able to timestamp,
+    which is a fitted and very uncertain relation to the recorded epoch
+  spatial_support: scalp EEG; montage per channels.tsv
+- name: tms_evoked_eeg_under_sedation
+  kind: measured
+  via: null
+  observation_chain: coil current -> induced electric field, computed rather than measured and not computed
+    here -> cortical activation -> post-synaptic currents -> volume conduction -> scalp potential recorded
+    through the amplifier's post-pulse recovery transient
+  confounds:
+  - amplifier saturation and recovery in the first tens of milliseconds
+  - auditory evoked potential from the coil click, which sedation itself attenuates -- so a sedation effect
+    on the TEP is partly a sedation effect on hearing
+  - somatosensory evoked potential from scalp afferents
+  - muscle artefact
+  systematic_bias: A perturbational measure under graded pharmacological state change is exactly the design
+    obj-acq-wave4-perturbational wants; the release carries no coil pose, no head model and no intensity,
+    so nothing here constrains a field.
+  band_hz:
+  - null
+  - null
+- name: eeg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: tms_evoked_eeg_subset
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: awakening_reports
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: exclusion_flags
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- structural_mri
+- coil_pose
+- e_field
+- measured_drug_concentration
+- sham_arm
+- dream_report_content_verification
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'Two device geometries are needed at once and neither can be defaulted: the electrode positions
+    that define the lead field, and the coil winding and pose that determine the induced field. Without
+    both, the pulse is a machine setting and the response is a channel-space waveform, with nothing connecting
+    them at any cortical location.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- fit
+forbidden:
+- ds005620/* -> a no-report trial treated as an absence of experience
+- ds005620/* -> a delivered-field claim
+split:
+  group_by:
+  - participant
+  - run
+provenance:
+  imported_from: win-registry
+  card: ds005620
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

@@ -1,0 +1,64 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: kwave-reference-problems
+title: k-Wave reference and benchmark problems
+provider: k-Wave project and the ITRUSST intercomparison effort
+citation: 'Treeby and Cox, k-Wave: MATLAB toolbox for the simulation and reconstruction of photoacoustic
+  wave fields. Journal of Biomedical Optics 2010; transcranial ultrasound simulation intercomparison exercises.'
+urls:
+- http://www.k-wave.org/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- simulation_grid
+- phantom_native
+streams:
+- name: benchmark_problems
+  kind: measured
+  via: null
+  systematic_bias: Simple geometries have ANALYTIC solutions, which makes them the rare case where a simulator
+    can be checked against exact truth rather than against another simulator. The multi-code intercomparison
+    exercises then measure how much transcranial predictions differ between codes -- a simulator-discrepancy
+    component (§39) that is large enough to matter for dose.
+  notes: grid resolution, absorbing boundary treatment and the nonlinearity model all change the answer;
+    a converged solution is a claim that must be demonstrated
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: benchmark acoustic problems with defined media and sources, used to compare simulation
+    codes against each other and against analytic solutions
+- name: intercomparison_results
+  kind: measured
+  via: null
+  systematic_bias: between-code disagreement on the same transcranial problem is the honest error bar
+    on any simulated tFUS dose
+  band_hz:
+  - null
+  - null
+absent:
+- in_vivo_validation
+- individual_skull_properties
+use:
+- control
+- surrogate
+forbidden:
+- kwave-reference-problems/* -> in-vivo delivered-field claims
+- kwave-reference-problems/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: kwave-reference-problems
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

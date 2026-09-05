@@ -1,0 +1,122 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: m4raw
+title: M4Raw -- multi-contrast, multi-repetition, multi-channel low-field MRI k-space
+provider: Deposited on Zenodo by the authors (University of Hong Kong and collaborators)
+citation: 'Lyu et al., M4Raw: a multi-contrast, multi-repetition, multi-channel MRI k-space dataset for
+  low-field MRI research. Scientific Data 10:264, 2023. doi:10.1038/s41597-023-02181-4. Data doi:10.5281/zenodo.7523691.'
+urls:
+- https://zenodo.org/records/7523691
+- https://github.com/mylyu/M4Raw
+access: held
+licence:
+  name: CC-BY-4.0
+  redistribution: unresolved
+  commercial: permitted
+  notes: 'Stated by Zenodo record 7523691 itself. DUA: none. Recorded as dua_required false on the basis
+    of HOW THIS WAS ACTUALLY OBTAINED -- it is held in this store, fetched anonymously over plain HTTP
+    by a script in scripts/ that sends no credential and accepts no terms, from a repository that serves
+    it without an access request. That is evidence about the acquisition rather than an opinion about
+    the deposit''s policy. It says nothing about the LICENCE terms, which are recorded separately and
+    still govern distribution; a non-commercial work with no DUA is an ordinary combination.'
+binding: unbound
+population:
+  n: 183
+  hierarchy:
+  - participant
+  - run
+  - device
+  notes: 183 volunteers, 116 male and 67 female. 1,024 training volumes, 240 validation volumes; 200 motion-corrupted
+    volumes were EXCLUDED from those sets, which is a censoring decision with a stated mechanism -- unusually,
+    the excluded volumes are identified rather than silently dropped.
+frames:
+- kspace_sampling_grid
+- scanner
+- subject_native
+streams:
+- name: repeated_low_field_kspace
+  kind: measured
+  via: null
+  observation_chain: transverse magnetisation at 0.3 T -> coil-weighted signal -> complex k-space samples,
+    repeated two or three times per contrast on the same anatomy in the same session
+  confounds:
+  - low-field SNR is intrinsically much lower, so thermal noise dominates in a way it does not at 3 T
+  - coil sensitivity estimation is harder at low SNR and its error is larger
+  - the repetitions are not simultaneous, so motion between them is a real difference and not only noise
+  - 0.3 T relaxation times differ from 3 T values, so contrast behaviour does not transfer
+  systematic_bias: The repetition structure gives an EMPIRICAL noise distribution per voxel, which is
+    the measured floor a reconstruction method must be quoted against. Almost every other k-space dataset
+    has one acquisition per contrast and can only estimate that floor from a model.
+  band_hz:
+  - null
+  - null
+  temporal_support: MULTIPLE REPETITIONS OF THE SAME CONTRAST IN THE SAME SESSION -- T1w and T2w three
+    times each, FLAIR twice. Repeated acquisitions of the same anatomy make the noise distribution measurable
+    rather than modelled, which is what turns a denoising claim into a measurable one
+  spatial_support: '0.3 T whole-body scanner, multi-channel k-space, about 1.2 mm in-plane and 5 mm through-plane.
+    THE LOW FIELD IS THE POINT: SNR, contrast behaviour and artefact structure at 0.3 T are qualitatively
+    different from 3 T, and a reconstruction or physics model that only ever sees 3 T has been fitted
+    to one corner of the parameter space'
+- name: identified_motion_corrupted_volumes
+  kind: measured
+  via: null
+  systematic_bias: 200 motion-corrupted volumes identified and set aside rather than deleted is a censoring
+    mechanism made explicit, and it doubles as a real test set for motion robustness.
+  band_hz:
+  - null
+  - null
+- name: raw_kspace_t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: raw_kspace_t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: raw_kspace_flair
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: raw_kspace_gre
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: reconstructed_volumes
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- high_field_comparison
+- same_subjects_at_3t
+- functional_mri
+- dwi
+- clinical_labels
+requires:
+- geometry: mr-acquisition-objects
+  severity: blocking
+  without_it: Raw k-space is not an image. Without the acquisition object -- scanner frame, sequence timeline,
+    sampling trajectory, coil sensitivities and reconstruction provenance -- these samples cannot be placed
+    in space at all, and a reconstruction produced without them carries none of its own physics.
+use:
+- calibrate
+- fit
+forbidden:
+- m4raw/* -> a 3 T contrast or relaxation claim from 0.3 T data
+split:
+  group_by:
+  - participant
+  - run
+provenance:
+  imported_from: win-registry
+  card: m4raw
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

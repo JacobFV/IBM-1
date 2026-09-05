@@ -1,0 +1,5 @@
+# where the bytes for `abide` actually live.  never the bytes themselves.
+source_url: "https://fcon_1000.projects.nitrc.org/indi/abide/abide_I.html"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

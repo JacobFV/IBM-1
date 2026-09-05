@@ -1,0 +1,5 @@
+# where the bytes for `ds003059` actually live.  never the bytes themselves.
+source_url: "https://openneuro.org/datasets/ds003059"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

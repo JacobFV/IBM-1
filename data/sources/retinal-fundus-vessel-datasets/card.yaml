@@ -1,0 +1,155 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: retinal-fundus-vessel-datasets
+title: 'Retinal fundus vessel-segmentation datasets: DRIVE, STARE, HRF, CHASE_DB1 and FIVES'
+provider: 'five independent providers: UMC Utrecht via Grand Challenge (DRIVE); Clemson/UCSD (STARE);
+  FAU Erlangen-Nurnberg (HRF); Kingston University and St George''s (CHASE_DB1); Zhejiang University via
+  figshare (FIVES)'
+citation: 'Staal et al., Ridge-based vessel segmentation in color images of the retina. IEEE TMI 23(4):501-509,
+  2004; Hoover, Kouznetsova, Goldbaum, IEEE TMI 19(3):203-210, 2000; Budai et al., Robust vessel segmentation
+  in fundus images. International Journal of Biomedical Imaging 2013; Fraz et al./Barman et al., Kingston
+  University 2012 (CHASE_DB1); Jin et al., FIVES: a fundus image dataset for artificial intelligence based
+  vessel segmentation. Scientific Data 9:475, 2022.'
+urls:
+- https://drive.grand-challenge.org/
+- https://cecas.clemson.edu/~ahoover/stare/
+- https://www5.cs.fau.de/research/data/fundus-images/
+- https://blogs.kingston.ac.uk/retinal/chasedb1/
+- https://figshare.com/articles/figure/FIVES_A_Fundus_Image_Dataset_for_AI-based_Vessel_Segmentation/19688169
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: FIVE PROVIDERS, FIVE ANSWERS, AND TWO OF THEM ARE VERIFIED-ABSENT. HRF states verbatim that it
+    is released under a Creative Commons 4.0 Attribution License. FIVES carries CC BY 4.0 in figshare's
+    own API record for the item. CHASE_DB1 is listed as Attribution 4.0 on Kingston's institutional research
+    portal, but the primary download host did not resolve at audit time, so that is attested by a catalogue
+    and not by the provider's own page. DRIVE states no licence anywhere on the canonical Grand Challenge
+    pages and its download path requires account registration and challenge participation. STARE states
+    nothing at all -- no licence and no restriction -- on an unmaintained site whose host fails TLS validation.
+    Resolve per dataset before any of them reaches an artifact; the collection is carded together because
+    they are used together as one benchmark and separating them would hide that they do not share terms.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - device
+  - site
+  notes: 'IMAGE COUNTS, NOT PARTICIPANTS: DRIVE 40 (20 train, 20 test), STARE 20 in the vessel set, HRF
+    45, CHASE_DB1 28 (two eyes of 14 children), FIVES 800 (600 train, 200 test). n_participants is left
+    null because four of the five report images rather than people and CHASE_DB1''s 28 images are 14 people.'
+frames:
+- image_pixel
+- retinal_fundus
+streams:
+- name: annotated_retinal_vasculature
+  kind: measured
+  via: null
+  observation_chain: 'retinal reflectance under flash illumination -> optics of the eye, whose media opacity
+    and refractive error vary per subject -> camera optics and CCD -> demosaiced 8-bit RGB. A VESSEL LABEL
+    IS A HUMAN ANNOTATION OF THAT IMAGE, not a measurement of a vessel: what is marked is where an annotator
+    judged contrast to indicate blood'
+  confounds:
+  - illumination gradient and vignetting across the field, strongest at the periphery where the smallest
+    vessels are
+  - media opacity (cataract, floaters) reducing contrast in a subject-dependent way
+  - the annotator's certainty threshold -- DRIVE's observers marked pixels they were at least 70% certain
+    were vessel, which is a stated and unusual convention
+  - vessel width near the pixel scale, where the label is a decision rather than an observation
+  - pathology (haemorrhage, exudate) mimicking or occluding vessels
+  systematic_bias: The retina is developmentally and structurally continuous with the brain and its vasculature
+    obeys the same branching statistics, so these datasets constrain the vascular-geometry priors that
+    obj-vascular-products needs -- with the enormous advantage that ground truth is a photograph rather
+    than a reconstruction. It is a two-dimensional projection of a three-dimensional tree, so depth and
+    overlap are unresolvable by construction.
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- single photographs; no flow, no pulsatility
+  spatial_support: colour fundus photographs at resolutions from 768x584 (DRIVE) through 1280x960 (CHASE_DB1)
+    and 2048x2048 (FIVES) to 3504x2336 (HRF), at 30 to 45 degree fields of view. THE RETINAL VASCULATURE
+    IS THE ONLY VASCULAR BED IN THE BODY THAT CAN BE PHOTOGRAPHED DIRECTLY AND NON-INVASIVELY, which is
+    why it is worth carding alongside the cerebral angiography and microscopy sources
+- name: inter_observer_disagreement
+  kind: measured
+  via: null
+  systematic_bias: STARE and CHASE_DB1 ship TWO INDEPENDENT OBSERVER LABELLINGS PER IMAGE, which makes
+    inter-observer agreement measurable and sets the real ceiling on any segmentation score. FIVES's masks
+    are a single verified consensus of two junior annotators, so its disagreement is NOT recoverable,
+    and HRF ships one mask per image. A method reported at above the inter-observer ceiling on STARE has
+    fitted an annotator.
+  band_hz:
+  - null
+  - null
+- name: colour_fundus
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: manual_vessel_masks
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: fov_masks_partial
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: second_observer_masks_partial
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: optic_disc_annotations_partial
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: image_quality_labels_partial
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- fov_masks_for_stare_and_chase_db1
+- drive_test_annotations_on_the_canonical_host
+- drive_second_observer_masks_on_the_canonical_host
+- flow
+- depth
+- photometric_calibration
+- artery_vein_labels_in_most_sets
+requires:
+- geometry: vascular-products
+  for_streams:
+  - annotated_retinal_vasculature
+  severity: blocking
+  without_it: These are images of vasculature, not vasculature. Segmentation, centreline extraction and
+    graph construction are the manufacturing step, and until the vascular product performs it with its
+    assumptions and uncertainty recorded, there is no vessel geometry here that anything can be addressed
+    to.
+use:
+- evaluate
+- fit
+forbidden:
+- retinal-fundus-vessel-datasets/* -> an artifact, before the specific dataset's terms are resolved
+- retinal-fundus-vessel-datasets/* -> a segmentation score reported above the measured inter-observer
+  ceiling
+- retinal-fundus-vessel-datasets/* -> a three-dimensional vascular claim from a projection
+split:
+  group_by:
+  - participant
+  - device
+  - site
+provenance:
+  imported_from: win-registry
+  card: retinal-fundus-vessel-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

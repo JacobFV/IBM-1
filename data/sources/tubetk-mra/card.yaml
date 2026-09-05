@@ -1,0 +1,90 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tubetk-mra
+title: TubeTK / CASILab designed database of MR brain images of healthy volunteers (MRA)
+provider: Collected by CASILab at the University of North Carolina at Chapel Hill; distributed by the
+  MIDAS Data Server at Kitware, Inc.
+citation: 'Bullitt et al., Vessel tortuosity and brain tumor malignancy: a blinded study. Academic Radiology
+  12:1232-1240, 2005.'
+urls:
+- https://public.kitware.com/Wiki/TubeTK/Data
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: 'UNRESOLVED AND NOT VERIFIABLE FROM THE PROVIDER: the Kitware wiki page returns HTTP 403 and
+    the MIDAS platform has been retired. The only mandated text that could be verified is the acknowledgement
+    sentence: the MR brain images from healthy volunteers were collected and made available by the CASILab
+    at The University of North Carolina at Chapel Hill and were distributed by the Midas Data Server at
+    Kitware, Inc. Status is ''watch'' because the distribution route no longer exists; secondary redistributions
+    circulate and their provenance is unverified.'
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  notes: Secondary papers give figures around 100 and 109 healthy volunteers; no primary page was reachable
+    to confirm either, so n is left null. A redistributed archive of about 5.2 GiB circulates.
+frames:
+- scanner
+- subject_native
+streams:
+- name: healthy_volunteer_mra
+  kind: measured
+  via: null
+  observation_chain: flowing blood entering an unsaturated slab -> time-of-flight enhancement relative
+    to stationary tissue -> volumetric reconstruction. A FLOW CONTRAST, not a lumen measurement
+  confounds:
+  - in-plane flow saturation hiding patent vessels
+  - turbulence at stenoses and bifurcations causing signal loss exactly where the geometry matters
+  - partial volume systematically mis-sizing vessels near the voxel scale
+  - the tortuosity measures the dataset is famous for are computed from a segmentation and inherit its
+    errors
+  systematic_bias: 'Authority is low not because the acquisition is poor but because the provenance chain
+    is broken: the primary distributor is retired and every reachable copy is a redistribution whose fidelity
+    is unverified. A source whose bytes cannot be traced to their origin cannot carry high authority.'
+  band_hz:
+  - null
+  - null
+  temporal_support: none -- static volumes
+  spatial_support: MRA together with structural MR of the same healthy volunteers; the exact sequence
+    list is unresolved. This is the classical vessel-extraction benchmark that the tubular-structure literature
+    is built on
+- name: mra
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: structural_mr
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- verified_terms
+- verified_participant_count
+- flow_velocity
+- functional_imaging
+- capillary_scale_vasculature
+requires:
+- geometry: vascular-products
+  severity: blocking
+  without_it: An angiographic volume is an image of a lumen, not a vessel. Without the vascular product
+    -- a resolved graph carrying radius, topology and territory -- there is no vessel for this evidence
+    to constrain and no way to say which cortical support any of it supplies.
+use:
+- fit
+- prior
+forbidden:
+- tubetk-mra/* -> an artifact, until the terms and a traceable copy are resolved
+- tubetk-mra/* -> an absent small vessel treated as a measured absence
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: tubetk-mra
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

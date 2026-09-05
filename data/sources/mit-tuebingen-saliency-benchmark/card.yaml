@@ -1,0 +1,92 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: mit-tuebingen-saliency-benchmark
+title: MIT/Tübingen Saliency Benchmark (MIT300, MIT1003, CAT2000)
+provider: MIT and University of Tübingen
+citation: Judd et al., A Benchmark of Computational Models of Saliency to Predict Human Fixations. MIT
+  CSAIL TR 2012; Kümmerer et al., MIT/Tübingen Saliency Benchmark.
+urls:
+- https://saliency.tuebingen.ai/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Per-subset terms; the MIT300 test fixations are DELIBERATELY WITHHELD to keep the benchmark honest.
+    Unresolved.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  notes: Real eye tracking, unlike SALICON. Free viewing with controlled viewing distance.
+frames:
+- eye
+- display
+- image_plane
+streams:
+- name: fixation_maps
+  kind: imposed
+  via: null
+  systematic_bias: free viewing of static images for a few seconds; the centre bias is enormous and is
+    a property of the paradigm, not of vision
+  band_hz:
+  - null
+  - null
+  temporal_support: 3-5 s free viewing per image; fixations as events
+  spatial_support: laboratory eye tracking with known screen size and viewing distance, so visual angle
+    IS defined here
+- name: held_out_test_set
+  kind: measured
+  via: null
+  systematic_bias: the withheld test fixations are one of the few genuinely uncontaminated held-out sets
+    in the vision literature
+  band_hz:
+  - null
+  - null
+- name: centre_bias_baseline
+  kind: measured
+  via: null
+  systematic_bias: the centre-bias-only baseline is the floor every saliency number must be quoted against,
+    and §46 requires exactly this
+  band_hz:
+  - null
+  - null
+- name: images
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: viewing_parameters
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- any_neural_measurement
+- dynamic_stimuli
+- task_conditions
+requires:
+- geometry: retinal-world-geometry
+  for_streams:
+  - fixation_maps
+  severity: blocking
+  without_it: A screen-coordinate gaze trace is not retinal input. Without the per-episode display, eye
+    and gaze geometry there is no map from what was on the screen to what fell on the retina, and treating
+    the stimulus as the input is exactly the modelling error retinalisation exists to prevent.
+use:
+- control
+- evaluate
+- fit
+forbidden:
+- mit-tuebingen-saliency-benchmark/* -> any cortical state
+split:
+  group_by:
+  - stimulus
+  - participant
+provenance:
+  imported_from: win-registry
+  card: mit-tuebingen-saliency-benchmark
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

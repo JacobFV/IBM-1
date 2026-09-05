@@ -1,0 +1,131 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: bci-competition-datasets
+title: BCI Competition II/III/IV datasets
+provider: Berlin BCI group / Graz BCI Lab / Wadsworth Center and collaborators
+citation: Tangermann et al., Review of the BCI Competition IV. Frontiers in Neuroscience 2012; Blankertz
+  et al., The BCI competition III. IEEE Transactions on Neural Systems and Rehabilitation Engineering
+  2006.
+urls:
+- https://www.bbci.de/competition/iv/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Per-dataset terms set by the contributing laboratory; not read. Several require a registration
+    and an agreement to cite.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - run
+  - device
+  notes: Each competition dataset has its own small cohort; n left null.
+frames:
+- channel_label
+- 10_20_nominal_positions
+streams:
+- name: motor_imagery_and_erp_eeg
+  kind: measured
+  via: null
+  observation_chain: post-synaptic currents in spatially aligned pyramidal populations -> volume conduction
+    through brain, CSF, skull and scalp -> potential difference between a scalp electrode and a reference
+    -> amplifier gain, filtering and group delay -> sampled integer
+  confounds:
+  - ocular and blink artefact
+  - muscle (EMG) contamination, broadband and strongest at temporal sites
+  - cardiac field and pulse artefact
+  - electrode impedance drift and movement artefact
+  - the reference choice, which is itself a montage operator and not a property of the brain
+  - line noise and its harmonics
+  - in motor-imagery paradigms, actual muscle activity is the standard confound and EMG is not always
+    recorded
+  - the cue itself produces a visually evoked response time-locked to the class label
+  systematic_bias: These datasets are so heavily benchmarked that published accuracies are an overfitted
+    literature, not a floor. Their use here is as a well-characterised BASELINE with a known chance level
+    and known published controls -- which is exactly what a number needs to be a result.
+  band_hz:
+  - null
+  - null
+  temporal_support: 100 Hz to 1000 Hz depending on the dataset; several are distributed already downsampled
+    and filtered, which is a derived view and not the native clock
+  spatial_support: scalp montages from 22 to 118 channels depending on the dataset, plus one ECoG grid
+    dataset
+- name: published_benchmark_baselines
+  kind: measured
+  via: null
+  systematic_bias: the competition's own held-out test labels are the only part that was not available
+    to the methods that report on it
+  band_hz:
+  - null
+  - null
+- name: eeg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: ecog
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: emg
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: eog
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: task_labels
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- individual_head_model
+- digitised_electrode_positions
+- mri
+- fmri
+- intervention
+requires:
+- geometry: device-geometry
+  for_streams:
+  - motor_imagery_and_erp_eeg
+  severity: degrading
+  without_it: A scalp voltage is a function of where the electrode sat. Without per-participant electrode
+    positions carried as a device-geometry object there is no lead field for this montage, so nothing
+    recorded here can be attributed to a cortical support -- only channel-space statistics remain.
+  substitute: A nominal 10-20/10-10 template montage. It displaces every electrode in a head-size-dependent,
+    spatially correlated way, so the resulting source-estimate error is systematic and structured rather
+    than random, and it must be carried as uncertainty in every number derived from it.
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- evaluate
+- fit
+forbidden:
+- bci-competition-datasets/* -> lead field construction from nominal positions
+- bci-competition-datasets/* -> any subject-specific anatomy
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: bci-competition-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

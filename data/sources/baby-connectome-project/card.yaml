@@ -1,0 +1,125 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: baby-connectome-project
+title: Baby Connectome Project (BCP) -- infant and early-childhood MRI
+provider: UNC Chapel Hill / University of Minnesota, distributed via NDA
+citation: 'Howell et al., The UNC/UMN Baby Connectome Project (BCP): an overview of the study design and
+  protocol development. NeuroImage 2019.'
+urls:
+- https://babyconnectomeproject.org/
+access: restricted
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Distributed through the NIMH Data Archive; access requires an approved data-use certification.
+    Terms not read.
+binding: unbound
+population:
+  n: null
+  hierarchy:
+  - participant
+  - session
+  - site
+  notes: n left null; read it from the release obtained.
+frames:
+- scanner
+- subject_native
+- age_specific_infant_templates
+streams:
+- name: infant_bold_rest
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away. Scans are acquired during natural sleep, so the behavioural state
+    is sleep and not rest'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift and between-session hardware change
+  - sleep stage, uncontrolled and unrecorded, which changes network structure more than age does over
+    short intervals
+  - rapid change in head size and tissue contrast across the age range, which breaks a single registration
+    target
+  band_hz:
+  - null
+  - null
+  temporal_support: multiband BOLD; the developmental axis is accelerated-longitudinal, meaning the population
+    curve is assembled from overlapping short individual arcs
+  spatial_support: HCP-style structural, diffusion and resting BOLD adapted for natural sleep in infants
+- name: accelerated_longitudinal_design
+  kind: measured
+  via: null
+  systematic_bias: A cross-sectional slope through an accelerated-longitudinal cohort is not a within-individual
+    developmental rate, and the two are routinely reported interchangeably.
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: behavioural_assessment
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- pet
+- task_fmri
+- intervention
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- fit
+- prior
+forbidden:
+- baby-connectome-project/* -> adult tissue-contrast assumptions
+- baby-connectome-project/* -> intervention response parameters
+split:
+  group_by:
+  - participant
+  - session
+  - site
+provenance:
+  imported_from: win-registry
+  card: baby-connectome-project
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

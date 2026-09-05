@@ -1,0 +1,154 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: ds006072
+title: OpenNeuro ds006072 -- psilocybin precision functional mapping
+provider: OpenNeuro; Washington University in St. Louis (Dosenbach and Siegel groups)
+citation: Siegel et al., Psilocybin desynchronizes the human brain. Nature 632:131, 2024. doi:10.1038/s41586-024-07624-5;
+  Subramanian, Siegel et al., data descriptor, Scientific Data, 2025. doi:10.1038/s41597-025-05189-0.
+  Dataset doi:10.18112/openneuro.ds006072.v1.2.0.
+urls:
+- https://openneuro.org/datasets/ds006072
+access: priority
+licence:
+  name: CC0 (verbatim License field in dataset_description.json)
+  redistribution: permitted
+  commercial: permitted
+  notes: 'CC0 in dataset_description.json. NOTE THE TRAP: the Scientific Data descriptor page carries
+    CC BY-NC-ND 4.0, which is the ARTICLE''s licence and does not apply to the data. Reading the article
+    licence off the descriptor and applying it here would import a non-commercial and no-derivatives term
+    that the data do not carry.'
+binding: unbound
+population:
+  n: 7
+  hierarchy:
+  - participant
+  - session
+  notes: 7 participants, 4 returning for a replication protocol 6-12 months later. A DEEP, NOT WIDE design.
+    participants.tsv is absent from the S3 root, so the count comes from the descriptor rather than from
+    the archive itself.
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: multi_echo_psilocybin_bold
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away. Multi-echo acquisition gives the T2* decay across echoes, so
+    the BOLD-weighted component is separable from signal that does not depend on echo time -- the closest
+    thing available to measuring the vascular stage rather than assuming it'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift
+  - psilocybin's own cardiovascular effects, partly addressable by the multi-echo separation and the concurrent
+    physiology
+  - head motion increases under the drug and is confounded with condition
+  - blinding fails for the participant even against an active control
+  - with n=7 the between-participant variance component is essentially unestimable
+  systematic_bias: 'An ACTIVE CONTROL (methylphenidate 40 mg against psilocybin 25 mg, crossover) plus
+    a replication protocol months later is a much stronger design than a placebo contrast: methylphenidate
+    produces arousal and cardiovascular change without the serotonergic action, so a difference that survives
+    it is not merely a difference in being drugged.'
+  band_hz:
+  - null
+  - null
+  temporal_support: many sessions per participant across the drug day and across months, with CONCURRENT
+    pulse oximetry and respiratory belt at the device's own faster rate
+  spatial_support: 'MULTI-ECHO resting and task fMRI, T1 and T2 structural, and DBSI diffusion. Multi-echo
+    matters here: it separates BOLD-like from non-BOLD-like signal by echo-time dependence, which is a
+    physics-based handle on exactly the drug-induced vascular confound that ruins single-echo pharmacological
+    fMRI'
+- name: active_control_and_replication_arm
+  kind: measured
+  via: null
+  systematic_bias: the methylphenidate arm and the 6-12 month replication are two controls that could
+    have failed, which is what a result needs and what most pharmacological imaging lacks
+  band_hz:
+  - null
+  - null
+- name: multi_echo_bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: multi_echo_bold_task
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dbsi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pulse_oximetry
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: respiration
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: raw_and_preprocessed_variants
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- population_sample
+- participants_tsv_in_the_archive
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+use:
+- evaluate
+- fit
+forbidden:
+- ds006072/* -> a population-level claim
+- ds006072/* -> the descriptor article's CC BY-NC-ND terms applied to the data
+split:
+  group_by:
+  - participant
+  - session
+provenance:
+  imported_from: win-registry
+  card: ds006072
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

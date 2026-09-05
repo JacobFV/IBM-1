@@ -1,0 +1,79 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: skull-acoustics-ct-mri-datasets
+title: CT and MRI skull datasets for transcranial acoustics
+provider: multiple -- skull imaging collections used for acoustic property estimation
+citation: PROMPT.md §52.13, 'CT/MRI skull-acoustics datasets'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- subject_native
+streams:
+- name: skull_density_imaging
+  kind: measured
+  via: null
+  observation_chain: X-ray attenuation (CT) or short-T2 signal (ZTE/UTE MRI) -> reconstructed volume ->
+    empirical mapping to acoustic speed of sound, density and attenuation, and to electrical conductivity
+    for the EEG and tES forward problems
+  confounds:
+  - CT beam hardening and metal artifact
+  - ZTE/UTE MRI is an indirect proxy for bone density and the mapping is empirical
+  - partial volume at the inner and outer skull tables, which sets thickness estimates
+  - diploe porosity varies with age and sex and is below typical imaging resolution
+  systematic_bias: 'The skull is the SHARED BOTTLENECK for three separate physics problems in this registry:
+    acoustic aberration (§52.13), electrical conduction for EEG and tES (§14, §54.1), and magnetic field
+    distortion. One measurement, three forward models -- which is an argument for modelling the skull
+    once, properly, rather than three times approximately.'
+  notes: the imaging-to-acoustic-property mapping is empirical and its scatter propagates directly into
+    focal position and pressure
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: head CT (the reference for bone density) and ZTE/UTE MRI (the radiation-free substitute)
+    in the same individuals where paired, plus derived skull thickness and porosity
+- name: paired_ct_and_zte
+  kind: measured
+  via: null
+  systematic_bias: where CT and ZTE exist in the same person, the discrepancy between the two derived
+    skull models is directly measurable -- which is the uncertainty a radiation-free pipeline actually
+    carries
+  band_hz:
+  - null
+  - null
+- name: skull_conductivity_relevance
+  kind: measured
+  via: null
+  systematic_bias: skull conductivity is the dominant uncertainty in every EEG forward model in this registry,
+    and it depends on the same porosity these images measure
+  band_hz:
+  - null
+  - null
+absent:
+- direct_acoustic_property_measurement
+- microstructure
+use:
+- calibrate
+- fit
+- prior
+forbidden:
+- skull-acoustics-ct-mri-datasets/* -> measured acoustic or electrical property claims
+- skull-acoustics-ct-mri-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: skull-acoustics-ct-mri-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

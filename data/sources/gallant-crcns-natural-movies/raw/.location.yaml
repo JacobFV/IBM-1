@@ -1,0 +1,5 @@
+# where the bytes for `gallant-crcns-natural-movies` actually live.  never the bytes themselves.
+source_url: "https://crcns.org/data-sets/vc/vim-2"
+local_root: null   # set on acquisition
+acquired_at: null
+bytes: null

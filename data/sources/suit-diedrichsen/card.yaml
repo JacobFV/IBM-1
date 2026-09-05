@@ -1,0 +1,71 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: suit-diedrichsen
+title: SUIT / Diedrichsen cerebellar atlas and normalisation template
+provider: Diedrichsen lab
+citation: Diedrichsen et al., A probabilistic MR atlas of the human cerebellum. NeuroImage 2009.
+urls:
+- https://www.diedrichsenlab.org/imaging/suit.htm
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- SUIT
+- MNI152
+- cerebellar_flatmap
+streams:
+- name: lobular_probabilistic_maps
+  kind: measured
+  via: null
+  systematic_bias: LOBULES are anatomical folding units and are NOT functional units -- the MDTB atlas
+    shows functional boundaries crossing lobular ones. Using SUIT lobules as functional supports is the
+    same category error §5 warns about for the cerebrum.
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: probabilistic cerebellar LOBULE definitions with a dedicated cerebellar normalisation
+    template and a flatmap surface. Cerebellar cortex is far more tightly folded than cerebral cortex,
+    so whole-brain normalisation blurs it catastrophically -- which is why a dedicated template exists
+- name: cerebellar_normalisation_template
+  kind: measured
+  via: null
+  systematic_bias: the dedicated template measurably improves cerebellar alignment over whole-brain normalisation;
+    using whole-brain MNI for cerebellum is a choice with a known cost
+  band_hz:
+  - null
+  - null
+- name: cerebellar_flatmap
+  kind: measured
+  via: null
+  systematic_bias: a flatmap is a derived 2D representation with unavoidable distortion
+  band_hz:
+  - null
+  - null
+absent:
+- individual_folia
+- function
+- deep_nuclei_detail
+- brainstem
+use:
+- calibrate
+- prior
+forbidden:
+- suit-diedrichsen/lobular_probabilistic_maps -> functional support definitions
+- suit-diedrichsen/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: suit-diedrichsen
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

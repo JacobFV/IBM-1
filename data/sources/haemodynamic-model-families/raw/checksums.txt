@@ -1,0 +1,1 @@
+# sha256 manifest for haemodynamic-model-families; written on acquisition

@@ -1,0 +1,176 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: adni
+title: Alzheimer's Disease Neuroimaging Initiative (ADNI)
+provider: ADNI / LONI Image and Data Archive
+citation: 'Jack et al., The Alzheimer''s Disease Neuroimaging Initiative (ADNI): MRI methods. JMRI 2008.'
+urls:
+- https://adni.loni.usc.edu/
+access: restricted
+licence:
+  name: unresolved
+  redistribution: prohibited
+  commercial: unresolved
+  notes: Application and Data Use Agreement; redistribution prohibited. Registered but never held in the
+    predecessor (§49.3).
+binding: unbound
+population:
+  n: 2000
+  hierarchy:
+  - participant
+  - site
+  - session
+  notes: Multi-site, multi-vendor, multi-protocol across four phases. 'ADNI' is not one acquisition.
+frames:
+- scanner
+- subject_native
+- fsaverage
+- MNI152
+- pet_scanner
+- adni_phantom
+streams:
+- name: phantom_scans
+  kind: measured
+  via: null
+  systematic_bias: The ADNI geometric phantom is a genuine gradient-nonlinearity and scaling calibration
+    object across many scanners -- arguably the most reusable single stream in ADNI for B-WIN's MR acquisition
+    objects (§52.12).
+  band_hz:
+  - null
+  - null
+  temporal_support: longitudinal over years; PET on its own dynamic frame timeline
+  spatial_support: 1 mm MPRAGE; phase-specific diffusion and perfusion; the ADNI geometric phantom is
+    scanned alongside participants
+- name: pet_fdg
+  kind: measured
+  via: null
+  observation_chain: glucose transport and hexokinase phosphorylation -> 18F-FDG trapping -> positron
+    emission and annihilation -> coincidence detection -> attenuation and scatter correction -> reconstruction
+    -> activity concentration -> kinetic model of the metabolic rate
+  confounds:
+  - atrophy-driven partial volume
+  - reference-region choice
+  - tracer batch and uptake period
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  observation_chain: tissue proton density and T1 -> sequence-specific contrast -> k-space acquisition
+    -> reconstruction -> voxel intensity; intensity is not a tissue parameter until an explicit relaxometry
+    model is applied
+  confounds:
+  - B1+ transmit inhomogeneity
+  - B0 off-resonance
+  - the fitted signal model's own misspecification
+  - motion between the volumes that enter one fit
+  - scanner and phase differences across ADNI-1/GO/2/3/4
+  systematic_bias: protocol drift across phases is large; ADNI is a family of studies
+  band_hz:
+  - null
+  - null
+- name: diagnosis_group
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t2flair
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: dwi
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: asl_perfusion
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pet_amyloid
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: pet_tau
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: csf_biomarkers
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: genetics
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: cognition
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- eeg
+- meg
+- ieeg
+- eye_tracking
+- intervention
+- naturalistic_stimulus
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+- geometry: tract-path-products
+  severity: blocking
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
+    exists there is no engineered claim of the form 'this tract transmits between these two supports',
+    so this source can constrain local microstructure but no interaction between supports.
+- geometry: vascular-products
+  severity: degrading
+  without_it: A perfusion or reactivity map is a voxel field with no vessel attached. It can be used as
+    a voxel-wise measurement, but attributing it to a supplying artery, a draining vein or a microvascular
+    compartment -- which is what makes it evidence about the vascular state rather than about the image
+    -- requires the vascular product.
+  substitute: Voxel-wise use with no vessel attribution, which cannot separate an arterial transit effect
+    from a tissue perfusion change.
+use:
+- control
+- fit
+- prior
+forbidden:
+- adni/* -> healthy population priors without pathology conditioning
+- adni/* -> cortical current-source dynamics
+- adni/diagnosis_group -> instantaneous cortical state
+split:
+  group_by:
+  - participant
+  - site
+  - session
+provenance:
+  imported_from: win-registry
+  card: adni
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

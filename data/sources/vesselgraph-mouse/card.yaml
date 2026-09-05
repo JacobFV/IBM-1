@@ -1,0 +1,68 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: vesselgraph-mouse
+title: VesselGraph -- mouse whole-brain microvascular graph dataset
+provider: TU Munich / VesselGraph
+citation: 'Paetzold et al., Whole Brain Vessel Graphs: A Dataset and Benchmark for Graph Learning and
+  Neuroscience. NeurIPS Datasets and Benchmarks 2021.'
+urls:
+- https://github.com/jocpae/VesselGraph
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- mouse_brain_native
+- allen_mouse_ccf
+streams:
+- name: microvascular_graph_statistics
+  kind: measured
+  via: null
+  systematic_bias: MOUSE. §56.3 asks for stochastic microvascular ensembles CONSISTENT WITH capillary-density,
+    radius, orientation and transit-time evidence, and this is the most complete such evidence that exists
+    -- in a different species, at a different brain size, with a different metabolic rate. The cross-species
+    step is an explicit assumption with an uncertainty, and it must be carded wherever it is used.
+  notes: capillary density scales with metabolic rate and brain size; transferring mouse statistics to
+    human without a scaling argument is unsupported
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: whole-brain MOUSE microvascular networks as graphs, with millions of nodes and edges
+    carrying radius, length and tortuosity -- the capillary-scale topology that no human in-vivo modality
+    can reach
+- name: graph_topology
+  kind: measured
+  via: null
+  systematic_bias: branch-point degree distributions and loop statistics are topological facts that may
+    transfer better across species than absolute densities do
+  band_hz:
+  - null
+  - null
+absent:
+- human_correspondence
+- in_vivo_geometry
+- flow
+- individual_variation
+use:
+- calibrate
+- prior
+forbidden:
+- vesselgraph-mouse/* -> human vascular geometry without an explicit cross-species scaling assumption
+- vesselgraph-mouse/* -> human observation-role likelihoods
+- vesselgraph-mouse/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: vesselgraph-mouse
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

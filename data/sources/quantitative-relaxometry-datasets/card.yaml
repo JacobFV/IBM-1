@@ -1,0 +1,87 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: quantitative-relaxometry-datasets
+title: Quantitative relaxometry datasets
+provider: multiple -- MPM, MP2RAGE, MESE/MEGRE and multi-site relaxometry studies
+citation: PROMPT.md §52.12, 'quantitative relaxometry datasets'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- scanner
+- subject_native
+- MNI152
+streams:
+- name: quantitative_parameter_maps
+  kind: measured
+  via: null
+  observation_chain: spin physics under a specified pulse sequence -> signal evolution -> fitted quantitative
+    parameter map with its estimator, its assumed model and its bias
+  confounds:
+  - B1+ transmit inhomogeneity
+  - B0 off-resonance
+  - the fitted signal model's own misspecification
+  - motion between the volumes that enter one fit
+  systematic_bias: '§18: these are treated SEPARATELY from BOLD and from conventional structural contrast
+    because they are estimates of PHYSICAL TISSUE PARAMETERS with units, not intensities. That makes them
+    comparable across scanners in a way T1-weighted intensity never is -- provided the calibration lineage
+    in nist-mri-phantoms is present.'
+  notes: the signal model being fitted (mono-exponential, two-pool, variable flip angle) determines the
+    parameter, and different models give different values from identical data
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: in-vivo quantitative parameter maps with their parent multi-contrast acquisitions;
+    a parameter map is a FITTED FIELD, and the fit's model and its residual are part of the measurement
+- name: multi_contrast_parent_acquisitions
+  kind: measured
+  via: null
+  systematic_bias: the parent acquisitions are what allow the fit to be redone with a different model,
+    which is the only way the model-choice contribution becomes visible
+  band_hz:
+  - null
+  - null
+- name: myelin_sensitive_parameters
+  kind: measured
+  via: null
+  systematic_bias: 'MT saturation and R1 are myelin-SENSITIVE, not myelin-specific: iron contributes substantially
+    and the two are not separable from a single parameter'
+  band_hz:
+  - null
+  - null
+absent:
+- ground_truth_tissue_parameters
+- standardised_protocol
+- phantom_calibration_in_most_studies
+requires:
+- geometry: mr-acquisition-objects
+  for_streams:
+  - quantitative_parameter_maps
+  severity: blocking
+  without_it: A quantitative parameter map is a FITTED field, and its value depends on the sequence, the
+    timing and the field maps that produced it. Without the acquisition object those are not carried,
+    and the number is a fit output rather than a measurement of tissue.
+use:
+- calibrate
+- fit
+- prior
+forbidden:
+- quantitative-relaxometry-datasets/myelin_sensitive_parameters -> quantitative myelin content claims
+- quantitative-relaxometry-datasets/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: quantitative-relaxometry-datasets
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

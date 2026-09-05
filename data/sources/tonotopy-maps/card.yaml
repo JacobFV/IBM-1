@@ -1,0 +1,65 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: tonotopy-maps
+title: Human auditory cortical tonotopy maps
+provider: multiple -- 3T and 7T tonotopic mapping studies
+citation: PROMPT.md §52.9, 'tonotopy'.
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
+    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
+    by leaving this unresolved and counting it.
+binding: unbound
+population:
+  n: null
+frames:
+- MNI152
+- fsaverage
+- subject_native_surface
+- auditory_frequency_axis
+streams:
+- name: best_frequency_maps
+  kind: measured
+  via: null
+  systematic_bias: 'The auditory analogue of retinotopy, and much less well determined: the number and
+    orientation of tonotopic gradients in human auditory cortex is genuinely CONTESTED between laboratories,
+    with different studies reporting different gradient layouts from comparable data. That disagreement
+    is the honest state of the field and must not be resolved by picking one map.'
+  notes: frequency preference measured with tones differs from that measured with natural sounds; the
+    stimulus determines the map
+  band_hz:
+  - null
+  - null
+  temporal_support: not a time series -- this is static anatomy
+  spatial_support: cortical maps of preferred sound frequency in auditory cortex, from fMRI responses
+    to tone or noise stimuli sweeping frequency
+- name: frequency_axis_as_support_coordinate
+  kind: measured
+  via: null
+  systematic_bias: a continuous frequency coordinate over cortex is the auditory counterpart of retinotopic
+    coordinates and is what §56.1's tonotopic overlay needs
+  band_hz:
+  - null
+  - null
+absent:
+- consensus_layout
+- individual_maps_in_most_studies
+- peripheral_frequency_range
+use:
+- calibrate
+- prior
+forbidden:
+- tonotopy-maps/* -> a single consensus tonotopic layout
+- tonotopy-maps/* -> observation-role likelihoods
+- tonotopy-maps/* -> observation-role likelihoods
+split:
+  group_by:
+  - participant
+  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+provenance:
+  imported_from: win-registry
+  card: tonotopy-maps
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

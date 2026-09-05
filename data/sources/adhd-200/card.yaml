@@ -1,0 +1,145 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: adhd-200
+title: The ADHD-200 Sample
+provider: ADHD-200 Consortium via FCP/INDI on NITRC, mirrored on AWS S3
+citation: 'The ADHD-200 Consortium, The ADHD-200 Consortium: a model to advance the translational potential
+  of neuroimaging in clinical neuroscience. Frontiers in Systems Neuroscience 6:62, 2012. doi:10.3389/fnsys.2012.00062.'
+urls:
+- https://fcon_1000.projects.nitrc.org/indi/adhd200/
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: UNRESOLVED AND VERIFIED-ABSENT. The current distribution page is a stub with no licence and the
+    official download PDF states no terms. Circulating CC BY-NC and CC BY-NC-SA claims could not be traced
+    to any provider page and are not recorded here as fact. The download link routes through a NITRC login
+    while the official PDF documents ANONYMOUS S3 access to the raw BIDS tree, so the access route and
+    the terms are not even consistent with each other.
+binding: unbound
+population:
+  n: 776
+  hierarchy:
+  - participant
+  - site
+  notes: 776 resting-state and anatomical datasets across 8 sites in the release that is documented.
+frames:
+- scanner_per_site
+- MNI152
+streams:
+- name: resting_state_bold
+  kind: measured
+  via: null
+  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
+    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY: the vascular stage is a modelled state,
+    not a nuisance to be regressed away'
+  confounds:
+  - head motion and its spin-history effects
+  - respiratory and cardiac aliasing into the TR
+  - arterial CO2 fluctuation driving a global vascular signal independent of neural activity
+  - draining-vein displacement of the signal downstream of the active tissue
+  - susceptibility dropout and geometric distortion
+  - scanner drift and between-session hardware change
+  - site, which is confounded with cohort because each site contributed its own participants
+  - scanner vendor, field strength, coil and sequence differ between sites
+  - head-motion distributions differ systematically between diagnostic groups and inflate every connectivity
+    contrast in the direction of the group that moves more
+  - lifetime medication status is recorded but not randomised, and stimulant exposure changes vascular
+    reactivity independently of any neural effect
+  band_hz:
+  - null
+  - null
+  temporal_support: per-site TRs
+  spatial_support: resting-state and anatomical MRI across 8 sites
+- name: dimensional_symptom_measures
+  kind: measured
+  via: null
+  systematic_bias: Rating-scale scores are informant judgements, several inferential steps from any state.
+    The dimensional measures are more informative than the binary diagnosis and both are reports.
+  band_hz:
+  - null
+  - null
+- name: prediction_competition_holdout
+  kind: measured
+  via: null
+  systematic_bias: The competition's held-out test set with its published chance level is the floor any
+    classification claim on this data must be quoted against. The competition's own result -- a personal-characteristics-only
+    entry beating the imaging entries -- is the control that did fail, and it is the single most useful
+    fact about this dataset.
+  band_hz:
+  - null
+  - null
+- name: bold_rest
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: t1w
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: diagnostic_status
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: age
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: sex
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: iq
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+- name: lifetime_medication_status
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- licence
+- task_fmri
+- dwi
+- eeg
+- meg
+- intervention
+- harmonised_acquisition
+requires:
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- evaluate
+- fit
+- prior
+forbidden:
+- adhd-200/* -> an artifact, until the licence is resolved
+- adhd-200/* -> a diagnostic classification claim not quoted against the personal-characteristics baseline
+split:
+  group_by:
+  - participant
+  - site
+provenance:
+  imported_from: win-registry
+  card: adhd-200
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

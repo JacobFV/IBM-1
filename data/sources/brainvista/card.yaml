@@ -1,0 +1,49 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: brainvista
+title: BrainVista -- naturalistic brain world model
+provider: unresolved -- named in PROMPT.md §53.1
+citation: BrainVista, arXiv:2602.04512. Identified 2026-08-17 from NeuroWorld's bibliography rather than
+  by a name search; the method and what was ruled out are in notes/literature/brainvista.md.
+urls:
+- https://arxiv.org/abs/2602.04512
+access: watch
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- unresolved
+streams:
+- name: architecture_and_results
+  kind: measured
+  via: null
+  systematic_bias: Named in §53.1's highest-priority list. Nothing about its release, weights or evaluation
+    protocol has been verified, so it enters as a watch item with the §53.1 extraction checklist attached
+    rather than as a usable baseline.
+  band_hz:
+  - null
+  - null
+  temporal_support: unresolved
+  spatial_support: unresolved -- release and representation not verified
+absent:
+- everything_unverified
+use:
+- prior
+forbidden:
+- brainvista/* -> anything until the release is verified
+- brainvista/* -> observation-role likelihoods
+- brainvista/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: brainvista
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

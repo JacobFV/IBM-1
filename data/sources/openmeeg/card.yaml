@@ -1,0 +1,78 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: openmeeg
+title: OpenMEEG -- symmetric boundary element forward solver for EEG and MEG
+provider: INRIA
+citation: 'Gramfort et al., OpenMEEG: opensource software for quasistatic bioelectromagnetics. BioMedical
+  Engineering OnLine 2010.'
+urls:
+- https://openmeeg.github.io/
+access: reference
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Unresolved pending inspection of the distributed licence file. Code licence and bundled-data
+    licence frequently differ and must be resolved separately.
+binding: unbound
+population:
+  n: null
+frames:
+- subject_native
+- source_space
+- eeg_cap
+- meg_device
+streams:
+- name: symmetric_bem_formulation
+  kind: measured
+  via: null
+  systematic_bias: The numerical accuracy of a BEM degrades as a source approaches a conductivity boundary,
+    and cortical sources sit millimetres from the CSF boundary. The symmetric formulation is specifically
+    better there, which means the choice of BEM formulation changes the lead field exactly where it matters
+    most. §36 wants physical modules validated against physical truth; the sphere model's closed form
+    is the truth, and formulations are separated by how well they reproduce it near boundaries.
+  notes: 'still a boundary-element method: piecewise-homogeneous isotropic compartments only'
+  band_hz:
+  - null
+  - null
+  temporal_support: static operator
+  spatial_support: nested boundary surfaces (brain, skull, scalp) with a SYMMETRIC BEM formulation that
+    is more accurate than the classical one for sources near a boundary -- which is where cortical sources
+    are
+- name: numerical_accuracy_benchmarks
+  kind: measured
+  via: null
+  systematic_bias: published relative-difference and magnitude-error measures against analytic sphere
+    solutions are a real validation fixture with a tolerance
+  band_hz:
+  - null
+  - null
+absent:
+- anisotropy
+- measured_conductivities
+- inhomogeneous_skull
+requires:
+- geometry: device-geometry
+  severity: blocking
+  without_it: 'This solver''s input IS the geometry: sensor or electrode positions on one side, a head
+    model on the other. Used as an offline oracle it can produce nothing until the device product supplies
+    the first of those, and a solver run against assumed positions validates an internal implementation
+    against an assumption rather than against physics.'
+- geometry: cortical-support-bank
+  severity: blocking
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
+    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
+    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
+    to ship.
+use:
+- calibrate
+- surrogate
+forbidden:
+- openmeeg/* -> runtime dependency in a WIN query
+split:
+  group_by:
+  - participant
+provenance:
+  imported_from: win-registry
+  card: openmeeg
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl

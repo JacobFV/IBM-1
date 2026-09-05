@@ -1,0 +1,92 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: eegpt
+title: EEGPT -- pretrained transformer for universal EEG representation
+provider: Shanghai Jiao Tong University and collaborators
+citation: 'Wang et al., EEGPT: Pretrained Transformer for Universal and Reliable Representation of EEG
+  Signals. NeurIPS 2024.'
+urls:
+- https://github.com/BINE022/EEGPT
+access: priority
+licence:
+  name: unresolved
+  redistribution: unresolved
+  commercial: unresolved
+  notes: Model weights, code and training data commonly carry THREE different licences, and a permissive
+    code licence says nothing about the weights. Unresolved.
+binding: unbound
+population:
+  n: null
+frames:
+- eeg_cap
+streams:
+- name: channel_name_embeddings
+  kind: measured
+  via: null
+  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
+    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
+    starts low and is earned through held-out prediction. §53.2: the test is NOT leaderboard accuracy.
+    It is whether a representation survives new montages, devices, subjects, tasks and physically different
+    observation supports WITHOUT SILENTLY LEARNING CHANNEL IDENTITY AS ANATOMY. Keying a learned embedding
+    on the ELECTRODE NAME is exactly ''learning channel identity as anatomy'' in the most literal available
+    form: ''Cz'' is a string, and the model learns what that string means from data. A montage with an
+    unfamiliar naming convention, or the same name at a different position on a different head, breaks
+    the assumption silently.'
+  notes: the physically correct alternative is to key on electrode POSITION in a head frame and to carry
+    a forward model, which is what obj-eeg-meg-observation and obj-device-geometry are for
+  band_hz:
+  - null
+  - null
+  temporal_support: resampled to a fixed rate
+  spatial_support: EEG patches with LEARNED PER-CHANNEL EMBEDDINGS keyed by electrode NAME, which is how
+    it accommodates different montages -- and a name is not a position
+- name: dual_self_supervised_objective
+  kind: measured
+  via: null
+  band_hz:
+  - null
+  - null
+absent:
+- electrode_positions
+- forward_model
+- uncertainty
+requires:
+- geometry: device-geometry
+  severity: degrading
+  without_it: This model's channel axis is a set of names, not a set of positions -- the channel-identity
+    problem exactly. Its representation can be computed without any geometry, but relating it to a cortical
+    support, or transferring it to a montage it was not trained on, requires the electrode or sensor geometry
+    that the name stands in for.
+  substitute: Channel-name matching, which silently asserts that two electrodes sharing a label sat in
+    the same place on two different heads.
+use:
+- distil
+- prior
+forbidden:
+- eegpt/* -> observation-role likelihoods
+- eegpt/* -> B-WIN's state ontology or support definitions
+split:
+  group_by:
+  - participant
+  - stimulus
+provenance:
+  imported_from: win-registry
+  card: eegpt
+  imported_at: '2026-09-04'
+  index: data/index/win/cards.jsonl
+distillation:
+  reported_accuracy:
+    metric: unresolved
+    value: null
+    on_streams:
+    - channel_name_embeddings
+    - dual_self_supervised_objective
+    source: not yet extracted from the paper
+    verified: false
+  precision_model:
+    form: unresolved
+    ood_inflation_prior: unset -- must be a prior, not a constant
+    error_rank: unresolved -- a teacher's residuals covary across everything it writes
+    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
+      distillation precision
+    correlated_fraction: null
+    effective_constraints: null
