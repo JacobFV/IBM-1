@@ -63,7 +63,8 @@ from ibm.materialize.build import (
 from ibm.materialize.trace import trace as _trace
 from ibm.materialize.cache import Cache
 from ibm.materialize.library import MODELS
-from ibm.materialize.request import BudgetExceeded, SubjectSpec
+from ibm.materialize.request import BudgetExceeded, SubjectSpec, TierCeilingExceeded
+from ibm.materialize import substrate as substrate_mod
 from ibm.materialize.sites import MissingData
 from ibm.topologies.builders import MissingInput
 from ibm.registry import REGISTRY
@@ -200,17 +201,40 @@ class Aparc:
 # ---------------------------------------------------------------------------
 
 
-def head_warp(coreg):
-    """`eeg_cap -> subject_t1` and `meg_head -> subject_t1` from one -trans.fif.
+def head_warp(coreg, template=None):
+    """`eeg_cap`, `meg_head` and the template frames, into and out of `subject_t1`.
 
     the sample dataset's transform is MNE's head->MRI, and MNE's "head" frame is
     defined by the digitised fiducials shared by the eeg cap and the meg helmet;
     one measurement therefore serves both, and saying so explicitly is better
     than handing the eeg coregistration to a meg model and hoping the name check
-    does not notice.  every other pair is refused, which is the behaviour
-    `Coregistration.warp` already has and the reason it has it.
+    does not notice.
+
+    `template` is the second transform this subject actually has: `talairach.xfm`,
+    which `recon-all` wrote and which nothing here had ever read.  it is what makes
+    the structural substrate reachable at all -- a population atlas held in MNI152
+    and a subject in native surface RAS have no meaningful distance between them
+    until one of them is moved, and refusing to move them is why every model that
+    wanted an arterial territory reported a missing atlas that is on disk.  it is
+    an AFFINE, so it matches head size and gross orientation and does not match a
+    sulcus; `ibm.frames` puts the residual at 2 mm, systematic and spatially
+    correlated rather than random, which is what `provenance.rests_on` reports.
+
+    every other pair is refused, which is the behaviour `Coregistration.warp`
+    already has and the reason it has it.
     """
+    inv = None if template is None else np.linalg.inv(np.asarray(template, float))
+
+    def apply(m, xyz):
+        p = np.asarray(xyz, float).reshape(-1, 3)
+        return (np.concatenate([p, np.ones((len(p), 1))], axis=1) @ np.asarray(m, float).T)[:, :3]
+
     def warp(xyz, src, dst):
+        if template is not None:
+            if src == "subject_t1" and dst == "mni152":
+                return apply(template, xyz)
+            if src == "mni152" and dst == "subject_t1":
+                return apply(inv, xyz)
         if src == "meg_head":
             src = coreg.src_frame
         if dst == "meg_head":
@@ -253,6 +277,13 @@ def base_inputs(request) -> dict[str, dict]:
         # from "nobody said which system" into "the atlas is absent", which is
         # the true one.
         "neuromodulatory_projection": {"transmitter": "acetylcholine"},
+        # the vascular tree the substrate supplies is a whole-brain one and the
+        # tissue octree is millimetric, so the builder's 50 um default reach --
+        # written for a bed materialized at capillary density -- connects nothing.
+        # the builder's own docstring says this is a request decision and not a
+        # builder one, so the request makes it: reach to the coarse-grained
+        # capillary layer's own spacing, which is what one node stands for.
+        "metabolic_exchange": {"reach_mm": 6.0},
     }
     dev = next((d for d in request.devices if d.support == "sensor_array"), None)
     if dev is not None:
@@ -299,7 +330,7 @@ def lead_field_for(model_id: str, sites, paths, montage_ids, kind: str):
 class Row:
     __slots__ = ("id", "status", "reason", "sites", "variables", "coefficients",
                  "bytes", "edges", "factor", "strict", "gaps", "faults", "seconds",
-                 "supports", "split", "out_of_view")
+                 "supports", "split", "out_of_view", "tiers")
 
     def __init__(self, mid: str) -> None:
         self.id = mid
@@ -315,6 +346,7 @@ class Row:
         self.gaps: list[str] = []
         self.faults: list[str] = []
         self.out_of_view: list[str] = []
+        self.tiers: list = []
         self.seconds = 0.0
         self.supports: dict[str, int] = {}
         self.split = 0
@@ -487,7 +519,7 @@ def attempt(request, **kw):
         raise BudgetExceeded(last)
 
 
-def run_model(mid: str, *, montages, warp, anchors, anatomy, paths, cache) -> Row:
+def run_model(mid: str, *, montages, warp, anchors, anatomy, paths, cache, substrate) -> Row:
     row = Row(mid)
     model = MODELS[mid]
     t0 = time.time()
@@ -514,7 +546,7 @@ def run_model(mid: str, *, montages, warp, anchors, anatomy, paths, cache) -> Ro
     request = replace(model.request, subject=subject, devices=devices)
 
     common = dict(geometry=geom, warp=warp, anchors=anchors, anatomy=anatomy,
-                  cache=cache, strict=False)
+                  cache=cache, substrate=substrate, strict=False)
     over: tuple[str, ...] = ()
     chosen = request
     try:
@@ -530,6 +562,14 @@ def run_model(mid: str, *, montages, warp, anchors, anatomy, paths, cache) -> Ro
                 m = build(chosen, topology_inputs=ti, **common)
     except BudgetExceeded as exc:
         row.reason = f"budget: {one_line(str(exc))}"
+        row.faults.append(str(exc))
+        row.seconds = time.time() - t0
+        return row
+    except TierCeilingExceeded as exc:
+        # the request forbade the rung the build fell through to.  that is the one
+        # thing `strict` refuses about a fall-through, and it is a refusal rather
+        # than a gap: nothing external would fix it, the caller said no.
+        row.reason = f"tier ceiling: {one_line(str(exc))}"
         row.faults.append(str(exc))
         row.seconds = time.time() - t0
         return row
@@ -556,6 +596,7 @@ def run_model(mid: str, *, montages, warp, anchors, anatomy, paths, cache) -> Ro
     row.edges = {n: (0 if m.edges.get(n) is None else m.edges[n].n_edges)
                  for n in sorted(set(m.trace.topologies))}
     row.split = len(m.layout.split)
+    row.tiers = list(m.provenance.tiers)
     out_of_view = excluded_supports(chosen)
     for p in m.provenance.missing:
         if not is_gap(p):
@@ -577,7 +618,7 @@ def run_model(mid: str, *, montages, warp, anchors, anatomy, paths, cache) -> Ro
         # the only honest way to fill the strict column is to run it.
         try:
             build(chosen, topology_inputs=ti, geometry=geom, warp=warp, anchors=anchors,
-                  anatomy=anatomy, cache=cache, strict=True)
+                  anatomy=anatomy, cache=cache, substrate=substrate, strict=True)
             row.strict = True
         except MaterializationIncomplete as exc:
             # the interesting half is the first problem, not the summary line:
@@ -649,15 +690,30 @@ def main(argv: list[str]) -> int:
     print()
     print(coreg.describe())
 
-    head("2. building")
     cache = Cache()
-    warp = head_warp(coreg)
+    head("2. the structural substrate every model shares")
+    try:
+        substrate = substrate_mod.load(cache)
+        print(substrate.describe())
+    except Exception as exc:                                        # noqa: BLE001
+        substrate = False
+        print(f"  UNAVAILABLE: {type(exc).__name__}: {exc}")
+        print("  every fall-through below is therefore off and the table is the old one.")
+    to_template = geo.template_transform(paths.subject_dir)
+    print()
+    print("  subject_t1 -> mni152 from this subject's own talairach.xfm, composed with the")
+    print("  published MNI305 -> MNI152 affine.  it is a 12-parameter fit: it matches head size")
+    print("  and gross orientation and does not match a sulcus, and ibm.frames puts the residual")
+    print("  at 2 mm, systematic rather than random.")
+
+    head("3. building")
+    warp = head_warp(coreg, template=to_template)
     anchors = {"cortex": white}
     rows: list[Row] = []
     for mid in ids:
         try:
             r = run_model(mid, montages=montages, warp=warp, anchors=anchors,
-                          anatomy=aparc, paths=paths, cache=cache)
+                          anatomy=aparc, paths=paths, cache=cache, substrate=substrate)
         except Exception:                                           # noqa: BLE001
             traceback.print_exc()
             r = Row(mid)
@@ -666,13 +722,15 @@ def main(argv: list[str]) -> int:
         print(f"  {r.id:26s} {r.status:13s} {r.sites:>8,} sites  {r.variables:>10,} vars  "
               f"{r.seconds:6.1f}s  {r.reason[:60]}")
 
-    head("3. the table")
+    head("4. the table")
     hdr = ("model", "status", "r", "sites", "state vars", "spectral coef", "MiB",
-           "edges", "strict", "why")
+           "edges", "strict", "on a population", "why")
     def fmt(r: Row) -> tuple[str, ...]:
+        pop = [t for t in r.tiers if not t.subject_specific]
         return (r.id, r.status, r.factor, f"{r.sites:,}", f"{r.variables:,}",
                 f"{r.coefficients:,}", f"{r.bytes / 2**20:,.1f}",
                 f"{sum(r.edges.values()):,}", "yes" if r.strict else "-",
+                (", ".join(f"{t.what}@{t.tier}" for t in pop) or "-")[:56],
                 r.reason[:74] or "-")
     body = [fmt(r) for r in rows]
     w = [max(len(h), *(len(b[i]) for b in body)) if body else len(h)
@@ -682,7 +740,7 @@ def main(argv: list[str]) -> int:
     for b in body:
         print("  " + "  ".join(c.ljust(x) for c, x in zip(b, w)))
 
-    head("4. edges per topology, and what each row is resting on")
+    head("5. edges per topology, and what each row is resting on")
     for r in rows:
         print()
         print(f"  {r.id}  [{r.status}]  {r.seconds:.1f}s"
@@ -699,6 +757,8 @@ def main(argv: list[str]) -> int:
                 print("    no edges   " + ", ".join(empty))
         for f in r.faults:
             print("    FAULT      " + one_line(f))
+        for t in r.tiers:
+            print(f"    {'tier' if t.subject_specific else 'TIER'}       {t}")
         for g in r.gaps:
             print("    gap        " + one_line(g))
         for g in r.out_of_view[:4]:
@@ -706,7 +766,7 @@ def main(argv: list[str]) -> int:
         if len(r.out_of_view) > 4:
             print(f"    out-of-view (+{len(r.out_of_view) - 4} more topologies R excludes)")
 
-    head("5. counts")
+    head("6. counts")
     built = [r for r in rows if r.status == "built"]
     missing = [r for r in rows if r.status == "missing-data"]
     refused = [r for r in rows if r.status == "refused"]
@@ -728,7 +788,22 @@ def main(argv: list[str]) -> int:
     print("  8x coarsening, a topology with no builder.  gaps that are only a topology R put")
     print("  outside the view are counted as neither; they are listed per model as out-of-view.")
 
-    head("6. what this subject is missing, aggregated")
+    head("7. what the library is standing on, aggregated")
+    fell: dict[str, list[str]] = {}
+    for r in rows:
+        for t in r.tiers:
+            fell.setdefault(str(t), []).append(r.id)
+    if not fell:
+        print("  nothing fell through: every model used this subject's own structure.")
+    for why, ms in sorted(fell.items(), key=lambda kv: -len(kv[1])):
+        print(f"  {len(ms):2d} model(s)  {why}")
+    n_pop = sum(1 for r in rows if any(not t.subject_specific for t in r.tiers))
+    print()
+    print(f"  {n_pop} of {len(rows)} models rest on at least one piece of structure that is a")
+    print("  population's rather than this subject's.  every one of them says so in its own")
+    print("  provenance, and a model that must not may cap itself with max_tier=SUBJECT_ONLY.")
+
+    head("8. what this subject is missing, aggregated")
     counts: dict[str, list[str]] = {}
     for r in rows:
         for g in r.gaps:

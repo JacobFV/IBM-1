@@ -458,6 +458,57 @@ OLFACTORY_STIMULUS = I(Intervention(
     frame="body",
 ))
 
+NATURALISTIC_STREAM = I(Intervention(
+    id="naturalistic_stream",
+    doc="""a continuous naturalistic stimulus: an audiobook, a film, a
+    conversation.  the display and speaker components are clamped to one long
+    trajectory with no trial structure at all.
+
+    it looks like `visual_stimulus` and `auditory_stimulus` with a longer waveform
+    and it is not, and the difference is worth a declaration because it changes
+    what the data can constrain rather than only how much of it there is.
+
+    *there is no baseline and no repeat.*  a trial-structured clamp is a family of
+    short waveforms drawn from a design, so the analysis that follows it averages
+    over repetitions and what is constrained is a *mean evoked response* -- one
+    number per latency, per condition.  a continuous clamp has one realization of
+    one waveform, no repeats to average, and nothing to subtract.  what can be
+    constrained from it is therefore not a mean response but the *map*: the
+    transfer from a stimulus that is known at every instant to a state that is
+    measured at every instant.  that is a far higher-bandwidth constraint on
+    dynamics than a spectrum or an evoked average, and it is the whole reason this
+    clamp is worth separating.
+
+    *the stimulus is not stationary and that is the point.*  a resting spectrum
+    pins a component's marginal second moment.  two processes with completely
+    different transfer functions produce the same 1/f slope and the same alpha
+    peak, so a stationary fit cannot separate them.  a naturalistic stream
+    traverses a wide range of spectra within one recording, and a model that gets
+    the transfer function wrong is wrong differently in each of them, which is
+    exactly the leverage the stationary case lacks.
+
+    *both modalities at once, and jointly.*  the components are clamped together
+    because in a film they are: the sound and the picture are the same event, they
+    are correlated at every timescale from a syllable to a scene, and a
+    materialization that clamped them independently would be free to attribute a
+    response to either.  declaring one intervention over both records that the
+    attribution problem is real rather than solving it by omission.
+
+    two limitations, recorded rather than assumed away.  the participant's gaze is
+    a free variable -- a film clamps the display and not the retina, and without an
+    eye trace the mapping from screen position to retinal position is unknown and
+    moving.  and continuous naturalistic material is *autocorrelated*, heavily, so
+    a train/test split that cuts within a stream leaks: adjacent seconds of speech
+    share a speaker, a topic and a spectral envelope, and a held-out segment taken
+    from the middle of a training recording is not held out in any useful sense.
+    splits over this clamp must be by whole stream and by participant.""",
+    constrains=sel("device.display_luminance", "device.speaker_pressure",
+                   region=DISPLAY, band=Band(0.0, 20000.0)),
+    modality="naturalistic",
+    waveform="one continuous audiovisual trajectory, minutes to hours, unrepeated",
+    frame="display",
+))
+
 SENSORY_DEPRIVATION = I(Intervention(
     id="sensory_deprivation",
     doc="""darkness, earplugs, an eyes-closed resting state: the stimulus
@@ -593,7 +644,8 @@ __all__ = [
     "TMS", "TDCS", "TACS", "TRNS", "TFUS",
     "DBS", "INVASIVE_ELECTRICAL", "OPTOGENETIC",
     "VISUAL_STIMULUS", "AUDITORY_STIMULUS", "TACTILE_STIMULUS",
-    "VESTIBULAR_STIMULUS", "OLFACTORY_STIMULUS", "SENSORY_DEPRIVATION",
+    "VESTIBULAR_STIMULUS", "OLFACTORY_STIMULUS", "NATURALISTIC_STREAM",
+    "SENSORY_DEPRIVATION",
     "PHARMACOLOGICAL", "ANAESTHETIC", "THERMAL_STIMULUS",
 ]
 

@@ -142,6 +142,16 @@ except ImportError:  # pragma: no cover - written concurrently
     intervention = None  # type: ignore[assignment]
 
 try:
+    # driving early sensory state from a continuous naturalistic stimulus.
+    # imported after `transduction` and `intervention` because everything it
+    # declares is a second f for the former and a chain through the latter; it
+    # introduces no process and no component of its own, which is the property
+    # that keeps a stimulus encoder out of the state graph.
+    from ibm.processes import forcing  # noqa: F401
+except ImportError:  # pragma: no cover - written concurrently
+    forcing = None  # type: ignore[assignment]
+
+try:
     # learned modules that implement processes declared elsewhere.  imported
     # last because a learned f is a different p(theta) over an existing
     # declaration, so it has nothing to register until the declaration exists.
@@ -168,5 +178,6 @@ __all__ = [
     "device",
     "observation",
     "intervention",
+    "forcing",
     "nn",
 ]

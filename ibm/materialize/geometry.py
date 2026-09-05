@@ -349,7 +349,97 @@ def from_freesurfer(subject_dir: str | Path, *, surface: str = "white",
                 f"{int((occ > 0).sum()):,} voxels at "
                 f"{aseg.zooms[0]:g} mm; a hard label map, so occupancy is binary and a leaf "
                 f"straddling the pial surface is rounded rather than fractional"))
+
+    # the same `aseg` delimits two more declared supports, and reporting them as
+    # absent while the file sits open was putting a real limitation and an
+    # unopened label in the same column.  `ASEG_CSF` has been beside
+    # `ASEG_PARENCHYMA` since this module was written and nothing read it.
+    csf = _label_occupancy(aseg.data, ASEG_CSF)
+    out["csf_space"] = VolumeGeometry(
+        "csf_space", frame, _bounds(csf, aseg.vox2ras_tkr), csf, aseg.vox2ras_tkr,
+        source=(f"{root.name}: aseg.mgz, {len(ASEG_CSF)} csf labels, "
+                f"{int((csf > 0).sum()):,} voxels.  this is the VENTRICULAR system and what "
+                f"FreeSurfer labels of the cisterns; the subarachnoid space over the convexity "
+                f"is not labelled by recon-all and is therefore not in here, which matters for "
+                f"a glymphatic model and not for a ventricular one"))
+    # the interstitial space shares the parenchyma's extent and is not a copy of
+    # it: the extracellular space is interdigitated with the cells throughout, so
+    # at any resolution a materialization can afford the two occupy the same
+    # millimetres.  what distinguishes the support is its volume fraction and
+    # tortuosity, which are field state rather than extent.
+    out["interstitial"] = VolumeGeometry(
+        "interstitial", frame, _bounds(occ, aseg.vox2ras_tkr), occ, aseg.vox2ras_tkr,
+        source=(f"{root.name}: aseg.mgz parenchyma -- the interstitial space is interdigitated "
+                f"with the cells and has no boundary of its own; its 20% volume fraction and "
+                f"1.6 tortuosity are field properties, not extent"))
     return out
+
+
+def read_talairach_xfm(path: str | Path) -> np.ndarray:
+    """the linear scanner-RAS -> MNI305 transform `recon-all` writes.
+
+    read rather than recomputed, and read from the subject's own directory,
+    because it is the only transform into a template frame that this subject
+    actually has.  a materialization that needs a population atlas -- an arterial
+    territory, a group connectome's parcel centroids -- needs exactly this and
+    nothing else stands in for it.
+
+    it is an AFFINE, twelve parameters, and that is the honest limit of what it
+    can do: it matches head size and gross orientation and it does not match a
+    sulcus.  `ibm.frames` carries the residual, and every position warped through
+    it inherits a systematic, spatially correlated displacement rather than a
+    random one.
+    """
+    p = Path(path)
+    if not p.is_file():
+        raise MissingData("read_talairach_xfm", str(p),
+                          "the linear talairach transform recon-all writes",
+                          "subjects/<id>/mri/transforms/talairach.xfm")
+    text = p.read_text()
+    i = text.find("Linear_Transform")
+    if i < 0:
+        raise ValueError(f"{p}: no Linear_Transform block")
+    rows = []
+    for line in text[i:].splitlines()[1:]:
+        bits = line.replace(";", "").split()
+        if len(bits) != 4:
+            break
+        rows.append([float(x) for x in bits])
+        if len(rows) == 3:
+            break
+    if len(rows) != 3:
+        raise ValueError(f"{p}: Linear_Transform has {len(rows)} rows, not 3")
+    return np.vstack([np.array(rows, float), [0.0, 0.0, 0.0, 1.0]])
+
+
+def template_transform(subject_dir: str | Path, *, dst: str = "mni152") -> np.ndarray:
+    """surface RAS -> a template frame, as one 4x4, composed rather than assumed.
+
+    three transforms in a row, and each one is a place this has historically gone
+    wrong silently:
+
+        tkrRAS -> scanner RAS      inv(Torig) then Norig, from the T1's own header.
+                                   they differ by `c_ras`, a few centimetres, and
+                                   using the wrong one shifts a source grid off the
+                                   cortex while every number stays plausible.
+        scanner RAS -> MNI305      `talairach.xfm`, this subject's own affine.
+        MNI305 -> MNI152           a published constant.  FreeSurfer targets MNI305
+                                   and every volumetric atlas in this corpus is
+                                   distributed in MNI152; the two differ by about a
+                                   millimetre, and NOT applying it costs the same
+                                   millimetre silently.
+    """
+    from ibm.materialize.substrate import MNI305_TO_MNI152
+
+    root = Path(subject_dir)
+    t1 = read_mgh(root / "mri" / "T1.mgz")
+    xfm = read_talairach_xfm(root / "mri" / "transforms" / "talairach.xfm")
+    m = xfm @ np.asarray(t1.vox2ras, float) @ np.linalg.inv(np.asarray(t1.vox2ras_tkr, float))
+    if dst == "mni305":
+        return m
+    if dst != "mni152":
+        raise ValueError(f"template_transform knows mni305 and mni152, not {dst!r}")
+    return MNI305_TO_MNI152 @ m
 
 
 def _depth_geometry(levels: int, frame: str, note: str) -> DiscreteGeometry:

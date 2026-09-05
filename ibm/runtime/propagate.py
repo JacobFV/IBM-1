@@ -95,14 +95,12 @@ magnitude on a graph binned this finely.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass, field as _field, replace
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Mapping, Sequence
 
 import numpy as np
 
-from ibm.fields.uncertainty.spectral import SpectralGaussian, TemporalBasis
-from ibm.registry import Form
+from ibm.fields.uncertainty.spectral import TemporalBasis
 
 _EPS = 1e-30
 
@@ -174,6 +172,16 @@ class TargetReport:
     from_input: dict[str, float] = _field(default_factory=dict)
     #: fraction contributed by the first-order theta term.
     from_theta: float = 0.0
+    #: the largest `sigma_p |dH/dtheta_p| / |H|` any parameter reached inside the
+    #: retained band.  above 1 the first-order term is not a small correction to
+    #: |H| but larger than it, and what it reports is not a width -- it is the
+    #: derivative saying it has been extrapolated past where it means anything.
+    #: a conduction delay is the usual offender: `d/dv exp(-i omega d/v)` grows
+    #: like `omega tau / v`, so at 100 Hz and 50 ms a 50% velocity uncertainty
+    #: gives a ratio of 15 -- while what really happens there is that the phase
+    #: decoheres and the power redistributes, which a derivative reports as
+    #: growth because a derivative cannot see a saturation.
+    theta_linearity: float = 0.0
     #: fraction contributed by coherent cross terms between couplings sharing an
     #: input.  a large negative number means two pathways partially cancel and an
     #: incoherent sum would have overstated the width.
@@ -194,7 +202,9 @@ class TargetReport:
         return (f"{self.component:34s} prior {self.prior_power:11.4g} -> posterior "
                 f"{self.posterior_power:11.4g}  x{self.ratio:11.4g}   "
                 f"[{src}{'' if not self.from_theta else f', theta {self.from_theta:.0%}'}"
-                f"{'' if abs(self.from_cross) < 5e-3 else f', cross {self.from_cross:+.0%}'}]")
+                f"{'' if abs(self.from_cross) < 5e-3 else f', cross {self.from_cross:+.0%}'}]"
+                + ("" if self.theta_linearity <= 1.0 else
+                   f"  sigma dH/dtheta is {self.theta_linearity:.3g} x H: FIRST ORDER INVALID"))
 
 
 @dataclass
@@ -468,8 +478,8 @@ def _dH(c: Any, name: str, basis: TemporalBasis, n_in: int, n_out: int,
 
 def _theta_injection(state: Any, couplings: Sequence[Any], layout: Any,
                      basis: TemporalBasis, targets: Sequence[str],
-                     settings: Propagate, report: PropagationReport
-                     ) -> dict[str, np.ndarray]:
+                     settings: Propagate, report: PropagationReport,
+                     linearity: dict[str, float]) -> dict[str, np.ndarray]:
     """sum_p sigma_p^2 |d(drive)/dtheta_p|^2, before the inverse operator.
 
     grouped by (target, parameter name) so that one velocity behind twelve
@@ -512,6 +522,10 @@ def _theta_injection(state: Any, couplings: Sequence[Any], layout: Any,
                 d = _dH(c, name, basis, n_in, n_out, settings.theta_step)
                 if d is None:
                     continue
+                H0 = c._H(basis, n_in, n_out)
+                if H0 is not None:
+                    linearity[tgt] = max(linearity.get(tgt, 0.0), float(np.max(
+                        sd * np.abs(d) / np.maximum(np.abs(np.asarray(H0)), _EPS))))
                 pre = d.ndim == 2 and d.shape[0] == n_in
                 mix = c.mix if c.mix is not None else _identity_mix(n_out, n_in)
                 chans.append(_Channel(c.process, cid, mix, d, pre, w).prepare())
@@ -583,9 +597,13 @@ def propagate_linear(state: Any, couplings: Sequence[Any], basis: TemporalBasis,
 
     A = _self_operator(layout, couplings, basis)
     w = 1j * basis.omega
-    inv2 = {t: np.abs(np.where(np.abs(w - A[t]) <= 1e-12, np.inf, w - A[t])) ** -2.0
-            for t in targets}
-    inv_sq = {t: np.where(np.abs(w - A[t]) <= 1e-12, 0.0, 1.0 / (w - A[t])) ** 2
+    # a coefficient with no self-coupling at zero frequency is a solvability
+    # condition rather than a solve, and `solve_window` leaves the mean there at
+    # its prior.  the width has to be left there too: zeroing it would report
+    # certainty about the one coefficient the solver declined to determine.
+    singular = {t: np.abs(w - A[t]) <= 1e-12 for t in targets}
+    inv2 = {t: np.abs(np.where(singular[t], np.inf, w - A[t])) ** -2.0 for t in targets}
+    inv_sq = {t: np.where(singular[t], 0.0, 1.0 / np.where(singular[t], 1.0, w - A[t])) ** 2
               for t in targets}
 
     chans = _channels(couplings, layout, basis, targets)
@@ -609,9 +627,23 @@ def propagate_linear(state: Any, couplings: Sequence[Any], basis: TemporalBasis,
             for b in sorted(set(seen))[i + 1:]:
                 report.correlated_inputs.append((t, a, b))
 
-    inj = (_theta_injection(state, couplings, layout, basis, targets, settings, report)
+    linearity: dict[str, float] = {}
+    inj = (_theta_injection(state, couplings, layout, basis, targets, settings, report,
+                            linearity)
            if settings.parameters else {t: np.zeros((layout[t].n_sites, basis.k))
                                         for t in targets})
+    bad = sorted(t for t, v in linearity.items() if v > 1.0)
+    if bad:
+        report.note(
+            f"{len(bad)} component(s) carry a parameter whose sigma |dH/dtheta| exceeds |H| "
+            "somewhere in the retained band, so the first-order theta term there is an "
+            "extrapolation and not a correction.  the usual cause is a conduction delay: "
+            "`d/dv exp(-i omega d/v)` grows without bound in frequency, and what actually "
+            "happens at that point is that the phase decoheres and the coherent sum over "
+            "sites collapses towards the incoherent one -- a redistribution of power, which "
+            "a derivative reports as growth.  read the psd of "
+            f"{', '.join(bad)} as an upper bound with p(theta) on, and the same run with "
+            "`Propagate(parameters=False)` as the lower bound")
 
     prior = {t: np.asarray(state[t].total_psd()).copy() for t in targets}
     psd = {t: _pad(prior[t], basis.k).copy() for t in targets}
@@ -628,6 +660,7 @@ def propagate_linear(state: Any, couplings: Sequence[Any], basis: TemporalBasis,
 
     parts: dict[str, dict[str, float]] = {t: {} for t in targets}
     cross_share = {t: 0.0 for t in targets}
+    clipped: dict[str, int] = {}
     total0 = sum(float(v.sum()) for v in psd.values())
 
     for it in range(1, settings.max_iter + 1):
@@ -663,8 +696,20 @@ def propagate_linear(state: Any, couplings: Sequence[Any], basis: TemporalBasis,
             p = p + inj[t]
             if float(inj[t].sum()) > 0.0:
                 per["p(theta)"] = float(inj[t].sum())
+            # `|sum_c M_c|^2 P` is non-negative by construction, so a negative
+            # entry here means the decomposition into diagonal terms plus pairwise
+            # cross terms is INCOMPLETE -- a pair the budget dropped, or a channel
+            # whose transfer varies across the site axis in a way the pairwise
+            # form does not capture.  clipping is the only safe repair, and it is
+            # counted rather than done quietly, because the count is the only
+            # evidence that the coherent bookkeeping missed something.
+            neg = int(np.count_nonzero(p < 0.0))
+            if neg:
+                clipped[t] = max(clipped.get(t, 0), neg)
             p = np.maximum(p, 0.0) * inv2[t]
             r = r * inv_sq[t]
+            p = np.where(singular[t], _pad(prior[t], basis.k), p)
+            r = np.where(singular[t], 0.0, r)
             if settings.floor_fraction > 0.0:
                 p = np.maximum(p, settings.floor_fraction * _pad(prior[t], basis.k))
             new_p[t] = (1.0 - settings.damping) * psd[t] + settings.damping * p
@@ -690,7 +735,18 @@ def propagate_linear(state: Any, couplings: Sequence[Any], basis: TemporalBasis,
         report.note(f"the second-moment sweep did not converge in {settings.max_iter} "
                     "sweeps; the widths below are the last iterate")
 
+    for t, n_neg in sorted(clipped.items()):
+        report.note(f"{t}: {n_neg} of {layout[t].n_sites * basis.k} (site, coefficient) "
+                    "cells came out of the coherent sum NEGATIVE and were clipped to zero.  "
+                    "a squared magnitude cannot be negative, so those cells are missing a "
+                    "cross term -- the width there is understated, not overstated")
     if not report.diverged:
+        report.note("a target's low-rank `factor` term is not carried forward: a driven "
+                    "component's width is replaced by the push-forward, and pushing a rank-q "
+                    "non-stationarity through a site-mixing operator is a dense (sites x q) "
+                    "product per frequency that nothing here materializes.  an INPUT's factor "
+                    "is included, through `total_psd`, so no power is dropped on the way in -- "
+                    "what is lost is the rank structure on the way out")
         for t in targets:
             block = layout[t]
             k = block.k or basis.k
@@ -707,6 +763,7 @@ def propagate_linear(state: Any, couplings: Sequence[Any], basis: TemporalBasis,
                 from_cross=cross_share[t] / tot,
                 prior_power=float(_pad(prior[t], basis.k).mean(0).sum()),
                 posterior_power=float(psd[t].mean(0).sum()),
+                theta_linearity=linearity.get(t, 0.0),
                 channels=len(chans[t]), cross_pairs=len(cross[t]))
             report.targets[t] = tr
             state.note(t, f"psd pushed through {len(chans[t])} linear channels "

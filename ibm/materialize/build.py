@@ -45,10 +45,12 @@ import numpy as np
 from ibm import frames as _frames
 from ibm.materialize.model import Cost, MaterializedModel, RegionWeights, account
 from ibm.materialize.provenance import (
-    ConversionRecord, FrameRecord, GeometryRecord, Provenance, Selection, ValidityBreach,
-    fates,
+    ConversionRecord, FrameRecord, GeometryRecord, Provenance, Selection, TierRecord,
+    ValidityBreach, fates,
 )
-from ibm.materialize.request import Budget, BudgetExceeded, MaterializationRequest
+from ibm.materialize.request import (
+    Budget, BudgetExceeded, MaterializationRequest, TierCeilingExceeded,
+)
 from ibm.materialize.sites import (
     GeometrySet, MissingData, RegionResolver, SiteLayout, build_sites,
 )
@@ -76,6 +78,195 @@ class MaterializationIncomplete(RuntimeError):
         body = "\n".join(f"  {i + 1}. {p}" for i, p in enumerate(problems))
         super().__init__(f"cannot materialize {request!r}; {len(problems)} problem(s):\n{body}")
         self.problems = tuple(problems)
+
+
+# ---------------------------------------------------------------------------
+# falling through to a prior tier
+# ---------------------------------------------------------------------------
+
+
+class _Tiers:
+    """the shared structural substrate, the request's ceiling on it, and the ledger.
+
+    every fall-through in this module goes through one object, and that is the
+    whole design.  before it, a builder that could not find a subject's tractogram
+    raised, `build` caught it, appended a line of prose to `problems` and moved on
+    -- so thirty-four of the library's forty models came back as "missing data"
+    when what they were missing was a rung.  §1 is explicit that this is backwards:
+    "evidence constrains what it constrains; elsewhere the structure remains at its
+    prior ... that is the machinery working, not failing."
+
+    three rules, and each of them is the answer to a way of getting this wrong.
+
+    **subject data always wins, and a fall-through is only ever reached from an
+    exception.**  nothing here is consulted while a subject's own file is
+    readable; the substrate is asked only after `MissingData` or `MissingInput` has
+    already been raised, which means the ordering cannot drift out of agreement
+    with what is actually on disk.  a tier is not a preference, it is a report of
+    what happened.
+
+    **every fall-through is recorded, and the record travels.**  `record` returns
+    the answer and appends the rung, and there is no way to get the first without
+    the second -- the same contract `tract_prior.edge_support` enforces by
+    returning a tuple, for the same reason: the array is what gets passed around
+    and the provenance is what gets dropped.
+
+    **a ceiling refuses, loudly.**  `strict=True` does NOT refuse a fall-through:
+    a materialization resting on a population prior is legitimate and §7 asks only
+    that it be reportable as one.  what a ceiling refuses is a fall-through the
+    caller has forbidden by name, because there are models whose entire claim is
+    about one individual -- a virtual lesion resects a fascicle, and resecting a
+    fascicle from a group average produces a number that no inspection of it would
+    reveal as meaningless.
+    """
+
+    def __init__(self, request: MaterializationRequest, substrate: Any, cache: Any) -> None:
+        self.request = request
+        self.cache = cache
+        self._substrate = substrate
+        self._loaded = substrate is not None and substrate is not False
+        self.records: list[TierRecord] = []
+        self.refusals: list[str] = []
+
+    @property
+    def substrate(self):
+        """the substrate, loaded on first use and never if nothing falls through.
+
+        lazy because the common case for a well-equipped subject is that no
+        builder ever asks: assembling a minimum spanning forest over an arterial
+        atlas to serve a model that has its own angiogram is pure cost.  and
+        `cache`-backed, because the sweep over the library asks forty times.
+        """
+        if self._substrate is False:
+            return None
+        if not self._loaded:
+            from ibm.materialize import substrate as _sub
+            try:
+                self._substrate = _sub.load(self.cache)
+            except Exception as exc:                                # noqa: BLE001
+                # a corpus with none of the atlas cards acquired has no substrate,
+                # and that is a gap like any other rather than a broken build: the
+                # original MissingData is what gets reported, because it names the
+                # subject file the caller could actually supply.
+                self.refusals.append(f"no structural substrate is available: "
+                                     f"{type(exc).__name__}: {exc}")
+                self._substrate = False
+            self._loaded = True
+        return self._substrate or None
+
+    def admits(self, what: str, rank: int) -> bool:
+        return self.request.admits_tier(what, rank)
+
+    def refuse(self, what: str, rec: TierRecord, strict: bool) -> str:
+        ceiling = self.request.tier_ceiling(what)
+        msg = (f"{what!r} fell through to tier {rec.tier!r} (rung {rec.rank + 1} of "
+               f"{rec.n_rungs}) and this request caps it at rung {int(ceiling) + 1}: "
+               f"{rec.cost}.  the structure exists and is legitimate; this model has "
+               f"declared that it may not stand on it, so supply the subject's own or "
+               f"raise the ceiling")
+        if strict:
+            raise TierCeilingExceeded(msg)
+        self.refusals.append(msg)
+        return msg
+
+    def record(self, rec: TierRecord | None) -> None:
+        if rec is not None and not any(r.what == rec.what for r in self.records):
+            self.records.append(rec)
+
+    # -- the three questions ---------------------------------------------
+
+    def geometry_for(self, support: str, strict: bool):
+        """a template extent for a support this subject has no segmentation of."""
+        sub = self.substrate
+        if sub is None:
+            return None
+        got = sub.geometry_for(support)
+        if got is None:
+            return None
+        geom, rec = got
+        if rec is None:
+            return None
+        if not self.admits(support, rec.rank):
+            self.refuse(support, rec, strict)
+            return None
+        self.record(rec)
+        return geom
+
+    def edges_for(self, topology: str, sites: Sites, strict: bool, **kw):
+        """a topology's edge set, built from the substrate rather than the subject."""
+        sub = self.substrate
+        if sub is None:
+            return None
+        got = sub.edges_for(topology, sites, seed=self.request.seed, **kw)
+        if got is None:
+            return None
+        edges, rec = got
+        if rec is None:
+            return None
+        if not self.admits(topology, rec.rank):
+            self.refuse(topology, rec, strict)
+            return None
+        self.record(rec)
+        return edges
+
+    def anatomy(self, inner: Callable[[str, str, Any, str], Any] | None, warp, strict: bool):
+        """the caller's atlas lookup, with the substrate behind it.
+
+        wrapped rather than replaced, and wrapped in that order, because the
+        subject's own `aparc+aseg` is a better answer than a template's for the
+        one system both of them have -- and because the caller's refusal message
+        names the segmentation that would fix it, which is worth keeping when the
+        substrate cannot help either.
+
+        the warp is the part that must not be skipped.  the substrate speaks one
+        template frame and the request speaks the subject's; looking subject
+        millimetres up in a template volume returns a label for a different piece
+        of cortex and looks exactly like a working atlas, which is the silent
+        misregistration `ibm.frames` exists to prevent.  so a missing warp means
+        the substrate declines, rather than answering in the wrong frame.
+        """
+        def lookup(system: str, label: str, xyz: Any, frame: str):
+            first: Exception | None = None
+            if inner is not None:
+                try:
+                    return inner(system, label, xyz, frame)
+                except (MissingData, MissingInput) as exc:
+                    first = exc
+            sub = self.substrate
+            if sub is None or system not in sub.partitions:
+                raise first or MissingData(
+                    "region_weights", f"anatomy[{system!r}][{label!r}]",
+                    f"soft membership in the {label!r} partition of {system!r}",
+                    "no subject atlas was supplied and the structural substrate holds no "
+                    f"{system!r}; see ibm.materialize.substrate.REFUSALS for why")
+            p = np.asarray(xyz, float).reshape(-1, 3)
+            if frame != sub.frame:
+                if warp is None:
+                    raise first or MissingData(
+                        "region_weights", f"warp({frame!r} -> {sub.frame!r})",
+                        f"the structural substrate holds {system!r} in {sub.frame!r} and this "
+                        f"materialization is in {frame!r}",
+                        "pass warp=... to build(); a template atlas read at subject "
+                        "coordinates returns a label for different tissue and looks like a "
+                        "working atlas")
+                p = np.asarray(warp(p, frame, sub.frame), float).reshape(-1, 3)
+            got = sub.weights_for(system, label, p, sub.frame)
+            if got is None:
+                raise first or MissingData(
+                    "region_weights", f"anatomy[{system!r}][{label!r}]",
+                    f"membership in {label!r}", f"the substrate holds {system!r} but not "
+                    f"{label!r}; see ibm.materialize.substrate.REFUSALS")
+            w, rec = got
+            if rec is not None:
+                if not self.admits(system, rec.rank):
+                    msg = self.refuse(system, rec, strict)
+                    raise MissingData("region_weights", f"anatomy[{system!r}][{label!r}]",
+                                      "membership this request forbids taking from a template",
+                                      msg)
+                self.record(rec)
+            return w
+
+        return lookup
 
 
 # ---------------------------------------------------------------------------
@@ -453,6 +644,7 @@ def build(request: MaterializationRequest, *,
           implementation_override: Mapping[str, str] | None = None,
           moved_parameters: Mapping[str, Iterable[str]] | None = None,
           cache: Any = None,
+          substrate: Any = None,
           stop_at_observations: bool = False,
           strict: bool = True) -> MaterializedModel:
     """materialize one request into a runnable model.
@@ -474,13 +666,29 @@ def build(request: MaterializationRequest, *,
     simultaneous sheet/volume placement of the neural field a partition rather
     than a double count.
 
+    `substrate` is the shared structural floor of ARCHITECTURE.md §7 -- the object
+    that makes forty models views of one implicit model rather than forty
+    independent demands on one subject's imaging.  `None`, the default, loads it
+    lazily and only if something actually falls through; `False` disables it, which
+    is what a caller wants when the question is precisely what this subject has;
+    an instance is used as given.  what it changes is the meaning of an absent
+    file: a subject with no diffusion imaging does not have no connectivity, they
+    have connectivity nobody measured, and §1 says the honest representation of
+    that is a prior rather than a hole.  every substitution is recorded as a
+    `TierRecord` and reported by `provenance.rests_on(...)`, and a request that
+    must not stand on one says so with `max_tier`.
+
     `strict=False` builds anyway and records every gap in provenance.  it exists
     for cost estimation and for the coarsening argument, where the question is how
     big a thing would be rather than what it would predict, and a model built that
-    way says so in its own `describe()`.
+    way says so in its own `describe()`.  note what `strict=True` does and does not
+    refuse: a fall-through to a population prior is a legitimate materialization
+    and passes, visibly; a fall-through past a ceiling the request declared is what
+    it raises on.
     """
     problems: list[str] = []
     notes: list[str] = []
+    tiers = _Tiers(request, substrate, cache)
 
     # 1. trace -----------------------------------------------------------
     tr = trace_request(request, stop_at_observations=stop_at_observations)
@@ -495,7 +703,8 @@ def build(request: MaterializationRequest, *,
                         for k, v in (anchors or {}).items()})
     resolver = RegionResolver(frame=request.frame, anchors=all_anchors,
                               anchor_frames={d.name: d.frame for d in request.devices},
-                              anatomy=anatomy, warp=warp, geodesic=geodesic)
+                              anatomy=tiers.anatomy(anatomy, warp, strict), warp=warp,
+                              geodesic=geodesic)
     support_of, place_notes, place_problems = _place_components(request, tr)
     notes.extend(place_notes)
     problems.extend(place_problems)
@@ -503,7 +712,8 @@ def build(request: MaterializationRequest, *,
     if excluded:
         notes.append(f"{len(excluded)} traced support(s) are outside this view and require no "
                      "geometry: " + "; ".join(f"{s} ({why})" for s, why in sorted(excluded.items())))
-    raw, site_problems = _sample_sites(request, materialize, geom, resolver, cache, strict)
+    raw, site_problems = _sample_sites(request, materialize, geom, resolver, cache, strict,
+                                       tiers)
     problems.extend(site_problems)
     try:
         sites = _restrict_to_scope(raw, request, resolver, notes)
@@ -567,7 +777,8 @@ def build(request: MaterializationRequest, *,
 
     # 5. edges -----------------------------------------------------------
     edges, edge_problems, edge_notes = _build_edges(tr, sites, topology_inputs or {},
-                                                    request.budget)
+                                                    request.budget, tiers, strict,
+                                                    _parcels_of(sites, resolver))
     notes.extend(edge_notes)
     problems.extend(edge_problems)
 
@@ -632,16 +843,26 @@ def build(request: MaterializationRequest, *,
 
     # 8. provenance ------------------------------------------------------
     conversions = _conversions(tr)
+    substituted = {r.what for r in tiers.records}
     geometry_records = tuple(
         GeometryRecord(s, str(t.columns.get("geometry_source", "") or ""), t.n,
-                       "template" in str(t.columns.get("geometry_source", "")).lower(),
+                       "template" in str(t.columns.get("geometry_source", "")).lower()
+                       or s in substituted,
                        t.frame)
         for s, t in sorted(sites.tables.items()))
+    problems.extend(tiers.refusals)
+    if tiers.records:
+        pop = [r for r in tiers.records if not r.subject_specific]
+        notes.append(
+            f"{len(tiers.records)} piece(s) of structure came from the shared substrate rather "
+            f"than from this subject ({len(pop)} of them a population's): "
+            + "; ".join(f"{r.what} at {r.tier}" for r in tiers.records))
     prov = Provenance(
         request=request.name, subject=request.subject.id, policy=request.policy,
         selections=tuple(selections), parameters=tuple(param_fates),
         conversions=conversions, breaches=tuple(breaches), frames=tuple(frame_records),
-        geometry=geometry_records, unimplemented=tuple(sorted(unimplemented)),
+        geometry=geometry_records, tiers=tuple(tiers.records),
+        unimplemented=tuple(sorted(unimplemented)),
         missing=tuple(problems) if not strict else (), notes=tuple(notes), trace=tr)
     if moved_parameters:
         prov = prov.with_evidence(moved_parameters)
@@ -773,8 +994,8 @@ def _place_components(request: MaterializationRequest, tr: Trace
 
 
 def _sample_sites(request: MaterializationRequest, supports: Sequence[str],
-                  geom: GeometrySet, resolver: RegionResolver, cache: Any, strict: bool
-                  ) -> tuple[Sites, list[str]]:
+                  geom: GeometrySet, resolver: RegionResolver, cache: Any, strict: bool,
+                  tiers: "_Tiers | None" = None) -> tuple[Sites, list[str]]:
     """grid(R, r) per support, one support at a time.
 
     the loop is the point.  `build_sites` walks the supports in sorted order and
@@ -797,6 +1018,14 @@ def _sample_sites(request: MaterializationRequest, supports: Sequence[str],
     `strict=True` is unchanged, deliberately including *which* gap it reports:
     the loop visits supports in the same sorted order `build_sites` did, so the
     first failure is the same first failure.
+
+    what IS new is the second attempt.  a support the subject has no segmentation
+    of is now offered the structural substrate's template extent before it becomes
+    a gap, and only if that too comes back empty is the subject's own error
+    reported -- unchanged, because it is the message that names the file a caller
+    could actually supply.  the substituted table is marked as a template in
+    provenance and its tier is recorded, so the systematic, head-size-dependent
+    displacement it carries is visible rather than merely present.
     """
     tables: dict[str, SiteTable] = {}
     problems: list[str] = []
@@ -805,6 +1034,23 @@ def _sample_sites(request: MaterializationRequest, supports: Sequence[str],
         try:
             t = build_sites(request, (s,), geom, resolver=resolver, cache=cache).tables[s]
         except (MissingData, MissingInput) as exc:
+            sub = None if tiers is None else tiers.geometry_for(s, strict)
+            if sub is not None:
+                try:
+                    t = build_sites(request, (s,), geom.with_geometry(sub), resolver=resolver,
+                                    cache=cache).tables[s]
+                except (MissingData, MissingInput, BudgetExceeded) as inner:
+                    # the substrate had an extent and it still could not be
+                    # sampled -- a tree with no radii, a budget the template's
+                    # bounds blow.  that is not the subject's gap and reporting it
+                    # as one would send a caller looking for a file.
+                    if strict and isinstance(inner, BudgetExceeded):
+                        raise
+                    problems.append(str(inner))
+                    continue
+                tables[s] = replace(t, offset=offset)
+                offset += t.n
+                continue
             if strict:
                 raise
             problems.append(str(exc))
@@ -1122,8 +1368,71 @@ def _take(t: SiteTable, keep: np.ndarray, offset: int) -> SiteTable:
                      {k: np.asarray(v)[keep] for k, v in (t.partitions or {}).items()})
 
 
+def one_line_note(problem: str) -> str:
+    """a raised gap's first line, which is the part that names the thing."""
+    return problem.strip().splitlines()[0].strip()
+
+
+def _parcels_for(topology: str, parcels: Any):
+    """the parcel labels a fall-through needs, or `None` if they cannot be had.
+
+    the try/except is the whole function and it is not defensive padding.  the
+    labels come out of an atlas lookup, and an atlas lookup is exactly the kind of
+    thing that raises `MissingData` -- the subject has no parcellation, or has one
+    and the substrate's is in a template frame nothing can warp into.  a
+    fall-through that cannot get its inputs must degrade to the ORIGINAL gap, the
+    one that names the subject file a caller could supply, rather than replacing it
+    with a complaint about a template registration the caller never asked for.
+
+    getting this wrong took down `eeg_forward`, which needs no connectome at all
+    and was only ever passing through the tractometric branch on its way to
+    reporting that it has no tractogram.
+    """
+    if parcels is None or topology != "tractometric":
+        return None
+    try:
+        return parcels("cortical_areas", "tissue")
+    except (MissingData, MissingInput):
+        return None
+
+
+def _parcels_of(sites: Sites, resolver: RegionResolver):
+    """a per-site parcel index for one partitioning system, computed on demand.
+
+    a closure rather than a column on the site table, and that is deliberate.
+    writing the memberships onto `SiteTable.partitions` would change
+    `_n_partitions`, which sets the effective count of every per-partition
+    parameter in the model -- so attaching an atlas in order to build one topology
+    would silently reprice every process in the materialization.  the parcels are
+    needed by exactly one fall-through and are computed there and nowhere else.
+
+    the labels come out of the resolver, so they come out of whatever the resolver
+    is standing on: the subject's own `aparc+aseg` if the caller supplied one, the
+    substrate's template parcellation otherwise, with the tier recorded either way.
+    `-1` is "outside every parcel", which is most of the parenchyma -- the white
+    matter, the subcortex and the cerebellum have no cortical area -- and is what
+    keeps a subcortical voxel out of a cortical connectome.
+    """
+    def parcels(system: str, support: str):
+        t = sites.get(support)
+        if t is None or t.n == 0:
+            return None
+        labels = REGISTRY.anatomies[system].labels if system in REGISTRY.anatomies else ()
+        if not labels:
+            return None
+        w = np.zeros((t.n, len(labels)))
+        xyz = np.asarray(t.xyz, float)
+        for j, lab in enumerate(labels):
+            w[:, j] = np.clip(np.asarray(
+                resolver.anatomy(system, lab, xyz, t.frame), float).ravel(), 0.0, 1.0)
+        best = np.argmax(w, axis=1)
+        return np.where(w[np.arange(t.n), best] > 0.0, best, -1).astype(np.int64)
+    return parcels
+
+
 def _build_edges(tr: Trace, sites: Sites, inputs: Mapping[str, Mapping[str, Any]],
-                 budget: Budget) -> tuple[dict[str, EdgeSet], list[str], list[str]]:
+                 budget: Budget, tiers: "_Tiers | None" = None, strict: bool = True,
+                 parcels: Any = None) -> tuple[dict[str, EdgeSet], list[str], list[str]]:
     """apply every traced topology to the materialized state graph.
 
     a topology declares which state variables *may* interact; the edge set is that
@@ -1165,12 +1474,20 @@ def _build_edges(tr: Trace, sites: Sites, inputs: Mapping[str, Mapping[str, Any]
             continue
         try:
             e = spec(sites, **dict(inputs.get(name, {})))
-        except MissingInput as exc:
-            problems.append(str(exc))
-            continue
-        except MissingData as exc:
-            problems.append(str(exc))
-            continue
+        except (MissingInput, MissingData) as exc:
+            # the subject's own data is absent.  before this becomes a gap, ask
+            # the substrate -- and ask it only here, after the subject-specific
+            # builder has already failed, so the ordering in §7's three tiers is
+            # enforced by control flow rather than by everyone remembering it.
+            e = None
+            if tiers is not None:
+                e = tiers.edges_for(name, sites, strict,
+                                    parcels=_parcels_for(name, parcels))
+            if e is None:
+                problems.append(str(exc))
+                continue
+            notes.append(f"topology {name!r} was built from the structural substrate rather "
+                         f"than from this subject: {one_line_note(str(exc))}")
         out[name] = e
         total += e.n_edges
         if total > budget.max_edges:

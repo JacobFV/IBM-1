@@ -41,6 +41,31 @@ class BudgetExceeded(Exception):
     """
 
 
+class TierCeilingExceeded(Exception):
+    """a materialization fell through to a prior tier the request had forbidden.
+
+    the counterpart of `BudgetExceeded` for structure rather than cost, and it
+    exists for the same reason: the failure it names is one a caller can only act
+    on if it is raised rather than recorded.  a fall-through is a legitimate
+    materialization -- §1 says structure that no evidence constrains stays at its
+    prior, and that is the machinery working -- so the default is to allow it and
+    record the rung.  what a model may not do is fall through SILENTLY when its
+    entire claim depends on the structure being this subject's: a virtual-lesion
+    model over a group connectome resects somebody else's fascicle, and the number
+    it produces is not wrong in a way any inspection of it would reveal.
+    """
+
+
+#: the ceilings `MaterializationRequest.max_tier` takes, as ranks rather than as
+#: one enum.  the three prior modules each declare their own three-rung `Tier` and
+#: they are not interchangeable -- "this subject's tractogram" and "this subject's
+#: angiogram" are different claims -- but their RANKS mean the same thing, which
+#: is the only thing a request can usefully constrain.
+SUBJECT_ONLY = 0        # nothing but this subject's own measurements
+POPULATION_OK = 1       # a group connectome, a population atlas, a species' microcircuit
+ANY_TIER = 2            # a distance prior, a generative synthesis: a shape, not a measurement
+
+
 # ---------------------------------------------------------------------------
 # budget
 # ---------------------------------------------------------------------------
@@ -237,6 +262,21 @@ class MaterializationRequest:
     policy: str = "prefer_lti"
     seed: int = 0
     allow_template_geometry: bool = False
+    #: how far down a prior ladder this materialization may fall when the subject
+    #: has no measurement of a piece of structure.  `None` is no ceiling, which is
+    #: the right default: §1 says structure that evidence does not constrain stays
+    #: at its prior, so a fall-through is a legitimate materialization and refusing
+    #: it by default would put thirty-four of the library's forty models back where
+    #: they were.  what the ceiling buys is the ability of a model whose whole
+    #: claim is about ONE subject to say so and fail loudly, rather than quietly
+    #: resecting a fascicle from a population average.  see `SUBJECT_ONLY`.
+    max_tier: int | None = None
+    #: per-piece overrides on that ceiling, keyed by topology, support or
+    #: partitioning system.  the common case is a model that must be
+    #: subject-specific in exactly one respect -- `virtual_lesion` about its
+    #: tractometric edges, `dbs_response` about its contact positions -- and would
+    #: be needlessly refused by a blanket `max_tier=SUBJECT_ONLY`.
+    tier_ceilings: tuple[tuple[str, int], ...] = ()
     notes: str = ""
 
     def __post_init__(self) -> None:
@@ -244,6 +284,7 @@ class MaterializationRequest:
         object.__setattr__(self, "regions", tuple(self.regions))
         object.__setattr__(self, "bands", tuple(self.bands))
         object.__setattr__(self, "devices", tuple(self.devices))
+        object.__setattr__(self, "tier_ceilings", tuple(self.tier_ceilings))
 
     # -- accessors -------------------------------------------------------
 
@@ -281,6 +322,25 @@ class MaterializationRequest:
             if key == component:
                 out = out & b
         return out & self.resolution.default_band
+
+    def tier_ceiling(self, what: str) -> int | None:
+        """the deepest rung `what` may come from, most specific override winning.
+
+        the same shape `band_for` has and for the same reason: a ceiling written
+        against `tractometric` is a statement about that structure and one written
+        as `max_tier` is a statement about the materialization's habits.  a
+        per-piece entry therefore overrides the blanket one in BOTH directions --
+        it may loosen as well as tighten -- because the case it exists for is a
+        model that is strict about one thing and indifferent about the rest.
+        """
+        for key, r in self.tier_ceilings:
+            if key == what:
+                return int(r)
+        return self.max_tier
+
+    def admits_tier(self, what: str, rank: int) -> bool:
+        ceiling = self.tier_ceiling(what)
+        return ceiling is None or int(rank) <= int(ceiling)
 
     def anchors(self) -> dict[str, np.ndarray]:
         """device positions, keyed by name, for `Near(...)` regions to refine around."""
@@ -338,6 +398,8 @@ class MaterializationRequest:
             "subject": self.subject, "window": self.window, "frame": self.frame,
             "policy": self.policy, "seed": self.seed,
             "allow_template_geometry": self.allow_template_geometry,
+            "max_tier": self.max_tier,
+            "tier_ceilings": [list(x) for x in self.tier_ceilings],
         }
 
     def describe(self) -> str:

@@ -796,11 +796,17 @@ def initial_state(model, basis, rng, sites_of_interest=None):
     the prior declares no spatial covariance: spatial structure in ibm-1 lives in
     the topologies, not in the prior over a component.
 
-    this is a workaround for a real gap and is not a fix for it.  §4 says a
-    linear f's push-forward of the *uncertainty* is exact, and
-    `SpectralGaussian.apply_transfer` is exactly that push-forward -- but
-    `solve_window` never calls it, so for an all-LTI model every psd in the
-    returned state is still the prior's.  section 15 says so again with numbers.
+    the draw is still needed, and for a reason that is worth separating from the
+    one it used to have.  it used to be a workaround for the psd never moving;
+    `ibm.runtime.propagate` fixed that, and the width of every driven component
+    now comes out of the window as `|G|^2` times the drive's.  what the draw is
+    for now is the MEAN: a boundary-value solve driven by a zero mean returns a
+    zero mean, so without a realisation there is no trajectory to measure a
+    spectrum on, no phase ramp to fit a delay to, and no topography.  the belief
+    the run reports is therefore one realisation's mean carried alongside the
+    push-forward of the prior's width, and those are two different objects --
+    which is exactly why section 4 of `propagate_uncertainty.py` compares them
+    only on site-local links, where they must agree.
     """
     s = State.prior(model.layout)
     for cid in model.layout.components:
@@ -932,15 +938,23 @@ def continuity_probe(model, couplings, basis, plan, solve, drive, state0):
     print("  the trajectory, and the two conditions are inconsistent by construction.")
     print("  below, the drive is sliced forward by one hop per window, by hand, because")
     print("  there is no hook in `advance` for doing it.")
+    from ibm.runtime.propagate import propagate_linear
+
     s = state0.copy()
     carry = None
-    gaps, res, amps, reps = [], [], [], []
+    gaps, res, amps, reps, prop = [], [], [], [], []
     k = model.layout[ACT].k
     for i in range(plan.n_windows):
         seg = drive[:, i * plan.hop_n: i * plan.hop_n + basis.n]
         s.beliefs[ACT] = replace(s[ACT], mean=basis.analyze(seg)[..., :k])
         s, rep = solve_window(s, couplings, basis, solve=solve, carry=carry,
                               match_weight=plan.match_weight, window=i)
+        # the width follows the mean through the same operator, which `advance`
+        # now does for itself and this hand-rolled loop has to do explicitly.
+        # without it the state this function returns -- which is the one every
+        # check below runs on -- would carry a posterior mean and a prior
+        # covariance, which is precisely the thing section 15 used to report.
+        prop.append(propagate_linear(s, couplings, basis))
         carry = Carry.tail(s, plan.overlap_n)
         gaps.append(rep.joint_gap / max(joint_scale(s, couplings), 1e-300))
         res.append(rep.residual / max(rep.residual0, 1e-300))
@@ -950,6 +964,12 @@ def continuity_probe(model, couplings, basis, plan, solve, drive, state0):
     print(f"  joint gap relative to the state's own rms {['%.3g' % g for g in gaps]}, "
           f"residual/initial {['%.2e' % r for r in res]}")
     print(f"  max |mean| per window {['%.4g' % a for a in amps]}")
+    print(f"  and the width, which used to sit still: {prop[-1].iterations} sweeps of the "
+          f"second-moment fixed point,")
+    print(f"  {'converged' if prop[-1].converged else 'NOT converged'}, "
+          f"{sum(x.seconds for x in prop):.0f}s over {plan.n_windows} windows.  "
+          "`scripts/propagate_uncertainty.py`")
+    print("  reports it band by band; section 15 below reports only whether it moved.")
     return s, gaps, amps, reps
 
 
@@ -1430,7 +1450,20 @@ def fuse_real_eeg(model, state, basis, channels, seg, zobs, sfreq):
         moved = np.abs(a.mean[:, outside] - before.mean[:, outside]).max()
         print(f"    outside the observation's band ({len(outside)} coefficients): "
               f"max |change| {moved:.3g} uV -- zero precision, zero movement, no special case")
-    ok = float(np.median(dmu / sd0)) > 0.05 and float(np.median(shrink)) < 0.999
+    # the movement is reported against BOTH widths, and it has to be, now that the
+    # dynamics push a width forward.  `dmu / sd0` was the right scale-free number
+    # while every psd came out of the solve at its prior; with the association
+    # gain unfitted the propagated prior over a contact is enormous, so an
+    # observation that pins the state to within its own noise still moves it a
+    # small fraction of that prior sd.  measured against the POSTERIOR width the
+    # same observation moves the mean by many sd, which is what "the evidence
+    # decided this" looks like.  a run where neither is above the threshold is one
+    # where the evidence genuinely said nothing.
+    sd1 = np.sqrt(np.maximum(a.total_psd()[sl], 1e-300))
+    print(f"    |posterior - prior| median {np.median(dmu / sd1):.2f} POSTERIOR sd "
+          "-- the same movement measured against the width the evidence left behind")
+    ok = ((float(np.median(dmu / sd0)) > 0.05 or float(np.median(dmu / sd1)) > 0.05)
+          and float(np.median(shrink)) < 0.999)
     print(f"  [{'PASS' if ok else 'FAIL'}: the posterior moved and narrowed]")
     return after, ok
 
@@ -1750,19 +1783,29 @@ def main() -> int:
      cannot show an alpha peak because it was never given one.""")
 
     head("15. what is still untested")
-    same = all(np.array_equal(state0[c].psd, state1[c].psd)
-               for c in dict.fromkeys(c.writes for c in couplings) if c in state1)
+    frozen = [c for c in dict.fromkeys(c.writes for c in couplings)
+              if c in state1 and np.array_equal(np.asarray(state0[c].psd),
+                                                np.asarray(state1[c].psd))]
+    written = [c for c in dict.fromkeys(c.writes for c in couplings) if c in state1]
+    moved = len(written) - len(frozen)
     print(f"""  the honest list, after this run.
 
-  * the uncertainty is never propagated.  every written component's psd after
-    {args.windows} windows is bit-identical to its prior ({'confirmed' if same else 'NOT confirmed'}, checked
-    element-wise).  ARCHITECTURE.md 4 says the push-forward of a
-    linear f is exact and `SpectralGaussian.apply_transfer` is that push-forward,
-    but `solve_window` moves means only and `reproject_nonlinear` widens the
-    belief of components a NONLINEAR coupling writes.  an all-LTI materialization
-    -- which is what build selected, 29 of 29 -- therefore returns every psd
-    exactly as it found it, silently.  this is the largest remaining hole and it
-    is a design decision that has not been taken, not a bug I could fix here.
+  * the uncertainty IS propagated now, and this line used to say the opposite.
+    {moved} of {len(written)} written components come out of {args.windows} windows with a psd
+    that is not their prior; before `ibm/runtime/propagate.py` existed the count
+    was 0 of {len(written)}, bit-identical, checked element-wise, silently.  the push-forward
+    is `(i omega - A)^-1 M` squared onto the power and squared without conjugate
+    onto the relation -- the solve's OWN operator, not each coupling's H -- and
+    it composes couplings that share an input coherently, which on a graph binned
+    into twelve distance bins is the difference between a width and twelve times
+    a width.  p(theta) rides along to first order.
+    what it does NOT do: cross-component covariance, so anything reading two
+    components with a common ancestor gets a width that is too small; the
+    boundary condition's own width, so continuity is imposed on the mean only;
+    and the low-rank `factor` term, which is dropped on write-back.  the numbers
+    are in `scripts/propagate_uncertainty.py` and the first-order theta term is
+    reported there as a bracket rather than a value, because for a `weak()` prior
+    on a conduction velocity it is an extrapolation and says so.
   * `Form.CONSTRAINT` is never exercised.  build selected
     `capacitive_admittivity_lti` over `quasistatic_lead_field` for
     `em_generation`, so the one CONSTRAINT implementation in the inventory was
@@ -1890,8 +1933,15 @@ def run_nonlinear(model, lead_data, basis, rng) -> str:
     print("  carry and no stitching, which is legal: the refusal is about the overlap")
     print("  between windows and there is no second window.  the cyclic wrap WITHIN the")
     print("  window is still there and is the reason the multi-window run is refused.")
+    # 8 members used to be a memory budget rather than a statistical one:
+    # `reproject_nonlinear` materialized `(m, sites, n)` for every component the
+    # nonlinearity reads, which on this sheet is a gibibyte per component per
+    # sixty-four members.  it streams now, so the number here is what it should
+    # always have been -- a statement about how precisely the width is wanted.
+    # 64 members is a 12.5% relative standard error on every sd it reports;
+    # `advise` says 400 for 5%, and that is now runnable rather than notional.
     solve = Solve(damping=0.3, max_iter=25, newton=True, max_newton=1,
-                  krylov_restart=4, krylov_maxiter=6, ensemble=8, seed=1)
+                  krylov_restart=4, krylov_maxiter=6, ensemble=64, seed=1)
     st = initial_state(model, basis, rng)
     t0 = time.time()
     try:
@@ -1922,8 +1972,12 @@ def run_nonlinear(model, lead_data, basis, rng) -> str:
         m, why = advise(model.layout, cs, target_mc_error=0.05)
         print(f"  ensemble advice: {why}")
         before = {c: st[c].psd.copy() for c in (POT, ACT, ADAPT)}
+        t_ens = time.time()
         diag = reproject_nonlinear(st, cs, basis, m=solve.ensemble,
                                    rng=np.random.default_rng(1))
+        print(f"  {solve.ensemble} members in {time.time() - t_ens:.0f}s, streamed -- the "
+              f"working set is (sites x k) regardless of m, so the cost is linear in")
+        print(f"  members and the ensemble width is a statistical decision again:")
         for d in diag:
             grew = float(np.mean(st[d.component].psd / np.maximum(before[d.component], 1e-300)))
             print(f"    {d}  -> psd x{grew:.3g}")

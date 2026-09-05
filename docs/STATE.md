@@ -69,7 +69,90 @@ system working, and the list is the most valuable thing in this document.
 
 ## 4. open concerns, in priority order
 
-### 4.1 uncertainty is not propagated (BEING FIXED)
+### 4.1 uncertainty propagation — LANDED, and it invalidated a headline result
+
+RESOLVED as of 2026-09-05. `ibm/runtime/propagate.py` pushes the second moment
+through the solve's OWN operator rather than each coupling's H: at the picard
+fixed point z_O = (i omega - A_O)^-1 sum_c M_c z_I, so |inv_O M_c|^2 goes on the
+psd and its square on the relation. written spectral components whose psd is
+still bit-identical to their prior: **0 of 7**, was 7 of 7.
+
+three things worth keeping:
+
+- **couplings sharing an input compose COHERENTLY.** the association and lateral
+  pathways are split into 12 distance bins each, and an incoherent sum is wrong
+  by the cross terms — verified, two couplings at +2G and -1.5G give 0.5 coherent
+  against 12.5 incoherent, a factor of 25.
+- **distinct input components are composed as INDEPENDENT**, which is a real
+  approximation in the OVER-SHARPENING direction (ampa and nmda share an
+  ancestor). counted and named in every report, not fudged.
+- pressure pushed width out along the chain by 10^3-10^5 and evidence pulled it
+  back (fusing this subject's EEG multiplies device.contact_potential's psd by
+  0.0093 in delta to 0.0409 in gamma). the two compose by different rules, which
+  is the architecture's claim, now exercised.
+
+the width growth is NOT loss — at prior medians the chain has a power gain of
+that size, because the association topology is horvitz-thompson reweighted to
+stand for a dense graph sampled under a percent and the `gain` that would hold it
+down is `weak(1.0, 5.0)` and **has never been fitted**. what IS lossy is the
+frequency SHAPE: every component loses one to two orders at gamma relative to
+delta. `neural.exc.potential` is the exception, with a x1116 peak in alpha — the
+thalamocortical resonator showing up in the WIDTH for the first time.
+
+**parameter uncertainty is in, with an explicit validity bracket.** dH/dtheta by
+central difference, coherent across parameters shared by many couplings, exact to
+first order (1.2e-13). but 13 of 28 groups had sigma/median above 0.5 (worst 75x
+— a `weak()` lognormal has a natural-units sd 200x its median) and for two
+components sigma|dH/dtheta| EXCEEDS |H| in band, because d/dv exp(-i omega d/v)
+grows without bound. what physically happens there is phase decoherence and power
+redistribution; a derivative reports it as growth. so `parameters=False` is a
+lower bound, `parameters=True` an extrapolation, and the right treatment for a
+`weak()` prior is sampling over p(theta).
+
+#### 4.1a THE CONSEQUENCE: fit_neural_spectra.py REPORTED SCALP QUANTITIES AS CORTICAL
+
+the model now supplies what all three evaluations assumed was flat by never
+mentioning it — the power transfer from `neural.exc.activity` to
+`device.contact_potential`. it is 10372 (delta) falling to 231 (gamma), a log-log
+slope of **+1.11 over 1-45 Hz**.
+
+`fit_neural_spectra.py` fits `neural_population` — a prior over a CORTICAL
+component — to a SCALP psd. deconvolving by that transfer moves the fitted
+aperiodic exponent from **1.480 to 0.361**. the prior it was moved off is 2.000,
+so **the chain's bias is 215% of the entire distance the data moved that
+parameter.** alpha_gain moves 5.74 -> 2.80.
+
+the SIGN of its held-out delta log-likelihood is safe — both curves are filtered
+by the same transfer — so "the posterior beats the prior on unseen subjects,
+p 0.0014" stands. **every parameter VALUE it reports is a scalp-level quantity
+presented as a cortical one and must be redone.**
+
+`eval_sleep_state.py` is NOT changed, and that is the worse answer. its claim is
+directional and the transfer does not depend on sleep stage: deconvolving at
+source exponents 1.20 / 1.60 / 2.00 gives shifts of -1.134 / -1.116 / -1.115,
+agreeing to the third decimal. **a linear time-invariant head is transparent to a
+comparison between two spectra recorded through it, so the dynamics are
+irrelevant to that test.** it would stop being transparent only if something
+between cortex and scalp were stage-dependent or nonlinear, and nothing in this
+model is.
+
+`fit_hemodynamic_chain.py` and `fit_meg_instrument.py` cannot be affected —
+neither ever instantiates a State. note the hemodynamic components are declared
+SCALAR and `_advance_scalar` already carries the exact push-forward for that
+form; it has never run, because no assembled coupling in any script writes a
+scalar block.
+
+#### 4.1b what still does not propagate
+cross-component covariance (independent composition across distinct inputs — a
+component reading two inputs with a common ancestor gets a width that is too
+small; the declared form cannot carry it and the fix is a block covariance, not
+an approximation); the boundary condition's own width (Carry carries the previous
+window's MEAN tail only, so width is re-derived each window — wrong for any
+component whose memory exceeds the hop); the low-rank `factor` term on write-back;
+p(theta) beyond first order; and the scalar form's dynamics, still never
+exercised by anything.
+
+### 4.1-OLD uncertainty is not propagated (SUPERSEDED, kept for the record)
 every written component's psd after three windows is bit-identical to its prior.
 `solve_window` moves means only; `SpectralGaussian.apply_transfer` — which
 already scales psd by |H|² and relation by H², the exact linear push-forward §4

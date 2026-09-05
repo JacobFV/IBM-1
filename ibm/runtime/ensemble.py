@@ -27,6 +27,15 @@ output distribution, and the cost multiplies the site budget and the spectral
 budget that were already multiplying each other.  `advise` states the trade
 rather than hiding it behind a default.
 
+that cost is now linear in members and constant in memory, and it was not.
+`reproject_nonlinear` streams: it draws one member, evaluates f on it,
+accumulates four raw moments, and discards it.  the previous arrangement drew the
+whole ensemble up front as `(m, sites, n)` per read component, which on a 13k-node
+sheet over a 2048-sample window is over a gibibyte per component per sixty-four
+members -- so `advise`'s own recommendation of 400 members for a 5% standard error
+could not be run on the model it was advising about, and the ensemble width was a
+memory budget wearing a statistical argument's clothes.
+
 uncertain parameters ride along.  §4 says theta is uncertain and the push-forward
 is over both, so a member is a draw of state *and* a draw of theta; propagating
 the mean parameters with a sampled state understates the width by exactly the
@@ -265,7 +274,8 @@ def propagate(state: State, f: Callable[[dict[str, np.ndarray], dict[str, Any]],
 
 
 def reproject_nonlinear(state: State, couplings: Iterable[Any], basis: TemporalBasis, *,
-                        m: int = 32, rng: np.random.Generator | None = None) -> list[NonGaussianity]:
+                        m: int = 32, rng: np.random.Generator | None = None
+                        ) -> list[NonGaussianity]:
     """widen the belief of every component a nonlinear coupling writes, in place.
 
     called by `ibm.runtime.step.advance` once the window's *mean* has been
@@ -280,54 +290,104 @@ def reproject_nonlinear(state: State, couplings: Iterable[Any], basis: TemporalB
     much across the ensemble -- the same condition under which the solved mean
     was the right thing to solve for.  where it fails, the returned diagnostics
     say so.
+
+    **the members are streamed, one at a time, and never all exist at once.**
+    that is not a micro-optimization; it is what makes the ensemble width a
+    parameter a caller can actually set.  the previous arrangement drew every
+    member of every read component up front -- `(m, sites, n)` per component --
+    which on a 13k-node sheet over a 2048-sample window is 1.4 GiB per component
+    per 64 members, so `advise`'s own recommendation of 400 members for a 5%
+    standard error could not be run on the model it was advising about.  a
+    running sum of the first four raw moments costs `(sites, k)` regardless of m,
+    so the cost is now linear in members and constant in memory, and the number
+    of members is a statement about how precisely the width is wanted rather than
+    about how much RAM is free.
     """
     rng = rng or np.random.default_rng(0)
-    targets = {c.writes for c in couplings if not getattr(c, "linear", True)}
+    cs = [c for c in couplings if not getattr(c, "linear", True) and c.fn is not None]
+    targets = {c.writes for c in cs}
     targets = {t for t in targets if t in state and state.layout[t].uncertainty == "spectral"}
     if not targets:
         return []
     reads: set[str] = set()
-    for c in couplings:
-        if getattr(c, "linear", True):
-            continue
+    for c in cs:
         reads.update(getattr(c, "reads", ()) or ())
     reads &= set(state.layout.components)
+    reads &= set(state.beliefs)
 
-    ens = Ensemble.draw(state, m, rng, components=sorted(reads | targets))
-    xs = {cid: ens.time(cid, basis) for cid in ens.members}
-    acc: dict[str, np.ndarray] = {t: np.zeros((m, state.layout[t].n_sites, basis.n))
-                                  for t in targets}
-    for c in couplings:
-        if getattr(c, "linear", True) or c.writes not in acc or c.fn is None:
-            continue
-        for i in range(m):
-            member = {cid: xs[cid][i] for cid in (c.reads or ()) if cid in xs}
-            y = c.fn(member, c.theta)      # fn(x, theta), per ibm.processes.base
-            y = y[c.writes] if isinstance(y, dict) else y
-            acc[c.writes][i] += np.atleast_2d(np.asarray(y, float))
+    # raw moments, accumulated over members.  raw and not central because the
+    # mean is not known until the last member has been drawn, and a second pass
+    # over the ensemble would double the cost of the only expensive thing here --
+    # evaluating f.  the central moments are recovered at the end.
+    ks = {t: (state.layout[t].k or basis.k) for t in targets}
+    acc: dict[str, list[np.ndarray]] = {
+        t: [np.zeros((state.layout[t].n_sites, ks[t]), dtype=np.complex128),
+            np.zeros((state.layout[t].n_sites, ks[t]))] for t in targets}
+    raw: dict[str, np.ndarray] = {
+        t: np.zeros((4, state.layout[t].n_sites, 2 * ks[t])) for t in targets}
+
+    for _ in range(m):
+        xs = {cid: basis.synthesize(state[cid].sample(1, rng)[0]) for cid in reads}
+        for t in targets:
+            y = np.zeros((state.layout[t].n_sites, basis.n))
+            for c in cs:
+                if c.writes != t:
+                    continue
+                member = {cid: xs[cid] for cid in (c.reads or ()) if cid in xs}
+                v = c.fn(member, c.theta)      # fn(x, theta), per ibm.processes.base
+                v = v[t] if isinstance(v, dict) else v
+                y = y + np.atleast_2d(np.asarray(v, float))
+            # to the *block's* width and not the window's.  a component whose band
+            # is narrower than the solve's carries fewer coefficients than
+            # `basis.k`, and adding a `basis.k`-wide variance onto its psd raised a
+            # broadcast error -- which is to say this function had never run
+            # against a model whose components differ in bandwidth.
+            z = basis.analyze(y)[..., : ks[t]]
+            acc[t][0] += z
+            acc[t][1] += np.abs(z) ** 2
+            r = np.concatenate([z.real, z.imag], axis=-1)
+            for j in range(4):
+                raw[t][j] += r ** (j + 1)
 
     diag: list[NonGaussianity] = []
-    for cid, mem in acc.items():
-        # to the *block's* width and not the window's.  a component whose band is
-        # narrower than the solve's carries fewer coefficients than `basis.k`,
-        # and adding a `basis.k`-wide variance onto its psd raised a broadcast
-        # error -- which is to say this function had never run against a model
-        # whose components differ in bandwidth, i.e. against a model using the
-        # laziness axis §1 introduces bandwidth for.
-        k = state.layout[cid].k or basis.k
-        z = basis.analyze(mem)[..., : k]
-        d = _diagnose(cid, z)
+    c_bessel = m / max(m - 1, 1)
+    for t in targets:
+        mu = acc[t][0] / m
+        var = (acc[t][1] / m - np.abs(mu) ** 2) * c_bessel
+        var = np.maximum(var.real, 0.0)
+        d = _from_raw(t, raw[t], m)
         diag.append(d)
-        belief = state[cid]
-        var = (np.abs(z - z.mean(0)) ** 2).mean(0).real * (m / max(m - 1, 1))
+        belief = state[t]
         # the *mean* stays where the solve put it.  the ensemble's mean is a noisy
         # estimate of the same quantity and replacing a converged solve with it
         # would trade a residual of 1e-8 for one of 1/sqrt(m).
-        state.beliefs[cid] = replace(belief, psd=belief.psd + var)
-        state.note(cid, f"nonlinear width from {m} members; skew {d.skew:+.2f}, "
-                        f"excess kurtosis {d.excess_kurtosis:+.2f}"
-                        + ("" if d.adequate else " -- the gaussian projection is straining"))
+        state.beliefs[t] = replace(belief, psd=belief.psd + var)
+        state.note(t, f"nonlinear width from {m} members; skew {d.skew:+.2f}, "
+                      f"excess kurtosis {d.excess_kurtosis:+.2f}"
+                      + ("" if d.adequate else " -- the gaussian projection is straining"))
     return diag
+
+
+def _from_raw(cid: str, raw: np.ndarray, m: int) -> NonGaussianity:
+    """skew and excess kurtosis from streamed raw moments.
+
+    the textbook central-moment identities, which are less numerically stable
+    than a two-pass computation and are used anyway: the alternative is a second
+    evaluation of every member's f, and these numbers are a *diagnostic* about
+    whether the gaussian form is adequate, not a quantity anything downstream
+    computes with.  where they are unstable they are also large, which is the
+    direction that raises the flag rather than lowers it.
+    """
+    s1, s2, s3, s4 = (raw[j] / m for j in range(4))
+    mu = s1
+    m2 = np.maximum(s2 - mu ** 2, _EPS)
+    m3 = s3 - 3.0 * mu * s2 + 2.0 * mu ** 3
+    m4 = s4 - 4.0 * mu * s3 + 6.0 * mu ** 2 * s2 - 3.0 * mu ** 4
+    return NonGaussianity(
+        component=cid, members=m,
+        skew=float(np.mean(m3 / m2 ** 1.5)),
+        excess_kurtosis=float(np.mean(m4 / m2 ** 2) - 3.0),
+        mc_error=float(1.0 / math.sqrt(max(m, 1))))
 
 
 # ---------------------------------------------------------------------------

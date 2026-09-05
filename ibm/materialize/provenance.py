@@ -185,6 +185,50 @@ class FrameRecord:
 
 
 @dataclass(frozen=True)
+class TierRecord:
+    """which rung of a prior ladder one piece of structure actually came from.
+
+    §7's sentence -- a prediction resting on prior-dominated structure must not be
+    presented with the confidence of one resting on constrained structure -- is
+    usually about *parameters*, and `ParameterFate` answers it for those.  it is
+    equally about *structure*, and nothing answered it there.  a tractometric edge
+    set built from this subject's diffusion imaging and one expanded from a
+    published group matrix have the same type, the same features and the same name
+    downstream; the only thing that ever distinguished them was which file the
+    build happened to open, and that was not written down.
+
+    this is that written down.  the three prior modules each declare their own
+    three-rung `Tier`, and they are deliberately not one enum: "this subject's
+    tractogram" and "this subject's angiogram" are different claims and their
+    middle rungs cost measurably different amounts.  what a report needs is not a
+    shared enum but a shared *shape* -- which ladder, which rung, is it this
+    subject's, and what does standing here cost -- so that is what this carries.
+
+    `cost` must never be empty.  a tier without its measured penalty is a label,
+    and a label is exactly what lets a group connectome be quoted with a subject
+    scan's authority.
+    """
+
+    what: str                       # the topology, support or system this describes
+    ladder: str                     # "tract_prior.Tier", "vascular_prior.Tier", ...
+    tier: str                       # the enum value actually reached
+    rank: int                       # 0 = this subject's own data, larger = weaker
+    n_rungs: int = 3
+    source: str = ""                # where the bytes came from
+    cost: str = ""                  # what standing on this rung measurably costs
+    note: str = ""
+
+    @property
+    def subject_specific(self) -> bool:
+        return self.rank == 0
+
+    def __str__(self) -> str:
+        who = "this subject" if self.subject_specific else "a population"
+        return (f"{self.what}: tier {self.tier} (rung {self.rank + 1} of {self.n_rungs}, "
+                f"{who})" + (f" -- {self.cost}" if self.cost else ""))
+
+
+@dataclass(frozen=True)
 class GeometryRecord:
     """where one support's positions came from.
 
@@ -227,14 +271,32 @@ class Basis:
     lossy_conversions: tuple[ConversionRecord, ...] = ()
     validity_breaches: tuple[ValidityBreach, ...] = ()
     grounded_at: tuple[str, ...] = ()
+    #: the rungs the STRUCTURE upstream of this component is standing on -- the
+    #: topologies, supports and partitioning systems that fell through to a
+    #: population prior because this subject had no measurement of them.
+    tiers: tuple[TierRecord, ...] = ()
     caveats: tuple[str, ...] = ()
 
     @property
+    def rests_on_population(self) -> tuple[TierRecord, ...]:
+        """the rungs upstream of here that are somebody else's anatomy.
+
+        the question §7 actually wants asked of a materialization, and the reason
+        `tiers` is on this object rather than only on the provenance record: a
+        component whose parameters are all constrained by evidence is not
+        constrained if the graph those parameters live on came out of a group
+        average.  a fit over a population connectome moves the coupling on edges
+        this subject may not have.
+        """
+        return tuple(t for t in self.tiers if not t.subject_specific)
+
+    @property
     def trustworthy(self) -> bool:
-        """deliberately strict.  a single speculative form anywhere upstream, or a
-        hole in the graph, disqualifies the whole chain -- because it does."""
+        """deliberately strict.  a single speculative form anywhere upstream, a hole
+        in the graph, or structure that is somebody else's, disqualifies the whole
+        chain -- because each of them does."""
         return (self.verdict == "constrained" and not self.speculative_forms
-                and not self.validity_breaches)
+                and not self.validity_breaches and not self.rests_on_population)
 
     def describe(self) -> str:
         lines = [f"{self.component}: {self.verdict.upper()}",
@@ -252,6 +314,8 @@ class Basis:
             lines.append(f"  out of regime -- {v}")
         if self.grounded_at:
             lines.append("  bottoms out at: " + ", ".join(self.grounded_at[:8]))
+        for t in self.tiers:
+            lines.append(f"  {'structure' if t.subject_specific else 'POPULATION STRUCTURE'} -- {t}")
         for c in self.caveats:
             lines.append(f"  ! {c}")
         return "\n".join(lines)
@@ -285,6 +349,10 @@ class Provenance:
     breaches: tuple[ValidityBreach, ...] = ()
     frames: tuple[FrameRecord, ...] = ()
     geometry: tuple[GeometryRecord, ...] = ()
+    #: every piece of structure that fell through to a prior tier, keyed by the
+    #: topology, support or partitioning system it stands in for.  a build with an
+    #: empty tuple here used this subject's own anatomy for everything it built.
+    tiers: tuple[TierRecord, ...] = ()
     #: processes reached by the trace with no implementation at all.  §5 permits a
     #: process to exist in the ontology without a high-confidence f; a
     #: materialization that reaches one has a gap, not a bug.
@@ -309,6 +377,23 @@ class Provenance:
 
     def breaches_of(self, process: str) -> tuple[ValidityBreach, ...]:
         return tuple(b for b in self.breaches if b.process == process)
+
+    def tier_of(self, what: str) -> TierRecord | None:
+        """the rung one topology, support or system ended up on, or `None`.
+
+        `None` means "this subject's own", not "unknown".  a fall-through is
+        recorded when it happens and nothing else writes here, so the absence of a
+        record is the positive statement that no substitution was made.
+        """
+        for t in self.tiers:
+            if t.what == what:
+                return t
+        return None
+
+    @property
+    def rests_on_population(self) -> tuple[TierRecord, ...]:
+        """every piece of structure in this model that is somebody else's anatomy."""
+        return tuple(t for t in self.tiers if not t.subject_specific)
 
     @property
     def uses_template_geometry(self) -> bool:
@@ -396,8 +481,27 @@ class Provenance:
             f"{g.component} <- {g.kind}" for g in getattr(t, "groundings", ())
             if g.component in upstream_components and g.kind != "interior"))
 
+        # the structural half of the same question.  a topology one of these
+        # processes is declared over, a support one of their variables is indexed
+        # on, or a partitioning system the whole materialization was carved by --
+        # each of those can have fallen through to a population, and none of them
+        # shows up in a parameter fate.  systems are attributed to every component
+        # rather than traced, because R is one expression evaluated once: a
+        # materialization carved by a template parcellation is carved that way
+        # everywhere, not only where the atlas is read.
+        topos = {REGISTRY.processes[p].topology for p in procs if p in REGISTRY.processes}
+        supports = {s for c in upstream_components | {component}
+                    for s in REGISTRY.supports_of(c)}
+        tiers = tuple(t for t in self.tiers
+                      if t.what in topos or t.what in supports
+                      or t.what in REGISTRY.anatomies
+                      or t.what.split(".", 1)[0] in topos | supports)
+        for t in tiers:
+            if not t.subject_specific:
+                caveats.append(f"{t.what} is not this subject's: {t}")
+
         return Basis(component, verdict, f_moved, f_info, n, procs, prior_dominated,
-                     speculative, lossy, breaches, grounded, tuple(caveats))
+                     speculative, lossy, breaches, grounded, tiers, tuple(caveats))
 
     # -- presentation ----------------------------------------------------
 
@@ -436,6 +540,11 @@ class Provenance:
         if self.frames:
             lines.append("  frames:")
             lines += [f"    {r}" for r in self.frames]
+        if self.tiers:
+            pop = self.rests_on_population
+            lines.append(f"  {len(self.tiers)} piece(s) of structure came from a prior tier, "
+                         f"{len(pop)} of them a population's rather than this subject's:")
+            lines += [f"    {t}" for t in self.tiers]
         if self.geometry:
             lines.append("  geometry:")
             lines += [f"    {g.support}: {g.n_sites:,} sites from {g.source or 'unnamed source'}"

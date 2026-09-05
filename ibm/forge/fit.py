@@ -559,6 +559,74 @@ def _score(space: ParameterSpace, tasks: Sequence[Task], theta: np.ndarray,
             rep.held_out[f"{t.kind}:{t.name}"] = float(t.logp(theta))
 
 
+def laplace_sd(space: ParameterSpace, tasks: Sequence[Task], theta: np.ndarray, *,
+               step: float = 0.05, ridge: float = 1e-10
+               ) -> tuple[np.ndarray, bool]:
+    """marginal posterior sd at `theta`, from the full numerical hessian, in *u* units.
+
+    `fit_map`'s own docstring refuses to hand back a laplace width by default, and
+    the reason it gives is exactly right for a single fit: a hessian taken with
+    the same 2-point jacobian that found the mode reports error bars whose content
+    is partly the finite-difference step.  so why is this here.
+
+    because comparing two posteriors needs a width and the two other widths this
+    module produces are the wrong ones for that job.  `fit_vi`'s is mean-field, so
+    it collapses exactly the correlations -- a membrane time constant against a
+    loop gain, an alpha centre against a knee -- that decide whether two datasets
+    genuinely disagree or merely traded one parameter against another.
+    `fit_ensemble`'s is the spread of modes, which goes to zero on a unimodal
+    likelihood and is not a width at all.  a conflict test wants the MARGINAL
+    width, correlations included, which is `sqrt(diag(H^-1))` and nothing else.
+
+    the width is returned in the unconstrained parameterization on purpose.  every
+    time constant here is lognormal and is disagreed about multiplicatively, so a
+    disagreement of "a factor of two" is one number in u and is a different number
+    at every point in theta.  a caller wanting natural units multiplies by the
+    transform's local slope and inherits the first-order caveat that goes with it.
+
+    the second flag is whether the hessian was positive definite.  it is not
+    cosmetic: a mode on a ridge, or one the optimizer did not actually reach,
+    produces an indefinite hessian, and the diagonal fallback that follows reports
+    a *conditional* width -- narrower than the marginal, so it OVERSTATES conflict.
+    a caller that ignores the flag will publish disagreements that are an artefact
+    of an unconverged fit.
+    """
+    theta = np.asarray(theta, float)
+    mask = _mask_for(space, tasks)
+    idx, _expand, neg = _objective(space, tasks, mask, theta)
+    sd = np.full(space.size, np.nan)
+    n = idx.size
+    if n == 0:
+        return sd, True
+    u = space.to_unconstrained(theta)[idx]
+    e = np.eye(n) * step
+    f0 = neg(u)
+    fp = np.array([neg(u + e[i]) for i in range(n)])
+    fm = np.array([neg(u - e[i]) for i in range(n)])
+    h = np.zeros((n, n))
+    for i in range(n):
+        h[i, i] = (fp[i] - 2.0 * f0 + fm[i]) / step ** 2
+        for j in range(i + 1, n):
+            pp = neg(u + e[i] + e[j])
+            pm = neg(u + e[i] - e[j])
+            mp = neg(u - e[i] + e[j])
+            mm = neg(u - e[i] - e[j])
+            h[i, j] = h[j, i] = (pp - pm - mp + mm) / (4.0 * step ** 2)
+    h = 0.5 * (h + h.T)
+    ok = True
+    try:
+        np.linalg.cholesky(h + ridge * np.eye(n))
+        cov = np.linalg.inv(h + ridge * np.eye(n))
+        v = np.diag(cov)
+        if np.any(v <= 0) or not np.all(np.isfinite(v)):
+            raise np.linalg.LinAlgError
+    except np.linalg.LinAlgError:
+        ok = False
+        v = 1.0 / np.maximum(np.abs(np.diag(h)), _EPS)
+    sd[idx] = np.sqrt(np.maximum(v, 0.0))
+    return sd, ok
+
+
 def provenance_after(space: ParameterSpace, rep: FitReport,
                      threshold: float = 0.25) -> dict[str, Provenance]:
     """what each block's provenance becomes once the fit has run.
@@ -582,5 +650,5 @@ def provenance_after(space: ParameterSpace, rep: FitReport,
 
 __all__ = [
     "FitReport", "Method", "Task", "fit", "fit_distil", "fit_ensemble", "fit_map",
-    "fit_vi", "provenance_after",
+    "fit_vi", "laplace_sd", "provenance_after",
 ]
