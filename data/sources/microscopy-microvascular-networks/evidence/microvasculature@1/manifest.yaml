@@ -1,0 +1,189 @@
+# what this recipe produced, from which raw source.  committed.
+recipe: microvasculature
+version: 1
+produced_at: '2026-09-05'
+from_raw:
+  vesselgraph-mouse: nine whole mouse brains, three strains x three animals, every edge and
+    node table read in full -- 41.8 million segments over 2.4 GiB of csv.  the three C57BL_6-K
+    graphs and the five synthetic graphs in the same download table were deliberately excluded
+  microscopy-microvascular-networks: three cortical blocks (NW1-3, Zenodo 269650) with vessel-type
+    labels, per-segment centreline polylines and a solved pressure and flow field; 45,742
+    segments over 4.3 mm^3.  the MVN networks of Zenodo 1306230 are held and not used -- they
+    are the same geometry with a different rheology and would not be an independent animal
+  venat: 'the complete figshare release at 0.5 mm in MNI: mean AND standard-deviation maps
+    for vein diameter, curvature and torsion on a 12,427-voxel population skeleton, plus the
+    partial-volume maps'
+checksums: deferred -- each raw root records its own
+outputs:
+- measured.json
+headline:
+  n_animals_whole_brain: 9
+  n_animals_cortical_blocks: 3
+  n_segments_total_whole_brain: 41797271
+  n_segments_cortical_blocks: 45742
+  capillary_length_density_mm_per_mm3: 664.3
+  capillary_length_density_between_animal_factor: 1.088
+  capillary_length_density_depth_max_over_min: 2.57
+  capillary_surface_density_mm2_per_mm3: 8.79
+  capillary_volume_fraction: 0.0105
+  tissue_to_capillary_um_mean: 26.9
+  tissue_to_capillary_um_p90: 39.6
+  tissue_to_capillary_sqrt_density_estimate_um: 39.1
+  capillary_radius_um: 2.06
+  capillary_segment_length_um_cortical_blocks: 55.9
+  segment_length_um_whole_brain: 32.6
+  radius_um_whole_brain: 3.25
+  tortuosity_cortical_blocks: 1.167
+  tortuosity_whole_brain: 1.047
+  penetrating_vessel_nearest_distance_um: 64.5
+  murray_exponent_oriented: 2.8
+  murray_exponent_oriented_sd: 7.3
+  murray_exponent_unoriented_whole_brain: 3.78
+  murray_sum_rc3_over_rp3: 1.5
+  murray_junctions_with_no_exponent_fraction: 0.5
+  branch_angle_between_daughters_deg: 104.3
+  flow_unit_from_poiseuille_um3_per_s:
+  - 490.0
+  - 492.0
+  - 459.0
+  cbf_ml_per_100g_per_min:
+  - 93.0
+  - 173.0
+  - 94.0
+  arteriole_to_venule_drop_mmHg:
+  - 44.3
+  - 49.2
+  - 46.6
+  capillary_transit_time_s:
+  - 0.41
+  - 0.19
+  - 0.39
+  capillary_share_of_viscous_dissipation:
+  - 0.21
+  - 0.27
+  - 0.06
+  apparent_viscosity_mPa_s_by_diameter_um:
+    0-4: 2.41
+    4-6: 1.74
+    6-9: 1.47
+    9-15: 1.52
+    15-30: 1.81
+    30-1e+06: 2.16
+  resolvable_length_fraction_above_30um: 0.005
+  resolvable_volume_fraction_above_30um: 0.221
+  strain_icc: 0.151
+  deviation_correlation: -0.08
+  deviation_correlation_null: -0.125
+  effective_independent_animals_of_9: 4.08
+  effective_independent_animals_ceiling: 6.64
+  venat_between_subject_calibre_log_sd: 0.283
+  venat_between_subject_calibre_factor: 1.33
+  venat_between_subject_volume_cv: 0.546
+read_it_as: 'five things, in order of how much they change what this repository does.
+
+
+  ONE: an angiogram is not a vasculature.  in cortex, everything at or above 30 um
+
+  diameter -- an order of magnitude finer than 7T resolves -- is 0.5% of the
+
+  vascular LENGTH and 22% of its VOLUME.  a venogram therefore shows a fifth of the
+
+  blood and none of the exchange surface, so every tier of
+
+  ibm/topologies/vascular_prior.py synthesises the capillary bed and the tier names
+
+  only how much of the macro boundary condition is the subject''s own.  no amount of
+
+  better human imaging changes this; it is two orders of magnitude, not a factor.
+
+
+  TWO: Murray''s law is a median and not a law.  fitting r_p^k = sum r_c^k per
+
+  junction, on the one source where the parent is known from a solved pressure
+
+  field, gives a median exponent of 2.80 -- close to Murray''s 3 -- with a standard
+
+  deviation of 7.3 and an interdecile range of 0.96 to 10.1, and HALF of all
+
+  degree-three junctions have a ''child'' wider than their ''parent'' and admit no
+
+  exponent at all.  the median of sum(r_c^3)/r_p^3 is 1.50, not 1.  it holds best
+
+  on the arteriolar side (exponent 2.76, ratio 1.16) and worst in the capillary bed
+
+  (3.44, 1.94), which is what a meshed bed with loops should do, since a bed with
+
+  loops has no parents.  the whole-brain source gives 3.78, and the gap is
+
+  measurement rather than anatomy: a 3 um voxel compresses the three radii at a
+
+  junction toward each other, and a junction whose children are nearly as wide as
+
+  its parent needs a very large exponent to satisfy the law.
+
+
+  THREE: the numbers this repository had been asserting are close, and where they
+
+  are wrong they are wrong in a knowable direction.  the capillary surface density
+
+  metabolic.py quotes as ''roughly 5-10 mm^2 per mm^3'' is 8.79.  the 50 um reach
+
+  capillary_tissue_exchange defaults to is generous against a 27 um mean and about
+
+  right against a 40 um p90.  but the naive 1/sqrt(density) estimate of the
+
+  intercapillary distance is 39 um, which overstates the mean by 1.5x, and
+
+  vascular.py''s claim that ''the capillary bed is most of the resistance'' is not
+
+  right: the capillary bed takes 6-27% of the viscous dissipation, the descending
+
+  arterioles 37% and the pial vessels a third.  the capillary bed is most of the
+
+  LENGTH -- 85% of it -- which is the true half of that claim.
+
+
+  FOUR: the geometry and the physics are consistent, and that is a check nobody had
+
+  run.  the flow unit these networks are published in is undocumented and comes out
+
+  at 459-492 um^3/s per unit by Poiseuille in all three, consistent to 7%, and at
+
+  1000 um^3/s per unit the descending arterioles deliver 93-173 ml/100g/min, which
+
+  is mouse cortex.  the arteriole-to-venule drop is 44-49 mmHg and the capillary
+
+  transit 0.19-0.41 s.  a network SYNTHESISED from nothing but the geometry above
+
+  plus Murray at the measured exponent delivers 120 ml/100g/min at 46 mmHg -- an
+
+  agreement to 4% with a quantity it was not fitted to, and the reason
+
+  vascular_prior''s generator is falsifiable rather than decorative.
+
+
+  FIVE: nine mice are worth 4.1 mice, and the ceiling is 6.6.  measured as a
+
+  one-way ICC of 0.151 over three strains of three animals, which is the estimator
+
+  with dynamic range here -- the deviation-from-consensus correlation used for
+
+  tractography returns 0.040 against a null of -0.125, because deviations from a
+
+  sample mean are linearly dependent and an exchangeable shared bias is removed by
+
+  the centring exactly.  both are computed and reported.  the ICC is a LOWER bound
+
+  for the usual reason and one more: it sees only what differs BETWEEN strains, so
+
+  the clearing shrinkage and the segmentation''s calibre-dependent false negatives,
+
+  which every animal shares, are invisible to it.'
+notes: see derive/microvasculature.yaml for the recipe and scripts/measure_microvasculature.py
+  for why each choice was made -- in particular why the units of both mouse sources had to
+  be INFERRED and how, why the perfusion is divided by the full block volume and the length
+  density by an eroded one, why the branching angle is taken from a centreline 15 um from
+  the junction rather than from a chord, why vessel-type code 5 is counted and excluded, and
+  why the effective-animal count uses a strain ICC rather than the estimator the tract work
+  used.  ibm/topologies/vascular_prior.py reads measured.json and falls back to these figures
+  compiled in when it is absent.

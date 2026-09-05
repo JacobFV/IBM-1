@@ -83,9 +83,13 @@ class Component:
     #: *sampling* of a domain, not a different place: cortical population activity
     #: is the same quantity whether you index it by volume position or by a column
     #: node seeded on the folded sheet, and which one a materialization wants is
-    #: decided by the processes it needs, not by the component.  at 2 mm a volume
-    #: graph mis-connects 0.1% of cortical pairs across a sulcus; at 10 mm it
-    #: mis-connects 58%, so the sheet indexing is not a refinement of the volume
+    #: decided by the processes it needs, not by the component.  measured on the
+    #: mne sample subject: a euclidean volume graph connects pairs more than 20 mm
+    #: apart along the sheet for 0.0% of pairs at 2 mm spacing, 2.7% at 5 mm and
+    #: 20.4% at 10 mm, median geodesic/chord ratio 1.41, p90 3.5, worst 11x.  the
+    #: median is modest and the tail is the point: the map from chord to geodesic
+    #: is not monotone, so no reweighting separates a same-crown pair from an
+    #: opposite-banks one.  the sheet indexing is not a refinement of the volume
     #: one -- it is the only indexing on which lateral propagation is expressible.
     #: a materialization must place each position on exactly ONE of these; see
     #: `supports_of` and the overlap check in ibm.materialize.build.

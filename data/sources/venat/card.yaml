@@ -1,107 +1,128 @@
 # ibm-1 source card. schema: data/schema/source.schema.json
 id: venat
 title: VENAT -- high-resolution 7T QSM venous atlas
-provider: VENAT (PubMed 31278570)
-citation: A high-resolution 7T QSM venous atlas. 2019.
+provider: Huck et al., MPI CBS Leipzig
+citation: 'Huck et al., High resolution atlas of the venous brain vasculature from 7 T quantitative susceptibility
+  maps. Brain Structure and Function 224:2467-2485, 2019. PubMed 31278570.'
 urls:
 - https://pubmed.ncbi.nlm.nih.gov/31278570/
-access: priority
+- https://figshare.com/articles/dataset/VENAT_Probability_map_nii_gz/7205960
+access: held
 licence:
-  name: unresolved
-  redistribution: unresolved
-  commercial: unresolved
-  notes: Unresolved.
-binding: unbound
+  name: CC BY 4.0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'HELD from figshare item 7205960, whose record metadata declares CC BY 4.0. Resolved from the
+    licence''s own public terms rather than by judgement: attribution required, commercial use and redistribution
+    permitted, no share-alike.'
+binding: bound
 population:
-  n: null
+  n: 20
   hierarchy:
   - participant
-  notes: 'n unresolved. §51.2 item 15: venous geometry, susceptibility and VASCULAR-BIAS MODELLING --
-    the last is why this is p0 rather than p1.'
+  - session
+  notes: '20 young healthy volunteers at five measurements each. HELD is the ATLAS, not the cohort: nine
+    nifti volumes at 0.5 mm isotropic in MNI152, 159 MiB, measured 2026-09-05. No individual subject''s
+    data is in the release, so nothing here can be split by participant and nothing here is a measurement
+    of any one person.'
 frames:
-- scanner_anat
+- MNI152
 streams:
-- name: venous_probability_atlas
-  kind: measured
-  via: null
-  observation_chain: tissue magnetic susceptibility -> field perturbation -> phase accrual over TE ->
-    phase unwrapping, background-field removal and an ill-posed dipole inversion -> susceptibility map.
-    The inversion is regularised and its regularisation is a choice
-  confounds:
-  - QSM contrast for veins depends on DEOXYHAEMOGLOBIN concentration, so a vein's visibility depends on
-    its oxygenation -- the measurement is confounded with the physiological state it would be used to
-    constrain
-  - the dipole inversion is ill-posed and regularised; vessel diameter estimates inherit the regularisation's
-    smoothing
-  - iron-rich grey matter structures also produce positive susceptibility and are confusable with veins
-  - partial volume at sub-voxel calibre inflates apparent diameter
-  systematic_bias: 'THE source for venous geometry, and the reason it matters is §17: BOLD signal is displaced
-    downstream into draining veins, so the venous tree''s geometry is the spatial transfer function between
-    neural activity and where the BOLD signal appears.'
-  notes: QSM-derived diameter is a regularised estimate, not a measured lumen
-  band_hz:
-  - null
-  - null
-  temporal_support: not a time series
-  spatial_support: 7T quantitative susceptibility mapping at sub-millimetre resolution, with vessel location,
-    DIAMETER and CURVATURE -- geometric attributes, not only a mask
 - name: vessel_diameter_and_curvature
   kind: measured
-  via: null
-  systematic_bias: 'S56.3 asks for ORIENTED TUBE representations with radius and length, and diameter
-    and curvature are exactly those parameters. NOTHING MEASURED IS HELD. This entry previously said they
-    were ''supplied as measurement rather than assumption''; the only file held is the partial-volume
-    map, and every radius bwin.geometry.venous derives from it is a function of a THRESHOLD somebody chose
-    -- measured across four thresholds, the largest vessel''s radius runs 2.91 to 4.85 mm, and laminar
-    resistance goes as r^-4, so the two ends disagree by roughly eightfold on any flow either could support.
-    Authority lowered from high to medium to match: a reconstructed calibre with a free parameter in it
-    is not a measured one.'
+  constrains:
+  - structural.lumen_radius
+  via:
+  - vascular_flow
+  observation_chain: tissue magnetic susceptibility -> field perturbation -> phase accrual over TE ->
+    phase unwrapping, background-field removal and an ill-posed regularised dipole inversion -> susceptibility
+    map -> vessel segmentation at a chosen threshold -> centreline with a diameter, curvature and torsion
+    along it -> registration of 20 subjects into MNI and averaging. EVERY stage after the first is a derivation
+  confounds:
+  - the dipole inversion is ill-posed and regularised; a diameter inherits the regularisation's smoothing
+  - a diameter is the output of a THRESHOLD somebody chose.  measured across four thresholds the largest
+    vessel's radius runs 2.91 to 4.85 mm, and laminar resistance goes as r^-4, so the two ends disagree
+    by roughly eightfold on any flow either could support
+  - partial volume at sub-voxel calibre inflates apparent diameter, and the median vessel here is 0.73
+    mm against a 0.5 mm voxel
+  - QSM vein contrast depends on DEOXYHAEMOGLOBIN, so a vein's visibility depends on its oxygenation --
+    the geometry is confounded with the physiological state it would be used to constrain
+  - the atlas has a skeleton only where subjects agreed enough to leave one, and registration turns positional
+    variability into blur rather than into variance
+  systematic_bias: 'A POPULATION atlas, so it is somebody else''s venous tree by construction. Its authority
+    is medium rather than high because a reconstructed calibre with a free threshold in it is not a measured
+    one -- but the quantity ibm-1 actually takes from it is a RATIO and is insensitive to a multiplicative
+    error in that threshold.'
+  notes: 'this is the stream that closes gap #7 for the venous side: `structural.lumen_radius` is a component
+    now, so a centreline with a diameter along it lands somewhere instead of being context.  what it supplies
+    is tier 2 of ibm/topologies/vascular_prior.py, and specifically the SPREAD: the std maps shipped alongside
+    the means give a between-subject coefficient of variation of the calibre of 0.289 per voxel, which
+    is a log sd of 0.283 -- a factor of 1.33 on the radius and, because Poiseuille conductance goes as
+    r^4, a factor of 3.1 on what the vessel can carry.  the curvature spread is 0.52 and the torsion spread
+    0.31.  every one of those is a LOWER bound, twice over, for the reasons in the confounds.  measured
+    2026-09-05 over the 12,427 skeleton voxels by scripts/measure_microvasculature.py arm C.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  temporal_support: not a time series -- a population average of static anatomy
+  spatial_support: 7T QSM at 0.6 mm acquired, distributed at 0.5 mm isotropic in MNI152; vessel diameter,
+    curvature and torsion with a standard-deviation map for each, on a 12,427-voxel population venous
+    skeleton
+- name: venous_probability_atlas
+  kind: context
+  constrains: []
+  via: null
+  systematic_bias: 'THE source for venous geometry, and the reason it matters is that BOLD signal is displaced
+    downstream into draining veins, so the venous tree''s geometry is the spatial transfer function between
+    neural activity and where the BOLD signal appears.'
+  notes: 'context, and it is a DECISION.  a probability map is a COVER over the brain -- it says where
+    a vein is likely to be, which is a statement about position and not a value any ibm component takes.
+    ARCHITECTURE.md §2 is where covers live and §1 is where components do.  it reaches a materialization
+    as a support index and as a prior, never as a likelihood.  the partial-volume map is the largest file
+    in the release and the one every derived radius is computed from; its own between-subject CV is 0.546,
+    twice the calibre''s, because it is a volume.'
+  band_hz:
+  - 0.0
+  - 0.001
+  spatial_support: partial-volume and density maps of the venous tree at 0.5 mm in MNI152, with a standard-deviation
+    map for the partial volume
 - name: venous_bias_prior
-  kind: measured
+  kind: context
+  constrains: []
   via: null
   systematic_bias: a population venous atlas is a prior over WHERE BOLD IS DISPLACED, which is directly
     actionable in the observation model rather than only descriptive
+  notes: 'context, and a DECISION for the same reason as the probability atlas: "where the BOLD signal
+    is displaced to" is a property of a forward model, not a state variable, and no registered component
+    is a displacement field.  it enters an observation model as a weighting and never as evidence about
+    biology.'
   band_hz:
-  - null
-  - null
-- name: qsm_volumes
-  kind: measured
-  via: null
-  band_hz:
-  - null
-  - null
-- name: vessel_diameter_estimates
-  kind: measured
-  via: null
-  band_hz:
-  - null
-  - null
-- name: vessel_curvature_estimates
-  kind: measured
-  via: null
-  band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
 absent:
 - arterial_tree
 - capillary_scale
 - flow_velocity
 - individual_geometry
 - oxygenation_state
+- per_subject_qsm_volumes
+- subject_level_data
 use:
 - calibrate
-- fit
 - prior
 forbidden:
 - venat/* -> arterial geometry
-- venat/* -> capillary-scale geometry
+- venat/* -> capillary-scale geometry; the release stops at 0.5 mm and a capillary is 5 um, and in cortex
+  everything above 30 um is 0.5% of the vascular length
 - venat/venous_probability_atlas -> oxygenation state (circular)
+- venat/vessel_diameter_and_curvature -> an absolute lumen calibre; the threshold is free and only the
+  RATIO of the std map to the mean map is used
+- venat/* -> this subject's venous anatomy; the release ships no individual data at all
 split:
   group_by:
   - participant
+  notes: 'an atlas: it is held out of nothing and must be trusted for nothing on its own.  there is no
+    per-subject data in the release to split.'
 provenance:
   imported_from: win-registry
   card: venat

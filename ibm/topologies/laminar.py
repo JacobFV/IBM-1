@@ -30,6 +30,36 @@ re-deriving which is which.
 `distance_mm` is carried alongside `depth_delta` because the two say different
 things and both are needed: the delta says which layers are involved and the
 millimetres say how far a dendrite actually has to conduct.
+
+the cascade, measured
+---------------------
+the paragraph above states the translaminar cascade as anatomy, and until now
+that statement rested on rodent slice work and a small number of primate tracing
+studies.  `scripts/measure_microcircuit.py` tests it against MICrONS's proofread
+axons -- with intersomatic distance divided out, because layers are separated in
+depth and connection probability falls with distance, so an undivided "laminar"
+effect is partly a distance effect.  observed connections over what distance alone
+predicts, for excitatory cells:
+
+    L4   -> L2/3   1.44      L2/3 -> L4     0.67       2.1x forward
+    L2/3 -> L5     3.41      L5   -> L2/3   4.56       0.75x -- reciprocal
+    L5   -> L6     1.30      L6   -> L5     0.71       1.8x forward
+    L6   -> L4     0.30      L4   -> L6     0.74       0.4x -- unsupported
+
+the first and third confirm the direction this docstring asserts.  the second is
+the interesting one: L2/3 <-> L5 is the strongest laminar preference in the whole
+circuit and it is very nearly SYMMETRIC, so the "distinct 5 -> 2/3 return" this
+docstring already names is not a minor return path -- it is the equal or dominant
+half of a reciprocal loop.  the fourth is a negative result: the L6 -> L4 edge is
+three times less likely than distance alone predicts, from only 10 proofread layer
+6 cells, so this volume fails to support it rather than refuting it.
+
+none of that changes the topology, and that is the point.  `laminar` is a support
+and it must carry every one of these pairs whether the measurement liked them or
+not -- an edge the support refuses is a hypothesis no fit can recover, while a
+weakly-supported edge costs one parameter and a prior centred low.
+`ibm/topologies/microcircuit_prior.laminar_gain_priors` is where the four numbers
+above become those priors.
 """
 
 from __future__ import annotations

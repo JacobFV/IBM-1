@@ -1,0 +1,18 @@
+# what this recipe produced, from which raw source.  committed.
+recipe: population_kinetics
+version: 1
+produced_at: '2026-09-05'
+from_raw:
+  allen-cell-types-patchseq: cell_types_specimen_details.json, 2333 rows
+outputs:
+- measured.json
+headline:
+  n_human: 413
+  n_mouse: 1920
+  mouse_spiny_tau_ms_median: 20.42778224134875
+  human_spiny_tau_ms_median: 26.3727094722572
+  mouse_pvalb_tau_ms_median: 7.022243279892805
+read_it_as: single-cell patch clamp in slice at 34 C.  a membrane time constant measured at rest in a
+  quiet slice is several times LONGER than the effective one in the high-conductance state of active cortex,
+  which is the value the process parameter actually means.
+notes: see derive/population_kinetics.yaml

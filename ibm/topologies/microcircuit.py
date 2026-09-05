@@ -25,6 +25,42 @@ at 3 mm spacing would connect populations in different cortical areas and call i
 a canonical circuit.  the radius therefore defaults to zero rather than to a
 multiple of the spacing: a coarse materialization gets self-edges only, which is
 the honest answer, instead of getting a plausible-looking graph that is wrong.
+
+what the measurement says about all of the above
+------------------------------------------------
+the three claims in this docstring -- that a within-site self-edge is the correct
+statement of the circuit, that sst's lateral reach is "a few hundred microns",
+and that half a millimetre is where a microcircuit stops being one -- were
+declared judgements when they were written.  `scripts/measure_microcircuit.py`
+measures them against MICrONS's proofread axons and
+`ibm/topologies/microcircuit_prior.py` carries the result.  they come out:
+
+    fraction of a cell's local output inside a tangential radius of
+                    100 um   200 um   300 um   500 um
+    excitatory       29%      70%      88%      96%
+    pv               42%      87%      98%     100%
+    sst              45%      89%      99%     100%
+    vip              51%      91%      99%     100%
+
+so the self-edge is a very good model of the inhibitory circuit and a truncation
+of the excitatory one, and the difference is the finding.  at a 200 um column an
+sst cell's inhibition really is a relation the position has with itself; a
+pyramidal cell's excitation is not, and the 30% that escapes is exactly the part
+that carries information between columns.  a materialization that wants the
+excitatory circuit right has to raise `radius_mm`, and one that only wants the
+inhibitory circuit right does not.
+
+"a few hundred microns" for sst was generous rather than wrong: the measured
+median contact distance is 107 um and the p90 is 206 um, with a fitted space
+constant of 47 um for sst -> exc against 220 um for exc -> exc.  the two differ by
+a factor of five, which is the number a single `radius_mm` shared between the
+populations cannot express -- and `microcircuit_generative` in the prior module is
+where that per-pair reach is carried.
+
+`max_radius_mm = 0.5` survives contact with the data and can now say why: 96% of
+excitatory and effectively all of every interneuron's local output falls inside
+500 um, so past that radius the graph stops being a microcircuit not by definition
+but by measurement.
 """
 
 from __future__ import annotations

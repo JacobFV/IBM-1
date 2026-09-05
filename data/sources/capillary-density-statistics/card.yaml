@@ -27,11 +27,24 @@ streams:
     Stereological estimates carry real methodological spread between studies and are usually quoted without
     it.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: 'published NUMBERS rather than images: stereological estimates of capillary density,
     intercapillary distance and orientation distributions by cortical layer and region'
+  notes: 'NOT HELD, and searched for on 2026-09-05 rather than assumed unavailable.  this card names a
+    CLASS of published tables and not an artifact: the stereological literature on human cortical capillary
+    density sits behind publisher paywalls and is distributed as prose and figures rather than as data,
+    and no open machine-readable table of density by cortical layer was found.  transcribing numbers out
+    of a paper into this repository would produce a file that looks like evidence and has no provenance
+    anyone can check, which is worse than the gap.
+
+    the gap is partly filled from the other direction.  `microscopy-microvascular-networks` measures exactly
+    these quantities -- capillary length density by cortical depth, intercapillary distance, wall surface
+    density -- directly from complete reconstructions, and data/sources/microscopy-microvascular-networks/evidence/microvasculature@1/
+    holds them with their between-animal spread.  what remains missing is therefore not the QUANTITY but
+    the SPECIES, and consequently the one thing this card was supposed to supply and cannot: an independent
+    HUMAN number against which the cross-species transfer could be checked.'
 - name: layer_wise_density_variation
   kind: measured
   via: null
@@ -41,6 +54,7 @@ streams:
   - null
   - null
 absent:
+- bytes_here
 - spatial_maps
 - individual_variation
 - in_vivo_measurement

@@ -22,26 +22,36 @@ frames:
 - mesh_native
 streams:
 - name: centerlines_with_radius
-  kind: context
-  via: null
-  systematic_bias: §56.3 asks for VESSEL CENTRELINE GRAPHS, branch topology, radius and length estimates,
-    and ORIENTED TUBE representations. AneuRisk already distributes exactly that structure, computed by
-    VMTK's maximal-inscribed-sphere method -- which makes it both a data source and a worked example of
-    the target representation. The radius is a maximal inscribed sphere, which is a DEFINITION of radius,
-    not the only one.
+  kind: measured
+  constrains:
+  - structural.lumen_radius
+  - structural.segment_length
+  via:
+  - vascular_flow
+  systematic_bias: AneuRisk distributes VESSEL CENTRELINE GRAPHS with radius, curvature and torsion as
+    functions of arc length, computed by VMTK's maximal-inscribed-sphere method -- which makes it both
+    a data source and a worked example of the target representation. The radius is a maximal inscribed
+    sphere, which is a DEFINITION of radius and not the only one, and it is systematically larger than
+    a cross-sectional-area-equivalent radius wherever the lumen is not circular, which at an aneurysm
+    neck is everywhere.
   band_hz:
   - 0.0
   - 0.001
   temporal_support: not a time series
   spatial_support: vessel surface meshes plus CENTRELINE GRAPHS carrying radius, curvature and torsion
     as functions of arc length -- a tube-chain representation in all but name
-  constrains: []
-  notes: context, and the reason is an ONTOLOGY GAP that this card makes unusually sharp.  what is distributed
-    is exactly the structure a vascular product wants -- centreline graphs carrying radius, curvature
-    and torsion as functions of arc length, a tube-chain representation in all but name, computed by VMTK's
-    maximal-inscribed-sphere method -- and the registry has NO component for vessel geometry.  `blood.volume`
-    and `blood.flow` are per-tissue-element quantities and a lumen radius is not either of them.  so this
-    enters as a geometric prior and constrains no state until a vascular product exists.
+  notes: 'this stream WAS context, and the reason it was is now closed.  the note it carried said: "the
+    registry has NO component for vessel geometry.  `blood.volume` and `blood.flow` are per-tissue-element
+    quantities and a lumen radius is not either of them.  so this enters as a geometric prior and constrains
+    no state until a vascular product exists."  `structural.lumen_radius` and `structural.segment_length`
+    exist now -- on the `structural` field with a support override to `vascular_tree`, because a resting
+    calibre moves over days and `structural` is the field organised by that timescale -- and this is exactly
+    the shape they were declared for.
+
+    what it is still NOT is a measurement of a healthy person: the cohort is clinical, the geometry is
+    a segmentation with a threshold in it, and the vessels are of the circle of Willis, three orders of
+    magnitude above the capillary bed where all of the exchange happens.  it constrains the macro tree
+    and nothing below it, which is what `forbidden` says.'
 - name: vessel_surfaces
   kind: context
   via: null
@@ -104,8 +114,12 @@ use:
 - calibrate
 - fit
 forbidden:
-- aneurisk/* -> measured-geometry claims
 - aneurisk/* -> flow or pressure state
+- aneurisk/* -> an absolute lumen calibre; the segmentation threshold is free and the maximal-inscribed-sphere
+  radius overestimates a non-circular lumen
+- aneurisk/* -> healthy vascular geometry; the cohort is aneurysmal and the haemodynamics that shaped
+  these vessels are the pathology
+- aneurisk/* -> capillary-scale or microvascular geometry; the release stops at the circle of Willis
 split:
   group_by:
   - participant

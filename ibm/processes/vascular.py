@@ -35,6 +35,7 @@ from ibm.vocabulary import (
     HEMODYNAMIC,
     OnSupport,
     Provenance,
+    STRUCTURAL,
     Tying,
     Validity,
     lognormal,
@@ -266,6 +267,16 @@ VASCULAR_FLOW = process(
         within("blood", "flow", "pressure", "volume", band=HEMODYNAMIC),
         within("blood", "oxygen_content", "deoxyhemoglobin", band=HEMODYNAMIC),
         within("material", "stiffness", band=Band(0.0, 0.001)),
+        # the geometry the transport runs over, read and never written.  a segment's
+        # resistance is 8 mu L / (pi r^4), so the radius enters at the fourth power and
+        # the length linearly, and neither is recoverable from blood state -- a
+        # windkessel fitted without them absorbs the whole tree into one time constant
+        # and can no longer say which vessels a change happened in.  branch order is
+        # read because the arterial pressure drop is not spread evenly along the path:
+        # most of it falls across two or three generations of precapillary arteriole,
+        # and a model that does not know where in the order it is cannot place it.
+        within("structural", "lumen_radius", "segment_length", "branch_order",
+               region=OnSupport("vascular_tree"), band=STRUCTURAL),
     ),
     outputs=(
         within("blood", "flow", "pressure", "volume", band=HEMODYNAMIC),
@@ -366,6 +377,16 @@ TISSUE_EXCHANGE = process(
         within("blood", "flow", "oxygen_content", band=HEMODYNAMIC),
         within("metabolic", "consumption", "oxygen", "glucose", band=HEMODYNAMIC),
         within("extracellular", "ph", band=HEMODYNAMIC),
+        # exchange is permeability x SURFACE x concentration difference, and the
+        # surface is geometry: 2 pi r L per capillary segment on the tree, or
+        # equivalently a capillary length density times a mean calibre per unit of
+        # tissue.  both are read, because a materialization that resolves individual
+        # capillaries has the first and one at 2 mm has only the second -- and a model
+        # that had neither would be asserting a fixed extraction fraction while
+        # pretending to compute one.
+        within("structural", "lumen_radius", "segment_length",
+               region=OnSupport("vascular_tree"), band=STRUCTURAL),
+        within("structural", "capillary_density", band=STRUCTURAL),
     ),
     outputs=(
         within("metabolic", "oxygen", "glucose", band=HEMODYNAMIC),

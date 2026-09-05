@@ -650,7 +650,7 @@ permitted to update the biology.
 | `mdtb-cerebellar` | MDTB -- Multi-Domain Task Battery cerebellar functional atlas | prior/calibration | p1 |
 | `metabolomics-resources` | Human metabolomics resources | prior/calibration | p1 |
 | `microns` | MICrONS -- millimetre-scale mouse visual cortex EM connectome with functional imaging | prior/calibration | p1 |
-| `microscopy-microvascular-networks` | Microscopy-derived microvascular network reconstructions | prior/calibration | p1 |
+| `microscopy-microvascular-networks` | Microscopy-derived microvascular network reconstructions, with a flow solution | prior/calibration | held |
 | `mida-head-model` | MIDA v1.0 -- multimodal imaging-based detailed anatomical model of the human head and ne | prior/calibration | restricted |
 | `mni-open-ieeg-atlas` | MNI Open iEEG Atlas -- normative intracranial EEG | prior/calibration | watch |
 | `motor-threshold-calibration-studies` | Motor threshold calibration studies | calibration | p1 |
@@ -695,8 +695,8 @@ permitted to update the biology.
 | `transducer-calibration-datasets` | Focused ultrasound transducer calibration datasets | calibration | p1 |
 | `usda-fooddata-central` | USDA FoodData Central | calibration | p1 |
 | `vascular-model-repository` | Vascular Model Repository | oracle/prior | p1 |
-| `venat` | VENAT -- high-resolution 7T QSM venous atlas | observation/prior/calibration | repo-held |
-| `vesselgraph-mouse` | VesselGraph -- mouse whole-brain microvascular graph dataset | prior/calibration | p1 |
+| `venat` | VENAT -- high-resolution 7T QSM venous atlas | prior/calibration | held |
+| `vesselgraph-mouse` | VesselGraph -- mouse whole-brain microvascular graph dataset | prior/calibration | held |
 | `vestibular-proprioceptive-datasets` | Vestibular and proprioceptive task datasets | prior/boundary/calibration | p1 |
 | `von-economo` | von Economo and Koskinas cytoarchitectonic atlas | prior/calibration | repo-held |
 | `yeo2011` | Yeo 2011 resting-state cortical networks (7 and 17), on fsaverage | prior | repo-held |

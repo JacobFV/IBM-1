@@ -16,19 +16,42 @@ reason rather than by default: the distance that matters is the radial diffusion
 distance from a capillary wall out into tissue, the Krogh geometry.  it is not
 path length along the tree, because the molecule has left the tree; it is not
 tortuosity-corrected interstitial distance, because the first and dominant barrier
-is the endothelium.  the reach is set by the inter-capillary spacing -- capillary
-density in human grey matter puts most tissue within about 25 microns of a
-capillary, and the oxygen diffusion distance is of that order -- so a
-materialization coarser than that has already averaged over the exchange geometry,
-and the builder says so rather than pretending the reach is resolved.
+is the endothelium.
+
+the two numbers that used to be literature here are now measured, and both were
+about right.  `scripts/measure_microvasculature.py` sends two hundred thousand
+random points into three complete cortical microvascular reconstructions and asks
+how far each is from the nearest capillary centreline: the mean is 27 microns, the
+p90 is 40 and the p99 is 84.  so "most tissue within about 25 microns" was
+correct, and a materialization coarser than that has already averaged over the
+exchange geometry, which the builder says rather than pretending the reach is
+resolved.  what the measurement adds is that the estimate everyone reaches for --
+one over the square root of the length density -- gives 39 microns and overstates
+the mean by half, because a capillary bed is not a cubic lattice and the tissue
+nearest a vessel is much nearer than a lattice would put it.
 
 `contact_area_mm2` is the exchange surface, taken as the capillary wall area
 2 pi r L attributable to the segment.  it is the physically right quantity: flux
-is permeability times surface times concentration difference, and capillary
-surface density per unit tissue volume is one of the few directly measured
-numbers here (roughly 5-10 mm^2 per mm^3 in cortex).  carrying the area rather
-than a count is also what makes the topology insensitive to how finely the
-vascular tree was sampled.
+is permeability times surface times concentration difference, and the capillary
+surface density per unit tissue volume this sums to is now measured at 8.8 mm^2
+per mm^3 with a between-animal spread of x1.10, against the "roughly 5-10" this
+docstring previously quoted from the literature.  carrying the area rather than a
+count is also what makes the topology insensitive to how finely the vascular tree
+was sampled.
+
+what the same measurement says the builder is missing is the DEPTH profile.
+capillary length density varies 2.6-fold through the cortical ribbon, peaking
+around 40% of the way in, and that variation is three times the variation between
+animals -- so an exchange topology built at uniform density is wrong by a factor
+of two at both ends of the ribbon, which for a laminar BOLD model is the entire
+effect being modelled.  `ibm.topologies.vascular_prior.MEASURED.density_at_depth`
+is that profile, and `structural.capillary_density` is the component a
+materialization should carry it in.
+
+both numbers, and the profile, are in
+`data/sources/microscopy-microvascular-networks/evidence/microvasculature@1/`.
+they are MOUSE cortex.  the normalised geometry transfers and the absolute density
+does not, because capillary density tracks metabolic rate.
 """
 
 from __future__ import annotations
@@ -53,14 +76,25 @@ def capillary_tissue_exchange(sites, *, vascular_support: str = "vascular_tree",
 
     `capillary_radius_mm` defaults to 5 microns, the upper end of human cerebral
     capillary calibre; nodes wider than that are arterioles or venules and are
-    excluded from exchange.  if the tree carries no radii the selection cannot be
-    made, and the builder says so instead of exchanging with everything -- an
+    excluded from exchange.  measured on a labelled mouse bed the median capillary
+    RADIUS is 2.06 microns, so a 5 micron cut on the radius is loose by a factor
+    of two and will admit some precapillary arterioles -- which is the safer
+    direction here for the same reason the reach is generous, and is worth knowing
+    when a materialization's extraction fraction comes out low.
+
+    if the tree carries no radii the selection cannot be made, and the builder
+    says so instead of exchanging with everything -- an
     exchange topology built over the whole tree is worse than none, because it
     looks reasonable and delivers oxygen at the wrong place in the transit.
 
-    `reach_mm` defaults to 50 microns, about twice the mean tissue-to-capillary
-    distance in cortex.  when the materialization's tissue spacing is much
-    coarser than that -- as any whole-brain request will be -- every tissue site
+    `reach_mm` defaults to 50 microns, which the measurement now puts at about
+    twice the mean tissue-to-capillary distance (27 um) and a quarter above its
+    p90 (40 um) -- generous, and generous in the right direction, since an
+    exchange edge that should not exist costs a parameter while one that is
+    missing is a piece of tissue nothing perfuses.
+
+    when the materialization's tissue spacing is much coarser than that -- as any
+    whole-brain request will be -- every tissue site
     contains many capillaries and the reach is doing nothing but linking the site
     to whichever tree nodes were instantiated near it.  that is recorded in the
     note rather than corrected, because the correction is to materialize the

@@ -1,5 +1,23 @@
 # where the bytes for `vesselgraph-mouse` actually live.  never the bytes themselves.
-source_url: "https://github.com/jocpae/VesselGraph"
-local_root: null   # set on acquisition
-acquired_at: null
-bytes: null
+local_root: /home/brandonin/Documents/win-data/vesselgraph-mouse
+acquired_at: '2026-09-05'
+files: 9
+bytes: 2566571776
+gib: 2.39
+checksums: sha256 of every archive, in checksums.txt alongside this file
+source_url: https://github.com/jocpae/VesselGraph
+note: >-
+  the nine RAW archives, one per animal, from the download table in the project's
+  own README (syncandshare.lrz.de/dl/...).  each holds two semicolon-separated csv
+  written by Voreen -- a node list with position and degree, and an edge list with
+  arc length, chord distance, curveness and four radius estimates per segment.
+  BALBc_no1..3, C57BL_6_no1..3, CD1-E_no1..3: three strains, three animals each,
+  2.2 to 5.2 million segments per brain.
+
+  what was deliberately NOT taken: the `preprocessed` column of the same table,
+  which is the same graphs repackaged for OGB dataloaders and adds nothing this
+  repository can use; the C57BL_6-K18/19/20 graphs, which the README says are
+  still being verified with the Kleinfeld lab and are not produced by the same
+  pipeline as the other nine, so pooling them would mix two skeletonisations into
+  one between-animal spread; and the five synthetic graphs, which are not
+  measurements of anything.

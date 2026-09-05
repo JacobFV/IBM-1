@@ -1,58 +1,138 @@
 # ibm-1 source card. schema: data/schema/source.schema.json
 id: microscopy-microvascular-networks
-title: Microscopy-derived microvascular network reconstructions
-provider: multiple -- two-photon, light-sheet and cleared-tissue microvascular studies
-citation: PROMPT.md §52.10, 'microscopy-derived microvascular networks'.
-access: priority
+title: Microscopy-derived microvascular network reconstructions, with a flow solution
+provider: Blinder/Kleinfeld (geometry) and Schmid/Weber (flow), distributed on Zenodo
+citation: 'Blinder et al., The cortical angiome: an interconnected vascular network with noncolumnar patterns
+  of blood flow. Nature Neuroscience 16:889-897, 2013; Schmid et al., Depth-dependent flow and pressure
+  characteristics in cortical microvascular networks. PLoS Computational Biology 13:e1005392, 2017.'
+urls:
+- https://zenodo.org/records/269650
+- https://zenodo.org/records/1306230
+access: held
 licence:
-  name: unresolved
-  redistribution: unresolved
-  commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
-binding: unbound
+  name: CC BY 4.0
+  redistribution: permitted
+  commercial: permitted
+  notes: 'Both Zenodo records declare CC BY 4.0 in their record metadata, which was read from the Zenodo
+    API rather than from a landing page. Resolved from the licence''s own public terms: CC BY 4.0 requires
+    attribution, permits commercial use and redistribution, and has no share-alike clause.'
+binding: bound
 population:
-  n: null
+  n: 3
+  species: Mus musculus
+  hierarchy:
+  - participant
+  notes: 'HELD: three blocks of mouse vibrissa primary sensory cortex, NW1, NW2 and NW3, of 1.38, 2.75
+    and 1.70 mm^3 by bounding box. Measured 2026-09-05 from the files: 8,578 to 16,175 vertices and 11,336
+    to 21,883 segments each, of which 72-78% are labelled capillary. Record 1306230 adds MVN1 and MVN2
+    with and without discrete red blood cells and the in-vivo measurements the flow model was validated
+    against.'
 frames:
 - tissue_block_native
 streams:
 - name: capillary_network_geometry
   kind: measured
-  via: null
-  systematic_bias: §56.3 names STATISTICAL DESCRIPTIONS as an acceptable input -- 'no existing mesh is
-    required'. Microscopy studies typically publish DISTRIBUTIONS (density, radius, segment length, orientation
-    anisotropy) rather than networks, and those distributions are exactly what a stochastic ensemble is
-    conditioned on. Tissue clearing and fixation shrink vessels, and the shrinkage factor is often unreported.
+  constrains:
+  - structural.lumen_radius
+  - structural.segment_length
+  - structural.capillary_density
+  via:
+    structural.lumen_radius:
+    - tissue_exchange
+    structural.segment_length:
+    - tissue_exchange
+    structural.capillary_density:
+    - tissue_exchange
+  observation_chain: India-ink-filled fixed cortex -> two-photon and confocal microscopy -> semi-automated
+    reconstruction into a centreline graph with a diameter at every centreline point -> vessel-type labelling.
+    the geometry is a measurement and the labelling is a classifier's opinion
+  confounds:
+  - 'fixation and India-ink filling: the lumen a cast fills is not the lumen a live vessel has'
+  - the reconstruction is of a block cut on every face, so a boundary shell one segment thick is truncated
+    and every density there is low
+  - vessel-type code 5 appears in every network with a median calibre close to the arteriole and venule
+    codes and is not documented in the release; it is counted separately and kept out of every capillary
+    statistic
+  - three animals from one laboratory and one protocol
+  systematic_bias: MOUSE cortex, and the smallest and most complete such reconstruction that exists with
+    a flow solution attached. Its use is as the statistical and physical prior a synthesised human bed
+    must be consistent with, never as a human measurement. The absolute density is species-specific because
+    capillary density tracks metabolic rate; the normalised geometry is what transfers.
+  notes: 'this stream is the source of the capillary-bed numbers ibm/topologies/vascular_prior.py compiles
+    in: length density 664 mm/mm^3 with a between-animal spread of x1.09 and a 2.6-fold variation over
+    cortical DEPTH, wall surface 8.8 mm^2/mm^3, mean tissue-to-capillary distance 27 um and 40 um at
+    p90, capillary radius 2.06 um, segment length 56 um, tortuosity 1.17.  the depth variation is three
+    times the between-animal variation, which is why the generator conditions on depth and not on subject.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
-  spatial_support: microvascular networks reconstructed from optical microscopy in cortical tissue blocks,
-    human and animal, at capillary resolution
+  spatial_support: complete microvascular networks over 1.4-2.8 mm^3 of cortex spanning the full ribbon,
+    with the centreline of every segment stored as a polyline and a diameter at every point
 - name: orientation_anisotropy
   kind: measured
-  via: null
+  constrains:
+  - structural.branch_order
+  via:
+  - vascular_flow
   systematic_bias: capillary orientation anisotropy relative to the cortical surface normal matters for
-    susceptibility modelling and therefore for BOLD, which is why it is registered separately from density
+    susceptibility modelling and therefore for BOLD, which is why it is registered separately from density.
+    MEASURED here as branching geometry rather than as an orientation tensor -- the angle between daughters
+    at a bifurcation is 104 degrees at the median with a 78-138 degree interdecile range, and the parent-to-daughter
+    angle 54 degrees.
+  notes: 'branch order is the component this constrains and it is the ORIENTED one, which is what this
+    source can supply and vesselgraph-mouse cannot: the solved pressure field says which end of every
+    segment is upstream, so a parent is identified rather than guessed.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+- name: solved_flow_and_pressure
+  kind: context
+  constrains: []
+  via: null
+  systematic_bias: 'A SIMULATION on top of a measured geometry, and that is the whole reason it is context.
+    The pressure at a vertex and the flow in a segment are what a particular rheological model produced
+    from a particular set of boundary conditions; they are not measurements of blood. What they legitimately
+    support is a statement about what a network of THIS GEOMETRY must do in order to carry blood, which
+    is exactly what a generative model needs and is not a likelihood about anyone''s haemodynamic state.'
+  notes: 'context, and it is a DECISION rather than a gap.  a solved pressure field is not a measurement
+    of blood.pressure -- it is the output of a model, and letting it write a likelihood about a state
+    variable would let a simulation update biology.  what it is used for instead is a CONSTRAINT ON GEOMETRY:
+    the arteriole-to-venule drop (44 mmHg), the capillary transit time (0.19-0.41 s), the perfusion the
+    network delivers through its descending arterioles (93-173 ml/100g/min), the share of viscous dissipation
+    in the capillary bed (21%, against this repository''s previous assumption that it was most of it),
+    and the apparent viscosity each segment''s own drop implies as a function of calibre -- 2.4 mPa s
+    at 4 um falling to 1.5 at 6-9 um and rising again above 30, which is the Fahraeus-Lindqvist inversion
+    and which recovers the law the SOLVER used rather than a rheological fact.  the flow unit is not documented
+    in the release and was recovered two independent ways that agree; see the evidence directory.'
+  band_hz:
+  - 0.0
+  - 0.001
+  spatial_support: pressure at every vertex and flow, haematocrit and red-cell count in every segment
+    of the same three networks
 absent:
 - human_coverage
 - in_vivo_calibre
 - whole_brain_extent
-- flow
+- measured_flow
+- documented_flow_units
+- shrinkage_factor
 use:
 - calibrate
 - prior
 forbidden:
 - microscopy-microvascular-networks/* -> in-vivo vessel calibre without a shrinkage correction
 - microscopy-microvascular-networks/* -> observation-role likelihoods
+- microscopy-microvascular-networks/* -> human capillary density without a metabolic-rate scaling argument
+- microscopy-microvascular-networks/solved_flow_and_pressure -> a likelihood about blood.pressure or blood.flow;
+  it is a simulation and updating biology from it would be circular
 split:
   group_by:
   - participant
-  notes: 'a template or atlas: it is held out of nothing and must be trusted for nothing on its own'
+  notes: 'three animals is not a cohort.  it is enough to say what the between-animal spread of a density
+    is (x1.09) and not enough to say what a population''s is, and the deviation-from-consensus estimator
+    of shared error has essentially no dynamic range at n = 3 -- which the evidence directory reports
+    rather than papering over.'
 provenance:
   imported_from: win-registry
   card: microscopy-microvascular-networks

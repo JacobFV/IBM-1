@@ -1,5 +1,31 @@
-# where the bytes for `vessap` actually live.  never the bytes themselves.
-source_url: "http://discotechnologies.org/VesSAP/"
-local_root: null   # set on acquisition
+# where the bytes for `vessap` would live.  NOT ACQUIRED -- and the reason is
+# recorded rather than left as an empty directory.
+local_root: null
 acquired_at: null
 bytes: null
+source_url: http://discotechnologies.org/VesSAP/
+attempted_at: '2026-09-05'
+outcome: unobtainable from here
+note: >-
+  the VesSAP page links no download.  it links a four-page PDF, "VesSAP data
+  repository access", which instructs the reader to install FileZilla and connect
+  to sftp://ftp.isd.med.uni-muenchen.de:4253 with a username and password printed
+  in the PDF -- so the credentials are public and no registration wall exists.
+
+  the host answers on port 4253 and the SSH transport is refused.  the first
+  connection read the server's banner and rejected the password (the client had
+  no way to supply one non-interactively); every connection after that, over
+  forty minutes and through two different SSH implementations, was reset at the
+  banner with ECONNRESET before any key exchange.  that is the signature of an
+  IP block triggered by the first failed authentication, not of a wrong password
+  or a dead host, and it is not something this end can resolve.
+
+  so: NOT a dead link and NOT a registration wall.  a live server that has
+  blocked this address.  it is worth retrying from elsewhere, or after enough
+  time for a fail2ban window to expire.
+
+  it also matters less than it would have.  VesSAP is the imagery VesselGraph's
+  nine graphs were derived FROM, and those graphs are held in full -- the
+  skeletonisation VesSAP would have needed anyway is already done in them.  what
+  is lost is the segmentation volumes and the per-structure atlas-registered
+  densities, neither of which the microvasculature measurement uses.

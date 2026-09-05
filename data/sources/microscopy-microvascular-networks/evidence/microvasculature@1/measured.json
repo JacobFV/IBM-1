@@ -1,0 +1,3348 @@
+{
+ "measured_at": "2026-09-05",
+ "sources": [
+  "microscopy-microvascular-networks: Blinder et al. 2013 mouse vibrissa cortex networks with the Schmid/Weber flow solution (Zenodo 269650, CC BY 4.0)",
+  "vesselgraph-mouse: Paetzold et al. 2021 whole-brain mouse vessel graphs, 9 animals from 3 strains (CC BY-NC 4.0)",
+  "venat: Huck et al. 7T QSM venous atlas over 20 subjects x 5 measurements, MNI 0.5 mm (figshare 7205960, CC BY 4.0)"
+ ],
+ "arms": {
+  "cortical_networks_with_flow": {
+   "per_animal": {
+    "NW1": {
+     "name": "NW1",
+     "n_vertices": 9456,
+     "n_edges": 12523,
+     "interior_box_um": [
+      [
+       923.0943331335808,
+       1311.7570171375833,
+       32.16129032258064
+      ],
+      [
+       1852.3717350746267,
+       2265.284268548782,
+       1135.0
+      ]
+     ],
+     "interior_volume_mm3": 0.9772158155831911,
+     "kind_counts": {
+      "pial_artery": 20,
+      "pial_vein": 55,
+      "descending_arteriole": 1331,
+      "ascending_venule": 839,
+      "capillary": 9200,
+      "unlabelled": 1078
+     },
+     "by_kind": {
+      "pial_artery": {
+       "radius_um": {
+        "n": 20,
+        "median": 11.770751476288803,
+        "mean": 12.36528873444382,
+        "log_sd": 0.6635561722434413,
+        "spread_factor": 1.941685037754661,
+        "p10": 4.639524936688898,
+        "p90": 20.786593723488743
+       },
+       "length_um": {
+        "n": 20,
+        "median": 125.21198749833637,
+        "mean": 176.32328660150577,
+        "log_sd": 0.9907399655217944,
+        "spread_factor": 2.6932266300429686,
+        "p10": 32.22389958978242,
+        "p90": 326.9874692719056
+       }
+      },
+      "pial_vein": {
+       "radius_um": {
+        "n": 55,
+        "median": 15.195499897288801,
+        "mean": 16.759106176565147,
+        "log_sd": 0.4817042315039741,
+        "spread_factor": 1.6188309153029492,
+        "p10": 7.2322281837289,
+        "p90": 27.270751476288734
+       },
+       "length_um": {
+        "n": 55,
+        "median": 62.187165972425575,
+        "mean": 81.4430841564569,
+        "log_sd": 0.7297517198372843,
+        "spread_factor": 2.074565470275046,
+        "p10": 24.67622630431103,
+        "p90": 163.60989802063955
+       }
+      },
+      "descending_arteriole": {
+       "radius_um": {
+        "n": 1331,
+        "median": 4.878367185588899,
+        "mean": 4.879357765709436,
+        "log_sd": 0.14649124942247443,
+        "spread_factor": 1.1577647996634939,
+        "p10": 4.518321752588897,
+        "p90": 5.585283994688898
+       },
+       "length_um": {
+        "n": 1331,
+        "median": 40.31297954112574,
+        "mean": 49.14407775886388,
+        "log_sd": 0.7403572136753727,
+        "spread_factor": 2.096684345061138,
+        "p10": 13.38890505706126,
+        "p90": 92.55683314301997
+       }
+      },
+      "ascending_venule": {
+       "radius_um": {
+        "n": 839,
+        "median": 5.075370788588898,
+        "mean": 5.198017279019716,
+        "log_sd": 0.1805620674739013,
+        "spread_factor": 1.1978904692086092,
+        "p10": 4.527529811888899,
+        "p90": 6.1410570144289
+       },
+       "length_um": {
+        "n": 839,
+        "median": 35.46264369941973,
+        "mean": 43.085093592647674,
+        "log_sd": 0.6781062216088276,
+        "spread_factor": 1.9701431825552023,
+        "p10": 14.21733218180745,
+        "p90": 79.09147720747487
+       }
+      },
+      "capillary": {
+       "radius_um": {
+        "n": 9200,
+        "median": 2.162757927412966,
+        "mean": 2.2324678208045294,
+        "log_sd": 0.2036761850595757,
+        "spread_factor": 1.2259011240781983,
+        "p10": 1.7294313592888977,
+        "p90": 2.878981113488898
+       },
+       "length_um": {
+        "n": 9200,
+        "median": 57.733263722343835,
+        "mean": 74.3479025942397,
+        "log_sd": 0.7973783808889167,
+        "spread_factor": 2.2197140491282727,
+        "p10": 18.58505747976789,
+        "p90": 153.756589351071
+       }
+      },
+      "unlabelled": {
+       "radius_um": {
+        "n": 1078,
+        "median": 4.682089447988899,
+        "mean": 4.811590354164222,
+        "log_sd": 0.0669699164738542,
+        "spread_factor": 1.0692633104799862,
+        "p10": 4.519830036168899,
+        "p90": 5.1893503665889
+       },
+       "length_um": {
+        "n": 1078,
+        "median": 31.77914552936901,
+        "mean": 42.439884679147674,
+        "log_sd": 0.7259945526738881,
+        "spread_factor": 2.066785605290351,
+        "p10": 12.21733218180745,
+        "p90": 84.26951189577026
+       }
+      }
+     },
+     "length_density_mm_per_mm3": {
+      "capillary": 654.157958586731,
+      "all_vessels": 774.0613802299102,
+      "capillary_fraction_of_length": 0.8450983026597119
+     },
+     "capillary_surface_density_mm2_per_mm3": 9.113934237839706,
+     "capillary_volume_fraction": 0.01045914001155854,
+     "tissue_to_capillary_um": {
+      "mean": 21.810094429528647,
+      "median": 18.161177965334133,
+      "p90": 39.57902601491381,
+      "p99": 84.11718365070762,
+      "max": 145.95737744857593,
+      "note": "distance from a uniform random tissue point to the nearest capillary CENTRELINE, minus nothing -- subtract a ~2 um radius for the wall",
+      "sqrt_density_estimate": 39.09837298112079
+     },
+     "resolvable_fraction_above_diameter": {
+      "6um": {
+       "length": 0.21985409876082834,
+       "volume": 0.6769316475528565
+      },
+      "10um": {
+       "length": 0.07357167741045638,
+       "volume": 0.4428709029182124
+      },
+      "20um": {
+       "length": 0.007974497258982381,
+       "volume": 0.26407858363492276
+      },
+      "30um": {
+       "length": 0.005002269983411163,
+       "volume": 0.22143347090610363
+      },
+      "50um": {
+       "length": 0.0012680724405825937,
+       "volume": 0.08523407713841051
+      },
+      "100um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "200um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "300um": {
+       "length": 0.0,
+       "volume": 0.0
+      }
+     },
+     "tortuosity_arc_over_chord": {
+      "all": {
+       "n": 12491,
+       "median": 1.153749266972781,
+       "mean": 1.2468760019081377,
+       "log_sd": 0.19473955633713694,
+       "spread_factor": 1.2149945076591335,
+       "p10": 1.0447112723618754,
+       "p90": 1.4836020571747355
+      },
+      "capillary": {
+       "n": 9172,
+       "median": 1.1668907802286201,
+       "mean": 1.276350523164191,
+       "log_sd": 0.2143355616227609,
+       "spread_factor": 1.239038358764732,
+       "p10": 1.0000000000000002,
+       "p90": 1.5743609404976697
+      },
+      "stored_length_over_arc_median": 1.0
+     },
+     "depth_profile": [
+      {
+       "z_um": 78.11290322580643,
+       "capillary_length_density_mm_per_mm3": 716.9491902874021,
+       "capillary_radius_um_median": 2.1058451337888973,
+       "capillary_segment_length_um_median": 64.27947962831979,
+       "n_capillary_segments": 743
+      },
+      {
+       "z_um": 170.01612903225805,
+       "capillary_length_density_mm_per_mm3": 743.949854707521,
+       "capillary_radius_um_median": 2.1202810210888976,
+       "capillary_segment_length_um_median": 56.485158873767034,
+       "n_capillary_segments": 792
+      },
+      {
+       "z_um": 261.91935483870964,
+       "capillary_length_density_mm_per_mm3": 719.9031830438623,
+       "capillary_radius_um_median": 2.081062833788898,
+       "capillary_segment_length_um_median": 59.04430139083561,
+       "n_capillary_segments": 779
+      },
+      {
+       "z_um": 353.8225806451613,
+       "capillary_length_density_mm_per_mm3": 752.8013042613225,
+       "capillary_radius_um_median": 2.140849163988898,
+       "capillary_segment_length_um_median": 56.77635219840448,
+       "n_capillary_segments": 809
+      },
+      {
+       "z_um": 445.72580645161287,
+       "capillary_length_density_mm_per_mm3": 848.5448505929014,
+       "capillary_radius_um_median": 2.1202810210888976,
+       "capillary_segment_length_um_median": 57.75104369309265,
+       "n_capillary_segments": 951
+      },
+      {
+       "z_um": 537.6290322580644,
+       "capillary_length_density_mm_per_mm3": 813.1229351661937,
+       "capillary_radius_um_median": 2.147042319288898,
+       "capillary_segment_length_um_median": 56.2151453082304,
+       "n_capillary_segments": 931
+      },
+      {
+       "z_um": 629.5322580645161,
+       "capillary_length_density_mm_per_mm3": 655.5426709796144,
+       "capillary_radius_um_median": 2.1866919502888975,
+       "capillary_segment_length_um_median": 62.385018289308206,
+       "n_capillary_segments": 682
+      },
+      {
+       "z_um": 721.4354838709676,
+       "capillary_length_density_mm_per_mm3": 665.5286255275839,
+       "capillary_radius_um_median": 2.2063087157888974,
+       "capillary_segment_length_um_median": 61.89803702089364,
+       "n_capillary_segments": 678
+      },
+      {
+       "z_um": 813.3387096774193,
+       "capillary_length_density_mm_per_mm3": 577.3486412766437,
+       "capillary_radius_um_median": 2.2640000000000002,
+       "capillary_segment_length_um_median": 54.80166070371632,
+       "n_capillary_segments": 625
+      },
+      {
+       "z_um": 905.2419354838707,
+       "capillary_length_density_mm_per_mm3": 536.8691462324128,
+       "capillary_radius_um_median": 2.2640000000000002,
+       "capillary_segment_length_um_median": 57.471169205864626,
+       "n_capillary_segments": 596
+      },
+      {
+       "z_um": 997.1451612903224,
+       "capillary_length_density_mm_per_mm3": 488.71674076836837,
+       "capillary_radius_um_median": 2.2705,
+       "capillary_segment_length_um_median": 56.913726582972046,
+       "n_capillary_segments": 542
+      },
+      {
+       "z_um": 1089.0483870967741,
+       "capillary_length_density_mm_per_mm3": 330.6183601969448,
+       "capillary_radius_um_median": 2.2446022815,
+       "capillary_segment_length_um_median": 55.09491840145927,
+       "n_capillary_segments": 369
+      }
+     ],
+     "depth_variation": {
+      "log_sd_over_depth": 0.2636563630632178,
+      "max_over_min": 2.566538803493656
+     },
+     "penetrating_vessel_shells": [
+      {
+       "d_from_penetrating_um": [
+        0.28308537128067424,
+        31.522379356630974
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 22.5129328930556
+      },
+      {
+       "d_from_penetrating_um": [
+        31.522379356630974,
+        47.276047356154244
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 19.98029350714782
+      },
+      {
+       "d_from_penetrating_um": [
+        47.276047356154244,
+        63.897199572843654
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 19.433087971387934
+      },
+      {
+       "d_from_penetrating_um": [
+        63.897199572843654,
+        89.74661528384075
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 21.02231270300866
+      },
+      {
+       "d_from_penetrating_um": [
+        89.74661528384075,
+        375.6519212662105
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 26.101845073043233
+      }
+     ],
+     "penetrating_vessel_spacing_um": {
+      "mean_distance_to_nearest": 64.50858465831526,
+      "p90": 118.81300409943739,
+      "note": "twice this is roughly the spacing of the penetrating vessels, which is the length scale a vascular unit is defined on"
+     },
+     "murray": {
+      "n_bifurcations": 3290,
+      "n_with_a_root": 1646,
+      "n_child_wider_than_parent": 1644,
+      "exponent": {
+       "median": 2.802162048577328,
+       "mean": 4.94530368711563,
+       "p10": 0.9624218031481998,
+       "p90": 10.060103986981296,
+       "sd": 7.314748392505801
+      },
+      "sum_rc3_over_rp3": {
+       "median": 1.4957854116993563,
+       "log_sd": 0.985307307277912,
+       "p10": 0.37381995109133803,
+       "p90": 4.998426063610495
+      },
+      "angle_between_children_deg": {
+       "median": 104.26058334409328,
+       "p10": 76.05619343500528,
+       "p90": 137.96706195785796
+      },
+      "angle_parent_to_child_deg": {
+       "median": 53.61249877787738,
+       "p10": 25.40884902635913,
+       "p90": 86.1532173622424
+      },
+      "by_parent_kind": {
+       "descending_arteriole": {
+        "n": 673,
+        "exponent_median": 2.7648687229965696,
+        "sum_rc3_over_rp3_median": 1.1628248136463066
+       },
+       "ascending_venule": {
+        "n": 79,
+        "exponent_median": 3.292378371158507,
+        "sum_rc3_over_rp3_median": 1.3128167671839315
+       },
+       "capillary": {
+        "n": 2107,
+        "exponent_median": 3.4427031280988825,
+        "sum_rc3_over_rp3_median": 1.93642920391397
+       },
+       "unlabelled": {
+        "n": 414,
+        "exponent_median": 1.0963833882779646,
+        "sum_rc3_over_rp3_median": 0.5024114022975174
+       }
+      }
+     },
+     "murray_confluences": {
+      "n": 3118,
+      "exponent_median": 2.541109294889684,
+      "sum_rc3_over_rp3_median": 1.4493701894650777
+     },
+     "full_volume_mm3": 1.697145786374181,
+     "physics": {
+      "flow_unit_um3_per_s": {
+       "from_poiseuille_at_mu_3.5mPas": 489.68109818316503,
+       "adopted": 1000.0,
+       "cbf_at_adopted_ml_per_100g_per_min": 93.076609937292,
+       "cbf_one_decade_lower": 9.3076609937292,
+       "cbf_one_decade_higher": 930.76609937292,
+       "note": "the release documents no unit.  the Poiseuille route assumes only that the effective viscosity is in the plasma-to-whole-blood range; the perfusion route assumes only that mouse cortical CBF is of order 100 ml/100g/min.  a decade either way is ruled out by the second."
+      },
+      "perfusion": {
+       "n_descending_arterioles_fed_from_the_pia": 14,
+       "arteriolar_inflow_units": 26327.429394178056,
+       "cbf_from_descending_arterioles_ml_per_100g_per_min": 93.076609937292,
+       "boundary_inflow_units": 51562.99785378232,
+       "boundary_outflow_units": 51561.97618661975,
+       "cbf_from_pressure_boundary_ml_per_100g_per_min": 182.29311212188543,
+       "note": "the boundary figure is an UPPER bound and includes blood that enters one cut capillary at a lateral face and leaves by another without perfusing anything.  the arteriolar figure is the one to read; that in == out at the boundary to machine precision is a check that the solution is conservative, not a perfusion estimate"
+      },
+      "fahraeus_lindqvist": {
+       "by_diameter": [
+        {
+         "diameter_um": [
+          0,
+          4
+         ],
+         "n": 3397,
+         "apparent_viscosity_mPa_s": 2.412414756394739
+        },
+        {
+         "diameter_um": [
+          4,
+          6
+         ],
+         "n": 5214,
+         "apparent_viscosity_mPa_s": 1.7441655333479662
+        },
+        {
+         "diameter_um": [
+          6,
+          9
+         ],
+         "n": 691,
+         "apparent_viscosity_mPa_s": 1.4672178972530516
+        },
+        {
+         "diameter_um": [
+          9,
+          15
+         ],
+         "n": 3106,
+         "apparent_viscosity_mPa_s": 1.5234069686361162
+        },
+        {
+         "diameter_um": [
+          15,
+          30
+         ],
+         "n": 43,
+         "apparent_viscosity_mPa_s": 1.8102599827272927
+        },
+        {
+         "diameter_um": [
+          30,
+          1000000.0
+         ],
+         "n": 36,
+         "apparent_viscosity_mPa_s": 2.156774876885514
+        }
+       ],
+       "note": "median apparent viscosity implied by each segment's own solved pressure drop.  this is the correction vascular_tree_adjacency declines to apply and documents the direction of; the direction is confirmed here"
+      },
+      "pressure_mmHg": {
+       "min": 10.0,
+       "max": 54.31296949465779,
+       "arteriole_to_venule_drop": 44.31296949465779
+      },
+      "pressure_drop_by_kind": {
+       "pial_artery": {
+        "n": 20,
+        "median_segment_drop_mmHg": 1.160284656730921,
+        "vertex_pressure_mmHg": {
+         "p10": 30.93268767401575,
+         "median": 49.221469002247865,
+         "p90": 51.988876545072266
+        }
+       },
+       "pial_vein": {
+        "n": 55,
+        "median_segment_drop_mmHg": 0.06209245663325014,
+        "vertex_pressure_mmHg": {
+         "p10": 10.089820306381005,
+         "median": 10.368870680817224,
+         "p90": 12.211478568422045
+        }
+       },
+       "descending_arteriole": {
+        "n": 1324,
+        "median_segment_drop_mmHg": 0.08879571464425418,
+        "vertex_pressure_mmHg": {
+         "p10": 21.699035017617376,
+         "median": 23.28437583707023,
+         "p90": 29.940233573201606
+        }
+       },
+       "ascending_venule": {
+        "n": 839,
+        "median_segment_drop_mmHg": 0.11993732256640044,
+        "vertex_pressure_mmHg": {
+         "p10": 11.047645940503964,
+         "median": 15.581522650005137,
+         "p90": 22.309240543677944
+        }
+       },
+       "capillary": {
+        "n": 9177,
+        "median_segment_drop_mmHg": 0.5105721998836295,
+        "vertex_pressure_mmHg": {
+         "p10": 16.068062686734212,
+         "median": 21.8917199146632,
+         "p90": 26.48019088928804
+        }
+       },
+       "unlabelled": {
+        "n": 1072,
+        "median_segment_drop_mmHg": 0.020959913735458358,
+        "vertex_pressure_mmHg": {
+         "p10": 17.87740042651107,
+         "median": 22.587491972435316,
+         "p90": 26.31556253194778
+        }
+       }
+      },
+      "capillary_transit_time_s": {
+       "value": 0.41455896815834814,
+       "capillary_volume_mm3": 0.010914271963912219,
+       "note": "capillary blood volume over arteriolar inflow.  a mean, and the heterogeneity around it is what raises effective extraction above what the mean predicts -- see the validity note on `tissue_exchange`"
+      },
+      "dissipation_share": {
+       "pial_artery": 0.31916857591384873,
+       "pial_vein": 0.016970864235216137,
+       "descending_arteriole": 0.3733836928196076,
+       "ascending_venule": 0.07604896422578418,
+       "capillary": 0.21085755571978462,
+       "unlabelled": 0.003570347085758773,
+       "note": "share of total viscous dissipation dP*Q, not of series resistance: the capillary bed is massively parallel and a sum of segment resistances is not the resistance of anything"
+      }
+     }
+    },
+    "NW2": {
+     "name": "NW2",
+     "n_vertices": 16175,
+     "n_edges": 21883,
+     "interior_box_um": [
+      [
+       892.266791044776,
+       1120.0717785516135,
+       -35.90740740740742
+      ],
+      [
+       1937.2574626865671,
+       2460.284268548782,
+       1200.0
+      ]
+     ],
+     "interior_volume_mm3": 1.730900127069974,
+     "kind_counts": {
+      "pial_artery": 38,
+      "pial_vein": 80,
+      "descending_arteriole": 1396,
+      "ascending_venule": 2299,
+      "capillary": 17129,
+      "unlabelled": 941
+     },
+     "by_kind": {
+      "pial_artery": {
+       "radius_um": {
+        "n": 38,
+        "median": 14.18315672869999,
+        "mean": 17.683013275910515,
+        "log_sd": 0.568704648527351,
+        "spread_factor": 1.7659780069832463,
+        "p10": 8.139887571200077,
+        "p90": 32.13988757119993
+       },
+       "length_um": {
+        "n": 38,
+        "median": 120.69872678829299,
+        "mean": 148.5639848680153,
+        "log_sd": 0.9490190144500175,
+        "spread_factor": 2.583174359253287,
+        "p10": 24.33890031543506,
+        "p90": 306.8034445608576
+       }
+      },
+      "pial_vein": {
+       "radius_um": {
+        "n": 80,
+        "median": 12.13988757119999,
+        "mean": 14.617082033916546,
+        "log_sd": 0.4296337003127833,
+        "spread_factor": 1.5366945297167613,
+        "p10": 8.039887571200078,
+        "p90": 26.139887571199928
+       },
+       "length_um": {
+        "n": 80,
+        "median": 50.41409106190155,
+        "mean": 61.69846339198208,
+        "log_sd": 0.699408161260004,
+        "spread_factor": 2.012561243217553,
+        "p10": 19.705255888325762,
+        "p90": 112.33708252340357
+       }
+      },
+      "descending_arteriole": {
+       "radius_um": {
+        "n": 1396,
+        "median": 5.037800550300078,
+        "mean": 5.076761985628069,
+        "log_sd": 0.20419215964070098,
+        "spread_factor": 1.2265338211109518,
+        "p10": 4.506367921700079,
+        "p90": 5.892927408050083
+       },
+       "length_um": {
+        "n": 1396,
+        "median": 41.60550828100969,
+        "mean": 55.59056542997919,
+        "log_sd": 0.7869162994736554,
+        "spread_factor": 2.1966122770547667,
+        "p10": 13.817472766266274,
+        "p90": 101.32174702602862
+       }
+      },
+      "ascending_venule": {
+       "radius_um": {
+        "n": 2299,
+        "median": 5.086426019500079,
+        "mean": 5.4058804232217765,
+        "log_sd": 0.25599861583545197,
+        "spread_factor": 1.2917509399426106,
+        "p10": 3.915105104370041,
+        "p90": 7.179497289520082
+       },
+       "length_um": {
+        "n": 2299,
+        "median": 30.3424167926486,
+        "mean": 38.64949537814446,
+        "log_sd": 0.673471701916284,
+        "spread_factor": 1.9610336406593156,
+        "p10": 12.853006672199013,
+        "p90": 75.70908296364377
+       }
+      },
+      "capillary": {
+       "radius_um": {
+        "n": 17129,
+        "median": 2.0006939858888977,
+        "mean": 2.1260259821110794,
+        "log_sd": 0.20039284065218507,
+        "spread_factor": 1.2218826690743525,
+        "p10": 1.6370151471888978,
+        "p90": 2.7701160984200013
+       },
+       "length_um": {
+        "n": 17129,
+        "median": 51.705284386539006,
+        "mean": 64.44136314992373,
+        "log_sd": 0.7329437501383487,
+        "spread_factor": 2.08119812630551,
+        "p10": 18.823462215067014,
+        "p90": 127.66066082283506
+       }
+      },
+      "unlabelled": {
+       "radius_um": {
+        "n": 941,
+        "median": 4.84545826900008,
+        "mean": 4.873811316088974,
+        "log_sd": 0.061798528253567415,
+        "spread_factor": 1.0637480079684285,
+        "p10": 4.571339607100079,
+        "p90": 5.3830204009000795
+       },
+       "length_um": {
+        "n": 941,
+        "median": 22.56314876280806,
+        "mean": 26.625432427952113,
+        "log_sd": 0.6299004974865726,
+        "spread_factor": 1.8774237615870368,
+        "p10": 9.342416792648605,
+        "p90": 48.440734982459894
+       }
+      }
+     },
+     "length_density_mm_per_mm3": {
+      "capillary": 613.5203349986509,
+      "all_vessels": 708.2388993265826,
+      "capillary_fraction_of_length": 0.8662618441065673
+     },
+     "capillary_surface_density_mm2_per_mm3": 7.850358839233997,
+     "capillary_volume_fraction": 0.008281370687756423,
+     "tissue_to_capillary_um": {
+      "mean": 36.347995212051735,
+      "median": 20.28562682733643,
+      "p90": 93.79689570245387,
+      "p99": 163.64322839255902,
+      "max": 240.95411053693445,
+      "note": "distance from a uniform random tissue point to the nearest capillary CENTRELINE, minus nothing -- subtract a ~2 um radius for the wall",
+      "sqrt_density_estimate": 40.372488458278625
+     },
+     "resolvable_fraction_above_diameter": {
+      "6um": {
+       "length": 0.16776459103338281,
+       "volume": 0.6876118058680187
+      },
+      "10um": {
+       "length": 0.08014015744858863,
+       "volume": 0.5474290173236032
+      },
+      "20um": {
+       "length": 0.009584171907077998,
+       "volume": 0.3119606325764201
+      },
+      "30um": {
+       "length": 0.00480936137409937,
+       "volume": 0.2545730541277422
+      },
+      "50um": {
+       "length": 0.002039833339216294,
+       "volume": 0.17280270978024892
+      },
+      "100um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "200um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "300um": {
+       "length": 0.0,
+       "volume": 0.0
+      }
+     },
+     "tortuosity_arc_over_chord": {
+      "all": {
+       "n": 21807,
+       "median": 1.1549721799065458,
+       "mean": 1.215900878643261,
+       "log_sd": 0.15246115304523528,
+       "spread_factor": 1.1646972162757137,
+       "p10": 1.064215007148683,
+       "p90": 1.4155675536489751
+      },
+      "capillary": {
+       "n": 17075,
+       "median": 1.1646113294350873,
+       "mean": 1.2371298408461195,
+       "log_sd": 0.16428523265439077,
+       "spread_factor": 1.1785504282221986,
+       "p10": 1.0712949961303073,
+       "p90": 1.4730138607782415
+      },
+      "stored_length_over_arc_median": 1.0
+     },
+     "depth_profile": [
+      {
+       "z_um": 15.58873456790122,
+       "capillary_length_density_mm_per_mm3": 683.5063526188001,
+       "capillary_radius_um_median": 2.1014999999999997,
+       "capillary_segment_length_um_median": 54.212474477737416,
+       "n_capillary_segments": 1519
+      },
+      {
+       "z_um": 118.5810185185185,
+       "capillary_length_density_mm_per_mm3": 668.0084534257319,
+       "capillary_radius_um_median": 1.9877202004888979,
+       "capillary_segment_length_um_median": 58.59588933777628,
+       "n_capillary_segments": 1402
+      },
+      {
+       "z_um": 221.5733024691358,
+       "capillary_length_density_mm_per_mm3": 690.1321513159584,
+       "capillary_radius_um_median": 1.9587398490388979,
+       "capillary_segment_length_um_median": 53.76442690360757,
+       "n_capillary_segments": 1494
+      },
+      {
+       "z_um": 324.56558641975306,
+       "capillary_length_density_mm_per_mm3": 826.880929770532,
+       "capillary_radius_um_median": 1.9158091668999995,
+       "capillary_segment_length_um_median": 51.79959633061081,
+       "n_capillary_segments": 1852
+      },
+      {
+       "z_um": 427.5578703703703,
+       "capillary_length_density_mm_per_mm3": 867.3719288721303,
+       "capillary_radius_um_median": 1.9208107061888977,
+       "capillary_segment_length_um_median": 49.9445252853063,
+       "n_capillary_segments": 1965
+      },
+      {
+       "z_um": 530.5501543209876,
+       "capillary_length_density_mm_per_mm3": 788.3145051026733,
+       "capillary_radius_um_median": 1.9728443231888975,
+       "capillary_segment_length_um_median": 50.28803551474341,
+       "n_capillary_segments": 1786
+      },
+      {
+       "z_um": 633.5424382716049,
+       "capillary_length_density_mm_per_mm3": 707.8497506865504,
+       "capillary_radius_um_median": 2.0132349223888975,
+       "capillary_segment_length_um_median": 48.962643699419715,
+       "n_capillary_segments": 1608
+      },
+      {
+       "z_um": 736.5347222222222,
+       "capillary_length_density_mm_per_mm3": 750.4489020054971,
+       "capillary_radius_um_median": 2.0113238782888976,
+       "capillary_segment_length_um_median": 48.764426903607585,
+       "n_capillary_segments": 1736
+      },
+      {
+       "z_um": 839.5270061728395,
+       "capillary_length_density_mm_per_mm3": 676.0901328490567,
+       "capillary_radius_um_median": 2.168012527488898,
+       "capillary_segment_length_um_median": 53.63081678632152,
+       "n_capillary_segments": 1457
+      },
+      {
+       "z_um": 942.5192901234568,
+       "capillary_length_density_mm_per_mm3": 529.0167665684874,
+       "capillary_radius_um_median": 2.121,
+       "capillary_segment_length_um_median": 51.604779323150666,
+       "n_capillary_segments": 1199
+      },
+      {
+       "z_um": 1045.511574074074,
+       "capillary_length_density_mm_per_mm3": 169.2276484077773,
+       "capillary_radius_um_median": 2.027205609296299,
+       "capillary_segment_length_um_median": 61.96575265570462,
+       "n_capillary_segments": 323
+      },
+      {
+       "z_um": 1148.5038580246915,
+       "capillary_length_density_mm_per_mm3": 5.396498360615018,
+       "capillary_radius_um_median": 2.146774260862966,
+       "capillary_segment_length_um_median": 115.31785293598874,
+       "n_capillary_segments": 7
+      }
+     ],
+     "depth_variation": {
+      "log_sd_over_depth": 1.4383571936533486,
+      "max_over_min": 160.7286560489716
+     },
+     "penetrating_vessel_shells": [
+      {
+       "d_from_penetrating_um": [
+        0.48881278463953065,
+        31.946110054505226
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 31.981849146722688
+      },
+      {
+       "d_from_penetrating_um": [
+        31.946110054505226,
+        48.43928516063387
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 28.9403729442744
+      },
+      {
+       "d_from_penetrating_um": [
+        48.43928516063387,
+        65.65088571450133
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 29.77928594416606
+      },
+      {
+       "d_from_penetrating_um": [
+        65.65088571450133,
+        91.72359075813704
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 35.23008805549328
+      },
+      {
+       "d_from_penetrating_um": [
+        91.72359075813704,
+        309.675720413803
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 55.80837996960223
+      }
+     ],
+     "penetrating_vessel_spacing_um": {
+      "mean_distance_to_nearest": 64.96977363069932,
+      "p90": 118.85045331545294,
+      "note": "twice this is roughly the spacing of the penetrating vessels, which is the length scale a vascular unit is defined on"
+     },
+     "murray": {
+      "n_bifurcations": 5865,
+      "n_with_a_root": 3055,
+      "n_child_wider_than_parent": 2810,
+      "exponent": {
+       "median": 2.821775776462795,
+       "mean": 4.725202511977856,
+       "p10": 1.003354508158384,
+       "p90": 9.500535073246509,
+       "sd": 6.381138238037038
+      },
+      "sum_rc3_over_rp3": {
+       "median": 1.4961499643318315,
+       "log_sd": 0.8855403413899474,
+       "p10": 0.47550424706736294,
+       "p90": 3.8532228686500956
+      },
+      "angle_between_children_deg": {
+       "median": 106.91150572664054,
+       "p10": 83.97190122298217,
+       "p90": 133.37863201757207
+      },
+      "angle_parent_to_child_deg": {
+       "median": 55.33168738765585,
+       "p10": 30.168684826768644,
+       "p90": 83.14547642421552
+      },
+      "by_parent_kind": {
+       "pial_artery": {
+        "n": 23,
+        "exponent_median": 2.0606772972301948,
+        "sum_rc3_over_rp3_median": 1.0747404195233135
+       },
+       "descending_arteriole": {
+        "n": 812,
+        "exponent_median": 2.204917846284069,
+        "sum_rc3_over_rp3_median": 1.0877187747019428
+       },
+       "ascending_venule": {
+        "n": 161,
+        "exponent_median": 2.553340222457133,
+        "sum_rc3_over_rp3_median": 1.3857259066634322
+       },
+       "capillary": {
+        "n": 4455,
+        "exponent_median": 3.3928345556024424,
+        "sum_rc3_over_rp3_median": 1.688251360695933
+       },
+       "unlabelled": {
+        "n": 411,
+        "exponent_median": 0.9868687989354652,
+        "sum_rc3_over_rp3_median": 0.3000803222410114
+       }
+      }
+     },
+     "murray_confluences": {
+      "n": 5288,
+      "exponent_median": 2.630451949015179,
+      "sum_rc3_over_rp3_median": 1.322924474145295
+     },
+     "full_volume_mm3": 2.753424510973032,
+     "physics": {
+      "flow_unit_um3_per_s": {
+       "from_poiseuille_at_mu_3.5mPas": 492.4697191026983,
+       "adopted": 1000.0,
+       "cbf_at_adopted_ml_per_100g_per_min": 173.20894108777844,
+       "cbf_one_decade_lower": 17.32089410877785,
+       "cbf_one_decade_higher": 1732.0894108777845,
+       "note": "the release documents no unit.  the Poiseuille route assumes only that the effective viscosity is in the plasma-to-whole-blood range; the perfusion route assumes only that mouse cortical CBF is of order 100 ml/100g/min.  a decade either way is ruled out by the second."
+      },
+      "perfusion": {
+       "n_descending_arterioles_fed_from_the_pia": 28,
+       "arteriolar_inflow_units": 79486.29065179553,
+       "cbf_from_descending_arterioles_ml_per_100g_per_min": 173.20894108777844,
+       "boundary_inflow_units": 161219.48003632046,
+       "boundary_outflow_units": 161220.00098080075,
+       "cbf_from_pressure_boundary_ml_per_100g_per_min": 351.31410952540796,
+       "note": "the boundary figure is an UPPER bound and includes blood that enters one cut capillary at a lateral face and leaves by another without perfusing anything.  the arteriolar figure is the one to read; that in == out at the boundary to machine precision is a check that the solution is conservative, not a perfusion estimate"
+      },
+      "fahraeus_lindqvist": {
+       "by_diameter": [
+        {
+         "diameter_um": [
+          0,
+          4
+         ],
+         "n": 8547,
+         "apparent_viscosity_mPa_s": 2.357033905461317
+        },
+        {
+         "diameter_um": [
+          4,
+          6
+         ],
+         "n": 7935,
+         "apparent_viscosity_mPa_s": 1.7062228262037393
+        },
+        {
+         "diameter_um": [
+          6,
+          9
+         ],
+         "n": 1040,
+         "apparent_viscosity_mPa_s": 1.4714246614173114
+        },
+        {
+         "diameter_um": [
+          9,
+          15
+         ],
+         "n": 4006,
+         "apparent_viscosity_mPa_s": 1.5272752326298489
+        },
+        {
+         "diameter_um": [
+          15,
+          30
+         ],
+         "n": 285,
+         "apparent_viscosity_mPa_s": 1.7073972090924663
+        },
+        {
+         "diameter_um": [
+          30,
+          1000000.0
+         ],
+         "n": 55,
+         "apparent_viscosity_mPa_s": 2.0064884675338903
+        }
+       ],
+       "note": "median apparent viscosity implied by each segment's own solved pressure drop.  this is the correction vascular_tree_adjacency declines to apply and documents the direction of; the direction is confirmed here"
+      },
+      "pressure_mmHg": {
+       "min": 10.0,
+       "max": 59.23457857079427,
+       "arteriole_to_venule_drop": 49.23457857079427
+      },
+      "pressure_drop_by_kind": {
+       "pial_artery": {
+        "n": 38,
+        "median_segment_drop_mmHg": 0.3466699940530802,
+        "vertex_pressure_mmHg": {
+         "p10": 35.61062649035765,
+         "median": 50.58707851201026,
+         "p90": 58.57779201602149
+        }
+       },
+       "pial_vein": {
+        "n": 80,
+        "median_segment_drop_mmHg": 0.13183307115162712,
+        "vertex_pressure_mmHg": {
+         "p10": 10.0,
+         "median": 12.637743715303067,
+         "p90": 14.578704911113237
+        }
+       },
+       "descending_arteriole": {
+        "n": 1394,
+        "median_segment_drop_mmHg": 0.2665160501346264,
+        "vertex_pressure_mmHg": {
+         "p10": 26.198977883276,
+         "median": 31.511401335609733,
+         "p90": 43.04214631223363
+        }
+       },
+       "ascending_venule": {
+        "n": 2293,
+        "median_segment_drop_mmHg": 0.08978693037323993,
+        "vertex_pressure_mmHg": {
+         "p10": 12.20397495419027,
+         "median": 18.146111509929774,
+         "p90": 28.08683789555071
+        }
+       },
+       "capillary": {
+        "n": 17123,
+        "median_segment_drop_mmHg": 0.9294851275711444,
+        "vertex_pressure_mmHg": {
+         "p10": 18.56677116947966,
+         "median": 26.138043535969565,
+         "p90": 32.14377955584373
+        }
+       },
+       "unlabelled": {
+        "n": 940,
+        "median_segment_drop_mmHg": 0.025372595013120502,
+        "vertex_pressure_mmHg": {
+         "p10": 20.041259764784954,
+         "median": 26.141344388301775,
+         "p90": 32.19343623412562
+        }
+       }
+      },
+      "capillary_transit_time_s": {
+       "value": 0.18897627254317126,
+       "capillary_volume_mm3": 0.015021022925659438,
+       "note": "capillary blood volume over arteriolar inflow.  a mean, and the heterogeneity around it is what raises effective extraction above what the mean predicts -- see the validity note on `tissue_exchange`"
+      },
+      "dissipation_share": {
+       "pial_artery": 0.28101359742310184,
+       "pial_vein": 0.03912521199168654,
+       "descending_arteriole": 0.3240007957922015,
+       "ascending_venule": 0.08470486053350351,
+       "capillary": 0.26563969652830566,
+       "unlabelled": 0.005515837731201161,
+       "note": "share of total viscous dissipation dP*Q, not of series resistance: the capillary bed is massively parallel and a sum of segment resistances is not the resistance of anything"
+      }
+     }
+    },
+    "NW3": {
+     "name": "NW3",
+     "n_vertices": 8578,
+     "n_edges": 11336,
+     "interior_box_um": [
+      [
+       885.97455485756,
+       1368.0491852102023,
+       33.4375
+      ],
+      [
+       1824.0764925373132,
+       2265.284268548782,
+       940.0
+      ]
+     ],
+     "interior_volume_mm3": 0.7630518161404208,
+     "kind_counts": {
+      "pial_artery": 36,
+      "pial_vein": 52,
+      "descending_arteriole": 765,
+      "ascending_venule": 1660,
+      "capillary": 8112,
+      "unlabelled": 711
+     },
+     "by_kind": {
+      "pial_artery": {
+       "radius_um": {
+        "n": 36,
+        "median": 11.130033969372453,
+        "mean": 11.77475721919748,
+        "log_sd": 0.5022820137305299,
+        "spread_factor": 1.6524879714745073,
+        "p10": 5.555825233022606,
+        "p90": 20.433307647122287
+       },
+       "length_um": {
+        "n": 36,
+        "median": 104.29303873236478,
+        "mean": 144.32592742820103,
+        "log_sd": 1.211504666941854,
+        "spread_factor": 3.3585343281329734,
+        "p10": 20.875886325475832,
+        "p90": 306.47048929665027
+       }
+      },
+      "pial_vein": {
+       "radius_um": {
+        "n": 52,
+        "median": 16.40280103662242,
+        "mean": 15.492824122995488,
+        "log_sd": 0.45061086469499,
+        "spread_factor": 1.569270504706895,
+        "p10": 6.973180150512607,
+        "p90": 22.41061363202229
+       },
+       "length_um": {
+        "n": 52,
+        "median": 86.50354530190333,
+        "mean": 102.52719096146085,
+        "log_sd": 0.8590961025461142,
+        "spread_factor": 2.3610256038681348,
+        "p10": 22.25159315405364,
+        "p90": 196.25043328604232
+       }
+      },
+      "descending_arteriole": {
+       "radius_um": {
+        "n": 765,
+        "median": 4.864077806022607,
+        "mean": 4.976948157780164,
+        "log_sd": 0.17335510519679775,
+        "spread_factor": 1.1892883525829476,
+        "p10": 4.524271964522605,
+        "p90": 5.928066348542608
+       },
+       "length_um": {
+        "n": 765,
+        "median": 39.001941872633985,
+        "mean": 53.047317587159704,
+        "log_sd": 0.8244448712747278,
+        "spread_factor": 2.2806143793049745,
+        "p10": 12.389585014731662,
+        "p90": 94.30631413277355
+       }
+      },
+      "ascending_venule": {
+       "radius_um": {
+        "n": 1660,
+        "median": 4.936893224222608,
+        "mean": 5.2015517960853686,
+        "log_sd": 0.21889820090184647,
+        "spread_factor": 1.2447045604361207,
+        "p10": 4.341033324960029,
+        "p90": 6.539315795482608
+       },
+       "length_um": {
+        "n": 1660,
+        "median": 34.37552184654632,
+        "mean": 41.42620682884421,
+        "log_sd": 0.6619227918331339,
+        "spread_factor": 1.938516116182753,
+        "p10": 14.356489770562876,
+        "p90": 74.58464860326573
+       }
+      },
+      "capillary": {
+       "radius_um": {
+        "n": 8112,
+        "median": 2.017,
+        "mean": 2.14174442613607,
+        "log_sd": 0.23903828547205477,
+        "spread_factor": 1.270027159242374,
+        "p10": 1.549,
+        "p90": 2.862
+       },
+       "length_um": {
+        "n": 8112,
+        "median": 58.19056576077758,
+        "mean": 72.16734428348681,
+        "log_sd": 0.770637775903321,
+        "spread_factor": 2.1611441400029934,
+        "p10": 19.099078117098667,
+        "p90": 144.2195117567601
+       }
+      },
+      "unlabelled": {
+       "radius_um": {
+        "n": 711,
+        "median": 4.718446731122606,
+        "mean": 4.845593396626509,
+        "log_sd": 0.08025842017792166,
+        "spread_factor": 1.083567047086334,
+        "p10": 4.525891303522604,
+        "p90": 5.300970792322607
+       },
+       "length_um": {
+        "n": 711,
+        "median": 26.924074484064484,
+        "mean": 32.93960923019333,
+        "log_sd": 0.6597649464075074,
+        "spread_factor": 1.934337607957739,
+        "p10": 10.974691494688162,
+        "p90": 60.84814896812898
+       }
+      }
+     },
+     "length_density_mm_per_mm3": {
+      "capillary": 725.1150976393892,
+      "all_vessels": 859.8197618993515,
+      "capillary_fraction_of_length": 0.8433338354978044
+     },
+     "capillary_surface_density_mm2_per_mm3": 9.395901556214037,
+     "capillary_volume_fraction": 0.010254408681628975,
+     "tissue_to_capillary_um": {
+      "mean": 22.482770754023445,
+      "median": 17.4677382224362,
+      "p90": 45.636017709961564,
+      "p99": 90.32300132088142,
+      "max": 161.89031724826353,
+      "note": "distance from a uniform random tissue point to the nearest capillary CENTRELINE, minus nothing -- subtract a ~2 um radius for the wall",
+      "sqrt_density_estimate": 37.13611997326054
+     },
+     "resolvable_fraction_above_diameter": {
+      "6um": {
+       "length": 0.23031986225158163,
+       "volume": 0.7229859719958952
+      },
+      "10um": {
+       "length": 0.08659496306521497,
+       "volume": 0.4933833399310914
+      },
+      "20um": {
+       "length": 0.00988642293378388,
+       "volume": 0.2463346396661622
+      },
+      "30um": {
+       "length": 0.005231873041408765,
+       "volume": 0.18847226574759143
+      },
+      "50um": {
+       "length": 0.0005988339802399647,
+       "volume": 0.03882327922867803
+      },
+      "100um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "200um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "300um": {
+       "length": 0.0,
+       "volume": 0.0
+      }
+     },
+     "tortuosity_arc_over_chord": {
+      "all": {
+       "n": 11293,
+       "median": 1.1587682772678345,
+       "mean": 1.2319313601327917,
+       "log_sd": 0.17410773888487543,
+       "spread_factor": 1.1901837879870965,
+       "p10": 1.0000000000000002,
+       "p90": 1.4480842572774306
+      },
+      "capillary": {
+       "n": 8092,
+       "median": 1.16902235105691,
+       "mean": 1.2583777164292302,
+       "log_sd": 0.19136504467030108,
+       "spread_factor": 1.2109014045141797,
+       "p10": 1.0000000000000002,
+       "p90": 1.5381060032154905
+      },
+      "stored_length_over_arc_median": 1.0
+     },
+     "depth_profile": [
+      {
+       "z_um": 71.2109375,
+       "capillary_length_density_mm_per_mm3": 693.7264415662655,
+       "capillary_radius_um_median": 2.2622718457555906,
+       "capillary_segment_length_um_median": 57.84402022191795,
+       "n_capillary_segments": 639
+      },
+      {
+       "z_um": 146.7578125,
+       "capillary_length_density_mm_per_mm3": 674.0210739571748,
+       "capillary_radius_um_median": 2.2185000000000006,
+       "capillary_segment_length_um_median": 61.695665443305586,
+       "n_capillary_segments": 556
+      },
+      {
+       "z_um": 222.3046875,
+       "capillary_length_density_mm_per_mm3": 762.4671532923976,
+       "capillary_radius_um_median": 2.0728333333333335,
+       "capillary_segment_length_um_median": 63.59552485884676,
+       "n_capillary_segments": 640
+      },
+      {
+       "z_um": 297.8515625,
+       "capillary_length_density_mm_per_mm3": 875.065549101554,
+       "capillary_radius_um_median": 1.978376718535591,
+       "capillary_segment_length_um_median": 55.84814896812897,
+       "n_capillary_segments": 782
+      },
+      {
+       "z_um": 373.3984375,
+       "capillary_length_density_mm_per_mm3": 837.5948158858403,
+       "capillary_radius_um_median": 1.9406666666666668,
+       "capillary_segment_length_um_median": 52.383682874061705,
+       "n_capillary_segments": 826
+      },
+      {
+       "z_um": 448.9453125,
+       "capillary_length_density_mm_per_mm3": 910.4363289000898,
+       "capillary_radius_um_median": 1.9038333333333333,
+       "capillary_segment_length_um_median": 47.7873065568844,
+       "n_capillary_segments": 932
+      },
+      {
+       "z_um": 524.4921875,
+       "capillary_length_density_mm_per_mm3": 872.7915315592313,
+       "capillary_radius_um_median": 1.9455,
+       "capillary_segment_length_um_median": 55.072280726640436,
+       "n_capillary_segments": 767
+      },
+      {
+       "z_um": 600.0390625,
+       "capillary_length_density_mm_per_mm3": 799.4770005807675,
+       "capillary_radius_um_median": 1.9845,
+       "capillary_segment_length_um_median": 58.15503185484484,
+       "n_capillary_segments": 702
+      },
+      {
+       "z_um": 675.5859375,
+       "capillary_length_density_mm_per_mm3": 742.3997946334048,
+       "capillary_radius_um_median": 2.017,
+       "capillary_segment_length_um_median": 61.10969757483338,
+       "n_capillary_segments": 628
+      },
+      {
+       "z_um": 751.1328125,
+       "capillary_length_density_mm_per_mm3": 683.621717989785,
+       "capillary_radius_um_median": 2.0625,
+       "capillary_segment_length_um_median": 61.655396333774355,
+       "n_capillary_segments": 561
+      },
+      {
+       "z_um": 826.6796875,
+       "capillary_length_density_mm_per_mm3": 604.364445031972,
+       "capillary_radius_um_median": 2.049,
+       "capillary_segment_length_um_median": 65.89803702089364,
+       "n_capillary_segments": 469
+      },
+      {
+       "z_um": 902.2265625,
+       "capillary_length_density_mm_per_mm3": 245.41531917418675,
+       "capillary_radius_um_median": 2.075,
+       "capillary_segment_length_um_median": 65.37425537809767,
+       "n_capillary_segments": 200
+      }
+     ],
+     "depth_variation": {
+      "log_sd_over_depth": 0.3502680190692215,
+      "max_over_min": 3.709777906137537
+     },
+     "penetrating_vessel_shells": [
+      {
+       "d_from_penetrating_um": [
+        0.4497676349920237,
+        27.53209543023302
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 21.690890316192103
+      },
+      {
+       "d_from_penetrating_um": [
+        27.53209543023302,
+        41.65139046085629
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 19.689424535374418
+      },
+      {
+       "d_from_penetrating_um": [
+        41.65139046085629,
+        56.23563060836417
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 18.827128362195218
+      },
+      {
+       "d_from_penetrating_um": [
+        56.23563060836417,
+        77.22875657713867
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 19.723948787055473
+      },
+      {
+       "d_from_penetrating_um": [
+        77.22875657713867,
+        299.5441030042212
+       ],
+       "n_probes": 40000,
+       "tissue_to_capillary_um_mean": 32.48246176930002
+      }
+     ],
+     "penetrating_vessel_spacing_um": {
+      "mean_distance_to_nearest": 56.06362368534279,
+      "p90": 100.54786193912305,
+      "note": "twice this is roughly the spacing of the penetrating vessels, which is the length scale a vascular unit is defined on"
+     },
+     "murray": {
+      "n_bifurcations": 2906,
+      "n_with_a_root": 1432,
+      "n_child_wider_than_parent": 1474,
+      "exponent": {
+       "median": 2.3763511223729785,
+       "mean": 3.789522801552307,
+       "p10": 0.8393709618580246,
+       "p90": 7.708525583308161,
+       "sd": 5.2946237825616365
+      },
+      "sum_rc3_over_rp3": {
+       "median": 1.4705534332714152,
+       "log_sd": 1.0868851055617637,
+       "p10": 0.33667457508333254,
+       "p90": 5.395400537171115
+      },
+      "angle_between_children_deg": {
+       "median": 106.44721433446412,
+       "p10": 80.60166875702043,
+       "p90": 136.44422635900702
+      },
+      "angle_parent_to_child_deg": {
+       "median": 55.17900310368618,
+       "p10": 28.66145791418888,
+       "p90": 85.28656465459065
+      },
+      "by_parent_kind": {
+       "pial_artery": {
+        "n": 20,
+        "exponent_median": 2.533407959539251,
+        "sum_rc3_over_rp3_median": 1.1355778644440564
+       },
+       "descending_arteriole": {
+        "n": 476,
+        "exponent_median": 2.2084937363895145,
+        "sum_rc3_over_rp3_median": 1.17103817475974
+       },
+       "ascending_venule": {
+        "n": 227,
+        "exponent_median": 2.144956371044631,
+        "sum_rc3_over_rp3_median": 1.301311413265335
+       },
+       "capillary": {
+        "n": 1858,
+        "exponent_median": 2.894187359433942,
+        "sum_rc3_over_rp3_median": 1.852280671886648
+       },
+       "unlabelled": {
+        "n": 319,
+        "exponent_median": 0.9497896076826189,
+        "sum_rc3_over_rp3_median": 0.3614036659627927
+       }
+      }
+     },
+     "murray_confluences": {
+      "n": 2847,
+      "exponent_median": 2.3405099150725706,
+      "sum_rc3_over_rp3_median": 1.2692620760635405
+     },
+     "full_volume_mm3": 1.3818369346513764,
+     "physics": {
+      "flow_unit_um3_per_s": {
+       "from_poiseuille_at_mu_3.5mPas": 458.77758260732327,
+       "adopted": 1000.0,
+       "cbf_at_adopted_ml_per_100g_per_min": 94.29400978686277,
+       "cbf_one_decade_lower": 9.429400978686276,
+       "cbf_one_decade_higher": 942.9400978686276,
+       "note": "the release documents no unit.  the Poiseuille route assumes only that the effective viscosity is in the plasma-to-whole-blood range; the perfusion route assumes only that mouse cortical CBF is of order 100 ml/100g/min.  a decade either way is ruled out by the second."
+      },
+      "perfusion": {
+       "n_descending_arterioles_fed_from_the_pia": 16,
+       "arteriolar_inflow_units": 21716.49090664422,
+       "cbf_from_descending_arterioles_ml_per_100g_per_min": 94.29400978686277,
+       "boundary_inflow_units": 153575.9019669554,
+       "boundary_outflow_units": 153575.48496695215,
+       "cbf_from_pressure_boundary_ml_per_100g_per_min": 666.8336825388203,
+       "note": "the boundary figure is an UPPER bound and includes blood that enters one cut capillary at a lateral face and leaves by another without perfusing anything.  the arteriolar figure is the one to read; that in == out at the boundary to machine precision is a check that the solution is conservative, not a perfusion estimate"
+      },
+      "fahraeus_lindqvist": {
+       "by_diameter": [
+        {
+         "diameter_um": [
+          0,
+          4
+         ],
+         "n": 3855,
+         "apparent_viscosity_mPa_s": 2.22136908535559
+        },
+        {
+         "diameter_um": [
+          4,
+          6
+         ],
+         "n": 3748,
+         "apparent_viscosity_mPa_s": 1.6509158863510136
+        },
+        {
+         "diameter_um": [
+          6,
+          9
+         ],
+         "n": 677,
+         "apparent_viscosity_mPa_s": 1.41939049588661
+        },
+        {
+         "diameter_um": [
+          9,
+          15
+         ],
+         "n": 2891,
+         "apparent_viscosity_mPa_s": 1.4760097750665406
+        },
+        {
+         "diameter_um": [
+          15,
+          30
+         ],
+         "n": 114,
+         "apparent_viscosity_mPa_s": 1.699439177216152
+        },
+        {
+         "diameter_um": [
+          30,
+          1000000.0
+         ],
+         "n": 37,
+         "apparent_viscosity_mPa_s": 2.019204404336551
+        }
+       ],
+       "note": "median apparent viscosity implied by each segment's own solved pressure drop.  this is the correction vascular_tree_adjacency declines to apply and documents the direction of; the direction is confirmed here"
+      },
+      "pressure_mmHg": {
+       "min": 10.0,
+       "max": 56.550279214953484,
+       "arteriole_to_venule_drop": 46.550279214953484
+      },
+      "pressure_drop_by_kind": {
+       "pial_artery": {
+        "n": 36,
+        "median_segment_drop_mmHg": 1.0263061218716132,
+        "vertex_pressure_mmHg": {
+         "p10": 23.61937679423352,
+         "median": 42.30590509925225,
+         "p90": 53.009037170231394
+        }
+       },
+       "pial_vein": {
+        "n": 52,
+        "median_segment_drop_mmHg": 0.08785226265842194,
+        "vertex_pressure_mmHg": {
+         "p10": 10.0,
+         "median": 10.621368393831656,
+         "p90": 11.93118031464469
+        }
+       },
+       "descending_arteriole": {
+        "n": 765,
+        "median_segment_drop_mmHg": 0.1132224788059375,
+        "vertex_pressure_mmHg": {
+         "p10": 16.22308920827344,
+         "median": 20.384148251198393,
+         "p90": 23.474679125473198
+        }
+       },
+       "ascending_venule": {
+        "n": 1649,
+        "median_segment_drop_mmHg": 0.06504425855753482,
+        "vertex_pressure_mmHg": {
+         "p10": 11.986726060863878,
+         "median": 14.658615710656226,
+         "p90": 18.142645045191937
+        }
+       },
+       "capillary": {
+        "n": 8109,
+        "median_segment_drop_mmHg": 0.4200750224571941,
+        "vertex_pressure_mmHg": {
+         "p10": 13.840916582429536,
+         "median": 16.987513987340648,
+         "p90": 19.97780404982003
+        }
+       },
+       "unlabelled": {
+        "n": 711,
+        "median_segment_drop_mmHg": 0.011550706666426436,
+        "vertex_pressure_mmHg": {
+         "p10": 14.161373459337048,
+         "median": 17.080879405963802,
+         "p90": 19.752028690312613
+        }
+       }
+      },
+      "capillary_transit_time_s": {
+       "value": 0.38510119706811946,
+       "capillary_volume_mm3": 0.008363046644267621,
+       "note": "capillary blood volume over arteriolar inflow.  a mean, and the heterogeneity around it is what raises effective extraction above what the mean predicts -- see the validity note on `tissue_exchange`"
+      },
+      "dissipation_share": {
+       "pial_artery": 0.6777266696587482,
+       "pial_vein": 0.015012120841726925,
+       "descending_arteriole": 0.20187157922377189,
+       "ascending_venule": 0.04422699852605247,
+       "capillary": 0.06068776145680228,
+       "unlabelled": 0.0004748702928981187,
+       "note": "share of total viscous dissipation dP*Q, not of series resistance: the capillary bed is massively parallel and a sum of segment resistances is not the resistance of anything"
+      }
+     }
+    }
+   },
+   "between_animal": {
+    "capillary_length_density_mm_per_mm3": {
+     "n_animals": 3,
+     "mean": 664.2644637415904,
+     "median": 654.157958586731,
+     "min": 613.5203349986509,
+     "max": 725.1150976393892,
+     "between_animal_log_sd": 0.08430761300830558,
+     "between_animal_factor": 1.0879635140689046,
+     "cv": 0.08502588876862915,
+     "per_animal": {
+      "NW1": 654.157958586731,
+      "NW2": 613.5203349986509,
+      "NW3": 725.1150976393892
+     }
+    },
+    "capillary_surface_density_mm2_per_mm3": {
+     "n_animals": 3,
+     "mean": 8.786731544429246,
+     "median": 9.113934237839706,
+     "min": 7.850358839233997,
+     "max": 9.395901556214037,
+     "between_animal_log_sd": 0.09617670653329898,
+     "between_animal_factor": 1.1009535924988973,
+     "cv": 0.093673823025874,
+     "per_animal": {
+      "NW1": 9.113934237839706,
+      "NW2": 7.850358839233997,
+      "NW3": 9.395901556214037
+     }
+    },
+    "tissue_to_capillary_um_mean": {
+     "n_animals": 3,
+     "mean": 26.88028679853461,
+     "median": 22.482770754023445,
+     "min": 21.810094429528647,
+     "max": 36.347995212051735,
+     "between_animal_log_sd": 0.28652490080058146,
+     "between_animal_factor": 1.3317913301516524,
+     "cv": 0.30528586017797943,
+     "per_animal": {
+      "NW1": 21.810094429528647,
+      "NW2": 36.347995212051735,
+      "NW3": 22.482770754023445
+     }
+    },
+    "capillary_radius_um_median": {
+     "n_animals": 3,
+     "mean": 2.060150637767288,
+     "median": 2.017,
+     "min": 2.0006939858888977,
+     "max": 2.162757927412966,
+     "between_animal_log_sd": 0.042819435791002225,
+     "between_animal_factor": 1.0437494140473418,
+     "cv": 0.0433141905527279,
+     "per_animal": {
+      "NW1": 2.162757927412966,
+      "NW2": 2.0006939858888977,
+      "NW3": 2.017
+     }
+    },
+    "capillary_segment_length_um_median": {
+     "n_animals": 3,
+     "mean": 55.876371289886805,
+     "median": 57.733263722343835,
+     "min": 51.705284386539006,
+     "max": 58.19056576077758,
+     "between_animal_log_sd": 0.06606190263480179,
+     "between_animal_factor": 1.068292845261082,
+     "cv": 0.06477687317010093,
+     "per_animal": {
+      "NW1": 57.733263722343835,
+      "NW2": 51.705284386539006,
+      "NW3": 58.19056576077758
+     }
+    },
+    "murray_exponent_median": {
+     "n_animals": 3,
+     "mean": 2.666762982471034,
+     "median": 2.802162048577328,
+     "min": 2.3763511223729785,
+     "max": 2.821775776462795,
+     "between_animal_log_sd": 0.09723792691167926,
+     "between_animal_factor": 1.1021225670470072,
+     "cv": 0.09438228155610504,
+     "per_animal": {
+      "NW1": 2.802162048577328,
+      "NW2": 2.821775776462795,
+      "NW3": 2.3763511223729785
+     }
+    },
+    "cbf_ml_per_100g_per_min": {
+     "n_animals": 3,
+     "mean": 120.19318693731107,
+     "median": 94.29400978686277,
+     "min": 93.076609937292,
+     "max": 173.20894108777844,
+     "between_animal_log_sd": 0.35488644548580867,
+     "between_animal_factor": 1.4260187142248204,
+     "cv": 0.3820268508020434,
+     "per_animal": {
+      "NW1": 93.076609937292,
+      "NW2": 173.20894108777844,
+      "NW3": 94.29400978686277
+     }
+    }
+   },
+   "effective_animals": {
+    "n_animals": 3,
+    "n_features": 12,
+    "mean_pairwise_correlation_of_deviations": -0.4941959954388504,
+    "null_for_independent_animals": -0.5,
+    "correlated_fraction": 0.0038693363740997335,
+    "effective_animals": 2.9769622632608845,
+    "ceiling_at_any_n": 258.44225038012286
+   }
+  },
+  "whole_brain_graphs": {
+   "per_animal": {
+    "BALBc_no1": {
+     "name": "BALBc_no1",
+     "edge_file": "BALBc_no1_raw/BALBc-no1_iso3um_stitched_segmentation_bulge_size_3.0_edges.csv",
+     "n_nodes": 3538495,
+     "n_edges": 5409812,
+     "units": {
+      "length_per_centreline_voxel": 1.5285727272727272,
+      "expected_for_a_digital_curve": "1.0 to 1.73, mean ~1.4",
+      "length_unit": "voxel",
+      "voxel_um": 3.0,
+      "radius_unit": "um",
+      "note": "which unit each column is in, decided from the data rather than assumed.\n\n    the release documents none of it and the answer is not uniform, which is\n    exactly why it has to be settled before any number is quoted."
+     },
+     "n_edges_without_a_radius": 30102,
+     "radius_um": {
+      "n": 5379710,
+      "median": 3.34509,
+      "mean": 3.4930684244730665,
+      "log_sd": 0.2933862417040788,
+      "spread_factor": 1.3409606253375586,
+      "p10": 2.31068,
+      "p90": 4.69419
+     },
+     "segment_length_um": {
+      "n": 5379710,
+      "median": 31.153499999999998,
+      "mean": 38.3589080138803,
+      "log_sd": 0.645561247003462,
+      "spread_factor": 1.907057059028148,
+      "p10": 13.256250000000001,
+      "p90": 71.99430000000001
+     },
+     "tortuosity_length_over_distance": {
+      "n": 5357011,
+      "median": 1.0432197818886206,
+      "mean": 1.0912439634704483,
+      "log_sd": 0.11598003466228932,
+      "spread_factor": 1.1229734513652398,
+      "p10": 1.0069333333333335,
+      "p90": 1.2036505710278502
+     },
+     "curveness_as_shipped": {
+      "n": 5357011,
+      "median": 1.04322,
+      "mean": 1.0912439319557117,
+      "log_sd": 0.11598003443667744,
+      "spread_factor": 1.1229734511118836,
+      "p10": 1.00693,
+      "p90": 1.20365
+     },
+     "capillary_fraction_of_segments": 0.7516416312403457,
+     "capillary_fraction_of_length": 0.7720606337770568,
+     "capillary": {
+      "radius_um": {
+       "n": 4043614,
+       "median": 3.06037,
+       "mean": 3.0197349551297425,
+       "log_sd": 0.20695934434351995,
+       "spread_factor": 1.2299325670483325,
+       "p10": 2.20935,
+       "p90": 3.7796
+      },
+      "segment_length_um": {
+       "n": 4043614,
+       "median": 31.8384,
+       "mean": 39.400961310939415,
+       "log_sd": 0.6460407115757686,
+       "spread_factor": 1.9079716445634796,
+       "p10": 13.78809,
+       "p90": 74.3523
+      }
+     },
+     "resolvable_fraction_above_diameter": {
+      "6um": {
+       "length": 0.608307157506807,
+       "volume": 0.8130129634402117
+      },
+      "10um": {
+       "length": 0.07095771211129599,
+       "volume": 0.23671419859767934
+      },
+      "20um": {
+       "length": 0.003140802309174206,
+       "volume": 0.04101593639913877
+      },
+      "30um": {
+       "length": 0.0005159867191082568,
+       "volume": 0.013885346997894845
+      },
+      "50um": {
+       "length": 2.9433158055222252e-05,
+       "volume": 0.0017261492330608195
+      },
+      "100um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "200um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "300um": {
+       "length": 0.0,
+       "volume": 0.0
+      }
+     },
+     "bbox_um": [
+      [
+       534.0,
+       2424.0,
+       0.0
+      ],
+      [
+       9288.0,
+       14157.0,
+       5598.99
+      ]
+     ],
+     "bounding_volume_mm3": 575.07608141118,
+     "length_density_mm_per_mm3_over_bbox": {
+      "capillary": 277.04556652645306,
+      "all_vessels": 358.8391305111585,
+      "blood_volume_fraction": 0.014928007054915414,
+      "note": "over the BOUNDING BOX, which a brain fills to maybe 0.7.  a lower bound on the tissue density by that factor"
+     },
+     "degree": {
+      "0": 0,
+      "1": 249904,
+      "2": 920,
+      "3": 2721875,
+      "4": 462168,
+      "5": 79966,
+      "6": 16417,
+      "ge7": 7245,
+      "mean": 3.0576909109663855
+     },
+     "murray": {
+      "n_junctions": 400000,
+      "subsampled_from": 2700157,
+      "n_with_a_root": 399933,
+      "parent_assumed": "widest of the three (this release carries no flow direction), which biases the exponent DOWN",
+      "exponent": {
+       "median": 4.108803186634228,
+       "p10": 1.8515757000398096,
+       "p90": 11.985977225292922
+      },
+      "sum_rc3_over_rp3": {
+       "median": 1.1765862046731086,
+       "log_sd": 0.39333382694844304
+      }
+     }
+    },
+    "BALBc_no2": {
+     "name": "BALBc_no2",
+     "edge_file": "BALBc_no2_raw/BALBc-no2_iso3um_stitched_segmentation_bulge_size_3.0_edges.csv",
+     "n_nodes": 3451306,
+     "n_edges": 5247783,
+     "units": {
+      "length_per_centreline_voxel": 1.5161777777777778,
+      "expected_for_a_digital_curve": "1.0 to 1.73, mean ~1.4",
+      "length_unit": "voxel",
+      "voxel_um": 3.0,
+      "radius_unit": "um",
+      "note": "which unit each column is in, decided from the data rather than assumed.\n\n    the release documents none of it and the answer is not uniform, which is\n    exactly why it has to be settled before any number is quoted."
+     },
+     "n_edges_without_a_radius": 41142,
+     "radius_um": {
+      "n": 5206641,
+      "median": 3.34076,
+      "mean": 3.5266613120608854,
+      "log_sd": 0.3006843006094434,
+      "spread_factor": 1.3507828329001785,
+      "p10": 2.32308,
+      "p90": 4.79794
+     },
+     "segment_length_um": {
+      "n": 5206641,
+      "median": 32.2311,
+      "mean": 39.95102188356812,
+      "log_sd": 0.6555353432250327,
+      "spread_factor": 1.9261734052950736,
+      "p10": 13.52244,
+      "p90": 75.6009
+     },
+     "tortuosity_length_over_distance": {
+      "n": 5187006,
+      "median": 1.0434812989910376,
+      "mean": 1.0931484974228955,
+      "log_sd": 0.11848684886400622,
+      "spread_factor": 1.1257920685600364,
+      "p10": 1.0069365973006938,
+      "p90": 1.208528830332916
+     },
+     "curveness_as_shipped": {
+      "n": 5187006,
+      "median": 1.04348,
+      "mean": 1.0931484623036871,
+      "log_sd": 0.11848684824542544,
+      "spread_factor": 1.125792067863643,
+      "p10": 1.00694,
+      "p90": 1.20853
+     },
+     "capillary_fraction_of_segments": 0.7508311020483264,
+     "capillary_fraction_of_length": 0.7735391740530787,
+     "capillary": {
+      "radius_um": {
+       "n": 3909308,
+       "median": 3.06232,
+       "mean": 3.0214740346168685,
+       "log_sd": 0.2035101004506955,
+       "spread_factor": 1.2256975376762318,
+       "p10": 2.2232,
+       "p90": 3.7704
+      },
+      "segment_length_um": {
+       "n": 3909308,
+       "median": 33.0495,
+       "mean": 41.159297192250136,
+       "log_sd": 0.6555485632183059,
+       "spread_factor": 1.9261988694628522,
+       "p10": 14.14581,
+       "p90": 78.32859000000009
+      }
+     },
+     "resolvable_fraction_above_diameter": {
+      "6um": {
+       "length": 0.6078387157088568,
+       "volume": 0.8156060413431045
+      },
+      "10um": {
+       "length": 0.08227222797221244,
+       "volume": 0.27085999310387765
+      },
+      "20um": {
+       "length": 0.00362411592222114,
+       "volume": 0.04428265710116037
+      },
+      "30um": {
+       "length": 0.0004787610629483504,
+       "volume": 0.01265896107249666
+      },
+      "50um": {
+       "length": 3.8163686711909485e-05,
+       "volume": 0.0024588532018288423
+      },
+      "100um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "200um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "300um": {
+       "length": 0.0,
+       "volume": 0.0
+      }
+     },
+     "bbox_um": [
+      [
+       339.0,
+       2454.0,
+       117.0
+      ],
+      [
+       8952.0,
+       14037.0,
+       5847.0
+      ]
+     ],
+     "bounding_volume_mm3": 571.64989167,
+     "length_density_mm_per_mm3_over_bbox": {
+      "capillary": 281.47362945872345,
+      "all_vessels": 363.87766631636595,
+      "blood_volume_fraction": 0.015475257746599993,
+      "note": "over the BOUNDING BOX, which a brain fills to maybe 0.7.  a lower bound on the tissue density by that factor"
+     },
+     "degree": {
+      "0": 0,
+      "1": 251495,
+      "2": 790,
+      "3": 2676078,
+      "4": 431763,
+      "5": 70487,
+      "6": 14094,
+      "ge7": 6599,
+      "mean": 3.0410418548804423
+     },
+     "murray": {
+      "n_junctions": 400000,
+      "subsampled_from": 2647750,
+      "n_with_a_root": 399950,
+      "parent_assumed": "widest of the three (this release carries no flow direction), which biases the exponent DOWN",
+      "exponent": {
+       "median": 4.070205998173907,
+       "p10": 1.8206592539250355,
+       "p90": 11.954900175121233
+      },
+      "sum_rc3_over_rp3": {
+       "median": 1.1716939682905163,
+       "log_sd": 0.4042654792719995
+      }
+     }
+    },
+    "BALBc_no3": {
+     "name": "BALBc_no3",
+     "edge_file": "BALBc_no3_raw/BALBc-no3_iso3um_stitched_segmentation_bulge_size_3.0_edges.csv",
+     "n_nodes": 2850347,
+     "n_edges": 4146827,
+     "units": {
+      "length_per_centreline_voxel": 1.4861250000000001,
+      "expected_for_a_digital_curve": "1.0 to 1.73, mean ~1.4",
+      "length_unit": "voxel",
+      "voxel_um": 3.0,
+      "radius_unit": "um",
+      "note": "which unit each column is in, decided from the data rather than assumed.\n\n    the release documents none of it and the answer is not uniform, which is\n    exactly why it has to be settled before any number is quoted."
+     },
+     "n_edges_without_a_radius": 29371,
+     "radius_um": {
+      "n": 4117456,
+      "median": 3.26776,
+      "mean": 3.490463581608644,
+      "log_sd": 0.32247664393526465,
+      "spread_factor": 1.3805426464396031,
+      "p10": 2.22262,
+      "p90": 4.86115
+     },
+     "segment_length_um": {
+      "n": 4117456,
+      "median": 34.24185,
+      "mean": 42.523693210807835,
+      "log_sd": 0.669732215141501,
+      "spread_factor": 1.9537140755332443,
+      "p10": 14.014334999999999,
+      "p90": 81.25890000000001
+     },
+     "tortuosity_length_over_distance": {
+      "n": 4101457,
+      "median": 1.0477856495481281,
+      "mean": 1.1072226003752816,
+      "log_sd": 0.13391223732367138,
+      "spread_factor": 1.1432924768339412,
+      "p10": 1.0077149184154557,
+      "p90": 1.2428990792183503
+     },
+     "curveness_as_shipped": {
+      "n": 4101457,
+      "median": 1.04779,
+      "mean": 1.1072225641448878,
+      "log_sd": 0.13391223601405416,
+      "spread_factor": 1.1432924753366656,
+      "p10": 1.00771,
+      "p90": 1.2429
+     },
+     "capillary_fraction_of_segments": 0.7516291613073703,
+     "capillary_fraction_of_length": 0.7753369610704226,
+     "capillary": {
+      "radius_um": {
+       "n": 3094800,
+       "median": 2.9697050000000003,
+       "mean": 2.9453989541023655,
+       "log_sd": 0.21605480462813798,
+       "spread_factor": 1.241170399018923,
+       "p10": 2.1262490000000005,
+       "p90": 3.743691000000001
+      },
+      "segment_length_um": {
+       "n": 3094800,
+       "median": 35.2524,
+       "mean": 43.864970606264066,
+       "log_sd": 0.6682360992843438,
+       "spread_factor": 1.950793278394762,
+       "p10": 14.62188,
+       "p90": 84.1275
+      }
+     },
+     "resolvable_fraction_above_diameter": {
+      "6um": {
+       "length": 0.5639677976441654,
+       "volume": 0.7992536641828317
+      },
+      "10um": {
+       "length": 0.08767153824740671,
+       "volume": 0.29878094112521253
+      },
+      "20um": {
+       "length": 0.00436862222238839,
+       "volume": 0.05156019714065652
+      },
+      "30um": {
+       "length": 0.0005014446739314234,
+       "volume": 0.012839012915705099
+      },
+      "50um": {
+       "length": 2.3321679360258237e-05,
+       "volume": 0.0015019611807816722
+      },
+      "100um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "200um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "300um": {
+       "length": 0.0,
+       "volume": 0.0
+      }
+     },
+     "bbox_um": [
+      [
+       300.0,
+       2409.0,
+       51.0
+      ],
+      [
+       8922.0,
+       14277.0,
+       5517.0
+      ]
+     ],
+     "bounding_volume_mm3": 559.313347536,
+     "length_density_mm_per_mm3_over_bbox": {
+      "capillary": 242.7142345705031,
+      "all_vessels": 313.04354978178026,
+      "blood_volume_fraction": 0.013225531622508203,
+      "note": "over the BOUNDING BOX, which a brain fills to maybe 0.7.  a lower bound on the tissue density by that factor"
+     },
+     "degree": {
+      "0": 0,
+      "1": 363133,
+      "2": 625,
+      "3": 2102223,
+      "4": 320074,
+      "5": 50268,
+      "6": 9678,
+      "ge7": 4346,
+      "mean": 2.9096997663793216
+     },
+     "murray": {
+      "n_junctions": 400000,
+      "subsampled_from": 2081191,
+      "n_with_a_root": 399904,
+      "parent_assumed": "widest of the three (this release carries no flow direction), which biases the exponent DOWN",
+      "exponent": {
+       "median": 3.765507768751654,
+       "p10": 1.6914248337319686,
+       "p90": 10.999998281381423
+      },
+      "sum_rc3_over_rp3": {
+       "median": 1.1295837805473112,
+       "log_sd": 0.42930187740571
+      }
+     }
+    },
+    "C57BL_6_no1": {
+     "name": "C57BL_6_no1",
+     "edge_file": "C57BL_6_no1_raw/BL6J-no1_iso3um_stitched_segmentation_bulge_size_3.0_edges.csv",
+     "n_nodes": 3820133,
+     "n_edges": 5718361,
+     "units": {
+      "length_per_centreline_voxel": 1.5667857142857142,
+      "expected_for_a_digital_curve": "1.0 to 1.73, mean ~1.4",
+      "length_unit": "voxel",
+      "voxel_um": 3.0,
+      "radius_unit": "um",
+      "note": "which unit each column is in, decided from the data rather than assumed.\n\n    the release documents none of it and the answer is not uniform, which is\n    exactly why it has to be settled before any number is quoted."
+     },
+     "n_edges_without_a_radius": 11032,
+     "radius_um": {
+      "n": 5707329,
+      "median": 3.11285,
+      "mean": 3.2780771432039404,
+      "log_sd": 0.3095044619909458,
+      "spread_factor": 1.362749652537895,
+      "p10": 2.10862,
+      "p90": 4.52605
+     },
+     "segment_length_um": {
+      "n": 5707329,
+      "median": 28.87107,
+      "mean": 35.05671198628238,
+      "log_sd": 0.6335683876219971,
+      "spread_factor": 1.8843225900201512,
+      "p10": 12.3828,
+      "p90": 64.47540000000001
+     },
+     "tortuosity_length_over_distance": {
+      "n": 5672152,
+      "median": 1.04504744157602,
+      "mean": 1.097070279021168,
+      "log_sd": 0.1243692870758623,
+      "spread_factor": 1.1324339870276772,
+      "p10": 1.0066429772197358,
+      "p90": 1.214246063929442
+     },
+     "curveness_as_shipped": {
+      "n": 5672152,
+      "median": 1.04505,
+      "mean": 1.0970702556401875,
+      "log_sd": 0.12436928173777462,
+      "spread_factor": 1.1324339809826454,
+      "p10": 1.00664,
+      "p90": 1.21425
+     },
+     "capillary_fraction_of_segments": 0.807712679608973,
+     "capillary_fraction_of_length": 0.8082646035170141,
+     "capillary": {
+      "radius_um": {
+       "n": 4609882,
+       "median": 2.8894,
+       "mean": 2.876500833198117,
+       "log_sd": 0.22717106239153495,
+       "spread_factor": 1.2550445404991357,
+       "p10": 2.03991,
+       "p90": 3.7111
+      },
+      "segment_length_um": {
+       "n": 4609882,
+       "median": 28.919700000000002,
+       "mean": 35.08066683801494,
+       "log_sd": 0.6301036209071188,
+       "spread_factor": 1.8778051490563574,
+       "p10": 12.508833000000001,
+       "p90": 64.38536999999998
+      }
+     },
+     "resolvable_fraction_above_diameter": {
+      "6um": {
+       "length": 0.5083005309676295,
+       "volume": 0.761335713441163
+      },
+      "10um": {
+       "length": 0.06914641200245589,
+       "volume": 0.25665823448912095
+      },
+      "20um": {
+       "length": 0.003059483719751349,
+       "volume": 0.04478846112997081
+      },
+      "30um": {
+       "length": 0.000504186276524221,
+       "volume": 0.016424977663038395
+      },
+      "50um": {
+       "length": 5.404389083192991e-05,
+       "volume": 0.0039339538213221
+      },
+      "100um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "200um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "300um": {
+       "length": 0.0,
+       "volume": 0.0
+      }
+     },
+     "bbox_um": [
+      [
+       159.0,
+       0.0,
+       336.0
+      ],
+      [
+       8247.0,
+       10905.0,
+       5952.0
+      ]
+     ],
+     "bounding_volume_mm3": 495.32917824000003,
+     "length_density_mm_per_mm3_over_bbox": {
+      "capillary": 326.48537923644284,
+      "all_vessels": 403.9337833375382,
+      "blood_volume_fraction": 0.015504680330632726,
+      "note": "over the BOUNDING BOX, which a brain fills to maybe 0.7.  a lower bound on the tissue density by that factor"
+     },
+     "degree": {
+      "0": 0,
+      "1": 484662,
+      "2": 1388,
+      "3": 2617666,
+      "4": 548656,
+      "5": 124472,
+      "6": 30756,
+      "ge7": 12533,
+      "mean": 2.993802048253294
+     },
+     "murray": {
+      "n_junctions": 400000,
+      "subsampled_from": 2608779,
+      "n_with_a_root": 399801,
+      "parent_assumed": "widest of the three (this release carries no flow direction), which biases the exponent DOWN",
+      "exponent": {
+       "median": 3.602063606278837,
+       "p10": 1.6307522249663835,
+       "p90": 10.632310753726507
+      },
+      "sum_rc3_over_rp3": {
+       "median": 1.1068313240268324,
+       "log_sd": 0.437279377844152
+      }
+     }
+    },
+    "C57BL_6_no2": {
+     "name": "C57BL_6_no2",
+     "edge_file": "C57BL_6_no2_raw/BL6J-no2_iso3um_stitched_segmentation_bulge_size_3.0_edges.csv",
+     "n_nodes": 3439962,
+     "n_edges": 5144640,
+     "units": {
+      "length_per_centreline_voxel": 1.5383730303030303,
+      "expected_for_a_digital_curve": "1.0 to 1.73, mean ~1.4",
+      "length_unit": "voxel",
+      "voxel_um": 3.0,
+      "radius_unit": "um",
+      "note": "which unit each column is in, decided from the data rather than assumed.\n\n    the release documents none of it and the answer is not uniform, which is\n    exactly why it has to be settled before any number is quoted."
+     },
+     "n_edges_without_a_radius": 12277,
+     "radius_um": {
+      "n": 5132363,
+      "median": 3.1355,
+      "mean": 3.294353009183684,
+      "log_sd": 0.2932097369713887,
+      "spread_factor": 1.340723960327697,
+      "p10": 2.18793,
+      "p90": 4.48574
+     },
+     "segment_length_um": {
+      "n": 5132363,
+      "median": 30.501599999999996,
+      "mean": 37.87496670587934,
+      "log_sd": 0.6466428283224692,
+      "spread_factor": 1.9091208121747143,
+      "p10": 13.141079999999999,
+      "p90": 71.04023999999994
+     },
+     "tortuosity_length_over_distance": {
+      "n": 5106943,
+      "median": 1.0417587624313778,
+      "mean": 1.0916563638115313,
+      "log_sd": 0.11903933781869669,
+      "spread_factor": 1.1264142280955038,
+      "p10": 1.0069333333333335,
+      "p90": 1.2047627764274491
+     },
+     "curveness_as_shipped": {
+      "n": 5106943,
+      "median": 1.04176,
+      "mean": 1.091656332547671,
+      "log_sd": 0.11903933931579412,
+      "spread_factor": 1.1264142297818556,
+      "p10": 1.00693,
+      "p90": 1.20476
+     },
+     "capillary_fraction_of_segments": 0.8170174245274545,
+     "capillary_fraction_of_length": 0.8367503662195134,
+     "capillary": {
+      "radius_um": {
+       "n": 4193230,
+       "median": 2.94408,
+       "mean": 2.9216727634503714,
+       "log_sd": 0.21331658890976707,
+       "spread_factor": 1.237776455518472,
+       "p10": 2.1216,
+       "p90": 3.70514
+      },
+      "segment_length_um": {
+       "n": 4193230,
+       "median": 31.244699999999998,
+       "mean": 38.789738517543036,
+       "log_sd": 0.6447472807373819,
+       "spread_factor": 1.9055054104950597,
+       "p10": 13.582674,
+       "p90": 72.7872
+      }
+     },
+     "resolvable_fraction_above_diameter": {
+      "6um": {
+       "length": 0.5048609840097702,
+       "volume": 0.7377360232154456
+      },
+      "10um": {
+       "length": 0.05633150960931584,
+       "volume": 0.2131081751377471
+      },
+      "20um": {
+       "length": 0.002366685783001666,
+       "volume": 0.03577552250546862
+      },
+      "30um": {
+       "length": 0.0003888656290855122,
+       "volume": 0.012689779571156086
+      },
+      "50um": {
+       "length": 3.4379564772903856e-05,
+       "volume": 0.0023222435041365375
+      },
+      "100um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "200um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "300um": {
+       "length": 0.0,
+       "volume": 0.0
+      }
+     },
+     "bbox_um": [
+      [
+       366.0,
+       39.0,
+       114.0
+      ],
+      [
+       8400.0,
+       11397.0,
+       6177.0
+      ]
+     ],
+     "bounding_volume_mm3": 553.249792836,
+     "length_density_mm_per_mm3_over_bbox": {
+      "capillary": 293.99793248929905,
+      "all_vessels": 351.3568016917623,
+      "blood_volume_fraction": 0.012844855989835695,
+      "note": "over the BOUNDING BOX, which a brain fills to maybe 0.7.  a lower bound on the tissue density by that factor"
+     },
+     "degree": {
+      "0": 0,
+      "1": 363391,
+      "2": 695,
+      "3": 2520783,
+      "4": 450360,
+      "5": 80317,
+      "6": 16849,
+      "ge7": 7567,
+      "mean": 2.991102808693817
+     },
+     "murray": {
+      "n_junctions": 400000,
+      "subsampled_from": 2511437,
+      "n_with_a_root": 399879,
+      "parent_assumed": "widest of the three (this release carries no flow direction), which biases the exponent DOWN",
+      "exponent": {
+       "median": 4.071868182324932,
+       "p10": 1.840821220199936,
+       "p90": 11.885660739371753
+      },
+      "sum_rc3_over_rp3": {
+       "median": 1.1728085781482154,
+       "log_sd": 0.3945129866310931
+      }
+     }
+    },
+    "C57BL_6_no3": {
+     "name": "C57BL_6_no3",
+     "edge_file": "C57BL_6_no3_raw/BL6J-no3_iso3um_stitched_segmentation_bulge_size_3.0_edges.csv",
+     "n_nodes": 3318212,
+     "n_edges": 4873958,
+     "units": {
+      "length_per_centreline_voxel": 1.49978,
+      "expected_for_a_digital_curve": "1.0 to 1.73, mean ~1.4",
+      "length_unit": "voxel",
+      "voxel_um": 3.0,
+      "radius_unit": "um",
+      "note": "which unit each column is in, decided from the data rather than assumed.\n\n    the release documents none of it and the answer is not uniform, which is\n    exactly why it has to be settled before any number is quoted."
+     },
+     "n_edges_without_a_radius": 11280,
+     "radius_um": {
+      "n": 4862678,
+      "median": 3.249745,
+      "mean": 3.4206900707464074,
+      "log_sd": 0.29706123640599835,
+      "spread_factor": 1.3458977148635596,
+      "p10": 2.25581,
+      "p90": 4.68684
+     },
+     "segment_length_um": {
+      "n": 4862678,
+      "median": 32.9307,
+      "mean": 40.59658376284591,
+      "log_sd": 0.6579786589475147,
+      "spread_factor": 1.9308854091728975,
+      "p10": 13.62234,
+      "p90": 76.71000000000001
+     },
+     "tortuosity_length_over_distance": {
+      "n": 4843298,
+      "median": 1.044856175238662,
+      "mean": 1.0968241460106425,
+      "log_sd": 0.12224933832667051,
+      "spread_factor": 1.1300358278987057,
+      "p10": 1.0071784646500992,
+      "p90": 1.2174687230039078
+     },
+     "curveness_as_shipped": {
+      "n": 4843298,
+      "median": 1.04486,
+      "mean": 1.096824111495927,
+      "log_sd": 0.12224933737561412,
+      "spread_factor": 1.1300358268239779,
+      "p10": 1.00718,
+      "p90": 1.21747
+     },
+     "capillary_fraction_of_segments": 0.7715694931887326,
+     "capillary_fraction_of_length": 0.7948664346781055,
+     "capillary": {
+      "radius_um": {
+       "n": 3751894,
+       "median": 2.9937,
+       "mean": 2.9675181320706283,
+       "log_sd": 0.2091259322234725,
+       "spread_factor": 1.232600212842264,
+       "p10": 2.16845,
+       "p90": 3.7429
+      },
+      "segment_length_um": {
+       "n": 3751894,
+       "median": 33.908699999999996,
+       "mean": 41.82236607401888,
+       "log_sd": 0.6572892694362283,
+       "spread_factor": 1.9295547357531682,
+       "p10": 14.193089999999998,
+       "p90": 79.2483
+      }
+     },
+     "resolvable_fraction_above_diameter": {
+      "6um": {
+       "length": 0.5619157517101595,
+       "volume": 0.7831804682065331
+      },
+      "10um": {
+       "length": 0.07084197648236805,
+       "volume": 0.24209101868828803
+      },
+      "20um": {
+       "length": 0.002642399122347792,
+       "volume": 0.03883211227571712
+      },
+      "30um": {
+       "length": 0.0005000183374459089,
+       "volume": 0.01580416979826238
+      },
+      "50um": {
+       "length": 5.586785915358945e-05,
+       "volume": 0.0038270303480470473
+      },
+      "100um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "200um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "300um": {
+       "length": 0.0,
+       "volume": 0.0
+      }
+     },
+     "bbox_um": [
+      [
+       717.0,
+       207.0,
+       306.0
+      ],
+      [
+       8730.99,
+       12237.0,
+       6177.0
+      ]
+     ],
+     "bounding_volume_mm3": 566.0131275387001,
+     "length_density_mm_per_mm3_over_bbox": {
+      "capillary": 277.2251679413325,
+      "all_vessels": 348.7694986813722,
+      "blood_volume_fraction": 0.013903057796309903,
+      "note": "over the BOUNDING BOX, which a brain fills to maybe 0.7.  a lower bound on the tissue density by that factor"
+     },
+     "degree": {
+      "0": 0,
+      "1": 388540,
+      "2": 848,
+      "3": 2459699,
+      "4": 391142,
+      "5": 61453,
+      "6": 11856,
+      "ge7": 4674,
+      "mean": 2.9377013885791503
+     },
+     "murray": {
+      "n_junctions": 400000,
+      "subsampled_from": 2450100,
+      "n_with_a_root": 399924,
+      "parent_assumed": "widest of the three (this release carries no flow direction), which biases the exponent DOWN",
+      "exponent": {
+       "median": 3.9769858637994036,
+       "p10": 1.805612963486454,
+       "p90": 11.588128913278803
+      },
+      "sum_rc3_over_rp3": {
+       "median": 1.1596716022781277,
+       "log_sd": 0.3960215287022637
+      }
+     }
+    },
+    "CD1-E_no1": {
+     "name": "CD1-E_no1",
+     "edge_file": "CD1-E_no1_raw/CD1-E-no1_iso3um_stitched_segmentation_bulge_size_3.0_edges.csv",
+     "n_nodes": 3645963,
+     "n_edges": 5895612,
+     "units": {
+      "length_per_centreline_voxel": 1.54955,
+      "expected_for_a_digital_curve": "1.0 to 1.73, mean ~1.4",
+      "length_unit": "voxel",
+      "voxel_um": 3.0,
+      "radius_unit": "um",
+      "note": "which unit each column is in, decided from the data rather than assumed.\n\n    the release documents none of it and the answer is not uniform, which is\n    exactly why it has to be settled before any number is quoted."
+     },
+     "n_edges_without_a_radius": 8867,
+     "radius_um": {
+      "n": 5886745,
+      "median": 3.35832,
+      "mean": 3.5413370453422055,
+      "log_sd": 0.28065494697212323,
+      "spread_factor": 1.3239966760456465,
+      "p10": 2.42853,
+      "p90": 4.72859
+     },
+     "segment_length_um": {
+      "n": 5886745,
+      "median": 29.167320000000004,
+      "mean": 35.82658211963674,
+      "log_sd": 0.6401395093620289,
+      "spread_factor": 1.8967454745988543,
+      "p10": 12.435072000000002,
+      "p90": 65.5467
+     },
+     "tortuosity_length_over_distance": {
+      "n": 5854229,
+      "median": 1.0451393157510322,
+      "mean": 1.0954174487819999,
+      "log_sd": 0.12596640135391207,
+      "spread_factor": 1.1342440585781097,
+      "p10": 1.0069333333333335,
+      "p90": 1.1972948600356712
+     },
+     "curveness_as_shipped": {
+      "n": 5854229,
+      "median": 1.04514,
+      "mean": 1.0954174241800243,
+      "log_sd": 0.12596639970886853,
+      "spread_factor": 1.134244056712229,
+      "p10": 1.00693,
+      "p90": 1.1972920000000018
+     },
+     "capillary_fraction_of_segments": 0.7617172138422846,
+     "capillary_fraction_of_length": 0.7347431983726543,
+     "capillary": {
+      "radius_um": {
+       "n": 4484035,
+       "median": 3.11971,
+       "mean": 3.0793585158106485,
+       "log_sd": 0.18685060715369342,
+       "spread_factor": 1.2054471864112852,
+       "p10": 2.33336,
+       "p90": 3.77564
+      },
+      "segment_length_um": {
+       "n": 4484035,
+       "median": 28.3557,
+       "mean": 34.55788717253902,
+       "log_sd": 0.6285754862894202,
+       "spread_factor": 1.874937801407378,
+       "p10": 12.292602000000002,
+       "p90": 63.051
+      }
+     },
+     "resolvable_fraction_above_diameter": {
+      "6um": {
+       "length": 0.6832889562098021,
+       "volume": 0.8586415047155658
+      },
+      "10um": {
+       "length": 0.0990588224851069,
+       "volume": 0.3045765535890895
+      },
+      "20um": {
+       "length": 0.004942221563234796,
+       "volume": 0.05494501587955742
+      },
+      "30um": {
+       "length": 0.0006921289561474833,
+       "volume": 0.016212609425164805
+      },
+      "50um": {
+       "length": 3.108858292568846e-05,
+       "volume": 0.0017710713813586586
+      },
+      "100um": {
+       "length": 2.0440351240997682e-07,
+       "volume": 3.792363679175245e-05
+      },
+      "200um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "300um": {
+       "length": 0.0,
+       "volume": 0.0
+      }
+     },
+     "bbox_um": [
+      [
+       1050.999,
+       186.0,
+       69.0
+      ],
+      [
+       9515.01,
+       14439.0,
+       5646.99
+      ]
+     ],
+     "bounding_volume_mm3": 672.9150407360862,
+     "length_density_mm_per_mm3_over_bbox": {
+      "capillary": 230.27985143296868,
+      "all_vessels": 313.41542452247796,
+      "blood_volume_fraction": 0.014698945561958863,
+      "note": "over the BOUNDING BOX, which a brain fills to maybe 0.7.  a lower bound on the tissue density by that factor"
+     },
+     "degree": {
+      "0": 0,
+      "1": 4,
+      "2": 1195,
+      "3": 2969863,
+      "4": 539021,
+      "5": 104900,
+      "6": 22815,
+      "ge7": 8165,
+      "mean": 3.2340492758703254
+     },
+     "murray": {
+      "n_junctions": 400000,
+      "subsampled_from": 2962587,
+      "n_with_a_root": 399580,
+      "parent_assumed": "widest of the three (this release carries no flow direction), which biases the exponent DOWN",
+      "exponent": {
+       "median": 3.988966793546202,
+       "p10": 1.6618836451456953,
+       "p90": 12.047127027750928
+      },
+      "sum_rc3_over_rp3": {
+       "median": 1.167889510597237,
+       "log_sd": 0.49548075266778396
+      }
+     }
+    },
+    "CD1-E_no2": {
+     "name": "CD1-E_no2",
+     "edge_file": "CD1-E_no2_raw/CD1-E-no2_iso3um_stitched_segmentation_bulge_size_3.0_edges.csv",
+     "n_nodes": 1664812,
+     "n_edges": 2179060,
+     "units": {
+      "length_per_centreline_voxel": 1.3979300000000001,
+      "expected_for_a_digital_curve": "1.0 to 1.73, mean ~1.4",
+      "length_unit": "voxel",
+      "voxel_um": 3.0,
+      "radius_unit": "um",
+      "note": "which unit each column is in, decided from the data rather than assumed.\n\n    the release documents none of it and the answer is not uniform, which is\n    exactly why it has to be settled before any number is quoted."
+     },
+     "n_edges_without_a_radius": 3219,
+     "radius_um": {
+      "n": 2175841,
+      "median": 3.1369,
+      "mean": 3.4900409257896143,
+      "log_sd": 0.37452734649860636,
+      "spread_factor": 1.454303870329492,
+      "p10": 2.05777,
+      "p90": 5.28554
+     },
+     "segment_length_um": {
+      "n": 2175841,
+      "median": 39.7119,
+      "mean": 49.432002157772104,
+      "log_sd": 0.7014192764771692,
+      "spread_factor": 2.016612808475962,
+      "p10": 14.96961,
+      "p90": 95.1228
+     },
+     "tortuosity_length_over_distance": {
+      "n": 2168520,
+      "median": 1.0593261713168827,
+      "mean": 1.1319386610650986,
+      "log_sd": 0.15465935866658706,
+      "spread_factor": 1.1672602762780744,
+      "p10": 1.010460059758181,
+      "p90": 1.295156584486226
+     },
+     "curveness_as_shipped": {
+      "n": 2168520,
+      "median": 1.05933,
+      "mean": 1.1319386236603768,
+      "log_sd": 0.15465935773670653,
+      "spread_factor": 1.1672602751926617,
+      "p10": 1.01046,
+      "p90": 1.29516
+     },
+     "capillary_fraction_of_segments": 0.7338109724010164,
+     "capillary_fraction_of_length": 0.7487661569125393,
+     "capillary": {
+      "radius_um": {
+       "n": 1596656,
+       "median": 2.77272,
+       "mean": 2.791954458475088,
+       "log_sd": 0.2359027119106134,
+       "spread_factor": 1.2660511324793715,
+       "p10": 1.96384,
+       "p90": 3.6772
+      },
+      "segment_length_um": {
+       "n": 1596656,
+       "median": 40.6122,
+       "mean": 50.43943423612413,
+       "log_sd": 0.6984022592394841,
+       "spread_factor": 2.010537821649117,
+       "p10": 15.45024,
+       "p90": 97.17165
+      }
+     },
+     "resolvable_fraction_above_diameter": {
+      "6um": {
+       "length": 0.510691632247165,
+       "volume": 0.8038898469408974
+      },
+      "10um": {
+       "length": 0.12835843229168017,
+       "volume": 0.42645314432664216
+      },
+      "20um": {
+       "length": 0.007257077184692288,
+       "volume": 0.0832695471569883
+      },
+      "30um": {
+       "length": 0.0010555346457939273,
+       "volume": 0.0259685879000098
+      },
+      "50um": {
+       "length": 6.337252429080253e-05,
+       "volume": 0.003416786423863663
+      },
+      "100um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "200um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "300um": {
+       "length": 0.0,
+       "volume": 0.0
+      }
+     },
+     "bbox_um": [
+      [
+       767.001,
+       0.0,
+       219.0
+      ],
+      [
+       9125.01,
+       11397.0,
+       5937.0
+      ]
+     ],
+     "bounding_volume_mm3": 544.675114980414,
+     "length_density_mm_per_mm3_over_bbox": {
+      "capillary": 147.85772857019353,
+      "all_vessels": 197.46849828238732,
+      "blood_volume_fraction": 0.009073696140293856,
+      "note": "over the BOUNDING BOX, which a brain fills to maybe 0.7.  a lower bound on the tissue density by that factor"
+     },
+     "degree": {
+      "0": 1,
+      "1": 413820,
+      "2": 209,
+      "3": 1087933,
+      "4": 139355,
+      "5": 19570,
+      "6": 3055,
+      "ge7": 869,
+      "mean": 2.617785071227262
+     },
+     "murray": {
+      "n_junctions": 400000,
+      "subsampled_from": 1084858,
+      "n_with_a_root": 399764,
+      "parent_assumed": "widest of the three (this release carries no flow direction), which biases the exponent DOWN",
+      "exponent": {
+       "median": 3.109225237833722,
+       "p10": 1.4197768474421077,
+       "p90": 9.156821647167867
+      },
+      "sum_rc3_over_rp3": {
+       "median": 1.0216191449828536,
+       "log_sd": 0.4920944623966897
+      }
+     }
+    },
+    "CD1-E_no3": {
+     "name": "CD1-E_no3",
+     "edge_file": "CD1-E_no3_raw/CD1-E-no3_iso3um_stitched_segmentation_bulge_size_3.0_edges.csv",
+     "n_nodes": 2295363,
+     "n_edges": 3181218,
+     "units": {
+      "length_per_centreline_voxel": 1.456714642857143,
+      "expected_for_a_digital_curve": "1.0 to 1.73, mean ~1.4",
+      "length_unit": "voxel",
+      "voxel_um": 3.0,
+      "radius_unit": "um",
+      "note": "which unit each column is in, decided from the data rather than assumed.\n\n    the release documents none of it and the answer is not uniform, which is\n    exactly why it has to be settled before any number is quoted."
+     },
+     "n_edges_without_a_radius": 9319,
+     "radius_um": {
+      "n": 3171899,
+      "median": 3.28789,
+      "mean": 3.5513656620396805,
+      "log_sd": 0.3521913507707078,
+      "spread_factor": 1.4221806330438012,
+      "p10": 2.14295,
+      "p90": 5.132552000000002
+     },
+     "segment_length_um": {
+      "n": 3171899,
+      "median": 34.580999999999996,
+      "mean": 43.085687627257045,
+      "log_sd": 0.6840478794803799,
+      "spread_factor": 1.9818839445587901,
+      "p10": 13.565754,
+      "p90": 82.62546000000006
+     },
+     "tortuosity_length_over_distance": {
+      "n": 3156537,
+      "median": 1.052775236476629,
+      "mean": 1.1185685503000862,
+      "log_sd": 0.1458139853852656,
+      "spread_factor": 1.156980952666788,
+      "p10": 1.0082513281145953,
+      "p90": 1.2625422070278773
+     },
+     "curveness_as_shipped": {
+      "n": 3156537,
+      "median": 1.05278,
+      "mean": 1.1185685186329195,
+      "log_sd": 0.14581398295626555,
+      "spread_factor": 1.1569809498564811,
+      "p10": 1.00825,
+      "p90": 1.26254
+     },
+     "capillary_fraction_of_segments": 0.7187341084946274,
+     "capillary_fraction_of_length": 0.7316551615391923,
+     "capillary": {
+      "radius_um": {
+       "n": 2279752,
+       "median": 2.90241,
+       "mean": 2.887285870497317,
+       "log_sd": 0.23085222196060415,
+       "spread_factor": 1.259673073676856,
+       "p10": 2.0323610000000003,
+       "p90": 3.73579
+      },
+      "segment_length_um": {
+       "n": 2279752,
+       "median": 35.0877,
+       "mean": 43.86026121255601,
+       "log_sd": 0.686884877450276,
+       "spread_factor": 1.987514528487154,
+       "p10": 13.836182999999998,
+       "p90": 84.61527000000005
+      }
+     },
+     "resolvable_fraction_above_diameter": {
+      "6um": {
+       "length": 0.5580760958849531,
+       "volume": 0.8235412205639796
+      },
+      "10um": {
+       "length": 0.12123681302489661,
+       "volume": 0.39529570392918245
+      },
+      "20um": {
+       "length": 0.007131950627630262,
+       "volume": 0.08506336466226883
+      },
+      "30um": {
+       "length": 0.0011613900446799323,
+       "volume": 0.030706398396599437
+      },
+      "50um": {
+       "length": 0.00015090679187136549,
+       "volume": 0.008542459160852897
+      },
+      "100um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "200um": {
+       "length": 0.0,
+       "volume": 0.0
+      },
+      "300um": {
+       "length": 0.0,
+       "volume": 0.0
+      }
+     },
+     "bbox_um": [
+      [
+       609.0,
+       0.0,
+       117.0
+      ],
+      [
+       9165.0,
+       11757.0,
+       5757.0
+      ]
+     ],
+     "bounding_volume_mm3": 567.3439108800001,
+     "length_density_mm_per_mm3_over_bbox": {
+      "capillary": 176.2432209147234,
+      "all_vessels": 240.88290519806944,
+      "blood_volume_fraction": 0.011280415235248965,
+      "note": "over the BOUNDING BOX, which a brain fills to maybe 0.7.  a lower bound on the tissue density by that factor"
+     },
+     "degree": {
+      "0": 3,
+      "1": 445623,
+      "2": 542,
+      "3": 1551503,
+      "4": 243730,
+      "5": 42412,
+      "6": 8387,
+      "ge7": 3163,
+      "mean": 2.7718648422929184
+     },
+     "murray": {
+      "n_junctions": 400000,
+      "subsampled_from": 1543245,
+      "n_with_a_root": 399765,
+      "parent_assumed": "widest of the three (this release carries no flow direction), which biases the exponent DOWN",
+      "exponent": {
+       "median": 3.3643908698416825,
+       "p10": 1.4887590243779891,
+       "p90": 10.045043157825324
+      },
+      "sum_rc3_over_rp3": {
+       "median": 1.0682832058316638,
+       "log_sd": 0.48450219863676025
+      }
+     }
+    }
+   },
+   "between_animal": {
+    "radius_um_median": {
+     "n_animals": 9,
+     "mean": 3.248312777777778,
+     "median": 3.26776,
+     "min": 3.11285,
+     "max": 3.35832,
+     "between_animal_log_sd": 0.03004506578230472,
+     "between_animal_factor": 1.0305009732396224,
+     "cv": 0.02989698390525408,
+     "per_animal": {
+      "BALBc_no1": 3.34509,
+      "BALBc_no2": 3.34076,
+      "BALBc_no3": 3.26776,
+      "C57BL_6_no1": 3.11285,
+      "C57BL_6_no2": 3.1355,
+      "C57BL_6_no3": 3.249745,
+      "CD1-E_no1": 3.35832,
+      "CD1-E_no2": 3.1369,
+      "CD1-E_no3": 3.28789
+     }
+    },
+    "segment_length_um_median": {
+     "n_animals": 9,
+     "mean": 32.598893333333336,
+     "median": 32.2311,
+     "min": 28.87107,
+     "max": 39.7119,
+     "between_animal_log_sd": 0.09906304424950896,
+     "between_animal_factor": 1.1041359067842904,
+     "cv": 0.1026774534097773,
+     "per_animal": {
+      "BALBc_no1": 31.153499999999998,
+      "BALBc_no2": 32.2311,
+      "BALBc_no3": 34.24185,
+      "C57BL_6_no1": 28.87107,
+      "C57BL_6_no2": 30.501599999999996,
+      "C57BL_6_no3": 32.9307,
+      "CD1-E_no1": 29.167320000000004,
+      "CD1-E_no2": 39.7119,
+      "CD1-E_no3": 34.580999999999996
+     }
+    },
+    "tortuosity_median": {
+     "n_animals": 9,
+     "mean": 1.0470433148020433,
+     "median": 1.04504744157602,
+     "min": 1.0417587624313778,
+     "max": 1.0593261713168827,
+     "between_animal_log_sd": 0.005341476213855934,
+     "between_animal_factor": 1.0053557673318194,
+     "cv": 0.0053592627728330745,
+     "per_animal": {
+      "BALBc_no1": 1.0432197818886206,
+      "BALBc_no2": 1.0434812989910376,
+      "BALBc_no3": 1.0477856495481281,
+      "C57BL_6_no1": 1.04504744157602,
+      "C57BL_6_no2": 1.0417587624313778,
+      "C57BL_6_no3": 1.044856175238662,
+      "CD1-E_no1": 1.0451393157510322,
+      "CD1-E_no2": 1.0593261713168827,
+      "CD1-E_no3": 1.052775236476629
+     }
+    },
+    "murray_exponent_median": {
+     "n_animals": 9,
+     "mean": 3.7842241674649517,
+     "median": 3.9769858637994036,
+     "min": 3.109225237833722,
+     "max": 4.108803186634228,
+     "between_animal_log_sd": 0.09837466821162044,
+     "between_animal_factor": 1.1033761076272577,
+     "cv": 0.09409708538295501,
+     "per_animal": {
+      "BALBc_no1": 4.108803186634228,
+      "BALBc_no2": 4.070205998173907,
+      "BALBc_no3": 3.765507768751654,
+      "C57BL_6_no1": 3.602063606278837,
+      "C57BL_6_no2": 4.071868182324932,
+      "C57BL_6_no3": 3.9769858637994036,
+      "CD1-E_no1": 3.988966793546202,
+      "CD1-E_no2": 3.109225237833722,
+      "CD1-E_no3": 3.3643908698416825
+     }
+    },
+    "n_edges": {
+     "n_animals": 9,
+     "mean": 4644141.222222222,
+     "median": 5144640.0,
+     "min": 2179060.0,
+     "max": 5895612.0,
+     "between_animal_log_sd": 0.32865603157503703,
+     "between_animal_factor": 1.3890999668752864,
+     "cv": 0.26848980821463686,
+     "per_animal": {
+      "BALBc_no1": 5409812.0,
+      "BALBc_no2": 5247783.0,
+      "BALBc_no3": 4146827.0,
+      "C57BL_6_no1": 5718361.0,
+      "C57BL_6_no2": 5144640.0,
+      "C57BL_6_no3": 4873958.0,
+      "CD1-E_no1": 5895612.0,
+      "CD1-E_no2": 2179060.0,
+      "CD1-E_no3": 3181218.0
+     }
+    }
+   },
+   "effective_animals": {
+    "n_animals": 9,
+    "n_features": 12,
+    "mean_pairwise_correlation_of_deviations": -0.08035822164299322,
+    "null_for_independent_animals": -0.125,
+    "correlated_fraction": 0.039681580761783804,
+    "group_icc": {
+     "groups": {
+      "BALBc": 3,
+      "C57BL_6": 3,
+      "CD1-E": 3
+     },
+     "icc": 0.15066459463846255,
+     "between_group_ms": 16.22716508368947,
+     "within_group_ms": 10.590944972103507,
+     "note": "one-way random-effects ICC over the group label.  unlike the deviation correlation above, a between-group term is NOT removed by centring on the grand mean, so this is the estimator with dynamic range at small n"
+    },
+    "correlated_fraction_used": 0.15066459463846255,
+    "effective_animals": 4.081046394352711,
+    "ceiling_at_any_n": 6.63725941983661
+   }
+  },
+  "human_population_venogram": {
+   "n_skeleton_voxels": 12427,
+   "voxel_mm": 0.5,
+   "diameter_mm": {
+    "median": 0.7302482724189758,
+    "p10": 0.5479973793029785,
+    "p90": 1.3112663269042968,
+    "max": 2.5891611576080322
+   },
+   "between_subject_cv_of_diameter": {
+    "median": 0.2889245736398705,
+    "mean": 0.3046838643139127,
+    "p10": 0.1961609916698416,
+    "p90": 0.43483396038058725
+   },
+   "between_subject_log_sd_of_diameter": 0.28315312462928677,
+   "between_subject_cv_of_curvature": 0.5186753443210499,
+   "between_subject_cv_of_torsion": 0.31304677541582926,
+   "venous_volume_fraction": {
+    "voxels_with_any_venous_pv": 2848122,
+    "mean_pv_where_present": 0.08374927980016675,
+    "total_venous_volume_ml": 31.05608739527282,
+    "between_subject_cv_of_pv": 0.5458338143099878
+   },
+   "density_map": {
+    "n_voxels": 12802329,
+    "median": 0.3499999940395355
+   },
+   "read_it_as": "a population venous tree, and a LOWER bound on how much two people's macro vasculature differs: the atlas has a skeleton only where subjects agreed enough to leave one, and registration turns positional variability into blur rather than into variance"
+  }
+ },
+ "runtime_s": 67.6
+}

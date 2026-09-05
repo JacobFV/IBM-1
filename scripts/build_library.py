@@ -48,6 +48,7 @@ import time
 import traceback
 from dataclasses import replace
 from pathlib import Path
+from typing import Sequence
 
 import numpy as np
 
@@ -56,12 +57,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import ibm
 from ibm.materialize import geometry as geo
 from ibm.materialize.build import (
-    _named_supports, _place_components, _supports_to_materialize, build,
+    MaterializationIncomplete, _named_supports, _place_components,
+    _supports_to_materialize, build,
 )
 from ibm.materialize.trace import trace as _trace
 from ibm.materialize.cache import Cache
 from ibm.materialize.library import MODELS
-from ibm.materialize.request import BudgetExceeded, DeviceSpec, SubjectSpec
+from ibm.materialize.request import BudgetExceeded, SubjectSpec
 from ibm.materialize.sites import MissingData
 from ibm.topologies.builders import MissingInput
 from ibm.registry import REGISTRY
@@ -338,6 +340,38 @@ def excluded_supports(request) -> frozenset[str]:
     return frozenset(excluded)
 
 
+def primary_gap(gaps: Sequence[str], named: frozenset[str]) -> str:
+    """which of a model's gaps is the one the row should name.
+
+    the gaps come out in the order the build hit them, which is alphabetical by
+    support, so a model stopped dead by a missing thalamic segmentation reports
+    "it needs geometry['body']" -- true, irrelevant, and the wrong thing to put
+    in a one-line summary.  the binding gap is ranked instead:
+
+    1. a region or resolution rule that could not be evaluated.  this is the one
+       that zeroes a model, because r(q) is evaluated per support during
+       sampling and a rule naming an atlas the subject lacks takes the whole
+       support down with it -- unlike R, which now degrades to an unrestricted
+       build and a note.
+    2. geometry for a support R actually names.  a bold model that wants a
+       vascular tree is missing a venogram; one that merely traces to a retina
+       is not missing anything it asked for.
+    3. a topology input -- a tractogram, an atlas partition on a built support.
+    4. everything else, which is the peripheral supports the trace reaches and
+       R never wanted.
+    """
+    def rank(g: str) -> tuple[int, str]:
+        if "'region_weights'" in g:
+            return (0, g)
+        i = g.find("geometry['")
+        if i >= 0:
+            return (1 if g[i + 10:].split("'", 1)[0] in named else 3, g)
+        if "topology builder" in g:
+            return (2, g)
+        return (3, g)
+    return one_line(min(gaps, key=rank)) if gaps else ""
+
+
 def is_out_of_view(problem: str, excluded: frozenset[str]) -> bool:
     """is this gap a topology outside the view rather than an absent dataset?
 
@@ -537,7 +571,7 @@ def run_model(mid: str, *, montages, warp, anchors, anatomy, paths, cache) -> Ro
         row.reason = one_line(row.faults[0])
     elif row.gaps:
         row.status = "missing-data"
-        row.reason = one_line(row.gaps[0])
+        row.reason = primary_gap(row.gaps, _named_supports(chosen.scope))
     else:
         row.status = "built"
         # the only honest way to fill the strict column is to run it.
@@ -545,6 +579,12 @@ def run_model(mid: str, *, montages, warp, anchors, anatomy, paths, cache) -> Ro
             build(chosen, topology_inputs=ti, geometry=geom, warp=warp, anchors=anchors,
                   anatomy=anatomy, cache=cache, strict=True)
             row.strict = True
+        except MaterializationIncomplete as exc:
+            # the interesting half is the first problem, not the summary line:
+            # `strict=True` promotes to problems exactly the things `strict=False`
+            # keeps as notes -- a frame with no supplied warp, a budget note --
+            # and naming which one is the whole content of this column.
+            row.reason = f"strict refuses: {one_line(exc.problems[0]) if exc.problems else exc}"
         except Exception as exc:                                    # noqa: BLE001
             row.reason = f"strict refuses: {type(exc).__name__}: {one_line(str(exc))}"
     row.seconds = time.time() - t0

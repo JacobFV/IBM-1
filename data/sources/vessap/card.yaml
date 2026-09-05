@@ -12,9 +12,12 @@ licence:
   name: unresolved
   redistribution: unresolved
   commercial: prohibited
-  notes: The VesSAP page states a Creative Commons Attribution-NonCommercial 4.0 International License.
-    No version-qualified SPDX id is asserted here beyond that phrasing. Access runs through a published
-    access-guide PDF; whether registration is required is unresolved.
+  notes: 'The VesSAP page states a Creative Commons Attribution-NonCommercial 4.0 International License.
+    No version-qualified SPDX id is asserted here beyond that phrasing. RESOLVED 2026-09-05: there is
+    NO registration wall. The access-guide PDF is public and prints the SFTP host, port, username and
+    password in plain text, so the terms are accepted by nobody and nothing is signed. What blocks
+    acquisition is not a licence and not a wall -- see raw/.location.yaml -- it is that the host resets
+    the SSH connection at the banner from this address, which is an IP block and not a permission.'
 binding: unbound
 population:
   n: null
@@ -44,6 +47,13 @@ streams:
   systematic_bias: CROSS-SPECIES and EX-VIVO. Its use is as a statistical prior on branching, density
     and radius distributions in cortical tissue -- the structure a reconstructed human vascular tree must
     be consistent with -- and never as a measurement of a human vessel.
+  notes: 'NOT HELD, and largely superseded.  `vesselgraph-mouse` distributes the GRAPHS derived from
+    exactly these volumes -- nine whole brains with per-segment radius, arc length and curveness -- and
+    those are held in full and carry every statistic the microvasculature measurement needs.  what VesSAP
+    would add is the segmentation volumes themselves and the atlas-registered per-structure densities,
+    and the first is a manufacturing input this repository would only skeletonise back into the second.
+    the acquisition was attempted and failed for a reason that is neither a dead link nor a registration
+    wall; raw/.location.yaml records exactly what happened.'
   band_hz:
   - null
   - null
@@ -99,6 +109,7 @@ streams:
   - null
   - null
 absent:
+- bytes_here
 - human_data
 - flow
 - pressure

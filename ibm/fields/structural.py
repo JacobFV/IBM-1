@@ -27,6 +27,18 @@ and only histology or high-resolution diffusion models reach the second.  gliosi
 is here because it is what changes in disease and after injury while all of the
 above stay put, and it changes conductivity and diffusivity in ways nothing else
 in the inventory would otherwise explain.
+
+the last four components are vessel geometry and they break this field's one
+apparent rule -- that its support is `tissue` -- on purpose.  a lumen radius, a
+segment length and a branch order are indexed by position on the VASCULAR TREE,
+so they carry a `support` override, which is the mechanism §1 provides exactly
+for this: fields do not share a support, and a component may say which one it
+means.  they are here rather than in `blood` because the criterion this field is
+organised by is timescale, and a vessel's resting calibre moves over days while
+`blood` is what moves over seconds.  the fourth, capillary density, stays on
+`tissue`, because a length of capillary per cubic millimetre is a property of the
+tissue rather than of any one vessel -- and it is the only one of the four that a
+living human can be measured for.
 """
 
 from __future__ import annotations
@@ -129,3 +141,110 @@ GLIOSIS = _c(
 # imposed variable from imaging or histology, exactly as it supplies fiber_orientation.
 # declaring a process here to close the hole would be inventing pathology dynamics the
 # science does not give us.
+
+
+# ---------------------------------------------------------------------------
+# vessel geometry: the same field, a different support
+#
+# gap #7 of the binding work: `aneurisk` distributes centreline graphs carrying
+# radius as a function of arc length -- a tube-chain representation in all but
+# name -- and lands nowhere, because the registry had no component for a lumen.
+# `blood.volume` is millilitres of blood per hundred grams of TISSUE and
+# `blood.flow` is a perfusion; neither is a calibre, and a radius pushed into
+# either would be an encoding rather than a physical quantity, which §1 forbids
+# outright.
+#
+# so the four below are declared here rather than in `blood`, and the criterion
+# is the one this field is already organised by: TIMESCALE.  `blood` is state
+# that moves within an experiment -- flow, pressure, saturation, the balloon
+# emptying over seconds.  a vessel's resting calibre, the length of a segment,
+# where it sits in the branching order and how much capillary a cubic millimetre
+# holds move over DAYS: angiogenesis, remodelling, rarefaction, the capillary
+# loss of aging microangiopathy.  putting them in `blood` would give a lumen
+# radius the haemodynamic band and invite a fit to move it at 0.1 Hz, which is
+# the one thing the geometry must not do -- a vasodilation is a change in
+# resistance driven by `neurovascular_coupling`, and it is expressed as flow and
+# volume, not as a rewritten anatomy.
+#
+# three of them carry `support="vascular_tree"`, overriding the field's `tissue`.
+# ARCHITECTURE.md §1 is the whole reason that override exists: a lumen radius is
+# indexed by position ON THE TREE, and two capillaries a hundred microns apart in
+# space can hang off different penetrating arterioles.  the fourth,
+# `capillary_density`, is deliberately left on `tissue`, because a length of
+# capillary per unit tissue volume is a property of the TISSUE and not of any one
+# vessel -- it is what survives when the individual segments are averaged away,
+# and it is the only one of the four an in-vivo human measurement can reach.
+#
+# two things a caller might expect here and will not find, both refused on
+# purpose.
+#
+# FLOW DIRECTION is not declared.  a direction is a property of an EDGE, not of a
+# position, and `ibm/topologies/vascular.py` already carries it as the orientation
+# of the segment plus an optional `flow_sign` column.  a per-node "direction"
+# component would be a second, unreconcilable copy of the same fact, and the two
+# would disagree the moment a fit moved one.
+#
+# ARTERIAL TERRITORY is not declared either.  a territory is a COVER over the
+# brain organised by blood supply -- §2's object, not §1's -- and no registered
+# component is a region label.  it belongs in `ibm/anatomy` alongside the other
+# partitioning systems, which is where `arterial-territory-atlas-liu2023` and
+# `high-resolution-vascular-atlases` already say it goes.
+# ---------------------------------------------------------------------------
+
+LUMEN_RADIUS = _c(
+    "structural.lumen_radius",
+    "inner radius of the vessel lumen at a position on the vascular tree.  the component "
+    "that makes a tube chain expressible: a centreline plus this is an oriented tube, and "
+    "an oriented tube is what a segmented angiogram, a VMTK centreline and a light-sheet "
+    "skeletonisation all actually produce.  it earns its place by the fourth power -- "
+    "Poiseuille resistance goes as r^-4, so a 10% error here is a 46% error in the segment's "
+    "resistance and the capillary bed is where most of the resistance lives.  it is the "
+    "RESTING calibre and not the instantaneous one: a vasodilation is a change in resistance "
+    "driven by neurovascular coupling and is carried by `blood.flow` and `blood.volume` over "
+    "seconds, while this moves over days, as angiogenesis, remodelling and rarefaction",
+    "mm", bounds=(0.0, 10.0), exogenous=True, support="vascular_tree",
+    tags=frozenset({"geometry", "vascular"}))
+
+SEGMENT_LENGTH = _c(
+    "structural.segment_length",
+    "arc length of the vessel segment a node on the tree stands for.  declared rather than "
+    "computed from the positions of adjacent nodes because the two are not the same number: "
+    "a capillary segment wanders, and its arc length exceeds the chord between its endpoints "
+    "by a tortuosity that is itself a measured quantity.  taking the chord instead "
+    "systematically shortens every path, which lowers resistance, raises predicted flow and "
+    "shortens transit time -- three errors all in the same direction.  it is also what "
+    "`capillary_tissue_exchange` needs to turn a radius into an exchange surface 2 pi r L, "
+    "and the reason that builder already looks for a `segment_length_mm` column",
+    "mm", bounds=(0.0, 500.0), exogenous=True, support="vascular_tree",
+    tags=frozenset({"geometry", "vascular"}))
+
+BRANCH_ORDER = _c(
+    "structural.branch_order",
+    "generation of the segment counted from the pial surface inward: 0 on a pial vessel, "
+    "rising through the penetrating arteriole into the capillary bed and falling again "
+    "through the ascending venule.  an ordinal quantity and not a label -- which is the "
+    "reason it is a component at all, where arterial territory is not -- and the variable "
+    "every vascular statistic is actually organised by.  Murray's law is a statement about "
+    "what happens at one step of it; the pressure drop is distributed over it, with most of "
+    "the arterial-side drop across two or three generations of precapillary arteriole; and "
+    "which segments may exchange with tissue is decided by it far more sharply than by "
+    "euclidean position.  a materialization that carries a tree without it can still compute "
+    "transport, but cannot say where in the tree anything happened",
+    "dimensionless", bounds=(0.0, 64.0), exogenous=True, support="vascular_tree",
+    tags=frozenset({"geometry", "vascular", "topology"}))
+
+CAPILLARY_DENSITY = _c(
+    "structural.capillary_density",
+    "length of capillary per unit tissue volume at a position in the parenchyma.  the one "
+    "component in this group that stays on `tissue`, and the one that generalises: individual "
+    "branching topology is not recoverable in a living human and mostly does not need to be, "
+    "because oxygen delivery, BOLD contrast and thermal transport all depend on TRANSPORT "
+    "STATISTICS -- surface area per volume, diffusion distance, transit-time distribution -- "
+    "rather than on which capillary is where.  this is the scalar those statistics reduce to, "
+    "it sets the intercapillary distance as roughly 1/sqrt(density), and it is the quantity "
+    "stereology, two-photon microscopy and ex-vivo network reconstructions all report.  it is "
+    "declared exogenous for the same reason `gliosis` is: ibm-1 registers no angiogenesis "
+    "process, and inventing one to close the hole would be inventing vascular growth dynamics "
+    "the science does not give us",
+    "mm/mm^3", bounds=(0.0, 2000.0), exogenous=True,
+    tags=frozenset({"geometry", "vascular", "microstructure"}))

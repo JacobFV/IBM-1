@@ -77,7 +77,7 @@ MACRO_SURROGATE = register(NamedModel(
     needs the cortical sheet.**  the two facts are the same fact.  the cost of
     indexing cortex by volume position is that a euclidean neighbourhood joins
     the two banks of a sulcus, and that cost grows with the spacing: on the order
-    of a tenth of a percent of cortical pairs at 2 mm, and 58% at 10 mm
+    of a tenth of a percent of cortical pairs at 2 mm, and 20.4% at 10 mm
     (`Component.alt_supports`).  a 2 mm haemodynamic model can afford the volume
     indexing precisely because it is fine; at 8-10 mm a volume cortical graph is
     mostly wrong, and `lateral_cortical_propagation` -- one of this model's two

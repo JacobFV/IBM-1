@@ -1,0 +1,28 @@
+# what this recipe produced, from which raw source.  committed.
+recipe: microcircuit_statistics
+version: 1
+produced_at: '2026-09-05'
+from_raw:
+  microns: public_data/*.feather, 342 MB, materialization 1078
+outputs:
+- measured.json
+headline:
+  n_neurons_with_type: 71551
+  inhibitory_fraction: 0.1097
+  n_fully_extended_axons: 70
+  E_to_E_p_within_100um: 0.03254
+  synapses_per_connection_E_to_E: 1.145
+  synapses_per_connection_PV_to_E: 2.256
+  E_lambda_um: 220.3
+  SST_to_E_lambda_um: 47.0
+  E_output_within_200um: 0.7025076370472322
+  SST_output_within_200um: 0.8890331602077507
+  laminar_L4_to_L23_specificity: 1.4371700798501532
+  laminar_L6_to_L4_specificity: 0.3024138789220765
+  effective_excitatory_axons: 11.403741216212367
+  n_volumes: 1
+  n_animals: 1
+read_it_as: one mouse, one cubic millimetre of visual cortex.  the connection probabilities are unbiased
+  WITHIN the volume for fully-extended axons and lower bounds for the other two proofreading strategies;
+  nothing here transfers to human absolute density.
+notes: see derive/microcircuit_statistics.yaml and scripts/measure_microcircuit.py

@@ -1,0 +1,42 @@
+# a recipe, not a run.  its output lives under evidence/<recipe>@<version>/.
+name: human_microcircuit_census
+version: 1
+doc: 'the human half, and it is a census rather than a circuit.  H01''s axons are not proofread and the
+  released file for its 104 proofread cells carries synapse positions with no partner identity, so the
+  connection probability MICrONS supports cannot be computed here at all.  what can: the complete soma
+  census with layer labels, the complete per-segment excitatory and inhibitory input counts, and synapse-level
+  statistics from a uniform sample of the exported synapse table.'
+inputs:
+- source: h01
+  path: derived/data_20210601_c3_tables_somas.csv
+  what: 49,379 somata with cell type, cortical layer and position in 8x8x33 nm voxels
+- source: h01
+  path: derived/data_20210601_c3_segment_properties_info
+  what: 'gzipped neuroglancer segment properties over 46,637 segments: per-segment counts of outgoing
+    synapses, incoming excitatory and incoming inhibitory synapses, dendrite and axon and spine fragments,
+    plus type and layer tags.  these are WHOLE-VOLUME counts, which is what makes them a validation set
+    for the sampling fraction of the shards'
+- source: h01
+  path: synapses_exported/export*
+  what: avro shards of the exported synapse table, each carrying pre and post segment id, position and
+    synapse class.  each shard spans the whole z range, so a prefix of them is a uniform sample of synapses
+    and not a slab
+tool:
+  name: scripts/measure_microcircuit.py --only h01
+  runtime: python 3.12, numpy, pandas, fastavro, one process per shard
+parameters:
+  depth_axis: 'FITTED, not assumed: the block was cut at an angle to the pia and neither x nor y is depth,
+    so the axis is the direction from the layer-1 soma centroid to the white-matter one, after the 8x8x33
+    nm voxel anisotropy is divided out'
+  sampling_fraction: MEASURED against the whole-volume per-segment output counts rather than assumed to
+    be n_shards/166, which is the only available check that the shards are a random partition and not
+    a spatial one
+  excitatory: 'PYRAMIDAL, SPINY_STELLATE and SPINY_ATYPICAL; inhibitory: INTERNEURON.  UNCLASSIFIED_NEURON
+    and C_SHAPED are counted and excluded from the ratio'
+outputs:
+- path: evidence/human_microcircuit_census@1/measured.json
+  what: the soma census by layer and type, the inhibitory fraction overall and per layer, the per-segment
+    E/I input ratios, the measured sampling fraction, and the soma-to-soma synapse statistics with their
+    lower-bound caveat
+consumed_by:
+- ibm/topologies/microcircuit_prior.py

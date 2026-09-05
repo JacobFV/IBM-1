@@ -1,0 +1,19 @@
+# what this recipe produced, from which raw source.  committed.
+recipe: human_microcircuit_census
+version: 1
+produced_at: '2026-09-05'
+from_raw:
+  h01: derived/ tables plus synapses_exported/ shards
+outputs:
+- measured.json
+headline:
+  n_somas: 49379
+  inhibitory_fraction_of_classified_neurons: 0.308
+  inhibitory_input_fraction_pyramidal: 0.4767972996377315
+  n_synapses_sampled: 96474370
+  inhibitory_synapse_fraction: 0.4012504875647283
+  sampling_fraction_measured: 0.5680497225939697
+read_it_as: one person with epilepsy, one cubic millimetre of temporal cortex, and NO proofread axons
+  -- so every connection statistic here is a lower bound and only the census and the per-segment input
+  ratios are measurements in the ordinary sense.
+notes: see derive/human_microcircuit_census.yaml

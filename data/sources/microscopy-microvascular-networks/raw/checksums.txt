@@ -1,1 +1,8 @@
-# sha256 manifest for microscopy-microvascular-networks; written on acquisition
+ca53f9cff3b29a3d961b1c544ceb507b1a0f371f9e33548ab9e5c396bec2caf3  ./zenodo-1306230/measurementDict.pkl
+4fcf2ce2704a6fcec9c3986db958ddd0b5b43cc6102daeba2ec9e7fe4babcde5  ./zenodo-1306230/MVN1_wpPs.tar.bz2
+41fccda8b7bedd1af96590264fea7ca3a882409b83c6b40f95e174e524bfcd08  ./zenodo-1306230/MVN1_wRBCs.tar.bz2
+a1f4e38f66150d0c8a3e9adf74ef34cddcb2ff8dbbd99e3be099e458586a091b  ./zenodo-1306230/MVN2_wpPs.tar.bz2
+9c43c29d90353baabafd2083f00e8e396d7e895257cf8cdd8bc2fd42cafcc00a  ./zenodo-1306230/MVN2_wRBCs.tar.bz2
+20c7b9e9ff9e19d424d297b81eaa63bca2e40103cd2f7cc76550ce1ae9e928cf  ./zenodo-269650/NW1_results.tar.bz2
+8e18f6a4e3661345a37590cf63f39214e4768ee43ef1d2aa16d582c200560d87  ./zenodo-269650/NW2_results.tar.bz2
+44bef7dd2974e8db0baba52b6b8202c073363d6bb8e01d3a0daf3ab568f41111  ./zenodo-269650/NW3_results.tar.bz2

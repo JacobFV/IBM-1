@@ -1,0 +1,32 @@
+# a recipe, not a run.  its output lives under evidence/<recipe>@<version>/.
+name: population_kinetics
+version: 1
+doc: 'three of the parameters the microcircuit processes declare are cellular rather than circuit quantities
+  -- membrane time constant, resting potential, resting conductance -- and they are measured in hundreds
+  of identified cells of both species.  there is nothing to infer: the recipe is a grouping and a spread,
+  and its value is that it replaces a declared point value with a distribution.'
+inputs:
+- source: allen-cell-types-patchseq
+  path: cell_types_specimen_details.json
+  what: 2,333 patch-clamp specimens, 1,920 mouse and 413 human, with ef__tau, ef__vrest, ef__ri, ef__adaptation,
+    ef__f_i_curve_slope, the cortical layer and the Cre line
+tool:
+  name: scripts/measure_microcircuit.py --only allen
+  runtime: python 3.12, numpy
+  note: 'the RMA REST endpoint rather than allensdk: one request returns the whole table and adds no dependency'
+parameters:
+  grouping: species x dendrite type (spiny / aspiny), plus the Pvalb, Sst and Vip Cre lines which are
+    what identify pv, sst and vip cells rather than a morphological guess
+  spread: natural-log sd for the positive quantities (tau, input resistance) and an ordinary sd for resting
+    potential, because a millivolt is an increment and a time constant is a factor
+  caveat: acute slice at 34 C, at rest, with no network input.  the EFFECTIVE membrane time constant in
+    the high-conductance state of active cortex is several times shorter and that is the value the process
+    parameter means, so these numbers pin the spread and the between-class ratios exactly and the median
+    only up to a correction nothing here measures
+outputs:
+- path: evidence/population_kinetics@1/measured.json
+  what: 'per group: n, median, mean, sd and log sd of tau, resting potential, input resistance, adaptation
+    index, firing rate, f-I slope and upstroke/downstroke ratio; plus tau by cortical layer and the human/mouse
+    ratios'
+consumed_by:
+- ibm/topologies/microcircuit_prior.py

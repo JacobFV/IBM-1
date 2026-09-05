@@ -56,6 +56,20 @@ from ibm.topologies import (          # noqa: F401  (imported for registration)
 # exactly what §3's "there is no universal interaction graph" does not license.
 from ibm.topologies import tract_prior  # noqa: F401
 
+# vascular_prior is imported after `vascular` for the same reason.  it registers
+# no topology either: the microvasculature is not a second vasculature, it is the
+# part of the same one that no in-vivo measurement reaches, and a separate
+# topology for it would put the capillary bed and the artery feeding it in two
+# graphs that could disagree about being connected.
+from ibm.topologies import vascular_prior  # noqa: F401
+
+# microcircuit_prior is imported after `microcircuit` for the same reason and with
+# the same discipline: it registers NO topology.  it is a measured prior OVER the
+# `microcircuit` support -- connection probabilities, synapses per connection and
+# laminar specificity from proofread electron microscopy -- and a second topology
+# claiming to be the same circuit would be the duplicate §3 refuses.
+from ibm.topologies import microcircuit_prior  # noqa: F401
+
 from ibm.topologies.afferent import AFFERENT_PATHWAY
 from ibm.topologies.csf import CSF
 from ibm.topologies.device import DEVICE_COUPLING
@@ -78,5 +92,5 @@ __all__ = [
     "LOCAL", "CORTICAL_SURFACE", "LAMINAR", "MICROCIRCUIT", "TRACTOMETRIC",
     "VASCULAR", "CSF", "INTERSTITIAL", "ELECTROMAGNETIC", "MECHANICAL",
     "METABOLIC_EXCHANGE", "AFFERENT_PATHWAY", "EFFERENT_PATHWAY", "DEVICE_COUPLING",
-    "NEUROMODULATORY_PROJECTION", "tract_prior",
+    "NEUROMODULATORY_PROJECTION", "tract_prior", "vascular_prior", "microcircuit_prior",
 ]

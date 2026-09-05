@@ -21,7 +21,17 @@ what is carried per edge is the segment's geometry and its hydraulic resistance.
 resistance rather than conductance because it is the additive one along a series
 path, and because Poiseuille makes it a fourth power of radius: a 10% error in a
 segment radius is a 46% error in its resistance, which is why the radius is
-carried alongside rather than being folded in and forgotten.
+carried alongside rather than being folded in and forgotten.  that fourth power
+is also why `vascular_prior.theta_prior` widens a conductance prior by FOUR times
+the calibre's log spread -- a vein whose diameter is known across a population to
+a factor of 1.33 can carry a flow known to a factor of 3.1.
+
+this builder takes a tree and asks nothing about where it came from, which is
+right for the macrovasculature and badly wrong below it: no in-vivo human
+modality resolves a capillary, so a caller who supplies a capillary bed
+synthesised it.  `vascular_prior.py` is where that gets said -- three tiers over
+this same topology, a measured statistics table, and a generator whose output is
+checked against the flow it has to carry rather than against a histogram.
 
 `interstitial` and `csf` are the other two transport topologies and they are not
 this one.  the vascular tree is a plumbed network with walls; the interstitium is
@@ -31,6 +41,8 @@ crossings are the `metabolic_exchange` and `csf` topologies rather than edges he
 """
 
 from __future__ import annotations
+
+from typing import Any
 
 from ibm.registry import REGISTRY, Topology
 from ibm.topologies import builders as B
@@ -54,7 +66,8 @@ _RADIUS_WHAT = (
     "inverse fourth power of it, so a tree without radii supports adjacency but "
     "not transport, and substituting a constant radius would make every path's "
     "resistance proportional to its length -- exactly the wrong model, since the "
-    "capillary bed is most of the resistance and almost none of the length")
+    "capillary bed is most of the LENGTH (85% of it, measured) and a fifth of the "
+    "dissipation, so a length-proportional resistance gets the balance backwards")
 
 
 @B.builder(
@@ -67,18 +80,42 @@ _RADIUS_WHAT = (
     doc="parent-child segments of a vascular tree, with Poiseuille resistance")
 def vascular_tree_adjacency(sites, *, support: str = "vascular_tree",
                             parent=None, radius=None,
-                            viscosity_pa_s: float = 3.5e-3):
+                            viscosity_pa_s: float | Any = 3.5e-3):
     """segments of the tree, oriented parent to child.
 
     the resistance is Poiseuille's, R = 8 mu L / (pi r^4), in Pa s m^-3, with mu
-    the apparent whole-blood viscosity.  a constant mu is wrong in a known
-    direction and the direction is worth naming: below about 300 microns the
-    Fahraeus-Lindqvist effect reduces apparent viscosity, by roughly a factor of
-    two at capillary calibre, so a constant-viscosity tree overestimates capillary
-    resistance -- which is where most of the total resistance is.  it is left
-    uncorrected and documented rather than silently scaled, because the correction
-    depends on haematocrit, which is state rather than geometry and belongs to a
-    process.
+    the apparent whole-blood viscosity.
+
+    `viscosity_pa_s` may be a constant or a CALLABLE taking the segment diameter
+    in mm and returning a viscosity, which is how the Fahraeus-Lindqvist
+    correction enters when a caller wants it.  the default stays constant, and
+    the default is wrong in a direction that is now measured rather than merely
+    named.  `scripts/measure_microvasculature.py` recovers the apparent viscosity
+    implied by every segment's own solved pressure drop in three cortical
+    networks, and it is 2.4 mPa s at 4 um, 1.5 mPa s at 6-9 um and 2.2 mPa s
+    above 30 um -- so the constant 3.5 mPa s overestimates capillary resistance
+    by a factor of 1.5 to 2.4, and the relation is NOT monotone: it has its
+    minimum around 7 um and rises again below, which is the Fahraeus-Lindqvist
+    inversion.  a caller who applies a monotone "thinner therefore thinner blood"
+    correction has the sign right over half the range and wrong over the other
+    half.  `ibm.topologies.vascular_prior.MEASURED.viscosity_pa_s` is that
+    relation as a callable and is the intended argument.
+
+    the correction is not applied by default because it depends on haematocrit,
+    which is state rather than geometry and belongs to a process -- and because
+    the measured relation is recovered from a solver's own pressure field, so it
+    is what a network NEEDS in order to carry its flow rather than an independent
+    rheological measurement.
+
+    the same measurement contradicts this module's own summary of where the
+    resistance is.  the capillary bed accounts for 21% of the viscous dissipation
+    in those networks, not most of it; the descending arterioles take 37% and the
+    pial arteries 32%.  that figure is inflated on the arterial side by the blocks
+    being blocks -- their pial vessels are cut and carry the whole block's flow
+    through a few segments -- but not by a factor of four, so "the capillary bed
+    is most of the resistance" is not right as stated, and the reason it is nearly
+    harmless is that the capillary bed IS most of the LENGTH, which is what the
+    radius argument below is really about.
 
     a `flow_sign` column, if present, flips edges whose tree orientation runs
     against the flow.  venous trees are usually rooted at the sinus, so their
@@ -111,7 +148,9 @@ def vascular_tree_adjacency(sites, *, support: str = "vascular_tree",
     rad = np.asarray(rad, dtype=float)
     r_seg = 0.5 * (rad[child] + rad[up])
     r_m = np.maximum(r_seg, 1e-6) * 1e-3
-    resistance = 8.0 * float(viscosity_pa_s) * (length * 1e-3) / (np.pi * r_m ** 4)
+    mu = (viscosity_pa_s(2.0 * r_seg) if callable(viscosity_pa_s)
+          else float(viscosity_pa_s))
+    resistance = 8.0 * mu * (length * 1e-3) / (np.pi * r_m ** 4)
 
     src, dst = up, child
     sign = t.opt("flow_sign")
@@ -125,7 +164,12 @@ def vascular_tree_adjacency(sites, *, support: str = "vascular_tree",
         {"distance_mm": length, "radius_mm": r_seg, "resistance": resistance},
         directed=True,
         note=(f"{len(child)} segments, {int((par < 0).sum())} roots, "
-              f"mu = {viscosity_pa_s} Pa s constant (Fahraeus-Lindqvist not applied)"))
+              + ("mu from the supplied calibre-dependent relation "
+                 "(Fahraeus-Lindqvist applied)" if callable(viscosity_pa_s)
+                 else f"mu = {viscosity_pa_s} Pa s constant, which the measurement in "
+                      f"data/sources/microscopy-microvascular-networks/evidence/"
+                      f"microvasculature@1 puts 1.5-2.4x too high in the capillary bed "
+                      f"(Fahraeus-Lindqvist not applied)")))
 
 
 VASCULAR = REGISTRY.topology(Topology(

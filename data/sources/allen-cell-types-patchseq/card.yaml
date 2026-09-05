@@ -6,15 +6,15 @@ citation: Allen Cell Types Database; Gouwens et al., Integrated morphoelectric a
   of cortical GABAergic cells. Cell 2020.
 urls:
 - https://celltypes.brain-map.org/
-access: priority
+access: held
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
-binding: unbound
+  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's known bias
+    and licence rather than treating atlas availability as correctness; that practice is preserved by leaving this
+    unresolved and counting it.
+binding: bound
 population:
   n: null
 frames:
@@ -22,34 +22,53 @@ frames:
 - slice_native
 streams:
 - name: intrinsic_electrophysiology
-  kind: measured
+  kind: context
   via: null
-  systematic_bias: 'Measured current-clamp responses per cell type are the strongest available constraint
-    on WHICH LOCAL DYNAMICAL MODEL CLASS is appropriate where -- directly serving §37''s model-class uncertainty
-    and §53.4''s requirement for parameter priors. In acute slices, at non-physiological temperature and
-    without intact network input: the parameters are real, the regime is not in vivo.'
+  systematic_bias: 'Measured current-clamp responses per cell type are the strongest available constraint on WHICH
+    LOCAL DYNAMICAL MODEL CLASS is appropriate where -- directly serving §37''s model-class uncertainty and §53.4''s
+    requirement for parameter priors. In acute slices, at non-physiological temperature and without intact network
+    input: the parameters are real, the regime is not in vivo.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
-  spatial_support: single cells characterised ELECTROPHYSIOLOGICALLY, morphologically and transcriptomically
-    at once, in acute slices and from human surgical tissue in part
+  spatial_support: single cells characterised ELECTROPHYSIOLOGICALLY, morphologically and transcriptomically at
+    once, in acute slices and from human surgical tissue in part
+  constrains: []
+  notes: 'context, and a PRIOR-shaping stream in exactly the sense ismrm2015-submissions'' cross_pipeline_disagreement
+    is.  a whole-cell recording of one cell in a slice is not a measurement of `neural.exc.potential`, which is
+    a population mean in living tissue with its network intact; what it is is a distribution over the PARAMETERS
+    of the processes that generate that state, and this card''s `forbidden` already refuses it an observation role.  MEASURED
+    FROM THESE BYTES by scripts/measure_microcircuit.py over 2,333 specimens: pyramidal membrane time constant 20.4
+    ms x1.37 in mouse and 26.4 ms x1.41 in human, pv 7.0 ms x1.40, resting potential -73.0 +- 5.6 mV, input resistance
+    163 MOhm x1.44.  three of those replace declared literature values in ibm/processes/neural.py and one of them
+    confirms one -- see ibm/topologies/microcircuit_prior.parameter_priors.'
 - name: morphoelectric_transcriptomic_correspondence
-  kind: measured
+  kind: context
   via: null
-  systematic_bias: Patch-seq is the only assay that links a cell's transcriptomic identity to its measured
-    dynamics; the yield is low and biased toward cells that survive the procedure
+  systematic_bias: Patch-seq is the only assay that links a cell's transcriptomic identity to its measured dynamics;
+    the yield is low and biased toward cells that survive the procedure
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: context.  the correspondence between a cell's transcriptomic identity and its dynamics is what licenses
+    the pv / sst / vip decomposition `ibm.fields.neural` declares at all -- it is evidence about the MODEL CLASS
+    rather than about any component's value, which is the definition of a prior-shaping stream.  the acquired table
+    is the Cell Types electrophysiology summary; the transcriptomic half was not fetched.
 - name: human_surgical_subset
-  kind: measured
+  kind: context
   via: null
-  systematic_bias: human tissue here comes from surgical resections, i.e. from patients, and usually from
-    tissue removed to reach a lesion
+  systematic_bias: human tissue here comes from surgical resections, i.e. from patients, and usually from tissue
+    removed to reach a lesion
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and the stream that makes the species comparison in ibm/topologies/microcircuit_prior.py possible:
+    413 of the 2,333 specimens are human, recorded the same way as the 1,920 mouse ones, so the human/mouse ratio
+    of a membrane time constant is measured rather than assumed (1.29).  the tissue is surgical and usually removed
+    to reach a lesion, so it is neither healthy nor a population.'
 absent:
 - in_vivo_conditions
 - network_context

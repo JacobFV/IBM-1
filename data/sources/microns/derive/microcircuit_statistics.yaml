@@ -1,0 +1,52 @@
+# a recipe, not a run.  its output lives under evidence/<recipe>@<version>/.
+name: microcircuit_statistics
+version: 1
+doc: measure the cortical microcircuit -- connection probability against intersomatic distance and cell-type
+  pair, synapses per connection, laminar specificity with distance divided out, and the lateral extent
+  that decides what a cortical column is worth as a unit.  these are the quantities `local_excitation`,
+  `local_inhibition` and `laminar_propagation` currently declare with weak() priors, and the reason they
+  could be weak is that nothing in vivo resolves them.  MICrONS's hand-proofread axons do.
+inputs:
+- source: microns
+  path: public_data/proofread_axons_microns_1078.feather
+  what: 564 cells whose axon has been traced by hand; 77 marked axon_fully_extended, which is the subset
+    whose within-volume output is COMPLETE and therefore the only subset a connection probability can
+    honestly be computed from
+- source: microns
+  path: public_data/syn_proofread_axons_all_out_microns_1078.feather
+  what: 776,570 output synapses of those axons, with pre and post segment id and position
+- source: microns
+  path: public_data/cell_types_microns_1078_{auto,manual}.feather
+  what: 90,296 automatic and 1,357 manual cell-type calls with soma positions in nm.  the manual labels
+    override the automatic ones where both exist, and the agreement between them (0.843) is reported as
+    the classifier's error rate on the very stratification everything here is computed within
+tool:
+  name: scripts/measure_microcircuit.py
+  runtime: python 3.12, numpy, pyarrow
+  note: 'reads feather directly rather than through caveclient: CAVE''s info service and the minnie65_public
+    materialization both redirect to a Google OAuth wall, and the public GCS bucket serves the same tables
+    anonymously'
+parameters:
+  distance_bins_um: 0 25 50 75 100 150 200 250 300 400 500 700 1000, tangential
+  distance_axis: x and z of the MICrONS frame.  y is depth -- verified rather than assumed, by checking
+    that the classifier's laminar labels order monotonically along it (NGC 443 um, 23P 488, 4P 627, 5P
+    742-846, 6P 928-937)
+  layer_boundaries: 'MEASURED, not imported: the depth minimizing the number of cells on the wrong side
+    of it for each adjacent pair of excitatory types.  L2/3-L4 566 um at 91% separability, L4-L5 702 um
+    at 88%, L5-L6 816 um at 94%'
+  laminar_specificity: observed connections over the number the pre class's own p(d) curve predicts at
+    each pair's intersomatic distance.  without that division a laminar effect and a distance effect are
+    the same number
+  blocks: 3 x 3 in the two tangential axes for the intraclass correlation.  depth is deliberately NOT
+    split, because a real laminar gradient would otherwise be counted as shared error
+  autapses: dropped
+  effective_sample_count: 'ibm.runtime.fuse.TeacherPrecision.effective_constraints, at error_rank 1, on
+    the measured within-volume intraclass correlation.  it is a WITHIN-VOLUME figure and the between-animal
+    one is unmeasurable here: there is one animal'
+outputs:
+- path: evidence/microcircuit_statistics@1/measured.json
+  what: connection probability per class pair and distance bin with its exponential fit, synapses per
+    connection, the laminar matrix raw and distance-controlled, the lateral-extent table, the proofreading
+    correction factors, and the per-class spread and effective axon count
+consumed_by:
+- ibm/topologies/microcircuit_prior.py

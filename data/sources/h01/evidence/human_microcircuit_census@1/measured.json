@@ -1,0 +1,118 @@
+{
+ "census": {
+  "n_somas": 49379,
+  "by_celltype": {
+   "OLIGO": 20139,
+   "PYRAMIDAL": 8803,
+   "MG_OPC": 6536,
+   "ASTROCYTE": 5474,
+   "INTERNEURON": 4688,
+   "SPINY_ATYPICAL": 1535,
+   "UNCLASSIFIED_NEURON": 868,
+   "UNKNOWN": 692,
+   "BLOOD_VESSEL_CELL": 285,
+   "SPINY_STELLATE": 193,
+   "C_SHAPED": 166
+  },
+  "by_layer": {
+   "White matter": 13063,
+   "Layer 4": 6745,
+   "Layer 5": 6720,
+   "Layer 2": 6651,
+   "Layer 3": 6275,
+   "Layer 1": 4595,
+   "Layer 6": 3947,
+   "unclassified": 659
+  },
+  "n_excitatory": 10531,
+  "n_inhibitory": 4688,
+  "inhibitory_fraction_of_classified_neurons": 0.30803600762205136,
+  "inhibitory_fraction_by_layer": {
+   "Layer 1": 0.8733233979135618,
+   "Layer 2": 0.3506379234491861,
+   "Layer 3": 0.3658074298711145,
+   "Layer 4": 0.20785498489425983,
+   "Layer 5": 0.23271889400921658,
+   "Layer 6": 0.12379110251450677,
+   "White matter": 0.21936758893280633
+  },
+  "layer_depth_um": {
+   "Layer 1": 1.2667608468654496e-13,
+   "Layer 2": 83.97201947478545,
+   "Layer 3": 448.1910921620163,
+   "Layer 4": 870.4762507878968,
+   "Layer 5": 1244.4619902408429,
+   "Layer 6": 1682.0836557692166,
+   "White matter": 2243.38278279523
+  },
+  "cortical_depth_span_um": 2243.3827827952305,
+  "depth_axis_unit_vector": [
+   -0.8997780520963421,
+   0.4362605108619811,
+   0.008730614420272951
+  ]
+ },
+ "ei_input": {
+  "n_segments": 46637,
+  "inhibitory_input_fraction_all": 0.585516421954328,
+  "inhibitory_input_fraction_pyramidal": 0.4767972996377315,
+  "inhibitory_input_fraction_interneuron": 0.5908024078398837,
+  "n_pyramidal": 8626,
+  "n_interneuron": 4552,
+  "median_inputs_per_segment": 19.0,
+  "median_outputs_per_segment": 7.0
+ },
+ "synapse_sample": {
+  "n_shards": 100,
+  "n_shards_total": 166,
+  "n_synapses_sampled": 96474370,
+  "sampling_fraction_measured": 0.5680497225939697,
+  "sampling_fraction_nominal": 0.6024096385542169,
+  "per_segment_sampling_ratio_sd": 0.4440904264980879,
+  "per_segment_sampling_ratio_iqr": [
+   0.4136755485893417,
+   0.7307692307692307
+  ],
+  "synapse_type_counts": {
+   "1": 38710388,
+   "2": 57763982
+  },
+  "perisomatic_fraction_by_type": {
+   "1": 0.012439167491682078,
+   "2": 0.0019107235370303937
+  },
+  "inferred_inhibitory_type_code": 1,
+  "perisomatic_enrichment": 6.510186979229225,
+  "inhibitory_synapse_fraction": 0.4012504875647283,
+  "postsynaptic_compartment_counts": {
+   "dendrite": 84504187,
+   "soma": 423722,
+   "ais": 168174,
+   "axon": 2078338,
+   "other": 9299949
+  }
+ },
+ "soma_to_soma": {
+  "n_synapses_between_somas": 310530,
+  "fraction_of_sampled_synapses": 0.003218782356391651,
+  "n_unique_pairs": 175572,
+  "intersomatic_distance_um": {
+   "median": 58.09145121272161,
+   "p10": 11.243674844106794,
+   "p90": 242.5278347336169,
+   "frac_within_100um": 0.6760248607219914,
+   "frac_within_250um": 0.9049689240975107
+  },
+  "by_class_pair": {
+   "E->E": 42798,
+   "E->I": 13540,
+   "I->E": 8226,
+   "I->I": 2517
+  }
+ },
+ "sources": [
+  "H01 release 20210601: c3 soma table, c3 segment properties, and 100 of 166 shards of the exported synapse table"
+ ],
+ "measured_at": "2026-09-05",
+ "species": "Homo sapiens, temporal cortex, ONE person, resected during epilepsy surgery"
+}

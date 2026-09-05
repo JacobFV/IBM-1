@@ -16,6 +16,18 @@ different pial arterioles and are, for flow purposes, far apart.  a volume
 representation of perfusion silently asserts the opposite and is how a model
 acquires vascular smoothing it was never given.
 
+what is NOT here is the vessel.  a lumen radius, a segment length and a branch
+order are also indexed on `vascular_tree` and would sit here comfortably, and they
+are declared on `structural` instead with a support override.  the criterion is
+this field's own: `blood` is what MOVES within an experiment -- a flow that steps
+in a second, a balloon that empties over ten -- and a vessel's resting calibre
+moves over days, as angiogenesis, remodelling and rarefaction.  putting a radius
+here would give it the haemodynamic band and invite a fit to move it at 0.1 Hz,
+which is the one thing the geometry must not do: a vasodilation is a change in
+resistance, and in this ontology it is expressed as flow and volume rather than as
+a rewritten anatomy.  `ibm/topologies/vascular_prior.py` is where the geometry gets
+its prior, and `structural.py` argues the split at more length.
+
 six components rather than one "perfusion" variable, because the BOLD signal is a
 *ratio* and the things that enter it move independently.  flow and volume are
 related by Grubb's law only in steady state and diverge transiently -- the venous

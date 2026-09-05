@@ -21,6 +21,30 @@ ontology sprawls.  the generic `inh` pair remains, because most mesoscale
 literature and most fitted models speak in one inhibitory population, and the
 two descriptions coexist rather than one replacing the other.
 
+the three interneuron classes are now a measured decomposition rather than a
+declared one, and one of the numbers behind that is a gap in it.  MICrONS's
+proofread volume classifies 71,551 typed neurons of mouse visual cortex, and
+`scripts/measure_microcircuit.py` counts them: 89.0% excitatory, 4.6% basket
+(which is what `pv` is a population of), 3.4% martinotti (`sst`), 2.1% bipolar
+(`vip`) and **0.9% neurogliaform, for which this field declares no component at
+all**.  neurogliaform cells are not a rounding error in the circuit even at that
+abundance -- they are contacted by excitatory cells at 0.056 within 100 um,
+comparable to `vip`'s 0.044, and they contact excitatory cells more often than
+`vip` does.  the honest position is that the decomposition here is three classes
+where the tissue has at least four, and that the fourth is left out because it
+carries volume-transmitted gaba-b inhibition this field's `inh.gaba_b` already
+lumps rather than because it is absent.  `ibm/topologies/microcircuit_prior.py`
+carries neurogliaform connectivity through its measurement and drops it at the
+prior, and says so, rather than folding it into `sst` on the grounds that both
+target dendrites.
+
+the same census is where the species problem becomes a number.  the inhibitory
+fraction is 0.110 in that mouse volume and 0.308 in H01's human temporal cortex,
+which is a factor of 2.8 -- part real and part two classifiers disagreeing about
+what counts as a neuron.  a field that declares one `inh` population and three
+named classes has to be read with that in mind: the classes' *identities* transfer
+across species and their *proportions* do not.
+
 separate conductances rather than one "synaptic input" because their time
 constants differ by two orders of magnitude and that difference is load-bearing:
 ampa and gaba-a set the gamma rhythm, nmda sets the slow recurrent integration

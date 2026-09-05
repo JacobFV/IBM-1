@@ -1,0 +1,136 @@
+# a recipe, not a run.  its output lives under evidence/<recipe>@<version>/.
+name: microvasculature
+version: 1
+doc: >-
+  measure what a capillary bed IS, well enough to synthesise one that carries the
+  right flow.  microvasculature is the one piece of anatomy ibm-1 needs that no
+  in-vivo human measurement reaches: 7T angiography stops at 200-300 um and a
+  cortical capillary is 4-5 um at 40-60 um spacing, so the question is not how
+  wrong the measurement is -- there is no measurement -- but what a synthesis has
+  to be consistent with.  three arms answer three different halves of that, and
+  the third is a human source included only for its variance.
+inputs:
+- source: vesselgraph-mouse
+  path: '*_raw.zip -> */*_edges.csv and */*_nodes.csv'
+  what: >-
+    nine whole mouse brains, three strains x three animals, read in full: 2.2 to
+    5.9 million segments each with arc length, chord distance, curveness and a
+    maximal-inscribed-sphere radius, plus a node table with position and degree.
+    this is the only source here with enough animals for a between-animal spread
+    that means anything, and the only one at whole-brain extent.
+- source: microscopy-microvascular-networks
+  path: zenodo-269650/NW{1,2,3}_results.tar.bz2 -> verticesDict.pkl, edgesDict.pkl
+  what: >-
+    three 1.4-2.8 mm^3 blocks of mouse vibrissa cortex with vessel-type labels,
+    the full centreline polyline of every segment, and a solved pressure and flow
+    field.  everything that needs a tissue VOLUME rather than a graph comes from
+    here -- length density, the tissue-to-capillary distance, the depth profile,
+    the distance from a penetrating vessel -- and so does all of the physics.
+- source: venat
+  path: figshare-7205960/VENAT_{diameter,curvature,torsion}{,_std}.nii.gz and the
+    partial-volume maps
+  what: >-
+    the only human source, and it is here for one number: the ratio of the
+    standard-deviation map to the mean map, which is the BETWEEN-SUBJECT spread of
+    a macro vein's calibre.  that is what tier 2 of vascular_prior costs and it
+    was previously a declared judgement.
+tool:
+  name: scripts/measure_microvasculature.py
+  runtime: python 3.12, numpy, scipy, pandas, nibabel
+  cost: ~65 s over 6 GB of csv and 160 MB of nifti; nothing is cached
+parameters:
+  margin_um: 100.0
+  probes: 200000
+  depth_bins: 12
+  capillary_radius_um: 4.0
+  seed: 20260905
+  units_of_vesselgraph: >-
+    INFERRED, not documented.  length, distance and volume in VOXELS of 3 um and
+    avgRadiusAvg in MICRONS.  three independent checks, each of which one reading
+    passes and the other fails: length over centreline-voxel count is 1.4, the
+    mean step of a 3D digital curve; the whole-brain length density lands within
+    a factor of two of the direct cortical measurement in arm B, where the
+    micron reading is six times too low; and the all-voxels reading puts the
+    cerebral blood volume at 10-14% of tissue, three times any measured value.
+    every density and every resistance depends on this and the alternative is
+    stated so a reader can change it.
+  units_of_the_flow_solution: >-
+    INFERRED, and by two routes that share no arithmetic.  Poiseuille: every
+    segment has a solved drop, a radius and a length, so the flow a 3.5 mPa s
+    fluid would need is computable, and its ratio to the stored number is 459-492
+    in all three networks -- consistent to 7%, which a wrong unit would not be.
+    Perfusion: the flow entering the descending arterioles divided by the tissue
+    volume is a CBF, and at 1000 um^3/s per unit it is 93-173 ml/100g/min, which
+    is mouse cortex.  a decade either way makes it 9 or 1700 and is ruled out.
+  capillary_class: >-
+    vessel-type code 4 in arm B, which is the release's own label and 72-78% of
+    every network.  code 5 exists, is undocumented, carries an arteriole-like
+    calibre, and is counted and EXCLUDED rather than guessed into the bed.  arm A
+    has no type labels at all, so its capillary class is a calibre cut at 4 um
+    radius, justified by arm B's labelled bed.
+  perfusion_denominator: >-
+    the FULL bounding volume, not the eroded interior the length density uses.  a
+    descending arteriole runs through the whole block and perfuses the whole
+    block, so eroding the denominator would inflate the CBF by exactly the
+    erosion factor -- 1.7x at a 100 um margin, which is the difference between a
+    physiological answer and one twice too high.
+  murray_exponent: >-
+    FITTED per junction by bisection on r_p^k = sum r_c^k, not assumed to be 3.
+    the root is unique whenever every child is narrower than the parent; junctions
+    where one is not are returned as nan and COUNTED rather than clipped, because
+    they are half of them and dropping them silently would make the law look far
+    better than it is.
+  branching_angle: >-
+    taken from each segment's own stored centreline 15 um from the junction, not
+    from the chord to its far endpoint.  a capillary wanders by 17% of its length,
+    so a chord-based angle measures the wander.  the polyline's near end is FOUND
+    rather than assumed, because assuming it reverses about half the angles and
+    produces a symmetric distribution centred on 90 degrees that looks entirely
+    plausible.
+  effective_sample_count: >-
+    a strain-level one-way ICC over three strains of three animals, NOT the
+    correlation of each animal's deviation from the group consensus.  the second
+    estimator is the one the tract work used and it has a null of -1/(n-1) rather
+    than 0, because deviations from a sample mean sum to zero -- worse, an
+    exchangeable shared component is removed EXACTLY by the centring, so a bias
+    every animal shares is invisible to it.  both are computed and both reported;
+    the ICC is the one with dynamic range at this n.
+what_it_cannot_measure:
+  a_human_capillary: >-
+    nothing here is human below 300 um and nothing ever will be.  the transfer is
+    an assumption with a stated direction: normalised geometry is conserved,
+    absolute density tracks metabolic rate, and vascular_prior conditions on a
+    target CBF rather than on a target density for exactly that reason.
+  the_shrinkage_factor: >-
+    both microscopy sources are fixed and one is cleared, and neither reports a
+    per-specimen shrinkage.  fixation collapses the lumen and clearing shrinks the
+    block, so densities are upper bounds and calibres lower bounds -- while the
+    segmentation's calibre-correlated false negatives push density the other way.
+    the two are not known to cancel and no correction is applied.
+  rheology: >-
+    the apparent-viscosity-versus-calibre relation is recovered from a SOLVED
+    pressure field, so it is the law that solver used.  it is reported as what a
+    network needs in order to carry its flow, which is what the generator needs
+    it for, and never as a measurement of blood.
+  a_grey_white_contrast: >-
+    arm A ships no tissue mask and arm B is entirely cortical, so the white-matter
+    density this repository would want is not measured here.  vascular_prior
+    carries a declared factor of 0.5 and says it is declared.
+  individual_variation_in_a_human: >-
+    VENAT's between-subject spread is over a POPULATION ATLAS SKELETON, which
+    exists only where subjects agreed enough to leave one, and registration turns
+    positional variability into blur rather than into variance.  it is a lower
+    bound on how much two people differ, twice over.
+outputs:
+- path: evidence/microvasculature@1/measured.json
+  what: >-
+    per-animal geometry for all twelve reconstructions, the between-animal spread
+    of each headline quantity, the depth profile and the penetrating-vessel
+    shells, the fitted Murray exponent at bifurcations and separately at
+    confluences, the recovered flow unit and viscosity relation, the perfusion and
+    pressure drop and transit time, the fraction of vascular length and volume an
+    angiogram could ever resolve, and the effective independent animal count by
+    both estimators
+consumed_by:
+- ibm/topologies/vascular_prior.py
+- ibm/topologies/vascular.py

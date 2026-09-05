@@ -1,5 +1,29 @@
-# where the bytes for `microscopy-microvascular-networks` actually live.  never the bytes themselves.
-source_url: ""
-local_root: null   # set on acquisition
-acquired_at: null
-bytes: null
+# where the bytes for `microscopy-microvascular-networks` actually live.
+local_root: /home/brandonin/Documents/win-data/microscopy-microvascular-networks
+acquired_at: '2026-09-05'
+files: 22
+bytes: 1031022708
+gib: 0.96
+checksums: sha256 of every archive, in checksums.txt alongside this file
+source_url: https://zenodo.org/records/269650
+note: >-
+  two Zenodo records, both CC BY 4.0, holding the same three cortical
+  microvascular networks with different solutions on them.
+
+  269650 (861 MB): NW1, NW2 and NW3 -- three ~1.4-2.8 mm^3 blocks of mouse
+  vibrissa primary sensory cortex reconstructed by Blinder et al. 2013, with the
+  Schmid/Weber discrete-red-blood-cell flow solution.  each ships a vertex dict
+  (coordinates, pressure, pressure boundary condition) and an edge dict (vessel
+  type, diameter, arc length, flow, haematocrit, and the full centreline polyline
+  with a diameter at every point).  the RBC trajectory files are held but unused.
+
+  1306230 (2.9 MB): MVN1 and MVN2 with and without discrete RBCs, plus the in-vivo
+  measurement dictionary the paper validates against.
+
+  the GEOMETRY here is a measurement -- optical microscopy of India-ink-filled
+  fixed cortex -- and the FLOW AND PRESSURE ARE A SIMULATION on top of it.  every
+  number this repository takes from the flow field is therefore a statement about
+  what a network with this geometry must do to carry blood, not a measurement of
+  what blood did.  that distinction is the reason the evidence directory reports
+  the recovered viscosity relation as "the law the solver needed" rather than as
+  rheology.
