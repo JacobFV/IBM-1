@@ -11,7 +11,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: Per-contribution terms inherited from the parent datasets. Unresolved.
-binding: unbound
+binding: bound
 population:
   n: null
   hierarchy:
@@ -23,64 +23,95 @@ frames:
 - MNI152
 streams:
 - name: tractograms_with_lineage
-  kind: measured
+  kind: context
   via: null
   systematic_bias: '§51.3 item 23: USE AS DERIVED EVIDENCE ONLY. Its distinguishing feature is that it
     keeps the parent dataset and the algorithm attached to the streamlines, which is exactly what §52.8
     requires and what almost no distributed connectome does. That makes it a model for how obj-tract-path-products
     should store its own output.'
-  notes: the streamlines are one algorithm's answer; keeping the algorithm attached does not make the
-    answer correct, it makes the answer INTERPRETABLE
+  notes: 'context, and the decision is the point.  a set of streamlines or a parcel-by-parcel matrix is an INTERACTION
+    TOPOLOGY -- a statement about which state variables may interact (ARCHITECTURE.md §3) -- and a topology
+    is a support for interaction, not a measurement of any component.  there is no ibm component whose value
+    this stream reports: `structural.fiber_orientation` is what the underlying diffusion volume constrains,
+    and the tractogram is an ALGORITHM''S ANSWER computed from it, not a second measurement of it.  binding
+    it as `measured` would let one pipeline''s reconstruction contribute a likelihood about tissue, which is
+    exactly the double-count the card''s `forbidden` list already refuses.  the distinguishing feature -- the
+    parent dataset and the algorithm stay attached to the streamlines -- does not make the streamlines a measurement.  it
+    makes them INTERPRETABLE, which is what `tract_prior.tier` records for a materialization and what almost
+    no distributed connectome supports.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series
   spatial_support: streamline geometry in the parent dataset's subject space, with the parent and the
     algorithm recorded
+  constrains: []
 - name: cross_algorithm_agreement
-  kind: measured
+  kind: context
   via: null
   systematic_bias: where the same parent DWI has been processed several ways, the disagreement is a measurable
     model-class uncertainty
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and a prior rather than a likelihood: where one parent DWI has been processed several ways,
+    the spread is model-class uncertainty and it shapes p(theta) over the tractometric edges without contributing
+    evidence about any component.  it is the real-data counterpart of the phantom measurement in `ismrm2015-submissions`,
+    and it is the weaker of the two because there is no ground truth to score against -- disagreement bounds
+    error, it does not measure it.'
 - name: tractograms
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: duplicate of `tractograms_with_lineage` carried over from the migration; bound to nothing so one archive
+    is not counted twice.
 - name: bundle_segmentations
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context: a cover over the tractometric topology.  it groups edges for parameter tying and constrains
+    no component.'
 - name: parent_dataset_lineage
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context: which deposit each tractogram came from.  it is what makes `split.group_by: participant,
+    site` enforceable across an aggregate, and without it this source could leak a person between a fit and
+    an evaluation with nothing to detect it.  it constrains no state.'
 - name: algorithm_parameters
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context: seeding, response function, thresholds and software version per tractogram.  these are the
+    provenance §52.8 requires and almost no connectome ships; they are facts about a computation, not about
+    a brain.'
 absent:
 - raw_dwi
 - ground_truth
 - directionality
 requires:
 - geometry: tract-path-products
-  for_streams:
-  - tractograms_with_lineage
   severity: blocking
   without_it: 'A streamline set is geometry without endpoints: it terminates in voxels, not in named supports.
-    Without the tract product -- endpoint-density splats, path ensembles and arc-length tractometry --
-    these streamlines cannot become an interaction between two addressable supports.'
+    Without the tract product -- endpoint-density splats, path ensembles and arc-length tractometry -- these
+    streamlines cannot become an interaction between two addressable supports. STATED AT CARD LEVEL RATHER
+    THAN AGAINST A STREAM, for the reason given on the streams themselves -- these are topology assertions
+    and bind to no component, so no constraint of theirs is left dangling by the missing product. It still
+    blocks any materialization that wants to turn them into edges between supports, which is why it stays
+    blocking.'
 use:
 - evaluate
 - prior

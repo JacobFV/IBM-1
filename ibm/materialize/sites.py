@@ -159,15 +159,29 @@ class SurfaceGeometry:
         return out
 
     def edge_graph(self, step: str = "surface_sites"):
-        """the mesh as a sparse graph weighted by edge length, both directions."""
+        """the mesh as a sparse graph weighted by edge length, both directions.
+
+        the half-edges are made unique *before* the matrix is built, and that is
+        not tidiness.  `csr_matrix((data, (row, col)))` sums duplicate entries,
+        and every interior edge of a closed surface belongs to two triangles, so
+        assembling the half-edges directly gives each of them twice its true
+        length -- on a cortical mesh, which has essentially no boundary, that is
+        every edge.  the consequence is silent and expensive: geodesic distance
+        comes out uniformly doubled, a poisson-disk radius of r covers r/2 of
+        actual cortex, and the sampler returns about four times the sites the
+        request asked for while reporting the requested spacing.  the error is
+        invisible in the site table and only shows up against the sheet's known
+        area, which is why the check belongs here.
+        """
         csr, _ = _csgraph(step)
         v = np.asarray(self.vertices, float)
         f = np.asarray(self.faces, np.int64)
-        i = np.concatenate([f[:, 0], f[:, 1], f[:, 2]])
-        j = np.concatenate([f[:, 1], f[:, 2], f[:, 0]])
-        i, j = np.concatenate([i, j]), np.concatenate([j, i])
-        w = np.linalg.norm(v[i] - v[j], axis=1)
-        return csr((w, (i, j)), shape=(len(v), len(v)))
+        e = np.concatenate([f[:, [0, 1]], f[:, [1, 2]], f[:, [2, 0]]], axis=0)
+        e = np.unique(np.sort(e, axis=1), axis=0)
+        w = np.linalg.norm(v[e[:, 0]] - v[e[:, 1]], axis=1)
+        i = np.concatenate([e[:, 0], e[:, 1]])
+        j = np.concatenate([e[:, 1], e[:, 0]])
+        return csr((np.concatenate([w, w]), (i, j)), shape=(len(v), len(v)))
 
 
 @dataclass(frozen=True)
@@ -297,10 +311,23 @@ class RegionResolver:
     silent misregistration does not announce itself, the numbers stay plausible,
     and a `Ball` written in MNI applied to native positions is off by centimetres
     at the rim while looking entirely reasonable.
+
+    `anchor_frames` exists because `Near(...)` used to be the one hole in that
+    refusal.  a device declares its own frame -- an eeg cap is digitised in the
+    instrument's head frame and a coil is tracked in the coil frame -- and
+    comparing those positions to sites in the subject's anatomical frame without
+    a warp is exactly the error every other branch here raises over.  it silently
+    displaces the refined region by the whole coregistration, which for a scalp
+    montage is centimetres, and the resulting r(q) refines a plausible-looking
+    volume that is not where the electrodes are.
     """
 
     frame: str
     anchors: Mapping[str, Any] = _field(default_factory=dict)
+    #: anchor name -> the frame its positions are in.  absent means "already in
+    #: `frame`", which is the right default only because most callers hand over
+    #: positions they have already brought into the model's frame.
+    anchor_frames: Mapping[str, str] = _field(default_factory=dict)
     #: (system, label, xyz, frame) -> (n,) weights in [0, 1].  supplied by
     #: `ibm.anatomy`; absent means atlas-valued regions cannot be evaluated.
     anatomy: Callable[[str, str, Any, str], Any] | None = None
@@ -370,6 +397,9 @@ class RegionResolver:
                 "DeviceSpec(positions=...) on the request -- digitised electrode positions, a "
                 "post-implant CT localisation, or a coil tracking record")
         pts = np.asarray(pts, float).reshape(-1, 3)
+        src = self.anchor_frames.get(region.anchor, self.frame)
+        if src != self.frame:
+            pts = self._to(pts, src, self.frame)
         if region.metric == "geodesic":
             if self.geodesic is None:
                 raise MissingData(
@@ -511,8 +541,8 @@ def octree_sites(geom: VolumeGeometry, resolution: Resolution, resolver: RegionR
     n_kept = 0
 
     while len(cells):
-        occ = _cell_occupancy(geom, cells, size)
-        keep = occ > 0.0
+        hit, occ = _cell_occupancy(geom, cells, size)
+        keep = hit > 0.0
         cells, occ = cells[keep], occ[keep]
         if not len(cells):
             break
@@ -562,22 +592,64 @@ def octree_sites(geom: VolumeGeometry, resolution: Resolution, resolver: RegionR
                  "metric": "euclidean", "geometry_source": geom.source})
 
 
-def _cell_occupancy(geom: VolumeGeometry, centres: np.ndarray, size: float) -> np.ndarray:
-    """occupancy of a cell, sampled at its centre and its corners.
+def _cell_occupancy(geom: VolumeGeometry, centres: np.ndarray,
+                    size: float) -> tuple[np.ndarray, np.ndarray]:
+    """(does this cell touch the support, what fraction of it does), per cell.
 
-    the corner test is what stops a thin structure -- a sulcal bank, a vessel, the
-    skull's inner table -- from being pruned at a coarse level because the cell's
-    centre happened to fall in csf.  once pruned it never comes back, so the test
-    is conservative on purpose and the extra eight evaluations are cheap next to
-    the alternative of losing the structure entirely.
+    two numbers because the octree asks two different questions of the same cell
+    and answering both with one is what makes the sampling wrong at both ends.
+
+    *the keep/split test must be conservative.*  a cell that is pruned never comes
+    back, so anything that touches the support has to survive -- a sulcal bank, a
+    vessel, the skull's inner table.  a centre-and-corners test is not
+    conservative at coarse levels, and the failure is spectacular rather than
+    subtle: the root cell of an octree is the size of the bounding box, so its
+    centre and its eight far corners all sit *outside* any structure that is not
+    convex, and a brain mask is pruned in its entirety at level 0.  so the cell
+    is sampled on a lattice fine enough to resolve the geometry's own voxel, and
+    the maximum over that lattice decides.
+
+    *the leaf's weight must be an average.*  `octree_sites` uses this as the
+    partial-volume fraction, and a maximum makes every leaf that touches the
+    surface fully occupied -- which is exactly the error the fraction exists to
+    prevent, a full cell's worth of metabolic demand in the subarachnoid space.
+    the mean over the same lattice is the fraction, at the lattice's resolution.
+
+    the lattice is capped at 9 per axis, which bounds the work per cell at 729
+    evaluations while keeping the sample spacing at or below the voxel size for
+    every cell smaller than about 9 voxels -- and the cells that are larger are
+    the handful near the root, where over-inclusion costs one extra subdivision
+    and under-inclusion costs the structure.
     """
-    h = size * 0.5
-    corners = np.array([[sx, sy, sz] for sx in (-h, h) for sy in (-h, h) for sz in (-h, h)])
-    best = geom.occupied(centres)
-    if size > _min_spacing(geom.support):
-        for c in corners:
-            best = np.maximum(best, geom.occupied(centres + c))
-    return best
+    n = _lattice_n(geom, size)
+    off = ((np.arange(n) + 0.5) / n - 0.5) * size
+    grid = np.stack(np.meshgrid(off, off, off, indexing="ij"), axis=-1).reshape(-1, 3)
+    hit = np.zeros(len(centres))
+    frac = np.zeros(len(centres))
+    chunk = max(1, int(2_000_000 // max(len(grid), 1)))
+    for s in range(0, len(centres), chunk):
+        c = centres[s:s + chunk]
+        v = geom.occupied((c[:, None, :] + grid[None, :, :]).reshape(-1, 3))
+        v = np.asarray(v, float).reshape(len(c), len(grid))
+        hit[s:s + chunk] = v.max(axis=1)
+        frac[s:s + chunk] = v.mean(axis=1)
+    return hit, frac
+
+
+def _lattice_n(geom: VolumeGeometry, size: float) -> int:
+    """samples per axis inside one cell: enough to see the geometry's own voxel.
+
+    the scale is read off the occupancy's affine where there is one, because that
+    is the finest thing the mask can express; an analytic `inside` predicate has
+    no voxel, so the support's `min_spacing_mm` stands in and a millimetre is the
+    floor below which sampling an octree cell is pointless.
+    """
+    scale = 1.0
+    a = getattr(geom, "affine", None)
+    if a is not None and geom.occupancy is not None:
+        scale = float(np.linalg.norm(np.asarray(a, float)[:3, :3], axis=0).min())
+    scale = max(scale, _min_spacing(geom.support), 1e-3)
+    return int(np.clip(np.ceil(size / scale), 2, 9))
 
 
 def _subdivide(centres: np.ndarray, size: float) -> np.ndarray:
@@ -606,6 +678,13 @@ def surface_sites(geom: SurfaceGeometry, resolution: Resolution, resolver: Regio
     dijkstra at the end.  that is the measure every surface process integrates
     over, and with adaptive radii it varies across the sheet by the square of the
     refinement factor.
+
+    the same voronoi assignment gives the samples their own triangulation
+    (`_dual_faces`, written into the `faces` column).  without it the table is a
+    point cloud: the original mesh's faces index 3*10^5 vertices and the table
+    holds 10^4 rows, so a geodesic topology handed them would index into nothing,
+    and one that rebuilt a triangulation from proximity would put back exactly
+    the across-the-sulcus edges the cortical supports exist to exclude.
     """
     csr, cg = _csgraph("surface_sites")
     v = np.asarray(geom.vertices, float)
@@ -643,13 +722,65 @@ def surface_sites(geom: SurfaceGeometry, resolution: Resolution, resolver: Regio
     valid = sources >= 0
     np.add.at(area, np.array([pos[int(s)] for s in sources[valid]], dtype=np.int64), va[valid])
 
+    faces, covered = _dual_faces(np.asarray(geom.faces, np.int64), sources, idx, len(v))
     return SiteTable(
         support=geom.support, frame=geom.frame, xyz=v[idx], offset=offset, spacing_mm=r[idx],
         columns={"area_mm2": area, "volume_mm3": np.full(len(idx), np.nan),
                  "level": np.rint(np.log2(np.max(r) / np.maximum(r[idx], 1e-9))).astype(np.int32),
                  "vertex_of_site": idx, "mesh_vertices": v, "mesh_faces": np.asarray(geom.faces),
+                 "faces": faces, "dual_adjacency_covered": covered,
                  "voronoi_source": sources, "kind": "surface", "metric": "geodesic",
                  "geometry_source": geom.source})
+
+
+def _dual_faces(mesh_faces: np.ndarray, sources: np.ndarray, idx: np.ndarray,
+                n_vertices: int) -> tuple[np.ndarray, float]:
+    """the triangulation *of the samples*, taken from the geodesic voronoi dual.
+
+    a surface site table without faces is a point cloud, and `ibm.topologies.
+    surface` is explicit that reconstructing a triangulation from a point cloud
+    by nearest-neighbour linking is exactly the step that puts back the
+    across-the-sulcus edges the cortical topology exists to exclude.  the
+    original mesh's faces are no use either: they index 3*10^5 vertices and the
+    table holds 10^4 rows, so handing them on produces a table that looks right
+    and indexes into nothing.
+
+    so the triangulation is induced rather than reconstructed.  every mesh
+    triangle whose three corners fall in three different voronoi cells becomes
+    one triangle between those three samples -- the restricted delaunay complex
+    of the sample set with respect to the sheet.  it is built entirely out of
+    connectivity that already existed on the folded mesh, so two samples on
+    opposite banks of a sulcus can only be joined if some triangle actually
+    spans them, which no triangle does.
+
+    the returned coverage is the fraction of *adjacent* voronoi cell pairs --
+    pairs joined by at least one mesh edge -- that the dual triangles actually
+    connect.  a pair whose cells meet along an edge but never inside one
+    triangle is missed, and rather than patching it in (which is where a
+    reconstruction would start guessing) the number is recorded so a caller can
+    see how complete the induced graph is.
+    """
+    lut = np.full(int(n_vertices), -1, np.int64)
+    lut[idx] = np.arange(len(idx), dtype=np.int64)
+    sv = np.where(sources >= 0, lut[np.clip(sources, 0, n_vertices - 1)], -1)
+
+    tri = sv[mesh_faces]
+    ok = (tri >= 0).all(axis=1) & (tri[:, 0] != tri[:, 1]) & (tri[:, 1] != tri[:, 2]) \
+        & (tri[:, 0] != tri[:, 2])
+    tri = np.unique(np.sort(tri[ok], axis=1), axis=0) if ok.any() else np.zeros((0, 3), np.int64)
+
+    e = np.concatenate([mesh_faces[:, [0, 1]], mesh_faces[:, [1, 2]], mesh_faces[:, [2, 0]]])
+    p = sv[e]
+    p = p[(p >= 0).all(axis=1) & (p[:, 0] != p[:, 1])]
+    want = np.unique(np.sort(p, axis=1), axis=0)
+    have = (np.unique(np.sort(np.concatenate(
+        [tri[:, [0, 1]], tri[:, [1, 2]], tri[:, [0, 2]]]), axis=1), axis=0)
+        if len(tri) else np.zeros((0, 2), np.int64))
+    if not len(want):
+        return tri, 1.0
+    key = lambda a: a[:, 0].astype(np.int64) * len(idx) + a[:, 1]
+    covered = float(np.isin(key(want), key(have)).mean()) if len(have) else 0.0
+    return tri, covered
 
 
 def _voronoi(cg, graph, sources_idx: np.ndarray):
@@ -862,7 +993,8 @@ def build_sites(request: MaterializationRequest, supports: Iterable[str],
     order would make two runs of the same request produce edge arrays that cannot
     be compared, and a cached geodesic graph would be worse than useless.
     """
-    res = resolver or RegionResolver(frame=request.frame, anchors=request.anchors())
+    res = resolver or RegionResolver(frame=request.frame, anchors=request.anchors(),
+                                     anchor_frames={d.name: d.frame for d in request.devices})
     devices = device_geometries(request)
     tables: dict[str, SiteTable] = {}
     offset = 0

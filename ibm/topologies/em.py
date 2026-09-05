@@ -61,7 +61,7 @@ _LEADFIELD_WHERE = (
 @B.builder(
     "em_lead_field",
     produces=("distance_mm", "orientation"),
-    supports=("tissue", "sensor_array"),
+    supports=("tissue", "cortical_surface", "sensor_array"),
     requires=("lead_field",),
     directed=True,
     metric="lead-field sensitivity, which is not a function of distance",
@@ -79,7 +79,8 @@ def em_lead_field(sites, *, lead_field=None, source_support: str = "tissue",
     """
     np = B._numpy("em_lead_field")
     s = sites.require(source_support, "em_lead_field",
-                      "positions of the current sources (tissue sites)")
+                      "positions of the current sources -- tissue voxels, or the cortical "
+                      "column nodes when the neural field was placed on the sheet")
     m = sites.require(sensor_support, "em_lead_field",
                       "positions of the sensing elements")
     if lead_field is None:
@@ -154,8 +155,12 @@ ELECTROMAGNETIC = REGISTRY.topology(Topology(
     "with an orientation.  unlike the tractometric topology these edges carry no delay: at "
     "these frequencies and scales the quasi-static approximation holds, so the coupling is "
     "instantaneous, and that difference alone makes them different topologies over the same "
-    "positions",
-    on=("tissue", "head_volume", "scalp", "sensor_array", "implanted_array", "stimulator"),
+    "positions.  the sources may be indexed either as parenchyma voxels or as column nodes on "
+    "the folded sheet, and both are listed: the current that sources the field is the same "
+    "quantity under either sampling, and the sheet is the sampling on which the orientation "
+    "this topology depends on is actually defined",
+    on=("tissue", "cortical_surface", "head_volume", "scalp", "sensor_array",
+        "implanted_array", "stimulator"),
     edge_features=("distance_mm", "orientation"),
     directed=True,
     builder="em_lead_field",

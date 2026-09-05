@@ -16,7 +16,7 @@ licence:
     which was already recorded. The share-alike is the operative term for us -- a released derivative
     of this database carries it. dua_required false because this is an open-access PhysioNet database,
     not a credentialed one, and it is held here from an anonymous fetch.'
-binding: unbound
+binding: bound
 population:
   n: 78
   hierarchy:
@@ -33,7 +33,10 @@ frames:
 streams:
 - name: eeg_2ch
   kind: measured
-  via: null
+  via: &id001
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
     brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
     filtered, sampled voltage
@@ -48,26 +51,39 @@ streams:
   - sleep-position changes altering electrode contact
   systematic_bias: Two channels give essentially no spatial information. What this source supplies is
     very long, slowly-varying STATE trajectories -- the slow axis §52.15 cares about.
-  notes: no head model, no montage geometry; a source-space interpretation is not available
+  notes: Fpz-Cz and Pz-Oz only.  two bipolar derivations cannot localise anything; what they constrain
+    is the spectrum of whatever generators project onto those axes, which is exactly what an aperiodic-plus-peak
+    prior is about.
   band_hz:
-  - null
-  - null
+  - 0.5
+  - 45.0
   temporal_support: EEG at 100 Hz; sleep stages annotated in 30-second epochs. The 30 s epoch is a SCORING
     convention, not a property of sleep, and it discretises a continuous process
   spatial_support: TWO EEG channels only (Fpz-Cz and Pz-Oz). The spatial support is essentially nil --
     this source constrains state, not location
+  constrains:
+  - device.contact_potential
+  rate_hz: 100.0
+  frame: eeg_cap
+  units: V
+  support: sensor_array
 - name: expert_hypnograms
-  kind: measured
+  kind: context
   via: null
   systematic_bias: human expert scoring with known inter-rater agreement around 80-90 percent. The hypnogram
     is a LABEL produced by a person applying a rulebook, not a measurement, and it is the ceiling of any
     model fitted to it
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.005
+  constrains: []
+  notes: 30 s expert stage labels.  a label is not brain state -- it is a human annotation of one -- so
+    it binds to no component and is carried as a stratifier, which is how a state-dependent parameter
+    gets fitted at all.
 - name: respiration_and_temperature
   kind: measured
-  via: null
+  via:
+  - thermal_diffusion
   observation_chain: thoracic/abdominal circumference or airflow -> transducer -> sampled waveform
   confounds:
   - sensor placement and contact quality
@@ -75,44 +91,83 @@ streams:
   - respiratory-cardiac cross-coupling that makes the two streams non-independent
   systematic_bias: Slow physiological state across a whole night, which pairs with §52.15.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.02
+  constrains:
+  - thermal.temperature
+  frame: body
+  notes: 'narrowed to temperature alone.  the archive bundles oro-nasal airflow with rectal temperature,
+    but they are two components with bandwidths two decades apart, and the airflow half is already carried
+    by the `respiration` stream -- binding both here would double-count the same measurement against blood.oxygenation.  rectal
+    temperature is also a poor proxy for brain temperature: it lags by tens of minutes and misses selective
+    brain cooling entirely, so this constrains the slow drift and nothing faster.'
 - name: eog_emg
-  kind: imposed
-  via: null
+  kind: measured
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   band_hz:
-  - null
-  - null
+  - 0.5
+  - 45.0
+  constrains:
+  - device.contact_potential
+  frame: eeg_cap
+  notes: 'reclassified from imposed: these are recorded potentials, not anything the experimenter set.  the
+    migration inherited ''imposed'' from a role tag, which is exactly the conflation the measured/imposed
+    split exists to prevent.'
 - name: eog
   kind: measured
-  via: null
+  via: *id001
   band_hz:
-  - null
-  - null
+  - 0.5
+  - 45.0
+  constrains:
+  - device.contact_potential
+  rate_hz: 100.0
+  frame: eeg_cap
+  notes: the dominant confound for the frontal derivation, bound to the same component so it can be modelled
+    rather than regressed away silently.
 - name: emg_chin
   kind: measured
-  via: null
+  via:
+  - effector_activation
   band_hz:
-  - null
-  - null
+  - 10.0
+  - 45.0
+  constrains:
+  - effector.activation
+  rate_hz: 100.0
+  frame: body
 - name: respiration
   kind: measured
-  via: null
+  via:
+  - tissue_exchange
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.5
+  constrains:
+  - blood.oxygenation
+  frame: body
 - name: body_temperature
   kind: measured
-  via: null
+  via:
+  - thermal_diffusion
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.02
+  constrains:
+  - thermal.temperature
+  frame: body
 - name: event_markers
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.005
+  constrains: []
+  notes: lights-off/lights-on markers.  they bound the recording rather than constraining state, so they
+    bind to nothing deliberately.
 absent:
 - fmri
 - meg

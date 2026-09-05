@@ -14,14 +14,14 @@ licence:
   commercial: unresolved
   notes: Terms not read. The database COLLATES results from hundreds of separately published papers, so
     a redistribution claim would have to hold for all of them.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
 - multiple_incompatible_macaque_parcellations
 streams:
 - name: collated_tracer_edges
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'CROSS-SPECIES and LITERATURE-DERIVED at once. Strength is ordinal and each level means
     whatever the reporting author meant by it; combining ordinal judgements from different laboratories,
@@ -29,27 +29,44 @@ streams:
     example of obj-overlap-reconciliation: CoCoMac''s objective relational transformation is a prior attempt
     at exactly the probabilistic mapping between incompatible covers that B-WIN needs, and its failure
     modes are documented.'
-  notes: publication bias -- negative results are under-reported, so an absent edge is systematically
-    more likely to be unreported than genuinely absent
+  notes: 'context, and the decision is the point.  a set of streamlines or a parcel-by-parcel matrix is an INTERACTION
+    TOPOLOGY -- a statement about which state variables may interact (ARCHITECTURE.md §3) -- and a topology
+    is a support for interaction, not a measurement of any component.  there is no ibm component whose value
+    this stream reports: `structural.fiber_orientation` is what the underlying diffusion volume constrains,
+    and the tractogram is an ALGORITHM''S ANSWER computed from it, not a second measurement of it.  binding
+    it as `measured` would let one pipeline''s reconstruction contribute a likelihood about tissue, which is
+    exactly the double-count the card''s `forbidden` list already refuses.  three further reasons it can be
+    nothing else: the species is macaque, the strengths are ORDINAL judgements meaning whatever each reporting
+    author meant by them, and negative results are under-reported so an absent edge is more likely unreported
+    than genuinely absent.  the last of those is why this source may inform a PERMISSIVE support and must never
+    be read as evidence that an edge does not exist.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: none
   spatial_support: named regions in the ORIGINAL papers' own parcellations, related to each other by CoCoMac's
     objective relational transformation. There is no common space; the mapping between schemes is itself
     the database's main derived product
+  constrains: []
 - name: tract_tracing_connectivity
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: duplicate of `collated_tracer_edges` from the migration; bound to nothing so the same collation is
+    not counted twice.
 - name: parcellation_correspondence
-  kind: measured
+  kind: context
   via: null
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'context: CoCoMac''s objective relational transformation between the incompatible parcellations its
+    constituent papers used.  it is a mapping between COVERS, which is machinery for reconciling supports and
+    not a claim about any component''s value.'
 absent:
 - human_data
 - quantitative_strength

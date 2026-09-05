@@ -22,7 +22,7 @@ licence:
     that serves it without an access request. That is evidence about the acquisition rather than an opinion
     about the deposit''s policy. It says nothing about the LICENCE terms, which are recorded separately
     and still govern distribution; a non-commercial work with no DUA is an ordinary combination.'
-binding: unbound
+binding: bound
 population:
   n: 0
   hierarchy:
@@ -36,25 +36,42 @@ frames:
 - ismrm2015-phantom
 streams:
 - name: submitted_tractograms
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series
   spatial_support: streamlines in the ISMRM 2015 phantom frame, 90 x 108 x 90 at 2 mm
+  constrains: []
+  notes: 'this source contains NO BRAIN.  it is a simulated volume, so every stream in it is `context` and none
+    is `measured`: a measurement is evidence about the state of some real system, and there is no real system
+    here.  the card''s own `forbidden` list already refuses observation-role likelihoods from it, and `use`
+    is control / evaluate / surrogate.  these are the 96 files themselves, .trk/.tck/.vtk in the phantom frame.  MEASURED
+    FROM THESE BYTES by `scripts/measure_tract_uncertainty.py`: the submissions do not share a coordinate convention
+    -- 33 of 96 are written with x and y negated about the scanner origin -- which is the `absent` entry `coordinate_convention_per_submission`
+    turning out to be load-bearing rather than pedantic.'
 - name: cross_pipeline_disagreement
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and the most valuable stream in the corpus for what it is NOT.  it constrains no component;
+    what it constrains is a PRIOR -- the existence probability and the shared-error fraction that `ibm/topologies/tract_prior.py`
+    reads.  a stream that shapes p(theta) and contributes no likelihood is `use: prior` in the card vocabulary,
+    and `kind: context` is how that looks at the stream level.'
 - name: tractography
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'duplicate of `submitted_tractograms` carried over from the migration, kept so the card still describes
+    the archive it came from.  bound to nothing, deliberately: binding the same bytes twice would double their
+    weight wherever a materialization counted streams.'
 absent:
 - algorithm_parameters
 - software_version

@@ -2,8 +2,7 @@
 id: ds000117
 title: ds000117 -- Wakeman-Henson multimodal face-processing dataset
 provider: OpenNeuro ds000117
-citation: Wakeman and Henson, A multi-subject, multi-modal human neuroimaging dataset. Scientific Data
-  2015.
+citation: Wakeman and Henson, A multi-subject, multi-modal human neuroimaging dataset. Scientific Data 2015.
 urls:
 - https://openneuro.org/datasets/ds000117
 access: held
@@ -12,22 +11,22 @@ licence:
   redistribution: permitted
   commercial: permitted
   notes: 'Read from the held dataset_description.json, which states "License": "CC0". CC0-1.0 is a public-domain
-    dedication: nothing this source contributes inherits a redistribution, attribution or share-alike
-    constraint. Consent scope is a separate question the file does not answer.'
-binding: unbound
+    dedication: nothing this source contributes inherits a redistribution, attribution or share-alike constraint.
+    Consent scope is a separate question the file does not answer.'
+binding: bound
 population:
   n: 16
   hierarchy:
   - participant
   - session
   - run
-  notes: 'HELD: 16 participants (sub-01 .. sub-16), measured 2026-08-18, which is every participant the
-    release names. IT READ 2 UNTIL THIS DATE -- sub-01 and sub-02 -- and the other fourteen were fetched
-    from OpenNeuro for `bwin.instrument_transfer`, which needed a modality claim with participant generalisation
-    behind it. The participants.tsv in the same directory lists those 16 plus a `sub-emptyroom` row, which
-    is a noise recording and not a person: 16 is the count of people and 17 is the count of rows, and
-    the publication''s 19 is a third number this card no longer carries anywhere. n_participants is the
-    HELD count and it now equals the released one.'
+  notes: 'HELD: 16 participants (sub-01 .. sub-16), measured 2026-08-18, which is every participant the release
+    names. IT READ 2 UNTIL THIS DATE -- sub-01 and sub-02 -- and the other fourteen were fetched from OpenNeuro
+    for `bwin.instrument_transfer`, which needed a modality claim with participant generalisation behind it. The
+    participants.tsv in the same directory lists those 16 plus a `sub-emptyroom` row, which is a noise recording
+    and not a person: 16 is the count of people and 17 is the count of rows, and the publication''s 19 is a third
+    number this card no longer carries anywhere. n_participants is the HELD count and it now equals the released
+    one.'
 frames:
 - meg_device
 - eeg_cap
@@ -38,34 +37,47 @@ frames:
 streams:
 - name: meg_306ch
   kind: measured
-  via: null
-  observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current
-    plus volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration ->
-    SQUID flux -> sampled channel
+  via:
+  - em_generation
+  observation_chain: oriented cortical current-source state -> quasi-static magnetic field (primary current plus
+    volume-current return) -> pickup-coil geometry, orientation and gradiometer configuration -> SQUID flux -> sampled
+    channel
   confounds:
   - environmental magnetic interference and urban noise
   - head motion within and between runs
   - ocular and cardiac fields
   - muscle artifact at high frequency
   - SQUID jumps and sensor drift
-  systematic_bias: 'SIMULTANEOUS MEG and EEG with digitised head shape and individual anatomy: the best
-    available fixture for validating a forward model, because the same sources must explain two physically
-    different measurements at once.'
-  notes: magnetometer, gradiometer and electrode sensitivities differ; a forward model that fits one and
-    not the others is falsified by this dataset in a way single-modality data cannot do
+  systematic_bias: 'SIMULTANEOUS MEG and EEG with digitised head shape and individual anatomy: the best available
+    fixture for validating a forward model, because the same sources must explain two physically different measurements
+    at once.'
+  notes: '306-channel Elekta Neuromag: 102 magnetometers and 204 planar gradiometers.  band_hz starts at 0.1 Hz
+    because the recording is DC-coupled and everything below that is SQUID drift rather than field, and stops at
+    200 Hz because past there the scalp is muscle: there is no skull attenuation to protect a magnetic measurement,
+    so the same EMG that contaminates EEG arrives undiminished.  the chain is `em_generation` alone and not the
+    EEG chain, because magnetic permeability is uniform through bone -- there is no volume-conduction step for the
+    field to be smeared by, which is the whole reason this deposit can test one forward model against two instruments.'
   band_hz:
-  - null
-  - null
-  temporal_support: MEG/EEG at 1100 Hz; BOLD at TR 2 s; face stimuli as discrete events. MEG/EEG and MRI
-    are SEPARATE sessions in the same people
-  spatial_support: 306-channel MEG plus simultaneous 70-channel EEG, with digitised head shape and fiducials;
-    separate MRI session for anatomy and BOLD
+  - 0.1
+  - 200.0
+  temporal_support: MEG/EEG at 1100 Hz; BOLD at TR 2 s; face stimuli as discrete events. MEG/EEG and MRI are SEPARATE
+    sessions in the same people
+  spatial_support: 306-channel MEG plus simultaneous 70-channel EEG, with digitised head shape and fiducials; separate
+    MRI session for anatomy and BOLD
+  constrains:
+  - electromagnetic.bfield
+  rate_hz: 1100.0
+  frame: meg_device
+  support: sensor_array
 - name: eeg_70ch
   kind: measured
-  via: null
-  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
-    brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
-    filtered, sampled voltage
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
+  observation_chain: oriented cortical current-source state -> quasi-static volume conduction through brain, CSF,
+    skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified, filtered, sampled
+    voltage
   confounds:
   - 'ocular: blink and saccade corneo-retinal potentials'
   - 'cardiac: ECG contamination and pulse artifact'
@@ -73,26 +85,42 @@ streams:
   - electrode impedance drift, motion and bridging
   - line noise and amplifier drift
   - reference-electrode activity, which is never inactive
-  systematic_bias: Simultaneous with MEG, so the volume-conduction and magnetic-field predictions are
-    jointly constrained.
+  systematic_bias: Simultaneous with MEG, so the volume-conduction and magnetic-field predictions are jointly constrained.
   band_hz:
-  - null
-  - null
+  - 0.1
+  - 200.0
+  constrains:
+  - device.contact_potential
+  rate_hz: 1100.0
+  frame: eeg_cap
+  support: sensor_array
+  notes: '70-channel cap recorded on the same amplifier clock as the MEG above, so the two streams are samples of
+    one state at one instant.  it carries the extra two steps -- `em_coupling` for the volume conductor and `device_coupling`
+    for the electrode interface -- and that difference is exactly the claim this card can falsify: a lead field
+    that fits one instrument and not the other is wrong, and single-modality data cannot say so.'
 - name: head_shape_digitisation
-  kind: measured
+  kind: context
   via: null
-  systematic_bias: digitised head shape makes MEG-to-MRI coregistration measurable rather than assumed;
-    its residual is a reportable uncertainty component
+  systematic_bias: digitised head shape makes MEG-to-MRI coregistration measurable rather than assumed; its residual
+    is a reportable uncertainty component
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: geometry, not evidence.  the Polhemus fiducials and head-shape points are what make the MEG-to-MRI coregistration
+    measurable rather than assumed, and they supply the conductor and sensor pose a lead field is computed on.  they
+    constrain no component and must never be allowed to update biology.
 - name: bold_task
   kind: measured
-  via: null
+  via:
+  - neurovascular_coupling
+  - vascular_flow
+  - tissue_exchange
+  - bold_formation
   observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
-    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
-    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
-    modelled state, not a nuisance to be regressed away'
+    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction -> voxel intensity
+    time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a modelled state, not a nuisance
+    to be regressed away'
   confounds:
   - head motion and its spin-history effects
   - respiratory and cardiac aliasing into the TR
@@ -101,39 +129,72 @@ streams:
   - susceptibility dropout and geometric distortion
   - scanner drift
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.25
+  constrains:
+  - electromagnetic.bfield
+  rate_hz: 0.5
+  frame: scanner
+  support: tissue
+  notes: 'TR 2 s, so nyquist is 0.25 Hz and the band ends there.  a SEPARATE SESSION from the MEG/EEG in the same
+    people: same subjects and same task, never the same trials, so nothing here licenses a trial-by-trial coupling
+    claim between the electrophysiology and the haemodynamics.'
 - name: face_stimuli
   kind: imposed
-  via: null
+  via:
+  - transduction
   systematic_bias: 'famous, unfamiliar and scrambled faces: a designed contrast, not a natural world'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 1.0
+  constrains:
+  - device.display_luminance
+  frame: display
+  notes: 'imposed: famous, unfamiliar and scrambled faces on a designed schedule.  it conditions the likelihood
+    and never contributes one.'
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: the anatomical volume the supports are indexed over.  geometry, not evidence.
 - name: dwi
   kind: measured
-  via: null
+  via:
+  - plasticity
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains:
+  - structural.myelination
+  - structural.axonal_density
+  frame: scanner
+  support: tissue
+  notes: 'bound to LOCAL MICROSTRUCTURE only, which is what the card''s own tract-path-products requirement says
+    is permissible without a tract product: there is no registered process that outputs `structural.fiber_orientation`,
+    and `plasticity` is the declared process whose outputs a diffusion volume bears on.  the band is structural
+    DC.  no claim about interaction between supports is bound here and none may be read out of it.'
 - name: flash
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: multi-echo FLASH, acquired for BEM surface extraction rather than as a measurement of state.  geometry,
+    not evidence.
 - name: behaviour
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: DECIDED, not omitted.  button presses and reaction times are a report about a decision, and the registry
+    declares no component for a decision -- binding them to `neural.efferent.activity` would claim a motor measurement
+    this deposit does not make.  they index trials and condition the design; they constrain nothing.
 absent:
 - ieeg
 - eye_tracking
@@ -141,26 +202,33 @@ absent:
 - naturalistic_stimulus
 requires:
 - geometry: device-geometry
-  for_streams:
-  - meg_306ch
-  - head_shape_digitisation
-  severity: blocking
+  severity: degrading
   without_it: The MEG forward model is dominated by sensor pose relative to the head. Without coil integration-point
-    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot
-    be attributed to any cortical location.
+    geometry and the measured head position there is no lead field at all, and a sensor-space result cannot be attributed
+    to any cortical location.
+  substitute: 'the FIF files themselves.  RE-GRADED FROM BLOCKING 2026-09-04 after reading them: each raw file carries
+    the full 12-element coil geometry per channel in `info[''chs''][i][''loc'']`, the coil-type codes that select
+    the integration-point definitions, and the measured `dev_head_t` from the HPI fit -- which is exactly the coil
+    integration-point geometry and measured head position the blocking text says are absent.  a digitised head shape
+    ships beside them.  so the lead field is computable from this deposit alone and the requirement was overstated
+    for THIS card, whatever it is for others.  what genuinely remains, and is why this is degrading rather than
+    satisfied: `dev_head_t` is one transform per run and the head moves within a run, so every sensor position carries
+    a residual of a few millimetres; and the MEG-to-MRI alignment is estimated from the head-shape points rather
+    than measured, so its residual is a reportable uncertainty component and not zero.  both are systematic, spatially
+    structured errors and must be carried as uncertainty in anything localised here.'
 - geometry: cortical-support-bank
   severity: blocking
-  without_it: This source constrains cortical state, and a cortical state has a fully qualified address.
-    Until the support bank exists there is no oriented, laminar support with an extent for the constraint
-    to attach to, and the evidence can only be held in whatever grid or parcellation the provider happened
-    to ship.
+  without_it: This source constrains cortical state, and a cortical state has a fully qualified address. Until the
+    support bank exists there is no oriented, laminar support with an extent for the constraint to attach to, and
+    the evidence can only be held in whatever grid or parcellation the provider happened to ship.
 - geometry: tract-path-products
   severity: blocking
-  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product
-    exists there is no engineered claim of the form 'this tract transmits between these two supports',
-    so this source can constrain local microstructure but no interaction between supports.
+  without_it: A diffusion volume is a field of orientations attached to no pathway. Until the tract product exists
+    there is no engineered claim of the form 'this tract transmits between these two supports', so this source can
+    constrain local microstructure but no interaction between supports.
 use:
 - calibrate
+- evaluate
 - fit
 forbidden:
 - ds000117/* -> vascular geometry

@@ -441,8 +441,34 @@ writing $10^4$ cortical positions supplies the precision of about **one** indepe
 measurement.
 
 every card with `use: distil` carries a `distillation` block — `reported_accuracy` and
-`precision_model` — and none is filled in yet. those figures have to come out of the
-papers, and a card whose figure is unverified says so.
+`precision_model`. those figures have to come out of the papers, and a card whose figure
+is unverified says so. six of the EEG teachers are now filled in from the published
+tables — `labram`, `biot`, `cbramod` and `eegpt` on TUAB, `bendr` on P300, `neuro-gpt` on
+BCI Competition IV 2a — each with the table and the URL it was read from.
+
+converting one of those figures into the $r^2$ the precision formula needs is a real
+inferential step and each card documents it. an AUROC becomes a discriminability through
+$\mathrm{auc} = \Phi(d'/\sqrt2)$ and then $r^2 = d'^2/(d'^2+4)$; the same table's balanced
+accuracy read through $\mathrm{bac} = \Phi(d'/2)$ agrees to about 0.01, which is the only
+available check that the latent-gaussian model behind the conversion holds. what comes out
+is an $r^2$ on the *benchmark's latent label* and therefore an upper bound on any $r^2$ on
+a state variable — "is this recording abnormal" is not a field value. a raw multi-class
+accuracy cannot be converted at all, because the probit route needs the chance level and
+the schema records no arity, so `neuro-gpt` carries a verified figure and still supplies no
+precision. that is the correct outcome and the card says so.
+
+the sharing fraction is the harder half, because no paper reports one. `bendr` is the
+exception and the only card here whose figure is measured rather than declared: we hold the
+weights, so `scripts/measure_bendr_error_correlation.py` runs the real encoder over
+eegmmidb, perturbs its *input* with four named deployment shifts — amplifier gain, a
+swapped electrode label, a dropped electrode, mains interference — and measures the
+correlation of the induced representation error across the $8192$ values it writes. that
+error is a real sample under a real distribution shift, so no ground truth is needed. it
+comes out at $\rho \approx 0.05$, an order of magnitude below the $0.8$ the other cards
+declare as a prior, and its leading eigenvalue holds only 3–7% of the error variance — so
+a rank-1 model is a conservative simplification for this teacher and not a fitted rank.
+`scripts/verify_distillation_precision.py` checks the woodbury path against a dense inverse
+and reproduces the effective-constraints curve.
 
 ### brain-signal foundation models — infill unobserved channels, segments and modalities of recorded brain state
 

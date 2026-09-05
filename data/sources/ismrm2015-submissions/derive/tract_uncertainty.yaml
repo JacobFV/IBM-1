@@ -1,0 +1,44 @@
+# a recipe, not a run.  its output lives under evidence/<recipe>@<version>/.
+name: tract_uncertainty
+version: 1
+doc: >-
+  measure tractography's edge-existence probability, false-positive rate and
+  CROSS-PIPELINE ERROR CORRELATION against the one dataset where the answer is
+  known by construction.  the third of those is the number this repository has
+  everywhere assumed and nowhere measured: it is `correlated_fraction` for a
+  tractography prior, and it decides whether 96 tractograms are 96 votes about
+  an edge or roughly three.
+inputs:
+- source: ismrm2015-tractography-challenge
+  path: extracted/FilesForSimulation/Fibers.fib
+  what: the fibre geometry fiberfox was GIVEN -- the answer, by construction
+- source: ismrm2015-submissions
+  path: '*.trk, *.tck, *.vtk'
+  what: 96 submitted tractograms from 20 teams, one simulated acquisition
+tool:
+  name: scripts/measure_tract_uncertainty.py
+  runtime: python 3.12, numpy
+  reads_streamlines_with: a hand-written trk/tck/legacy-vtk walker, because two points
+    per streamline out of 37 GB is not what nibabel or dipy are shaped for
+parameters:
+  bin_mm: 20.0
+  min_bin_points: 200
+  min_streamlines: 1
+  min_dice: 0.5
+  min_margin: 2.0
+  parcellation: >-
+    CUBIC SPATIAL BINNING, not an atlas.  nothing in ibm.anatomy.systems is in
+    register with this phantom and putting one there would be a fabricated
+    registration.  an edge here is 'these two 20 mm boxes are connected'.
+  alignment: >-
+    four axis-sign conventions (x and y flip together, z either way), a scale
+    from {1, 2, 1/2}, and a translation read off the robust bounding boxes.  no
+    rotation and no fitted affine, because a real transform fit would let a
+    tractogram that is simply wrong be rotated into agreement.
+outputs:
+- path: evidence/tract_uncertainty@1/measured.json
+  what: existence probabilities, false-positive rates, the error correlation and
+    the effective number of independent pipelines, plus a per-submission
+    alignment record and a threshold sweep
+consumed_by:
+- ibm/topologies/tract_prior.py

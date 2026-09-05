@@ -73,18 +73,75 @@ provenance:
   index: data/index/win/cards.jsonl
 distillation:
   reported_accuracy:
-    metric: unresolved
-    value: null
+    metric: auc
+    value: 0.72
+    on_benchmark: P300 (binary), model configuration 1 'BENDR' -- softmax head on the transformer's first output
+      token, whole model fine-tuned
     on_streams:
     - contrastive_pretraining
     - tuh_pretraining_corpus
-    source: not yet extracted from the paper
-    verified: false
+    source: 'Kostas, Aroca-Ouellette & Rudzicz, ''BENDR: Using Transformers and a Contrastive Self-Supervised
+      Learning Task to Learn from Massive Amounts of EEG Data'', Frontiers in Human Neuroscience 2021 (also arXiv:2101.12037),
+      Table 2 ''Performances of downstream datasets'', P300 row: AUROC 0.72, best configuration ''BENDR (1.)''.
+      Read from https://www.frontiersin.org/articles/10.3389/fnhum.2021.653659/full and https://arxiv.org/pdf/2101.12037
+      (Table 2, p.10); the two agree. NO STANDARD DEVIATIONS ARE PRINTED, and the paper contains exactly one numeric
+      results table -- the per-configuration comparison against a from-scratch baseline exists only as boxplots
+      in Figure 3, so no pretrained-vs-scratch numeric pair is published for any dataset. The other binary AUROC
+      in that table is ERN 0.65 (r2 0.069 by the same conversion). MMI is printed as BAC 86.7 and BCIC as Accuracy
+      42.6; neither is used here because neither is binary-with-a-stated-chance-level, and Table 2 mixes percent
+      and fraction scaling between rows. The P300 AUROC is the only figure in the paper that converts cleanly.'
+    verified: true
   precision_model:
-    form: unresolved
-    ood_inflation_prior: unset -- must be a prior, not a constant
-    error_rank: unresolved -- a teacher's residuals covary across everything it writes
-    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
-      distillation precision
-    correlated_fraction: null
-    effective_constraints: null
+    form: residual_variance
+    ood_inflation_prior: 'lognormal on the variance inflation factor, median 2x, spread 3x, provenance WEAK. The
+      accuracy figure holds on P300; eegmmidb, on which the correlation structure above was measured, is already
+      a different corpus, and the encoder''s fixed 20-channel subset means any montage it was not pretrained on
+      is off-distribution by construction. NOTE: TeacherPrecision.from_card reads any non-empty string here as
+      exactly lognormal(median 2, spread 3, WEAK) -- the prose documents intent and is not parsed.'
+    error_rank: 1
+    notes: 'METRIC-TO-r2 CONVERSION. put a gaussian latent decision variable behind the binary P300 label with
+      equal variances under both classes; auc = Phi(d''/sqrt2) gives d'' = 0.8243 and r2 = d''^2/(d''^2+4) = 0.1452.
+      NO CROSS-CHECK IS AVAILABLE for this card: the paper prints no balanced accuracy for P300, so unlike the
+      TUAB cards there is no second reading of the same row to test the latent-gaussian model against. The figure
+      is also much weaker than the others in this set -- r2 0.145 against roughly 0.39 to 0.49 for LaBraM, BIOT,
+      CBraMod and EEGPT -- which is what one expects from a 2021 model evaluated on a hard single-trial ERP task,
+      and is not a reason to reach for a friendlier number from a different paper. WHAT IT IS NOT: the fraction
+      of a state variable''s variance explained. It is the fraction of the P300 decision label''s latent variance,
+      an upper bound on anything about a field value. CORRELATED_FRACTION IS MEASURED HERE, NOT ASSUMED -- this
+      is the one teacher in data/sources whose weights we hold. scripts/measure_bendr_error_correlation.py loads
+      the real encoder (/home/brandonin/Documents/win-data/bendr/encoder.pt, 6 conv blocks, 20 input channels,
+      512 features, total stride 96), runs it over 1920 six-second windows of real EEG from eegmmidb subjects
+      S001-S008 runs R03-R14, then perturbs the INPUT with four named deployment shifts -- amplifier gain x1.5,
+      a swapped C3/C4 label, a dropped Cz, and 50 Hz mains -- and measures the correlation of z_perturbed minus
+      z_clean across the 8192 (feature, position) values the encoder writes per window. That difference is a real
+      sample of the teacher''s error under a real distribution shift, so no ground truth is needed. The shared
+      fraction, estimated by the leading eigenvalue of the UNCENTERED second-moment correlation (sign-robust,
+      and uncentered because a systematic bias is part of the error and is exactly the rank-1 structure at issue)
+      is 0.064 for gain, 0.032 for the swapped label, 0.069 for the dropped electrode and 0.038 for mains: range
+      0.032 to 0.069, median 0.051. Declared as 0.05. THREE HONEST QUALIFICATIONS. (1) BENDR''s error under these
+      shifts is NOT one-factor: the leading eigenvalue holds only 3 to 7 percent of the error variance and the
+      top sixteen components only about 25 to 29 percent, so the rank-1 model is a deliberate simplification and
+      error_rank 1 is a floor, not a fitted rank. (2) the rank-1 model at 0.05 is CONSERVATIVE against the direct
+      measurement: over a 128-value subsample it predicts about 17 effective constraints where the held-out measured
+      covariance gives 71 to 113 out of 128. The declared value therefore under-credits this teacher about shared
+      structure, which is the safer of the two errors, and over-credits it about per-site differences, which is
+      not -- see the warning in the unmeasured cards. (3) four named perturbations are four points, not a sample
+      from the distribution of deployment shifts, so the spread is a floor on the uncertainty and not a confidence
+      interval. The preprocessing is a reconstruction of BENDR''s DEEP1010 pipeline and not the original (dn3
+      is not a dependency here); rho was measured under two different scalings and agreed to within 0.016, so
+      the number is a property of the encoder rather than of the scaling. error_rank is 1, and deliberately so.
+      rank 1 is the minimum honest value -- a teacher has at least a global bias -- and it is also the ONLY rank
+      at which correlated_fraction means what this schema says it means. ibm.runtime.fuse._shared_error_basis
+      builds q discrete cosine modes normalised by row, so above rank 1 the implied correlation between two residuals
+      decays with their separation and is identically zero between the first and last index: that models a correlation
+      LENGTH, not a fraction shared across everything the teacher writes. the consequence is large and runs against
+      intuition -- at rho 0.9 over 10^4 values the effective constraint count is 1.1 at rank 1 and 889 at rank
+      4 -- so a card declaring a higher rank would be quietly handing this teacher hundreds of times more influence.
+      see the rank caveat table in scripts/verify_distillation_precision.py. DERIVED FIGURE: effective_constraints
+      below is n / ((1 - rho) + n rho) with rho = 0.05 and n = 8192 (the 512 features x 16 positions BENDR writes
+      for a 6 s window at 256 Hz, the count actually measured) = 19.9537. It is derived, not declared: change
+      rho or the rank and it changes. Reproduce it with ibm.runtime.fuse.Evidence.effective_constraints, or with
+      part 2 of scripts/verify_distillation_precision.py, which checks the closed form against a dense matrix
+      inverse.'
+    correlated_fraction: 0.05
+    effective_constraints: 19.9537

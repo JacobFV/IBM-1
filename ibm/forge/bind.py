@@ -135,6 +135,13 @@ class StreamBinding:
 
     @property
     def bound(self) -> bool:
+        # a context stream is bound by deliberately constraining nothing: an expert
+        # hypnogram is a human annotation of brain state, not a measurement of a
+        # component, and a geometry file supplies a support rather than evidence.
+        # forcing either to name a component would be a false claim.  the note is
+        # what separates a decision from an omission, and it is checked above.
+        if self.kind == "context":
+            return not self.constrains and not self.band_problems
         return (bool(self.resolved) and not self.unknown
                 and self.via is not None and self.via_ok and not self.band_problems)
 
@@ -271,14 +278,32 @@ def bind_card(card: dict[str, Any], path: Path, cid: str) -> CardBinding:
                     f"band: stream reaches {band.hi_hz:g} Hz but {comp.id} is meaningful only "
                     f"to {comp.band.hi_hz:g} Hz; the evidence above that is about something "
                     "the model does not represent and must be band-limited before fusion")
-        via = st.get("via")
-        via = str(via) if via else None
-        via_ok = bool(via and via in REGISTRY.processes)
+        # `via` is a chain, not one id: an observation is evidence about state that an
+        # ordinary process chain produced (ARCHITECTURE.md §6).  scalp EEG is
+        # em_generation -> em_coupling -> device_coupling, and collapsing that to a
+        # single id would lose the step where the electrode interface enters.  a bare
+        # string is read as a one-element chain.
+        raw = st.get("via")
+        chain = ([raw] if isinstance(raw, str) else list(raw or []))
+        chain = [str(x) for x in chain]
+        missing_via = [x for x in chain if x not in REGISTRY.processes]
+        via = " -> ".join(chain) if chain else None
+        via_ok = bool(chain) and not missing_via
+        for x in missing_via:
+            problems.append(f"via: {x!r} is not a registered process")
         if name in blocked_streams:
             problems.append("geometry: a blocking requirement is unmet, so there is no support "
                             "for this constraint to attach to even once its ids resolve")
+        kind = str(st.get("kind", "measured"))
+        if kind == "context":
+            # a context stream is bound when it explicitly constrains nothing AND says why.
+            # silence is not the same as a decision, so the note is required.
+            if constrains or not str(st.get("notes", "")).strip():
+                problems.append("context: a context stream must declare `constrains: []` and a "
+                                "`notes` saying why no component is the right one; without the "
+                                "note this is an undecided stream, not a decided one")
         out.streams.append(StreamBinding(
-            name=name, kind=str(st.get("kind", "measured")), constrains=constrains,
+            name=name, kind=kind, constrains=constrains,
             resolved=tuple(resolved), unknown=tuple(unknown), via=via, via_ok=via_ok,
             band=band, band_problems=tuple(problems)))
 

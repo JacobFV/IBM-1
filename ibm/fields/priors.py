@@ -139,8 +139,18 @@ def aperiodic_psd(basis: TemporalBasis, exponent: float = 1.0,
     the difference between a background that can be fitted and one that forces
     every low-frequency residual into the periodic components.
     """
+    # evaluated as a log-sum-exp rather than as written, because the denominator
+    # overflows for exactly the parameters an optimizer probes on its way past a
+    # steep region -- a knee of a few hertz raised to an exponent of a few hundred
+    # is a python OverflowError, not an inf, and it aborts a fit rather than
+    # scoring badly.  the identity is exact; only the arithmetic differs.  a knee
+    # of zero is the pure power law and comes through as log(0) = -inf, which
+    # logaddexp absorbs correctly.
     f = _f(basis)
-    return at_1hz / (knee_hz ** exponent + f ** exponent)
+    with np.errstate(divide="ignore"):
+        lk = exponent * np.log(np.float64(max(knee_hz, 0.0)))
+        lf = exponent * np.log(f)
+    return at_1hz * np.exp(-np.logaddexp(lk, lf))
 
 
 def bump_psd(basis: TemporalBasis, center_hz: float, sd_hz: float,
@@ -206,11 +216,19 @@ def _aperiodic(basis: TemporalBasis, shape: tuple[int, ...] = (), exponent: floa
 def _neural_population(basis: TemporalBasis, shape: tuple[int, ...] = (),
                        exponent: float = 2.0, knee_hz: float = 2.0, at_1hz: float = 1.0,
                        alpha_gain: float = 0.6, beta_gain: float = 0.15,
-                       theta_gain: float = 0.3, dc_mean: float = 0.0) -> SpectralGaussian:
+                       theta_gain: float = 0.3, alpha_hz: float = 10.0,
+                       dc_mean: float = 0.0) -> SpectralGaussian:
+    # alpha_hz is a parameter and the other two centres are not, because it is the
+    # one this prior makes a falsifiable claim about: individual alpha peak
+    # frequency varies from about 8 to 13 Hz between people and moves with state,
+    # and a prior that pinned it at 10 Hz would absorb that variation into the
+    # amplitude of a bump sitting in the wrong place.  theta and beta are wide,
+    # low and poorly separated from the background in scalp recordings, so a free
+    # centre for either buys a parameter the data cannot pin.
     p = aperiodic_psd(basis, exponent, knee_hz, at_1hz)
     total = p.sum() or 1.0
     p = p + bump_psd(basis, 6.0, 1.5, theta_gain * total / basis.k)
-    p = p + bump_psd(basis, 10.0, 2.0, alpha_gain * total / basis.k)
+    p = p + bump_psd(basis, alpha_hz, 2.0, alpha_gain * total / basis.k)
     p = p + bump_psd(basis, 20.0, 5.0, beta_gain * total / basis.k)
     return _spectral(basis, p, shape, dc_mean)
 

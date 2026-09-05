@@ -79,6 +79,17 @@ class Component:
     aliases: tuple[str, ...] = ()
     tags: frozenset[str] = frozenset()
     support: str | None = None           # overrides the field's support
+    #: additional supports this component may be indexed on.  a support is a
+    #: *sampling* of a domain, not a different place: cortical population activity
+    #: is the same quantity whether you index it by volume position or by a column
+    #: node seeded on the folded sheet, and which one a materialization wants is
+    #: decided by the processes it needs, not by the component.  at 2 mm a volume
+    #: graph mis-connects 0.1% of cortical pairs across a sulcus; at 10 mm it
+    #: mis-connects 58%, so the sheet indexing is not a refinement of the volume
+    #: one -- it is the only indexing on which lateral propagation is expressible.
+    #: a materialization must place each position on exactly ONE of these; see
+    #: `supports_of` and the overlap check in ibm.materialize.build.
+    alt_supports: tuple[str, ...] = ()
     #: a component read but never written must be exogenous -- a stimulus, a
     #: device drive, a material constant -- or the graph has a hole in it.
     exogenous: bool = False
@@ -301,6 +312,25 @@ class Registry:
         if id_ in self._alias: return self.components[self._alias[id_]]
         raise KeyError(f"no registered component {id_!r}")
 
+    def supports_of(self, cid: str) -> tuple[str, ...]:
+        """every support this component may be indexed on, primary first.
+
+        a topology can only relate sites on its own support, so a component that
+        is never admissible on `cortical_surface` makes every surface topology
+        unbuildable no matter how good the mesh is.  that failure is invisible to
+        `seal()` -- nothing is inconsistent, there is simply nothing to relate --
+        and it only appears when a materialization asks for sites.
+        """
+        c = self.resolve(cid)
+        primary = c.support or (self.fields[c.field].support if c.field in self.fields else "")
+        out = [primary] if primary else []
+        out += [s for s in c.alt_supports if s != primary]
+        return tuple(out)
+
+    def components_on(self, support: str) -> list[Component]:
+        """components a materialization may index on this support."""
+        return [c for c in self.components.values() if support in self.supports_of(c.id)]
+
     def of_field(self, field: str) -> list[Component]:
         return [c for c in self.components.values() if c.field == field]
 
@@ -332,6 +362,11 @@ class Registry:
                 add("error", c.id, f"uncertainty form {c.uncertainty!r} is not registered")
             if c.support and c.support not in self.supports:
                 add("error", c.id, f"support {c.support!r} is not registered")
+            for alt in c.alt_supports:
+                if alt not in self.supports:
+                    add("error", c.id, f"alternative support {alt!r} is not registered")
+                if alt == (c.support or self.fields[c.field].support if c.field in self.fields else None):
+                    add("warning", c.id, f"lists {alt!r} as an alternative support and as its primary")
 
         for t in self.topologies.values():
             for s in t.on:

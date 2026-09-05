@@ -562,8 +562,33 @@ $$
 
 it is worth being exact about the sign, because the intuition points the wrong way: a
 teacher's shared error does not *add* a low-rank constraint, it *subtracts* the
-confidence that correlated values would otherwise appear to supply. at $\rho=0.9$, $10^4$
-distilled values contribute the precision of roughly one independent measurement.
+confidence that correlated values would otherwise appear to supply.
+
+for $q=1$ the discount has a closed form,
+
+$$
+n_{\text{eff}}
+=
+\frac{n}{(1-\rho)+n\rho}
+\;\xrightarrow[n\to\infty]{}\;
+\frac{1}{\rho}
+$$
+
+so at $\rho=0.9$ ten thousand distilled values are worth $1.11$ independent
+measurements about anything they have in common, however many more of them arrive.
+
+**this bound is rank-one and does not survive $q>1$.** a rank-$q$ basis encodes a
+correlation *length* rather than a fraction shared across everything a teacher writes,
+and the discount weakens sharply: at $\rho=0.9$ and $n=10^4$, rank 1 gives $1.1$
+effective constraints and rank 4 gives $889$. a card that declares a higher rank hands
+its teacher orders of magnitude more influence, so $q$ is a claim about the structure of
+a teacher's error and not a solver setting.
+
+the discount is also *directional*, not a blanket discount. conditional precision rises
+as $1/(1-\rho)$: a correlated teacher is less informative about levels and more
+informative about differences. there is therefore no safe direction in which to round
+$\rho$, and a card that has not measured it must say so rather than choosing a value
+that feels conservative.
 
 a distilled value is therefore always distinguishable from a measured one in the
 materialized model's provenance, and the two never carry the same weight by default.

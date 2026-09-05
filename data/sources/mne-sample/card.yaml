@@ -27,7 +27,7 @@ licence:
     someone obtains terms from the depositor. Also note the second sentence is a restriction on INFERENCE,
     not on distribution: benchmarking the scanner is forbidden by it even for purely internal work, which
     is a kind of constraint the licence vocabulary cannot express at all.'
-binding: unbound
+binding: bound
 population:
   n: 1
   hierarchy:
@@ -42,66 +42,104 @@ frames:
 - fsaverage
 streams:
 - name: forward_solution_and_bem
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'The reason to hold this: a complete, published, reproducible chain from anatomy through
     BEM surfaces to a forward solution. It is the fixture B-WIN''s internal lead field is checked against,
     and §49.4 records that the predecessor''s lead-field code already interoperated with it'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: MEG/EEG at 600 Hz; auditory and visual stimuli as discrete events
   spatial_support: 306-channel Neuromag MEG plus 60-channel EEG, with a complete FreeSurfer reconstruction
     and BEM surfaces shipped alongside
+  constrains: []
+  notes: duplicate of forward_solution + bem_surfaces carried over from the migration; kept so the card
+    still describes the archive it came from, bound to nothing.
 - name: evoked_responses
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   systematic_bias: 'n=1 tutorial data: it validates an implementation, it establishes nothing about people'
   band_hz:
-  - null
-  - null
+  - 0.1
+  - 40.0
+  constrains:
+  - device.contact_potential
+  rate_hz: 600.0
+  frame: eeg_cap
+  notes: auditory and visual evoked fields/potentials.  the fixture an observation model either reproduces
+    or fails.
 - name: meg
   kind: measured
-  via: null
+  via:
+  - em_generation
   band_hz:
-  - null
-  - null
+  - 0.1
+  - 40.0
+  constrains:
+  - electromagnetic.bfield
+  rate_hz: 600.0
+  frame: meg_head
 - name: eeg
   kind: measured
-  via: null
+  via:
+  - em_generation
+  - em_coupling
+  - device_coupling
   band_hz:
-  - null
-  - null
+  - 0.1
+  - 40.0
+  constrains:
+  - device.contact_potential
+  rate_hz: 600.0
+  frame: eeg_cap
+  support: sensor_array
 - name: t1w
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: the anatomical volume the supports are indexed over.  geometry, not evidence.
 - name: freesurfer_reconstruction
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: geometry, not evidence.  it supplies the cortical and head supports a materialization is indexed
+    over; it constrains no state and must never be allowed to update biology.
 - name: bem_surfaces
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'the three-layer conductor boundaries.  same: geometry.'
 - name: forward_solution
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'a precomputed lead field: the analytic value of em_generation/em_coupling on this head.  it
+    calibrates those processes and is not a measurement of a brain, so it constrains no component.'
 - name: coregistration_transform
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: the digitised eeg_cap -> subject_t1 warp.  without it electrode positions are template positions,
+    which is systematic error, not noise.
 absent:
 - population
 - naturalistic_stimulus

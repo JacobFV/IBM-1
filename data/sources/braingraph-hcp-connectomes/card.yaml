@@ -14,7 +14,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -23,36 +23,60 @@ frames:
 - MNI152
 streams:
 - name: parameterisable_consensus
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'Exposing the consensus threshold as an explicit parameter is unusually honest: it
     makes visible that the network''s existence depends on a chosen frequency cutoff. Sweeping that parameter
     is a direct measurement of edge-existence uncertainty, which is what §39 wants and what a single fixed
     matrix hides.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: connectomes from 1,015 HCP participants at five parcellation resolutions, plus a PARAMETERISABLE
     consensus in which the fraction of subjects an edge must appear in is an explicit knob
+  constrains: []
+  notes: 'context, and the decision is the point.  a set of streamlines or a parcel-by-parcel matrix is an INTERACTION
+    TOPOLOGY -- a statement about which state variables may interact (ARCHITECTURE.md §3) -- and a topology
+    is a support for interaction, not a measurement of any component.  there is no ibm component whose value
+    this stream reports: `structural.fiber_orientation` is what the underlying diffusion volume constrains,
+    and the tractogram is an ALGORITHM''S ANSWER computed from it, not a second measurement of it.  binding
+    it as `measured` would let one pipeline''s reconstruction contribute a likelihood about tissue, which is
+    exactly the double-count the card''s `forbidden` list already refuses.  what makes this stream worth holding
+    is that its consensus threshold is an explicit knob: sweeping it traces the existence probability of every
+    edge over 1,015 subjects, which is the same quantity `scripts/measure_tract_uncertainty.py` measures against
+    a phantom, measured instead across people.  the two disagree about different things and both belong in `edge_support`.'
 - name: multi_resolution_connectomes
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and the decision is the point.  a set of streamlines or a parcel-by-parcel matrix is an INTERACTION
+    TOPOLOGY -- a statement about which state variables may interact (ARCHITECTURE.md §3) -- and a topology
+    is a support for interaction, not a measurement of any component.  there is no ibm component whose value
+    this stream reports: `structural.fiber_orientation` is what the underlying diffusion volume constrains,
+    and the tractogram is an ALGORITHM''S ANSWER computed from it, not a second measurement of it.  binding
+    it as `measured` would let one pipeline''s reconstruction contribute a likelihood about tissue, which is
+    exactly the double-count the card''s `forbidden` list already refuses.  five parcellation resolutions of
+    the same tractograms are five COVERS over one topology, not five measurements.  they feed `tractometric_matrix`,
+    which expands a parcel-level matrix onto sites and is deliberately crude about it because a parcel-level
+    connectome carries no within-parcel information to be crude about.'
 absent:
 - provenance
 - path_geometry
 - directionality
 requires:
 - geometry: tract-path-products
-  for_streams:
-  - multi_resolution_connectomes
   severity: blocking
   without_it: A connectome matrix is an adjacency over parcel indices. Without the tract product its edges
-    have no path, no length and no supports to terminate on, so it cannot supply a delay, a route or an
-    engineered structural commitment -- only a number per pair of labels.
+    have no path, no length and no supports to terminate on, so it cannot supply a delay, a route or an engineered
+    structural commitment -- only a number per pair of labels. STATED AT CARD LEVEL RATHER THAN AGAINST A
+    STREAM, because every stream here is context -- a connectome matrix asserts a TOPOLOGY and constrains
+    no component, so there is no constraint of theirs for the missing geometry to have nowhere to attach.
+    The requirement is nevertheless real and blocking for any materialization that wants to USE these edges,
+    which is what it is recorded for.
 - geometry: cortical-support-bank
   severity: blocking
   without_it: A parcellation or a surface map is a COVER, not an element of the brain's ontology. Without

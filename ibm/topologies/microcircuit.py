@@ -37,7 +37,7 @@ from ibm.vocabulary import Provenance
 @B.builder(
     "microcircuit_within_site",
     produces=("distance_mm",),
-    supports=("tissue",),
+    supports=("tissue", "cortical_surface"),
     directed=False,
     metric="identity, extended to sub-columnar euclidean distance when radius_mm > 0",
     doc="self-edges at every site, plus sub-columnar neighbours if asked for")
@@ -53,7 +53,9 @@ def microcircuit_within_site(sites, *, support: str = "tissue", radius_mm: float
     """
     np = B._numpy("microcircuit_within_site")
     t = sites.require(support, "microcircuit_within_site",
-                      "positions of the tissue sites whose populations interact locally")
+                      "positions of the sites whose populations interact locally -- parenchyma "
+                      "voxels, or cortical column nodes where the neural field was placed on "
+                      "the sheet")
     idx = t.gidx(np)
     src, dst = idx, idx
     dist = np.zeros(t.n, dtype=float)
@@ -89,8 +91,12 @@ MICROCIRCUIT = REGISTRY.topology(Topology(
     "left implicit so that a pointwise process still names a topology the registry can "
     "check, and so that a sub-columnar materialization can widen it to the few-hundred-"
     "micron lateral reach of sst inhibition without pretending that a millimetre-scale "
-    "radius graph is a canonical circuit",
-    on=("tissue",),
+    "radius graph is a canonical circuit.  it is declared over the cortical sheet as well as "
+    "the parenchyma volume because a relation a position has with itself does not depend on "
+    "how the positions were sampled: the four populations coexist at a column node exactly as "
+    "they coexist in a voxel, and a materialization that indexes cortex on the sheet would "
+    "otherwise lose the canonical circuit entirely",
+    on=("tissue", "cortical_surface"),
     edge_features=("distance_mm",),
     directed=False,
     builder="microcircuit_within_site",

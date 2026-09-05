@@ -16,7 +16,7 @@ licence:
     ODC-BY 1.0 requires attribution, PERMITS COMMERCIAL USE, and has NO share-alike clause (that is ODbL,
     its sibling). dua_required false because this is an OPEN-ACCESS PhysioNet database, not a credentialed
     one, and it is held here from an anonymous fetch that accepted no terms.'
-binding: unbound
+binding: bound
 population:
   n: 109
   hierarchy:
@@ -32,7 +32,10 @@ frames:
 streams:
 - name: eeg_64ch
   kind: measured
-  via: null
+  via: &id001
+  - em_generation
+  - em_coupling
+  - device_coupling
   observation_chain: oriented cortical current-source state -> quasi-static volume conduction through
     brain, CSF, skull and scalp -> electrode contact geometry and impedance -> reference montage -> amplified,
     filtered, sampled voltage
@@ -46,35 +49,58 @@ streams:
   - 160 Hz sampling aliases muscle activity into the band of interest
   systematic_bias: 'Template montage with no individual anatomy: every source estimate carries template-head
     uncertainty, and at 64 channels and 160 Hz the spatial and temporal resolution are both modest.'
-  notes: no individual head model exists, so the forward operator is a population approximation
+  notes: BCI2000 64-channel montage at 160 Hz.  the ceiling is nyquist; the floor is DC because the recording
+    is not high-passed in the distributed files, though the amplifier's own coupling makes anything below
+    ~0.1 Hz drift rather than signal and a fit should not read precision there.
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 80.0
   temporal_support: EEG at 160 Hz. That is a low sampling rate by modern standards and it band-limits
     everything derived from this source
   spatial_support: 64-channel BCI2000 montage in the extended 10-10 system; positions are NOMINAL template
     positions, never digitised
+  constrains:
+  - device.contact_potential
+  rate_hz: 160.0
+  frame: eeg_cap
+  units: V
+  support: sensor_array
 - name: motor_imagery_vs_execution
   kind: imposed
-  via: null
+  via:
+  - transduction
   systematic_bias: 'imagery trials have NO behavioural verification: compliance is assumed. Executed trials
     do, because the movement happened'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 1.0
+  constrains:
+  - device.display_luminance
+  frame: display
+  notes: 'imposed: the cue schedule is the experimenter''s design, not a sample from the participant.  it
+    conditions the likelihood and never contributes one.'
 - name: baseline_runs
   kind: measured
-  via: null
+  via: *id001
   systematic_bias: eyes-open and eyes-closed baseline runs are the floor any task claim must clear
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 80.0
+  constrains:
+  - device.contact_potential
+  rate_hz: 160.0
+  frame: eeg_cap
+  notes: 'eyes-open and eyes-closed rest.  the eyes-closed run is the alpha fixture: any fit of the posterior
+    alpha prior that cannot separate these two has failed.'
 - name: task_annotations
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 1.0
+  constrains: []
+  notes: event codes.  they index the imposed cue rather than constraining brain state, so they bind to
+    nothing and that is correct, not missing.
 absent:
 - individual_anatomy
 - emg

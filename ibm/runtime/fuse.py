@@ -138,12 +138,23 @@ class Evidence:
         anything the values have in common, which is what a shared parameter is
         -- divided by the precision one independent value would have contributed
         alone.  for a diagonal increment that is just the count.  for a correlated
-        one it saturates: with a fraction `rho` of the residual variance shared,
-        N values are worth roughly `N / ((1 - rho) + N rho)`, which tends to
-        `1/rho` however large N gets.  a teacher writing 10^4 cortical positions
-        whose errors covary 90% supplies about *one* measurement's worth of
-        information about a global parameter, and that is the whole content of
-        ARCHITECTURE.md's warning that N distilled values are not N constraints.
+        one it saturates: at **rank 1**, with a fraction `rho` of the residual
+        variance shared, N values are worth exactly `N / ((1 - rho) + N rho)`,
+        which tends to `1/rho` however large N gets.  a teacher writing 10^4
+        cortical positions whose errors covary 90% supplies about *one*
+        measurement's worth of information about a global parameter, and that is
+        the whole content of ARCHITECTURE.md's warning that N distilled values
+        are not N constraints.  `scripts/verify_distillation_precision.py`
+        reproduces the curve against a dense inverse.
+
+        the closed form is a rank-1 statement and does not survive `error_rank`
+        above 1, which is the trap a card author walks into.  `_shared_error_basis`
+        models a rank-q teacher's errors as *smooth* rather than uniformly
+        shared, so residuals decorrelate with separation and a global parameter
+        averages over several independent patches instead of seeing one: at
+        rho = 0.9 and N = 10^4 the count is 1.1 at rank 1 and several hundred at
+        rank 4.  declare rank 1 unless a measured correlation length says
+        otherwise, and read the rank column of that script before choosing.
         """
         d = np.asarray(self.precision, float).reshape(-1)
         tot = float(np.sum(d))
@@ -573,7 +584,9 @@ class TeacherPrecision:
         metric = acc.get("metric", "unresolved")
         if val is None:
             return None
-        r2 = float(val) ** 2 if metric == "pearson_r" else float(val)
+        r2 = variance_explained(metric, float(val))
+        if r2 is None:
+            return None
         pm = d.get("precision_model") or {}
         rank = pm.get("error_rank")
         rank = int(rank) if isinstance(rank, int) else None
@@ -586,9 +599,77 @@ class TeacherPrecision:
             # it for a fitted figure.
             prior = Prior("lognormal", math.log(2.0), math.log(3.0),
                           provenance=Provenance.WEAK, note=ood)
+        # a card that measured its own sharing fraction must have that number
+        # reach the arithmetic.  reading `error_rank` and not `correlated_fraction`
+        # -- which is what this did -- silently substituted the 0.8 default for a
+        # measured 0.05, i.e. threw away the only empirical figure in the block
+        # and left no trace that it had.  null stays at the default, because the
+        # schema is explicit that an unmeasured fraction is to be treated as high
+        # rather than as zero.
+        rho = pm.get("correlated_fraction")
+        rho = cls.correlated_fraction if rho is None else min(max(float(rho), 0.0), 1.0)
         return cls(r2=min(max(r2, 0.0), 0.999), ood_inflation=prior, error_rank=rank,
+                   correlated_fraction=rho,
                    on_benchmark=str(acc.get("on_benchmark", "")),
                    verified=bool(acc.get("verified", False)), source=source)
+
+
+def variance_explained(metric: str, value: float) -> float | None:
+    """turn a published benchmark figure into the r2 the precision formula needs.
+
+    this is the step where a distillation pipeline most easily lies to itself,
+    because the two numbers are both fractions between a half and one and the
+    conversion is a one-line coercion away.  a balanced accuracy of 0.81 is not
+    81% of a state variable's variance explained.  it is not any variance
+    explained at all: it is a decision rate, and reading it as an r2 hands a
+    teacher roughly twice the precision it earned.
+
+    what is defensible is the classical signal-detection route.  put a gaussian
+    latent decision variable behind the benchmark's label with equal variances
+    under the two classes, and a published figure fixes its separation d':
+
+        auc  = Phi(d' / sqrt2)              ->  d' = sqrt2 Phi^-1(auc)
+        bac  = Phi(d' / 2)                  ->  d' = 2 Phi^-1(bac)
+
+    and the squared point-biserial correlation between that latent variable and
+    a balanced binary label is
+
+        r2 = d'^2 / (d'^2 + 4)
+
+    the two routes are independent readings of the same table and they agree to
+    about 0.01 on every card in data/sources, which is the only check available
+    that the model behind them is not badly wrong.
+
+    two limits are stated because they bound what the result may be used for.
+
+    *this is an r2 on the benchmark's latent variable, not on a state variable.*
+    "is this recording abnormal" is a coarse clinical summary; the thing a
+    teacher is asked to infill is a field value.  the teacher explains at most
+    this fraction of the label's variance and an unknown, smaller fraction of the
+    state variable's, so what comes out here is an upper bound.  the gap is what
+    `ood_inflation` is for, and a card that leans on this conversion should say
+    so in its notes.
+
+    *a raw multi-class accuracy cannot be converted at all.*  the probit route
+    needs the chance level, and `accuracy` in the source schema carries no arity
+    -- 0.645 is excellent on four classes and near chance on two.  guessing
+    binary would silently halve or double the precision, so this returns None and
+    the teacher is refused rather than approximated.  record an AUROC, which is
+    arity-free, or an r2 on the target stream itself.
+    """
+    from scipy.special import ndtri
+
+    m = (metric or "").strip().lower()
+    if m in ("r2", "explained_variance"):
+        return min(max(float(value), 0.0), 0.999)
+    if m == "pearson_r":
+        return min(max(float(value) ** 2, 0.0), 0.999)
+    if m == "auc":
+        v = min(max(float(value), 0.5 + 1e-6), 1.0 - 1e-9)
+        d = math.sqrt(2.0) * float(ndtri(v))
+        return min(d * d / (d * d + 4.0), 0.999)
+    # "accuracy" and "unresolved" both land here: not convertible, so not used.
+    return None
 
 
 def distillation_precision(r2: float, var_x: np.ndarray, inflation: float = 1.0) -> np.ndarray:
@@ -624,6 +705,15 @@ def _shared_error_basis(n: int, q: int) -> np.ndarray:
     normalizing by column instead makes each value's shared variance fall as 1/n,
     which quietly turns a correlated teacher back into an independent one exactly
     as n grows, i.e. precisely where the correction was supposed to bite.
+
+    what row normalization does *not* do is keep the sharing global once q > 1.
+    the implied correlation between residuals i and j is `rho * cos(angle between
+    rows i and j)`: rho for neighbours, falling with separation, and identically
+    zero between the first and last index for any q >= 2, because the row at 0 is
+    (1, 1, 1, ...) and the row at n-1 is (1, -1, 1, ...).  that is the intended
+    smoothness and it is defensible, but it is a correlation *length* and not the
+    "fraction shared across everything it writes" that the source-card schema
+    describes.  only q = 1 makes `correlated_fraction` mean what the schema says.
     """
     j = np.arange(n)[:, None]
     k = np.arange(q)[None, :]
@@ -655,5 +745,5 @@ def from_observation(obs_id: str, mean: np.ndarray, var: np.ndarray, *,
 
 __all__ = [
     "Evidence", "TeacherPrecision", "distillation_precision", "from_observation",
-    "fuse", "fuse_scalar", "fuse_spectral",
+    "fuse", "fuse_scalar", "fuse_spectral", "variance_explained",
 ]

@@ -1,11 +1,11 @@
 """neural traffic: what a cortical population does to its neighbours, to the
-layer above it, to the patch three millimetres away, and to the area at the far
-end of a fascicle.
+layer above it, to the patch three millimetres away, to the area at the far end
+of a fascicle, and to the area no fascicle was ever measured to.
 
-six processes, and the thing that separates them is not the dynamics -- most of
-them are a synapse behind a delay behind a membrane -- but the topology and the
-selectors.  a lumped ``neural -> neural`` coupling would be all six at once and
-would be identifiable from nothing, because every distinguishing fact about
+seven processes, and the thing that separates them is not the dynamics -- most
+of them are a synapse behind a delay behind a membrane -- but the topology and
+the selectors.  a lumped ``neural -> neural`` coupling would be all seven at
+once and would be identifiable from nothing, because every distinguishing fact about
 cortical signal traffic is a fact about *which* population at *which* depth
 reaches *which* other one over *what* delay.  ARCHITECTURE.md §4 makes that a
 rule; this file is what obeying it costs and buys.
@@ -36,8 +36,11 @@ not merely imprecise but structurally the wrong f.
 
 from __future__ import annotations
 
+from dataclasses import replace as _replace
+
 import numpy as np
 
+from ibm.processes import nn as _nn
 from ibm.processes.base import (
     alpha_synapse,
     delay_dispersion,
@@ -280,6 +283,62 @@ def tract_transfer(basis, tract_length_mm: float = 80.0, velocity_m_s: float = 3
     )
 
 
+def association_transfer(basis, distance_mm: float = 40.0, inclusion_prob: float = 1.0,
+                         velocity_m_s: float = 4.0, velocity_cv: float = 0.4,
+                         length_constant_mm: float = 40.0, tau_ampa_s: float = 3e-3,
+                         tau_nmda_decay_s: float = 0.1, nmda_fraction: float = 0.2,
+                         gain: float = 1.0):
+    """long-range cortico-cortical coupling under a distance prior, per edge.
+
+    the same shape as `tract_transfer` -- a dispersed delay behind the
+    glutamatergic receptor kernels -- and deliberately so: an association fibre
+    *is* a white-matter fibre, and if this used a different kinetic form from
+    the measured-tract process then a subject with diffusion imaging and a
+    subject without would disagree about the synapse as well as about the
+    anatomy.  what differs is where the weight and the length come from, and
+    that difference is the whole reason the process exists.
+
+    two things are read off `cortical_association`'s edge features rather than
+    fitted.  `distance_mm` is the euclidean chord, which is the right metric
+    here for the reason the topology's docstring gives -- an association fibre
+    leaves the sheet and re-enters elsewhere, so its length is the chord and
+    not the geodesic -- and it sets both the exponential weight and the delay.
+
+    `inclusion_prob` is the one that is easy to leave out and wrong to.  the
+    builder does not carry the dense prior graph; it *samples* it proportional
+    to exp(-d/l), so a materialized edge stands for the 1/p of the dense graph
+    it was drawn from.  summing the sampled edges with their own weights
+    estimates something systematically smaller than the dense sum, and biased
+    towards short edges, because near pairs are sampled far more often than far
+    ones.  dividing by the inclusion probability is the horvitz-thompson
+    correction, and it makes the estimate unbiased for the dense graph the
+    sample represents.  a materialization that skipped it would report weaker
+    and more local long-range coupling the more aggressively it sampled, which
+    is a bias that looks exactly like a scientific finding.
+
+    the velocity is the myelinated one, an order of magnitude above the
+    horizontal collaterals in `lateral_surface_transfer`: a 40 mm association
+    fibre at 4 m/s is 10 ms, against 160 ms for the same distance travelled
+    along the sheet.  that separation is what makes long-range coherence
+    possible at frequencies lateral spread cannot reach.
+
+    where it breaks: the weight is a geometric prior, not a measurement.  the
+    real connectivity is patchy and reciprocal between specific areas, and no
+    isotropic exponential recovers that -- which is what the learned
+    implementation is for, and why a model resting on this form must say that
+    its long-range anatomy came from a distance decay and not from a subject.
+    """
+    mean_s = (distance_mm * 1e-3) / max(velocity_m_s, 1e-6)
+    weight = gain * float(np.exp(-distance_mm / max(length_constant_mm, 1e-6)))
+    weight /= max(float(inclusion_prob), 1e-6)
+    return weight * series(
+        delay_dispersion(basis, mean_s, velocity_cv * mean_s),
+        synaptic_drive_transfer(basis, tau_ampa_s=tau_ampa_s,
+                                tau_nmda_decay_s=tau_nmda_decay_s,
+                                nmda_fraction=nmda_fraction),
+    )
+
+
 def thalamocortical_loop_transfer(basis, tc_delay_s: float = 5e-3, ct_delay_s: float = 8e-3,
                                   tau_relay_s: float = 0.012, tau_trn_gaba_b_s: float = 0.15,
                                   loop_gain: float = 2.0, tau_ampa_s: float = 3e-3,
@@ -388,6 +447,96 @@ def shunting_inhibition_rate(x, theta) -> dict:
     tau_m = float(theta.get("tau_membrane_s", 0.015))
     tau_eff = tau_m * g_leak / (g_leak + np.maximum(g_i, 0.0))
     return {"neural.exc.potential": -(v - e_rev) * np.maximum(g_i, 0.0) / np.maximum(tau_eff, 1e-6)}
+
+
+# ---------------------------------------------------------------------------
+# learned kernels
+# ---------------------------------------------------------------------------
+
+#: the shape of the learned association kernel, declared once so that the
+#: parameter count is a fact about the model rather than an artefact of the
+#: forward pass.  `embed_dim` is 8 because the second factor is a *similarity*
+#: between two cortical locations, not a feature bank: the thing being learned
+#: is which areas talk to which, and a few hundred areas do not need more than a
+#: handful of dimensions to be told apart.  EMBEDDING rather than PER_SITE for
+#: the reason `nn.DistanceMessagePassing.param_count` spells out -- one embedding
+#: per column node over 10^4 nodes is 10^5 numbers no eeg dataset distinguishes,
+#: whereas one per cortical area, factorized, is a few thousand and is what a
+#: multi-subject corpus can actually move.
+ASSOCIATION_KERNEL = _nn.DistanceMessagePassing(
+    channels_in=1, channels_out=1, embed_dim=8,
+    geometric_feature="distance_mm", length_scale_mm=40.0,
+    learn_length_scale=True, tying=Tying.EMBEDDING, symmetric=True)
+
+
+def association_learned_kernel(x, theta) -> dict:
+    """w_ij = exp(-d_ij / l) . sigma(<e_i, e_j>), summed over sampled edges.
+
+    the architecture's own factorization (§3, §4): the geometry is the
+    topology's and is not fitted beyond its one length scale, and the content is
+    the process's.  keeping them multiplicative is what stops a fit from
+    explaining a long-range correlation with a content embedding when the real
+    explanation is that the two patches are three centimetres apart, and
+    vice-versa.
+
+    the edge set arrives through `x` alongside the state, because a
+    message-passing f is not a function of state alone -- it is a function of
+    state over an incidence structure, and pretending otherwise would hide the
+    one input that decides what this process even is.  `x["edges"]` is the
+    (src, dst) pair the builder produced, `x["distance_mm"]` and
+    `x["inclusion_prob"]` are its features.
+
+    the inclusion probability is divided out for the same reason
+    `association_transfer` divides it out, and it matters *more* here.  a fitted
+    kernel that ignores it does not merely come out too small: the sampler drew
+    near pairs far more often than far ones, so the residual the fit is asked to
+    explain is itself distance-biased, and the learned content factor will
+    absorb that bias as though it were anatomy.  the correction is one divide
+    and it is the difference between fitting connectivity and fitting the
+    sampler.
+
+    embeddings are read per position.  with `Tying.EMBEDDING` they come from a
+    factorized per-partition table (`nn.PartitionEmbedding`) read through soft
+    anatomical membership, so a column node on the boundary between two areas
+    gets a blend rather than a label -- ARCHITECTURE.md §2's gradient, not a
+    wall.  a caller that has already resolved the table to positions may pass
+    `theta["embedding"]` directly.
+    """
+    r = np.asarray(x["neural.exc.activity"], dtype=float)
+    src = np.asarray(x["edges"][0], dtype=np.int64)
+    dst = np.asarray(x["edges"][1], dtype=np.int64)
+    d = np.asarray(x["distance_mm"], dtype=float)
+    p = np.clip(np.asarray(x.get("inclusion_prob", 1.0), dtype=float), 1e-6, 1.0)
+
+    emb = theta.get("embedding")
+    if emb is None:
+        table = _nn.PartitionEmbedding(
+            n_partitions=int(np.asarray(x["membership"]).shape[1]),
+            dim=ASSOCIATION_KERNEL.embed_dim, tying=Tying.EMBEDDING,
+            rank=int(theta.get("embedding_rank", 8)))
+        emb = table.lookup(np.asarray(x["membership"], dtype=float),
+                           theta["embedding_table"])
+    emb = np.asarray(emb, dtype=float)
+
+    kernel = _replace(ASSOCIATION_KERNEL,
+                      length_scale_mm=float(theta.get("length_constant_mm", 40.0)))
+    # edge_weights rather than apply(): the horvitz-thompson correction has to
+    # sit between the kernel and the accumulation, and folding 1/p into the
+    # geometric feature would hide a sampling correction inside a distance.
+    w = kernel.edge_weights(d, emb[src], emb[dst]) / p
+    w *= float(theta.get("prior_scale", 1.0))
+
+    drive = np.zeros(len(r), dtype=float)
+    np.add.at(drive, dst, w * r[src])
+    np.add.at(drive, src, w * r[dst])            # undirected: one edge, both ways
+
+    f_nmda = float(theta.get("nmda_fraction", 0.2))
+    g = float(theta.get("gain", 1.0))
+    return {
+        "neural.exc.ampa": g * (1.0 - f_nmda) * drive,
+        "neural.exc.nmda": g * f_nmda * drive,
+        "neural.pv.activity": g * float(theta.get("feedforward_inhibition", 0.3)) * drive,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -1019,6 +1168,199 @@ implementation(
 
 
 # ---------------------------------------------------------------------------
+# cortico-cortical association
+# ---------------------------------------------------------------------------
+
+CORTICAL_ASSOCIATION_PROPAGATION = process(
+    id="cortical_association_propagation",
+    doc="""long-range cortico-cortical drive where no tractogram exists, carried
+    by a geometric prior over unobserved connectivity.
+
+    the third cortical process, and it is declared for the same reason
+    `cortical_association` is declared as a topology rather than folded into
+    `tractometric`: what a materialization is resting on has to be reportable.
+    `lateral_cortical_propagation` runs along the sheet under the sheet's own
+    metric and is anatomically hard.  `tract_propagation` runs along measured
+    white matter and is evidence.  neither is available for the ordinary case --
+    an eeg or meg subject with no diffusion imaging -- and long-range cortical
+    coupling does not stop existing because we did not measure it.  so this
+    process carries it explicitly as a prior, and a prediction that rests on it
+    can be labelled as such instead of borrowing a tractogram's authority.
+
+    it is not a coarser `tract_propagation`.  the two differ in exactly one
+    place that matters -- where the edge came from -- and that difference is the
+    entire content of the distinction between "this subject has a fascicle here"
+    and "cortex generally has fibres at this distance".  merging them would make
+    the provenance audit unable to answer which one a number came from, and
+    ARCHITECTURE.md §7 requires that it can.
+
+    what it reads and writes.  excitatory activity at the source, because that
+    is what a myelinated fibre transmits; ampa and nmda conductance at the
+    target, plus pv activity, because a long-range excitatory projection
+    recruits feedforward inhibition and a model that omits that limb predicts a
+    net excitatory coupling that is monotonically too strong.  the source is
+    layers 2/3 and 5 -- the layers association fibres actually leave from -- and
+    the target is layer 2/3, which is where the bulk of them terminate.
+
+    the bands.  the input stops at 90 Hz and the output at 60 Hz, and unlike
+    `lateral_cortical_propagation`'s ceiling this one is *not* set by conduction
+    velocity: association fibres are myelinated and a 40 mm hop costs about
+    10 ms, which passes gamma perfectly well.  it is set by dispersion.  the
+    edge lengths within one materialized pair are a distance prior rather than a
+    measurement, so the delay spread is as wide as the prior, and a coupling
+    whose delay is uncertain to tens of percent cannot transmit a phase
+    relationship above a few tens of hertz no matter how fast the fibre is.
+    declaring the ceiling is declaring that limit rather than hiding it in a
+    parameter.
+
+    where it breaks, said plainly: the edge set is a sample from an exponential
+    distance prior, so it asserts that connection probability depends on
+    distance and on nothing else.  real cortico-cortical connectivity is
+    hierarchical, reciprocal, and strongly area-specific -- frontal and parietal
+    areas 60 mm apart are densely connected while two visual patches 20 mm apart
+    across a boundary are not -- and no isotropic decay recovers that.  the
+    learned implementation exists to carry the part the geometry cannot, and
+    with no data it collapses back to the decay, which is a defensible prior
+    rather than a correct answer.""",
+    inputs=(
+        within("neural", "exc.activity", region=L2_3, band=Band(0.5, 90.0)),
+        within("neural", "exc.activity", region=L5, band=Band(0.5, 90.0)),
+    ),
+    outputs=(
+        within("neural", "exc.ampa", region=L2_3, band=Band(0.0, 60.0)),
+        within("neural", "exc.nmda", region=L2_3, band=SLOW),
+        within("neural", "pv.activity", region=L2_3, band=Band(0.0, 60.0)),
+    ),
+    topology="cortical_association",
+    timescale_s=2e-2,
+    validity=Validity(
+        min_spacing_mm=1.0, max_spacing_mm=15.0, band=Band(0.0, 150.0),
+        note="the edges are drawn from a distance prior whose only input is the position of "
+             "two column nodes, so sampling the sheet below ~1 mm asserts an endpoint "
+             "precision that a decay constant fitted to tract-tracing across whole areas "
+             "cannot possibly carry -- the prior does not know where within an area a fibre "
+             "lands.  above ~15 mm the node spacing approaches the topology's own 8 mm "
+             "near-pair exclusion, so the boundary between this process and "
+             "lateral_cortical_propagation stops being a boundary and the two double-count.",
+    ),
+    provenance=Provenance.WEAK,
+    tags=frozenset({"neural", "cortical", "long_range", "prior"}),
+    notes="rests on a geometric prior over unobserved connectivity, not on this subject's "
+          "anatomy.  where a tractogram exists, tract_propagation should carry these edges "
+          "instead and this process should not be materialized at all.",
+)
+
+implementation(
+    name="distance_prior_lti",
+    process="cortical_association_propagation",
+    doc="""exponential decay in euclidean distance, dispersed delay, glutamatergic
+    kernels -- and the sampler's inclusion probability divided back out.
+
+    the analytic default.  four numbers do all the work: a decay length, a
+    conduction velocity, its spread, and a gain, with the per-edge distance
+    supplied by the topology rather than fitted.  that is deliberately austere,
+    because a long-range coupling with free per-edge weights would happily
+    absorb volume conduction, common thalamic drive and reference artefact,
+    all of which have their own processes and none of which are long-range
+    cortical coupling.
+
+    the one term here that is neither physics nor literature is the
+    horvitz-thompson factor, and it is the term that makes the form correct at
+    all: the edge set is a *sample* of the dense prior graph, drawn
+    proportional to exp(-d/l), and summing it without reweighting estimates a
+    coupling that is both too weak and too local.  `association_transfer` says
+    what that costs.
+
+    linear, so exact at any timestep and free of history buffers, which is what
+    makes 10^5 long-range edges affordable at all.""",
+    form=Form.LTI,
+    transfer=association_transfer,
+    params={
+        "length_constant_mm": lognormal(40.0, 1.5, units="mm", provenance=Provenance.LITERATURE,
+                                        source="cortico-cortical connection probability falls "
+                                               "roughly exponentially with distance; reported "
+                                               "decay constants span ~10-50 mm across species "
+                                               "and tracer methods",
+                                        note="the topology builds its edge set at 40 mm; this "
+                                             "parameter re-weights that sample and is expected "
+                                             "to move, which is why the prior is wide"),
+        "velocity_m_s": lognormal(4.0, 1.8, units="m/s", provenance=Provenance.LITERATURE,
+                                  source="myelinated cortico-cortical conduction, 1-10 m/s",
+                                  note="an order of magnitude above the unmyelinated horizontal "
+                                       "collaterals in lateral_cortical_propagation, which is "
+                                       "why the two processes occupy different bands"),
+        "velocity_cv": uniform(0.2, 0.7, units="dimensionless", provenance=Provenance.WEAK,
+                               note="wider than the tractometric process's spread because the "
+                                    "length itself is a prior here, so the delay's uncertainty "
+                                    "includes the geometry's and not only the calibre's"),
+        "tau_ampa_s": lognormal(3e-3, 1.5, units="s", provenance=Provenance.LITERATURE),
+        "tau_nmda_decay_s": lognormal(0.1, 1.5, units="s", provenance=Provenance.LITERATURE),
+        "nmda_fraction": uniform(0.05, 0.6, units="dimensionless", provenance=Provenance.WEAK,
+                                 note="feedback-type projections are reported nmda-rich; with "
+                                      "no tractogram there is no way to tell feedback from "
+                                      "feedforward here, so this stays weak"),
+        "gain": weak(1.0, 8.0, units="nS per Hz",
+                     note="the absolute strength of a connection nobody measured in this "
+                          "subject.  it stays weak on principle: a tight prior here would be "
+                          "asserting a coupling magnitude from a distance decay"),
+    },
+    tying=Tying.PER_PARTITION,
+    provenance=Provenance.WEAK,
+    source="markov et al 2013 exponential distance rule in macaque cortex; ercsey-ravasz "
+           "et al 2013",
+)
+
+implementation(
+    name="embedded_similarity_kernel",
+    process="cortical_association_propagation",
+    doc="""w_ij = exp(-d_ij / l) . sigma(<e_i, e_j>): geometry from the topology,
+    content from a learned per-area embedding.
+
+    the implementation the topology was written for, and the architecture's own
+    example of what a learned process parameter over an interaction topology
+    looks like (§3).  the exponential above is isotropic and cortical
+    connectivity is emphatically not: it is hierarchical, it is reciprocal
+    between specific area pairs, and the strongest long-range connections in
+    the brain are not the shortest.  a distance decay cannot express any of
+    that, and no setting of its length constant will.
+
+    what the factorization buys is identifiability rather than capacity.  a
+    free weight per edge over 10^5 sampled pairs is 10^5 numbers that no eeg
+    dataset can distinguish, and a fit given them memorizes noise into a
+    connectivity map that looks structured; the factorized form has a few
+    thousand, and with no data at all it degrades to the geometric prior rather
+    than to nothing.  `nn.DistanceMessagePassing.param_count` is the arithmetic.
+
+    `state_dependent_weights` is true and is not a technicality.  the content
+    factor is computed from embeddings that a neuromodulatory or attentional
+    process may write, so the effective long-range coupling changes with brain
+    state -- which is the one thing about long-range cortical coupling that is
+    least controversial and that no static weight can represent.  it also means
+    this f does not commute with coarse-graining, and `earns_its_cost` is right
+    to say so.""",
+    form=Form.LEARNED,
+    fn=association_learned_kernel,
+    params={
+        "prior_scale": weak(1.0, 3.0, note="centred so that an untouched posterior reproduces "
+                                           "the distance prior exactly"),
+        "length_constant_mm": lognormal(40.0, 1.5, units="mm", provenance=Provenance.LITERATURE,
+                                        source="markov et al 2013 exponential distance rule"),
+        "embedding_scale": speculative(0.5, 10.0,
+                                       note="how far the learned content factor is allowed to "
+                                            "move the geometric prior.  that cortical "
+                                            "connectivity is area-specific is not in doubt; "
+                                            "how much of it an eeg-scale measurement can "
+                                            "recover is entirely unmeasured"),
+        "nmda_fraction": uniform(0.05, 0.6, units="dimensionless", provenance=Provenance.WEAK),
+        "gain": weak(1.0, 8.0, units="nS per Hz"),
+    },
+    tying=Tying.EMBEDDING,
+    state_dependent_weights=True,
+    provenance=Provenance.WEAK,
+)
+
+
+# ---------------------------------------------------------------------------
 # tract propagation
 # ---------------------------------------------------------------------------
 
@@ -1343,6 +1685,7 @@ __all__ = [
     "LOCAL_INHIBITION",
     "LAMINAR_PROPAGATION",
     "LATERAL_CORTICAL_PROPAGATION",
+    "CORTICAL_ASSOCIATION_PROPAGATION",
     "TRACT_PROPAGATION",
     "THALAMOCORTICAL_COUPLING",
 ]

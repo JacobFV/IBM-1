@@ -125,9 +125,10 @@
           "kind": {
             "enum": [
               "measured",
-              "imposed"
+              "imposed",
+              "context"
             ],
-            "description": "measured: contributes a likelihood term. imposed: conditioned on, never modelled as sampled."
+            "description": "measured: contributes a likelihood term about state. imposed: conditioned on, never modelled as sampled. context: recorded alongside but constrains no ibm state -- an expert label, an event code, a geometry file. context is a DECISION, not a gap: a hypnogram is a human annotation of brain state rather than a measurement of a component, and a stream that names no component because none is right is bound, whereas one that names none because nobody has decided yet is unbound. such a stream must carry `notes` saying which it is."
           },
           "constrains": {
             "type": "array",
@@ -137,11 +138,21 @@
             "description": "Registered ibm component ids this stream bears on. Empty while unbound."
           },
           "via": {
-            "type": [
-              "string",
-              "null"
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "description": "Registered process id producing the observed variable from brain state. Null while unbound."
+            "description": "Registered process ids forming the chain from brain state to the observed variable, in order. ARCHITECTURE.md \u00a76 describes an observation as evidence about state that an ordinary process CHAIN produces -- scalp EEG is em_generation then em_coupling then device_coupling -- so this is a list, not one id. A bare string is accepted as a one-element chain. Null while unbound."
           },
           "observation_chain": {
             "type": "string",

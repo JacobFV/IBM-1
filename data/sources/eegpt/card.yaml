@@ -75,18 +75,67 @@ provenance:
   index: data/index/win/cards.jsonl
 distillation:
   reported_accuracy:
-    metric: unresolved
-    value: null
+    metric: auc
+    value: 0.8718
+    on_benchmark: TUAB, binary abnormal-vs-normal detection; EEGPT 25M under LINEAR PROBING, not full fine-tuning
     on_streams:
     - channel_name_embeddings
     - dual_self_supervised_objective
-    source: not yet extracted from the paper
-    verified: false
+    source: 'Wang et al., ''EEGPT: Pretrained Transformer for Universal and Reliable Representation of EEG Signals'',
+      NeurIPS 2024, Table 2 ''The results of different methods on TUAB'', row ''Ours'' (25M): AUROC 0.8718 +/-
+      0.0050, Balanced Accuracy 0.7983 +/- 0.0030. Read from the official proceedings PDF https://proceedings.neurips.cc/paper_files/paper/2024/file/4540d267eeec4e5dbd9dae9448f0b739-Paper-Conference.pdf.
+      EEGPT''s protocol for this table is LINEAR PROBING, so this is a representation-quality figure and is not
+      comparable like-for-like with LaBraM''s or CBraMod''s fine-tuned rows -- which matters, because a linear
+      probe is much closer to how a teacher would actually be read out here. Table 11 gives the same architecture
+      without pretraining at AUROC 0.8260 +/- 0.0018, so pretraining is worth about 0.046 AUROC. Ours-Tiny (4.7M)
+      is 0.8716 +/- 0.0041.'
+    verified: true
   precision_model:
-    form: unresolved
-    ood_inflation_prior: unset -- must be a prior, not a constant
-    error_rank: unresolved -- a teacher's residuals covary across everything it writes
-    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
-      distillation precision
-    correlated_fraction: null
-    effective_constraints: null
+    form: residual_variance
+    ood_inflation_prior: 'lognormal on the variance inflation factor, median 2x, spread 3x, provenance WEAK. the
+      figure above was measured on TUAB, a Temple University Hospital clinical corpus; the distribution this teacher
+      would be used over is not that one, and how much worse it gets there is itself unknown, so this is a prior
+      and not a constant. NOTE FOR READERS: TeacherPrecision.from_card currently reads ANY non-empty string in
+      this field as exactly lognormal(median 2, spread 3, WEAK) -- the prose is not parsed. that coercion is deliberate
+      and conservative, but it means this text documents intent rather than driving arithmetic.'
+    error_rank: 1
+    notes: 'METRIC-TO-r2 CONVERSION, written out because an AUROC is not an r2 and coercing one into the other
+      is the exact error this block exists to prevent. put a gaussian latent decision variable behind the benchmark''s
+      binary label with equal variances under both classes. then auc = Phi(d''/sqrt2) gives d'' = 1.6050, and
+      the squared point-biserial correlation between that latent variable and a balanced binary label is r2 =
+      d''^2/(d''^2+4) = 0.3917. CROSS-CHECK: the same table''s balanced accuracy 0.7983 through bac = Phi(d''/2)
+      gives d'' = 1.6711 and r2 = 0.4111, differing by 0.0194. two independent readings of the same row agreeing
+      to that tolerance is the only available evidence that the latent-gaussian model behind the conversion is
+      not badly wrong. ibm.runtime.fuse.variance_explained performs it; the card stores the published figure and
+      never the derived r2, so the derivation stays auditable. WHAT r2 = 0.3917 IS NOT: it is the fraction of
+      the variance of the BENCHMARK''S LATENT LABEL that this teacher explains. ''is this whole EEG recording
+      abnormal'' is a coarse summary of a whole recording; what a teacher is asked to infill here is a field value
+      on a support. the teacher explains at most this much of the label and an unknown, strictly smaller fraction
+      of any state variable, so 0.3917 is an UPPER BOUND and the precision it implies is an over-estimate. the
+      ood_inflation prior is what carries that gap and it is deliberately weak for that reason. correlated_fraction
+      and error_rank are NOT reported by this paper, and no paper in this set reports either -- the quantity has
+      no place in a benchmark table. so what is declared here is a prior with a stated basis, which is the correct
+      answer, and not a point estimate, which would be a fabricated one. BASIS: the schema''s own instruction
+      is that an unmeasured sharing fraction must be treated as high rather than as zero, and 0.8 is the value
+      ibm.runtime.fuse.TeacherPrecision defaults to, so 0.8 is what is declared. TWO WARNINGS attach to it. (1)
+      it is very likely too high for this model class: BENDR is the one teacher in data/sources whose weights
+      are held, and measuring its induced error directly (scripts/measure_bendr_error_correlation.py) gives 0.03
+      to 0.07, an order of magnitude below this. (2) THERE IS NO SAFE DIRECTION TO ROUND IN. raising rho is conservative
+      only about structure the values share -- a global gain, a cortex-wide offset -- where the effective constraint
+      count falls toward 1/rho. it is ANTI-conservative about differences between values, because splitting the
+      residual leaves a smaller independent part and the conditional precision rises as 1/(1-rho); part 2 of scripts/verify_distillation_precision.py
+      prints both columns. this number therefore has to be measured before this teacher writes anything that matters,
+      not defaulted. error_rank is 1, and deliberately so. rank 1 is the minimum honest value -- a teacher has
+      at least a global bias -- and it is also the ONLY rank at which correlated_fraction means what this schema
+      says it means. ibm.runtime.fuse._shared_error_basis builds q discrete cosine modes normalised by row, so
+      above rank 1 the implied correlation between two residuals decays with their separation and is identically
+      zero between the first and last index: that models a correlation LENGTH, not a fraction shared across everything
+      the teacher writes. the consequence is large and runs against intuition -- at rho 0.9 over 10^4 values the
+      effective constraint count is 1.1 at rank 1 and 889 at rank 4 -- so a card declaring a higher rank would
+      be quietly handing this teacher hundreds of times more influence. see the rank caveat table in scripts/verify_distillation_precision.py.
+      DERIVED FIGURE: effective_constraints below is n / ((1 - rho) + n rho) with rho = 0.8 and n = 10000 (ARCHITECTURE.md''s
+      reference figure of 10^4 values) = 1.25. It is derived, not declared: change rho or the rank and it changes.
+      Reproduce it with ibm.runtime.fuse.Evidence.effective_constraints, or with part 2 of scripts/verify_distillation_precision.py,
+      which checks the closed form against a dense matrix inverse.'
+    correlated_fraction: 0.8
+    effective_constraints: 1.25

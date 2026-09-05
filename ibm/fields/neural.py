@@ -78,7 +78,8 @@ EXC_POTENTIAL = _c(
     "rate that summarizes it: two populations at the same rate but different distances "
     "from threshold respond differently to identical input",
     "mV", band=WIDE, prior="neural_population", bounds=(-90.0, 50.0),
-    timescale_s=1e-2, tags=frozenset({"population", "excitatory"}))
+    timescale_s=1e-2, tags=frozenset({"population", "excitatory"}),
+    alt_supports=("cortical_surface",))
 
 EXC_ACTIVITY = _c(
     "neural.exc.activity",
@@ -88,7 +89,8 @@ EXC_ACTIVITY = _c(
     "function, and because rate is what tract propagation transmits while potential is "
     "what stays local",
     "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 500.0),
-    timescale_s=5e-3, tags=frozenset({"population", "excitatory"}))
+    timescale_s=5e-3, tags=frozenset({"population", "excitatory"}),
+    alt_supports=("cortical_surface",))
 
 EXC_ADAPTATION = _c(
     "neural.exc.adaptation",
@@ -98,7 +100,8 @@ EXC_ADAPTATION = _c(
     "different output at the start and end of a stimulus; without it a population model has "
     "no mechanism for spike-frequency adaptation or for slow oscillation",
     "nA", band=SLOW, prior="adaptation_slow", bounds=(0.0, 10.0),
-    timescale_s=0.5, tags=frozenset({"population", "excitatory", "slow"}))
+    timescale_s=0.5, tags=frozenset({"population", "excitatory", "slow"}),
+    alt_supports=("cortical_surface",))
 
 EXC_AMPA = _c(
     "neural.exc.ampa",
@@ -107,7 +110,8 @@ EXC_AMPA = _c(
     "excitation that can support gamma-band dynamics.  separate from nmda because the two "
     "are carried by the same synapses but have completely different dynamics",
     "nS", band=SYNAPTIC, prior="synaptic_conductance", bounds=(0.0, 1000.0),
-    timescale_s=3e-3, tags=frozenset({"synaptic", "excitatory"}))
+    timescale_s=3e-3, tags=frozenset({"synaptic", "excitatory"}),
+    alt_supports=("cortical_surface",))
 
 EXC_NMDA = _c(
     "neural.exc.nmda",
@@ -117,7 +121,8 @@ EXC_NMDA = _c(
     "usual substrate for persistent activity, which a single lumped excitatory conductance "
     "cannot produce",
     "nS", band=SLOW, prior="synaptic_conductance", bounds=(0.0, 1000.0),
-    timescale_s=0.1, tags=frozenset({"synaptic", "excitatory"}))
+    timescale_s=0.1, tags=frozenset({"synaptic", "excitatory"}),
+    alt_supports=("cortical_surface",))
 
 # -- inhibitory population ---------------------------------------------------
 
@@ -128,7 +133,8 @@ INH_POTENTIAL = _c(
     "literature, and every neural-mass model ibm-1 will inherit parameters from, is written "
     "in one excitatory and one inhibitory population",
     "mV", band=WIDE, prior="neural_population", bounds=(-90.0, 50.0),
-    timescale_s=5e-3, tags=frozenset({"population", "inhibitory"}))
+    timescale_s=5e-3, tags=frozenset({"population", "inhibitory"}),
+    alt_supports=("cortical_surface",))
 
 INH_ACTIVITY = _c(
     "neural.inh.activity",
@@ -136,7 +142,8 @@ INH_ACTIVITY = _c(
     "one because fast-spiking interneurons sustain rates that principal cells cannot, and "
     "that asymmetry is what sets the frequency of pyramidal-interneuron gamma",
     "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 1000.0),
-    timescale_s=3e-3, tags=frozenset({"population", "inhibitory"}))
+    timescale_s=3e-3, tags=frozenset({"population", "inhibitory"}),
+    alt_supports=("cortical_surface",))
 
 INH_GABA_A = _c(
     "neural.inh.gaba_a",
@@ -146,7 +153,8 @@ INH_GABA_A = _c(
     "is also the target of most anaesthetics, which is why it must be a state variable a "
     "pharmacological process can act on rather than a fixed weight",
     "nS", band=SYNAPTIC, prior="synaptic_conductance", bounds=(0.0, 1000.0),
-    timescale_s=6e-3, tags=frozenset({"synaptic", "inhibitory"}))
+    timescale_s=6e-3, tags=frozenset({"synaptic", "inhibitory"}),
+    alt_supports=("cortical_surface",))
 
 INH_GABA_B = _c(
     "neural.inh.gaba_b",
@@ -155,7 +163,8 @@ INH_GABA_B = _c(
     "than a per-event current, and the component that carries inhibition's contribution to "
     "delta and slow-oscillation timescales",
     "nS", band=SLOW, prior="synaptic_conductance", bounds=(0.0, 1000.0),
-    timescale_s=0.15, tags=frozenset({"synaptic", "inhibitory", "slow"}))
+    timescale_s=0.15, tags=frozenset({"synaptic", "inhibitory", "slow"}),
+    alt_supports=("cortical_surface",))
 
 # -- interneuron classes -----------------------------------------------------
 
@@ -166,7 +175,8 @@ PV_ACTIVITY = _c(
     "pv cells target the soma while sst cells target distal dendrites, so the two divide "
     "inhibition by target compartment rather than by amount",
     "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 800.0),
-    timescale_s=3e-3, tags=frozenset({"population", "inhibitory", "interneuron"}))
+    timescale_s=3e-3, tags=frozenset({"population", "inhibitory", "interneuron"}),
+    alt_supports=("cortical_surface",))
 
 SST_ACTIVITY = _c(
     "neural.sst.activity",
@@ -175,7 +185,8 @@ SST_ACTIVITY = _c(
     "transients.  they gate which inputs a pyramidal dendrite integrates, which is a "
     "different computation from the gain control pv cells implement",
     "Hz", band=SYNAPTIC, prior="neural_spiking", bounds=(0.0, 300.0),
-    timescale_s=2e-2, tags=frozenset({"population", "inhibitory", "interneuron"}))
+    timescale_s=2e-2, tags=frozenset({"population", "inhibitory", "interneuron"}),
+    alt_supports=("cortical_surface",))
 
 VIP_ACTIVITY = _c(
     "neural.vip.activity",
@@ -185,7 +196,8 @@ VIP_ACTIVITY = _c(
     "inversion in the microcircuit is not something a lumped inhibitory population can "
     "express at all",
     "Hz", band=SYNAPTIC, prior="neural_spiking", bounds=(0.0, 300.0),
-    timescale_s=2e-2, tags=frozenset({"population", "inhibitory", "interneuron"}))
+    timescale_s=2e-2, tags=frozenset({"population", "inhibitory", "interneuron"}),
+    alt_supports=("cortical_surface",))
 
 # -- the electromagnetic source ----------------------------------------------
 
@@ -198,7 +210,8 @@ TRANSMEMBRANE_CURRENT = _c(
     "and synapse placement -- a synchronous input to apical dendrites and the same input to "
     "somata produce opposite dipoles at identical firing rates",
     "nA/mm^3", band=WIDE, prior="transmembrane_current", timescale_s=1e-3,
-    tags=frozenset({"source", "electromagnetic"}))
+    tags=frozenset({"source", "electromagnetic"}),
+    alt_supports=("cortical_surface",))
 
 # -- peripheral traffic ------------------------------------------------------
 

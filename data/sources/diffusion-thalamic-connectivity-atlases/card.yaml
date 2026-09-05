@@ -12,7 +12,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -20,27 +20,35 @@ frames:
 - subject_native
 streams:
 - name: connectivity_based_thalamic_labels
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 'A CONNECTIVITY-BASED parcellation inherits every limitation of the tractography that
     produced it: seeding, algorithm, thresholds and the crossing-fibre problem in the internal capsule,
     which is exactly where thalamocortical fibres run. §52.8 requires the parent DWI, software version,
     seeding, response functions, thresholds and bundle definitions to travel with any such product, and
     they usually do not.'
-  notes: the winner-take-all assignment discards the fact that most thalamic voxels connect to several
-    cortical territories
+  notes: 'context: a labelling of thalamic voxels by which cortical territory they most connect to under probabilistic
+    tractography.  the label is a TRACTOGRAPHY OUTPUT and not an anatomical boundary, and the winner-take-all
+    assignment discards the fact that most thalamic voxels connect to several territories -- so it is a cover
+    over the thalamus with a known and directional error, never a measurement.  the crossing-fibre problem in
+    the internal capsule is worst exactly where thalamocortical fibres run.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: thalamic voxels labelled by which cortical territory they most connect to under probabilistic
     tractography. The label is a TRACTOGRAPHY OUTPUT, not an anatomical boundary
+  constrains: []
 - name: thalamocortical_connectivity_prior
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'context, and `use: prior` is the whole point: it shapes p(theta) over the tractometric edges that
+    `thalamocortical_coupling` runs on, and contributes no likelihood about any component.  a stream that shapes
+    a prior and asserts no value is exactly the case `kind: context` exists for.'
 absent:
 - tractography_provenance
 - histological_validation

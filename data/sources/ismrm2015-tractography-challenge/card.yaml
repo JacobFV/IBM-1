@@ -12,7 +12,7 @@ licence:
   redistribution: unresolved
   commercial: unresolved
   notes: Unresolved pending inspection of the distribution terms.
-binding: unbound
+binding: bound
 population:
   n: 1
   hierarchy:
@@ -24,43 +24,75 @@ frames:
 - phantom_native
 streams:
 - name: ground_truth_bundles
-  kind: measured
+  kind: context
   via: null
   systematic_bias: '§51.3 item 22 is emphatic: use this to QUANTIFY TRACTOGRAPHY ERROR, NOT BIOLOGICAL
     PREVALENCE. The phantom''s bundles were chosen by the organisers; the fact that a bundle exists in
     the phantom says nothing about how common it is in people. The simulation is also simpler than real
     tissue, so measured error rates here are a LOWER BOUND on real error.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series
   spatial_support: a simulated diffusion volume generated FROM a known fibre geometry, so the answer is
     available by construction -- the only source in the registry where tractography can be scored against
     truth rather than against consensus
+  constrains: []
+  notes: 'this source contains NO BRAIN.  it is a simulated volume, so every stream in it is `context` and none
+    is `measured`: a measurement is evidence about the state of some real system, and there is no real system
+    here.  the card''s own `forbidden` list already refuses observation-role likelihoods from it, and `use`
+    is control / evaluate / surrogate.  these bundles are the fibre geometry fiberfox was GIVEN, so they are
+    the tractometric topology of the phantom by construction, not an inference about one.  that is what makes
+    them scoreable truth and simultaneously what makes them not evidence: `scripts/measure_tract_uncertainty.py`
+    reads them as the answer key and nothing may read them as anatomy.'
 - name: submitted_tractograms
-  kind: measured
+  kind: context
   via: null
   systematic_bias: 96 pipelines producing 96 different answers from IDENTICAL input is the cleanest available
     measurement of model-class uncertainty in tractography (§39). The headline result -- large numbers
     of false-positive bundles across essentially all pipelines -- is the control that a tractography-derived
     connectome must be quoted against
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'this source contains NO BRAIN.  it is a simulated volume, so every stream in it is `context` and none
+    is `measured`: a measurement is evidence about the state of some real system, and there is no real system
+    here.  the card''s own `forbidden` list already refuses observation-role likelihoods from it, and `use`
+    is control / evaluate / surrogate.  96 pipelines'' answers to one question.  their disagreement is a measurement
+    OF THE PIPELINES, which is why it is useful, and it is not a measurement of tissue, which is why it binds
+    to nothing.  the bytes actually live under the `ismrm2015-submissions` card; this entry is the challenge''s
+    own description of them.'
 - name: scoring_results
-  kind: measured
+  kind: context
   via: null
   systematic_bias: '§46: a number without its floor is not a result, and this dataset IS the floor for
     any structural connectivity claim'
   band_hz:
   - null
   - null
+  constrains: []
+  notes: 'this source contains NO BRAIN.  it is a simulated volume, so every stream in it is `context` and none
+    is `measured`: a measurement is evidence about the state of some real system, and there is no real system
+    here.  the card''s own `forbidden` list already refuses observation-role likelihoods from it, and `use`
+    is control / evaluate / surrogate.  the challenge''s published per-submission scores -- an annotation of
+    how well each pipeline did, computed by the organisers with their own bundle definitions.  it is a label
+    on an algorithm, in the same sense that a hypnogram is a label on a night, and it constrains no component.'
 - name: simulated_dwi
-  kind: measured
+  kind: context
   via: null
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
+  constrains: []
+  notes: 'this source contains NO BRAIN.  it is a simulated volume, so every stream in it is `context` and none
+    is `measured`: a measurement is evidence about the state of some real system, and there is no real system
+    here.  the card''s own `forbidden` list already refuses observation-role likelihoods from it, and `use`
+    is control / evaluate / surrogate.  the tempting binding is `structural.fiber_orientation` via `plasticity`,
+    exactly as for a real DWI, and it is refused here on purpose: this signal was GENERATED FROM the ground-truth
+    geometry, so a likelihood from it would be a likelihood about the simulator.  it is a surrogate fixture
+    -- `use: surrogate` -- and a surrogate fit reads it through a materialization, never as evidence about a
+    person.'
 absent:
 - biological_tissue
 - real_acquisition_artifacts

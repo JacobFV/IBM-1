@@ -13,7 +13,7 @@ licence:
   notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
     known bias and licence rather than treating atlas availability as correctness; that practice is preserved
     by leaving this unresolved and counting it.
-binding: unbound
+binding: bound
 population:
   n: null
 frames:
@@ -21,20 +21,30 @@ frames:
 - Schaefer2018
 streams:
 - name: group_connectome_matrix
-  kind: measured
+  kind: context
   via: null
   systematic_bias: A GROUP AVERAGE OF A TRACTOGRAPHY OUTPUT projected onto a parcellation, distributed
     without its seeding, response function or thresholds. It fails §52.8's provenance requirement on every
     count, and it is nevertheless one of the most reused objects in network neuroscience. Registered so
     that its reuse is a recorded choice.
-  notes: parcel-wise aggregation destroys path geometry, endpoint density, dispersion and delay -- everything
-    obj-tract-path-products exists to preserve
+  notes: 'context, and the decision is the point.  a set of streamlines or a parcel-by-parcel matrix is an INTERACTION
+    TOPOLOGY -- a statement about which state variables may interact (ARCHITECTURE.md §3) -- and a topology
+    is a support for interaction, not a measurement of any component.  there is no ibm component whose value
+    this stream reports: `structural.fiber_orientation` is what the underlying diffusion volume constrains,
+    and the tractogram is an ALGORITHM''S ANSWER computed from it, not a second measurement of it.  binding
+    it as `measured` would let one pipeline''s reconstruction contribute a likelihood about tissue, which is
+    exactly the double-count the card''s `forbidden` list already refuses.  and this one is a GROUP AVERAGE
+    of a tractography output, distributed with no seeding, no response function and no thresholds -- so it is
+    one pipeline''s answer with the evidence of how it was produced discarded.  it is nevertheless one of the
+    most reused objects in network neuroscience, which is why it is registered: so that reusing it is a recorded
+    choice with `use: prior` attached rather than an unexamined default.'
   band_hz:
-  - null
-  - null
+  - 0.0
+  - 0.001
   temporal_support: not a time series -- this is static anatomy
   spatial_support: a group-averaged structural connectivity matrix over Desikan and Schaefer parcellations,
     derived from HCP diffusion tractography
+  constrains: []
 absent:
 - provenance
 - path_geometry

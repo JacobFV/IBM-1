@@ -73,18 +73,61 @@ provenance:
   index: data/index/win/cards.jsonl
 distillation:
   reported_accuracy:
-    metric: unresolved
-    value: null
+    metric: accuracy
+    value: 0.645
+    on_benchmark: BCI Competition IV 2a, FOUR-class motor imagery, leave-one-subject-out cross-validation; Neuro-GPT
+      'Encoder-only' with pre-training
     on_streams:
     - causal_chunk_prediction
     - transfer_to_small_datasets
-    source: not yet extracted from the paper
-    verified: false
+    source: 'Cui et al., ''Neuro-GPT: Towards a Foundation Model for EEG'', ISBI 2024 (arXiv:2311.03764), Table
+      1, row ''Encoder-only'', column ''w/ Pre-train'': 0.645 +/- 0.104, against 0.606 +/- 0.098 for the same
+      architecture without pre-training. Caption: ''A comparison of means and stds of four-class classification
+      accuracy among different methods.'' Read from https://arxiv.org/pdf/2311.03764. VERSION CAVEAT: an earlier
+      arXiv version prints 0.643 +/- 0.106 for the same cell; the value here is the current version. The same
+      table quotes BENDR at 0.426 on this benchmark, which is Neuro-GPT''s own comparison and is consistent with
+      BENDR''s printed BCIC Accuracy of 42.6. NO AUROC AND NO r2 IS PUBLISHED anywhere in the paper.'
+    verified: true
   precision_model:
-    form: unresolved
-    ood_inflation_prior: unset -- must be a prior, not a constant
-    error_rank: unresolved -- a teacher's residuals covary across everything it writes
-    notes: distilled values enter as evidence and must carry calibrated precision; see ARCHITECTURE.md,
-      distillation precision
-    correlated_fraction: null
-    effective_constraints: null
+    form: residual_variance
+    ood_inflation_prior: 'lognormal on the variance inflation factor, median 2x, spread 3x, provenance WEAK. The
+      figure holds on BCI Competition IV 2a under leave-one-subject-out; the +/- 0.104 standard deviation across
+      held-out subjects is itself larger than the 0.039 gain pre-training buys, which is a direct measurement
+      of how far this number travels between subjects. NOTE: TeacherPrecision.from_card reads any non-empty string
+      here as exactly lognormal(median 2, spread 3, WEAK) -- the prose documents intent and is not parsed.'
+    error_rank: 1
+    notes: 'THE FIGURE IS VERIFIED AND THIS TEACHER STILL MAY NOT WRITE EVIDENCE. That is not a gap in the research;
+      it is the correct outcome, and it is worth being exact about why. The precision formula needs a variance-explained
+      fraction. Converting a classification metric into one requires the chance level, because the probit route
+      reads the metric as Phi of a discriminability and where Phi starts depends on how many classes there are:
+      0.645 is strong on four classes and barely above chance on two. The `accuracy` metric in this schema carries
+      no arity, so the conversion is undetermined, and guessing binary would hand this teacher roughly the precision
+      of an r2 of 0.35 on the strength of a number that does not say that. ibm.runtime.fuse.variance_explained
+      therefore returns None for `accuracy`, TeacherPrecision.from_card returns None in turn, and this card yields
+      no distillation precision at all. WHAT WOULD UNBLOCK IT, in decreasing order of how good the answer would
+      be: an r2 or correlation on the target stream itself; an AUROC, which is arity-free and converts cleanly
+      like the TUAB cards in this set; or a chance-corrected figure with the class count recorded, which this
+      schema currently has nowhere to put. Until one of those exists this teacher is `use: distil` on paper and
+      unusable in fact, and the card says so rather than letting a plausible coercion supply the missing step.
+      The precision_model fields below are filled in so that the block is complete and so that the moment a convertible
+      figure appears the card works, not because they are currently doing anything. correlated_fraction 0.8 is
+      the schema-consistent prior for an unmeasured sharing fraction (the schema states that null must be treated
+      as high rather than zero) and is what TeacherPrecision defaults to. The one teacher in data/sources whose
+      weights are held, BENDR, measures at 0.03 to 0.07, an order of magnitude below it, so 0.8 may well be far
+      too high. AND THERE IS NO SAFE DIRECTION TO ROUND IN: raising rho is conservative about structure the values
+      share and ANTI-conservative about differences between them, because the conditional precision rises as 1/(1-rho).
+      Measure it, do not default it. error_rank is 1, and deliberately so. rank 1 is the minimum honest value
+      -- a teacher has at least a global bias -- and it is also the ONLY rank at which correlated_fraction means
+      what this schema says it means. ibm.runtime.fuse._shared_error_basis builds q discrete cosine modes normalised
+      by row, so above rank 1 the implied correlation between two residuals decays with their separation and is
+      identically zero between the first and last index: that models a correlation LENGTH, not a fraction shared
+      across everything the teacher writes. the consequence is large and runs against intuition -- at rho 0.9
+      over 10^4 values the effective constraint count is 1.1 at rank 1 and 889 at rank 4 -- so a card declaring
+      a higher rank would be quietly handing this teacher hundreds of times more influence. see the rank caveat
+      table in scripts/verify_distillation_precision.py. DERIVED FIGURE: effective_constraints below is n / ((1
+      - rho) + n rho) with rho = 0.8 and n = 10000 (ARCHITECTURE.md''s reference figure of 10^4 values) = 1.25.
+      It is derived, not declared: change rho or the rank and it changes. Reproduce it with ibm.runtime.fuse.Evidence.effective_constraints,
+      or with part 2 of scripts/verify_distillation_precision.py, which checks the closed form against a dense
+      matrix inverse.'
+    correlated_fraction: 0.8
+    effective_constraints: 1.25

@@ -35,6 +35,7 @@ modules here register declarations and the functions that turn them into edges.
 
 from __future__ import annotations
 
+from ibm.topologies import association  # noqa: F401
 from ibm.topologies import builders
 from ibm.topologies.builders import (
     BUILDERS, BuilderSpec, EdgeSet, MissingInput, SiteTable, Sites, as_sites,
