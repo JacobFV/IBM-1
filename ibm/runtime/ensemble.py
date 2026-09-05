@@ -315,18 +315,23 @@ def reproject_nonlinear(state: State, couplings: Iterable[Any], basis: TemporalB
     reads &= set(state.layout.components)
     reads &= set(state.beliefs)
 
-    # raw moments, accumulated over members.  raw and not central because the
-    # mean is not known until the last member has been drawn, and a second pass
-    # over the ensemble would double the cost of the only expensive thing here --
-    # evaluating f.  the central moments are recovered at the end.
+    # central moments, accumulated ONLINE.  the obvious streaming scheme is to sum
+    # raw powers and subtract the mean at the end, and it is wrong here: an
+    # unstable loop drives the members to 1e30 and `E[x^4] - 4 mu E[x^3] + ...`
+    # then cancels away every significant digit.  the first version of this
+    # function did exactly that and reported a skew of 1e83 on an ensemble whose
+    # true skew is zero, which is worse than not reporting one.  the pebay
+    # recurrences below cost the same and stay conditioned, because every term is
+    # a deviation from the running mean rather than a difference of large numbers.
     ks = {t: (state.layout[t].k or basis.k) for t in targets}
-    acc: dict[str, list[np.ndarray]] = {
-        t: [np.zeros((state.layout[t].n_sites, ks[t]), dtype=np.complex128),
-            np.zeros((state.layout[t].n_sites, ks[t]))] for t in targets}
-    raw: dict[str, np.ndarray] = {
-        t: np.zeros((4, state.layout[t].n_sites, 2 * ks[t])) for t in targets}
+    mu = {t: np.zeros((state.layout[t].n_sites, ks[t]), dtype=np.complex128)
+          for t in targets}
+    m2c = {t: np.zeros((state.layout[t].n_sites, ks[t])) for t in targets}
+    mom = {t: [np.zeros((state.layout[t].n_sites, 2 * ks[t])) for _ in range(4)]
+           for t in targets}        # running mean, M2, M3, M4 of [Re z, Im z]
 
-    for _ in range(m):
+    for i in range(m):
+        n_seen = i + 1
         xs = {cid: basis.synthesize(state[cid].sample(1, rng)[0]) for cid in reads}
         for t in targets:
             y = np.zeros((state.layout[t].n_sites, basis.n))
@@ -343,19 +348,27 @@ def reproject_nonlinear(state: State, couplings: Iterable[Any], basis: TemporalB
             # broadcast error -- which is to say this function had never run
             # against a model whose components differ in bandwidth.
             z = basis.analyze(y)[..., : ks[t]]
-            acc[t][0] += z
-            acc[t][1] += np.abs(z) ** 2
+            # complex welford for the width the caller actually gets
+            d = z - mu[t]
+            mu[t] = mu[t] + d / n_seen
+            m2c[t] = m2c[t] + (np.conj(d) * (z - mu[t])).real
+            # and the real fourth-order recurrences for the diagnostics
             r = np.concatenate([z.real, z.imag], axis=-1)
-            for j in range(4):
-                raw[t][j] += r ** (j + 1)
+            mean_r, M2, M3, M4 = mom[t]
+            dr = r - mean_r
+            dn = dr / n_seen
+            dn2 = dn * dn
+            t1 = dr * dn * (n_seen - 1)
+            mean_r += dn
+            M4 += (t1 * dn2 * (n_seen * n_seen - 3 * n_seen + 3)
+                   + 6.0 * dn2 * M2 - 4.0 * dn * M3)
+            M3 += t1 * dn * (n_seen - 2) - 3.0 * dn * M2
+            M2 += t1
 
     diag: list[NonGaussianity] = []
-    c_bessel = m / max(m - 1, 1)
     for t in targets:
-        mu = acc[t][0] / m
-        var = (acc[t][1] / m - np.abs(mu) ** 2) * c_bessel
-        var = np.maximum(var.real, 0.0)
-        d = _from_raw(t, raw[t], m)
+        var = np.maximum(m2c[t] / max(m - 1, 1), 0.0)
+        d = _from_online(t, mom[t], m)
         diag.append(d)
         belief = state[t]
         # the *mean* stays where the solve put it.  the ensemble's mean is a noisy
@@ -368,25 +381,25 @@ def reproject_nonlinear(state: State, couplings: Iterable[Any], basis: TemporalB
     return diag
 
 
-def _from_raw(cid: str, raw: np.ndarray, m: int) -> NonGaussianity:
-    """skew and excess kurtosis from streamed raw moments.
+def _from_online(cid: str, mom: Sequence[np.ndarray], m: int) -> NonGaussianity:
+    """skew and excess kurtosis from the online central moments.
 
-    the textbook central-moment identities, which are less numerically stable
-    than a two-pass computation and are used anyway: the alternative is a second
-    evaluation of every member's f, and these numbers are a *diagnostic* about
-    whether the gaussian form is adequate, not a quantity anything downstream
-    computes with.  where they are unstable they are also large, which is the
-    direction that raises the flag rather than lowers it.
+    `g1 = sqrt(m) M3 / M2^1.5` and `g2 = m M4 / M2^2 - 3`, the population
+    estimators, reduced over sites and frequency.  cells whose variance is
+    numerically zero -- a coefficient no member moved -- are dropped rather than
+    divided by, because a 0/0 there would be reported as non-gaussianity and the
+    whole point of these two numbers is that a large value means the declared
+    form has stopped describing the variable.
     """
-    s1, s2, s3, s4 = (raw[j] / m for j in range(4))
-    mu = s1
-    m2 = np.maximum(s2 - mu ** 2, _EPS)
-    m3 = s3 - 3.0 * mu * s2 + 2.0 * mu ** 3
-    m4 = s4 - 4.0 * mu * s3 + 6.0 * mu ** 2 * s2 - 3.0 * mu ** 4
+    _, M2, M3, M4 = mom
+    ok = M2 > 0.0
+    if not np.any(ok):
+        return NonGaussianity(cid, m, 0.0, 0.0, 1.0 / math.sqrt(max(m, 1)))
+    v = M2[ok]
     return NonGaussianity(
         component=cid, members=m,
-        skew=float(np.mean(m3 / m2 ** 1.5)),
-        excess_kurtosis=float(np.mean(m4 / m2 ** 2) - 3.0),
+        skew=float(np.mean(math.sqrt(m) * M3[ok] / v ** 1.5)),
+        excess_kurtosis=float(np.mean(m * M4[ok] / v ** 2) - 3.0),
         mc_error=float(1.0 / math.sqrt(max(m, 1))))
 
 

@@ -202,14 +202,19 @@ system. we currently have a dynamical model with a decorative covariance.
 going straight from measured spectra to process parameters. if propagation
 changes those numbers, the three model evaluations need redoing.
 
-### 4.1c OPEN: eeg_forward build is broken by an in-flight materialize refactor
-`scripts/run_eeg_forward.py` and `scripts/propagate_uncertainty.py` cannot run
-end to end. two faults seen: `parcels("cortical_areas","tissue")` asks for a
-`subject_t1 -> mni152` warp that no transform supplies (the fix is to look parcels
-up in the SUBJECT frame — `aparc+aseg.mgz` is already there and its Desikan labels
-are exactly what the registry declares), and `sample_coregistration()` now returns
-a `Coregistration` object where `build(warp=...)` expects a callable. all
-propagation numbers above are from a verified coarse run BEFORE this regression.
+### 4.1c RESOLVED: the eeg_forward build regression
+cleared 2026-09-05, verified independently. cause: the new tier fall-through in
+`_build_edges` computed `parcels("cortical_areas","tissue")` EAGERLY and let its
+exceptions escape, so a caller supplying no subject `anatomy=` fell through to the
+substrate's template parcellation and demanded a `subject_t1 -> mni152` transform
+nobody had bound. `eeg_forward` needs no connectome at all — it was only passing
+through that branch on its way to reporting it has no tractogram.
+
+the fix is the general lesson, not the specific guard: **a fall-through that
+cannot get its inputs must degrade to the ORIGINAL gap** — the one naming the
+subject file a caller could supply — rather than replacing it with a complaint
+about a template registration nobody asked for. the parcel lookup now runs in the
+subject frame and declines instead of raising.
 
 ### 4.2 models do not share the substrate (BEING FIXED)
 34 of 40 named models were reported as blocked by "missing data". they are not.
