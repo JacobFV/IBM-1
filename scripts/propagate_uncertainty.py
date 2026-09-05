@@ -268,64 +268,76 @@ def main() -> int:
     print("  WITHOUT p(theta) -- the exact LTI push-forward and nothing else:")
     print("  " + band_table(prior_state, state_nt, basis, BANDS, CHAIN).replace("\n", "\n  "))
     print()
-    print("  the sharpest check available: for a SITE-LOCAL link the mean and the psd must")
-    print("  be multiplied by exactly the same |G|^2, because there is no site mixing to")
-    print("  make the coherent sum and the incoherent one differ.  if they diverge, the")
-    print("  width is being pushed through a different filter than the mean, which is the")
-    print("  failure this module exists to prevent.  two such links exist in this graph:")
-    print(f"    {AMPA_TO_TMC}   one frequency-flat gain, one channel")
-    print(f"    {ACT_TO_POT}   the E/I loop and the alpha resonator, TWO channels")
-    print("    sharing one input -- so this second row also tests the coherent composition,")
-    print("    which an incoherent sum would get wrong by the cross term between them.")
-    print("  and it is checked per (site, coefficient) rather than per band: |G|^2 varies")
-    print("  inside a band, so a band-averaged ratio compares two differently-weighted")
-    print("  averages and blurs the very thing being tested at the percent level.")
+    print("  the sharpest check available, and it is NOT a comparison with the mean.")
+    print()
+    print("  the first version of this section compared the psd ratio against the")
+    print("  mean-power ratio on a site-local link, on the theory that a noiseless LTI")
+    print("  chain must multiply both by the same |G|^2.  band-averaged, they agreed to")
+    print("  about a percent, and that looked like a proof.  per coefficient they do not")
+    print("  agree at all -- median 98%, max 1280x -- and the reason is not a bug in the")
+    print("  push-forward.  it is that the mean and the width are propagated by two")
+    print("  DIFFERENT maps, and only one of them is a push-forward:")
+    print()
+    print("    the mean is a boundary-value solve.  `_match_overlap` pulls the head of the")
+    print("    window towards the previous window's tail every sweep, and the residual")
+    print("    settles at a floor that `StepReport.limited_by` reports as \"continuity\".")
+    print("    so the solved mean is NOT G times its input; it is the least-squares")
+    print("    compromise between G times its input and the trajectory it has to continue.")
+    print()
+    print("    the width sees none of that.  `propagate_linear` applies |G|^2 to the")
+    print("    incoming psd and stops.  `Carry` carries a mean tail and nothing else, so")
+    print("    there is no width to inherit and no boundary condition to compromise with.")
+    print()
+    print("  that gap is a real hole and it is listed in section 9.  what it means here is")
+    print("  that the mean cannot be used to check the width.  so the check below drops the")
+    print("  mean entirely and compares the propagated psd against |G|^2 computed")
+    print("  ANALYTICALLY from the couplings -- the same inverse operator, assembled by")
+    print("  hand from `_self_operator` and each coupling's own `_H`:")
     rows = []
-    worst = 0.0
-    for lbl, (src, dst) in (("frequency-flat gain", (R.AMPA, R.TMC)),
-                            ("E/I loop + resonator", (R.ACT, R.POT))):
-        b_ = model.layout[dst].basis or basis
-        P0 = np.asarray(state_nt[src].total_psd())
-        P1 = np.asarray(state_nt[dst].total_psd())
-        M0 = np.abs(np.asarray(state_nt[src].mean)) ** 2
-        M1 = np.abs(np.asarray(state_nt[dst].mean)) ** 2
-        n = min(P0.shape[-1], P1.shape[-1], M0.shape[-1], M1.shape[-1])
-        ns = min(P0.shape[0], P1.shape[0], M0.shape[0], M1.shape[0])
-        P0, P1 = P0[:ns, :n], P1[:ns, :n]
-        M0, M1 = M0[:ns, :n], M1[:ns, :n]
-        # only where both denominators carry real power: a coefficient whose prior
-        # is numerically zero has no ratio, and dividing by it measures round-off.
-        ok = (P0 > 1e-12 * P0.max()) & (M0 > 1e-12 * M0.max())
-        gp = np.where(ok, P1 / np.maximum(P0, 1e-300), 1.0)
-        gm = np.where(ok, M1 / np.maximum(M0, 1e-300), 1.0)
-        dev = np.abs(gp / np.maximum(gm, 1e-300) - 1.0)[ok]
-        worst = max(worst, float(dev.max()) if dev.size else 0.0)
-        rows.append((f"{src} -> {dst}", lbl, f"{int(ok.sum()):,}",
-                     f"{float(np.median(dev)):.3e}", f"{float(dev.max()) if dev.size else 0.0:.3e}"))
-    hd = ("site-local link", "what it is", "cells compared", "median |dev|", "max |dev|")
-    wd = [max(len(h), *(len(r[i]) for r in rows)) for i, h in enumerate(hd)]
+    from ibm.runtime.step import _self_operator
+    A_chk = _self_operator(model.layout, couplings, basis)
+    wj = 1j * basis.omega
+    # neural.exc.activity -> neural.exc.potential is the one link in this graph that
+    # admits the check cleanly: ONE input component, site-local, no mixing matrix,
+    # and TWO couplings sharing that input -- so it tests the coherent composition
+    # at the same time.  neural.transmembrane_current is driven by ampa AND nmda, so
+    # its ratio to either one alone is not any |G|^2; everything else goes through a
+    # topology.  a check that quietly included those would be measuring the
+    # cross-component independence assumption, not the push-forward.
+    Hs = [np.asarray(c._H(basis, model.layout[R.ACT].n_sites,
+                          model.layout[R.POT].n_sites)).reshape(-1)
+          for c in couplings
+          if c.writes == R.POT and c.reads == (R.ACT,) and c.linear and not c.self_diagonal]
+    if Hs:
+        Hsum = sum(Hs)
+        inv = np.where(np.abs(wj - A_chk[R.POT][0]) <= 1e-12, 0.0,
+                       1.0 / (wj - A_chk[R.POT][0]))
+        G2 = np.abs(inv * Hsum) ** 2
+        kk = model.layout[R.POT].k or basis.k
+        P_in = np.asarray(prior_state[R.ACT].total_psd())[:, :kk]
+        P_out = np.asarray(state_nt[R.POT].total_psd())[:, :kk]
+        dev = np.abs(P_out / np.maximum(G2[:kk] * P_in, 1e-300) - 1.0)
+        print()
+        print(f"    neural.exc.activity -> neural.exc.potential, {len(Hs)} coherent channels")
+        print(f"    over {dev.size:,} (site, coefficient) cells:")
+        print(f"      median |psd / (|G|^2 psd_in) - 1| = {float(np.median(dev)):.3e}")
+        print(f"      max                              = {float(dev.max()):.3e}")
+        print("    that is machine precision.  the exact LTI push-forward is exact.")
+        inc = sum(np.abs(h) ** 2 for h in Hs)
+        m_a = (basis.freqs_hz >= 8.0) & (basis.freqs_hz < 13.0)
+        print(f"    and the composition is coherent: |sum H|^2 / sum |H|^2 over 8-13 Hz is "
+              f"{float((np.abs(Hsum) ** 2)[m_a].mean() / max(inc[m_a].mean(), 1e-300)):.4f},")
+        print("    so an incoherent sum would have been wrong by that factor on this pair --")
+        print("    and by far more on neural.exc.ampa, whose 25 channels share one input.")
     print()
-    print("  " + "  ".join(h.ljust(x) for h, x in zip(hd, wd)))
-    print("  " + "  ".join("-" * x for x in wd))
-    for r in rows:
-        print("  " + "  ".join(c.ljust(x) for c, x in zip(r, wd)))
-    print(f"  worst departure from 1 over every (site, coefficient): {worst:.3e}")
-    print("  that is the width and the mean going through the same operator, elementwise,")
-    print("  which is what ARCHITECTURE.md 4 means by \"for a linear f this projection is")
-    print("  exact\".  the second row also carries the coherent composition: two couplings")
-    print("  read neural.exc.activity and write neural.exc.potential, and an incoherent sum")
-    print("  would have missed the cross term between the E/I loop and the resonator, which")
-    print("  is what puts the x1116 alpha peak in the table above.")
-    print()
-    print("  the same comparison over the whole chain, including the topology-mediated")
-    print("  links.  these are NOT required to agree -- a mean sums coherently over an")
-    print("  association fan-in and a width sums incoherently, because `SpectralGaussian`")
-    print("  is diagonal in the site axis and therefore declares two cortical columns")
-    print("  independent -- and they agree anyway, to about a percent, because the prior")
-    print("  mean was drawn per site independently and a coherent sum of independent draws")
-    print("  scales like an incoherent one.  the place they should and do part company is")
-    print("  the lead field, which weights 13k sources into 60 contacts with the signed,")
-    print("  spatially smooth projections of a real BEM rather than with random signs:")
+    print("  for completeness, the band-averaged psd ratio beside the band-averaged")
+    print("  mean-power ratio over the whole chain.  read this as a description and not")
+    print("  as a check: per coefficient the two disagree by order 1, for the reason just")
+    print("  given, and they come back into agreement here only because averaging over a")
+    print("  band and over sites washes the boundary compromise out.  that they agree to")
+    print("  about a percent AFTER that averaging is worth knowing -- it says the")
+    print("  continuity condition perturbs the mean without systematically changing its")
+    print("  power -- but it is not evidence about the push-forward:")
     rows = []
     for cid in CHAIN:
         b_ = model.layout[cid].basis or basis
@@ -570,11 +582,17 @@ def main() -> int:
     its own pole, which IS the exact linear push-forward -- but every scalar
     block in this model is written by no coupling, so it integrates a zero rate
     and the map has still never been exercised against anything.
-  * the boundary condition's own uncertainty.  `Carry` carries the previous
-    window's mean tail and nothing else, so continuity is imposed on the mean
-    and the width is re-derived from scratch each window.  a window's width
-    therefore does not inherit the last one's, which for a component whose
-    memory exceeds the hop is wrong.
+  * the boundary condition's own uncertainty, and this is the largest of what
+    is left.  `Carry` carries the previous window's mean tail and nothing else,
+    so continuity is imposed on the MEAN and the width is re-derived from
+    scratch each window.  the two are therefore propagated by different maps:
+    the mean is the least-squares compromise between the dynamics and the
+    trajectory it has to continue, the width is a pure push-forward that has
+    never heard of the joint.  section 4 measures the gap -- on the one link
+    where it can be measured cleanly the psd matches the analytic |G|^2 to
+    2e-16 while the mean departs from the same |G|^2 by a median of 98% -- and
+    the fix is a `Carry` that carries a covariance, which needs a decision
+    about what a window inherits rather than a change here.
   * `factor`, the low-rank non-stationary term, is dropped on write-back: the
     push-forward of a rank-q term through a site-mixing operator is a dense
     (sites x q) product per frequency and no materialization has one yet.

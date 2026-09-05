@@ -90,6 +90,39 @@ three things worth keeping:
   back (fusing this subject's EEG multiplies device.contact_potential's psd by
   0.0093 in delta to 0.0409 in gamma). the two compose by different rules, which
   is the architecture's claim, now exercised.
+- **the push-forward itself is exact to machine precision.** compared against
+  |G|^2 assembled ANALYTICALLY from the couplings (inv = 1/(i omega - A) from
+  `_self_operator`, each coupling's own H summed by hand) on a site-local link
+  with 885,190 cells: median |psd/(|G|^2 psd_in) - 1| = **2.2e-16**, max 1.0e-15.
+- coherent composition earns its keep on the real model too: |sum H|^2 / sum|H|^2
+  over 8-13 Hz is **0.9179** on that pair, and far further from 1 on
+  `neural.exc.ampa`, whose 25 channels share one input.
+
+#### 4.1d THE MEAN AND THE WIDTH ARE PROPAGATED BY TWO DIFFERENT MAPS
+
+this is the largest remaining item in the runtime, and it was found by tightening
+a check until it failed. an earlier claim that "psd ratio and mean-power ratio
+agree to <3% on every topology-mediated link" was BAND-AVERAGED and over-read;
+per (site, coefficient) the two do not agree at all — **median deviation 98%,
+max 1280x**.
+
+that is not a bug in the push-forward, which is exact (above). it is that only
+ONE of the two is a push-forward:
+
+- **the mean is a boundary-value solve.** `_match_overlap` pulls the window's
+  head towards the previous window's tail every sweep, and the residual settles
+  at the floor `StepReport` reports as `limited_by="continuity"`. so the solved
+  mean is the least-squares compromise between G times its input and the
+  trajectory it has to continue.
+- **the width sees none of that.** `propagate_linear` applies |G|^2 and stops.
+  `Carry` carries a mean tail and nothing else, so there is no width to inherit
+  and no boundary condition to compromise against.
+
+so the mean departs from the analytic |G|^2 by a median of 98% while the psd
+matches it to 2e-16 — the gap is exactly the continuity constraint, which acts on
+one and not the other. **the fix is a `Carry` that carries a covariance**, which
+is a decision about what a window inherits rather than a code change, and it
+should be taken deliberately.
 
 the width growth is NOT loss — at prior medians the chain has a power gain of
 that size, because the association topology is horvitz-thompson reweighted to

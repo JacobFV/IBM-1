@@ -239,7 +239,6 @@ def cache_meg(root: Path, out: Path) -> None:
     happening.
     """
     import mne
-    import pandas as pd
 
     mne.set_log_level("ERROR")
     out.mkdir(parents=True, exist_ok=True)
@@ -503,7 +502,7 @@ def fitted_r2(stats: dict, w: np.ndarray, proj: np.ndarray | None = None) -> np.
     mode this signature makes visible by taking `stats` as an argument rather than
     holding one.
     """
-    xtx, xty, yty, n = stats["xtx"], stats["xty"], stats["yty"], stats["n"]
+    xtx, xty, yty = stats["xtx"], stats["xty"], stats["yty"]
     if proj is not None:
         xtx = proj.T @ xtx @ proj
         xty = proj.T @ xty

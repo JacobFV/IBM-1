@@ -87,7 +87,7 @@ what is *not* here, recorded rather than glossed:
 from __future__ import annotations
 
 from dataclasses import dataclass, field as _field
-from typing import Iterable, Mapping, Sequence
+from typing import Sequence
 
 import numpy as np
 

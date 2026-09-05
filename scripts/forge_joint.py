@@ -1009,6 +1009,7 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--max-iter", type=int, default=300)
     ap.add_argument("--restarts", type=int, default=3)
+    ap.add_argument("--polish", type=int, default=6)
     ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
 
@@ -1312,12 +1313,33 @@ def main() -> int:
     # -- 7. the fits ------------------------------------------------------
     rule("7. forging")
 
-    def do_fit(keys_in: list[str], label: str, *, weighted: bool = True):
+    def do_fit(keys_in: list[str], label: str, *, weighted: bool = True,
+               theta0: np.ndarray | None = None):
+        """one fit, restarted from its own answer until it stops improving.
+
+        `fit_map` asks L-BFGS-B for `ftol=1e-12` on an objective whose gradient is
+        a finite difference of a grid-profiled likelihood, and it routinely reports
+        NOT CONVERGED because it cannot reach a tolerance that tight through
+        numerical noise.  refitting from the previous answer is the cheap and
+        honest way to tell "the optimizer gave up" from "the optimizer is at the
+        mode": what is printed is the log-posterior gained by the LAST pass, and a
+        gain of a small fraction of a nat means further passes buy nothing.
+        """
         tasks = [datasets[k].task(space, weighted=weighted) for k in keys_in]
-        with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
-            th, rep = fit(space, tasks, method=Method.JOINT, max_iter=args.max_iter)
+        th, rep, gain = theta0, None, float("inf")
+        for _ in range(args.polish):
+            with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+                th_new, rep = fit(space, tasks, method=Method.JOINT, theta0=th,
+                                  max_iter=args.max_iter)
+            gain = rep.log_posterior - rep.log_posterior0
+            th = th_new
+            if rep.converged or gain < 1e-3:
+                break
         print(f"\n--- {label} ---")
         print(rep)
+        print(f"  the last of up to {args.polish} restarts-from-its-own-answer gained "
+              f"{gain:.3g} nats; a gain\n  well under a nat means the point below is the "
+              "mode and not where the optimizer tired")
         return th, rep, tasks
 
     alone: dict[str, np.ndarray] = {}
@@ -1339,9 +1361,8 @@ def main() -> int:
     rng = np.random.default_rng(args.seed + 100)
     restarts = []
     for i in range(args.restarts):
-        with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
-            th_i, _ = fit(space, tasks_joint, method=Method.JOINT,
-                          theta0=space.sample(rng), max_iter=args.max_iter)
+        th_i, _, _ = do_fit(list(datasets), f"JOINT restart {i + 1} from a prior draw",
+                            theta0=space.sample(rng))
         restarts.append(th_i)
     print(f"\n{args.restarts} restarts of the joint fit from independent prior draws, as the "
           "yardstick\nevery posterior shift below is measured against.")
@@ -1351,9 +1372,13 @@ def main() -> int:
         rest = [x for x in datasets if x != k]
         lodo[k], _, _ = do_fit(rest, f"leave out {k}  (fitted on {', '.join(rest)})")
 
-    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
-        theta_n2, rep_n2 = fit(space, [n2_ds.task(space)], method=Method.JOINT,
-                               max_iter=args.max_iter)
+    theta_n2, rep_n2 = None, None
+    for _ in range(args.polish):
+        with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+            theta_n2, rep_n2 = fit(space, [n2_ds.task(space)], method=Method.JOINT,
+                                   theta0=theta_n2, max_iter=args.max_iter)
+        if rep_n2.converged or rep_n2.log_posterior - rep_n2.log_posterior0 < 1e-3:
+            break
     print("\n--- sleep-edfx N2 alone (the positive control for the conflict detector) ---")
     print(rep_n2)
 
