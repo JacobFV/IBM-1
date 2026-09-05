@@ -790,6 +790,8 @@ all are materialized views of the same implicit model rather than independently 
 the sources these are fitted and evaluated against are inventoried in
 [EVIDENCE.md](EVIDENCE.md), and their cards live in `data/sources/`.
 
+where the effort actually stands -- what has been verified by running, which declared claims have been overturned by measurement, and which concerns are open -- is recorded in [STATE.md](STATE.md).
+
 ## 8. organization
 
 the codebase mirrors the four primitives. nothing else may become a peer of them.

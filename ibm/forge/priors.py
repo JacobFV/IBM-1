@@ -140,6 +140,41 @@ def median_of(p: Prior) -> float:
     return p.loc
 
 
+def sd_of(p: Prior) -> float:
+    """the prior's standard deviation in its own natural units.
+
+    the companion to `median_of`, and it exists for the same reason that one
+    does: ARCHITECTURE.md 4 says the induced state distribution depends on p(x)
+    **and** p(theta), and everything downstream of a build was reading the median
+    and throwing the width away.  a first-order push-forward of parameter
+    uncertainty needs exactly one number per parameter, and this is it.
+
+    for a lognormal -- the house prior, because every rate constant and time
+    constant in the inventory is positive and reported to within a factor -- the
+    sd is `median sqrt(exp(s^2) - 1) exp(s^2/2)`, which for the `weak(1, 10)`
+    priors most of the inventory carries is many times the median.  that is not a
+    bug in the arithmetic; it is what "the science does not pin this" means, and a
+    propagation that reports a huge width off a `weak()` prior is reporting the
+    truth about the prior rather than a failure of the dynamics.
+    """
+    if p.dist == "normal":
+        return float(p.scale)
+    if p.dist == "lognormal":
+        v = float(p.scale) ** 2
+        return float(math.exp(p.loc + 0.5 * v) * math.sqrt(max(math.expm1(v), 0.0)))
+    if p.dist == "halfnormal":
+        return float(p.scale) * math.sqrt(max(1.0 - 2.0 / math.pi, 0.0))
+    if p.dist == "uniform":
+        return abs(float(p.scale) - float(p.loc)) / math.sqrt(12.0)
+    if p.dist == "beta":
+        a, b = max(float(p.loc), _EPS), max(float(p.scale), _EPS)
+        return math.sqrt(a * b / ((a + b) ** 2 * (a + b + 1.0)))
+    # an unknown family gets zero rather than a guess: a fabricated width would
+    # be propagated as though it were declared, and the parameter space already
+    # reports which entries fell through.
+    return 0.0
+
+
 def sample_prior(p: Prior, shape: tuple[int, ...], rng: np.random.Generator) -> np.ndarray:
     if p.dist == "normal":
         return p.loc + p.scale * rng.standard_normal(shape)
@@ -438,5 +473,5 @@ def _site_counts(model: Any) -> dict[str, int]:
 
 __all__ = [
     "ParameterBlock", "ParameterSpace", "Transform", "assemble", "expand", "log_prior",
-    "median_of", "partitions_for", "sample_prior", "transform_for",
+    "median_of", "partitions_for", "sample_prior", "sd_of", "transform_for",
 ]

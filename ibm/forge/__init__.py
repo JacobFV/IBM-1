@@ -32,7 +32,7 @@ this package about the update and not about zarr.
 #: function -- a failure that only shows up at the call site and reads as a
 #: mystery.  call them as `from ibm.forge.fit import fit`.
 from ibm.forge.priors import (
-    ParameterBlock, ParameterSpace, assemble, expand, log_prior, median_of, sample_prior,
+    ParameterBlock, ParameterSpace, assemble, expand, log_prior, median_of, sample_prior, sd_of,
 )
 from ibm.forge.fit import FitReport, Method, Task, provenance_after
 from ibm.forge.bind import BindReport, CardBinding, StreamBinding, load_cards
@@ -40,5 +40,5 @@ from ibm.forge.bind import BindReport, CardBinding, StreamBinding, load_cards
 __all__ = [
     "BindReport", "CardBinding", "FitReport", "Method", "ParameterBlock", "ParameterSpace",
     "StreamBinding", "Task", "assemble", "expand", "load_cards", "log_prior",
-    "median_of", "provenance_after", "sample_prior",
+    "median_of", "provenance_after", "sample_prior", "sd_of",
 ]

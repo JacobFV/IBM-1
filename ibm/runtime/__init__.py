@@ -9,7 +9,8 @@ modules because the architecture draws exactly four lines here.
     step.py        dot x = sum_p f_p, solved over a window
     fuse.py        J' = J + dJ: evidence, which is not pressure
     intervene.py   externally constrained state, applied after accumulation
-    ensemble.py    the push-forward wherever f is not linear
+    propagate.py   the push-forward wherever f IS linear -- exactly, in closed form
+    ensemble.py    the push-forward wherever f is not
 
 the separation between `step` and `fuse` is the one that carries weight.
 ARCHITECTURE.md §4 ends by saying that dynamical pressure and gaussian evidence
@@ -19,6 +20,15 @@ there is no such function.  a process contributes through `State.add` and
 `step`; a measurement contributes through `fuse`; a clamp overrides both through
 `intervene`; and the ensemble exists only because the first of those stops being
 exact the moment f is nonlinear.
+
+`propagate` and `ensemble` are two halves of one sentence in §4: the induced
+distribution `P_f(p(x), p(theta))` is exact and closed-form for a linear f and
+has to be sampled otherwise.  they are separate modules because the exact half is
+the one that runs on essentially every materialization `build` selects, and it
+must not be reachable only through a code path whose entry condition is "there is
+a nonlinearity here".  that was the arrangement until `propagate` existed, and
+its consequence was that an all-LTI model returned every psd bit-identical to its
+prior, silently, for the entire life of the runtime.
 
 what the runtime deliberately does not do: it does not choose an implementation
 for a process, resolve a region, build a topology, or decide a resolution.  all
@@ -41,12 +51,16 @@ from ibm.runtime.fuse import (
 )
 from ibm.runtime.intervene import Clamp, ClampConflict, apply_clamps, baseline, from_intervention
 from ibm.runtime.ensemble import Ensemble, NonGaussianity, advise, propagate, reproject_nonlinear
+from ibm.runtime.propagate import (
+    Propagate, PropagationReport, TargetReport, band_table, propagate_linear,
+)
 
 __all__ = [
     "Block", "Carry", "CausalityViolation", "Clamp", "ClampConflict", "Coupling",
-    "Ensemble", "Evidence", "Layout", "NonGaussianity", "Solve", "State", "StateVector",
-    "StepReport", "TeacherPrecision", "View", "WindowPlan", "advance", "advise",
-    "apply_clamps", "baseline", "couplings_of", "distillation_precision", "from_intervention",
+    "Ensemble", "Evidence", "Layout", "NonGaussianity", "Propagate", "PropagationReport",
+    "Solve", "State", "StateVector", "StepReport", "TargetReport", "TeacherPrecision",
+    "View", "WindowPlan", "advance", "advise", "apply_clamps", "band_table", "baseline",
+    "couplings_of", "distillation_precision", "from_intervention",
     "fuse", "fuse_scalar", "fuse_spectral", "longest_memory", "propagate",
-    "reproject_nonlinear", "solve_window",
+    "propagate_linear", "reproject_nonlinear", "solve_window",
 ]

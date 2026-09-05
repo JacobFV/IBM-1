@@ -269,6 +269,19 @@ class Coupling:
     #: gradient, so this scales the gain and is never thresholded.
     weights: np.ndarray | None = None
     theta: dict[str, Any] = _field(default_factory=dict)
+    #: the prior sd of each entry of `theta`, in the same natural units.
+    #:
+    #: ARCHITECTURE.md 4 says the induced state distribution depends on p(x) AND
+    #: p(theta), and a coupling that carries only theta's median has thrown the
+    #: second factor away before the solver ever sees it.  this is the smallest
+    #: thing that can carry it: one number per parameter, enough for the
+    #: first-order term `sigma_p^2 |dH/dtheta_p|^2` that
+    #: `ibm.runtime.propagate` injects.  it is *not* a covariance -- correlated
+    #: parameters within one implementation are composed as independent, which
+    #: over-sharpens wherever a fit has correlated them, and a coupling that
+    #: leaves this empty declares its parameters known exactly rather than
+    #: declaring nothing.
+    theta_sd: dict[str, float] = _field(default_factory=dict)
     memory_s: float = 0.0
     note: str = ""
 
@@ -549,6 +562,7 @@ def couplings_of(model: Any, basis: TemporalBasis) -> tuple[Coupling, ...]:
             stiffness=float(_attr(c, "stiffness", "gamma", default=0.0) or 0.0),
             weights=_attr(c, "weights", "region_weights"),
             theta=dict(_attr(c, "theta", "params", default={}) or {}),
+            theta_sd=dict(_attr(c, "theta_sd", "param_sd", default={}) or {}),
             memory_s=float(_attr(c, "memory_s", "memory", default=0.0) or 0.0),
             note=str(_attr(c, "note", default="") or ""),
         ))
@@ -609,10 +623,25 @@ class Solve:
     max_newton: int = 3
     krylov_restart: int = 40
     krylov_maxiter: int = 200
-    #: ensemble width for reprojecting nonlinear contributions.  0 propagates the
-    #: mean only and leaves the uncertainty where it was, which is a *lie of
-    #: omission* and is recorded in provenance as one.
-    ensemble: int = 0
+    #: ensemble width for reprojecting nonlinear contributions.
+    #:
+    #: it used to default to 0, which propagated the mean only and left the
+    #: uncertainty exactly where it was -- a lie of omission that was recorded in
+    #: provenance and then, because every materialization `build` selects is
+    #: all-LTI, never read by anybody.  the default is now a real ensemble: 64
+    #: members is a 12.5% relative standard error on a reported sd
+    #: (`ensemble.advise` says 400 for 5%), which is enough to see a width move
+    #: and not enough to quote it to two figures.  0 restores the old silence and
+    #: still records itself as one.
+    ensemble: int = 64
+    #: push psd and relation through the LTI part of the graph, exactly.
+    #:
+    #: this is `SpectralGaussian.apply_transfer` composed with the solve's own
+    #: inverse operator, run as a second fixed point over second moments; see
+    #: `ibm.runtime.propagate`.  off leaves every psd at its prior, which is what
+    #: the runtime did before this existed and is never the right answer -- it is
+    #: kept only so the difference can be measured.
+    propagate: bool = True
     seed: int = 0
 
 
@@ -678,19 +707,34 @@ def _targets(layout: Layout, couplings: Sequence[Coupling]) -> tuple[str, ...]:
 
 
 def _self_operator(layout: Layout, couplings: Sequence[Coupling],
-                   basis: TemporalBasis) -> dict[str, np.ndarray]:
+                   basis: TemporalBasis, *, stiff: bool = True) -> dict[str, np.ndarray]:
     """A(omega) per spectral block: the diagonal linear operator, summed.
 
     this is the only thing that gets inverted anywhere in this module, and it is
     inverted exactly and elementwise.  everything that does not fit in it -- site
     mixing, cross-component coupling, every nonlinearity -- lives on the
     right-hand side, where picard and, failing that, gmres deal with it.
+
+    `stiff=False` returns only the part that `_drift` *also* computes, and the
+    distinction is not cosmetic.  a self-diagonal LTI coupling appears twice --
+    once here and once inside `_drift`, because `spectral_drift` reads the
+    component it writes -- so the picard sweep has to subtract it back out.  a
+    `Form.CONSTRAINT` coupling does not: `spectral_drift` returns only its
+    `+gamma g(x_I)` half and this function holds the `-gamma x_O` half, exactly
+    as both docstrings say.  subtracting the stiff half as well turned
+    `i omega z = -gamma z + gamma g` into `i omega z = gamma g`, which is the
+    unconstrained relation with the relaxation deleted.  nothing caught it
+    because no materialized model has ever selected a CONSTRAINT implementation
+    -- `run_eeg_forward` encodes the same limit as a self-diagonal LTI leak by
+    hand, which lands in the branch that does cancel.
     """
     out: dict[str, np.ndarray] = {
         cid: np.zeros((layout[cid].n_sites, basis.k), dtype=np.complex128)
         for cid in _targets(layout, couplings)}
     for c in couplings:
-        if c.writes not in out or not (c.self_diagonal or c.stiff):
+        if c.writes not in out:
+            continue
+        if not (c.self_diagonal or (stiff and c.stiff)):
             continue
         out[c.writes] = out[c.writes] + c.diagonal(basis, layout[c.writes])
     return out
@@ -985,6 +1029,8 @@ def solve_window(state: State, couplings: Sequence[Coupling], basis: TemporalBas
     s = state.copy()
     report = StepReport(window=window)
     A = _self_operator(s.layout, couplings, basis)
+    # only the half `_drift` double-counts comes back off the right-hand side.
+    A_in_drift = _self_operator(s.layout, couplings, basis, stiff=False)
     w = 1j * basis.omega
     inv = {cid: _guarded_inverse(w - a) for cid, a in A.items()}
     singular = {cid: np.abs(w - a) <= 1e-12 for cid, a in A.items()}
@@ -1009,7 +1055,7 @@ def solve_window(state: State, couplings: Sequence[Coupling], basis: TemporalBas
         for cid, target in d.items():
             block = s.layout[cid]
             z = _coefficients(s, cid, basis)
-            rest = target - A[cid] * z                       # the non-invertible remainder
+            rest = target - A_in_drift[cid] * z              # the non-invertible remainder
             z_new = rest * inv[cid]
             z_new = np.where(singular[cid], z, z_new)
             z = (1.0 - solve.damping) * z + solve.damping * z_new
@@ -1096,8 +1142,8 @@ def _guarded_inverse(x: np.ndarray) -> np.ndarray:
 
 def advance(state: State, couplings: Sequence[Coupling], plan: WindowPlan, *,
             solve: Solve = Solve(), clamps: Any = (),
-            evidence: Any = (), on_window: Callable[[int, State, StepReport], None] | None = None
-            ) -> tuple[State, list[StepReport]]:
+            evidence: Any = (), on_window: Callable[[int, State, StepReport], None] | None = None,
+            propagate: Any = None) -> tuple[State, list[StepReport]]:
     """run the plan, window by window, refusing an acausal one first.
 
     the refusal happens here and not inside `solve_window` because it is a
@@ -1105,13 +1151,27 @@ def advance(state: State, couplings: Sequence[Coupling], plan: WindowPlan, *,
     is legal for a cortico-cortical model becomes illegal the moment a
     thalamocortical loop with a 40 ms round trip is materialized into it, and the
     place to discover that is before the first solve rather than after the last.
+
+    the order inside a window is mean, then scalar, then width, and it is not
+    arbitrary.  the width a linear coupling induces is `|G|^2` against the
+    *solved* operator (`ibm.runtime.propagate`), so it needs the solve to have
+    happened; the width a nonlinear one induces is measured by an ensemble around
+    the solved mean (`ibm.runtime.ensemble`), so it needs the same.  a component
+    written by both gets the exact linear push-forward with the sampled nonlinear
+    width added on top, which is the right composition because the two
+    contributions come from different couplings and therefore different noise.
+    `PropagationReport`s are attached to the corresponding `StepReport.notes` so a
+    caller reading only the reports still sees what happened to the covariance.
     """
     plan.refuse_if_acausal(longest_memory(couplings))
 
-    from ibm.runtime.ensemble import reproject_nonlinear
+    from ibm.runtime.ensemble import advise, reproject_nonlinear
     from ibm.runtime.fuse import fuse
     from ibm.runtime.intervene import apply_clamps
+    from ibm.runtime.propagate import Propagate, propagate_linear
 
+    settings = propagate if isinstance(propagate, Propagate) else Propagate()
+    m_advised, why = advise(state.layout, couplings)
     reports: list[StepReport] = []
     carry: Carry | None = None
     s = state
@@ -1122,10 +1182,23 @@ def advance(state: State, couplings: Sequence[Coupling], plan: WindowPlan, *,
         # integrated afterwards, over the hop and against the window just solved.
         _advance_scalar(s, couplings, plan.hop_s)
         apply_clamps(s, clamps, plan.basis)
-        if solve.ensemble > 0:
+        if solve.propagate:
+            pr = propagate_linear(s, couplings, plan.basis, settings=settings)
+            rep.note(str(pr).replace("\n", "\n  "))
+        else:
+            for c in couplings:
+                if c.linear and c.writes in s:
+                    s.note(c.writes, f"{c.process}: linear f advanced on the mean only; the "
+                                     "exact push-forward of its width was not applied "
+                                     "(Solve.propagate=False)")
+        if solve.ensemble > 0 and m_advised:
             reproject_nonlinear(s, couplings, plan.basis, m=solve.ensemble,
                                 rng=np.random.default_rng(solve.seed + i))
-        else:
+            if i == 0:
+                rep.note(f"nonlinear width from {solve.ensemble} members "
+                         f"({1.0 / math.sqrt(solve.ensemble):.1%} relative standard error on "
+                         f"every sd below).  {why}")
+        elif m_advised:
             for c in couplings:
                 if not c.linear and c.writes in s:
                     s.note(c.writes, f"{c.process}: nonlinear f advanced on the mean only; "

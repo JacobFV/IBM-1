@@ -69,7 +69,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import ibm
-from ibm.forge.priors import median_of
+from ibm.forge.priors import median_of, sd_of
 from ibm.materialize import geometry as geo
 from ibm.materialize.build import build
 from ibm.materialize.cache import Cache, default_root, spec_hash
@@ -332,15 +332,34 @@ def theta_of(model, impl, fn=None) -> dict:
     `params` is the fallback.  reading the model first keeps a forged parameter
     winning wherever one exists.
     """
+    return _theta(model, impl, fn, median_of)
+
+
+def theta_sd_of(model, impl, fn=None) -> dict:
+    """the same parameters' prior *widths*, in the same natural units.
+
+    ARCHITECTURE.md 4 says the induced state distribution depends on p(x) and
+    p(theta), and every number this script has ever reported came from the
+    median alone -- which is the assertion that all 123 of this model's
+    parameters are known exactly.  they are not: most of them are `weak()`, and
+    what that declaration means is a lognormal spread of a factor of ten.
+    `Coupling.theta_sd` carries these so `ibm.runtime.propagate` can put the
+    first-order term on the psd instead of pretending the second factor is a
+    delta.
+    """
+    return _theta(model, impl, fn, sd_of)
+
+
+def _theta(model, impl, fn, reduce) -> dict:
     import inspect
 
     fn = fn or impl.transfer
     want = set(inspect.signature(fn).parameters)
-    out = {name: median_of(pr) for name, pr in impl.params.items() if name in want}
+    out = {name: reduce(pr) for name, pr in impl.params.items() if name in want}
     for key, prior in model.priors.items():
         proc, _, name = key.partition(".")
         if proc == impl.process and name in want:
-            out[name] = median_of(prior)
+            out[name] = reduce(prior)
     return out
 
 
@@ -373,7 +392,7 @@ def binned_topology_couplings(model, edges, transfer, process: str, impl_name: s
                               cid_in: str, cid_out: str, feature: str, param: str,
                               theta: dict, velocity_key: str, cv_key: str,
                               per_edge_scale=None, n_bins: int = DISTANCE_BINS,
-                              note: str = ""):
+                              note: str = "", theta_sd: dict | None = None):
     """one coupling per distance bin of a topology whose kernel varies per edge.
 
     `feature` is the edge column binned over and `param` is the transfer's own
@@ -401,7 +420,7 @@ def binned_topology_couplings(model, edges, transfer, process: str, impl_name: s
             process=f"{process}[{impl_name}] {feature}~{d_rep:.0f}mm",
             writes=cid_out, reads=(cid_in,), form=Form.LTI,
             transfer=_stiff(transfer, {param: d_rep}), mix=mix,
-            theta=dict(theta),
+            theta=dict(theta), theta_sd=dict(theta_sd or {}),
             # `memory_s` is "the longest time into the past this coupling
             # reads", and for this kernel that is two things added: the
             # dispersed delay out to three standard deviations, and the slow
@@ -519,7 +538,7 @@ def assemble(model, lead_data, *, nonlinear: bool = False, verbose: bool = True)
     lat_cs, lat_spread, n_lat = binned_topology_couplings(
         model, surf, lat.transfer, "lateral_cortical_propagation",
         "geodesic_exponential_lti", ACT, AMPA, "geodesic_mm", "distance_mm", th_lat,
-        "velocity_m_s", "velocity_cv",
+        "velocity_m_s", "velocity_cv", theta_sd=theta_sd_of(model, lat),
         note="horizontal layer 2/3 arbor; the distance is the geodesic, per the "
              "topology's own metric, and the delay follows from it")
     cs += list(lat_cs)
@@ -542,6 +561,7 @@ def assemble(model, lead_data, *, nonlinear: bool = False, verbose: bool = True)
             model, assoc, ass.transfer, "cortical_association_propagation",
             "distance_prior_lti", ACT, out, "distance_mm", "distance_mm", th_ass,
             "velocity_m_s", "velocity_cv", per_edge_scale=ht,
+            theta_sd=theta_sd_of(model, ass),
             note="geometric prior over UNOBSERVED connectivity: no tractogram informed "
                  "these edges on this subject")
         cs += list(acs)
@@ -557,7 +577,7 @@ def assemble(model, lead_data, *, nonlinear: bool = False, verbose: bool = True)
     mix_micro, n_micro = edge_mix(model, micro, PV, GABA_A, np.ones(micro.n_edges))
     cs.append(Coupling(process="local_inhibition[gaba_conductance_lti]", writes=GABA_A,
                        reads=(PV,), form=Form.LTI, transfer=_self(inh.transfer),
-                       mix=mix_micro, theta=th_inh,
+                       mix=mix_micro, theta=th_inh, theta_sd=theta_sd_of(model, inh),
                        memory_s=3.0 * (th_inh.get("tau_gaba_b_rise_s", 0.05)
                                        + th_inh.get("tau_gaba_b_decay_s", 0.15)),
                        note="pv -> gaba-a; the microcircuit graph on this subject is "
@@ -571,6 +591,7 @@ def assemble(model, lead_data, *, nonlinear: bool = False, verbose: bool = True)
         th_ei = theta_of(model, ei)
         cs.append(Coupling(process="local_excitation[ei_loop_lti]", writes=POT, reads=(ACT,),
                            form=Form.LTI, transfer=_self(ei.transfer), theta=th_ei,
+                           theta_sd=theta_sd_of(model, ei),
                            memory_s=3.0 * (th_ei.get("tau_membrane_s", 0.015)
                                            + th_ei.get("tau_gaba_a_s", 6e-3)
                                            + th_ei.get("tau_inh_membrane_s", 8e-3)),
@@ -581,7 +602,7 @@ def assemble(model, lead_data, *, nonlinear: bool = False, verbose: bool = True)
         th_tc = theta_of(model, tc)
         cs.append(Coupling(process="thalamocortical_coupling[alpha_resonator]", writes=POT,
                            reads=(ACT,), form=Form.LTI, transfer=_self(tc.transfer),
-                           theta=th_tc,
+                           theta=th_tc, theta_sd=theta_sd_of(model, tc),
                            # a resonator rings for q cycles; three ring times is
                            # 3 q / (pi f0), which at q=4 and 10 Hz is 380 ms.
                            memory_s=3.0 * th_tc.get("q", 4.0) / (math.pi
@@ -663,11 +684,13 @@ def assemble(model, lead_data, *, nonlinear: bool = False, verbose: bool = True)
 
     cs.append(Coupling(process="device_coupling[quasistatic_lead_field x anti-alias]",
                        writes=CP, reads=(TMC,), form=Form.LTI, transfer=instrument,
-                       mix=L, theta=th_dev, memory_s=3.0 * tau_lp,
+                       mix=L, theta=th_dev, theta_sd=theta_sd_of(model, ei_dev),
+                       memory_s=3.0 * tau_lp,
                        note="the subject's own three-layer BEM solution"))
     ac = Coupling(process="device_coupling[quasistatic_lead_field x electrode_interface]",
                   writes=CP, reads=(TMC,), form=Form.LTI, transfer=instrument_ac,
-                  mix=L, theta=th_dev, memory_s=3.0 * tau_hp,
+                  mix=L, theta=th_dev, theta_sd=theta_sd_of(model, ei_dev),
+                  memory_s=3.0 * tau_hp,
                   note="the same, with the amplifier's AC-coupling corner restored")
     lines.append(f"  device_coupling                     {TMC} -> {CP}   "
                  f"{L.shape[0]} electrodes x {L.shape[1]:,} sources, dense BEM lead field, "
