@@ -789,6 +789,7 @@ def stage_eval() -> None:
     print(header)
     print("-" * len(header))
     results = {}
+    per_channel = {}
     for name, kw in splits.items():
         segs = load_segments(meg, cochs, **kw)
         if not segs:
@@ -796,6 +797,7 @@ def stage_eval() -> None:
             continue
         r_dr = predict_r2(segs, w_driven, proj)
         r_te = predict_r2(segs, w_direct)
+        per_channel[name] = (r_dr, r_te, len(segs))
         results[name] = (float(np.mean(r_dr)), float(np.mean(r_te)),
                          float(np.max(r_dr)), float(np.max(r_te)), len(segs))
         print(f"{name:46s} {len(segs):6d} {0.0:10.5f} "
@@ -825,15 +827,17 @@ def stage_eval() -> None:
     print(f"\n{'split (downstream sensors only)':46s} {'n seg':>6s} {'unforced':>10s} "
           f"{'driven':>10s} {'teacher':>10s}")
     print("-" * len(header))
-    for name, kw in splits.items():
-        segs = load_segments(meg, cochs, **kw)
-        if not segs:
-            continue
-        r_dr = predict_r2(segs, w_driven, proj)
-        r_te = predict_r2(segs, w_direct)
-        print(f"{name:46s} {len(segs):6d} {0.0:10.5f} "
+    for name, (r_dr, r_te, n_seg) in per_channel.items():
+        print(f"{name:46s} {n_seg:6d} {0.0:10.5f} "
               f"{float(np.mean(r_dr[downstream])):10.5f} "
               f"{float(np.mean(r_te[downstream])):10.5f}")
+    print(f"\n{'split (early sensors only)':46s} {'n seg':>6s} {'unforced':>10s} "
+          f"{'driven':>10s} {'teacher':>10s}")
+    print("-" * len(header))
+    for name, (r_dr, r_te, n_seg) in per_channel.items():
+        print(f"{name:46s} {n_seg:6d} {0.0:10.5f} "
+              f"{float(np.mean(r_dr[early])):10.5f} "
+              f"{float(np.mean(r_te[early])):10.5f}")
 
     # the calibration the forcing actually earns, measured on the strictest split
     # available: participants and material both unseen.  the figure used during

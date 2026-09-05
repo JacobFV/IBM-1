@@ -118,7 +118,10 @@ slope of **+1.11 over 1-45 Hz**.
 
 `fit_neural_spectra.py` fits `neural_population` — a prior over a CORTICAL
 component — to a SCALP psd. deconvolving by that transfer moves the fitted
-aperiodic exponent from **1.480 to 0.361**. the prior it was moved off is 2.000,
+aperiodic exponent from **1.480 to 0.361** on a full refit, or to **0.391** when
+the exponent alone is refitted with the other five parameters held (three of six
+run to a boundary on the full refit, so the exponent-only number is the more
+trustworthy of the two). the prior it was moved off is 2.000,
 so **the chain's bias is 215% of the entire distance the data moved that
 parameter.** alpha_gain moves 5.74 -> 2.80.
 
@@ -165,6 +168,15 @@ system. we currently have a dynamical model with a decorative covariance.
 **consequence that must not be forgotten:** every fit so far bypassed the solver,
 going straight from measured spectra to process parameters. if propagation
 changes those numbers, the three model evaluations need redoing.
+
+### 4.1c OPEN: eeg_forward build is broken by an in-flight materialize refactor
+`scripts/run_eeg_forward.py` and `scripts/propagate_uncertainty.py` cannot run
+end to end. two faults seen: `parcels("cortical_areas","tissue")` asks for a
+`subject_t1 -> mni152` warp that no transform supplies (the fix is to look parcels
+up in the SUBJECT frame — `aparc+aseg.mgz` is already there and its Desikan labels
+are exactly what the registry declares), and `sample_coregistration()` now returns
+a `Coregistration` object where `build(warp=...)` expects a callable. all
+propagation numbers above are from a verified coarse run BEFORE this regression.
 
 ### 4.2 models do not share the substrate (BEING FIXED)
 34 of 40 named models were reported as blocked by "missing data". they are not.

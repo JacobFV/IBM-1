@@ -586,10 +586,13 @@ def laplace_sd(space: ParameterSpace, tasks: Sequence[Task], theta: np.ndarray, 
 
     the second flag is whether the hessian was positive definite.  it is not
     cosmetic: a mode on a ridge, or one the optimizer did not actually reach,
-    produces an indefinite hessian, and the diagonal fallback that follows reports
-    a *conditional* width -- narrower than the marginal, so it OVERSTATES conflict.
-    a caller that ignores the flag will publish disagreements that are an artefact
-    of an unconverged fit.
+    produces an indefinite hessian, and what happens then is a choice with a
+    direction.  the eigenvalues are floored at a small positive value rather than
+    taken in absolute value or replaced by the diagonal, so a flat direction comes
+    back with a very LARGE width -- which makes everything downstream conservative.
+    the diagonal fallback would have been the opposite: it reports the conditional
+    width, which is narrower than the marginal, and manufactures disagreements out
+    of a fit that simply had not converged.
     """
     theta = np.asarray(theta, float)
     mask = _mask_for(space, tasks)
@@ -613,16 +616,18 @@ def laplace_sd(space: ParameterSpace, tasks: Sequence[Task], theta: np.ndarray, 
             mm = neg(u - e[i] - e[j])
             h[i, j] = h[j, i] = (pp - pm - mp + mm) / (4.0 * step ** 2)
     h = 0.5 * (h + h.T)
-    ok = True
-    try:
-        np.linalg.cholesky(h + ridge * np.eye(n))
-        cov = np.linalg.inv(h + ridge * np.eye(n))
-        v = np.diag(cov)
-        if np.any(v <= 0) or not np.all(np.isfinite(v)):
-            raise np.linalg.LinAlgError
-    except np.linalg.LinAlgError:
-        ok = False
-        v = 1.0 / np.maximum(np.abs(np.diag(h)), _EPS)
+    lam, vec = np.linalg.eigh(h)
+    ok = bool(np.all(lam > 0) and np.all(np.isfinite(lam)))
+    if not ok:
+        # a flat or negatively curved direction gets a small POSITIVE eigenvalue,
+        # not its absolute value and not the diagonal.  the direction of the error
+        # matters: flooring makes the width along that direction large, which makes
+        # every downstream conflict test conservative, whereas the tempting
+        # diagonal fallback reports the CONDITIONAL width -- narrower than the
+        # marginal -- and manufactures disagreements out of an unconverged fit.
+        top = float(np.max(np.abs(lam))) if lam.size else 1.0
+        lam = np.maximum(lam, max(1e-6 * top, ridge))
+    v = ((vec ** 2) / lam).sum(1)
     sd[idx] = np.sqrt(np.maximum(v, 0.0))
     return sd, ok
 
