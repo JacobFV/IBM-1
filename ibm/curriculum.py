@@ -128,13 +128,16 @@ STAGES: tuple[Stage, ...] = (
           "the geometric prior on long-range edges",
           "none -- a declaration change",
           "severing long-range edges costs > 5% loss",
-          Status.READY,
+          Status.RUNNING,
           "the distance prior exp(-d/40mm) is applied to long-range edges too, and a "
           "uniform-random partner on a 127 mm sphere is ~85 mm away, so those edges "
           "carry 7x less geometric weight than local ones before learning starts. the "
           "learned factor cannot overcome it. real association fibres are long-range "
           "AND strong -- they need a patchy, distance-INDEPENDENT prior, which is what "
-          "topologies/association.py already argues for and the trainer does not do",
+          "topologies/association.py already argues for and the trainer does not do. "
+          "APPLIED: long-range edges now take the median LOCAL geometric weight "
+          "instead of exp(-d/40mm), so the learned factor decides which survive. "
+          "needs a rerun of the ablation to confirm severing them now costs",
           "either"),
 
     Stage("s5.ablate", "is the cortex load-bearing?", ("s4.selfsup",),
@@ -165,10 +168,14 @@ STAGES: tuple[Stage, ...] = (
           "one theta, scheduled across d",
           "paired + self-supervised together",
           "joint beats each branch on its own held-out set",
-          Status.BLOCKED,
+          Status.RUNNING,
           "grad log p(theta|D) = grad log p(theta) + sum_d grad log p(D_d|theta). "
           "ibm/forge/fit.py already takes a sequence of Tasks; only the schedule is "
-          "missing. free ONCE the ablation says the cortex matters",
+          "missing. BUILT and running: scripts/train_multi_materialization.py holds "
+          "one CorticalDynamics and accumulates gradients from an AV head and a "
+          "paired-MEG head before a single optimizer step. at 250k sites the shared "
+          "substrate is 32.0M and the two heads are 9.9M and 3.0M, so most of the "
+          "model is shared -- which is the architecture's own claim, measured",
           "both"),
 
     Stage("s8.curriculum", "expansion-aware stimulus selection", ("s6.scale",),

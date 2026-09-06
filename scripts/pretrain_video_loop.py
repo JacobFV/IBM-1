@@ -112,10 +112,30 @@ class CorticalDynamics(nn.Module):
             idx = torch.cat([idx, far], 1)
             dist = torch.cat([dist, far_d], 1)
         self.register_buffer("pos", pos)
+        self.n_far = n_far
         self.register_buffer("idx", idx)
         # the geometric prior, held: exp(-d/l), normalized by fan-in so that the
         # total drive onto a node is O(1) rather than O(k).
-        self.register_buffer("geo", torch.exp(-dist / length_scale_mm) / k)
+        geo = torch.exp(-dist / length_scale_mm) / k
+        if long_range:
+            # a PATCHY, distance-INDEPENDENT prior on the long-range edges.
+            #
+            # applying exp(-d/40mm) to them too was measured to make them inert: a
+            # uniform-random partner on a 127 mm sphere is ~85 mm away, so a
+            # long-range edge starts with 7x less weight than a local one and the
+            # learned factor never overcomes it.  the ablation is unambiguous --
+            # severing EVERY long-range edge cost +0.1% loss while the occipito-
+            # temporal weights sat at 4.4x the random baseline.  large and inert.
+            #
+            # real association fibres are long-range AND strong, and
+            # `ibm.topologies.association` already says so: the connection is
+            # patchy and specific, not a decaying function of distance.  so these
+            # edges get a flat prior and the LEARNED factor decides which survive,
+            # which is the division of labour ARCHITECTURE.md asks for.
+            n_loc = k - n_far
+            geo[:, n_loc:] = float(torch.exp(-dist[:, :n_loc].median() /
+                                             length_scale_mm)) / k
+        self.register_buffer("geo", geo)
 
         # THE PARAMETERS.  one embedding per site; the learned factor of w_ij.
         self.embed = nn.Parameter(torch.randn(n_sites, embed_dim) * 0.02)
