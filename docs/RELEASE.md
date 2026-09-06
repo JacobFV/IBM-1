@@ -104,3 +104,48 @@ tensor is 6 GB at 250k sites and was being built eight times per forward.
 **not yet applied**: batch is 4, precision is fp32, there is no `torch.compile`.
 batch 32 + bf16 + compile is conservatively 6× on this shape, and the estimates in
 CURRICULUM.md assume it is available.
+
+## 6. the audio-visual result, and the metric that hid it
+
+**AV joint ran to completion: 20,000 steps, 4 hours on one GB10, 68.9M
+parameters.** recon 1.77 → 0.185, effective rank recovered 1.42 → 2.97 over the
+run, `|v|max` held inside range.
+
+the headline number was nearly reported as a failure. `cross_modal_weight` moved
+0.1384 → 0.1393 across the whole run — flat — which reads as "the joint model
+learned no occipito-temporal association." **it was the metric.** it averaged
+similarity over every occipital × temporal PAIR, about 10⁹ of them, when only
+187,484 are edges. the signal was diluted roughly five thousand to one and the
+metric reported the random baseline.
+
+measured on the same checkpoint, restricted to actual edges:
+
+| | mean \|w\| | mean w | sd | range |
+|---|---|---|---|---|
+| **occ→tmp edges** | **0.618** | +0.450 | 0.556 | [−0.964, +0.964] |
+| random pairs | 0.139 | +0.001 | 0.174 | |
+
+**4.4× the random baseline**, net excitatory, and genuinely signed — the learned
+kernel placed both excitatory and inhibitory occipito-temporal projections. the
+association was there the whole time.
+
+that is three metric bugs this session, all the same class: **measuring over the
+wrong population.** effective rank over a batch of 4 (ceiling 3), effective rank
+over samples instead of sites, and now similarity over pairs instead of edges.
+the pattern is worth naming because each one produced a confident and wrong
+conclusion about whether the model was learning.
+
+## 7. the rank-one concern, which is not resolved
+
+the paired MEG run explains 91–97% of standardized MEG variance
+(recon 0.029–0.088) **with an effective rank of 1.0–1.2.** a rank-one cortical
+state predicting 306 channels means the learned lead field is doing the work and
+the cortex is close to a scalar. that is the decorative-cortex failure in the
+paired setting, and it is not fixed by the paired objective as I claimed earlier
+in the session on the basis of step 100 alone — rank rose to 3.2 early and
+collapsed by step 500.
+
+so the correction stands both ways: paired data does not automatically prevent
+collapse, and the AV run's rank RECOVERED where the paired run's did not. the
+ablation in §3 is still the test that settles whether either cortex is
+load-bearing.

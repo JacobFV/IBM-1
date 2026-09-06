@@ -16,3 +16,77 @@ Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pyto
   250  recon 0.16376  viab    0.000  r_eff    1.90  |v|max    66.8  xmod nan     188s
   275  recon 0.17603  viab    0.000  r_eff    1.90  |v|max    67.1  xmod nan     208s
   300  recon 0.09516  viab    0.000  r_eff    2.55  |v|max    67.5  xmod nan     227s
+  325  recon 0.07582  viab    0.000  r_eff    1.56  |v|max    67.3  xmod nan     246s
+  350  recon 0.08913  viab    0.000  r_eff    1.46  |v|max    67.9  xmod nan     266s
+  375  recon 0.26836  viab    0.000  r_eff    1.18  |v|max    67.9  xmod nan     285s
+  400  recon 0.13072  viab    0.000  r_eff    1.29  |v|max    69.1  xmod nan     305s
+  425  recon 0.08885  viab    0.000  r_eff    2.09  |v|max    69.6  xmod nan     324s
+  450  recon 0.10475  viab    0.000  r_eff    1.10  |v|max    70.0  xmod nan     344s
+  475  recon 0.15515  viab    0.000  r_eff    1.15  |v|max    70.7  xmod nan     363s
+  500  recon 0.07287  viab    0.000  r_eff    1.08  |v|max    71.9  xmod nan     382s
+  525  recon 0.33835  viab    0.000  r_eff    1.09  |v|max    73.8  xmod nan     401s
+  550  recon 0.28221  viab    0.000  r_eff    1.07  |v|max    74.4  xmod nan     420s
+  575  recon 0.06972  viab    0.000  r_eff    1.02  |v|max    75.5  xmod nan     440s
+  600  recon 0.08997  viab    0.000  r_eff    1.03  |v|max    76.1  xmod nan     460s
+  625  recon 0.12453  viab    0.000  r_eff    1.02  |v|max    80.2  xmod nan     479s
+  650  recon 0.13339  viab    0.000  r_eff    1.02  |v|max    79.7  xmod nan     498s
+  675  recon 0.12492  viab    0.000  r_eff    1.01  |v|max    81.3  xmod nan     517s
+  700  recon 0.09203  viab    0.000  r_eff    1.02  |v|max    83.1  xmod nan     537s
+  725  recon 0.05090  viab    0.000  r_eff    1.02  |v|max    86.7  xmod nan     556s
+  750  recon 0.06740  viab    0.000  r_eff    1.03  |v|max    93.1  xmod nan     575s
+  775  recon 0.11150  viab    0.000  r_eff    1.05  |v|max    92.3  xmod nan     595s
+  800  recon 0.13520  viab    0.000  r_eff    1.09  |v|max    94.9  xmod nan     614s
+  825  recon 0.10178  viab    0.001  r_eff    1.14  |v|max   101.7  xmod nan     632s
+  850  recon 0.05211  viab    0.000  r_eff    1.11  |v|max    98.3  xmod nan     650s
+  875  recon 0.05778  viab    0.001  r_eff    1.08  |v|max    96.3  xmod nan     669s
+  900  recon 0.09247  viab    0.001  r_eff    1.10  |v|max    97.0  xmod nan     687s
+  925  recon 0.07796  viab    0.002  r_eff    1.13  |v|max    98.4  xmod nan     706s
+  950  recon 0.42209  viab    0.002  r_eff    1.14  |v|max    97.4  xmod nan     723s
+  975  recon 0.21654  viab    0.001  r_eff    1.12  |v|max    94.2  xmod nan     742s
+ 1000  recon 0.07755  viab    0.000  r_eff    1.16  |v|max    91.9  xmod nan     760s
+ 1025  recon 0.03435  viab    0.001  r_eff    1.19  |v|max    94.3  xmod nan     778s
+ 1050  recon 0.04906  viab    0.000  r_eff    1.21  |v|max    92.5  xmod nan     796s
+ 1075  recon 0.08125  viab    0.005  r_eff    1.16  |v|max    97.1  xmod nan     815s
+ 1100  recon 0.05928  viab    0.000  r_eff    1.12  |v|max    93.2  xmod nan     833s
+ 1125  recon 0.03362  viab    0.000  r_eff    1.20  |v|max    92.7  xmod nan     852s
+ 1150  recon 0.04265  viab    0.002  r_eff    1.17  |v|max    95.0  xmod nan     871s
+ 1175  recon 0.04049  viab    0.001  r_eff    1.22  |v|max    93.3  xmod nan     890s
+ 1200  recon 0.03802  viab    0.001  r_eff    1.43  |v|max    93.3  xmod nan     909s
+ 1225  recon 0.03894  viab    0.000  r_eff    1.15  |v|max    93.3  xmod nan     928s
+ 1250  recon 0.03873  viab    0.000  r_eff    1.26  |v|max    92.6  xmod nan     947s
+ 1275  recon 0.04551  viab    0.000  r_eff    1.19  |v|max    91.6  xmod nan     966s
+ 1300  recon 0.11574  viab    0.001  r_eff    1.17  |v|max    93.6  xmod nan     984s
+ 1325  recon 0.09177  viab    0.000  r_eff    1.17  |v|max    92.0  xmod nan    1003s
+ 1350  recon 0.05337  viab    0.000  r_eff    1.11  |v|max    93.6  xmod nan    1022s
+ 1375  recon 0.05554  viab    0.001  r_eff    1.08  |v|max    93.4  xmod nan    1041s
+ 1400  recon 0.07276  viab    0.000  r_eff    1.12  |v|max    92.8  xmod nan    1060s
+ 1425  recon 0.02901  viab    0.001  r_eff    1.23  |v|max    93.8  xmod nan    1080s
+ 1450  recon 0.05013  viab    0.001  r_eff    1.18  |v|max    93.5  xmod nan    1099s
+ 1475  recon 0.06642  viab    0.002  r_eff    1.44  |v|max    94.8  xmod nan    1118s
+ 1500  recon 0.06945  viab    0.001  r_eff    1.14  |v|max    93.1  xmod nan    1137s
+ 1525  recon 0.06652  viab    0.000  r_eff    1.16  |v|max    92.1  xmod nan    1156s
+ 1550  recon 0.03075  viab    0.000  r_eff    1.17  |v|max    91.1  xmod nan    1175s
+ 1575  recon 0.05489  viab    0.000  r_eff    1.23  |v|max    95.0  xmod nan    1194s
+ 1600  recon 0.03739  viab    0.000  r_eff    1.22  |v|max    93.8  xmod nan    1213s
+ 1625  recon 0.03318  viab    0.000  r_eff    1.21  |v|max    92.8  xmod nan    1232s
+ 1650  recon 0.03611  viab    0.000  r_eff    1.41  |v|max    92.3  xmod nan    1251s
+ 1675  recon 0.03469  viab    0.000  r_eff    1.48  |v|max    91.5  xmod nan    1269s
+ 1700  recon 0.03504  viab    0.000  r_eff    1.35  |v|max    90.2  xmod nan    1288s
+ 1725  recon 0.04310  viab    0.000  r_eff    1.50  |v|max    93.0  xmod nan    1307s
+ 1750  recon 0.02919  viab    0.000  r_eff    1.19  |v|max    92.5  xmod nan    1326s
+ 1775  recon 0.03354  viab    0.000  r_eff    1.25  |v|max    91.2  xmod nan    1345s
+ 1800  recon 0.02811  viab    0.000  r_eff    1.40  |v|max    92.3  xmod nan    1364s
+ 1825  recon 0.09209  viab    0.000  r_eff    1.26  |v|max    92.2  xmod nan    1383s
+ 1850  recon 0.05914  viab    0.000  r_eff    1.14  |v|max    92.9  xmod nan    1402s
+ 1875  recon 0.01908  viab    0.000  r_eff    1.22  |v|max    92.6  xmod nan    1421s
+ 1900  recon 0.06209  viab    0.000  r_eff    1.35  |v|max    93.2  xmod nan    1440s
+ 1925  recon 0.06352  viab    0.000  r_eff    1.07  |v|max    91.7  xmod nan    1458s
+ 1950  recon 0.07615  viab    0.001  r_eff    1.07  |v|max    93.5  xmod nan    1477s
+ 1975  recon 0.05096  viab    0.000  r_eff    1.11  |v|max    92.3  xmod nan    1496s
+ 2000  recon 0.08763  viab    0.000  r_eff    1.14  |v|max    92.9  xmod nan    1515s
+Traceback (most recent call last):
+  File "/home/brandonin/Documents/IBM-1/scripts/pretrain_video_loop.py", line 608, in <module>
+    main()
+  File "/home/brandonin/Documents/IBM-1/scripts/pretrain_video_loop.py", line 579, in main
+    from ibm.release import CheckpointName, sidecar, upload
+ModuleNotFoundError: No module named 'ibm'
