@@ -1918,7 +1918,7 @@ def run_nonlinear(model, lead_data, basis, rng) -> str:
     print(f"  memory is now {mem * 1e3:.0f} ms, from the adaptation current's own time")
     print(f"  constant, against a {basis.duration_s * 1e3:.0f} ms window --")
     try:
-        WindowPlan(basis, overlap=0.25, n_windows=2).refuse_if_acausal(mem)
+        WindowPlan(basis, overlap=0.50, n_windows=2).refuse_if_acausal(mem)  # 0.44 is the floor at tau_a=0.30; 0.50 leaves headroom
         print("    IT PASSED, which would be a bug in the refusal.")
     except CausalityViolation as exc:
         for part in str(exc).split("; "):

@@ -66,11 +66,13 @@ STAGES: tuple[Stage, ...] = (
           "nothing -- a scheduling change",
           "none",
           "multi-window plan not refused with Form.RATE selected",
-          Status.BLOCKED,
+          Status.DONE,
           "selecting the nonlinearity gives the graph a 1.5 s memory from the "
           "adaptation current, longer than half the 2.048 s window. tau_adaptation_s "
           "= 0.30 s drops it to 0.44 and puts the SO at 0.533 Hz, in band -- one "
-          "parameter fixes both. NOT YET APPLIED to eeg_forward",
+          "parameter fixes both. APPLIED and VERIFIED: at tau_a=0.50 the plan is "
+          "refused at every overlap from 0.25 to 0.60; at 0.30 it is CLEAR from "
+          "0.44 up. eeg_forward now asks for 0.50",
           "either"),
 
     Stage("s1.regime", "nonlinear regime selection", ("s0.gain", "s0.window"),

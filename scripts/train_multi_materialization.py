@@ -100,7 +100,7 @@ def main():
              [p for n, p in pr.named_parameters() if not n.startswith("dyn.")]
     opt = torch.optim.AdamW(params, lr=a.lr, weight_decay=1e-4)
 
-    H, vctx, pctx = a.horizon, 8, 25
+    H, vctx, pctx = a.horizon, 8, 125
     log = {"config": vars(a), "shared": shared, "steps": []}
     t0 = time.time()
 

@@ -263,7 +263,7 @@ class PairedNeuralLoop(nn.Module):
     """
 
     def __init__(self, dyn: CorticalDynamics, n_bands: int = 64, n_sensors: int = 306,
-                 ctx: int = 25, hidden: int = 256, read_sites: int = 4096):
+                 ctx: int = 125, hidden: int = 256, read_sites: int = 4096):
         super().__init__()
         self.dyn, self.ctx, self.n_sensors = dyn, ctx, n_sensors
         self.port = dyn.n // 8
@@ -531,7 +531,9 @@ def main():
     for step in range(a.steps):
         H, ctx = a.horizon, 8
         if a.modality == "paired":
-            ctx = 25                      # 100 ms of cochleagram at 250 Hz
+            ctx = 125                     # 500 ms at 250 Hz: a speech-tracking
+                                          # response is spread over 0-400 ms of lag,
+                                          # so a 100 ms context cannot carry it
             lim = min(n_frames, neural.shape[0]) - H - 2
             i = np.random.randint(ctx, lim, size=a.batch)
             x = torch.from_numpy(np.stack([frames[j - ctx:j] for j in i])).float().to(dev)
@@ -582,8 +584,8 @@ def main():
                 # make the number mean something.
                 mb = 16
                 if a.modality == "paired":
-                    jj = np.random.randint(25, min(n_frames, neural.shape[0]) - H - 2, size=mb)
-                    mx = torch.from_numpy(np.stack([frames[j-25:j] for j in jj])).float().to(dev)
+                    jj = np.random.randint(125, min(n_frames, neural.shape[0]) - H - 2, size=mb)
+                    mx = torch.from_numpy(np.stack([frames[j-125:j] for j in jj])).float().to(dev)
                     _, ms = model(mx, a.dyn_steps, a.dt)
                 elif a.modality == "av":
                     lim = min(n_frames, coch.shape[0]) - H - 2

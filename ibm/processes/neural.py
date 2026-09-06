@@ -771,9 +771,18 @@ implementation(
                                    "parameter is a statement about the input statistics"),
         "r_max_hz": lognormal(100.0, 1.8, units="Hz", provenance=Provenance.LITERATURE,
                               note="refractory-limited ceiling for principal cells"),
-        "tau_adaptation_s": lognormal(0.5, 2.0, units="s", provenance=Provenance.LITERATURE,
+        # 0.30 s, not the 0.50 s midpoint of the literature range.  MEASURED
+        # (STATE.md 4.10): the adaptation current sets both the slow-oscillation
+        # frequency and this graph's longest memory, and 0.30 s is the only value
+        # that satisfies both -- it puts the SO at 0.533 Hz, inside the 0.5-1.0 Hz
+        # cortical band, and drops memory (3*tau) to 0.44 of a 2.048 s window,
+        # which clears the causality refusal that 0.50 s cannot.  below 0.20 s the
+        # oscillation disappears entirely, so the viable band is narrow and this is
+        # not a free parameter dressed as one.
+        "tau_adaptation_s": lognormal(0.30, 2.0, units="s", provenance=Provenance.LITERATURE,
                                       source="calcium- and sodium-activated potassium currents, "
-                                             "0.1-2 s"),
+                                             "0.1-2 s; the median is set by the SO band and the "
+                                             "window constraint jointly"),
         "adaptation_gain": weak(0.05, 6.0, units="mV per Hz"),
         "drive_gain": weak(1.0, 5.0, units="mV per nS"),
     },
