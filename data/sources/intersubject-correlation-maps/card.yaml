@@ -1,17 +1,16 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: intersubject-correlation-maps
 title: Naturalistic intersubject correlation maps
 provider: multiple -- Hasson lab and the naturalistic imaging literature
-citation: Hasson et al., Intersubject synchronization of cortical activity during natural vision. Science
-  2004; PROMPT.md §52.9.
+citation: "Hasson et al., Intersubject synchronization of cortical activity during natural vision. Science\
+  \ 2004; PROMPT.md \xA752.9."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -36,9 +35,9 @@ streams:
 - name: isc_as_noise_ceiling
   kind: measured
   via: null
-  systematic_bias: ISC is a principled UPPER BOUND on what any stimulus-driven encoding model can predict
-    in a region, which is exactly the floor-and-ceiling §46 demands and is usually the honest denominator
-    for an encoding-model score
+  systematic_bias: "ISC is a principled UPPER BOUND on what any stimulus-driven encoding model can predict\
+    \ in a region, which is exactly the floor-and-ceiling \xA746 demands and is usually the honest denominator\
+    \ for an encoding-model score"
   band_hz:
   - null
   - null
@@ -68,3 +67,9 @@ provenance:
   card: intersubject-correlation-maps
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

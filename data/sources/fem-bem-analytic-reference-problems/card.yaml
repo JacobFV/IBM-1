@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: fem-bem-analytic-reference-problems
 title: Finite-element and boundary-element analytic reference problems
 provider: the numerical bioelectromagnetics literature
-citation: PROMPT.md §54.1, 'finite-element/BEM analytic reference problems'.
+citation: "PROMPT.md \xA754.1, 'finite-element/BEM analytic reference problems'."
 access: reference
 licence:
   name: unresolved
@@ -20,11 +19,11 @@ streams:
 - name: closed_form_validation_problems
   kind: measured
   via: null
-  systematic_bias: THE ONLY PLACE IN THE ELECTROMAGNETIC CHAIN WHERE TRUTH IS AVAILABLE. Everything else
-    -- BEM against FEM, MNE against Brainstorm, ROAST against SimNIBS -- compares approximations. §46
-    demands a control that could fail and evidence that is not this code; an analytic solution is both.
-    The standard RDM and MAG error measures give a tolerance, so a validation fixture here has a pass
-    criterion rather than a vibe.
+  systematic_bias: "THE ONLY PLACE IN THE ELECTROMAGNETIC CHAIN WHERE TRUTH IS AVAILABLE. Everything else\
+    \ -- BEM against FEM, MNE against Brainstorm, ROAST against SimNIBS -- compares approximations. \xA7\
+    46 demands a control that could fail and evidence that is not this code; an analytic solution is both.\
+    \ The standard RDM and MAG error measures give a tolerance, so a validation fixture here has a pass\
+    \ criterion rather than a vibe."
   notes: a sphere is not a head; passing the analytic test bounds numerical error and says nothing about
     geometric or conductivity error
   band_hz:
@@ -57,3 +56,9 @@ provenance:
   card: fem-bem-analytic-reference-problems
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

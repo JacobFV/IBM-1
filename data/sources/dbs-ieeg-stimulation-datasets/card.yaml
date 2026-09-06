@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: dbs-ieeg-stimulation-datasets
 title: DBS and intracranial stimulation datasets
 provider: multiple -- DBS centres and intracranial stimulation studies, where governance permits
-citation: PROMPT.md §52.13, 'DBS/iEEG stimulation datasets where governance permits'.
+citation: "PROMPT.md \xA752.13, 'DBS/iEEG stimulation datasets where governance permits'."
 access: restricted
 licence:
   name: unresolved
@@ -22,10 +21,10 @@ streams:
 - name: direct_stimulation_with_recording
   kind: measured
   via: null
-  systematic_bias: DIRECT SUBCORTICAL STIMULATION, which no non-invasive method reaches. The population
-    is defined by the disorder that justified the implant, and the target nucleus is chosen clinically
-    -- so both the site and the tissue state are non-random. §52.13's 'where governance permits' is the
-    binding constraint and is not a formality.
+  systematic_bias: "DIRECT SUBCORTICAL STIMULATION, which no non-invasive method reaches. The population\
+    \ is defined by the disorder that justified the implant, and the target nucleus is chosen clinically\
+    \ -- so both the site and the tissue state are non-random. \xA752.13's 'where governance permits'\
+    \ is the binding constraint and is not a formality."
   notes: the delivered current density depends on contact geometry, encapsulation tissue impedance (which
     changes over months post-implant) and local conductivity; none is measured
   band_hz:
@@ -75,3 +74,9 @@ provenance:
   card: dbs-ieeg-stimulation-datasets
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

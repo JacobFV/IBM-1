@@ -1,6 +1,5 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: ds004024
-title: ds004024 — bifocal TMS-EEG ccPAS
+title: "ds004024 \u2014 bifocal TMS-EEG ccPAS"
 provider: OpenNeuro
 access: held
 licence:
@@ -46,11 +45,11 @@ streams:
     thing. Co-stimulation models are ENABLED BY DEFAULT for any prediction from this source (obj-tms-field);
     disabling them is an explicit ablation.
   notes: 'MEASURED FROM THE HELD BYTES: SamplingFrequency 20000.0 Hz and SoftwareFilters n/a in the BrainVision
-    sidecar, 64 EEG plus 2 EOG, 1 ECG and 2 EMG channels.  the band is the full nyquist and that is not generosity
-    -- an unfiltered 20 kHz recording is the only way the TMS pulse artifact and the amplifier''s recovery are
-    separable from the response at all, and a card that declared 0.1-100 Hz here would be throwing away the
-    thing that makes this deposit worth holding.  bound for 2 of the 13 participants; the other 11 have montages
-    and events and no signal.'
+    sidecar, 64 EEG plus 2 EOG, 1 ECG and 2 EMG channels.  the band is the full nyquist and that is not
+    generosity -- an unfiltered 20 kHz recording is the only way the TMS pulse artifact and the amplifier''s
+    recovery are separable from the response at all, and a card that declared 0.1-100 Hz here would be
+    throwing away the thing that makes this deposit worth holding.  bound for 2 of the 13 participants;
+    the other 11 have montages and events and no signal.'
   band_hz:
   - 0.0
   - 10000.0
@@ -69,10 +68,10 @@ streams:
   - null
   - null
   constrains: []
-  notes: 'DECLARED IN `absent`: no functional volumes are held under this root.  the entry survives from the
-    migration and is kept so the absence is visible in the stream list as well as in `absent` -- a materializer
-    reading streams alone would otherwise not see it.  it constrains nothing because there is nothing here,
-    which is a gap the card has decided to state rather than a binding nobody got to.'
+  notes: 'DECLARED IN `absent`: no functional volumes are held under this root.  the entry survives from
+    the migration and is kept so the absence is visible in the stream list as well as in `absent` -- a
+    materializer reading streams alone would otherwise not see it.  it constrains nothing because there
+    is nothing here, which is a gap the card has decided to state rather than a binding nobody got to.'
 - name: dwi
   kind: context
   via: null
@@ -80,7 +79,8 @@ streams:
   - null
   - null
   constrains: []
-  notes: 'DECLARED IN `absent`: no diffusion volumes are held under this root.  same decision as `fmri` above.'
+  notes: 'DECLARED IN `absent`: no diffusion volumes are held under this root.  same decision as `fmri`
+    above.'
 - name: t1w
   kind: context
   via: null
@@ -89,11 +89,11 @@ streams:
   - 0.001
   constrains: []
   notes: 'context: geometry.  UNLIKE the other cards here this T1 would genuinely bind to `material.conductivity`
-    and `material.mass_density` through `structural_mri`, because this source does have an electromagnetic modality
-    and a lead field is what its EEG needs.  it stays context anyway, and the reason is the blocking `device-geometry`
-    requirement: with no digitised electrode positions and no coil pose there is no head model to put the material
-    values into, so binding them would assert conductivity for a conductor nobody can address.  revisit this
-    when the support bank exists.'
+    and `material.mass_density` through `structural_mri`, because this source does have an electromagnetic
+    modality and a lead field is what its EEG needs.  it stays context anyway, and the reason is the blocking
+    `device-geometry` requirement: with no digitised electrode positions and no coil pose there is no
+    head model to put the material values into, so binding them would assert conductivity for a conductor
+    nobody can address.  revisit this when the support bank exists.'
 - name: coil_pose
   kind: context
   via: null
@@ -101,9 +101,9 @@ streams:
   - null
   - null
   constrains: []
-  notes: 'DECLARED IN `absent`: no neuronavigation record is held.  this is the single most consequential absence
-    in the card -- without the coil pose the induced field has no location, which is why `device-geometry` is
-    a BLOCKING requirement here and why `pulse_timing` above cannot be `imposed`.'
+  notes: 'DECLARED IN `absent`: no neuronavigation record is held.  this is the single most consequential
+    absence in the card -- without the coil pose the induced field has no location, which is why `device-geometry`
+    is a BLOCKING requirement here and why `pulse_timing` above cannot be `imposed`.'
 - name: pulse_timing
   kind: context
   via: null
@@ -111,12 +111,12 @@ streams:
   - 0.0
   - 10000.0
   constrains: []
-  notes: context, and this is the card's hardest call.  the trigger times mark a real intervention, so `imposed`
-    is the obvious reading -- but an imposed stream is CONDITIONED ON, and what a materialization would condition
-    on is the delivered field, which this deposit does not record.  `forbidden` already refuses delivered-field
-    parameters here.  binding these marks to `device.coil_current` would hand the model a waveform and an amplitude
-    nobody measured, dressed as a boundary condition; the times are an index into the recording and nothing
-    more until the coil pose and winding exist.
+  notes: context, and this is the card's hardest call.  the trigger times mark a real intervention, so
+    `imposed` is the obvious reading -- but an imposed stream is CONDITIONED ON, and what a materialization
+    would condition on is the delivered field, which this deposit does not record.  `forbidden` already
+    refuses delivered-field parameters here.  binding these marks to `device.coil_current` would hand
+    the model a waveform and an amplitude nobody measured, dressed as a boundary condition; the times
+    are an index into the recording and nothing more until the coil pose and winding exist.
 absent:
 - fmri
 - dwi
@@ -155,3 +155,11 @@ provenance:
   card: ds004024
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: sourced
+urls:
+- https://openneuro.org/datasets/ds004024
+release: 1.0.0
+provenance_note: ''
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

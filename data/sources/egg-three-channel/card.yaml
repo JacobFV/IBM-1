@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: egg-three-channel
 title: Three-channel surface electrogastrography dataset
-provider: unresolved -- named in PROMPT.md §52.15
-citation: Three-channel surface EGG dataset (named in PROMPT.md §52.15).
+provider: "unresolved -- named in PROMPT.md \xA752.15"
+citation: "Three-channel surface EGG dataset (named in PROMPT.md \xA752.15)."
 access: watch
 licence:
   name: unresolved
@@ -31,9 +30,10 @@ streams:
   - movement and posture change
   - electrode position relative to the stomach, which moves with meals and posture
   - adiposity, which attenuates the signal
-  systematic_bias: The gastric slow wave is a genuine, phase-stable, very slow biological oscillator with
-    a known peripheral generator. §52.15's slow physiological interactions are exactly this, and the timescale
-    is one B-WIN's native-clock architecture must accommodate rather than resample away (§33).
+  systematic_bias: "The gastric slow wave is a genuine, phase-stable, very slow biological oscillator\
+    \ with a known peripheral generator. \xA752.15's slow physiological interactions are exactly this,\
+    \ and the timescale is one B-WIN's native-clock architecture must accommodate rather than resample\
+    \ away (\xA733)."
   notes: surface EGG cannot localise gastric activity; it reports a global frequency, and the relationship
     between it and gastric motility is indirect
   band_hz:
@@ -85,3 +85,9 @@ provenance:
   card: egg-three-channel
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: named
+provenance_note: named in a specification and never sourced. aspirational -- this repo does not hold it
+  and no provider has been identified
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

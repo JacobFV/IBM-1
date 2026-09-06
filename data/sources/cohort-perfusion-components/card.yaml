@@ -1,17 +1,16 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: cohort-perfusion-components
 title: Perfusion and vascular-pathology components of the large cohorts
 provider: multiple -- see the hcp-aging, uk-biobank-imaging, adni and oasis-3 cards
-citation: 'PROMPT.md §52.11: ''HCP/UKB perfusion where available'' and ''ADNI/OASIS perfusion and vascular
-  pathology only under appropriate domain conditioning''.'
+citation: "PROMPT.md \xA752.11: 'HCP/UKB perfusion where available' and 'ADNI/OASIS perfusion and vascular\
+  \ pathology only under appropriate domain conditioning'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -35,9 +34,9 @@ streams:
 - name: vascular_pathology_markers
   kind: measured
   via: null
-  systematic_bias: §52.11 says ADNI/OASIS vascular pathology is usable ONLY UNDER APPROPRIATE DOMAIN CONDITIONING.
-    White-matter hyperintensity burden changes both the vascular and the structural model, and using such
-    a cohort unconditioned contaminates the healthy prior.
+  systematic_bias: "\xA752.11 says ADNI/OASIS vascular pathology is usable ONLY UNDER APPROPRIATE DOMAIN\
+    \ CONDITIONING. White-matter hyperintensity burden changes both the vascular and the structural model,\
+    \ and using such a cohort unconditioned contaminates the healthy prior."
   band_hz:
   - null
   - null
@@ -80,3 +79,9 @@ provenance:
   card: cohort-perfusion-components
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

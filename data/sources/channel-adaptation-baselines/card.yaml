@@ -1,10 +1,9 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: channel-adaptation-baselines
 title: 'Channel-adaptation baselines: spherical interpolation, source-space adaptation, convolutional
   adaptation and channel-token methods'
 provider: multiple -- the EEG transfer-learning literature
-citation: 'PROMPT.md §53.2, ''channel-adaptation baselines: spherical interpolation, source-space adaptation,
-  convolutional adaptation, and channel-token methods''.'
+citation: "PROMPT.md \xA753.2, 'channel-adaptation baselines: spherical interpolation, source-space adaptation,\
+  \ convolutional adaptation, and channel-token methods'."
 access: priority
 licence:
   name: unresolved
@@ -36,11 +35,11 @@ streams:
 - name: source_space_adaptation
   kind: measured
   via: null
-  systematic_bias: 'THE PHYSICALLY CORRECT ANSWER, and the one B-WIN''s architecture already implies:
-    project every montage into a common SOURCE space through its own forward model, so montage differences
-    are handled by the physics rather than by a learned adapter. §8''s warning still applies -- an inverse
-    solution is not ground truth -- but the uncertainty is then explicit instead of hidden in an adapter''s
-    weights.'
+  systematic_bias: "THE PHYSICALLY CORRECT ANSWER, and the one B-WIN's architecture already implies: project\
+    \ every montage into a common SOURCE space through its own forward model, so montage differences are\
+    \ handled by the physics rather than by a learned adapter. \xA78's warning still applies -- an inverse\
+    \ solution is not ground truth -- but the uncertainty is then explicit instead of hidden in an adapter's\
+    \ weights."
   notes: the inverse operator's uncertainty is transferred into the representation and must be carried,
     not discarded
   band_hz:
@@ -49,9 +48,9 @@ streams:
 - name: convolutional_and_token_adaptation
   kind: measured
   via: null
-  systematic_bias: 'learned adapters and channel tokens use NO GEOMETRY: they infer the montage relationship
-    from data. That is the mechanism by which a model learns channel identity as anatomy, and comparing
-    these four families head to head is the direct test §53.2 is asking for'
+  systematic_bias: "learned adapters and channel tokens use NO GEOMETRY: they infer the montage relationship\
+    \ from data. That is the mechanism by which a model learns channel identity as anatomy, and comparing\
+    \ these four families head to head is the direct test \xA753.2 is asking for"
   band_hz:
   - null
   - null
@@ -82,3 +81,9 @@ provenance:
   card: channel-adaptation-baselines
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

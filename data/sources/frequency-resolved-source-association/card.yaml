@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: frequency-resolved-source-association
 title: Frequency-resolved EEG/MEG source-space association maps
 provider: multiple -- MEG/EEG connectivity literature
-citation: PROMPT.md §52.9, 'frequency-resolved EEG/MEG source association'.
+citation: "PROMPT.md \xA752.9, 'frequency-resolved EEG/MEG source association'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -22,10 +21,10 @@ streams:
 - name: frequency_band_connectivity
   kind: measured
   via: null
-  systematic_bias: 'Computed on an INVERSE SOLUTION, so every value inherits the source estimate''s uncertainty
-    and its leakage structure. §8: an inverse solution is not ground truth, and training cortical state
-    against one as if it were a label is the category error the architecture exists to prevent -- a connectivity
-    map is that same estimate, squared.'
+  systematic_bias: "Computed on an INVERSE SOLUTION, so every value inherits the source estimate's uncertainty\
+    \ and its leakage structure. \xA78: an inverse solution is not ground truth, and training cortical\
+    \ state against one as if it were a label is the category error the architecture exists to prevent\
+    \ -- a connectivity map is that same estimate, squared."
   notes: the choice of inverse operator (MNE, dSPM, beamformer, eLORETA) changes the connectivity map
     substantially and is rarely varied
   band_hz:
@@ -37,9 +36,9 @@ streams:
 - name: lag_resolved_measures
   kind: measured
   via: null
-  systematic_bias: 'LAG is the quantity §52.9 requires and that a correlation matrix cannot carry. Phase-lag
-    and Granger-style measures do carry it, and the predecessor''s native-clock result is why: delay is
-    what separates a pathway claim from a correlation'
+  systematic_bias: "LAG is the quantity \xA752.9 requires and that a correlation matrix cannot carry.\
+    \ Phase-lag and Granger-style measures do carry it, and the predecessor's native-clock result is why:\
+    \ delay is what separates a pathway claim from a correlation"
   band_hz:
   - null
   - null
@@ -69,3 +68,9 @@ provenance:
   card: frequency-resolved-source-association
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

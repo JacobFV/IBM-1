@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: diff5t
 title: diff5T -- diffusion MRI raw data at 5 tesla
-provider: unresolved -- named in PROMPT.md §52.12
-citation: diff5T diffusion raw-data resource (named in PROMPT.md §52.12).
+provider: "unresolved -- named in PROMPT.md \xA752.12"
+citation: "diff5T diffusion raw-data resource (named in PROMPT.md \xA752.12)."
 access: watch
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -60,3 +59,9 @@ provenance:
   card: diff5t
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: named
+provenance_note: named in a specification and never sourced. aspirational -- this repo does not hold it
+  and no provider has been identified
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

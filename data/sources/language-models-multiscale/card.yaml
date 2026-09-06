@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: language-models-multiscale
 title: Language models at token, syntactic, semantic and discourse scales
 provider: multiple -- the language model family and structured linguistic annotators
-citation: PROMPT.md §53.3, 'language models at token, syntactic, semantic, and discourse scales'.
+citation: "PROMPT.md \xA753.3, 'language models at token, syntactic, semantic, and discourse scales'."
 access: priority
 licence:
   name: unresolved
@@ -21,15 +20,16 @@ streams:
 - name: multiscale_linguistic_structure
   kind: measured
   via: null
-  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
-    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
-    starts low and is earned through held-out prediction. §53.3: the required output is NOT one flat embedding.
-    A model must expose MULTISCALE, SPATIAL, TEMPORAL and EVENT-STRUCTURED state suitable for interaction
-    with SPECIFICALLY ADDRESSED cortical supports. A single pooled vector cannot address a support. §58.4
-    asks explicitly for SEPARATE phonetic, acoustic, lexical, semantic and discourse forcing interactions
-    -- not one language head. That separation is only possible if the linguistic representation itself
-    is separated by scale, which is what this card records as a requirement on any language model entering
-    the system. §29 keeps all of it at low authority until held-out prediction earns more.'
+  systematic_bias: "\xA748 and registry/README: TEACHER IS NOT OBSERVATION. This model's representations\
+    \ are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. \xA729: influence\
+    \ starts low and is earned through held-out prediction. \xA753.3: the required output is NOT one flat\
+    \ embedding. A model must expose MULTISCALE, SPATIAL, TEMPORAL and EVENT-STRUCTURED state suitable\
+    \ for interaction with SPECIFICALLY ADDRESSED cortical supports. A single pooled vector cannot address\
+    \ a support. \xA758.4 asks explicitly for SEPARATE phonetic, acoustic, lexical, semantic and discourse\
+    \ forcing interactions -- not one language head. That separation is only possible if the linguistic\
+    \ representation itself is separated by scale, which is what this card records as a requirement on\
+    \ any language model entering the system. \xA729 keeps all of it at low authority until held-out prediction\
+    \ earns more."
   notes: 'syntactic and discourse annotations are theory-laden: a dependency parse presupposes a grammatical
     framework, and a discourse relation presupposes a taxonomy'
   band_hz:
@@ -37,9 +37,9 @@ streams:
   - null
   temporal_support: tokens and clause boundaries are not time; alignment to a neural time series requires
     word onsets from a separate source and carries that alignment's error
-  spatial_support: 'FOUR DIFFERENT LEVELS OF STRUCTURE over the same text: sub-word tokens, syntactic
-    constituency or dependency, propositional semantics, and discourse-level relations spanning sentences.
-    §53.3 lists them separately because they are separate, and a single embedding conflates them'
+  spatial_support: "FOUR DIFFERENT LEVELS OF STRUCTURE over the same text: sub-word tokens, syntactic\
+    \ constituency or dependency, propositional semantics, and discourse-level relations spanning sentences.\
+    \ \xA753.3 lists them separately because they are separate, and a single embedding conflates them"
 - name: discourse_and_coreference
   kind: measured
   via: null
@@ -84,3 +84,9 @@ distillation:
       distillation precision
     correlated_fraction: null
     effective_constraints: null
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

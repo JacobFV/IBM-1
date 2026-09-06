@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: lifespan-motor-somatosensory-fmri
 title: Lifespan motor and somatosensory fMRI in 155 participants
-provider: unresolved -- named in PROMPT.md §52.9
-citation: Lifespan motor/somatosensory fMRI dataset (named in PROMPT.md §52.9).
+provider: "unresolved -- named in PROMPT.md \xA752.9"
+citation: "Lifespan motor/somatosensory fMRI dataset (named in PROMPT.md \xA752.9)."
 access: priority
 licence:
   name: unresolved
@@ -27,10 +26,10 @@ streams:
 - name: bold_motor_somatosensory
   kind: measured
   via: null
-  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
-    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
-    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
-    modelled state, not a nuisance to be regressed away'
+  observation_chain: "neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin\
+    \ concentration change -> T2*/T2' change -> gradient-echo k-space acquisition -> reconstruction ->\
+    \ voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md \xA717): the vascular stage\
+    \ is a modelled state, not a nuisance to be regressed away"
   confounds:
   - head motion and its spin-history effects
   - respiratory and cardiac aliasing into the TR
@@ -40,8 +39,8 @@ streams:
   - scanner drift
   - age-related differences in neurovascular coupling, which change the BOLD response independently of
     neural activity -- the single most important confound in any lifespan BOLD study
-  systematic_bias: '§17 is directly load-bearing here: an age difference in BOLD amplitude is ambiguous
-    between a neural and a vascular explanation, and only an explicit vascular stage can separate them.'
+  systematic_bias: "\xA717 is directly load-bearing here: an age difference in BOLD amplitude is ambiguous\
+    \ between a neural and a vascular explanation, and only an explicit vascular stage can separate them."
   notes: without a vascular calibration (breath-hold, hypercapnia or ASL) the neural and vascular contributions
     to an age effect are not identifiable
   band_hz:
@@ -113,3 +112,9 @@ provenance:
   card: lifespan-motor-somatosensory-fmri
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: named
+provenance_note: named in a specification and never sourced. aspirational -- this repo does not hold it
+  and no provider has been identified
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

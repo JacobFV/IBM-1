@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: multimodal-audiovisual-models
 title: Multimodal audiovisual model family
 provider: multiple -- audiovisual contrastive and fusion models
-citation: PROMPT.md §53.3, 'multimodal audiovisual models'.
+citation: "PROMPT.md \xA753.3, 'multimodal audiovisual models'."
 access: priority
 licence:
   name: unresolved
@@ -21,21 +20,21 @@ streams:
 - name: joint_audiovisual_representation
   kind: measured
   via: null
-  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
-    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
-    starts low and is earned through held-out prediction. §30''s finding is the specific hazard: A WEAKLY
-    WEIGHTED MODALITY DIES IN A SHARED TRUNK. Run 4 of the predecessor programme demonstrated strong gradients
-    through a shared trunk destroying a weak modality''s representation entirely WHILE THE LOSS WENT DOWN.
-    A joint audiovisual embedding is a shared trunk by construction, so the ablation §53.1 asks for is
-    not optional here -- it is the only way to find out whether both modalities are actually present in
-    the representation.'
+  systematic_bias: "\xA748 and registry/README: TEACHER IS NOT OBSERVATION. This model's representations\
+    \ are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. \xA729: influence\
+    \ starts low and is earned through held-out prediction. \xA730's finding is the specific hazard: A\
+    \ WEAKLY WEIGHTED MODALITY DIES IN A SHARED TRUNK. Run 4 of the predecessor programme demonstrated\
+    \ strong gradients through a shared trunk destroying a weak modality's representation entirely WHILE\
+    \ THE LOSS WENT DOWN. A joint audiovisual embedding is a shared trunk by construction, so the ablation\
+    \ \xA753.1 asks for is not optional here -- it is the only way to find out whether both modalities\
+    \ are actually present in the representation."
   notes: cross-modal alignment learns the correlations between modalities, which is not the same as representing
     each faithfully
   band_hz:
   - null
   - null
-  temporal_support: the two modalities' native rates are typically resampled to a common grid before fusion
-    -- which is the §33 objection in miniature and is where the temporal detail goes
+  temporal_support: "the two modalities' native rates are typically resampled to a common grid before\
+    \ fusion -- which is the \xA733 objection in miniature and is where the temporal detail goes"
   spatial_support: a SHARED representation space for video and audio, learned by aligning the two
 - name: audiovisual_correspondence
   kind: measured
@@ -87,3 +86,9 @@ distillation:
       distillation precision
     correlated_fraction: null
     effective_constraints: null
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

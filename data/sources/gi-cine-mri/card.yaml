@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: gi-cine-mri
 title: Gastrointestinal cine-MRI and pan-alimentary MRI
 provider: multiple -- University of Nottingham and collaborators
-citation: PROMPT.md §52.15, 'gastrointestinal cine-MRI and pan-alimentary MRI'.
+citation: "PROMPT.md \xA752.15, 'gastrointestinal cine-MRI and pan-alimentary MRI'."
 access: watch
 licence:
   name: unresolved
@@ -33,9 +32,9 @@ streams:
   - breathing motion, which displaces the abdominal organs by centimetres
   - segmentation of a deformable organ with variable content, where the boundary is often ambiguous
   - meal composition, which changes the contrast as well as the physiology
-  systematic_bias: The interior body as a MOVING GEOMETRIC OBJECT on a slow clock. §52.15's slow physiological
-    interactions have a spatial substrate here rather than being a scalar state, which is what makes it
-    worth carding as geometry rather than as a signal.
+  systematic_bias: "The interior body as a MOVING GEOMETRIC OBJECT on a slow clock. \xA752.15's slow physiological\
+    \ interactions have a spatial substrate here rather than being a scalar state, which is what makes\
+    \ it worth carding as geometry rather than as a signal."
   notes: manual or semi-automatic segmentation of deformable organs carries a large operator-dependent
     error
   band_hz:
@@ -94,3 +93,9 @@ provenance:
   card: gi-cine-mri
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

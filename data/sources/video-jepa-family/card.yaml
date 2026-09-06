@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: video-jepa-family
 title: Video joint-embedding predictive model family
 provider: multiple -- V-JEPA, V-JEPA 2 and successors
-citation: PROMPT.md §53.3, 'video joint-embedding predictive models'; Bardes et al., V-JEPA. 2024.
+citation: "PROMPT.md \xA753.3, 'video joint-embedding predictive models'; Bardes et al., V-JEPA. 2024."
 access: priority
 licence:
   name: unresolved
@@ -20,15 +19,15 @@ streams:
 - name: spatially_structured_video_representations
   kind: measured
   via: null
-  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
-    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
-    starts low and is earned through held-out prediction. §53.3: the required output is NOT one flat embedding.
-    A model must expose MULTISCALE, SPATIAL, TEMPORAL and EVENT-STRUCTURED state suitable for interaction
-    with SPECIFICALLY ADDRESSED cortical supports. A single pooled vector cannot address a support. The
-    JEPA objective predicts in REPRESENTATION space rather than pixel space, which avoids spending capacity
-    on unpredictable detail -- the same argument §35 makes for transition-sufficiency over reconstruction-sufficiency.
-    The spatial patch layout is what §21''s retinotopic mapping consumes, and a model that pools it away
-    is unusable for that purpose however good its benchmark numbers are.'
+  systematic_bias: "\xA748 and registry/README: TEACHER IS NOT OBSERVATION. This model's representations\
+    \ are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. \xA729: influence\
+    \ starts low and is earned through held-out prediction. \xA753.3: the required output is NOT one flat\
+    \ embedding. A model must expose MULTISCALE, SPATIAL, TEMPORAL and EVENT-STRUCTURED state suitable\
+    \ for interaction with SPECIFICALLY ADDRESSED cortical supports. A single pooled vector cannot address\
+    \ a support. The JEPA objective predicts in REPRESENTATION space rather than pixel space, which avoids\
+    \ spending capacity on unpredictable detail -- the same argument \xA735 makes for transition-sufficiency\
+    \ over reconstruction-sufficiency. The spatial patch layout is what \xA721's retinotopic mapping consumes,\
+    \ and a model that pools it away is unusable for that purpose however good its benchmark numbers are."
   band_hz:
   - null
   - null
@@ -39,9 +38,9 @@ streams:
 - name: forcing_precision
   kind: measured
   via: null
-  systematic_bias: '§53.3: the model may represent more detail than a person''s imagery. The LEARNED FORCING
-    PRECISION controls how much of that representation affects the modelled brain -- it is a parameter
-    to be estimated, not a design constant.'
+  systematic_bias: "\xA753.3: the model may represent more detail than a person's imagery. The LEARNED\
+    \ FORCING PRECISION controls how much of that representation affects the modelled brain -- it is a\
+    \ parameter to be estimated, not a design constant."
   band_hz:
   - null
   - null
@@ -87,3 +86,9 @@ distillation:
       distillation precision
     correlated_fraction: null
     effective_constraints: null
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

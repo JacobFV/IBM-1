@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: gpu-jemris
 title: GPU-JEMRIS -- GPU-accelerated JEMRIS
 provider: JEMRIS community
-citation: GPU-accelerated JEMRIS (named in PROMPT.md §52.12).
+citation: "GPU-accelerated JEMRIS (named in PROMPT.md \xA752.12)."
 access: reference
 licence:
   name: unresolved
@@ -21,10 +20,10 @@ streams:
 - name: accelerated_bloch_simulation
   kind: measured
   via: null
-  systematic_bias: 'Same physics, different arithmetic. That makes it a NUMERICAL uncertainty probe: GPU
-    and CPU implementations of the same Bloch model differ in floating-point associativity and in reduction
-    order, and §39''s `numerical` uncertainty component is exactly this. Agreement between them is a real
-    check; disagreement is a real finding.'
+  systematic_bias: "Same physics, different arithmetic. That makes it a NUMERICAL uncertainty probe: GPU\
+    \ and CPU implementations of the same Bloch model differ in floating-point associativity and in reduction\
+    \ order, and \xA739's `numerical` uncertainty component is exactly this. Agreement between them is\
+    \ a real check; disagreement is a real finding."
   band_hz:
   - null
   - null
@@ -45,3 +44,9 @@ provenance:
   card: gpu-jemris
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: sourced
+release: unresolved
+provenance_note: provider identified; a direct url is not recorded
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

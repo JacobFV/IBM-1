@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: qbold-mqbold-datasets
 title: qBOLD and mqBOLD oxygenation datasets
 provider: multiple -- quantitative BOLD and multiparametric qBOLD studies
-citation: PROMPT.md §52.11, 'qBOLD/mqBOLD data'.
+citation: "PROMPT.md \xA752.11, 'qBOLD/mqBOLD data'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -31,10 +30,10 @@ streams:
   - macroscopic field inhomogeneity, which mimics R2' and must be removed
   - haematocrit, assumed
   - the static-dephasing regime assumption, which fails for capillaries where diffusion narrowing matters
-  systematic_bias: 'THE MODEL HERE IS A VASCULAR GEOMETRY MODEL. qBOLD is the clearest case in the registry
-    where §16''s demand that vascular structure become first-class is not optional: the physiological
-    number depends explicitly on assumed vessel radius and orientation distributions, which §52.10''s
-    microvascular sources could supply as measured priors instead.'
+  systematic_bias: "THE MODEL HERE IS A VASCULAR GEOMETRY MODEL. qBOLD is the clearest case in the registry\
+    \ where \xA716's demand that vascular structure become first-class is not optional: the physiological\
+    \ number depends explicitly on assumed vessel radius and orientation distributions, which \xA752.10's\
+    \ microvascular sources could supply as measured priors instead."
   notes: randomly-oriented-cylinder assumptions are known to be wrong near the cortical surface and in
     white matter, where vessels are anisotropically oriented
   band_hz:
@@ -79,3 +78,9 @@ provenance:
   card: qbold-mqbold-datasets
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

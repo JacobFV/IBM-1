@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: clinical-ieeg-archives
 title: Clinical intracranial EEG archives
 provider: multiple hospital and consortium archives
-citation: PROMPT.md §52.5, 'clinical iEEG archives'.
+citation: "PROMPT.md \xA752.5, 'clinical iEEG archives'."
 access: restricted
 licence:
   name: unresolved
@@ -113,3 +112,9 @@ provenance:
   card: clinical-ieeg-archives
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

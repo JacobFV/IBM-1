@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: dwi-phantoms
 title: Diffusion MRI physical phantoms
 provider: multiple -- Fibrecup, HARDI phantoms, NIST diffusion phantoms and successors
-citation: PROMPT.md §52.8, 'DWI phantoms'; §52.12, 'NIST/ADNI phantoms'.
+citation: "PROMPT.md \xA752.8, 'DWI phantoms'; \xA752.12, 'NIST/ADNI phantoms'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -58,3 +57,9 @@ provenance:
   card: dwi-phantoms
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

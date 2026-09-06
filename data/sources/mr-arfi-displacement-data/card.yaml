@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: mr-arfi-displacement-data
 title: MR-ARFI and focal displacement measurements
 provider: multiple -- MR acoustic radiation force imaging studies
-citation: PROMPT.md §52.13, 'MR-ARFI and focal-displacement data'.
+citation: "PROMPT.md \xA752.13, 'MR-ARFI and focal-displacement data'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -22,10 +21,10 @@ streams:
 - name: in_situ_focal_localisation
   kind: measured
   via: null
-  systematic_bias: THE ONLY IN-VIVO MEASUREMENT OF WHERE A TRANSCRANIAL ULTRASOUND FOCUS ACTUALLY LANDS.
-    Everything else in the tFUS section computes it. §52.13's demand that delivered field be distinguished
-    from requested settings has, in MR-ARFI, its one available answer -- and the answer is a position,
-    not a pressure.
+  systematic_bias: "THE ONLY IN-VIVO MEASUREMENT OF WHERE A TRANSCRANIAL ULTRASOUND FOCUS ACTUALLY LANDS.\
+    \ Everything else in the tFUS section computes it. \xA752.13's demand that delivered field be distinguished\
+    \ from requested settings has, in MR-ARFI, its one available answer -- and the answer is a position,\
+    \ not a pressure."
   notes: displacement is proportional to radiation force, which depends on intensity AND on local tissue
     stiffness and absorption; converting displacement to pressure requires assumptions that make it a
     good localiser and a poor dosimeter
@@ -39,8 +38,8 @@ streams:
 - name: simulation_validation
   kind: measured
   via: null
-  systematic_bias: published comparisons between MR-ARFI-measured and simulated focal positions are the
-    empirical error bar on skull-aberration correction, and §46 requires exactly that kind of control
+  systematic_bias: "published comparisons between MR-ARFI-measured and simulated focal positions are the\
+    \ empirical error bar on skull-aberration correction, and \xA746 requires exactly that kind of control"
   band_hz:
   - null
   - null
@@ -72,3 +71,9 @@ provenance:
   card: mr-arfi-displacement-data
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

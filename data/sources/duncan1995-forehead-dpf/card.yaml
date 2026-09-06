@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: duncan1995-forehead-dpf
 title: Adult forehead differential pathlength factor, Duncan et al. 1995
 provider: Duncan et al., University College London
@@ -48,3 +47,9 @@ provenance:
   card: duncan1995-forehead-dpf
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: sourced
+release: unresolved -- two anchors quoted from a 1995 paper, not a versioned artifact
+provenance_note: provider identified; a direct url is not recorded
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

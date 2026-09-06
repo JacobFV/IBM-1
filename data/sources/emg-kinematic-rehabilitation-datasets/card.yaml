@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: emg-kinematic-rehabilitation-datasets
 title: EMG and kinematic rehabilitation datasets
 provider: multiple -- clinical rehabilitation and movement-disorder studies
-citation: PROMPT.md §52.14, 'EMG/kinematic rehabilitation datasets'.
+citation: "PROMPT.md \xA752.14, 'EMG/kinematic rehabilitation datasets'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -22,10 +21,10 @@ streams:
 - name: clinical_emg_kinematics
   kind: measured
   via: null
-  systematic_bias: 'Clinical populations where the motor system is DAMAGED, which makes them informative
-    about what the intact system contributes -- a lesion is an intervention nobody chose -- and simultaneously
-    makes them unusable as a healthy prior. §52.16''s rule that dose, physiology, expression, report and
-    behaviour are separate variables applies: a clinical score is a report, not a motor state.'
+  systematic_bias: "Clinical populations where the motor system is DAMAGED, which makes them informative\
+    \ about what the intact system contributes -- a lesion is an intervention nobody chose -- and simultaneously\
+    \ makes them unusable as a healthy prior. \xA752.16's rule that dose, physiology, expression, report\
+    \ and behaviour are separate variables applies: a clinical score is a report, not a motor state."
   band_hz:
   - null
   - null
@@ -60,3 +59,9 @@ provenance:
   card: emg-kinematic-rehabilitation-datasets
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

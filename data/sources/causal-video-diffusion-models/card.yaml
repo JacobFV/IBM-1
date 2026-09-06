@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: causal-video-diffusion-models
 title: Causal video diffusion and flow-matching models
 provider: multiple -- causal and autoregressive video generative models
-citation: PROMPT.md §53.3, 'causal video diffusion/flow models'.
+citation: "PROMPT.md \xA753.3, 'causal video diffusion/flow models'."
 access: priority
 licence:
   name: unresolved
@@ -20,13 +19,13 @@ streams:
 - name: causal_generative_dynamics
   kind: measured
   via: null
-  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
-    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
-    starts low and is earned through held-out prediction. §22''s visual imagination/prediction prior is
-    the reason this family matters: a model that can ROLL FORWARD a visual scene is a candidate for the
-    predictive component, not merely an encoder. Generation quality is not the criterion -- §46 -- and
-    a model that produces beautiful video with a state that does not support prediction of neural responses
-    has failed the only test that counts here.'
+  systematic_bias: "\xA748 and registry/README: TEACHER IS NOT OBSERVATION. This model's representations\
+    \ are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. \xA729: influence\
+    \ starts low and is earned through held-out prediction. \xA722's visual imagination/prediction prior\
+    \ is the reason this family matters: a model that can ROLL FORWARD a visual scene is a candidate for\
+    \ the predictive component, not merely an encoder. Generation quality is not the criterion -- \xA7\
+    46 -- and a model that produces beautiful video with a state that does not support prediction of neural\
+    \ responses has failed the only test that counts here."
   notes: the diffusion timestep axis is an inference procedure, not a dynamical variable; conflating it
     with time is a category error the architecture must not make
   band_hz:
@@ -34,16 +33,16 @@ streams:
   - null
   temporal_support: frame rate, with an additional DIFFUSION timestep axis that is not physical time and
     must not be confused with it
-  spatial_support: generative models with a spatial latent grid; the CAUSAL variants condition only on
-    past frames, which is the property §53.1's strict past-only protocol requires
+  spatial_support: "generative models with a spatial latent grid; the CAUSAL variants condition only on\
+    \ past frames, which is the property \xA753.1's strict past-only protocol requires"
 - name: forcing_precision
   kind: measured
   via: null
-  systematic_bias: '§53.3: the model may represent more detail than a person''s imagery. The LEARNED FORCING
-    PRECISION controls how much of that representation affects the modelled brain -- it is a parameter
-    to be estimated, not a design constant. A generative video model represents FAR more detail than any
-    person''s imagery; the precision parameter is what stops that detail from being imposed on the modelled
-    brain.'
+  systematic_bias: "\xA753.3: the model may represent more detail than a person's imagery. The LEARNED\
+    \ FORCING PRECISION controls how much of that representation affects the modelled brain -- it is a\
+    \ parameter to be estimated, not a design constant. A generative video model represents FAR more detail\
+    \ than any person's imagery; the precision parameter is what stops that detail from being imposed\
+    \ on the modelled brain."
   band_hz:
   - null
   - null
@@ -89,3 +88,9 @@ distillation:
       distillation precision
     correlated_fraction: null
     effective_constraints: null
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

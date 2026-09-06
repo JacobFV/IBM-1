@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: prahl-haemoglobin-extinction
 title: Haemoglobin molar extinction, Gratzer/Kollias as distributed by Prahl
 provider: Compiled by Gratzer (Med. Res. Council Labs) and Kollias (Wellman Labs); distributed by S. Prahl,
@@ -49,3 +48,9 @@ provenance:
   card: prahl-haemoglobin-extinction
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: sourced
+release: unresolved -- an evolving web tabulation with no version string
+provenance_note: provider identified; a direct url is not recorded
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

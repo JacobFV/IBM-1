@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: audio-spectrotemporal-encoders
 title: Audio spectrotemporal and speech encoder family
 provider: multiple -- HuBERT, WavLM, Whisper encoders, spectrotemporal filter banks
-citation: PROMPT.md §53.3, 'audio spectrotemporal and speech encoders'.
+citation: "PROMPT.md \xA753.3, 'audio spectrotemporal and speech encoders'."
 access: priority
 licence:
   name: unresolved
@@ -21,15 +20,15 @@ streams:
 - name: spectrotemporal_representations
   kind: measured
   via: null
-  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
-    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
-    starts low and is earned through held-out prediction. §53.3: the required output is NOT one flat embedding.
-    A model must expose MULTISCALE, SPATIAL, TEMPORAL and EVENT-STRUCTURED state suitable for interaction
-    with SPECIFICALLY ADDRESSED cortical supports. A single pooled vector cannot address a support. Authority
-    slightly higher than the language side because the frequency axis is PHYSICAL and maps onto measured
-    tonotopy (see the tonotopy-maps card, and note that the human tonotopic layout is itself contested).
-    Classical spectrotemporal modulation filter banks are a strong non-learned baseline here and §46 requires
-    them to be beaten rather than ignored.'
+  systematic_bias: "\xA748 and registry/README: TEACHER IS NOT OBSERVATION. This model's representations\
+    \ are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. \xA729: influence\
+    \ starts low and is earned through held-out prediction. \xA753.3: the required output is NOT one flat\
+    \ embedding. A model must expose MULTISCALE, SPATIAL, TEMPORAL and EVENT-STRUCTURED state suitable\
+    \ for interaction with SPECIFICALLY ADDRESSED cortical supports. A single pooled vector cannot address\
+    \ a support. Authority slightly higher than the language side because the frequency axis is PHYSICAL\
+    \ and maps onto measured tonotopy (see the tonotopy-maps card, and note that the human tonotopic layout\
+    \ is itself contested). Classical spectrotemporal modulation filter banks are a strong non-learned\
+    \ baseline here and \xA746 requires them to be beaten rather than ignored."
   notes: a learned speech encoder's representations are shaped by its recognition objective; a spectrotemporal
     filter bank's are shaped by an explicit hypothesis about auditory processing, and the two fail differently
   band_hz:
@@ -43,9 +42,9 @@ streams:
 - name: forcing_precision
   kind: measured
   via: null
-  systematic_bias: '§53.3: the model may represent more detail than a person''s imagery. The LEARNED FORCING
-    PRECISION controls how much of that representation affects the modelled brain -- it is a parameter
-    to be estimated, not a design constant.'
+  systematic_bias: "\xA753.3: the model may represent more detail than a person's imagery. The LEARNED\
+    \ FORCING PRECISION controls how much of that representation affects the modelled brain -- it is a\
+    \ parameter to be estimated, not a design constant."
   band_hz:
   - null
   - null
@@ -71,41 +70,44 @@ distillation:
   reported_accuracy:
     metric: r2
     value: 0.00103
-    on_benchmark: 'meg-masc, 4 participants and 1 story never seen by any fit, 208 MEG channels,
-      0.5-30 Hz, 903k held-out samples. Mean over channels; top decile 0.0038, best channel 0.0052.'
+    on_benchmark: meg-masc, 4 participants and 1 story never seen by any fit, 208 MEG channels, 0.5-30
+      Hz, 903k held-out samples. Mean over channels; top decile 0.0038, best channel 0.0052.
     on_streams:
     - spectrotemporal_representations
     - forcing_precision
-    source: 'MEASURED IN THIS REPOSITORY, not read off a paper: scripts/force_early_sensory.py,
-      forcing the declared transduction -> afferent_propagation -> thalamocortical_coupling ->
-      local_excitation -> em_generation chain from an audiobook waveform. IMPORTANT SCOPE: this
-      figure belongs to the NON-LEARNED member of this family only -- the gammatone cochleagram
-      declared as `gammatone_cochleagram` in ibm/processes/forcing.py, which is the classical
-      spectrotemporal filter bank this card''s own notes require to be beaten rather than ignored.
-      It licenses NOTHING about HuBERT, WavLM or Whisper, whose weights are not held on this
-      machine and which have never been run against these recordings. A learned member of this
-      family must measure its own r2 before it may write anything.'
+    source: 'MEASURED IN THIS REPOSITORY, not read off a paper: scripts/force_early_sensory.py, forcing
+      the declared transduction -> afferent_propagation -> thalamocortical_coupling -> local_excitation
+      -> em_generation chain from an audiobook waveform. IMPORTANT SCOPE: this figure belongs to the NON-LEARNED
+      member of this family only -- the gammatone cochleagram declared as `gammatone_cochleagram` in ibm/processes/forcing.py,
+      which is the classical spectrotemporal filter bank this card''s own notes require to be beaten rather
+      than ignored. It licenses NOTHING about HuBERT, WavLM or Whisper, whose weights are not held on
+      this machine and which have never been run against these recordings. A learned member of this family
+      must measure its own r2 before it may write anything.'
     verified: true
   precision_model:
     form: residual_variance
-    ood_inflation_prior: 'lognormal, median 3x, log-sd log(3). TWO separate gaps, and the prior
-      covers both. (1) The r2 above is measured on `electromagnetic.bfield`, which is several
-      processes and one unfitted lead field downstream of `transduction.hair_cell`, the component
-      the teacher actually writes; it bounds rather than states the front end''s fidelity. (2)
-      Off-distribution degradation was MEASURED rather than assumed: the same chain, frozen, on
-      libribrain -- a different person, scanner, 306-channel array and book -- gives a delta-band
-      r2 of 0.0024 against 0.0033 on meg-masc, a factor of 1.4. That is comfortably inside a 3x
-      prior, which is the first empirical evidence in this registry that the inflation prior is
-      not merely conservative bookkeeping.'
+    ood_inflation_prior: 'lognormal, median 3x, log-sd log(3). TWO separate gaps, and the prior covers
+      both. (1) The r2 above is measured on `electromagnetic.bfield`, which is several processes and one
+      unfitted lead field downstream of `transduction.hair_cell`, the component the teacher actually writes;
+      it bounds rather than states the front end''s fidelity. (2) Off-distribution degradation was MEASURED
+      rather than assumed: the same chain, frozen, on libribrain -- a different person, scanner, 306-channel
+      array and book -- gives a delta-band r2 of 0.0024 against 0.0033 on meg-masc, a factor of 1.4. That
+      is comfortably inside a 3x prior, which is the first empirical evidence in this registry that the
+      inflation prior is not merely conservative bookkeeping.'
     error_rank: 1
-    notes: 'Rank 1 is a claim and not a solver setting (ARCHITECTURE.md §4): the closed-form
-      discount is a rank-one statement and does not survive q > 1, and no correlation length
-      across the cochlea has been measured here. With rho = 0.9 and n = 28 tonotopic places the
-      teacher supplies 1.11 independent measurements'' worth of information about anything those
-      places have in common -- verified by ibm.runtime.fuse.Evidence.effective_constraints on the
-      increment this card produces. THE BAND MATTERS AND IS NOT OPTIONAL: the measured r2 is
-      0.0033 in 0.5-4 Hz, 0.0008 in 4-8 Hz and indistinguishable from zero in 8-13 and 13-30 Hz,
-      so this teacher constrains the delta band and nothing above it. Applying the overall figure
-      uniformly across a wide band would hand the beta band a precision the delta band earned.'
+    notes: "Rank 1 is a claim and not a solver setting (ARCHITECTURE.md \xA74): the closed-form discount\
+      \ is a rank-one statement and does not survive q > 1, and no correlation length across the cochlea\
+      \ has been measured here. With rho = 0.9 and n = 28 tonotopic places the teacher supplies 1.11 independent\
+      \ measurements' worth of information about anything those places have in common -- verified by ibm.runtime.fuse.Evidence.effective_constraints\
+      \ on the increment this card produces. THE BAND MATTERS AND IS NOT OPTIONAL: the measured r2 is\
+      \ 0.0033 in 0.5-4 Hz, 0.0008 in 4-8 Hz and indistinguishable from zero in 8-13 and 13-30 Hz, so\
+      \ this teacher constrains the delta band and nothing above it. Applying the overall figure uniformly\
+      \ across a wide band would hand the beta band a precision the delta band earned."
     correlated_fraction: 0.9
     effective_constraints: 1.11
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

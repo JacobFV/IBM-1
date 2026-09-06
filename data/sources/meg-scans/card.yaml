@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: meg-scans
 title: MEG-SCANS -- MEG with graded acoustic and speech conditions
 provider: unresolved
-citation: MEG-SCANS (named in PROMPT.md §51.1 item 10 and §52.4).
+citation: "MEG-SCANS (named in PROMPT.md \xA751.1 item 10 and \xA752.4)."
 access: priority
 licence:
   name: unresolved
@@ -16,8 +15,8 @@ population:
   - participant
   - session
   - run
-  notes: n unresolved. §51.1 item 10 identifies its distinctive contribution as GRADED acoustic and speech
-    conditions -- a designed complexity ladder rather than a single naturalistic condition.
+  notes: "n unresolved. \xA751.1 item 10 identifies its distinctive contribution as GRADED acoustic and\
+    \ speech conditions -- a designed complexity ladder rather than a single naturalistic condition."
 frames:
 - meg_device
 - head_fiducial
@@ -56,9 +55,9 @@ streams:
   kind: imposed
   via:
   - transduction
-  systematic_bias: 'A graded acoustic/linguistic ladder is the audio analogue of BBBD''s attention manipulation:
-    it varies interaction strength by design (§26), which is what makes a forcing-precision parameter
-    identifiable rather than merely fitted'
+  systematic_bias: "A graded acoustic/linguistic ladder is the audio analogue of BBBD's attention manipulation:\
+    \ it varies interaction strength by design (\xA726), which is what makes a forcing-precision parameter\
+    \ identifiable rather than merely fitted"
   band_hz:
   - 20.0
   - 8000.0
@@ -116,3 +115,9 @@ provenance:
   card: meg-scans
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

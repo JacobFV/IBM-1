@@ -1,17 +1,16 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: physiological-etco2-recordings
 title: Physiological recordings of end-tidal CO2, respiration, pulse and blood pressure
 provider: multiple -- concurrent physiological monitoring in imaging studies
-citation: PROMPT.md §52.11, 'physiological recordings of end-tidal CO2, respiration, pulse, and blood
-  pressure'.
+citation: "PROMPT.md \xA752.11, 'physiological recordings of end-tidal CO2, respiration, pulse, and blood\
+  \ pressure'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -25,10 +24,10 @@ streams:
 - name: end_tidal_co2
   kind: measured
   via: null
-  systematic_bias: 'Spontaneous arterial CO2 fluctuation drives a large, brain-wide BOLD signal that has
-    NOTHING to do with neural activity. §17''s argument applies at rest as well as under task: without
-    a CO2 recording that variance is either regressed away blindly or attributed to the brain, and both
-    are wrong.'
+  systematic_bias: "Spontaneous arterial CO2 fluctuation drives a large, brain-wide BOLD signal that has\
+    \ NOTHING to do with neural activity. \xA717's argument applies at rest as well as under task: without\
+    \ a CO2 recording that variance is either regressed away blindly or attributed to the brain, and both\
+    \ are wrong."
   band_hz:
   - null
   - null
@@ -38,9 +37,9 @@ streams:
 - name: respiration_and_pulse
   kind: measured
   via: null
-  systematic_bias: respiratory and cardiac cycles alias into the BOLD sampling at typical TRs; the recordings
-    make the aliased components MODELLABLE rather than a noise floor -- and §25's point applies, that
-    the same physical event participates in several interactions with different roles
+  systematic_bias: "respiratory and cardiac cycles alias into the BOLD sampling at typical TRs; the recordings\
+    \ make the aliased components MODELLABLE rather than a noise floor -- and \xA725's point applies,\
+    \ that the same physical event participates in several interactions with different roles"
   band_hz:
   - null
   - null
@@ -72,3 +71,9 @@ provenance:
   card: physiological-etco2-recordings
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

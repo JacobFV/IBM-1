@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: supercognition-longitudinal
 title: Planned Supercognition longitudinal sessions
 provider: Supercognition (this programme)
@@ -30,8 +29,8 @@ streams:
   band_hz:
   - null
   - null
-  temporal_support: unresolved -- but the design commitment is that NATIVE clocks are recorded with hardware
-    triggers and never discarded in favour of a resampled grid (§33)
+  temporal_support: "unresolved -- but the design commitment is that NATIVE clocks are recorded with hardware\
+    \ triggers and never discarded in favour of a resampled grid (\xA733)"
   spatial_support: unresolved -- to be fixed by the acquisition design
 absent:
 - everything
@@ -50,3 +49,9 @@ provenance:
   card: supercognition-longitudinal
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: authored
+provenance_note: 'synthesized by a peer programme on this machine, not obtained from an external provider.
+  credited as authorship: the artefact exists because that programme produced it'
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

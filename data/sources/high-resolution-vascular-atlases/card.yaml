@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: high-resolution-vascular-atlases
 title: High-resolution arterial and venous atlases
 provider: multiple
-citation: PROMPT.md §52.10, 'high-resolution arterial and venous atlases'.
+citation: "PROMPT.md \xA752.10, 'high-resolution arterial and venous atlases'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: bound
 population:
   n: null
@@ -21,10 +20,10 @@ streams:
 - name: arterial_territory_maps
   kind: context
   via: null
-  systematic_bias: An arterial territory atlas is a COVER over the brain organised by blood supply rather
-    than by cytoarchitecture or function -- a genuinely different partition from every atlas in §52.6,
-    and §11's multi-cover argument applies to it identically. Territory boundaries also depend on the
-    individual's Circle of Willis variant, which a population atlas cannot represent.
+  systematic_bias: "An arterial territory atlas is a COVER over the brain organised by blood supply rather\
+    \ than by cytoarchitecture or function -- a genuinely different partition from every atlas in \xA7\
+    52.6, and \xA711's multi-cover argument applies to it identically. Territory boundaries also depend\
+    \ on the individual's Circle of Willis variant, which a population atlas cannot represent."
   band_hz:
   - 0.0
   - 0.001
@@ -32,12 +31,12 @@ streams:
   spatial_support: population probability maps of arterial and venous anatomy, including ARTERIAL TERRITORY
     atlases that label which major artery supplies each voxel
   constrains: []
-  notes: 'context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over
-    a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value any ibm component
-    takes at them.  no registered component is a region label.  it reaches a materialization as a support
-    index and as a `prior`, never as a likelihood.  organised by BLOOD SUPPLY rather than by cytoarchitecture
-    or function, which makes it a genuinely different partition from every cortical atlas here -- and
-    still a partition.'
+  notes: "context, and it is a decision.  a parcellation, an annotation or a label set is a COVER over\
+    \ a carrier (ARCHITECTURE.md \xA72): it says which points a name collects, not what value any ibm\
+    \ component takes at them.  no registered component is a region label.  it reaches a materialization\
+    \ as a support index and as a `prior`, never as a likelihood.  organised by BLOOD SUPPLY rather than\
+    \ by cytoarchitecture or function, which makes it a genuinely different partition from every cortical\
+    \ atlas here -- and still a partition."
 - name: population_vessel_probability
   kind: context
   via: null
@@ -79,3 +78,9 @@ provenance:
   card: high-resolution-vascular-atlases
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

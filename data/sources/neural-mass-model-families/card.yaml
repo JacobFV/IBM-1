@@ -1,10 +1,9 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: neural-mass-model-families
 title: 'Neural mass and population model families: Wilson-Cowan, Jansen-Rit, Wong-Wang, Hopf, AdEx/aLN,
   conductance-based, neural-field, point-process and spiking'
 provider: the computational neuroscience literature
-citation: Wilson and Cowan 1972; Jansen and Rit 1995; Wong and Wang 2006; Brunel and Wang 2003; Amari
-  1977; and successors. PROMPT.md §53.4.
+citation: "Wilson and Cowan 1972; Jansen and Rit 1995; Wong and Wang 2006; Brunel and Wang 2003; Amari\
+  \ 1977; and successors. PROMPT.md \xA753.4."
 access: priority
 licence:
   name: unresolved
@@ -22,11 +21,11 @@ streams:
 - name: competing_model_classes
   kind: measured
   via: null
-  systematic_bias: '§37: INTERACTION STRENGTHS AND MODEL CLASSES REMAIN UNCERTAIN, and this card is that
-    uncertainty made concrete. Nine families that all claim to describe local cortical dynamics and disagree
-    about what the state variable is. §53.4 says to use them as MODEL-CLASS CONTROLS, and §46 requires
-    an equal-capacity alternative that could have won -- which means implementing more than one properly
-    rather than picking a favourite and calling the rest baselines.'
+  systematic_bias: "\xA737: INTERACTION STRENGTHS AND MODEL CLASSES REMAIN UNCERTAIN, and this card is\
+    \ that uncertainty made concrete. Nine families that all claim to describe local cortical dynamics\
+    \ and disagree about what the state variable is. \xA753.4 says to use them as MODEL-CLASS CONTROLS,\
+    \ and \xA746 requires an equal-capacity alternative that could have won -- which means implementing\
+    \ more than one properly rather than picking a favourite and calling the rest baselines."
   notes: each family was derived under assumptions -- mean-field homogeneity, slow synapses, spatial continuity
     -- that hold in different regimes, and the regimes are not everywhere
   band_hz:
@@ -40,10 +39,10 @@ streams:
 - name: neural_field_spatial_formulation
   kind: measured
   via: null
-  systematic_bias: NEURAL FIELD models are the family whose state is a CONTINUOUS FIELD OVER CORTEX rather
-    than a value per node, which is structurally what §5's no-canonical-parcellation and §9's mesoscopic
-    state are asking for. They are the closest existing formalism to B-WIN's local dynamics and are correspondingly
-    under-used because they do not fit a connectome matrix
+  systematic_bias: "NEURAL FIELD models are the family whose state is a CONTINUOUS FIELD OVER CORTEX rather\
+    \ than a value per node, which is structurally what \xA75's no-canonical-parcellation and \xA79's\
+    \ mesoscopic state are asking for. They are the closest existing formalism to B-WIN's local dynamics\
+    \ and are correspondingly under-used because they do not fit a connectome matrix"
   band_hz:
   - null
   - null
@@ -78,3 +77,9 @@ provenance:
   card: neural-mass-model-families
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

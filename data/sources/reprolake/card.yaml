@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: reprolake
 title: ReproLake or an equivalent immutable object and data-lineage layer
-provider: unresolved -- named in PROMPT.md §55
-citation: PROMPT.md §55, 'ReproLake or an equivalent immutable object/data lineage layer'.
+provider: "unresolved -- named in PROMPT.md \xA755"
+citation: "PROMPT.md \xA755, 'ReproLake or an equivalent immutable object/data lineage layer'."
 access: watch
 licence:
   name: unresolved
@@ -20,11 +19,11 @@ streams:
 - name: immutable_lineage_layer
   kind: measured
   via: null
-  systematic_bias: 'registry/README rule 4 is the requirement this would serve: AN ARTIFACT''S LICENCE
-    IS COMPUTED FROM THE SOURCES THAT ACTUALLY CONTRIBUTED TO IT -- meaning ENTERED A CODE PATH THAT PRODUCED
-    THOSE BYTES, NOT MERELY APPEARED IN A CONFIG. That distinction is only computable if the lineage graph
-    is recorded at the object level, which is what an immutable lineage layer is for. §55 explicitly says
-    ''OR AN EQUIVALENT'', so the requirement is the capability, not the product.'
+  systematic_bias: "registry/README rule 4 is the requirement this would serve: AN ARTIFACT'S LICENCE\
+    \ IS COMPUTED FROM THE SOURCES THAT ACTUALLY CONTRIBUTED TO IT -- meaning ENTERED A CODE PATH THAT\
+    \ PRODUCED THOSE BYTES, NOT MERELY APPEARED IN A CONFIG. That distinction is only computable if the\
+    \ lineage graph is recorded at the object level, which is what an immutable lineage layer is for.\
+    \ \xA755 explicitly says 'OR AN EQUIVALENT', so the requirement is the capability, not the product."
   notes: lineage recorded at object level still cannot distinguish a source that contributed meaningfully
     from one that contributed a single unused array
   band_hz:
@@ -50,3 +49,9 @@ provenance:
   card: reprolake
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: named
+provenance_note: named in a specification and never sourced. aspirational -- this repo does not hold it
+  and no provider has been identified
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

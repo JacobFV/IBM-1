@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: scanner-field-maps-and-gradient-phantoms
 title: Scanner field maps and gradient-nonlinearity phantoms
 provider: multiple -- per-scanner B0/B1 mapping and geometric distortion phantoms
-citation: PROMPT.md §52.12, 'scanner field maps and gradient-nonlinearity phantoms'.
+citation: "PROMPT.md \xA752.12, 'scanner field maps and gradient-nonlinearity phantoms'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -22,10 +21,10 @@ streams:
 - name: b0_field_maps
   kind: measured
   via: null
-  systematic_bias: B0 off-resonance produces GEOMETRIC DISPLACEMENT in EPI, several millimetres near air
-    cavities, which means functional and structural images of the same brain do not align even when perfectly
-    registered. That is a coordinate-frame-graph edge with a real, measurable, spatially varying residual
-    (§56.6's field maps).
+  systematic_bias: "B0 off-resonance produces GEOMETRIC DISPLACEMENT in EPI, several millimetres near\
+    \ air cavities, which means functional and structural images of the same brain do not align even when\
+    \ perfectly registered. That is a coordinate-frame-graph edge with a real, measurable, spatially varying\
+    \ residual (\xA756.6's field maps)."
   band_hz:
   - null
   - null
@@ -66,3 +65,9 @@ provenance:
   card: scanner-field-maps-and-gradient-phantoms
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

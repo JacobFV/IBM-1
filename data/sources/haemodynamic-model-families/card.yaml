@@ -1,18 +1,17 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: haemodynamic-model-families
 title: Published haemodynamic and oxygen-transport model families
 provider: the literature -- Buxton balloon, Davis calibration, Windkessel, oxygen-transport and vascular-control
   models
-citation: Buxton et al., Magnetic Resonance in Medicine 1998; Davis et al., PNAS 1998; Friston et al.,
-  NeuroImage 2000; and successors. PROMPT.md §52.11.
+citation: "Buxton et al., Magnetic Resonance in Medicine 1998; Davis et al., PNAS 1998; Friston et al.,\
+  \ NeuroImage 2000; and successors. PROMPT.md \xA752.11."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -22,10 +21,10 @@ streams:
 - name: competing_model_families
   kind: measured
   via: null
-  systematic_bias: '§52.11 says it outright: AS COMPETING IMPLEMENTATIONS, NOT ONE TRUTH. §43 adds that
-    the predecessor''s balloon state becomes an OPTIONAL BASELINE rather than the foundation. Registering
-    the family rather than picking a member is the whole point, and §37 makes model-class uncertainty
-    a first-class quantity rather than a modelling preference.'
+  systematic_bias: "\xA752.11 says it outright: AS COMPETING IMPLEMENTATIONS, NOT ONE TRUTH. \xA743 adds\
+    \ that the predecessor's balloon state becomes an OPTIONAL BASELINE rather than the foundation. Registering\
+    \ the family rather than picking a member is the whole point, and \xA737 makes model-class uncertainty\
+    \ a first-class quantity rather than a modelling preference."
   notes: the balloon model's parameters were estimated in specific cortical regions under specific stimuli;
     its transfer function is not universal and its failure regime -- sustained stimulation, unusual vascular
     states -- is documented
@@ -47,9 +46,9 @@ streams:
 - name: balloon_model_as_baseline
   kind: measured
   via: null
-  systematic_bias: §46 requires an equal-capacity alternative that could have won; the balloon model is
-    that alternative for the vascular stage and it must be implemented well enough to be a fair comparison
-    rather than a strawman
+  systematic_bias: "\xA746 requires an equal-capacity alternative that could have won; the balloon model\
+    \ is that alternative for the vascular stage and it must be implemented well enough to be a fair comparison\
+    \ rather than a strawman"
   band_hz:
   - null
   - null
@@ -83,3 +82,9 @@ provenance:
   card: haemodynamic-model-families
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

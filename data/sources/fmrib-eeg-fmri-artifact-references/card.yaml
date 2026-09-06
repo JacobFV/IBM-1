@@ -1,9 +1,8 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: fmrib-eeg-fmri-artifact-references
 title: FMRIB and TESA EEG-fMRI and TMS-EEG artifact reference methods
 provider: FMRIB Oxford and the TESA project
-citation: Niazy et al., Removal of FMRI environment artifacts from EEG data using optimal basis sets.
-  NeuroImage 2005; Rogasch et al., TESA. Brain Stimulation 2017. PROMPT.md §54.1.
+citation: "Niazy et al., Removal of FMRI environment artifacts from EEG data using optimal basis sets.\
+  \ NeuroImage 2005; Rogasch et al., TESA. Brain Stimulation 2017. PROMPT.md \xA754.1."
 access: reference
 licence:
   name: unresolved
@@ -40,9 +39,9 @@ streams:
 - name: ballistocardiogram_removal
   kind: measured
   via: null
-  systematic_bias: the BCG arises from electrode motion driven by arterial pulsation in the static field
-    -- so it is a VASCULAR signal contaminating a neural one, and §16's vascular state is literally present
-    in the EEG. Removing it discards a real physiological measurement
+  systematic_bias: "the BCG arises from electrode motion driven by arterial pulsation in the static field\
+    \ -- so it is a VASCULAR signal contaminating a neural one, and \xA716's vascular state is literally\
+    \ present in the EEG. Removing it discards a real physiological measurement"
   band_hz:
   - null
   - null
@@ -78,3 +77,9 @@ provenance:
   card: fmrib-eeg-fmri-artifact-references
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: sourced
+release: unresolved
+provenance_note: provider identified; a direct url is not recorded
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

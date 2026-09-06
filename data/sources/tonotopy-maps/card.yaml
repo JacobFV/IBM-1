@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: tonotopy-maps
 title: Human auditory cortical tonotopy maps
 provider: multiple -- 3T and 7T tonotopic mapping studies
-citation: PROMPT.md §52.9, 'tonotopy'.
+citation: "PROMPT.md \xA752.9, 'tonotopy'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -38,8 +37,8 @@ streams:
 - name: frequency_axis_as_support_coordinate
   kind: measured
   via: null
-  systematic_bias: a continuous frequency coordinate over cortex is the auditory counterpart of retinotopic
-    coordinates and is what §56.1's tonotopic overlay needs
+  systematic_bias: "a continuous frequency coordinate over cortex is the auditory counterpart of retinotopic\
+    \ coordinates and is what \xA756.1's tonotopic overlay needs"
   band_hz:
   - null
   - null
@@ -63,3 +62,9 @@ provenance:
   card: tonotopy-maps
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: body-surface-gastric-mapping
 title: Body surface gastric mapping normative studies
 provider: University of Auckland and collaborators
@@ -99,3 +98,9 @@ provenance:
   card: body-surface-gastric-mapping
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: sourced
+release: unresolved
+provenance_note: provider identified; a direct url is not recorded
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

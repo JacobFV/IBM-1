@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: skull-acoustics-ct-mri-datasets
 title: CT and MRI skull datasets for transcranial acoustics
 provider: multiple -- skull imaging collections used for acoustic property estimation
-citation: PROMPT.md §52.13, 'CT/MRI skull-acoustics datasets'.
+citation: "PROMPT.md \xA752.13, 'CT/MRI skull-acoustics datasets'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -29,10 +28,10 @@ streams:
   - ZTE/UTE MRI is an indirect proxy for bone density and the mapping is empirical
   - partial volume at the inner and outer skull tables, which sets thickness estimates
   - diploe porosity varies with age and sex and is below typical imaging resolution
-  systematic_bias: 'The skull is the SHARED BOTTLENECK for three separate physics problems in this registry:
-    acoustic aberration (§52.13), electrical conduction for EEG and tES (§14, §54.1), and magnetic field
-    distortion. One measurement, three forward models -- which is an argument for modelling the skull
-    once, properly, rather than three times approximately.'
+  systematic_bias: "The skull is the SHARED BOTTLENECK for three separate physics problems in this registry:\
+    \ acoustic aberration (\xA752.13), electrical conduction for EEG and tES (\xA714, \xA754.1), and magnetic\
+    \ field distortion. One measurement, three forward models -- which is an argument for modelling the\
+    \ skull once, properly, rather than three times approximately."
   notes: the imaging-to-acoustic-property mapping is empirical and its scatter propagates directly into
     focal position and pressure
   band_hz:
@@ -77,3 +76,9 @@ provenance:
   card: skull-acoustics-ct-mri-datasets
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

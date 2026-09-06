@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: multiscale-visual-encoders
 title: Multiscale visual encoder family
 provider: multiple -- hierarchical vision transformers, feature-pyramid and multi-resolution encoders
-citation: PROMPT.md §53.3, 'multiscale visual encoders'.
+citation: "PROMPT.md \xA753.3, 'multiscale visual encoders'."
 access: priority
 licence:
   name: unresolved
@@ -20,16 +19,16 @@ streams:
 - name: multiscale_feature_maps
   kind: measured
   via: null
-  systematic_bias: '§48 and registry/README: TEACHER IS NOT OBSERVATION. This model''s representations
-    are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. §29: influence
-    starts low and is earned through held-out prediction. §53.3: the required output is NOT one flat embedding.
-    A model must expose MULTISCALE, SPATIAL, TEMPORAL and EVENT-STRUCTURED state suitable for interaction
-    with SPECIFICALLY ADDRESSED cortical supports. A single pooled vector cannot address a support. The
-    scale axis is the point. §21 wants a retinotopic mapping into cortical supports, and different cortical
-    areas have systematically different receptive-field sizes at the same eccentricity -- so a single-scale
-    feature map cannot address V1 and MT appropriately with the same representation. The analogy between
-    network scale and cortical receptive-field size is suggestive and unproven, and the pRF measurements
-    in hcp-7t-retinotopy are what would test it.'
+  systematic_bias: "\xA748 and registry/README: TEACHER IS NOT OBSERVATION. This model's representations\
+    \ are a discrepancy-aware forcing CANDIDATE, never automatically a subject likelihood. \xA729: influence\
+    \ starts low and is earned through held-out prediction. \xA753.3: the required output is NOT one flat\
+    \ embedding. A model must expose MULTISCALE, SPATIAL, TEMPORAL and EVENT-STRUCTURED state suitable\
+    \ for interaction with SPECIFICALLY ADDRESSED cortical supports. A single pooled vector cannot address\
+    \ a support. The scale axis is the point. \xA721 wants a retinotopic mapping into cortical supports,\
+    \ and different cortical areas have systematically different receptive-field sizes at the same eccentricity\
+    \ -- so a single-scale feature map cannot address V1 and MT appropriately with the same representation.\
+    \ The analogy between network scale and cortical receptive-field size is suggestive and unproven,\
+    \ and the pRF measurements in hcp-7t-retinotopy are what would test it."
   notes: network receptive fields grow by architecture; cortical ones grow by eccentricity and by area,
     and the two need not correspond
   band_hz:
@@ -80,3 +79,9 @@ distillation:
       distillation precision
     correlated_fraction: null
     effective_constraints: null
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

@@ -1,17 +1,16 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: diffusion-thalamic-connectivity-atlases
 title: Diffusion-derived thalamic connectivity atlases
 provider: multiple -- Behrens/FSL, Oxford thalamic connectivity atlas and successors
-citation: Behrens et al., Non-invasive mapping of connections between human thalamus and cortex using
-  diffusion imaging. Nature Neuroscience 2003; PROMPT.md §52.7.
+citation: "Behrens et al., Non-invasive mapping of connections between human thalamus and cortex using\
+  \ diffusion imaging. Nature Neuroscience 2003; PROMPT.md \xA752.7."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: bound
 population:
   n: null
@@ -22,16 +21,16 @@ streams:
 - name: connectivity_based_thalamic_labels
   kind: context
   via: null
-  systematic_bias: 'A CONNECTIVITY-BASED parcellation inherits every limitation of the tractography that
-    produced it: seeding, algorithm, thresholds and the crossing-fibre problem in the internal capsule,
-    which is exactly where thalamocortical fibres run. §52.8 requires the parent DWI, software version,
-    seeding, response functions, thresholds and bundle definitions to travel with any such product, and
-    they usually do not.'
-  notes: 'context: a labelling of thalamic voxels by which cortical territory they most connect to under probabilistic
-    tractography.  the label is a TRACTOGRAPHY OUTPUT and not an anatomical boundary, and the winner-take-all
-    assignment discards the fact that most thalamic voxels connect to several territories -- so it is a cover
-    over the thalamus with a known and directional error, never a measurement.  the crossing-fibre problem in
-    the internal capsule is worst exactly where thalamocortical fibres run.'
+  systematic_bias: "A CONNECTIVITY-BASED parcellation inherits every limitation of the tractography that\
+    \ produced it: seeding, algorithm, thresholds and the crossing-fibre problem in the internal capsule,\
+    \ which is exactly where thalamocortical fibres run. \xA752.8 requires the parent DWI, software version,\
+    \ seeding, response functions, thresholds and bundle definitions to travel with any such product,\
+    \ and they usually do not."
+  notes: 'context: a labelling of thalamic voxels by which cortical territory they most connect to under
+    probabilistic tractography.  the label is a TRACTOGRAPHY OUTPUT and not an anatomical boundary, and
+    the winner-take-all assignment discards the fact that most thalamic voxels connect to several territories
+    -- so it is a cover over the thalamus with a known and directional error, never a measurement.  the
+    crossing-fibre problem in the internal capsule is worst exactly where thalamocortical fibres run.'
   band_hz:
   - 0.0
   - 0.001
@@ -46,9 +45,9 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: 'context, and `use: prior` is the whole point: it shapes p(theta) over the tractometric edges that
-    `thalamocortical_coupling` runs on, and contributes no likelihood about any component.  a stream that shapes
-    a prior and asserts no value is exactly the case `kind: context` exists for.'
+  notes: 'context, and `use: prior` is the whole point: it shapes p(theta) over the tractometric edges
+    that `thalamocortical_coupling` runs on, and contributes no likelihood about any component.  a stream
+    that shapes a prior and asserts no value is exactly the case `kind: context` exists for.'
 absent:
 - tractography_provenance
 - histological_validation
@@ -75,3 +74,9 @@ provenance:
   card: diffusion-thalamic-connectivity-atlases
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

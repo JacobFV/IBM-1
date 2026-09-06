@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: manufacturer-coil-geometry
 title: Manufacturer TMS coil and waveform specifications
 provider: multiple -- MagVenture, Magstim, Deymed, Nexstim and others
-citation: PROMPT.md §52.13, 'manufacturer waveform/coil geometry'.
+citation: "PROMPT.md \xA752.13, 'manufacturer waveform/coil geometry'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -20,10 +19,10 @@ streams:
 - name: nominal_coil_geometry
   kind: measured
   via: null
-  systematic_bias: 'NOMINAL specifications from a datasheet, frequently incomplete: exact winding paths
-    and casing offsets are commonly proprietary, so a published ''figure-of-eight, 70 mm'' underdetermines
-    the field. §56.4''s device geometry is a construction from whatever is specified plus whatever is
-    measured, and its uncertainty is the gap between them.'
+  systematic_bias: "NOMINAL specifications from a datasheet, frequently incomplete: exact winding paths\
+    \ and casing offsets are commonly proprietary, so a published 'figure-of-eight, 70 mm' underdetermines\
+    \ the field. \xA756.4's device geometry is a construction from whatever is specified plus whatever\
+    \ is measured, and its uncertainty is the gap between them."
   notes: an approximated winding reproduces the far field better than the near field, and the near field
     is where the cortex is
   band_hz:
@@ -60,3 +59,9 @@ provenance:
   card: manufacturer-coil-geometry
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

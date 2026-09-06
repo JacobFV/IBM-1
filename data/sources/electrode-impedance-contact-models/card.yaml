@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: electrode-impedance-contact-models
 title: Electrode impedance and contact models
 provider: multiple -- electrode-skin interface characterisation literature
-citation: PROMPT.md §52.13, 'electrode impedance and contact models'.
+citation: "PROMPT.md \xA752.13, 'electrode impedance and contact models'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -21,10 +20,10 @@ streams:
 - name: interface_impedance_models
   kind: measured
   via: null
-  systematic_bias: The electrode-skin interface is a FREQUENCY-DEPENDENT, DRIFTING, NONLINEAR element
-    sitting between the head and every EEG or tES number. §56.4 asks for EEG electrode contact geometry
-    AND IMPEDANCE SUPPORT as a constructed object, and this is the physics that object encodes -- for
-    both directions, since the same interface carries recording and stimulation.
+  systematic_bias: "The electrode-skin interface is a FREQUENCY-DEPENDENT, DRIFTING, NONLINEAR element\
+    \ sitting between the head and every EEG or tES number. \xA756.4 asks for EEG electrode contact geometry\
+    \ AND IMPEDANCE SUPPORT as a constructed object, and this is the physics that object encodes -- for\
+    \ both directions, since the same interface carries recording and stimulation."
   notes: impedance drifts over a session as gel dries and skin hydrates; a single start-of-session impedance
     check does not characterise it
   band_hz:
@@ -59,3 +58,9 @@ provenance:
   card: electrode-impedance-contact-models
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

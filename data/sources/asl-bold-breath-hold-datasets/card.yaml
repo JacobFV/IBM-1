@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: asl-bold-breath-hold-datasets
 title: Simultaneous ASL and BOLD breath-hold datasets
 provider: multiple -- dual-echo ASL/BOLD calibration studies
-citation: PROMPT.md §52.11, 'simultaneous ASL/BOLD breath-hold data'.
+citation: "PROMPT.md \xA752.11, 'simultaneous ASL/BOLD breath-hold data'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -38,12 +37,12 @@ streams:
 - name: perfusion_bold_coupling
   kind: measured
   via: null
-  observation_chain: 'arterial blood water magnetically labelled proximally -> transit through the arterial
-    tree -> exchange into tissue -> label decay at T1 of blood -> control-label subtraction -> perfusion-weighted
-    signal -> kinetic-model CBF; simultaneously with neural activity -> neurovascular coupling -> coupled
-    CBF/CBV/CMRO2 change -> deoxyhaemoglobin concentration change -> T2*/T2'' change -> gradient-echo
-    k-space acquisition -> reconstruction -> voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY
-    (PROMPT.md §17): the vascular stage is a modelled state, not a nuisance to be regressed away'
+  observation_chain: "arterial blood water magnetically labelled proximally -> transit through the arterial\
+    \ tree -> exchange into tissue -> label decay at T1 of blood -> control-label subtraction -> perfusion-weighted\
+    \ signal -> kinetic-model CBF; simultaneously with neural activity -> neurovascular coupling -> coupled\
+    \ CBF/CBV/CMRO2 change -> deoxyhaemoglobin concentration change -> T2*/T2' change -> gradient-echo\
+    \ k-space acquisition -> reconstruction -> voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY\
+    \ (PROMPT.md \xA717): the vascular stage is a modelled state, not a nuisance to be regressed away"
   confounds:
   - ASL has much lower SNR than BOLD, so the perfusion estimate is the noisy half
   - arterial transit time
@@ -79,3 +78,9 @@ provenance:
   card: asl-bold-breath-hold-datasets
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

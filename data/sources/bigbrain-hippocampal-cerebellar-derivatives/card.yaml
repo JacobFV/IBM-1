@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: bigbrain-hippocampal-cerebellar-derivatives
 title: BigBrain hippocampal and cerebellar derivative products
 provider: MNI / Julich / EBRAINS and community derivatives
-citation: Derived products of Amunts et al. 2013 (see the bigbrain card); PROMPT.md §52.7.
+citation: "Derived products of Amunts et al. 2013 (see the bigbrain card); PROMPT.md \xA752.7."
 access: watch
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -22,9 +21,9 @@ streams:
 - name: bigbrain_derived_subcortical_geometry
   kind: measured
   via: null
-  systematic_bias: 'DERIVED FROM A DERIVED PRODUCT: BigBrain''s 3D volume is itself a reconstruction from
-    sections, and these are segmentations of that reconstruction. Two derivation steps from measurement,
-    in one 65-year-old brain, and §52.7 lists them with the honest qualifier ''where available''.'
+  systematic_bias: "DERIVED FROM A DERIVED PRODUCT: BigBrain's 3D volume is itself a reconstruction from\
+    \ sections, and these are segmentations of that reconstruction. Two derivation steps from measurement,\
+    \ in one 65-year-old brain, and \xA752.7 lists them with the honest qualifier 'where available'."
   band_hz:
   - null
   - null
@@ -52,3 +51,9 @@ provenance:
   card: bigbrain-hippocampal-cerebellar-derivatives
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: sourced
+release: unresolved
+provenance_note: provider identified; a direct url is not recorded
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: sg-mind
 title: SG-MIND -- naturalistic multimodal neural dataset
 provider: unresolved
-citation: SG-MIND (named in PROMPT.md §52.2).
+citation: "SG-MIND (named in PROMPT.md \xA752.2)."
 access: watch
 licence:
   name: unresolved
@@ -15,8 +14,8 @@ population:
   hierarchy:
   - participant
   - session
-  notes: Named in the source material without a resolvable reference in §59. Everything about it is unresolved
-    and this card says so rather than inventing plausible detail.
+  notes: "Named in the source material without a resolvable reference in \xA759. Everything about it is\
+    \ unresolved and this card says so rather than inventing plausible detail."
 frames:
 - unresolved
 streams:
@@ -47,3 +46,9 @@ provenance:
   card: sg-mind
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

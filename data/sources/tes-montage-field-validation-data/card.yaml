@@ -1,16 +1,15 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: tes-montage-field-validation-data
 title: tES montage and field validation measurements
 provider: multiple -- intracranial field measurement studies in patients and cadavers
-citation: PROMPT.md §52.13, 'montage/field validation data'.
+citation: "PROMPT.md \xA752.13, 'montage/field validation data'."
 access: priority
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: unbound
 population:
   n: null
@@ -22,10 +21,10 @@ streams:
 - name: intracranial_field_measurement
   kind: measured
   via: null
-  systematic_bias: THE ONLY DIRECT EVIDENCE ABOUT DELIVERED FIELD IN A HUMAN HEAD. Everything else in
-    §52.13 computes it. These measurements are what a head-conduction model must reproduce, and published
-    comparisons show real discrepancies between measured and simulated fields -- which is precisely why
-    §52.13 insists on separating requested settings from delivered field.
+  systematic_bias: "THE ONLY DIRECT EVIDENCE ABOUT DELIVERED FIELD IN A HUMAN HEAD. Everything else in\
+    \ \xA752.13 computes it. These measurements are what a head-conduction model must reproduce, and published\
+    \ comparisons show real discrepancies between measured and simulated fields -- which is precisely\
+    \ why \xA752.13 insists on separating requested settings from delivered field."
   notes: measurements come from patients with implanted electrodes and craniotomies, or from cadavers
     with altered tissue conductivity; neither is an intact healthy head
   band_hz:
@@ -75,3 +74,9 @@ provenance:
   card: tes-montage-field-validation-data
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

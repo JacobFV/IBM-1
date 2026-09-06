@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: qsm-reconstruction-tools
 title: QSM reconstruction tool family
 provider: multiple -- STI Suite, MEDI, SEPIA, QSMbox and successors
-citation: PROMPT.md §52.10 and §54.3, 'QSM reconstruction tools'.
+citation: "PROMPT.md \xA752.10 and \xA754.3, 'QSM reconstruction tools'."
 access: reference
 licence:
   name: unresolved
@@ -20,11 +19,11 @@ streams:
 - name: dipole_inversion_algorithms
   kind: measured
   via: null
-  systematic_bias: 'THE DIPOLE INVERSION IS ILL-POSED: the forward operator has a null cone in k-space,
-    so the data cannot determine susceptibility at those orientations and every algorithm fills the gap
-    with a regulariser. §14 wants electromagnetism as internal physical state, and this is the cleanest
-    well-characterised electromagnetic inverse problem available -- with a challenge dataset (qsm-reconstruction-challenge)
-    that measures exactly how much the answer depends on the choice.'
+  systematic_bias: "THE DIPOLE INVERSION IS ILL-POSED: the forward operator has a null cone in k-space,\
+    \ so the data cannot determine susceptibility at those orientations and every algorithm fills the\
+    \ gap with a regulariser. \xA714 wants electromagnetism as internal physical state, and this is the\
+    \ cleanest well-characterised electromagnetic inverse problem available -- with a challenge dataset\
+    \ (qsm-reconstruction-challenge) that measures exactly how much the answer depends on the choice."
   notes: algorithm choice changes susceptibility values systematically, especially near large vessels
     and at tissue boundaries -- which is where the venous geometry of interest is
   band_hz:
@@ -74,3 +73,9 @@ provenance:
   card: qsm-reconstruction-tools
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source

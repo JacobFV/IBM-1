@@ -1,8 +1,7 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: imaging-container-formats
 title: NIfTI, GIfTI, CIfTI, MGH/MGZ, NRRD and DICOM imaging containers
 provider: multiple -- NIfTI DFWG, HCP, FreeSurfer, Kitware, NEMA
-citation: PROMPT.md §55, 'NIfTI, GIfTI, CIfTI, MGH/MGZ, NRRD, and DICOM as native imaging containers'.
+citation: "PROMPT.md \xA755, 'NIfTI, GIfTI, CIfTI, MGH/MGZ, NRRD, and DICOM as native imaging containers'."
 access: priority
 licence:
   name: unresolved
@@ -22,10 +21,10 @@ streams:
 - name: affine_and_axis_semantics
   kind: measured
   via: null
-  systematic_bias: THE AFFINE IS THE FRAME EDGE. A NIfTI without a correct affine is an array in no space,
-    and the qform/sform ambiguity -- two affines that may disagree -- is a well-known source of silent
-    left-right flips. §3's fully qualified address requires the frame to be unambiguous, and these containers
-    make it merely usually unambiguous.
+  systematic_bias: "THE AFFINE IS THE FRAME EDGE. A NIfTI without a correct affine is an array in no space,\
+    \ and the qform/sform ambiguity -- two affines that may disagree -- is a well-known source of silent\
+    \ left-right flips. \xA73's fully qualified address requires the frame to be unambiguous, and these\
+    \ containers make it merely usually unambiguous."
   notes: NIfTI permits two affines that can disagree; NRRD lets axis meaning be declared arbitrarily;
     DICOM's geometry is spread across several tags
   band_hz:
@@ -40,19 +39,19 @@ streams:
 - name: cifti_grayordinates
   kind: measured
   via: null
-  systematic_bias: CIfTI's grayordinate model is a MIXED support -- surface vertices for cortex, voxels
-    for subcortex -- indexed as one array. That is a real design decision about what a brain location
-    is, adopted by HCP and inherited by everything built on it, and it is a cover in §11's sense rather
-    than a neutral container
+  systematic_bias: "CIfTI's grayordinate model is a MIXED support -- surface vertices for cortex, voxels\
+    \ for subcortex -- indexed as one array. That is a real design decision about what a brain location\
+    \ is, adopted by HCP and inherited by everything built on it, and it is a cover in \xA711's sense\
+    \ rather than a neutral container"
   band_hz:
   - null
   - null
 - name: dicom_acquisition_metadata
   kind: measured
   via: null
-  systematic_bias: §56.6's MR acquisition objects need sequence parameters and per-slice timing, and DICOM
-    is where they survive; converting to NIfTI discards most of it, which is why the fastmri-brain and
-    ismrmrd cards matter
+  systematic_bias: "\xA756.6's MR acquisition objects need sequence parameters and per-slice timing, and\
+    \ DICOM is where they survive; converting to NIfTI discards most of it, which is why the fastmri-brain\
+    \ and ismrmrd cards matter"
   band_hz:
   - null
   - null
@@ -72,3 +71,9 @@ provenance:
   card: imaging-container-formats
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+origin_kind: class
+provenance_note: a CLASS of resource rather than one dataset; the provider field names a literature or
+  model family. a single origin url would be a fiction
+provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
+  dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
+  source
