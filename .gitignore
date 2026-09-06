@@ -8,3 +8,7 @@ __pycache__/
 
 # scratch: cached streamline endpoints for scripts/measure_tract_uncertainty.py
 .cache/
+
+# corpus payloads: hundreds of GB, tracked by card + origin URL, not by git
+data/sources/*/raw/
+data/derived/

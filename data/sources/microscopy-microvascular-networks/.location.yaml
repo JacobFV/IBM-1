@@ -1,0 +1,9 @@
+local_root: data/sources/microscopy-microvascular-networks/raw
+acquired_at: '2026-09-05'
+files: 22
+bytes: 1031022708
+gib: 0.96
+checksums: sha256 of every archive, in checksums.txt alongside this file
+source_url: https://zenodo.org/records/269650
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record

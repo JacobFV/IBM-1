@@ -1,0 +1,9 @@
+local_root: data/sources/ds005498/raw
+acquired_at: '2026-09-04'
+files: 3477
+bytes: 47927556410
+gib: 44.64
+checksums: deferred -- see checksums.txt
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record
+source_url: https://openneuro.org/datasets/ds005498

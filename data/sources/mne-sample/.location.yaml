@@ -1,0 +1,9 @@
+local_root: data/sources/mne-sample/raw
+acquired_at: '2026-09-04'
+files: 621
+bytes: 2951099650
+gib: 2.75
+checksums: deferred -- see checksums.txt
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record
+source_url: https://mne.tools/stable/documentation/datasets.html

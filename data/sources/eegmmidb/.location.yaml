@@ -1,0 +1,9 @@
+local_root: data/sources/eegmmidb/raw
+acquired_at: '2026-09-04'
+files: 3060
+bytes: 3616824885
+gib: 3.37
+checksums: deferred -- see checksums.txt
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record
+source_url: https://physionet.org/content/eegmmidb/1.0.0/

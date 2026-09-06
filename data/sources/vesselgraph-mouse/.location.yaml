@@ -1,0 +1,9 @@
+local_root: data/sources/vesselgraph-mouse/raw
+acquired_at: '2026-09-05'
+files: 9
+bytes: 2566571776
+gib: 2.39
+checksums: sha256 of every archive, in checksums.txt alongside this file
+source_url: https://github.com/jocpae/VesselGraph
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record

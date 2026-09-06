@@ -1,0 +1,6 @@
+source_url: https://doi.org/10.5061/dryad.070jc
+local_root: data/sources/broderick-natural-speech-eeg/raw
+acquired_at: null
+bytes: null
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record

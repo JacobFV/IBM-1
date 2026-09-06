@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: ds002336
 title: ds002336 -- simultaneous EEG-fMRI motor-imagery neurofeedback
 provider: OpenNeuro ds002336
@@ -80,10 +79,10 @@ streams:
   kind: measured
   via:
   - em_generation
-  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
-    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
-    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
-    modelled state, not a nuisance to be regressed away'
+  observation_chain: "neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin\
+    \ concentration change -> T2*/T2' change -> gradient-echo k-space acquisition -> reconstruction ->\
+    \ voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md \xA717): the vascular stage\
+    \ is a modelled state, not a nuisance to be regressed away"
   confounds:
   - head motion and its spin-history effects
   - respiratory and cardiac aliasing into the TR
@@ -210,3 +209,6 @@ provenance:
   card: ds002336
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/ds002336/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

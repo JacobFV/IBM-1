@@ -1,4 +1,0 @@
-# sha256 manifest for aomic-id1000 -- DEFERRED
-# 14359 files, 97403036433 bytes (90.71 GiB) at /home/brandonin/Documents/win-data/aomic-id1000
-# hashing this source has not been run; until it has, no derive recipe may claim
-# reproducibility against a specific raw state.

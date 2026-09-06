@@ -1,0 +1,9 @@
+local_root: data/sources/synthrad2023/raw
+acquired_at: '2026-09-04'
+files: 724
+bytes: 3658926601
+gib: 3.41
+checksums: deferred -- see checksums.txt
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record
+source_url: https://doi.org/10.5281/zenodo.7260705

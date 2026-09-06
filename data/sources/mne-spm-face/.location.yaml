@@ -1,0 +1,9 @@
+local_root: data/sources/mne-spm-face/raw
+acquired_at: '2026-09-04'
+files: 579
+bytes: 1592215881
+gib: 1.48
+checksums: deferred -- see checksums.txt
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record
+source_url: https://mne.tools/stable/documentation/datasets.html

@@ -1,4 +1,0 @@
-# sha256 manifest for mne-sample -- DEFERRED
-# 621 files, 2951099650 bytes (2.75 GiB) at /home/brandonin/Documents/win-data/mne-sample
-# hashing this source has not been run; until it has, no derive recipe may claim
-# reproducibility against a specific raw state.

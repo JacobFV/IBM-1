@@ -18,8 +18,8 @@ from __future__ import annotations
 import csv, glob, os, re
 import av, h5py, numpy as np
 
-ROOT = "/home/brandonin/Documents/win-data/libribrain/Sherlock1"
-OUT = "/home/brandonin/Documents/win-data/derived/libribrain-paired"
+ROOT = "/home/brandonin/Documents/IBM-1/data/sources/libribrain/Sherlock1"
+OUT = "/home/brandonin/Documents/IBM-1/data/derived/libribrain-paired"
 FS, N_BANDS, RATE = 16000, 64, 250          # MEG is 250 Hz; cochleagram matches it
 
 

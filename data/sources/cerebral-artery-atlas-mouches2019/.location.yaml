@@ -1,0 +1,9 @@
+local_root: data/sources/cerebral-artery-atlas-mouches2019/raw
+acquired_at: '2026-09-04'
+files: 8
+bytes: 237286834
+gib: 0.22
+checksums: deferred -- see checksums.txt
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record
+source_url: https://doi.org/10.6084/m9.figshare.c.4215089

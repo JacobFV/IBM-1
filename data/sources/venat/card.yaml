@@ -1,9 +1,8 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: venat
 title: VENAT -- high-resolution 7T QSM venous atlas
 provider: Huck et al., MPI CBS Leipzig
-citation: 'Huck et al., High resolution atlas of the venous brain vasculature from 7 T quantitative susceptibility
-  maps. Brain Structure and Function 224:2467-2485, 2019. PubMed 31278570.'
+citation: Huck et al., High resolution atlas of the venous brain vasculature from 7 T quantitative susceptibility
+  maps. Brain Structure and Function 224:2467-2485, 2019. PubMed 31278570.
 urls:
 - https://pubmed.ncbi.nlm.nih.gov/31278570/
 - https://figshare.com/articles/dataset/VENAT_Probability_map_nii_gz/7205960
@@ -49,10 +48,10 @@ streams:
     the geometry is confounded with the physiological state it would be used to constrain
   - the atlas has a skeleton only where subjects agreed enough to leave one, and registration turns positional
     variability into blur rather than into variance
-  systematic_bias: 'A POPULATION atlas, so it is somebody else''s venous tree by construction. Its authority
+  systematic_bias: A POPULATION atlas, so it is somebody else's venous tree by construction. Its authority
     is medium rather than high because a reconstructed calibre with a free threshold in it is not a measured
     one -- but the quantity ibm-1 actually takes from it is a RATIO and is insensitive to a multiplicative
-    error in that threshold.'
+    error in that threshold.
   notes: 'this is the stream that closes gap #7 for the venous side: `structural.lumen_radius` is a component
     now, so a centreline with a diameter along it lands somewhere instead of being context.  what it supplies
     is tier 2 of ibm/topologies/vascular_prior.py, and specifically the SPREAD: the std maps shipped alongside
@@ -72,15 +71,15 @@ streams:
   kind: context
   constrains: []
   via: null
-  systematic_bias: 'THE source for venous geometry, and the reason it matters is that BOLD signal is displaced
-    downstream into draining veins, so the venous tree''s geometry is the spatial transfer function between
-    neural activity and where the BOLD signal appears.'
-  notes: 'context, and it is a DECISION.  a probability map is a COVER over the brain -- it says where
-    a vein is likely to be, which is a statement about position and not a value any ibm component takes.
-    ARCHITECTURE.md §2 is where covers live and §1 is where components do.  it reaches a materialization
-    as a support index and as a prior, never as a likelihood.  the partial-volume map is the largest file
-    in the release and the one every derived radius is computed from; its own between-subject CV is 0.546,
-    twice the calibre''s, because it is a volume.'
+  systematic_bias: THE source for venous geometry, and the reason it matters is that BOLD signal is displaced
+    downstream into draining veins, so the venous tree's geometry is the spatial transfer function between
+    neural activity and where the BOLD signal appears.
+  notes: "context, and it is a DECISION.  a probability map is a COVER over the brain -- it says where\
+    \ a vein is likely to be, which is a statement about position and not a value any ibm component takes.\
+    \ ARCHITECTURE.md \xA72 is where covers live and \xA71 is where components do.  it reaches a materialization\
+    \ as a support index and as a prior, never as a likelihood.  the partial-volume map is the largest\
+    \ file in the release and the one every derived radius is computed from; its own between-subject CV\
+    \ is 0.546, twice the calibre's, because it is a volume."
   band_hz:
   - 0.0
   - 0.001
@@ -128,3 +127,6 @@ provenance:
   card: venat
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/venat/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

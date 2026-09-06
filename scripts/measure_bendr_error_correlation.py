@@ -58,8 +58,8 @@ import mne
 import torch
 import torch.nn as nn
 
-WEIGHTS = Path("/home/brandonin/Documents/win-data/bendr/encoder.pt")
-EEGMMIDB = Path("/home/brandonin/Documents/win-data/eegmmidb/1.0.0")
+WEIGHTS = Path("/home/brandonin/Documents/IBM-1/data/sources/bendr/encoder.pt")
+EEGMMIDB = Path("/home/brandonin/Documents/IBM-1/data/sources/eegmmidb/1.0.0")
 
 #: the 19 electrodes of the 10-20 system, in the eegmmidb naming.  BENDR's
 #: pretrained encoder takes 20 input channels: these plus one relative-amplitude

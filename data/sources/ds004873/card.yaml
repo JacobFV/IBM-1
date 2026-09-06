@@ -1,9 +1,8 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: ds004873
 title: 'ds004873 -- quantitative fMRI: BOLD, T2, T2*, CBF, CBV, OEF and CMRO2 under controlled tasks'
 provider: OpenNeuro ds004873
-citation: Epp et al., quantitative fMRI dataset behind 'BOLD signal changes can oppose oxygen metabolism
-  across the human cortex' (PROMPT.md §17-18, §59).
+citation: "Epp et al., quantitative fMRI dataset behind 'BOLD signal changes can oppose oxygen metabolism\
+  \ across the human cortex' (PROMPT.md \xA717-18, \xA759)."
 urls:
 - https://openneuro.org/datasets/ds004873
 access: held
@@ -28,8 +27,8 @@ population:
   - participant
   - session
   - run
-  notes: 'n unresolved pending file-level audit. §51.2 item 11: this should REPLACE THE ASSUMPTION THAT
-    ONE BOLD HEAD IS SUFFICIENT.'
+  notes: "n unresolved pending file-level audit. \xA751.2 item 11: this should REPLACE THE ASSUMPTION\
+    \ THAT ONE BOLD HEAD IS SUFFICIENT."
 frames:
 - scanner
 - subject_native
@@ -39,10 +38,10 @@ streams:
   kind: measured
   via:
   - em_generation
-  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
-    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
-    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
-    modelled state, not a nuisance to be regressed away'
+  observation_chain: "neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin\
+    \ concentration change -> T2*/T2' change -> gradient-echo k-space acquisition -> reconstruction ->\
+    \ voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md \xA717): the vascular stage\
+    \ is a modelled state, not a nuisance to be regressed away"
   confounds:
   - head motion and its spin-history effects
   - respiratory and cardiac aliasing into the TR
@@ -50,8 +49,8 @@ streams:
   - draining-vein displacement of the signal downstream of the active tissue
   - susceptibility dropout and geometric distortion
   - scanner drift
-  systematic_bias: Here BOLD arrives ALONGSIDE the physiological quantities it is a function of, which
-    is what makes the §17 argument testable rather than rhetorical.
+  systematic_bias: "Here BOLD arrives ALONGSIDE the physiological quantities it is a function of, which\
+    \ is what makes the \xA717 argument testable rather than rhetorical."
   band_hz:
   - 0.0
   - 0.25
@@ -85,9 +84,9 @@ streams:
   - M-value estimation from a hypercapnia or hyperoxia calibration, which is itself noisy
   - arterial oxygenation assumed rather than measured in most protocols
   - flow-metabolism coupling assumptions inside the calibration model
-  systematic_bias: The headline result behind this dataset -- that BOLD changes can OPPOSE oxygen metabolism
-    across cortex -- is the sharpest available demonstration that a BOLD-to-activity mapping with a single
-    sign is wrong. §17 rests on this.
+  systematic_bias: "The headline result behind this dataset -- that BOLD changes can OPPOSE oxygen metabolism\
+    \ across cortex -- is the sharpest available demonstration that a BOLD-to-activity mapping with a\
+    \ single sign is wrong. \xA717 rests on this."
   notes: CMRO2 is a model output, and different calibration models give different CMRO2 from identical
     data; the model must travel with the number
   band_hz:
@@ -133,8 +132,8 @@ streams:
   - haematocrit assumed rather than measured
   - the assumed venous blood volume fraction
   - vessel orientation relative to B0, which changes the susceptibility effect
-  systematic_bias: OEF is where the assumed VASCULAR GEOMETRY enters the physiology explicitly, which
-    is why §16 wants vascular structure to be first-class rather than parameterised away.
+  systematic_bias: "OEF is where the assumed VASCULAR GEOMETRY enters the physiology explicitly, which\
+    \ is why \xA716 wants vascular structure to be first-class rather than parameterised away."
   band_hz:
   - 0.0
   - 0.02
@@ -348,3 +347,6 @@ provenance:
   card: ds004873
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/ds004873/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

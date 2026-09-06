@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: arterial-territory-atlas-liu2023
 title: Digital 3D brain MRI arterial territories atlas (Liu 2023)
 provider: Johns Hopkins University -- Chin-Fu Liu, Johnny Hsu, Andreia V. Faria and colleagues
@@ -34,16 +33,16 @@ streams:
 - name: arterial_territory_maps
   kind: context
   via: null
-  systematic_bias: 'An arterial territory atlas is a COVER organised by blood supply rather than by cytoarchitecture
-    or function, so §11''s multi-cover argument applies to it identically. Three biases are specific to
-    how THIS one was made. (1) It is estimated from where INFARCTS fell, so it is best determined where
-    strokes are common and worst where they are rare -- the borderzones between territories are exactly
-    where the estimate is softest and exactly where a territory-assignment rule is tested. (2) Territory
-    boundaries depend on the individual''s Circle of Willis variant and this is a population map over
-    1,298 people whose variants were never recorded, so it is smoother and more central than any individual''s.
-    (3) The label volume is a HARD partition: the deposit''s probabilistic releases, which carry the borderzone
-    width, are on NITRC behind a login and are NOT held, so what is held has had its own uncertainty flattened
-    out of it.'
+  systematic_bias: "An arterial territory atlas is a COVER organised by blood supply rather than by cytoarchitecture\
+    \ or function, so \xA711's multi-cover argument applies to it identically. Three biases are specific\
+    \ to how THIS one was made. (1) It is estimated from where INFARCTS fell, so it is best determined\
+    \ where strokes are common and worst where they are rare -- the borderzones between territories are\
+    \ exactly where the estimate is softest and exactly where a territory-assignment rule is tested. (2)\
+    \ Territory boundaries depend on the individual's Circle of Willis variant and this is a population\
+    \ map over 1,298 people whose variants were never recorded, so it is smoother and more central than\
+    \ any individual's. (3) The label volume is a HARD partition: the deposit's probabilistic releases,\
+    \ which carry the borderzone width, are on NITRC behind a login and are NOT held, so what is held\
+    \ has had its own uncertainty flattened out of it."
   band_hz:
   - 0.0
   - 0.001
@@ -53,14 +52,14 @@ streams:
     level 1, and 8 arterial territories (ACA, MCA, PCA, VB, each bilateral) plus 2 ventricles at level
     2'
   constrains: []
-  notes: 'context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set
-    is a COVER over a carrier (ARCHITECTURE.md §2): it says which points a name collects, not what value
-    any ibm component takes at them.  no registered component is a region label, and inventing one would
-    make a naming convention into biology.  it reaches a materialization as a support index and as a `prior`,
-    never as a likelihood.  a territory here is where infarcts co-occurred, which is a statement about
-    which artery supplies which tissue -- a topology assertion about the vascular tree, not a value of
-    `blood.flow` or `blood.volume` anywhere.  binding it `measured` would let a lesion-derived cover contribute
-    a likelihood about perfusion in a brain that never had a stroke.'
+  notes: "context, and it is a decision rather than a gap.  a parcellation, an annotation or a label set\
+    \ is a COVER over a carrier (ARCHITECTURE.md \xA72): it says which points a name collects, not what\
+    \ value any ibm component takes at them.  no registered component is a region label, and inventing\
+    \ one would make a naming convention into biology.  it reaches a materialization as a support index\
+    \ and as a `prior`, never as a likelihood.  a territory here is where infarcts co-occurred, which\
+    \ is a statement about which artery supplies which tissue -- a topology assertion about the vascular\
+    \ tree, not a value of `blood.flow` or `blood.volume` anywhere.  binding it `measured` would let a\
+    \ lesion-derived cover contribute a likelihood about perfusion in a brain that never had a stroke."
 absent:
 - cow_variant_conditioning
 - individual_geometry
@@ -88,3 +87,6 @@ provenance:
   card: arterial-territory-atlas-liu2023
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/arterial-territory-atlas-liu2023/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

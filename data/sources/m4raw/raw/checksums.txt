@@ -1,4 +1,0 @@
-# sha256 manifest for m4raw -- DEFERRED
-# 8 files, 17967217976 bytes (16.73 GiB) at /home/brandonin/Documents/win-data/m4raw
-# hashing this source has not been run; until it has, no derive recipe may claim
-# reproducibility against a specific raw state.

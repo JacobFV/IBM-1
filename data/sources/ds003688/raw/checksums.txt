@@ -1,4 +1,0 @@
-# sha256 manifest for ds003688 -- DEFERRED
-# 1632 files, 16423373220 bytes (15.3 GiB) at /home/brandonin/Documents/win-data/ds003688
-# hashing this source has not been run; until it has, no derive recipe may claim
-# reproducibility against a specific raw state.

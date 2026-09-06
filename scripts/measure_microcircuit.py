@@ -95,9 +95,9 @@ import numpy as np
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-MICRONS_ROOT = Path("/home/brandonin/Documents/win-data/microns/public_data")
-H01_ROOT = Path("/home/brandonin/Documents/win-data/h01")
-ALLEN_ROOT = Path("/home/brandonin/Documents/win-data/allen-cell-types-patchseq")
+MICRONS_ROOT = Path("/home/brandonin/Documents/IBM-1/data/sources/microns/public_data")
+H01_ROOT = Path("/home/brandonin/Documents/IBM-1/data/sources/h01")
+ALLEN_ROOT = Path("/home/brandonin/Documents/IBM-1/data/sources/allen-cell-types-patchseq")
 
 TODAY = "2026-09-05"
 

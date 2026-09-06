@@ -1,0 +1,9 @@
+local_root: data/sources/ismrm2015-submissions/raw
+acquired_at: '2026-09-04'
+files: 99
+bytes: 38968819489
+gib: 36.29
+checksums: deferred -- see checksums.txt
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record
+source_url: https://zenodo.org/records/840086

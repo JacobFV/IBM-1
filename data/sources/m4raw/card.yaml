@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: m4raw
 title: M4Raw -- multi-contrast, multi-repetition, multi-channel low-field MRI k-space
 provider: Deposited on Zenodo by the authors (University of Hong Kong and collaborators)
@@ -183,3 +182,6 @@ provenance:
   card: m4raw
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/m4raw/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

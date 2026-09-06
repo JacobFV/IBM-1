@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: ds008037
 title: Neural dynamics of working memory and transcranial magnetic stimulation -- TMS-EEG at four sites
   including a SHOULDER control
@@ -157,3 +156,6 @@ forbidden:
 - ds008037/tms_eeg_four_sites -> independent evidence from ds008037/eeg (same recording)
 - ds008037/shoulder_control_condition -> independent evidence from ds008037/eeg (the acq-control runs
   are part of the same recording and are already bound there)
+local_root: data/sources/ds008037/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

@@ -473,7 +473,7 @@ def main():
     ap.add_argument("--dyn-steps", type=int, default=8)
     ap.add_argument("--dt", type=float, default=5e-3)
     ap.add_argument("--lr", type=float, default=3e-4)
-    ap.add_argument("--frames", default="/home/brandonin/Documents/win-data/derived/"
+    ap.add_argument("--frames", default="/home/brandonin/Documents/IBM-1/data/derived/"
                                         "koyaanisqatsi-full/frames_64x64.npy")
     ap.add_argument("--viability-weight", type=float, default=1e-1,
                     help="ONTOLOGY.md §7: cost of leaving the physiological range")

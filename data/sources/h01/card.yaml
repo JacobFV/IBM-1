@@ -1,9 +1,8 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: h01
 title: H01 -- petavoxel electron-microscopy reconstruction of a human cortical fragment
 provider: Harvard Lichtman lab and Google Research
-citation: Shapson-Coe et al., A petavoxel fragment of human cerebral cortex reconstructed at nanoscale resolution.
-  Science 2024.
+citation: Shapson-Coe et al., A petavoxel fragment of human cerebral cortex reconstructed at nanoscale
+  resolution. Science 2024.
 urls:
 - https://research.google/pubs/a-connectomic-study-of-a-petascale-fragment-of-human-cerebral-cortex/
 - https://h01-release.storage.googleapis.com/landing.html
@@ -12,62 +11,65 @@ licence:
   name: CC BY 4.0 (stated for the H01 release; not independently verified here)
   redistribution: unresolved
   commercial: unresolved
-  notes: 'Stated by the providers. The dataset is over a petabyte, so §51.3 item 24''s instruction stands: ingest
-    selected derived geometry and statistics first rather than attempting a full local mirror.'
+  notes: "Stated by the providers. The dataset is over a petabyte, so \xA751.3 item 24's instruction stands:\
+    \ ingest selected derived geometry and statistics first rather than attempting a full local mirror."
 binding: bound
 population:
   n: 1
   hierarchy:
   - participant
-  notes: ONE cubic millimetre from ONE patient's temporal cortex, removed to access a hippocampal lesion. The tissue
-    is human, adult, and came from someone with epilepsy.
+  notes: ONE cubic millimetre from ONE patient's temporal cortex, removed to access a hippocampal lesion.
+    The tissue is human, adult, and came from someone with epilepsy.
 frames:
 - h01_native
 streams:
 - name: cell_segmentation
   kind: context
   via: null
-  observation_chain: fixed and stained tissue -> serial sectioning -> electron microscopy -> alignment -> automated
-    segmentation and proofreading -> a reconstruction whose errors are merge/split errors, not gaussian noise
+  observation_chain: fixed and stained tissue -> serial sectioning -> electron microscopy -> alignment
+    -> automated segmentation and proofreading -> a reconstruction whose errors are merge/split errors,
+    not gaussian noise
   confounds:
-  - automated segmentation MERGE and SPLIT errors, which are the dominant error mode and are not gaussian; only
-    proofread subsets are reliable at the level of an individual neuron
+  - automated segmentation MERGE and SPLIT errors, which are the dominant error mode and are not gaussian;
+    only proofread subsets are reliable at the level of an individual neuron
   - fixation and staining artifacts
   - the tissue is from a patient with epilepsy and was resected for clinical reasons
-  - one cubic millimetre is smaller than many single neurons' arbors, so almost every cell is truncated at the volume
-    boundary
-  systematic_bias: The densest structural measurement of human cortex that exists. Its errors are topological, which
-    means an unproofread connectivity claim can be wrong in a way that averaging does not fix.
-  notes: 'context, and the same ONTOLOGY GAP von-economo and bigbrain name.  what this stream supplies is a cell
-    census -- 49,379 somata with a cell-type label and a cortical layer -- and a cell count per unit volume is not
-    `structural.dendritic_density` (dendrite length per volume) nor `structural.synaptic_density` (synapses per
-    volume).  MEASURED FROM THESE BYTES by scripts/measure_microcircuit.py and carried as a prior instead: 30.8%
-    of classified neurons are inhibitory, against 11.0% in MICrONS''s mouse volume, and the gap is part species
-    and part two classifiers disagreeing about what a neuron is.'
+  - one cubic millimetre is smaller than many single neurons' arbors, so almost every cell is truncated
+    at the volume boundary
+  systematic_bias: The densest structural measurement of human cortex that exists. Its errors are topological,
+    which means an unproofread connectivity claim can be wrong in a way that averaging does not fix.
+  notes: 'context, and the same ONTOLOGY GAP von-economo and bigbrain name.  what this stream supplies
+    is a cell census -- 49,379 somata with a cell-type label and a cortical layer -- and a cell count
+    per unit volume is not `structural.dendritic_density` (dendrite length per volume) nor `structural.synaptic_density`
+    (synapses per volume).  MEASURED FROM THESE BYTES by scripts/measure_microcircuit.py and carried as
+    a prior instead: 30.8% of classified neurons are inhibitory, against 11.0% in MICrONS''s mouse volume,
+    and the gap is part species and part two classifiers disagreeing about what a neuron is.'
   band_hz:
   - 0.0
   - 0.001
   temporal_support: not a time series -- a single fixed instant of one tissue block
-  spatial_support: 4 nm x 4 nm x 33 nm voxels over roughly one cubic millimetre; 57,000 cells, 150 million synapses
-    and the vasculature within that volume
+  spatial_support: 4 nm x 4 nm x 33 nm voxels over roughly one cubic millimetre; 57,000 cells, 150 million
+    synapses and the vasculature within that volume
   constrains: []
 - name: vascular_reconstruction
   kind: context
   via: null
-  observation_chain: fixed and stained tissue -> serial sectioning -> electron microscopy -> alignment -> automated
-    segmentation and proofreading -> a reconstruction whose errors are merge/split errors, not gaussian noise
+  observation_chain: fixed and stained tissue -> serial sectioning -> electron microscopy -> alignment
+    -> automated segmentation and proofreading -> a reconstruction whose errors are merge/split errors,
+    not gaussian noise
   confounds:
   - fixation-induced vessel collapse, which alters lumen diameter systematically
   - segmentation errors at vessel branch points
-  systematic_bias: §52.10 lists H01 vessel reconstructions under human vascular imaging. It supplies capillary-scale
-    geometry -- density, radius, orientation, branching -- that no in-vivo modality can reach, and §56.3's stochastic
-    microvascular ensembles need exactly these statistics as their conditioning.
-  notes: 'context, and an ONTOLOGY GAP rather than a judgement about the data.  the components this would constrain
-    -- `structural.lumen_radius`, `structural.capillary_density`, `structural.branch_order`, `structural.segment_length`
-    -- are all registered and NONE of them has a writer, so no process chain exists for `via` to end in and §6''s
-    route to them is not merely unnamed, it is absent from the ontology.  binding this stream needs a vascular growth
-    or remodelling process to exist first.  the bytes for it were not fetched either: this acquisition took the
-    connectivity and cell tables only.'
+  systematic_bias: "\xA752.10 lists H01 vessel reconstructions under human vascular imaging. It supplies\
+    \ capillary-scale geometry -- density, radius, orientation, branching -- that no in-vivo modality\
+    \ can reach, and \xA756.3's stochastic microvascular ensembles need exactly these statistics as their\
+    \ conditioning."
+  notes: "context, and an ONTOLOGY GAP rather than a judgement about the data.  the components this would\
+    \ constrain -- `structural.lumen_radius`, `structural.capillary_density`, `structural.branch_order`,\
+    \ `structural.segment_length` -- are all registered and NONE of them has a writer, so no process chain\
+    \ exists for `via` to end in and \xA76's route to them is not merely unnamed, it is absent from the\
+    \ ontology.  binding this stream needs a vascular growth or remodelling process to exist first.  the\
+    \ bytes for it were not fetched either: this acquisition took the connectivity and cell tables only."
   band_hz:
   - 0.0
   - 0.001
@@ -76,19 +78,20 @@ streams:
   kind: measured
   via:
   - plasticity
-  systematic_bias: synapse counts per connection constrain the plausible strength distribution of a local interaction,
-    which is model-class evidence, not a measured weight
+  systematic_bias: synapse counts per connection constrain the plausible strength distribution of a local
+    interaction, which is model-class evidence, not a measured weight
   band_hz:
   - 0.0
   - 0.001
   constrains:
   - structural.synaptic_density
-  notes: 'the one stream in this card that binds, and it binds because the object it counts IS the component: synapses
-    per unit volume is `structural.synaptic_density`, the tissue is human, and §6''s route to it is the process
-    that writes it -- structural plasticity is what laid the synapses down, so the chain ENDS in `plasticity` and
-    the direction check passes.  read it with the card''s own caveats: one person, epilepsy surgery, and the automated
-    segmentation''s merge/split errors are topological rather than gaussian.  100 of the 166 shards of the exported
-    synapse table are held here, which is a uniform sample of synapses and NOT a sample of complete neurons.'
+  notes: "the one stream in this card that binds, and it binds because the object it counts IS the component:\
+    \ synapses per unit volume is `structural.synaptic_density`, the tissue is human, and \xA76's route\
+    \ to it is the process that writes it -- structural plasticity is what laid the synapses down, so\
+    \ the chain ENDS in `plasticity` and the direction check passes.  read it with the card's own caveats:\
+    \ one person, epilepsy surgery, and the automated segmentation's merge/split errors are topological\
+    \ rather than gaussian.  100 of the 166 shards of the exported synapse table are held here, which\
+    \ is a uniform sample of synapses and NOT a sample of complete neurons."
 - name: cell_type_classifications
   kind: context
   via: null
@@ -96,8 +99,9 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: context.  a cell-type label is an annotation of an object, not a value of a state variable, and the registry
-    declares no component whose value is a cell type.  it is used to stratify the streams that do bind.
+  notes: context.  a cell-type label is an annotation of an object, not a value of a state variable, and
+    the registry declares no component whose value is a cell type.  it is used to stratify the streams
+    that do bind.
 - name: em_volume
   kind: context
   via: null
@@ -105,8 +109,8 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: 'context, and not held: the volume is over a petabyte and this acquisition deliberately took the derived
-    tables instead, as the card''s own licence note instructs.'
+  notes: 'context, and not held: the volume is over a petabyte and this acquisition deliberately took
+    the derived tables instead, as the card''s own licence note instructs.'
 - name: proofread_subsets
   kind: context
   via: null
@@ -114,11 +118,12 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: context, and the negative finding of this acquisition.  H01's 104 proofread cells are the human counterpart
-    of the MICrONS axons the microcircuit measurement rests on -- but the released file for them, proofread_104/synapse_locations.csv,
-    carries synapse POSITIONS and no partner segment id.  so the connection probability that MICrONS's proofread
-    axons make measurable cannot be computed here at all, and the human volume contributes a census rather than
-    a circuit.  that is a limit of what was published, not of what was fetched.
+  notes: context, and the negative finding of this acquisition.  H01's 104 proofread cells are the human
+    counterpart of the MICrONS axons the microcircuit measurement rests on -- but the released file for
+    them, proofread_104/synapse_locations.csv, carries synapse POSITIONS and no partner segment id.  so
+    the connection probability that MICrONS's proofread axons make measurable cannot be computed here
+    at all, and the human volume contributes a census rather than a circuit.  that is a limit of what
+    was published, not of what was fetched.
 absent:
 - population
 - function
@@ -141,3 +146,6 @@ provenance:
   card: h01
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/h01/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

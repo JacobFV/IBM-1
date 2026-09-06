@@ -1,0 +1,9 @@
+source_url: https://storage.googleapis.com/allen-minnie-phase3/public_data/
+local_root: data/sources/microns/raw
+acquired_at: '2026-09-05'
+files: 5
+bytes: 342301890
+gib: 0.319
+checksums: deferred -- fetched over https from a public bucket, byte counts recorded here
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record

@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: ds003688
 title: ds003688 -- open multimodal iEEG-fMRI dataset from naturalistic audiovisual film
 provider: OpenNeuro ds003688 / NEMAR on003688
@@ -24,13 +23,14 @@ population:
   - participant
   - session
   - run
-  notes: 'HELD AND MEASURED 2026-08-18 from the deposit''s own participants.tsv: 63 participants, of whom
-    51 have iEEG, 30 have the movie fMRI, and 18 have BOTH. THIS FIELD READ 51 UNTIL 2026-08-18, WHICH
-    IS THE iEEG COUNT UNDER THE NOUN ''participants'' -- a right value under a wrong noun, which is the
-    defect CLAUDE.md §8 names. The directory agrees with the table: 51 `ses-iemu` directories and 18 participants
-    with both `ses-iemu` and a `ses-mri3t/func`. Ages 5 to 55, so this population includes minors. TWO
-    POPULATIONS, ONE STIMULUS: the iEEG participants are epilepsy surgery patients and the fMRI-only participants
-    are not, so any cross-modal inference crosses a population boundary and must say so.'
+  notes: "HELD AND MEASURED 2026-08-18 from the deposit's own participants.tsv: 63 participants, of whom\
+    \ 51 have iEEG, 30 have the movie fMRI, and 18 have BOTH. THIS FIELD READ 51 UNTIL 2026-08-18, WHICH\
+    \ IS THE iEEG COUNT UNDER THE NOUN 'participants' -- a right value under a wrong noun, which is the\
+    \ defect CLAUDE.md \xA78 names. The directory agrees with the table: 51 `ses-iemu` directories and\
+    \ 18 participants with both `ses-iemu` and a `ses-mri3t/func`. Ages 5 to 55, so this population includes\
+    \ minors. TWO POPULATIONS, ONE STIMULUS: the iEEG participants are epilepsy surgery patients and the\
+    \ fMRI-only participants are not, so any cross-modal inference crosses a population boundary and must\
+    \ say so."
 frames:
 - electrode_native
 - subject_native
@@ -52,8 +52,8 @@ streams:
   - medication state and post-implant recovery
   - referencing scheme (common average vs. bipolar) reshaping the apparent field
   - epileptiform activity contaminating putative task responses
-  systematic_bias: '§51.1 item 7: this supplies SPATIALLY LOCAL electrical evidence that scalp EEG cannot.
-    Coverage is dictated by clinical need and is therefore non-random over the cortex.'
+  systematic_bias: "\xA751.1 item 7: this supplies SPATIALLY LOCAL electrical evidence that scalp EEG\
+    \ cannot. Coverage is dictated by clinical need and is therefore non-random over the cortex."
   notes: 'MEASURED FROM THE HELD SIDECARS: Micromed, SamplingFrequency 512 Hz on the runs read, SoftwareFilters
     n/a, 88 ECoG channels in the file inspected; the release documents runs up to 2 kHz, so 256 Hz is
     the nyquist of the SLOWEST held rate and is the conservative ceiling for the deposit as a whole.  the
@@ -93,10 +93,10 @@ streams:
   kind: measured
   via:
   - em_generation
-  observation_chain: 'neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin
-    concentration change -> T2*/T2'' change -> gradient-echo k-space acquisition -> reconstruction ->
-    voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md §17): the vascular stage is a
-    modelled state, not a nuisance to be regressed away'
+  observation_chain: "neural activity -> neurovascular coupling -> coupled CBF/CBV/CMRO2 change -> deoxyhaemoglobin\
+    \ concentration change -> T2*/T2' change -> gradient-echo k-space acquisition -> reconstruction ->\
+    \ voxel intensity time course. BOLD IS NOT NEURAL ACTIVITY (PROMPT.md \xA717): the vascular stage\
+    \ is a modelled state, not a nuisance to be regressed away"
   confounds:
   - head motion and its spin-history effects
   - respiratory and cardiac aliasing into the TR
@@ -197,3 +197,6 @@ provenance:
   card: ds003688
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/ds003688/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

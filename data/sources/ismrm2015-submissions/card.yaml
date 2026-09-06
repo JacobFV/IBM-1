@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: ismrm2015-submissions
 title: 'ISMRM 2015 Tractography Challenge: the 96 submitted tractograms'
 provider: Sherbrooke Connectivity Imaging Lab (SCIL), via Zenodo record 840086
@@ -44,17 +43,18 @@ streams:
   temporal_support: not a time series
   spatial_support: streamlines in the ISMRM 2015 phantom frame, 90 x 108 x 90 at 2 mm
   constrains: []
-  notes: 'this source contains NO BRAIN.  it is a simulated volume, so every stream in it is `context` and none
-    is `measured`: a measurement is evidence about the state of some real system, and there is no real system
-    here.  the card''s own `forbidden` list already refuses observation-role likelihoods from it, and `use`
-    is control / evaluate / surrogate.  these are the 96 files themselves, .trk/.tck/.vtk in the phantom frame.  MEASURED
-    FROM THESE BYTES by `scripts/measure_tract_uncertainty.py`: the submissions do not share a coordinate convention
-    -- 34 of the 96 are written with coordinates negative throughout, and 55 of the 91 whose convention could
-    be identified need x and y negated to reach the ground truth''s frame -- which is the `absent` entry `coordinate_convention_per_submission`
-    turning out to be load-bearing rather than pedantic.  the worse half of that finding is that x ALONE is
-    not recoverable from this phantom at all: it is left-right symmetric to within 3% of any occupancy overlap,
-    so the sign is settled by y, which is recoverable, on the ground that RAS and LPS negate the two together.  all
-    42 .trk files agree with their own voxel_order field on that reading.'
+  notes: 'this source contains NO BRAIN.  it is a simulated volume, so every stream in it is `context`
+    and none is `measured`: a measurement is evidence about the state of some real system, and there is
+    no real system here.  the card''s own `forbidden` list already refuses observation-role likelihoods
+    from it, and `use` is control / evaluate / surrogate.  these are the 96 files themselves, .trk/.tck/.vtk
+    in the phantom frame.  MEASURED FROM THESE BYTES by `scripts/measure_tract_uncertainty.py`: the submissions
+    do not share a coordinate convention -- 34 of the 96 are written with coordinates negative throughout,
+    and 55 of the 91 whose convention could be identified need x and y negated to reach the ground truth''s
+    frame -- which is the `absent` entry `coordinate_convention_per_submission` turning out to be load-bearing
+    rather than pedantic.  the worse half of that finding is that x ALONE is not recoverable from this
+    phantom at all: it is left-right symmetric to within 3% of any occupancy overlap, so the sign is settled
+    by y, which is recoverable, on the ground that RAS and LPS negate the two together.  all 42 .trk files
+    agree with their own voxel_order field on that reading.'
 - name: cross_pipeline_disagreement
   kind: context
   via: null
@@ -73,9 +73,9 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: 'duplicate of `submitted_tractograms` carried over from the migration, kept so the card still describes
-    the archive it came from.  bound to nothing, deliberately: binding the same bytes twice would double their
-    weight wherever a materialization counted streams.'
+  notes: 'duplicate of `submitted_tractograms` carried over from the migration, kept so the card still
+    describes the archive it came from.  bound to nothing, deliberately: binding the same bytes twice
+    would double their weight wherever a materialization counted streams.'
 absent:
 - algorithm_parameters
 - software_version
@@ -96,3 +96,6 @@ provenance:
   card: ismrm2015-submissions
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/ismrm2015-submissions/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

@@ -1,0 +1,9 @@
+local_root: data/sources/bendr/raw
+acquired_at: '2026-09-04'
+files: 2
+bytes: 628586182
+gib: 0.59
+checksums: deferred -- see checksums.txt
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record
+source_url: https://github.com/SPOClab-ca/BENDR

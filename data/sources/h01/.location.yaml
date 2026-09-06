@@ -1,0 +1,9 @@
+source_url: https://storage.googleapis.com/h01-release/data/20210601/
+local_root: data/sources/h01/raw
+acquired_at: '2026-09-05'
+files: 104
+bytes: 19807850289
+gib: 18.447
+checksums: deferred -- fetched over https from a public bucket, byte counts recorded here
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record

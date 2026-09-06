@@ -1,0 +1,9 @@
+local_root: data/sources/bbbd/raw
+acquired_at: '2026-09-04'
+files: 126
+bytes: 26973320945
+gib: 25.12
+checksums: deferred -- see checksums.txt
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record
+source_url: https://zenodo.org/records/19241964

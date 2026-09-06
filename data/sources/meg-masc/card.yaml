@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: meg-masc
 title: MEG-MASC -- MEG during naturalistic story listening over the MASC corpus
 provider: NYU Abu Dhabi / Meta AI
@@ -182,3 +181,6 @@ provenance:
   card: meg-masc
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/meg-masc/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

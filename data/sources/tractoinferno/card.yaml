@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: tractoinferno
 title: TractoInferno -- multi-site diffusion database for machine-learning tractography
 provider: Universite de Sherbrooke / SCIL
@@ -23,9 +22,9 @@ population:
   - participant
   - site
   - session
-  notes: '284 participants across SIX sites with different scanners and protocols. The multi-site design
-    is the point: it is the only source in §52.8 built specifically to test cross-pipeline and cross-site
-    generalisation.'
+  notes: "284 participants across SIX sites with different scanners and protocols. The multi-site design\
+    \ is the point: it is the only source in \xA752.8 built specifically to test cross-pipeline and cross-site\
+    \ generalisation."
 frames:
 - scanner
 - subject_native
@@ -61,17 +60,17 @@ streams:
   - structural.myelination
   frame: subject_native
   support: tissue
-  notes: 'the only stream here that is evidence about tissue.  `via: plasticity` is not a claim that this
-    scan measured learning -- it is the chain the registry itself declares for `dwi_microstructure` (ibm/processes/observation.py),
-    because `plasticity` is the only registered process that WRITES structural state, and §6 asks for
-    the process that produced the state being observed rather than for the imaging physics.  ibm-1 registers
-    no diffusion-encoding process, so the gradient-attenuation step is outside the ontology and the chain
-    is one link long; that gap is real and is recorded here rather than papered over with a plausible-looking
-    id.  the band is 0-0.001 Hz because the structural components are declared meaningful only there:
-    a single session says nothing about how fibre orientation changes, and a multi-site cross-sectional
-    design cannot either.  per-component chains: this acquisition makes more than one claim and the routes
-    differ.  one chain for all of them would let the component whose route is wrong borrow the route of
-    the ones that are right.'
+  notes: "the only stream here that is evidence about tissue.  `via: plasticity` is not a claim that this\
+    \ scan measured learning -- it is the chain the registry itself declares for `dwi_microstructure`\
+    \ (ibm/processes/observation.py), because `plasticity` is the only registered process that WRITES\
+    \ structural state, and \xA76 asks for the process that produced the state being observed rather than\
+    \ for the imaging physics.  ibm-1 registers no diffusion-encoding process, so the gradient-attenuation\
+    \ step is outside the ontology and the chain is one link long; that gap is real and is recorded here\
+    \ rather than papered over with a plausible-looking id.  the band is 0-0.001 Hz because the structural\
+    \ components are declared meaningful only there: a single session says nothing about how fibre orientation\
+    \ changes, and a multi-site cross-sectional design cannot either.  per-component chains: this acquisition\
+    \ makes more than one claim and the routes differ.  one chain for all of them would let the component\
+    \ whose route is wrong borrow the route of the ones that are right."
 - name: reference_tractograms
   kind: context
   via: null
@@ -82,27 +81,27 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: 'context, and the decision is the point.  a set of streamlines or a parcel-by-parcel matrix is
-    an INTERACTION TOPOLOGY -- a statement about which state variables may interact (ARCHITECTURE.md §3)
-    -- and a topology is a support for interaction, not a measurement of any component.  there is no ibm
-    component whose value this stream reports: `structural.fiber_orientation` is what the underlying diffusion
-    volume constrains, and the tractogram is an ALGORITHM''S ANSWER computed from it, not a second measurement
-    of it.  binding it as `measured` would let one pipeline''s reconstruction contribute a likelihood
-    about tissue, which is exactly the double-count the card''s `forbidden` list already refuses.  here
-    it is doubly true: `systematic_bias` on this stream already records that these bundles are EXPERT-CURATED
-    TRACTOGRAPHY OUTPUT and that a method matching them has matched a convention.  they supply the tractometric
-    support a materialization is built over, and `scripts/measure_tract_uncertainty.py` is what says how
-    much that support should be believed. what THESE bundles were then used for is the other half of that
-    question, and it is in `derive/group_connectome.yaml`: not how wrong one tractogram is -- the phantom
-    answers that -- but how much two SUBJECTS differ, which is the error a group connectome carries to
-    a subject who has no diffusion imaging at all.  they differ MORE than two algorithms do -- a strength
-    spread of 6.7 against the phantom''s 3.9 -- and a group connectome explains 28% of a held-out subject''s
-    edge strengths.'
+  notes: "context, and the decision is the point.  a set of streamlines or a parcel-by-parcel matrix is\
+    \ an INTERACTION TOPOLOGY -- a statement about which state variables may interact (ARCHITECTURE.md\
+    \ \xA73) -- and a topology is a support for interaction, not a measurement of any component.  there\
+    \ is no ibm component whose value this stream reports: `structural.fiber_orientation` is what the\
+    \ underlying diffusion volume constrains, and the tractogram is an ALGORITHM'S ANSWER computed from\
+    \ it, not a second measurement of it.  binding it as `measured` would let one pipeline's reconstruction\
+    \ contribute a likelihood about tissue, which is exactly the double-count the card's `forbidden` list\
+    \ already refuses.  here it is doubly true: `systematic_bias` on this stream already records that\
+    \ these bundles are EXPERT-CURATED TRACTOGRAPHY OUTPUT and that a method matching them has matched\
+    \ a convention.  they supply the tractometric support a materialization is built over, and `scripts/measure_tract_uncertainty.py`\
+    \ is what says how much that support should be believed. what THESE bundles were then used for is\
+    \ the other half of that question, and it is in `derive/group_connectome.yaml`: not how wrong one\
+    \ tractogram is -- the phantom answers that -- but how much two SUBJECTS differ, which is the error\
+    \ a group connectome carries to a subject who has no diffusion imaging at all.  they differ MORE than\
+    \ two algorithms do -- a strength spread of 6.7 against the phantom's 3.9 -- and a group connectome\
+    \ explains 28% of a held-out subject's edge strengths."
 - name: cross_site_generalisation
   kind: context
   via: null
-  systematic_bias: a site-held-out arm is available here and is the honest generalisation test §46 asks
-    for
+  systematic_bias: "a site-held-out arm is available here and is the honest generalisation test \xA746\
+    \ asks for"
   band_hz:
   - null
   - null
@@ -184,3 +183,6 @@ provenance:
   card: tractoinferno
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/tractoinferno/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

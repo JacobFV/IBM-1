@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: hansen-many-networks
 title: 'Hansen many-networks: ten annotation and connectivity networks on three shared parcellations'
 provider: netneurolab (Bratislav Misic lab), McGill University
@@ -32,12 +31,12 @@ streams:
   spatial_support: group consensus networks on three parcellations held side by side -- Cammoun033 (68
     nodes), Schaefer100, Schaefer400 -- which is a COVER family and not a choice of parcellation
   constrains: []
-  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
-    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
-    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
-    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
-    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
-    about a component.
+  notes: "context, and this is the case the schema's own note singles out.  a connectome matrix or an\
+    \ annotation network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by\
+    \ somebody's reconstruction pipeline.  ARCHITECTURE.md \xA73 makes interaction topologies a separate\
+    \ primitive from state, and binding a matrix as `measured` would let one pipeline's tractography or\
+    \ one study's correlation contribute a likelihood about tissue.  it enters as a topology and as a\
+    \ `prior`, never as evidence about a component."
 - name: three_connectivity_kinds_on_one_parcellation
   kind: context
   via: null
@@ -45,12 +44,12 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
-    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
-    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
-    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
-    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
-    about a component.
+  notes: "context, and this is the case the schema's own note singles out.  a connectome matrix or an\
+    \ annotation network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by\
+    \ somebody's reconstruction pipeline.  ARCHITECTURE.md \xA73 makes interaction topologies a separate\
+    \ primitive from state, and binding a matrix as `measured` would let one pipeline's tractography or\
+    \ one study's correlation contribute a likelihood about tissue.  it enters as a topology and as a\
+    \ `prior`, never as evidence about a component."
 - name: same_networks_on_three_parcellations
   kind: context
   via: null
@@ -58,12 +57,12 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
-    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
-    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
-    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
-    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
-    about a component.
+  notes: "context, and this is the case the schema's own note singles out.  a connectome matrix or an\
+    \ annotation network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by\
+    \ somebody's reconstruction pipeline.  ARCHITECTURE.md \xA73 makes interaction topologies a separate\
+    \ primitive from state, and binding a matrix as `measured` would let one pipeline's tractography or\
+    \ one study's correlation contribute a likelihood about tissue.  it enters as a topology and as a\
+    \ `prior`, never as evidence about a component."
 - name: annotation_similarity_networks
   kind: context
   via: null
@@ -71,12 +70,12 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
-    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
-    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
-    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
-    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
-    about a component.
+  notes: "context, and this is the case the schema's own note singles out.  a connectome matrix or an\
+    \ annotation network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by\
+    \ somebody's reconstruction pipeline.  ARCHITECTURE.md \xA73 makes interaction topologies a separate\
+    \ primitive from state, and binding a matrix as `measured` would let one pipeline's tractography or\
+    \ one study's correlation contribute a likelihood about tissue.  it enters as a topology and as a\
+    \ `prior`, never as evidence about a component."
 - name: structural_connectivity
   kind: context
   via: null
@@ -84,12 +83,12 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
-    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
-    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
-    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
-    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
-    about a component.
+  notes: "context, and this is the case the schema's own note singles out.  a connectome matrix or an\
+    \ annotation network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by\
+    \ somebody's reconstruction pipeline.  ARCHITECTURE.md \xA73 makes interaction topologies a separate\
+    \ primitive from state, and binding a matrix as `measured` would let one pipeline's tractography or\
+    \ one study's correlation contribute a likelihood about tissue.  it enters as a topology and as a\
+    \ `prior`, never as evidence about a component."
 - name: functional_connectivity
   kind: context
   via: null
@@ -97,12 +96,12 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
-    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
-    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
-    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
-    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
-    about a component.
+  notes: "context, and this is the case the schema's own note singles out.  a connectome matrix or an\
+    \ annotation network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by\
+    \ somebody's reconstruction pipeline.  ARCHITECTURE.md \xA73 makes interaction topologies a separate\
+    \ primitive from state, and binding a matrix as `measured` would let one pipeline's tractography or\
+    \ one study's correlation contribute a likelihood about tissue.  it enters as a topology and as a\
+    \ `prior`, never as evidence about a component."
 - name: meg_connectivity
   kind: context
   via: null
@@ -110,12 +109,12 @@ streams:
   - 0.0
   - 0.001
   constrains: []
-  notes: context, and this is the case the schema's own note singles out.  a connectome matrix or an annotation
-    network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by somebody's
-    reconstruction pipeline.  ARCHITECTURE.md §3 makes interaction topologies a separate primitive from
-    state, and binding a matrix as `measured` would let one pipeline's tractography or one study's correlation
-    contribute a likelihood about tissue.  it enters as a topology and as a `prior`, never as evidence
-    about a component.
+  notes: "context, and this is the case the schema's own note singles out.  a connectome matrix or an\
+    \ annotation network is a TOPOLOGY ASSERTION -- which supports are taken to interact -- produced by\
+    \ somebody's reconstruction pipeline.  ARCHITECTURE.md \xA73 makes interaction topologies a separate\
+    \ primitive from state, and binding a matrix as `measured` would let one pipeline's tractography or\
+    \ one study's correlation contribute a likelihood about tissue.  it enters as a topology and as a\
+    \ `prior`, never as evidence about a component."
 - name: pet_metabolic
   kind: context
   via: null
@@ -176,3 +175,6 @@ provenance:
   card: hansen-many-networks
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/hansen-many-networks/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

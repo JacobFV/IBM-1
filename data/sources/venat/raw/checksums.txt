@@ -1,9 +1,0 @@
-49543f5f99fe4e8f512c2f8c0d0732051996269023377e28a0c53422f7a14367  ./figshare-7205960/VENAT_curvature.nii.gz
-9a4124d1ef79b925cdb4ae8e9d4442514b58cd3692ecffa5b458efe38065196d  ./figshare-7205960/VENAT_curvature_std.nii.gz
-28909a8d2fee8946dca50bddd01d1bba5aec9c3ccd69dc61d38574d77707fd0b  ./figshare-7205960/VENAT_DensityMap.nii.gz
-deabc6211777fd8d6e0dfc69321a26ea1ae29adf1c3d3a97772e4ea33f56e978  ./figshare-7205960/VENAT_diameter.nii.gz
-c7277c5fb6634d32dfece3b04ef7aba18b5d4b261890ea10bc79e10a7846aa52  ./figshare-7205960/VENAT_diameter_std.nii.gz
-af222f62aa94a1bfd873e2822fce0daf472ed632f2c9957b45ad26069be86c35  ./figshare-7205960/VENAT_PartialVolume.nii.gz
-1ecf4da105657e906d899055729b5d72024442613383f6b95021bd57ad7e1141  ./figshare-7205960/VENAT_PartialVolume_std.nii.gz
-1fb300d0898530e8185940466516d57398365e77f4d8e078f27111af93f75f59  ./figshare-7205960/VENAT_torsion.nii.gz
-74921c210a59e4be5f7473c01cbda66346bc7ee5b397d3ebb1ae149f03165d9f  ./figshare-7205960/VENAT_torsion_std.nii.gz

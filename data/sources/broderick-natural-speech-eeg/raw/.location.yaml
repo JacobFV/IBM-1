@@ -1,5 +1,0 @@
-# where the bytes for `broderick-natural-speech-eeg` actually live.  never the bytes themselves.
-source_url: "https://doi.org/10.5061/dryad.070jc"
-local_root: null   # set on acquisition
-acquired_at: null
-bytes: null

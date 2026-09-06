@@ -1,0 +1,9 @@
+local_root: data/sources/libribrain/raw
+acquired_at: '2026-09-04'
+files: 163
+bytes: 48943755496
+gib: 45.58
+checksums: deferred -- see checksums.txt
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record
+source_url: https://huggingface.co/datasets/pnpl/LibriBrain

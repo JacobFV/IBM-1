@@ -1206,15 +1206,15 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--flow-root", type=Path,
-                    default=Path("/home/brandonin/Documents/win-data/"
+                    default=Path("/home/brandonin/Documents/IBM-1/data/sources/"
                                  "microscopy-microvascular-networks/extracted"),
                     help="where NW*_results/ live")
     ap.add_argument("--graph-root", type=Path,
-                    default=Path("/home/brandonin/Documents/win-data/"
+                    default=Path("/home/brandonin/Documents/IBM-1/data/sources/"
                                  "vesselgraph-mouse/zips"),
                     help="where the VesselGraph *_raw.zip archives live")
     ap.add_argument("--venat-root", type=Path,
-                    default=Path("/home/brandonin/Documents/win-data/venat/"
+                    default=Path("/home/brandonin/Documents/IBM-1/data/sources/venat/"
                                  "figshare-7205960"))
     ap.add_argument("--out", type=Path, default=None)
     ap.add_argument("--margin-um", type=float, default=100.0)

@@ -1,8 +1,8 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: microns
 title: MICrONS -- millimetre-scale mouse visual cortex EM connectome with functional imaging
 provider: IARPA MICrONS consortium / Allen Institute, Baylor, Princeton
-citation: MICrONS Consortium, Functional connectomics spanning multiple areas of mouse visual cortex. Nature 2025.
+citation: MICrONS Consortium, Functional connectomics spanning multiple areas of mouse visual cortex.
+  Nature 2025.
 urls:
 - https://www.microns-explorer.org/
 access: held
@@ -10,9 +10,9 @@ licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's known bias
-    and licence rather than treating atlas availability as correctness; that practice is preserved by leaving this
-    unresolved and counting it.
+  notes: "Unresolved. \xA749.2 records that the predecessor's attribution generator tracked each source's\
+    \ known bias and licence rather than treating atlas availability as correctness; that practice is\
+    \ preserved by leaving this unresolved and counting it."
 binding: bound
 population:
   n: null
@@ -23,57 +23,60 @@ streams:
 - name: structure_function_correspondence
   kind: context
   via: null
-  systematic_bias: '§52.6: MICrONS is A MOUSE MESOSCALE/MICROCIRCUIT PRIOR. Its unique value is that the same neurons
-    have both a measured synaptic wiring diagram and a measured functional response -- which is the only direct
-    empirical handle anywhere on §38''s structural-versus-functional distinction. It is mouse, and the extrapolation
-    to human is an assumption that must be carded wherever it is used.'
+  systematic_bias: "\xA752.6: MICrONS is A MOUSE MESOSCALE/MICROCIRCUIT PRIOR. Its unique value is that\
+    \ the same neurons have both a measured synaptic wiring diagram and a measured functional response\
+    \ -- which is the only direct empirical handle anywhere on \xA738's structural-versus-functional distinction.\
+    \ It is mouse, and the extrapolation to human is an assumption that must be carded wherever it is\
+    \ used."
   band_hz:
   - 0.0
   - 0.001
   temporal_support: not a time series -- this is static anatomy
-  spatial_support: one cubic millimetre of MOUSE visual cortex with electron-microscopy reconstruction AND prior
-    in-vivo two-photon calcium imaging of the same neurons -- structure and function in the same cells, which exists
-    nowhere else
+  spatial_support: one cubic millimetre of MOUSE visual cortex with electron-microscopy reconstruction
+    AND prior in-vivo two-photon calcium imaging of the same neurons -- structure and function in the
+    same cells, which exists nowhere else
   constrains: []
-  notes: 'context, and the most valuable stream here for what it is NOT.  it constrains no component; what it constrains
-    is a PRIOR -- the connection probabilities, synapses-per-connection and laminar specificity that `ibm/topologies/microcircuit_prior.py`
-    reads.  a stream that shapes p(theta) and contributes no likelihood is `use: prior` in the card vocabulary and
-    `kind: context` at the stream level, which is the same reading ismrm2015-submissions carries.  the functional
-    half (two-photon calcium in the same cells) is not bound either, and for a second reason: calcium fluorescence
-    is a slow nonlinear proxy whose observation model this card does not carry.'
+  notes: 'context, and the most valuable stream here for what it is NOT.  it constrains no component;
+    what it constrains is a PRIOR -- the connection probabilities, synapses-per-connection and laminar
+    specificity that `ibm/topologies/microcircuit_prior.py` reads.  a stream that shapes p(theta) and
+    contributes no likelihood is `use: prior` in the card vocabulary and `kind: context` at the stream
+    level, which is the same reading ismrm2015-submissions carries.  the functional half (two-photon calcium
+    in the same cells) is not bound either, and for a second reason: calcium fluorescence is a slow nonlinear
+    proxy whose observation model this card does not carry.'
 - name: synaptic_wiring_statistics
   kind: context
   via: null
-  systematic_bias: connection probability as a function of cell type and distance is the local interaction prior;
-    it is measured in mouse V1 and nowhere else
+  systematic_bias: connection probability as a function of cell type and distance is the local interaction
+    prior; it is measured in mouse V1 and nowhere else
   band_hz:
   - 0.0
   - 0.001
   constrains: []
-  notes: 'context, and the decision is about SPECIES rather than about the measurement.  synapses per unit volume
-    is exactly `structural.synaptic_density` and this source measures it directly and well -- 776,570 synapses from
-    564 hand-proofread axons at materialization 1078, MEASURED FROM THESE BYTES by scripts/measure_microcircuit.py.  what
-    stops it binding is this card''s own `forbidden`: ibm-1 materializes human anatomy, and letting a mouse synaptic
-    density contribute precision to a human component is precisely the observation-role likelihood the forbidden
-    list refuses.  it enters as a prior instead, and the prior module states per quantity what transfers (the ordering
-    of connection probabilities, the E/I ratio, the shape of p(d)) and what does not (every absolute density, and
-    lambda in absolute microns).  MEASURED: E->E connection probability 0.033 within 100 um at a space constant
-    of 220 um, E->PV 0.121, SST->E 0.195 at 47 um; inhibitory connections carry 2.0x the synapses of excitatory
-    ones; a 200 um column encloses 70% of an excitatory cell''s local output and 89% of an sst cell''s.'
+  notes: 'context, and the decision is about SPECIES rather than about the measurement.  synapses per
+    unit volume is exactly `structural.synaptic_density` and this source measures it directly and well
+    -- 776,570 synapses from 564 hand-proofread axons at materialization 1078, MEASURED FROM THESE BYTES
+    by scripts/measure_microcircuit.py.  what stops it binding is this card''s own `forbidden`: ibm-1
+    materializes human anatomy, and letting a mouse synaptic density contribute precision to a human component
+    is precisely the observation-role likelihood the forbidden list refuses.  it enters as a prior instead,
+    and the prior module states per quantity what transfers (the ordering of connection probabilities,
+    the E/I ratio, the shape of p(d)) and what does not (every absolute density, and lambda in absolute
+    microns).  MEASURED: E->E connection probability 0.033 within 100 um at a space constant of 220 um,
+    E->PV 0.121, SST->E 0.195 at 47 um; inhibitory connections carry 2.0x the synapses of excitatory ones;
+    a 200 um column encloses 70% of an excitatory cell''s local output and 89% of an sst cell''s.'
 - name: calcium_functional_data
   kind: context
   via: null
-  systematic_bias: calcium fluorescence is a slow, nonlinear proxy for spiking -- an observation process in its
-    own right that this card does not model
+  systematic_bias: calcium fluorescence is a slow, nonlinear proxy for spiking -- an observation process
+    in its own right that this card does not model
   band_hz:
   - 0.0
   - 0.001
   constrains: []
-  notes: 'context.  it would constrain `neural.exc.activity` if the card carried an observation model for two-photon
-    calcium, which it does not: fluorescence is a slow, saturating, indicator- and expression-dependent function
-    of spiking, and binding a rate component to it without that model would attribute the indicator''s dynamics
-    to the tissue.  nothing in this repository''s acquisition touched these bytes either -- what was fetched is
-    the connectivity product, not the imaging.'
+  notes: 'context.  it would constrain `neural.exc.activity` if the card carried an observation model
+    for two-photon calcium, which it does not: fluorescence is a slow, saturating, indicator- and expression-dependent
+    function of spiking, and binding a rate component to it without that model would attribute the indicator''s
+    dynamics to the tissue.  nothing in this repository''s acquisition touched these bytes either -- what
+    was fetched is the connectivity product, not the imaging.'
 absent:
 - human_correspondence
 - population
@@ -95,3 +98,6 @@ provenance:
   card: microns
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/microns/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

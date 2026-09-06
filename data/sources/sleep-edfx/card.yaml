@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: sleep-edfx
 title: Sleep-EDF Expanded (Sleep-EDFx) -- polysomnography with expert sleep staging
 provider: PhysioNet
@@ -49,8 +48,8 @@ streams:
   - reference-electrode activity, which is never inactive
   - sweat artifact and electrode drift over a full night
   - sleep-position changes altering electrode contact
-  systematic_bias: Two channels give essentially no spatial information. What this source supplies is
-    very long, slowly-varying STATE trajectories -- the slow axis §52.15 cares about.
+  systematic_bias: "Two channels give essentially no spatial information. What this source supplies is\
+    \ very long, slowly-varying STATE trajectories -- the slow axis \xA752.15 cares about."
   notes: Fpz-Cz and Pz-Oz only.  two bipolar derivations cannot localise anything; what they constrain
     is the spectrum of whatever generators project onto those axes, which is exactly what an aperiodic-plus-peak
     prior is about.
@@ -89,7 +88,7 @@ streams:
   - sensor placement and contact quality
   - motion artifact
   - respiratory-cardiac cross-coupling that makes the two streams non-independent
-  systematic_bias: Slow physiological state across a whole night, which pairs with §52.15.
+  systematic_bias: "Slow physiological state across a whole night, which pairs with \xA752.15."
   band_hz:
   - 0.0
   - 0.02
@@ -193,3 +192,6 @@ provenance:
   card: sleep-edfx
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/sleep-edfx/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

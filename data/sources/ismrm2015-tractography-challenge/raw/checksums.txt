@@ -1,4 +1,0 @@
-# sha256 manifest for ismrm2015-tractography-challenge -- DEFERRED
-# 34 files, 787131814 bytes (0.73 GiB) at /home/brandonin/Documents/win-data/ismrm2015-tractography-challenge
-# hashing this source has not been run; until it has, no derive recipe may claim
-# reproducibility against a specific raw state.

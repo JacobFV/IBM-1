@@ -1,9 +1,8 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: libribrain
 title: LibriBrain -- deep within-person MEG during audiobook listening
 provider: Oxford / LibriBrain benchmark
-citation: 'LibriBrain: a large within-subject MEG dataset for naturalistic speech (named in PROMPT.md
-  §51.1 item 10 and §52.4).'
+citation: "LibriBrain: a large within-subject MEG dataset for naturalistic speech (named in PROMPT.md\
+  \ \xA751.1 item 10 and \xA752.4)."
 urls:
 - https://huggingface.co/datasets/pnpl/LibriBrain
 - https://huggingface.co/datasets/pnpl/LibriBrain2
@@ -31,8 +30,8 @@ population:
   hierarchy:
   - session
   - run
-  notes: 'Very many hours in ONE participant. §51.1 item 10: together with MEG-MASC and MEG-SCANS this
-    separates PERSON DEPTH from population breadth, and that separation is the reason to hold all three.'
+  notes: "Very many hours in ONE participant. \xA751.1 item 10: together with MEG-MASC and MEG-SCANS this\
+    \ separates PERSON DEPTH from population breadth, and that separation is the reason to hold all three."
 frames:
 - meg_device
 - head_fiducial
@@ -168,3 +167,6 @@ provenance:
   card: libribrain
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/libribrain/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on

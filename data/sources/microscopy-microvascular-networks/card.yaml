@@ -1,4 +1,3 @@
-# ibm-1 source card. schema: data/schema/source.schema.json
 id: microscopy-microvascular-networks
 title: Microscopy-derived microvascular network reconstructions, with a flow solution
 provider: Blinder/Kleinfeld (geometry) and Schmid/Weber (flow), distributed on Zenodo
@@ -60,9 +59,9 @@ streams:
     capillary density tracks metabolic rate; the normalised geometry is what transfers.
   notes: 'this stream is the source of the capillary-bed numbers ibm/topologies/vascular_prior.py compiles
     in: length density 664 mm/mm^3 with a between-animal spread of x1.09 and a 2.6-fold variation over
-    cortical DEPTH, wall surface 8.8 mm^2/mm^3, mean tissue-to-capillary distance 27 um and 40 um at
-    p90, capillary radius 2.06 um, segment length 56 um, tortuosity 1.17.  the depth variation is three
-    times the between-animal variation, which is why the generator conditions on depth and not on subject.'
+    cortical DEPTH, wall surface 8.8 mm^2/mm^3, mean tissue-to-capillary distance 27 um and 40 um at p90,
+    capillary radius 2.06 um, segment length 56 um, tortuosity 1.17.  the depth variation is three times
+    the between-animal variation, which is why the generator conditions on depth and not on subject.'
   band_hz:
   - 0.0
   - 0.001
@@ -90,11 +89,11 @@ streams:
   kind: context
   constrains: []
   via: null
-  systematic_bias: 'A SIMULATION on top of a measured geometry, and that is the whole reason it is context.
+  systematic_bias: A SIMULATION on top of a measured geometry, and that is the whole reason it is context.
     The pressure at a vertex and the flow in a segment are what a particular rheological model produced
     from a particular set of boundary conditions; they are not measurements of blood. What they legitimately
     support is a statement about what a network of THIS GEOMETRY must do in order to carry blood, which
-    is exactly what a generative model needs and is not a likelihood about anyone''s haemodynamic state.'
+    is exactly what a generative model needs and is not a likelihood about anyone's haemodynamic state.
   notes: 'context, and it is a DECISION rather than a gap.  a solved pressure field is not a measurement
     of blood.pressure -- it is the output of a model, and letting it write a likelihood about a state
     variable would let a simulation update biology.  what it is used for instead is a CONSTRAINT ON GEOMETRY:
@@ -129,12 +128,15 @@ forbidden:
 split:
   group_by:
   - participant
-  notes: 'three animals is not a cohort.  it is enough to say what the between-animal spread of a density
-    is (x1.09) and not enough to say what a population''s is, and the deviation-from-consensus estimator
+  notes: three animals is not a cohort.  it is enough to say what the between-animal spread of a density
+    is (x1.09) and not enough to say what a population's is, and the deviation-from-consensus estimator
     of shared error has essentially no dynamic range at n = 3 -- which the evidence directory reports
-    rather than papering over.'
+    rather than papering over.
 provenance:
   imported_from: win-registry
   card: microscopy-microvascular-networks
   imported_at: '2026-09-04'
   index: data/index/win/cards.jsonl
+local_root: data/sources/microscopy-microvascular-networks/raw
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on
