@@ -596,6 +596,16 @@ def main() -> int:
     ap.add_argument("--polish", type=int, default=6)
     ap.add_argument("--nodes", type=int, default=3000)
     ap.add_argument("--bins", type=int, default=9)
+    ap.add_argument("--montage", choices=("real", "uniform", "shuffle"), default="real",
+                    help="`real` gives every source its own lead-field weighting.  the other "
+                         "two are placebos for the objection that nine extra coefficients "
+                         "would loosen any conflict: `uniform` hands every source the "
+                         "area-weighted sheet, so the gradients keep all their freedom to "
+                         "broaden a spectrum and lose every bit of montage differentiation; "
+                         "`shuffle` permutes the real weightings between sources, so the "
+                         "differentiation survives and only its ATTRIBUTION is destroyed.  a "
+                         "conflict that collapses under either of these did not collapse "
+                         "because of the forward model")
     ap.add_argument("--cache", type=Path, default=None)
     ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
@@ -616,6 +626,14 @@ def main() -> int:
         break
     table = montage_weight_table(fld, ds000117_raw=d117)
     mix = mixtures(fld, table, k_bins=args.bins)
+    if args.montage == "uniform":
+        mix = {k: replace(mix["ds004873"], name=k) for k in mix}
+    elif args.montage == "shuffle":
+        movable = ["eegmmidb", "sleep-edfx", "ds000117/eeg", "ds000117/meg"]
+        perm = list(np.random.default_rng(args.seed).permutation(len(movable)))
+        mix = dict(mix, **{k: replace(mix[movable[j]], name=k)
+                           for k, j in zip(movable, perm)})
+    payload["montage_mode"] = args.montage
     print(f"\n{'source':16s} {'mean a':>8s} {'sd a':>7s} {'bins':>5s}  what it is")
     print("-" * 78)
     for k, m in mix.items():
@@ -886,11 +904,31 @@ def main() -> int:
         for tag, space, res, t0 in (("old", space_old, res_old, t0_old),
                                     ("new", space_new, res_new, t0_new))}
 
+    def jsonable(x):
+        """numpy out, python in -- once, at the boundary, rather than at 40 call sites.
+
+        `json.dumps(default=float)` converts a 0-d numpy scalar and raises on an
+        array, and the difference between the two is invisible at the point where
+        one is written.  converting here is the only place that knows it is about
+        to serialize.
+        """
+        if isinstance(x, dict):
+            return {str(k): jsonable(v) for k, v in x.items()}
+        if isinstance(x, (list, tuple)):
+            return [jsonable(v) for v in x]
+        if isinstance(x, np.ndarray):
+            return jsonable(x.tolist())
+        if isinstance(x, (np.floating, np.integer)):
+            return x.item()
+        if isinstance(x, np.bool_):
+            return bool(x)
+        return x
+
     payload["runtime_s"] = time.time() - t0
     out = args.out or (Path(__file__).resolve().parents[1] / "data" / "joint" /
                        "forge_joint_spatial@v1" / "posterior.json")
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(payload, indent=2, default=float))
+    out.write_text(json.dumps(jsonable(payload), indent=2, default=float))
     print(f"\nwritten to {out}\n{time.time() - t0:.1f} s")
     return 0
 

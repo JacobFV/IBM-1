@@ -587,6 +587,35 @@ credits a shrinkage of 0.25 where the correct one gives 0.003.
    montage moves between visits.
 3. six saturated sensors turned a +0.0009 median into a **-0.073 mean**.
 
+### 4.9 subcortical anatomy is requested by models with no process behind it
+
+`Anat(...)` appears in process declarations for exactly four systems:
+`thalamic_nuclei`, `cortical_layers`, `cortical_areas`, `brainstem_nuclei`. nine
+other anatomical systems are declared and **no process selects on any of them**.
+
+that would be a mere gap, except that library models REQUEST them:
+
+| anatomy | requested by | dynamics |
+|---|---|---|
+| `bg_territories` | 3 models (`state`, `stimulation`, `surrogate`) | none |
+| `striosome_matrix` | 2 models (`state`, `stimulation`) | none |
+| `hippocampal_subfields` | 4 models (`state`, `decoding`, `slow`, `substrate`) | none |
+| `cerebellar_lobules` | 3 models (`state`, `surrogate`, `hemodynamic`) | none |
+| `cerebellar_microzones` | nothing | none |
+| `amygdalar_nuclei` | nothing | none |
+| `hypothalamic_nuclei` | topology builders only | none |
+
+**so a model that asks for striatal or hippocampal signal gets the partition and
+then evolves it under generic cortical processes wearing a subcortical label.**
+this is not a missing feature; it is a wrong answer being returned today. either
+declare the processes (DYNAMICS.md mechanisms 5, 7, 8, 18 — the anatomy,
+partitions and supports already exist, so this is the cheapest real progress
+available) or make the request refuse an anatomy no process covers.
+
+the refusal is the smaller change and should probably land first, because it
+converts a silent wrong answer into a build-time gap of the kind §4.6 already
+tracks.
+
 ## 5. decisions already made — do not relitigate
 
 - **the laplacian is over TIME, for one state variable.** not over space. fields
