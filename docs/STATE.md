@@ -403,6 +403,10 @@ materialized views of ONE implicit model.
 
 ### 4.3 JOINT FORGING RAN. the strong claim fails; the scope of the failure matters
 
+**4.3(iii) has now been re-run with a montage factor and a spatial gradient and it
+SURVIVES — see 4.3b. the strong shared-parameter claim is falsified across
+modalities, not merely under a GLOBAL collapse.**
+
 `scripts/forge_joint.py`, 4 sources (60 eegmmidb, 60 sleep-edfx nights scored
 WAKE, 16 ds000117 with 102 magnetometers + 70 EEG on the same head, 37 ds004873),
 one `ParameterSpace`, `Method.JOINT`, split by subject 60/40. weighting by
@@ -452,17 +456,97 @@ architecture explicitly does not make. the agent named this itself as the first 
 three causes it could not separate; the other two are a missing instrument/montage
 factor in the forward model, and genuine cohort differences.
 
-**the open question, now sharp and testable:** re-run with the DECLARED
-per_partition tying and a montage factor. if the conflicts survive that, the
-shared-parameter architecture is falsified. if they collapse, the architecture is
-intact and the GLOBAL collapse was the error. until that is run, (iii) is not
-evidence against the architecture.
+**that open question has now been run, and (iii) SURVIVES.** see 4.3b.
 
 #### what does survive
 the joint theta beats the untouched literature prior on all four sources
 (p <= 0.003), with r2 of log psd rising 0.56->0.80, -1.21->0.80, 0.53->0.65,
 0.55->0.92. so the WEAK form holds and the strong form -- that pooling pays for
 itself -- does not, on these four sources under a global collapse.
+
+### 4.3b THE MONTAGE FACTOR WAS RUN. it absorbs half the conflict and explains none of it
+
+`scripts/forge_joint_spatial.py`, `ibm/forge/montage.py`, evidence in
+`data/joint/forge_joint_spatial@v1/`. the fix 4.3(iii) asked for, built the only
+way three montages can support: NOT the declared per_partition map -- 34 areas x
+6 layers against three scalar functionals is rank 3 against rank 204 -- but a
+rank-2 reparameterization of it, one global value plus ONE anterior-posterior
+gradient per shared parameter, `theta_p(q) = theta_p0 exp(g_p a(q))`, against a
+real forward weighting per source. the weighting is the mne `sample` subject's
+three-layer BEM solved over the white surface and projected onto each montage:
+11 monopolar parieto-occipital electrodes, the Fpz-Cz/Pz-Oz bipolar pair,
+ds000117's own digitised 74-electrode cap, the Vectorview magnetometer array,
+and the sheet's own area for a grey-matter median. the montages really do weigh
+cortex differently -- mean standardized A-P position **-0.75 / +0.11 / -0.09 /
+-0.27 / 0.00** -- so the design is identifiable where a partition map is not.
+
+the OLD model is re-run in the same process from the same splits and reproduces
+`forge_joint@v1/posterior.json` **bit for bit on all 19 live comparisons**, so
+the two columns differ by the spatial factor and the montage weighting and by
+nothing else.
+
+| | mean \|z\| | mean \|d_u\| | >=3 sigma | W-vs-N2 control |
+|---|---|---|---|---|
+| OLD, global + flat | 38.1 | 2.619 | 18 of 19 | 4 of 6 |
+| NEW, real montages | 11.8 | 1.183 (-55%) | **10 of 19** | **1 of 6** |
+| placebo: montages SHUFFLED between sources | 12.8 | 0.958 (-63%) | 10 of 19 | 1 of 5 |
+| placebo: every montage uniform, gradients free | 11.9 | 1.934 (-26%) | 6 of 19 | 5 of 7 |
+
+`d_u` is the disagreement itself in the unconstrained coordinate and `z` divides
+it by the two marginal laplace widths. **read d_u.** nine loose coefficients
+widen every width whether or not they explain anything, and on 8 of the 19 rows
+the width grew by 5x to 48x -- a z that fell because its denominator grew is a
+conflict hidden, not a conflict resolved.
+
+**three things settle it, and they all point the same way.**
+
+- **the conflict survives.** with the real forward model in place 10 of 19 live
+  comparisons still exceed 3 sigma. `alpha_resonator.f0_hz` still differs by
+  **4.78 Hz** between eegmmidb and sleep-edfx (z +27) and the eegmmidb-ds000117
+  pair reads z +39 on a *narrower* width. the effect is smaller than 88 sigma
+  suggested and it is not zero.
+- **the absorption is not the forward model.** SCRAMBLING which montage belongs
+  to which source absorbs as much as the correct assignment (0.958 against
+  1.183) and leaves the same 10 rows above 3 sigma. what buys the reduction is
+  having heterogeneous mixtures at all -- nine extra degrees of spectral freedom
+  -- not having the RIGHT ones.
+- **the detector loses power under the same freedom.** wake against N2 in the
+  same people through the same electrodes, where no montage factor can be the
+  explanation, falls from 4 of 6 to 1 of 6. the uniform placebo, which adds the
+  same nine coefficients but no mixture width, keeps it at 5 of 7.
+
+**held out, the montage factor IS worth something, and not enough.** the joint
+theta's held-out log-likelihood summed over the four sources rises 10,524 ->
+15,497 nats, but the shuffled placebo reaches 15,377 -- **98% of the same gain**.
+and joint still beats each source's own fit on **0 of 4**, significantly worse on
+2 of 4, exactly as before; eegmmidb's gap does close (-92 -> -7 nats, p 0.75).
+
+**what the correct weighting alone buys**: fitted per source, the alpha-f0
+gradient comes out **-0.13 +- 0.003, -0.72 +- 0.07 and -1.83** from the three
+montages -- all negative, i.e. alpha faster posteriorly, the documented
+direction -- while both placebos give mixed signs. that is the only place the
+right assignment beats a wrong one, it is 3 of 3 against 2 of 3, and with three
+sources it is worth p ~ 0.25. the JOINT gradient is +0.217, the opposite
+direction, from a mode whose hessian is not positive definite and whose restarts
+move 92 sd -- 4.3(ii) again, and it is not usable.
+
+**verdict: the conflict is NOT an artefact of the observation model.** what 4.3
+(iii) falsifies is narrower than "no parameter is shared" -- the weak form still
+holds, the joint theta still beats the literature prior on all four sources --
+but the strong form does not survive a real montage factor and a real spatial
+gradient, and the scaling plan must not assume that pooling across modalities
+pays for itself. the remaining candidates for the residual are the two the
+montage factor cannot touch: cohort and state differences (eegmmidb is resting
+eyes-closed, ds000117 is a face-recognition task, sleep-edfx is overnight scored
+wake), and a forward model that is still ONE head, the mne sample subject,
+standing in for four cohorts.
+
+**what NOT to do next.** do not expand to the declared per_partition tying: the
+identifiability argument that killed it is unchanged and the rank-2 version has
+now been measured. do not read a falling `z` as a resolved conflict without the
+scrambled-assignment placebo beside it -- that control is the only thing that
+separated a forward model from nine free parameters here, and it cost one extra
+run.
 
 ### 4.3-OLD no parameter has ever been moved by evidence in a materialization
 provenance reports 0 of 123 θ entries moved. `local_excitation`'s 22 parameters

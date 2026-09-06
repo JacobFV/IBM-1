@@ -1,0 +1,2692 @@
+{
+  "argv": [
+    "--montage",
+    "real",
+    "--cache",
+    "/tmp/claude-1000/-home-brandonin-Documents-IBM-1/d6587b2e-c347-48cf-bb14-8df80b8c7706/scratchpad/cache.pkl",
+    "--out",
+    "/tmp/claude-1000/-home-brandonin-Documents-IBM-1/d6587b2e-c347-48cf-bb14-8df80b8c7706/scratchpad/spatial2.json"
+  ],
+  "seed": 0,
+  "montage_mode": "real",
+  "montage": {
+    "eegmmidb": {
+      "mean_a": -0.753718533071094,
+      "sd_a": 0.7916689919107694,
+      "mean_ml": 0.012825535808020023,
+      "detail": "11 monopolar channels: P3, P1, Pz, P2, P4, PO3, POz, PO4, O1, Oz, O2",
+      "approximations": [
+        "standard_1005 template electrodes on the sample head; fiducial residual 0.8 mm",
+        "the EDFs do not record their reference, so a far reference is assumed"
+      ],
+      "bin_a": [
+        -1.5204411759371397,
+        -1.122056929596745,
+        -0.7642750026018621,
+        -0.4288957684782043,
+        -0.051407672243205506,
+        0.33216356902477784,
+        0.6886485159632171,
+        1.0992097620521684,
+        1.5946078801763506
+      ],
+      "bin_w": [
+        0.311944473349149,
+        0.2099493937276687,
+        0.13783981963535186,
+        0.10361409305908945,
+        0.08920442590787789,
+        0.057377336662078116,
+        0.039562673845581695,
+        0.03294465533907559,
+        0.01756312847412779
+      ]
+    },
+    "sleep-edfx": {
+      "mean_a": 0.11361100805216728,
+      "sd_a": 1.1117921073034396,
+      "mean_ml": -0.21867491162912722,
+      "detail": "2 bipolar derivations: Fpz-Cz, Pz-Oz",
+      "approximations": [
+        "standard_1005 template electrodes on the sample head; fiducial residual 0.8 mm"
+      ],
+      "bin_a": [
+        -1.5174051344828112,
+        -1.1195345050441918,
+        -0.7577566387439799,
+        -0.4294079533901774,
+        -0.05502724753159598,
+        0.3370593257775825,
+        0.704703563020599,
+        1.1101706879430007,
+        1.7077893903361852
+      ],
+      "bin_w": [
+        0.12845692369763076,
+        0.09698410563260024,
+        0.10827313354074024,
+        0.09805628909868037,
+        0.09015389731419504,
+        0.07767665418956211,
+        0.08849359842925027,
+        0.12548320669767607,
+        0.18642219139966495
+      ]
+    },
+    "ds000117/eeg": {
+      "mean_a": -0.08645315067562256,
+      "sd_a": 0.9679264070182209,
+      "mean_ml": 0.0944897984007485,
+      "detail": "74 digitised channels from sub-01_ses-meg_task-facerecognition_run-01_meg.fif",
+      "approximations": [
+        "ds000117's own digitised electrodes carried onto the sample head; fiducial residual 1.0 mm"
+      ],
+      "bin_a": [
+        -1.5052093682242147,
+        -1.1134340943624463,
+        -0.7535846808145394,
+        -0.4222739709236318,
+        -0.04355765395377431,
+        0.34044862302836787,
+        0.6945672024190019,
+        1.109302134377752,
+        1.6450437627548982
+      ],
+      "bin_w": [
+        0.12362521503845338,
+        0.11712245384740458,
+        0.11619471161442704,
+        0.11720026813098496,
+        0.11555564579411412,
+        0.11613791952501751,
+        0.0995716386188252,
+        0.10581119718463441,
+        0.08878095024613886
+      ]
+    },
+    "ds000117/meg": {
+      "mean_a": -0.2653074110147652,
+      "sd_a": 0.9838451291264614,
+      "mean_ml": 0.24026194576289278,
+      "detail": "102 magnetometers",
+      "approximations": [
+        "the sample subject's own Vectorview 306 magnetometers; ds000117 used the same array, so the geometry is the array's and only the head position differs"
+      ],
+      "bin_a": [
+        -1.507352457870671,
+        -1.1169915873128073,
+        -0.7555638923100232,
+        -0.4285503098702129,
+        -0.04521499102658849,
+        0.3518521340470483,
+        0.6982819055069575,
+        1.0993398572454043,
+        1.6727154987522566
+      ],
+      "bin_w": [
+        0.17366014216551026,
+        0.14613439803511952,
+        0.12538273663231086,
+        0.11436695891641246,
+        0.11276782585300188,
+        0.08758055853291194,
+        0.07536723027542784,
+        0.08802326546816824,
+        0.07671688412113681
+      ]
+    },
+    "ds004873": {
+      "mean_a": 5.551115123125783e-17,
+      "sd_a": 0.9917127057185255,
+      "mean_ml": -9.020562075079397e-17,
+      "detail": "grey-matter median, uniform over the sheet",
+      "approximations": [
+        "a whole-grey-matter median over a T2-masked volume weighs cortex by area, not by any lead field; no forward model enters"
+      ],
+      "bin_a": [
+        -1.4897249801219805,
+        -1.1120844711457891,
+        -0.7596159754504139,
+        -0.41816547104769186,
+        -0.04640239356531977,
+        0.33649033050153637,
+        0.6968103307597158,
+        1.1081925656578322,
+        1.6774203300256254
+      ],
+      "bin_w": [
+        0.11070412999475956,
+        0.11150585492905524,
+        0.11101511624862181,
+        0.11063886249181729,
+        0.11137413826913282,
+        0.11130244758604232,
+        0.11117972966865977,
+        0.11084320923835081,
+        0.11143651157356046
+      ]
+    }
+  },
+  "two_factor_singular_values": [
+    0.6927042996411128,
+    0.30590149171636777
+  ],
+  "conflicts_old": [
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": -18.040451890996714,
+      "d_u": -0.775951385413495,
+      "sd": 0.04301174882435966,
+      "theta_a": 0.004135589243132068,
+      "theta_b": 0.008985221796234427,
+      "sd_a": 0.020873895477179855,
+      "sd_b": 0.03760706083353996,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": -2.8037862502204525,
+      "d_u": -0.19196021098491833,
+      "sd": 0.06846463811919512,
+      "theta_a": 0.002603947491146032,
+      "theta_b": 0.003155000865871856,
+      "sd_a": 0.015557555797430104,
+      "sd_b": 0.06667360145066557,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": -6.868690137904036,
+      "d_u": -0.7805191260076185,
+      "sd": 0.11363434808340213,
+      "theta_a": 0.0066194512847338105,
+      "theta_b": 0.01444764759365348,
+      "sd_a": 0.09521493453207656,
+      "sd_b": 0.06202323198924876,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": -14.984420249792057,
+      "d_u": -0.9151429234069068,
+      "sd": 0.061072961659601514,
+      "theta_a": 0.006350904161300659,
+      "theta_b": 0.015859046804185352,
+      "sd_a": 0.05046696163263813,
+      "sd_b": 0.03439465698978531,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": -38.464846750414445,
+      "d_u": -1.158736285069236,
+      "sd": 0.030124552233052923,
+      "theta_a": 0.005072527941267118,
+      "theta_b": 0.01616059038504731,
+      "sd_a": 0.0239704362066844,
+      "sd_b": 0.01824573471535765,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": -11.689171720472228,
+      "d_u": -0.31984172429107716,
+      "sd": 0.027362223084712794,
+      "theta_a": 4.916927161388462,
+      "theta_b": 6.770165271652885,
+      "sd_a": 0.014645998472893301,
+      "sd_b": 0.02311246375593906,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": 65.01340208572371,
+      "d_u": 6.107692903252407,
+      "sd": 0.09394513603824456,
+      "theta_a": 10.44196361066115,
+      "theta_b": 4.334270707408742,
+      "sd_a": 0.02164234475155387,
+      "sd_b": 0.09141825582945216,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": 77.15443925336173,
+      "d_u": 2.507820413811366,
+      "sd": 0.032503903055741495,
+      "theta_a": 6.035269735877882,
+      "theta_b": 0.4915459448107471,
+      "sd_a": 0.02422091686264924,
+      "sd_b": 0.021676044385211875,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": -52.70867858656078,
+      "d_u": -2.6429438834973586,
+      "sd": 0.05014248041064028,
+      "theta_a": 0.09851269448620693,
+      "theta_b": 1.3845484012947666,
+      "sd_a": 0.031669894558590844,
+      "sd_b": 0.03887526360526938,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": -0.5890715516042787,
+      "d_u": -0.028557078309962236,
+      "sd": 0.048478114809974826,
+      "theta_a": 0.004135589243132068,
+      "theta_b": 0.004255392056613214,
+      "sd_a": 0.020873895477179855,
+      "sd_b": 0.04375394957186003,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": 5.939125039629853,
+      "d_u": 1.022924434187786,
+      "sd": 0.17223487085423245,
+      "theta_a": 0.002603947491146032,
+      "theta_b": 0.0009362283442406905,
+      "sd_a": 0.015557555797430104,
+      "sd_b": 0.17153079372457875,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": 6.6532187490667845,
+      "d_u": 1.2673056906083922,
+      "sd": 0.19048008766976904,
+      "theta_a": 0.0066194512847338105,
+      "theta_b": 0.0018639665827672445,
+      "sd_a": 0.09521493453207656,
+      "sd_b": 0.16497508915207554,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": 12.816297675307865,
+      "d_u": 1.6322351617119075,
+      "sd": 0.12735621495875554,
+      "theta_a": 0.006350904161300659,
+      "theta_b": 0.0012415517749777203,
+      "sd_a": 0.05046696163263813,
+      "sd_b": 0.11693028381129748,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": -62.60495444300077,
+      "d_u": -1.5191791371761063,
+      "sd": 0.024266116806446306,
+      "theta_a": 0.005072527941267118,
+      "theta_b": 0.023173709809707285,
+      "sd_a": 0.0239704362066844,
+      "sd_b": 0.003776587470901401,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": 85.93233976639536,
+      "d_u": 1.4000663825945383,
+      "sd": 0.016292659857750635,
+      "theta_a": 4.916927161388462,
+      "theta_b": 1.2124188237418179,
+      "sd_a": 0.014645998472893301,
+      "sd_b": 0.007137611223117023,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": -58.69564474324842,
+      "d_u": -6.945242271763869,
+      "sd": 0.11832636479494091,
+      "theta_a": 10.44196361066115,
+      "theta_b": 17.387205882425018,
+      "sd_a": 0.02164234475155387,
+      "sd_b": 0.1163302949331786,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": 60.6554472387619,
+      "d_u": 1.9374579097190234,
+      "sd": 0.03194202660962146,
+      "theta_a": 6.035269735877882,
+      "theta_b": 0.8694996385287355,
+      "sd_a": 0.02422091686264924,
+      "sd_b": 0.02082403059598212,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": -65.61013747451645,
+      "d_u": -4.989217888953604,
+      "sd": 0.0760433994044207,
+      "theta_a": 0.09851269448620693,
+      "theta_b": 14.463786284815399,
+      "sd_a": 0.031669894558590844,
+      "sd_b": 0.06913476962880537,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": -3.8218720652395026,
+      "d_u": -1.288425816984084,
+      "sd": 0.33711903354968614,
+      "theta_a": 0.004135589243132068,
+      "theta_b": 0.01500008153372992,
+      "sd_a": 0.020873895477179855,
+      "sd_b": 0.33647217309769045,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": -0.3489422438312891,
+      "d_u": -0.14158798751211954,
+      "sd": 0.4057633892575536,
+      "theta_a": 0.002603947491146032,
+      "theta_b": 0.0030000127749168753,
+      "sd_a": 0.015557555797430104,
+      "sd_b": 0.40546502995867206,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": -0.5417566209106169,
+      "d_u": -0.18944390348046003,
+      "sd": 0.3496845191518497,
+      "theta_a": 0.0066194512847338105,
+      "theta_b": 0.008000118727374895,
+      "sd_a": 0.09521493453207656,
+      "sd_b": 0.33647195897505744,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": 0.16703550434163872,
+      "d_u": 0.05683142078177017,
+      "sd": 0.34023557450117026,
+      "theta_a": 0.006350904161300659,
+      "theta_b": 0.006000037802309234,
+      "sd_a": 0.05046696163263813,
+      "sd_b": 0.3364718887807884,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": 2.999636496700236,
+      "d_u": 1.2183714030665866,
+      "sd": 0.40617301609940465,
+      "theta_a": 0.005072527941267118,
+      "theta_b": 0.0015000041848705333,
+      "sd_a": 0.0239704362066844,
+      "sd_b": 0.405465087517222,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": -0.7020482766530602,
+      "d_u": -0.4867326319988239,
+      "sd": 0.6933036490300488,
+      "theta_a": 4.916927161388462,
+      "theta_b": 7.999798922611258,
+      "sd_a": 0.014645998472893301,
+      "sd_b": 0.6931489338425856,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": 0.3674215713711491,
+      "d_u": 0.44094165141367014,
+      "sd": 1.2000973425924824,
+      "theta_a": 10.44196361066115,
+      "theta_b": 10.00102195924748,
+      "sd_a": 0.02164234475155387,
+      "sd_b": 1.1999021796009843,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": 0.6993314117963022,
+      "d_u": 0.4114237334051669,
+      "sd": 0.5883101008553072,
+      "theta_a": 6.035269735877882,
+      "theta_b": 3.9996098361615013,
+      "sd_a": 0.02422091686264924,
+      "sd_b": 0.5878112979134668,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": -1.4397150268722283,
+      "d_u": -2.317610396798607,
+      "sd": 1.609770234762084,
+      "theta_a": 0.09851269448620693,
+      "theta_b": 1.0000405365445941,
+      "sd_a": 0.031669894558590844,
+      "sd_b": 1.60945867499126,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": 12.954257167662226,
+      "d_u": 0.7473943071035327,
+      "sd": 0.05769487956200659,
+      "theta_a": 0.008985221796234427,
+      "theta_b": 0.004255392056613214,
+      "sd_a": 0.03760706083353996,
+      "sd_b": 0.04375394957186003,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": 6.6014463563897525,
+      "d_u": 1.2148846451727042,
+      "sd": 0.1840331011698335,
+      "theta_a": 0.003155000865871856,
+      "theta_b": 0.0009362283442406905,
+      "sd_a": 0.06667360145066557,
+      "sd_b": 0.17153079372457875,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": 11.618939229906578,
+      "d_u": 2.0478248166160107,
+      "sd": 0.17624886197399245,
+      "theta_a": 0.01444764759365348,
+      "theta_b": 0.0018639665827672445,
+      "sd_a": 0.06202323198924876,
+      "sd_b": 0.16497508915207554,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": 20.900038505730343,
+      "d_u": 2.5473780851188144,
+      "sd": 0.12188389434882513,
+      "theta_a": 0.015859046804185352,
+      "theta_b": 0.0012415517749777203,
+      "sd_a": 0.03439465698978531,
+      "sd_b": 0.11693028381129748,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": -19.34486342362809,
+      "d_u": -0.3604428521068703,
+      "sd": 0.018632483683840347,
+      "theta_a": 0.01616059038504731,
+      "theta_b": 0.023173709809707285,
+      "sd_a": 0.01824573471535765,
+      "sd_b": 0.003776587470901401,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": 71.10145917834237,
+      "d_u": 1.7199081068856155,
+      "sd": 0.024189491000059567,
+      "theta_a": 6.770165271652885,
+      "theta_b": 1.2124188237418179,
+      "sd_a": 0.02311246375593906,
+      "sd_b": 0.007137611223117023,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": -88.22363608743383,
+      "d_u": -13.052935175016277,
+      "sd": 0.14795281348504152,
+      "theta_a": 4.334270707408742,
+      "theta_b": 17.387205882425018,
+      "sd_a": 0.09141825582945216,
+      "sd_b": 0.1163302949331786,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": -18.975315933955294,
+      "d_u": -0.5703625040923423,
+      "sd": 0.030058129523509523,
+      "theta_a": 0.4915459448107471,
+      "theta_b": 0.8694996385287355,
+      "sd_a": 0.021676044385211875,
+      "sd_b": 0.02082403059598212,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": -29.581640317295307,
+      "d_u": -2.346274005456245,
+      "sd": 0.07931520971419777,
+      "theta_a": 1.3845484012947666,
+      "theta_b": 14.463786284815399,
+      "sd_a": 0.03887526360526938,
+      "sd_b": 0.06913476962880537,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": -1.5136560346841224,
+      "d_u": -0.5124744315705891,
+      "sd": 0.33856729655065587,
+      "theta_a": 0.008985221796234427,
+      "theta_b": 0.01500008153372992,
+      "sd_a": 0.03760706083353996,
+      "sd_b": 0.33647217309769045,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": 0.12258691424800713,
+      "d_u": 0.050372223472798794,
+      "sd": 0.41091028175234195,
+      "theta_a": 0.003155000865871856,
+      "theta_b": 0.0030000127749168753,
+      "sd_a": 0.06667360145066557,
+      "sd_b": 0.40546502995867206,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": 1.727579378204926,
+      "d_u": 0.5910752225271585,
+      "sd": 0.3421407027567824,
+      "theta_a": 0.01444764759365348,
+      "theta_b": 0.008000118727374895,
+      "sd_a": 0.06202323198924876,
+      "sd_b": 0.33647195897505744,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": 2.8737485581351123,
+      "d_u": 0.971974344188677,
+      "sd": 0.338225256846907,
+      "theta_a": 0.015859046804185352,
+      "theta_b": 0.006000037802309234,
+      "sd_a": 0.03439465698978531,
+      "sd_b": 0.3364718887807884,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": 5.856742392864611,
+      "d_u": 2.3771076881358226,
+      "sd": 0.4058754045648143,
+      "theta_a": 0.01616059038504731,
+      "theta_b": 0.0015000041848705333,
+      "sd_a": 0.01824573471535765,
+      "sd_b": 0.405465087517222,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": -0.24063833829774414,
+      "d_u": -0.16689090770774673,
+      "sd": 0.6935341595537906,
+      "theta_a": 6.770165271652885,
+      "theta_b": 7.999798922611258,
+      "sd_a": 0.02311246375593906,
+      "sd_b": 0.6931489338425856,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": -4.709030386029761,
+      "d_u": -5.666751251838737,
+      "sd": 1.2033796317497203,
+      "theta_a": 4.334270707408742,
+      "theta_b": 10.00102195924748,
+      "sd_a": 0.09141825582945216,
+      "sd_b": 1.1999021796009843,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": -3.564022620352119,
+      "d_u": -2.096396680406199,
+      "sd": 0.5882108234765016,
+      "theta_a": 0.4915459448107471,
+      "theta_b": 3.9996098361615013,
+      "sd_a": 0.021676044385211875,
+      "sd_b": 0.5878112979134668,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": 0.20207951218514708,
+      "d_u": 0.3253334866987516,
+      "sd": 1.6099281079057541,
+      "theta_a": 1.3845484012947666,
+      "theta_b": 1.0000405365445941,
+      "sd_a": 0.03887526360526938,
+      "sd_b": 1.60945867499126,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": -3.713085495755414,
+      "d_u": -1.2598687386741219,
+      "sd": 0.3393050712444762,
+      "theta_a": 0.004255392056613214,
+      "theta_b": 0.01500008153372992,
+      "sd_a": 0.04375394957186003,
+      "sd_b": 0.33647217309769045,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": -2.6450845638687497,
+      "d_u": -1.1645124216999054,
+      "sd": 0.44025527108164286,
+      "theta_a": 0.0009362283442406905,
+      "theta_b": 0.0030000127749168753,
+      "sd_a": 0.17153079372457875,
+      "sd_b": 0.40546502995867206,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": -3.8873595530071037,
+      "d_u": -1.4567495940888522,
+      "sd": 0.37474012224106457,
+      "theta_a": 0.0018639665827672445,
+      "theta_b": 0.008000118727374895,
+      "sd_a": 0.16497508915207554,
+      "sd_b": 0.33647195897505744,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": -4.422674520043274,
+      "d_u": -1.5754037409301374,
+      "sd": 0.35621064443935674,
+      "theta_a": 0.0012415517749777203,
+      "theta_b": 0.006000037802309234,
+      "sd_a": 0.11693028381129748,
+      "sd_b": 0.3364718887807884,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": 6.751337870479247,
+      "d_u": 2.737550540242693,
+      "sd": 0.4054826751024929,
+      "theta_a": 0.023173709809707285,
+      "theta_b": 0.0015000041848705333,
+      "sd_a": 0.003776587470901401,
+      "sd_b": 0.405465087517222,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": -2.721924389228819,
+      "d_u": -1.8867990145933622,
+      "sd": 0.6931856821812504,
+      "theta_a": 1.2124188237418179,
+      "theta_b": 7.999798922611258,
+      "sd_a": 0.007137611223117023,
+      "sd_b": 0.6931489338425856,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": 6.126928089417017,
+      "d_u": 7.386183923177539,
+      "sd": 1.205528090975251,
+      "theta_a": 17.387205882425018,
+      "theta_b": 10.00102195924748,
+      "sd_a": 0.1163302949331786,
+      "sd_b": 1.1999021796009843,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": -2.5945017961632466,
+      "d_u": -1.5260341763138565,
+      "sd": 0.5881800423382085,
+      "theta_a": 0.8694996385287355,
+      "theta_b": 3.9996098361615013,
+      "sd_a": 0.02082403059598212,
+      "sd_b": 0.5878112979134668,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": 1.658412341592457,
+      "d_u": 2.6716074921549966,
+      "sd": 1.6109428428334291,
+      "theta_a": 14.463786284815399,
+      "theta_b": 1.0000405365445941,
+      "sd_a": 0.06913476962880537,
+      "sd_b": 1.60945867499126,
+      "both_have_an_opinion": false
+    }
+  ],
+  "conflicts_new": [
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": 0.20496596249277987,
+      "d_u": 0.30071995636180127,
+      "sd": 1.4671702203842476,
+      "theta_a": 0.014067932501029912,
+      "theta_b": 0.01041428019709993,
+      "sd_a": 0.016968012574971054,
+      "sd_b": 1.4670720984776506,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": 0.3439279858199174,
+      "d_u": 0.6480584219263852,
+      "sd": 1.8842852243658712,
+      "theta_a": 0.0026743047101711955,
+      "theta_b": 0.0013988227684497427,
+      "sd_a": 0.062250761288431364,
+      "sd_b": 1.8832566605437913,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": 0.7338640009150499,
+      "d_u": 0.4734055131646775,
+      "sd": 0.6450861638864851,
+      "theta_a": 0.009129585220992983,
+      "theta_b": 0.0056866126246789914,
+      "sd_a": 0.10277484511704456,
+      "sd_b": 0.6368465200100796,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": 5.14408698442318,
+      "d_u": 0.7008393557526205,
+      "sd": 0.13624173888871505,
+      "theta_a": 0.006737526413226614,
+      "theta_b": 0.0033429494989084354,
+      "sd_a": 0.05259811490452915,
+      "sd_b": 0.12567915389558745,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": 0.29950863094514707,
+      "d_u": 0.3546347791439759,
+      "sd": 1.1840552909105475,
+      "theta_a": 0.0016519610429324262,
+      "theta_b": 0.001158734329192746,
+      "sd_a": 1.1630957257502161,
+      "sd_b": 0.22180005562406727,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": 2.3719563901061735,
+      "d_u": 2.4739861825158798,
+      "sd": 1.0430150372221385,
+      "theta_a": 46.54343266095785,
+      "theta_b": 3.9212078441786296,
+      "sd_a": 0.08528678384935848,
+      "sd_b": 1.0395222616048834,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": 27.27793509503332,
+      "d_u": 4.778948969067515,
+      "sd": 0.17519467483217419,
+      "theta_a": 12.448589892136921,
+      "theta_b": 7.669640923069406,
+      "sd_a": 0.0443733956055492,
+      "sd_b": 0.16948208121209946,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": -7.068159333666068,
+      "d_u": -0.8771369658993855,
+      "sd": 0.12409694299356402,
+      "theta_a": 1.1684173599251084,
+      "theta_b": 2.808883617281532,
+      "sd_a": 0.04185156204728905,
+      "sd_b": 0.11682678637431483,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "sleep-edfx",
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": -0.41896586826710963,
+      "d_u": -0.341764363747036,
+      "sd": 0.8157331888647927,
+      "theta_a": 0.035448659354233185,
+      "theta_b": 0.04989145761765693,
+      "sd_a": 0.06796563009508348,
+      "sd_b": 0.8128968621795153,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": -14.140381596681367,
+      "d_u": -0.23994232967949003,
+      "sd": 0.016968589428718286,
+      "theta_a": 0.014067932501029912,
+      "theta_b": 0.01788281590125001,
+      "sd_a": 0.016968012574971054,
+      "sd_b": 0.00013991588914092308,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": -10.499623134449491,
+      "d_u": -0.6536111843059853,
+      "sd": 0.06225091852692054,
+      "theta_a": 0.0026743047101711955,
+      "theta_b": 0.0051412724615261165,
+      "sd_a": 0.062250761288431364,
+      "sd_b": 0.0001399158891409231,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": -3.760826516448286,
+      "d_u": -0.38651872091923334,
+      "sd": 0.10277494035653113,
+      "theta_a": 0.009129585220992983,
+      "theta_b": 0.013437361302414252,
+      "sd_a": 0.10277484511704456,
+      "sd_b": 0.0001399158891409231,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": -7.936610046462451,
+      "d_u": -0.41745220413436357,
+      "sd": 0.052598300998854375,
+      "theta_a": 0.006737526413226614,
+      "theta_b": 0.010228163682687119,
+      "sd_a": 0.05259811490452915,
+      "sd_b": 0.00013991588914092314,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": 0.14594474470187604,
+      "d_u": 0.1697477099866811,
+      "sd": 1.1630957341658845,
+      "theta_a": 0.0016519610429324262,
+      "theta_b": 0.0013940530716157783,
+      "sd_a": 1.1630957257502161,
+      "sd_b": 0.00013991588914092316,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": 22.043404228407297,
+      "d_u": 1.8800135816168153,
+      "sd": 0.0852868986176847,
+      "theta_a": 46.54343266095785,
+      "theta_b": 7.101970855122154,
+      "sd_a": 0.08528678384935848,
+      "sd_b": 0.0001399158891409231,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": 39.2437039256598,
+      "d_u": 1.7413763993359304,
+      "sd": 0.0443733956059463,
+      "theta_a": 12.448589892136921,
+      "theta_b": 10.70721349280099,
+      "sd_a": 0.0443733956055492,
+      "sd_b": 1.8772780662608402e-07,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": 19.4281847788128,
+      "d_u": 0.8131044245807311,
+      "sd": 0.04185179592626963,
+      "theta_a": 1.1684173599251084,
+      "theta_b": 0.5181687719059651,
+      "sd_a": 0.04185156204728905,
+      "sd_b": 0.00013991588914092308,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds000117",
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": -35.02474059411274,
+      "d_u": -2.3804836075597122,
+      "sd": 0.06796577411225264,
+      "theta_a": 0.035448659354233185,
+      "theta_b": 0.3832045968150055,
+      "sd_a": 0.06796563009508348,
+      "sd_b": 0.0001399158891409231,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": -0.19038908999383827,
+      "d_u": -0.0641420373849666,
+      "sd": 0.3368997529587566,
+      "theta_a": 0.014067932501029912,
+      "theta_b": 0.014999846293279393,
+      "sd_a": 0.016968012574971054,
+      "sd_b": 0.3364721832379712,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": -0.28012890887264963,
+      "d_u": -0.11491332335064186,
+      "sd": 0.4102158674486645,
+      "theta_a": 0.0026743047101711955,
+      "theta_b": 0.002999971379577753,
+      "sd_a": 0.062250761288431364,
+      "sd_b": 0.4054650424212561,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": 0.37544938391918137,
+      "d_u": 0.1320899434559415,
+      "sd": 0.35181824531739003,
+      "theta_a": 0.009129585220992983,
+      "theta_b": 0.007999910225294138,
+      "sd_a": 0.10277484511704456,
+      "sd_b": 0.3364720032177636,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": 0.3404555807929998,
+      "d_u": 0.11594496145500255,
+      "sd": 0.3405582636799194,
+      "theta_a": 0.006737526413226614,
+      "theta_b": 0.005999930555651006,
+      "sd_a": 0.05259811490452915,
+      "sd_b": 0.3364719442526694,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": 0.07833541530326654,
+      "d_u": 0.09648918813943919,
+      "sd": 1.2317441321513698,
+      "theta_a": 0.0016519610429324262,
+      "theta_b": 0.0015000131952776824,
+      "sd_a": 1.1630957257502161,
+      "sd_b": 0.4054650907672684,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": 2.5214872711496685,
+      "d_u": 1.7609459345370277,
+      "sd": 0.6983758969102893,
+      "theta_a": 46.54343266095785,
+      "theta_b": 7.999987489258121,
+      "sd_a": 0.08528678384935848,
+      "sd_b": 0.6931486549693968,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": 2.038748088142262,
+      "d_u": 2.448002355286574,
+      "sd": 1.200738026205695,
+      "theta_a": 12.448589892136921,
+      "theta_b": 10.000587536850347,
+      "sd_a": 0.0443733956055492,
+      "sd_b": 1.1999178344114991,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": -2.0882734451016263,
+      "d_u": -1.2306099007794304,
+      "sd": 0.5892953835456843,
+      "theta_a": 1.1684173599251084,
+      "theta_b": 3.999862758121999,
+      "sd_a": 0.04185156204728905,
+      "sd_b": 0.5878073628515188,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "eegmmidb",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": -2.0731735662003308,
+      "d_u": -3.339654134532784,
+      "sd": 1.6108897918535745,
+      "theta_a": 0.035448659354233185,
+      "theta_b": 0.9999842900028869,
+      "sd_a": 0.06796563009508348,
+      "sd_b": 1.6094553720510023,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": -0.3685315017193103,
+      "d_u": -0.5406622860412913,
+      "sd": 1.467072105149598,
+      "theta_a": 0.01041428019709993,
+      "theta_b": 0.01788281590125001,
+      "sd_a": 1.4670720984776506,
+      "sd_b": 0.00013991588914092308,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": -0.6911801401855143,
+      "d_u": -1.3016696062323705,
+      "sd": 1.8832566657412921,
+      "theta_a": 0.0013988227684497427,
+      "theta_b": 0.0051412724615261165,
+      "sd_a": 1.8832566605437913,
+      "sd_b": 0.0001399158891409231,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": -1.3502848587704317,
+      "d_u": -0.8599242340839108,
+      "sd": 0.6368465353799176,
+      "theta_a": 0.0056866126246789914,
+      "theta_b": 0.013437361302414252,
+      "sd_a": 0.6368465200100796,
+      "sd_b": 0.0001399158891409231,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": -8.897982141236062,
+      "d_u": -1.118291559886984,
+      "sd": 0.1256792317782329,
+      "theta_a": 0.0033429494989084354,
+      "theta_b": 0.010228163682687119,
+      "sd_a": 0.12567915389558745,
+      "sd_b": 0.00013991588914092314,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": -0.8335752299551802,
+      "d_u": -0.1848870691572948,
+      "sd": 0.22180009975492654,
+      "theta_a": 0.001158734329192746,
+      "theta_b": 0.0013940530716157783,
+      "sd_a": 0.22180005562406727,
+      "sd_b": 0.00013991588914092316,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": -0.5713899715834799,
+      "d_u": -0.5939726008990645,
+      "sd": 1.0395222710209664,
+      "theta_a": 3.9212078441786296,
+      "theta_b": 7.101970855122154,
+      "sd_a": 1.0395222616048834,
+      "sd_b": 0.0001399158891409231,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": -17.92267682816764,
+      "d_u": -3.0375725697315845,
+      "sd": 0.16948208121220343,
+      "theta_a": 7.669640923069406,
+      "theta_b": 10.70721349280099,
+      "sd_a": 0.16948208121209946,
+      "sd_b": 1.8772780662608402e-07,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": 14.467916397901542,
+      "d_u": 1.6902413904801166,
+      "sd": 0.11682687015839219,
+      "theta_a": 2.808883617281532,
+      "theta_b": 0.5181687719059651,
+      "sd_a": 0.11682678637431483,
+      "sd_b": 0.00013991588914092308,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds000117",
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": -2.5079678720221144,
+      "d_u": -2.038719243812676,
+      "sd": 0.8128968742206836,
+      "theta_a": 0.04989145761765693,
+      "theta_b": 0.3832045968150055,
+      "sd_a": 0.8128968621795153,
+      "sd_b": 0.0001399158891409231,
+      "both_have_an_opinion": true
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": -0.24240704915442107,
+      "d_u": -0.36486199374676787,
+      "sd": 1.5051624736966254,
+      "theta_a": 0.01041428019709993,
+      "theta_b": 0.014999846293279393,
+      "sd_a": 1.4670720984776506,
+      "sd_b": 0.3364721832379712,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": -0.3960587482979102,
+      "d_u": -0.762971745277027,
+      "sd": 1.9264105351944647,
+      "theta_a": 0.0013988227684497427,
+      "theta_b": 0.002999971379577753,
+      "sd_a": 1.8832566605437913,
+      "sd_b": 0.4054650424212561,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": -0.47387260198794817,
+      "d_u": -0.341315569708736,
+      "sd": 0.7202686297474876,
+      "theta_a": 0.0056866126246789914,
+      "theta_b": 0.007999910225294138,
+      "sd_a": 0.6368465200100796,
+      "sd_b": 0.3364720032177636,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": -1.628426255254923,
+      "d_u": -0.5848943942976179,
+      "sd": 0.35917769835150154,
+      "theta_a": 0.0033429494989084354,
+      "theta_b": 0.005999930555651006,
+      "sd_a": 0.12567915389558745,
+      "sd_b": 0.3364719442526694,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": -0.5585562679234315,
+      "d_u": -0.2581455910045367,
+      "sd": 0.4621657760000718,
+      "theta_a": 0.001158734329192746,
+      "theta_b": 0.0015000131952776824,
+      "sd_a": 0.22180005562406727,
+      "sd_b": 0.4054650907672684,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": -0.5706949446806999,
+      "d_u": -0.713040247978852,
+      "sd": 1.249424503624775,
+      "theta_a": 3.9212078441786296,
+      "theta_b": 7.999987489258121,
+      "sd_a": 1.0395222616048834,
+      "sd_b": 0.6931486549693968,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": -1.9234963263388822,
+      "d_u": -2.3309466137809407,
+      "sd": 1.2118279519761732,
+      "theta_a": 7.669640923069406,
+      "theta_b": 10.000587536850347,
+      "sd_a": 0.16948208121209946,
+      "sd_b": 1.1999178344114991,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": -0.5898051502940161,
+      "d_u": -0.35347293488004494,
+      "sd": 0.5993045918704503,
+      "theta_a": 2.808883617281532,
+      "theta_b": 3.999862758121999,
+      "sd_a": 0.11682678637431483,
+      "sd_b": 0.5878073628515188,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "sleep-edfx",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": -1.662636447632552,
+      "d_u": -2.997889770785748,
+      "sd": 1.8030939806801898,
+      "theta_a": 0.04989145761765693,
+      "theta_b": 0.9999842900028869,
+      "sd_a": 0.8128968621795153,
+      "sd_b": 1.6094553720510023,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": 0.5224808642526884,
+      "d_u": 0.17580029229452343,
+      "sd": 0.3364722123287195,
+      "theta_a": 0.01788281590125001,
+      "theta_b": 0.014999846293279393,
+      "sd_a": 0.00013991588914092308,
+      "sd_b": 0.3364721832379712,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": 1.3285925357837722,
+      "d_u": 0.5386978609553434,
+      "sd": 0.40546506656199993,
+      "theta_a": 0.0051412724615261165,
+      "theta_b": 0.002999971379577753,
+      "sd_a": 0.0001399158891409231,
+      "sd_b": 0.4054650424212561,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": 1.54131284201249,
+      "d_u": 0.5186086643751748,
+      "sd": 0.33647203230852746,
+      "theta_a": 0.013437361302414252,
+      "theta_b": 0.007999910225294138,
+      "sd_a": 0.0001399158891409231,
+      "sd_b": 0.3364720032177636,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": 1.585264770462547,
+      "d_u": 0.5333971655893661,
+      "sd": 0.33647197334343837,
+      "theta_a": 0.010228163682687119,
+      "theta_b": 0.005999930555651006,
+      "sd_a": 0.00013991588914092314,
+      "sd_b": 0.3364719442526694,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": -0.18067774305037948,
+      "d_u": -0.07325852184724191,
+      "sd": 0.40546511490800935,
+      "theta_a": 0.0013940530716157783,
+      "theta_b": 0.0015000131952776824,
+      "sd_a": 0.00013991588914092316,
+      "sd_b": 0.4054650907672684,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": -0.1717779350798855,
+      "d_u": -0.11906764707978756,
+      "sd": 0.6931486690907946,
+      "theta_a": 7.101970855122154,
+      "theta_b": 7.999987489258121,
+      "sd_a": 0.0001399158891409231,
+      "sd_b": 0.6931486549693968,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": 0.5888952857319606,
+      "d_u": 0.7066259559506438,
+      "sd": 1.1999178344115138,
+      "theta_a": 10.70721349280099,
+      "theta_b": 10.000587536850347,
+      "sd_a": 1.8772780662608402e-07,
+      "sd_b": 1.1999178344114991,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": -3.4768435998302643,
+      "d_u": -2.0437143253601615,
+      "sd": 0.5878073795036203,
+      "theta_a": 0.5181687719059651,
+      "theta_b": 3.999862758121999,
+      "sd_a": 0.00013991588914092308,
+      "sd_b": 0.5878073628515188,
+      "both_have_an_opinion": false
+    },
+    {
+      "a": "ds000117",
+      "b": "ds004873",
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": -0.5959596892247518,
+      "d_u": -0.9591705269730719,
+      "sd": 1.6094553781327043,
+      "theta_a": 0.3832045968150055,
+      "theta_b": 0.9999842900028869,
+      "sd_a": 0.0001399158891409231,
+      "sd_b": 1.6094553720510023,
+      "both_have_an_opinion": false
+    }
+  ],
+  "absorbed": {
+    "n_live": 19,
+    "n3_old": 18,
+    "n3_new": 10,
+    "mean_abs_z_old": 38.117832603839,
+    "mean_abs_z_new": 11.774326815793483,
+    "mean_abs_du_old": 2.619316244574803,
+    "mean_abs_du_new": 1.1832222763685851
+  },
+  "control_old": [
+    {
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": 18.859852175256403,
+      "d_u": 1.7413878264017617,
+      "sd": 0.0923330580865535,
+      "theta_w": 0.008985221796234427,
+      "theta_n2": 0.0015749025206273932,
+      "both_have_an_opinion": true
+    },
+    {
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": 12.074816950082797,
+      "d_u": 1.4494311472887569,
+      "sd": 0.1200375254780834,
+      "theta_w": 0.003155000865871856,
+      "theta_n2": 0.0007404905723272416,
+      "both_have_an_opinion": false
+    },
+    {
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": -1.9571494924935908,
+      "d_u": -0.14925960907548763,
+      "sd": 0.07626377527519218,
+      "theta_w": 0.01444764759365348,
+      "theta_n2": 0.016773348267815184,
+      "both_have_an_opinion": true
+    },
+    {
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": -2.074288661177571,
+      "d_u": -0.08201047388357008,
+      "sd": 0.03953667366479882,
+      "theta_w": 0.015859046804185352,
+      "theta_n2": 0.017214474793422207,
+      "both_have_an_opinion": true
+    },
+    {
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": 28.294278373146913,
+      "d_u": 1.4843383065870093,
+      "sd": 0.05246072322507937,
+      "theta_w": 0.01616059038504731,
+      "theta_n2": 0.0036628344206483384,
+      "both_have_an_opinion": true
+    },
+    {
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": 1.4247625336802427,
+      "d_u": 0.04621140728475548,
+      "sd": 0.03243446272087797,
+      "theta_w": 6.770165271652885,
+      "theta_n2": 6.464425154357829,
+      "both_have_an_opinion": false
+    },
+    {
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": -29.64251777853277,
+      "d_u": -4.876279342366435,
+      "sd": 0.16450287316342121,
+      "theta_w": 4.334270707408742,
+      "theta_n2": 9.210550049775177,
+      "both_have_an_opinion": true
+    },
+    {
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": -15.127158550033347,
+      "d_u": -0.42553784572714703,
+      "sd": 0.028130718952913268,
+      "theta_w": 0.4915459448107471,
+      "theta_n2": 0.7522684635978526,
+      "both_have_an_opinion": true
+    },
+    {
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": -31.90261628371028,
+      "d_u": -1.5290416102602704,
+      "sd": 0.047928408023420035,
+      "theta_w": 1.3845484012947666,
+      "theta_n2": 6.387964242179436,
+      "both_have_an_opinion": false
+    }
+  ],
+  "control_new": [
+    {
+      "param": "local_excitation:ei_loop_lti.tau_membrane_s",
+      "z": 0.03782317931565479,
+      "d_u": 0.05668907135259715,
+      "sd": 1.4987918091045793,
+      "theta_w": 0.01041428019709993,
+      "theta_n2": 0.009840326474687123,
+      "both_have_an_opinion": true
+    },
+    {
+      "param": "local_excitation:ei_loop_lti.tau_ampa_s",
+      "z": -0.30283394600844227,
+      "d_u": -0.5719233333620881,
+      "sd": 1.888570752719196,
+      "theta_w": 0.0013988227684497427,
+      "theta_n2": 0.0024782541402572356,
+      "both_have_an_opinion": true
+    },
+    {
+      "param": "local_excitation:ei_loop_lti.tau_inh_membrane_s",
+      "z": -0.3983363734166272,
+      "d_u": -0.30000878867399816,
+      "sd": 0.7531543908500005,
+      "theta_w": 0.0056866126246789914,
+      "theta_n2": 0.00767619159994489,
+      "both_have_an_opinion": false
+    },
+    {
+      "param": "local_excitation:ei_loop_lti.tau_gaba_a_s",
+      "z": -2.5632216292008394,
+      "d_u": -0.5539613680067772,
+      "sd": 0.21611918442631556,
+      "theta_w": 0.0033429494989084354,
+      "theta_n2": 0.005817175698643372,
+      "both_have_an_opinion": false
+    },
+    {
+      "param": "local_excitation:ei_loop_lti.synaptic_lag_s",
+      "z": -0.32661734033844714,
+      "d_u": -0.1917440474985348,
+      "sd": 0.5870602194600139,
+      "theta_w": 0.001158734329192746,
+      "theta_n2": 0.0014036449112702501,
+      "both_have_an_opinion": false
+    },
+    {
+      "param": "local_excitation:ei_loop_lti.loop_gain",
+      "z": -0.933022239282744,
+      "d_u": -1.0421928200511057,
+      "sd": 1.117007479749128,
+      "theta_w": 3.9212078441786296,
+      "theta_n2": 11.11830167297655,
+      "both_have_an_opinion": true
+    },
+    {
+      "param": "thalamocortical_coupling:alpha_resonator.f0_hz",
+      "z": -5.387699930406876,
+      "d_u": -1.8697647241939679,
+      "sd": 0.34704321850618813,
+      "theta_w": 7.669640923069406,
+      "theta_n2": 9.539405647263374,
+      "both_have_an_opinion": true
+    },
+    {
+      "param": "thalamocortical_coupling:alpha_resonator.q",
+      "z": 1.4924966051462574,
+      "d_u": 0.35177506483489906,
+      "sd": 0.23569572193460825,
+      "theta_w": 2.808883617281532,
+      "theta_n2": 1.9758764070831434,
+      "both_have_an_opinion": true
+    },
+    {
+      "param": "thalamocortical_coupling:alpha_resonator.gain",
+      "z": -1.0979229584852213,
+      "d_u": -0.8936769052181432,
+      "sd": 0.8139705052266404,
+      "theta_w": 0.04989145761765693,
+      "theta_n2": 0.12193970524873757,
+      "both_have_an_opinion": true
+    }
+  ],
+  "gradients": {
+    "spatial_gradient:ap.ei_loop_lti.tau_membrane_s": {
+      "JOINT": {
+        "g": 2.7312973825331412,
+        "sd": 0.26064983866624564,
+        "z": 10.478799436474949
+      },
+      "eegmmidb": {
+        "g": -0.49368661137920133,
+        "sd": 0.04132659722665284,
+        "z": -11.945977760317684
+      },
+      "sleep-edfx": {
+        "g": 2.4285832438979744,
+        "sd": 0.3312412189518281,
+        "z": 7.3317664135608664
+      },
+      "ds000117": {
+        "g": -0.5991552242146009,
+        "sd": 0.0001399158891409231,
+        "z": -4282.252915615127
+      },
+      "ds004873": {
+        "g": -1.2460558338204973e-05,
+        "sd": 0.9999986222281778,
+        "z": -1.2460575506034793e-05
+      }
+    },
+    "spatial_gradient:ap.ei_loop_lti.tau_ampa_s": {
+      "JOINT": {
+        "g": -0.8926221690296786,
+        "sd": 0.017618834984429194,
+        "z": -50.66295074666069
+      },
+      "eegmmidb": {
+        "g": -0.31357692994982905,
+        "sd": 0.0499832210464699,
+        "z": -6.2736439025866995
+      },
+      "sleep-edfx": {
+        "g": -1.9405158103252913,
+        "sd": 0.30085430660183315,
+        "z": -6.45001839010892
+      },
+      "ds000117": {
+        "g": 0.4642524397462199,
+        "sd": 0.00013991588914092308,
+        "z": 3318.0823321547527
+      },
+      "ds004873": {
+        "g": -4.815347728442996e-06,
+        "sd": 0.9999990302077233,
+        "z": -4.815352398334562e-06
+      }
+    },
+    "spatial_gradient:ap.ei_loop_lti.tau_inh_membrane_s": {
+      "JOINT": {
+        "g": -1.2545585259586445,
+        "sd": 0.08387750072801613,
+        "z": -14.957032756933426
+      },
+      "eegmmidb": {
+        "g": 1.160022446120728,
+        "sd": 0.059987967393191094,
+        "z": 19.337585461386976
+      },
+      "sleep-edfx": {
+        "g": 0.6181976531489227,
+        "sd": 1.5511703629767783,
+        "z": 0.39853627164624816
+      },
+      "ds000117": {
+        "g": 0.565743379335826,
+        "sd": 0.00013991588914092303,
+        "z": 4043.4534119710324
+      },
+      "ds004873": {
+        "g": -5.235250692943733e-07,
+        "sd": 0.9999939702867711,
+        "z": -5.235282260194435e-07
+      }
+    },
+    "spatial_gradient:ap.ei_loop_lti.tau_gaba_a_s": {
+      "JOINT": {
+        "g": -1.3833972944707684,
+        "sd": 0.04946549671540886,
+        "z": -27.966914037675682
+      },
+      "eegmmidb": {
+        "g": -0.24905127164900037,
+        "sd": 0.06541230805197747,
+        "z": -3.8074068790096964
+      },
+      "sleep-edfx": {
+        "g": -0.7020967007585587,
+        "sd": 1.3639016117899467,
+        "z": -0.5147707830898054
+      },
+      "ds000117": {
+        "g": 0.5608368961237592,
+        "sd": 0.00013991588914092314,
+        "z": 4008.386035119177
+      },
+      "ds004873": {
+        "g": 9.891234119190445e-06,
+        "sd": 0.9999924469859153,
+        "z": 9.891308828385342e-06
+      }
+    },
+    "spatial_gradient:ap.ei_loop_lti.synaptic_lag_s": {
+      "JOINT": {
+        "g": -2.0470809536211347,
+        "sd": 0.1751970407912704,
+        "z": -11.684449374119424
+      },
+      "eegmmidb": {
+        "g": -1.1155413120970745,
+        "sd": 0.8546569957016837,
+        "z": -1.3052503141113372
+      },
+      "sleep-edfx": {
+        "g": 0.34540215986967004,
+        "sd": 0.8410393820931604,
+        "z": 0.41068488256761615
+      },
+      "ds000117": {
+        "g": 0.18909983007309183,
+        "sd": 0.0001399158891409231,
+        "z": 1351.5250571908293
+      },
+      "ds004873": {
+        "g": -5.994105121856677e-06,
+        "sd": 0.9999997434217247,
+        "z": -5.994106659814225e-06
+      }
+    },
+    "spatial_gradient:ap.ei_loop_lti.loop_gain": {
+      "JOINT": {
+        "g": -2.505612095713412,
+        "sd": 0.21844709549871227,
+        "z": -11.470109455990375
+      },
+      "eegmmidb": {
+        "g": -0.6933175329296111,
+        "sd": 0.021369160097626128,
+        "z": -32.44477226817309
+      },
+      "sleep-edfx": {
+        "g": -0.2973496729436285,
+        "sd": 1.7500525359003467,
+        "z": -0.1699089980693931
+      },
+      "ds000117": {
+        "g": 0.07266576098606355,
+        "sd": 0.00013991588914092308,
+        "z": 519.353173054382
+      },
+      "ds004873": {
+        "g": -8.817042102058543e-06,
+        "sd": 1.0000045892670986,
+        "z": -8.817001638483015e-06
+      }
+    },
+    "spatial_gradient:ap.alpha_resonator.f0_hz": {
+      "JOINT": {
+        "g": 0.2165099461844157,
+        "sd": 0.0076638236268362445,
+        "z": 28.250904082169576
+      },
+      "eegmmidb": {
+        "g": -0.13411571292662064,
+        "sd": 0.002752160372152971,
+        "z": -48.731067521949704
+      },
+      "sleep-edfx": {
+        "g": -0.7177705073895766,
+        "sd": 0.06992827440316732,
+        "z": -10.264381804294402
+      },
+      "ds000117": {
+        "g": -1.8315814871709823,
+        "sd": 1.3991588914093402e-07,
+        "z": -13090589.627930485
+      },
+      "ds004873": {
+        "g": 2.8890940482947098e-05,
+        "sd": 0.9969162195300435,
+        "z": 2.898030939507292e-05
+      }
+    },
+    "spatial_gradient:ap.alpha_resonator.q": {
+      "JOINT": {
+        "g": -0.2063404194089449,
+        "sd": 0.08531508300500822,
+        "z": -2.418569051815049
+      },
+      "eegmmidb": {
+        "g": 1.4896208331135325,
+        "sd": 0.03277404412003315,
+        "z": 45.45123658398327
+      },
+      "sleep-edfx": {
+        "g": -0.21547701471245698,
+        "sd": 0.2532249724544781,
+        "z": -0.85093114088972
+      },
+      "ds000117": {
+        "g": 1.2671871259888918,
+        "sd": 0.00013991588914092306,
+        "z": 9056.77785253241
+      },
+      "ds004873": {
+        "g": -9.870504719051931e-06,
+        "sd": 1.0001003716295889,
+        "z": -9.86951409983848e-06
+      }
+    },
+    "spatial_gradient:ap.alpha_resonator.gain": {
+      "JOINT": {
+        "g": 0.4533393521562845,
+        "sd": 0.11346620803320147,
+        "z": 3.9953688416522426
+      },
+      "eegmmidb": {
+        "g": 0.9131373798709806,
+        "sd": 0.031016619520706726,
+        "z": 29.44026118840479
+      },
+      "sleep-edfx": {
+        "g": 0.38773828659242904,
+        "sd": 0.9372401400085121,
+        "z": 0.41370217731915276
+      },
+      "ds000117": {
+        "g": 0.46859859144553123,
+        "sd": 0.00013991588914092308,
+        "z": 3349.1449350227795
+      },
+      "ds004873": {
+        "g": -9.470934066089226e-06,
+        "sd": 1.0000006214107438,
+        "z": -9.470928180752702e-06
+      }
+    }
+  },
+  "transfer": {
+    "eegmmidb": {
+      "old": {
+        "n": 24,
+        "prior": 5982.191963150765,
+        "own": 6569.430257823715,
+        "joint": 6477.036176051363,
+        "joint_vs_own": {
+          "mean": -92.39408177235146,
+          "sd": 290.7208880286322,
+          "sem": 59.34315276991262,
+          "t": -1.5569459568584951,
+          "p": 0.13313771924642237,
+          "dz": -0.317810262616052,
+          "win_rate": 0.4166666666666667,
+          "n": 24
+        },
+        "joint_vs_prior": {
+          "mean": 494.8442129005983,
+          "sd": 708.9319329755357,
+          "sem": 144.7101248462522,
+          "t": 3.4195548751433074,
+          "p": 0.0023446735668355965,
+          "dz": 0.6980137159623119,
+          "win_rate": 0.8333333333333334,
+          "n": 24
+        },
+        "own_vs_prior": {
+          "mean": 587.2382946729498,
+          "sd": 457.2794089403412,
+          "sem": 93.34176848211003,
+          "t": 6.29127028791511,
+          "p": 2.0280800837378237e-06,
+          "dz": 1.2842001699437195,
+          "win_rate": 0.9166666666666666,
+          "n": 24
+        }
+      },
+      "new": {
+        "n": 24,
+        "prior": 5982.191963150763,
+        "own": 6569.008375379464,
+        "joint": 6561.899758308939,
+        "joint_vs_own": {
+          "mean": -7.108617070525118,
+          "sd": 106.44974812240314,
+          "sem": 21.72896384563995,
+          "t": -0.327149380937992,
+          "p": 0.746513766813439,
+          "dz": -0.06677908774712316,
+          "win_rate": 0.5416666666666666,
+          "n": 24
+        },
+        "joint_vs_prior": {
+          "mean": 579.7077951581763,
+          "sd": 507.6974596332687,
+          "sem": 103.63330998406403,
+          "t": 5.593836530429449,
+          "p": 1.0826953484866687e-05,
+          "dz": 1.1418371003410648,
+          "win_rate": 0.8333333333333334,
+          "n": 24
+        },
+        "own_vs_prior": {
+          "mean": 586.8164122287013,
+          "sd": 488.1744056352416,
+          "sem": 99.64818327439991,
+          "t": 5.888882194799203,
+          "p": 5.298003679708725e-06,
+          "dz": 1.202063044384928,
+          "win_rate": 0.9166666666666666,
+          "n": 24
+        }
+      }
+    },
+    "sleep-edfx": {
+      "old": {
+        "n": 12,
+        "prior": -52879.52100111899,
+        "own": 1122.042847051421,
+        "joint": -3704.4670641108823,
+        "joint_vs_own": {
+          "mean": -4826.509911162303,
+          "sd": 4705.615176169779,
+          "sem": 1358.3940943322052,
+          "t": -3.5530998929548825,
+          "p": 0.004527357242798597,
+          "dz": -1.025691589827566,
+          "win_rate": 0.16666666666666666,
+          "n": 12
+        },
+        "joint_vs_prior": {
+          "mean": 49175.05393700811,
+          "sd": 11334.982924752792,
+          "sem": 3272.1277214329184,
+          "t": 15.02846408314207,
+          "p": 1.1171391063852552e-08,
+          "dz": 4.338343891954348,
+          "win_rate": 1.0,
+          "n": 12
+        },
+        "own_vs_prior": {
+          "mean": 54001.563848170415,
+          "sd": 15027.059609745595,
+          "sem": 4337.938455407586,
+          "t": 12.44866989315009,
+          "p": 7.96964799918047e-08,
+          "dz": 3.593621456931497,
+          "win_rate": 1.0,
+          "n": 12
+        }
+      },
+      "new": {
+        "n": 12,
+        "prior": -52879.52100111899,
+        "own": 1266.211630245758,
+        "joint": -157.09518634726797,
+        "joint_vs_own": {
+          "mean": -1423.306816593026,
+          "sd": 1073.5717478245065,
+          "sem": 309.91346880042795,
+          "t": -4.592594255752013,
+          "p": 0.0007742362543125839,
+          "dz": -1.3257677649185768,
+          "win_rate": 0.0,
+          "n": 12
+        },
+        "joint_vs_prior": {
+          "mean": 52722.425814771734,
+          "sd": 15390.41518212804,
+          "sem": 4442.830174170864,
+          "t": 11.866855978714286,
+          "p": 1.304536486506158e-07,
+          "dz": 3.425666246872606,
+          "win_rate": 1.0,
+          "n": 12
+        },
+        "own_vs_prior": {
+          "mean": 54145.73263136475,
+          "sd": 15123.256650599615,
+          "sem": 4365.708149123743,
+          "t": 12.402508546576238,
+          "p": 8.281259205779675e-08,
+          "dz": 3.5802958239962126,
+          "win_rate": 1.0,
+          "n": 12
+        }
+      }
+    },
+    "ds000117": {
+      "old": {
+        "n": 6,
+        "prior": 6049.018219527007,
+        "own": 11794.285310496974,
+        "joint": 8303.538545176794,
+        "joint_vs_own": {
+          "mean": -3490.7467653201797,
+          "sd": 1448.5333951151351,
+          "sem": 591.3612822355694,
+          "t": -5.902900426831863,
+          "p": 0.001985730834198359,
+          "dz": -2.409849008032515,
+          "win_rate": 0.0,
+          "n": 6
+        },
+        "joint_vs_prior": {
+          "mean": 2254.5203256497866,
+          "sd": 1012.3890426749151,
+          "sem": 413.306095956381,
+          "t": 5.454844116036754,
+          "p": 0.0028150252719346862,
+          "dz": 2.2269307851188667,
+          "win_rate": 1.0,
+          "n": 6
+        },
+        "own_vs_prior": {
+          "mean": 5745.267090969966,
+          "sd": 532.3863009223503,
+          "sem": 217.34579721792926,
+          "t": 26.433762071825463,
+          "p": 1.4483470025265659e-06,
+          "dz": 10.791538176351247,
+          "win_rate": 1.0,
+          "n": 6
+        }
+      },
+      "new": {
+        "n": 6,
+        "prior": 6049.018219527007,
+        "own": 11676.57408398632,
+        "joint": 9644.724933544547,
+        "joint_vs_own": {
+          "mean": -2031.8491504417714,
+          "sd": 511.44342918806666,
+          "sem": 208.795905635004,
+          "t": -9.731269127439912,
+          "p": 0.00019477512733878655,
+          "dz": -3.972773985321112,
+          "win_rate": 0.0,
+          "n": 6
+        },
+        "joint_vs_prior": {
+          "mean": 3595.70671401754,
+          "sd": 437.36898763118654,
+          "sem": 178.55514150234237,
+          "t": 20.137794318123124,
+          "p": 5.582619945378132e-06,
+          "dz": 8.221220104086658,
+          "win_rate": 1.0,
+          "n": 6
+        },
+        "own_vs_prior": {
+          "mean": 5627.555864459311,
+          "sd": 387.60510459280425,
+          "sem": 158.23912132507917,
+          "t": 35.563619270220286,
+          "p": 3.3082785890391255e-07,
+          "dz": 14.518786769775128,
+          "win_rate": 1.0,
+          "n": 6
+        }
+      }
+    },
+    "ds004873": {
+      "old": {
+        "n": 15,
+        "prior": -569.6299858766848,
+        "own": -552.330344169701,
+        "joint": -552.2779352566151,
+        "joint_vs_own": {
+          "mean": 0.052408913085980655,
+          "sd": 0.5073701441144448,
+          "sem": 0.1310024079012068,
+          "t": 0.40006068533873007,
+          "p": 0.6951493345981392,
+          "dz": 0.10329522478594849,
+          "win_rate": 0.5333333333333333,
+          "n": 15
+        },
+        "joint_vs_prior": {
+          "mean": 17.35205062006967,
+          "sd": 12.85272782190965,
+          "sem": 3.3185600538395197,
+          "t": 5.22878909483456,
+          "p": 0.00012769107443082024,
+          "dz": 1.3500675390083468,
+          "win_rate": 0.8,
+          "n": 15
+        },
+        "own_vs_prior": {
+          "mean": 17.299641706983685,
+          "sd": 13.18994010202024,
+          "sem": 3.4056278901731827,
+          "t": 5.0797216445464235,
+          "p": 0.00016785126907975916,
+          "dz": 1.3115784888465098,
+          "win_rate": 0.8,
+          "n": 15
+        }
+      },
+      "new": {
+        "n": 15,
+        "prior": -569.6299858766848,
+        "own": -552.3056800851921,
+        "joint": -552.0740484404799,
+        "joint_vs_own": {
+          "mean": 0.2316316447121873,
+          "sd": 0.5549961954608333,
+          "sem": 0.14329940148188558,
+          "t": 1.616417391258035,
+          "p": 0.12830713134703867,
+          "dz": 0.4173571757908272,
+          "win_rate": 0.6666666666666666,
+          "n": 15
+        },
+        "joint_vs_prior": {
+          "mean": 17.55593743620477,
+          "sd": 12.644950097264687,
+          "sem": 3.264912076021999,
+          "t": 5.3771547372249895,
+          "p": 9.75490335416702e-05,
+          "dz": 1.3883753831501802,
+          "win_rate": 0.8666666666666667,
+          "n": 15
+        },
+        "own_vs_prior": {
+          "mean": 17.32430579149258,
+          "sd": 13.104164878724855,
+          "sem": 3.3834808227504998,
+          "t": 5.1202612631950135,
+          "p": 0.00015577629215094,
+          "dz": 1.3220457733723494,
+          "win_rate": 0.8,
+          "n": 15
+        }
+      }
+    }
+  },
+  "restart_sd": {
+    "old": 208.7374287838913,
+    "new": 91.56850276135457
+  },
+  "hessian_pd": {
+    "old": {
+      "eegmmidb": true,
+      "sleep-edfx": true,
+      "ds000117": true,
+      "ds004873": true,
+      "sleep-edfx/N2": true
+    },
+    "new": {
+      "eegmmidb": false,
+      "sleep-edfx": false,
+      "ds000117": false,
+      "ds004873": true,
+      "sleep-edfx/N2": false
+    }
+  },
+  "posterior": {
+    "old": {
+      "joint": {
+        "local_excitation:ei_loop_lti.tau_membrane_s": 0.010474670716974674,
+        "local_excitation:ei_loop_lti.tau_ampa_s": 0.002332382274510386,
+        "local_excitation:ei_loop_lti.tau_inh_membrane_s": 0.004132455048181055,
+        "local_excitation:ei_loop_lti.tau_gaba_a_s": 0.0038750168124895737,
+        "local_excitation:ei_loop_lti.synaptic_lag_s": 0.007072783225473738,
+        "local_excitation:ei_loop_lti.loop_gain": 6.0355929006132225,
+        "metabolism:mass_action_budget.cmro2_baseline": 2.840551467936771,
+        "neurovascular_coupling:balloon_lti.tau_signal_s": 1.6273835099547083,
+        "neurovascular_coupling:balloon_lti.tau_feedback_s": 2.3654402890583843,
+        "neurovascular_coupling:balloon_lti.onset_lag_s": 0.9999851509173957,
+        "thalamocortical_coupling:alpha_resonator.f0_hz": 10.433531486970148,
+        "thalamocortical_coupling:alpha_resonator.q": 5.917757357239319,
+        "thalamocortical_coupling:alpha_resonator.gain": 0.005016906196938721,
+        "tissue_exchange:fick_oxygen_limitation.oxygen_extraction_fraction": 0.46593913460977887,
+        "tissue_exchange:fick_oxygen_limitation.arterial_oxygen_content": 0.2059467544648604,
+        "tissue_exchange:linearized_exchange_lti.coupling_ratio_n": 1.1247712840105353,
+        "vascular_flow:poiseuille_network.baseline_cbf": 29.971672087070466,
+        "vascular_flow:poiseuille_network.baseline_cbv": 0.039351714799905825,
+        "vascular_flow:windkessel_lti.tau_transit_s": 2.1364204288230693,
+        "vascular_flow:windkessel_lti.tau_compliance_s": 2.2526951741668584,
+        "vascular_flow:windkessel_lti.autoregulation_gain": 0.9363243508862926
+      },
+      "alone": {
+        "eegmmidb": {
+          "local_excitation:ei_loop_lti.tau_membrane_s": 0.004135589243132068,
+          "local_excitation:ei_loop_lti.tau_ampa_s": 0.002603947491146032,
+          "local_excitation:ei_loop_lti.tau_inh_membrane_s": 0.0066194512847338105,
+          "local_excitation:ei_loop_lti.tau_gaba_a_s": 0.006350904161300659,
+          "local_excitation:ei_loop_lti.synaptic_lag_s": 0.005072527941267118,
+          "local_excitation:ei_loop_lti.loop_gain": 4.916927161388462,
+          "metabolism:mass_action_budget.cmro2_baseline": 3.4,
+          "neurovascular_coupling:balloon_lti.tau_signal_s": 1.54,
+          "neurovascular_coupling:balloon_lti.tau_feedback_s": 2.44,
+          "neurovascular_coupling:balloon_lti.onset_lag_s": 1.0,
+          "thalamocortical_coupling:alpha_resonator.f0_hz": 10.44196361066115,
+          "thalamocortical_coupling:alpha_resonator.q": 6.035269735877882,
+          "thalamocortical_coupling:alpha_resonator.gain": 0.09851269448620693,
+          "tissue_exchange:fick_oxygen_limitation.oxygen_extraction_fraction": 0.4,
+          "tissue_exchange:fick_oxygen_limitation.arterial_oxygen_content": 0.2,
+          "tissue_exchange:linearized_exchange_lti.coupling_ratio_n": 2.5,
+          "vascular_flow:poiseuille_network.baseline_cbf": 50.0,
+          "vascular_flow:poiseuille_network.baseline_cbv": 0.04,
+          "vascular_flow:windkessel_lti.tau_transit_s": 3.0000000000000004,
+          "vascular_flow:windkessel_lti.tau_compliance_s": 7.999999999999998,
+          "vascular_flow:windkessel_lti.autoregulation_gain": 0.6
+        },
+        "sleep-edfx": {
+          "local_excitation:ei_loop_lti.tau_membrane_s": 0.008985221796234427,
+          "local_excitation:ei_loop_lti.tau_ampa_s": 0.003155000865871856,
+          "local_excitation:ei_loop_lti.tau_inh_membrane_s": 0.01444764759365348,
+          "local_excitation:ei_loop_lti.tau_gaba_a_s": 0.015859046804185352,
+          "local_excitation:ei_loop_lti.synaptic_lag_s": 0.01616059038504731,
+          "local_excitation:ei_loop_lti.loop_gain": 6.770165271652885,
+          "metabolism:mass_action_budget.cmro2_baseline": 3.4,
+          "neurovascular_coupling:balloon_lti.tau_signal_s": 1.54,
+          "neurovascular_coupling:balloon_lti.tau_feedback_s": 2.44,
+          "neurovascular_coupling:balloon_lti.onset_lag_s": 1.0,
+          "thalamocortical_coupling:alpha_resonator.f0_hz": 4.334270707408742,
+          "thalamocortical_coupling:alpha_resonator.q": 0.4915459448107471,
+          "thalamocortical_coupling:alpha_resonator.gain": 1.3845484012947666,
+          "tissue_exchange:fick_oxygen_limitation.oxygen_extraction_fraction": 0.4,
+          "tissue_exchange:fick_oxygen_limitation.arterial_oxygen_content": 0.2,
+          "tissue_exchange:linearized_exchange_lti.coupling_ratio_n": 2.5,
+          "vascular_flow:poiseuille_network.baseline_cbf": 50.0,
+          "vascular_flow:poiseuille_network.baseline_cbv": 0.04,
+          "vascular_flow:windkessel_lti.tau_transit_s": 3.0000000000000004,
+          "vascular_flow:windkessel_lti.tau_compliance_s": 7.999999999999998,
+          "vascular_flow:windkessel_lti.autoregulation_gain": 0.6
+        },
+        "ds000117": {
+          "local_excitation:ei_loop_lti.tau_membrane_s": 0.004255392056613214,
+          "local_excitation:ei_loop_lti.tau_ampa_s": 0.0009362283442406905,
+          "local_excitation:ei_loop_lti.tau_inh_membrane_s": 0.0018639665827672445,
+          "local_excitation:ei_loop_lti.tau_gaba_a_s": 0.0012415517749777203,
+          "local_excitation:ei_loop_lti.synaptic_lag_s": 0.023173709809707285,
+          "local_excitation:ei_loop_lti.loop_gain": 1.2124188237418179,
+          "metabolism:mass_action_budget.cmro2_baseline": 3.4,
+          "neurovascular_coupling:balloon_lti.tau_signal_s": 1.54,
+          "neurovascular_coupling:balloon_lti.tau_feedback_s": 2.44,
+          "neurovascular_coupling:balloon_lti.onset_lag_s": 1.0,
+          "thalamocortical_coupling:alpha_resonator.f0_hz": 17.387205882425018,
+          "thalamocortical_coupling:alpha_resonator.q": 0.8694996385287355,
+          "thalamocortical_coupling:alpha_resonator.gain": 14.463786284815399,
+          "tissue_exchange:fick_oxygen_limitation.oxygen_extraction_fraction": 0.4,
+          "tissue_exchange:fick_oxygen_limitation.arterial_oxygen_content": 0.2,
+          "tissue_exchange:linearized_exchange_lti.coupling_ratio_n": 2.5,
+          "vascular_flow:poiseuille_network.baseline_cbf": 50.0,
+          "vascular_flow:poiseuille_network.baseline_cbv": 0.04,
+          "vascular_flow:windkessel_lti.tau_transit_s": 3.0000000000000004,
+          "vascular_flow:windkessel_lti.tau_compliance_s": 7.999999999999998,
+          "vascular_flow:windkessel_lti.autoregulation_gain": 0.6
+        },
+        "ds004873": {
+          "local_excitation:ei_loop_lti.tau_membrane_s": 0.01500008153372992,
+          "local_excitation:ei_loop_lti.tau_ampa_s": 0.0030000127749168753,
+          "local_excitation:ei_loop_lti.tau_inh_membrane_s": 0.008000118727374895,
+          "local_excitation:ei_loop_lti.tau_gaba_a_s": 0.006000037802309234,
+          "local_excitation:ei_loop_lti.synaptic_lag_s": 0.0015000041848705333,
+          "local_excitation:ei_loop_lti.loop_gain": 7.999798922611258,
+          "metabolism:mass_action_budget.cmro2_baseline": 2.8324171521508545,
+          "neurovascular_coupling:balloon_lti.tau_signal_s": 1.5611204685251956,
+          "neurovascular_coupling:balloon_lti.tau_feedback_s": 1.9342534840698287,
+          "neurovascular_coupling:balloon_lti.onset_lag_s": 1.0000059686949871,
+          "thalamocortical_coupling:alpha_resonator.f0_hz": 10.00102195924748,
+          "thalamocortical_coupling:alpha_resonator.q": 3.9996098361615013,
+          "thalamocortical_coupling:alpha_resonator.gain": 1.0000405365445941,
+          "tissue_exchange:fick_oxygen_limitation.oxygen_extraction_fraction": 0.46615198466876984,
+          "tissue_exchange:fick_oxygen_limitation.arterial_oxygen_content": 0.20593583632186463,
+          "tissue_exchange:linearized_exchange_lti.coupling_ratio_n": 1.126075273863725,
+          "vascular_flow:poiseuille_network.baseline_cbf": 29.548415412995784,
+          "vascular_flow:poiseuille_network.baseline_cbv": 0.039349308784959104,
+          "vascular_flow:windkessel_lti.tau_transit_s": 2.042802998423706,
+          "vascular_flow:windkessel_lti.tau_compliance_s": 2.571435744436005,
+          "vascular_flow:windkessel_lti.autoregulation_gain": 0.9676208883099222
+        }
+      },
+      "prior_median": {
+        "local_excitation:ei_loop_lti.tau_membrane_s": 0.014999999999999998,
+        "local_excitation:ei_loop_lti.tau_ampa_s": 0.002999999999999999,
+        "local_excitation:ei_loop_lti.tau_inh_membrane_s": 0.007999999999999997,
+        "local_excitation:ei_loop_lti.tau_gaba_a_s": 0.005999999999999998,
+        "local_excitation:ei_loop_lti.synaptic_lag_s": 0.0015000000000000007,
+        "local_excitation:ei_loop_lti.loop_gain": 7.999999999999998,
+        "metabolism:mass_action_budget.cmro2_baseline": 3.4,
+        "neurovascular_coupling:balloon_lti.tau_signal_s": 1.54,
+        "neurovascular_coupling:balloon_lti.tau_feedback_s": 2.44,
+        "neurovascular_coupling:balloon_lti.onset_lag_s": 1.0,
+        "thalamocortical_coupling:alpha_resonator.f0_hz": 10.0,
+        "thalamocortical_coupling:alpha_resonator.q": 4.0,
+        "thalamocortical_coupling:alpha_resonator.gain": 1.0,
+        "tissue_exchange:fick_oxygen_limitation.oxygen_extraction_fraction": 0.4,
+        "tissue_exchange:fick_oxygen_limitation.arterial_oxygen_content": 0.2,
+        "tissue_exchange:linearized_exchange_lti.coupling_ratio_n": 2.5,
+        "vascular_flow:poiseuille_network.baseline_cbf": 50.0,
+        "vascular_flow:poiseuille_network.baseline_cbv": 0.04,
+        "vascular_flow:windkessel_lti.tau_transit_s": 3.0000000000000004,
+        "vascular_flow:windkessel_lti.tau_compliance_s": 7.999999999999998,
+        "vascular_flow:windkessel_lti.autoregulation_gain": 0.6
+      }
+    },
+    "new": {
+      "joint": {
+        "local_excitation:ei_loop_lti.tau_membrane_s": 0.0022898286085589656,
+        "local_excitation:ei_loop_lti.tau_ampa_s": 0.020815981873307483,
+        "local_excitation:ei_loop_lti.tau_inh_membrane_s": 0.012125639075960811,
+        "local_excitation:ei_loop_lti.tau_gaba_a_s": 0.01457362196182151,
+        "local_excitation:ei_loop_lti.synaptic_lag_s": 0.0005203325828163682,
+        "local_excitation:ei_loop_lti.loop_gain": 4661.395504638238,
+        "metabolism:mass_action_budget.cmro2_baseline": 2.8323821631686164,
+        "neurovascular_coupling:balloon_lti.tau_signal_s": 1.626946577299503,
+        "neurovascular_coupling:balloon_lti.tau_feedback_s": 2.726876923634966,
+        "neurovascular_coupling:balloon_lti.onset_lag_s": 0.9999892609496907,
+        "spatial_gradient:ap.ei_loop_lti.tau_membrane_s": 2.7312973825331412,
+        "spatial_gradient:ap.ei_loop_lti.tau_ampa_s": -0.8926221690296786,
+        "spatial_gradient:ap.ei_loop_lti.tau_inh_membrane_s": -1.2545585259586445,
+        "spatial_gradient:ap.ei_loop_lti.tau_gaba_a_s": -1.3833972944707684,
+        "spatial_gradient:ap.ei_loop_lti.synaptic_lag_s": -2.0470809536211347,
+        "spatial_gradient:ap.ei_loop_lti.loop_gain": -2.505612095713412,
+        "spatial_gradient:ap.alpha_resonator.f0_hz": 0.2165099461844157,
+        "spatial_gradient:ap.alpha_resonator.q": -0.2063404194089449,
+        "spatial_gradient:ap.alpha_resonator.gain": 0.4533393521562845,
+        "thalamocortical_coupling:alpha_resonator.f0_hz": 13.191136675079933,
+        "thalamocortical_coupling:alpha_resonator.q": 4.761046310960692,
+        "thalamocortical_coupling:alpha_resonator.gain": 3.8333279288978636e-05,
+        "tissue_exchange:fick_oxygen_limitation.oxygen_extraction_fraction": 0.46631032639996617,
+        "tissue_exchange:fick_oxygen_limitation.arterial_oxygen_content": 0.2058585005086257,
+        "tissue_exchange:linearized_exchange_lti.coupling_ratio_n": 1.1536852273833154,
+        "vascular_flow:poiseuille_network.baseline_cbf": 30.947752069284512,
+        "vascular_flow:poiseuille_network.baseline_cbv": 0.03935414469980635,
+        "vascular_flow:windkessel_lti.tau_transit_s": 2.039488775320504,
+        "vascular_flow:windkessel_lti.tau_compliance_s": 2.3041492960522603,
+        "vascular_flow:windkessel_lti.autoregulation_gain": 1.0672508637312306
+      },
+      "alone": {
+        "eegmmidb": {
+          "local_excitation:ei_loop_lti.tau_membrane_s": 0.014067932501029912,
+          "local_excitation:ei_loop_lti.tau_ampa_s": 0.0026743047101711955,
+          "local_excitation:ei_loop_lti.tau_inh_membrane_s": 0.009129585220992983,
+          "local_excitation:ei_loop_lti.tau_gaba_a_s": 0.006737526413226614,
+          "local_excitation:ei_loop_lti.synaptic_lag_s": 0.0016519610429324262,
+          "local_excitation:ei_loop_lti.loop_gain": 46.54343266095785,
+          "metabolism:mass_action_budget.cmro2_baseline": 3.4,
+          "neurovascular_coupling:balloon_lti.tau_signal_s": 1.54,
+          "neurovascular_coupling:balloon_lti.tau_feedback_s": 2.44,
+          "neurovascular_coupling:balloon_lti.onset_lag_s": 1.0,
+          "spatial_gradient:ap.ei_loop_lti.tau_membrane_s": -0.49368661137920133,
+          "spatial_gradient:ap.ei_loop_lti.tau_ampa_s": -0.31357692994982905,
+          "spatial_gradient:ap.ei_loop_lti.tau_inh_membrane_s": 1.160022446120728,
+          "spatial_gradient:ap.ei_loop_lti.tau_gaba_a_s": -0.24905127164900037,
+          "spatial_gradient:ap.ei_loop_lti.synaptic_lag_s": -1.1155413120970745,
+          "spatial_gradient:ap.ei_loop_lti.loop_gain": -0.6933175329296111,
+          "spatial_gradient:ap.alpha_resonator.f0_hz": -0.13411571292662064,
+          "spatial_gradient:ap.alpha_resonator.q": 1.4896208331135325,
+          "spatial_gradient:ap.alpha_resonator.gain": 0.9131373798709806,
+          "thalamocortical_coupling:alpha_resonator.f0_hz": 12.448589892136921,
+          "thalamocortical_coupling:alpha_resonator.q": 1.1684173599251084,
+          "thalamocortical_coupling:alpha_resonator.gain": 0.035448659354233185,
+          "tissue_exchange:fick_oxygen_limitation.oxygen_extraction_fraction": 0.4,
+          "tissue_exchange:fick_oxygen_limitation.arterial_oxygen_content": 0.2,
+          "tissue_exchange:linearized_exchange_lti.coupling_ratio_n": 2.5,
+          "vascular_flow:poiseuille_network.baseline_cbf": 50.0,
+          "vascular_flow:poiseuille_network.baseline_cbv": 0.04,
+          "vascular_flow:windkessel_lti.tau_transit_s": 3.0000000000000004,
+          "vascular_flow:windkessel_lti.tau_compliance_s": 7.999999999999998,
+          "vascular_flow:windkessel_lti.autoregulation_gain": 0.6
+        },
+        "sleep-edfx": {
+          "local_excitation:ei_loop_lti.tau_membrane_s": 0.01041428019709993,
+          "local_excitation:ei_loop_lti.tau_ampa_s": 0.0013988227684497427,
+          "local_excitation:ei_loop_lti.tau_inh_membrane_s": 0.0056866126246789914,
+          "local_excitation:ei_loop_lti.tau_gaba_a_s": 0.0033429494989084354,
+          "local_excitation:ei_loop_lti.synaptic_lag_s": 0.001158734329192746,
+          "local_excitation:ei_loop_lti.loop_gain": 3.9212078441786296,
+          "metabolism:mass_action_budget.cmro2_baseline": 3.4,
+          "neurovascular_coupling:balloon_lti.tau_signal_s": 1.54,
+          "neurovascular_coupling:balloon_lti.tau_feedback_s": 2.44,
+          "neurovascular_coupling:balloon_lti.onset_lag_s": 1.0,
+          "spatial_gradient:ap.ei_loop_lti.tau_membrane_s": 2.4285832438979744,
+          "spatial_gradient:ap.ei_loop_lti.tau_ampa_s": -1.9405158103252913,
+          "spatial_gradient:ap.ei_loop_lti.tau_inh_membrane_s": 0.6181976531489227,
+          "spatial_gradient:ap.ei_loop_lti.tau_gaba_a_s": -0.7020967007585587,
+          "spatial_gradient:ap.ei_loop_lti.synaptic_lag_s": 0.34540215986967004,
+          "spatial_gradient:ap.ei_loop_lti.loop_gain": -0.2973496729436285,
+          "spatial_gradient:ap.alpha_resonator.f0_hz": -0.7177705073895766,
+          "spatial_gradient:ap.alpha_resonator.q": -0.21547701471245698,
+          "spatial_gradient:ap.alpha_resonator.gain": 0.38773828659242904,
+          "thalamocortical_coupling:alpha_resonator.f0_hz": 7.669640923069406,
+          "thalamocortical_coupling:alpha_resonator.q": 2.808883617281532,
+          "thalamocortical_coupling:alpha_resonator.gain": 0.04989145761765693,
+          "tissue_exchange:fick_oxygen_limitation.oxygen_extraction_fraction": 0.4,
+          "tissue_exchange:fick_oxygen_limitation.arterial_oxygen_content": 0.2,
+          "tissue_exchange:linearized_exchange_lti.coupling_ratio_n": 2.5,
+          "vascular_flow:poiseuille_network.baseline_cbf": 50.0,
+          "vascular_flow:poiseuille_network.baseline_cbv": 0.04,
+          "vascular_flow:windkessel_lti.tau_transit_s": 3.0000000000000004,
+          "vascular_flow:windkessel_lti.tau_compliance_s": 7.999999999999998,
+          "vascular_flow:windkessel_lti.autoregulation_gain": 0.6
+        },
+        "ds000117": {
+          "local_excitation:ei_loop_lti.tau_membrane_s": 0.01788281590125001,
+          "local_excitation:ei_loop_lti.tau_ampa_s": 0.0051412724615261165,
+          "local_excitation:ei_loop_lti.tau_inh_membrane_s": 0.013437361302414252,
+          "local_excitation:ei_loop_lti.tau_gaba_a_s": 0.010228163682687119,
+          "local_excitation:ei_loop_lti.synaptic_lag_s": 0.0013940530716157783,
+          "local_excitation:ei_loop_lti.loop_gain": 7.101970855122154,
+          "metabolism:mass_action_budget.cmro2_baseline": 3.4,
+          "neurovascular_coupling:balloon_lti.tau_signal_s": 1.54,
+          "neurovascular_coupling:balloon_lti.tau_feedback_s": 2.44,
+          "neurovascular_coupling:balloon_lti.onset_lag_s": 1.0,
+          "spatial_gradient:ap.ei_loop_lti.tau_membrane_s": -0.5991552242146009,
+          "spatial_gradient:ap.ei_loop_lti.tau_ampa_s": 0.4642524397462199,
+          "spatial_gradient:ap.ei_loop_lti.tau_inh_membrane_s": 0.565743379335826,
+          "spatial_gradient:ap.ei_loop_lti.tau_gaba_a_s": 0.5608368961237592,
+          "spatial_gradient:ap.ei_loop_lti.synaptic_lag_s": 0.18909983007309183,
+          "spatial_gradient:ap.ei_loop_lti.loop_gain": 0.07266576098606355,
+          "spatial_gradient:ap.alpha_resonator.f0_hz": -1.8315814871709823,
+          "spatial_gradient:ap.alpha_resonator.q": 1.2671871259888918,
+          "spatial_gradient:ap.alpha_resonator.gain": 0.46859859144553123,
+          "thalamocortical_coupling:alpha_resonator.f0_hz": 10.70721349280099,
+          "thalamocortical_coupling:alpha_resonator.q": 0.5181687719059651,
+          "thalamocortical_coupling:alpha_resonator.gain": 0.3832045968150055,
+          "tissue_exchange:fick_oxygen_limitation.oxygen_extraction_fraction": 0.4,
+          "tissue_exchange:fick_oxygen_limitation.arterial_oxygen_content": 0.2,
+          "tissue_exchange:linearized_exchange_lti.coupling_ratio_n": 2.5,
+          "vascular_flow:poiseuille_network.baseline_cbf": 50.0,
+          "vascular_flow:poiseuille_network.baseline_cbv": 0.04,
+          "vascular_flow:windkessel_lti.tau_transit_s": 3.0000000000000004,
+          "vascular_flow:windkessel_lti.tau_compliance_s": 7.999999999999998,
+          "vascular_flow:windkessel_lti.autoregulation_gain": 0.6
+        },
+        "ds004873": {
+          "local_excitation:ei_loop_lti.tau_membrane_s": 0.014999846293279393,
+          "local_excitation:ei_loop_lti.tau_ampa_s": 0.002999971379577753,
+          "local_excitation:ei_loop_lti.tau_inh_membrane_s": 0.007999910225294138,
+          "local_excitation:ei_loop_lti.tau_gaba_a_s": 0.005999930555651006,
+          "local_excitation:ei_loop_lti.synaptic_lag_s": 0.0015000131952776824,
+          "local_excitation:ei_loop_lti.loop_gain": 7.999987489258121,
+          "metabolism:mass_action_budget.cmro2_baseline": 2.832622991207543,
+          "neurovascular_coupling:balloon_lti.tau_signal_s": 1.6134919900068683,
+          "neurovascular_coupling:balloon_lti.tau_feedback_s": 2.203309350137075,
+          "neurovascular_coupling:balloon_lti.onset_lag_s": 1.0000015407051974,
+          "spatial_gradient:ap.ei_loop_lti.tau_membrane_s": -1.2460558338204973e-05,
+          "spatial_gradient:ap.ei_loop_lti.tau_ampa_s": -4.815347728442996e-06,
+          "spatial_gradient:ap.ei_loop_lti.tau_inh_membrane_s": -5.235250692943733e-07,
+          "spatial_gradient:ap.ei_loop_lti.tau_gaba_a_s": 9.891234119190445e-06,
+          "spatial_gradient:ap.ei_loop_lti.synaptic_lag_s": -5.994105121856677e-06,
+          "spatial_gradient:ap.ei_loop_lti.loop_gain": -8.817042102058543e-06,
+          "spatial_gradient:ap.alpha_resonator.f0_hz": 2.8890940482947098e-05,
+          "spatial_gradient:ap.alpha_resonator.q": -9.870504719051931e-06,
+          "spatial_gradient:ap.alpha_resonator.gain": -9.470934066089226e-06,
+          "thalamocortical_coupling:alpha_resonator.f0_hz": 10.000587536850347,
+          "thalamocortical_coupling:alpha_resonator.q": 3.999862758121999,
+          "thalamocortical_coupling:alpha_resonator.gain": 0.9999842900028869,
+          "tissue_exchange:fick_oxygen_limitation.oxygen_extraction_fraction": 0.4661509426339128,
+          "tissue_exchange:fick_oxygen_limitation.arterial_oxygen_content": 0.205935902972663,
+          "tissue_exchange:linearized_exchange_lti.coupling_ratio_n": 1.1257226572221635,
+          "vascular_flow:poiseuille_network.baseline_cbf": 29.544179646357623,
+          "vascular_flow:poiseuille_network.baseline_cbv": 0.03934931781571797,
+          "vascular_flow:windkessel_lti.tau_transit_s": 2.045023523367122,
+          "vascular_flow:windkessel_lti.tau_compliance_s": 2.258531191522529,
+          "vascular_flow:windkessel_lti.autoregulation_gain": 0.9402560459986042
+        }
+      },
+      "prior_median": {
+        "local_excitation:ei_loop_lti.tau_membrane_s": 0.014999999999999998,
+        "local_excitation:ei_loop_lti.tau_ampa_s": 0.002999999999999999,
+        "local_excitation:ei_loop_lti.tau_inh_membrane_s": 0.007999999999999997,
+        "local_excitation:ei_loop_lti.tau_gaba_a_s": 0.005999999999999998,
+        "local_excitation:ei_loop_lti.synaptic_lag_s": 0.0015000000000000007,
+        "local_excitation:ei_loop_lti.loop_gain": 7.999999999999998,
+        "metabolism:mass_action_budget.cmro2_baseline": 3.4,
+        "neurovascular_coupling:balloon_lti.tau_signal_s": 1.54,
+        "neurovascular_coupling:balloon_lti.tau_feedback_s": 2.44,
+        "neurovascular_coupling:balloon_lti.onset_lag_s": 1.0,
+        "spatial_gradient:ap.ei_loop_lti.tau_membrane_s": 0.0,
+        "spatial_gradient:ap.ei_loop_lti.tau_ampa_s": 0.0,
+        "spatial_gradient:ap.ei_loop_lti.tau_inh_membrane_s": 0.0,
+        "spatial_gradient:ap.ei_loop_lti.tau_gaba_a_s": 0.0,
+        "spatial_gradient:ap.ei_loop_lti.synaptic_lag_s": 0.0,
+        "spatial_gradient:ap.ei_loop_lti.loop_gain": 0.0,
+        "spatial_gradient:ap.alpha_resonator.f0_hz": 0.0,
+        "spatial_gradient:ap.alpha_resonator.q": 0.0,
+        "spatial_gradient:ap.alpha_resonator.gain": 0.0,
+        "thalamocortical_coupling:alpha_resonator.f0_hz": 10.0,
+        "thalamocortical_coupling:alpha_resonator.q": 4.0,
+        "thalamocortical_coupling:alpha_resonator.gain": 1.0,
+        "tissue_exchange:fick_oxygen_limitation.oxygen_extraction_fraction": 0.4,
+        "tissue_exchange:fick_oxygen_limitation.arterial_oxygen_content": 0.2,
+        "tissue_exchange:linearized_exchange_lti.coupling_ratio_n": 2.5,
+        "vascular_flow:poiseuille_network.baseline_cbf": 50.0,
+        "vascular_flow:poiseuille_network.baseline_cbv": 0.04,
+        "vascular_flow:windkessel_lti.tau_transit_s": 3.0000000000000004,
+        "vascular_flow:windkessel_lti.tau_compliance_s": 7.999999999999998,
+        "vascular_flow:windkessel_lti.autoregulation_gain": 0.6
+      }
+    }
+  },
+  "runtime_s": [
+    1788668647.717875,
+    1788668647.729875,
+    1788668647.7248752,
+    1788668647.726875,
+    1788668647.7313752,
+    1788668639.732875,
+    1788668644.332875,
+    1788668646.1928751,
+    1788668645.292875,
+    1788668646.732875,
+    1788668647.732875,
+    1788668647.732875,
+    1788668647.732875,
+    1788668647.732875,
+    1788668647.732875,
+    1788668647.732875,
+    1788668647.732875,
+    1788668647.732875,
+    1788668647.732875,
+    1788668637.732875,
+    1788668643.732875,
+    1788668646.732875,
+    1788668647.332875,
+    1788668647.532875,
+    1788668645.232875,
+    1788668597.732875,
+    1788668647.6928751,
+    1788668644.732875,
+    1788668639.732875,
+    1788668647.1328752
+  ]
+}

@@ -840,10 +840,10 @@ def main() -> int:
     transfer = {}
     for k in keys:
         row = {}
-        for tag, space, res, ds, t0 in (("old", space_old, res_old, ds_old, t0_old),
-                                        ("new", space_new, res_new, ds_new, t0_new)):
+        for tag, space, res, ds, med in (("old", space_old, res_old, ds_old, t0_old),
+                                         ("new", space_new, res_new, ds_new, t0_new)):
             d = ds[k]
-            sp = d.per_subject(space, t0)
+            sp = d.per_subject(space, med)
             so = d.per_subject(space, res["alone"][k])
             sj = d.per_subject(space, res["joint"])
             subs = sorted(sp)
