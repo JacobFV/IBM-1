@@ -646,6 +646,66 @@ mandatory regardless of pretraining status:
 - provenance records FORCED versus EVOLVED per component
 - no learned latent becomes a state variable
 
+## 7b. THE CLOSED LOOP — next-frame prediction through brain state
+
+**this was asked for early and I recorded the wrong thing.** §7 above records
+stimulus-driven forcing fitted against MEASURED brain data, which is bounded by
+the ~90 GiB of paired recordings we hold. the actual proposal is a closed loop
+that needs no paired recordings for its training signal:
+
+    frame_t --[encoder]--> eeg_t --[IBM dynamics]--> eeg_{t+dt} --[decoder]--> frame_{t+dt}
+
+trained on RAW NATURALISTIC VIDEO with next-frame prediction as the objective.
+likewise audio and human speech; likewise any other modality with a stimulus
+stream. paired brain data is needed only to build and validate the encoder and
+decoder — not to generate the optimization signal. **that is the difference
+between a 90 GiB corpus and an unbounded one, and it is what justifies learning
+10^8 parameters.**
+
+what makes it more than an autoencoder: the latent is BRAIN STATE, and the
+transition is not free. the encoder and decoder may be learned, but the step from
+eeg_t to eeg_{t+dt} is the declared process graph with its declared transfer
+functions and its fitted theta. so next-frame prediction supervises THETA through
+the transition — a dense, abundant signal on the one part of the model that is
+otherwise stuck at prior medians (see 4.3: zero theta have ever been moved by
+evidence in a materialization).
+
+### the degenerate solution is the whole design problem
+if encoder and decoder are both free, they will learn to route information AROUND
+the brain state and the IBM dynamics collapse to an identity map. next-frame
+prediction would be perfectly satisfied with the brain contributing nothing, and
+the result would look like it worked. two guards, and neither is optional:
+
+1. **the transition stays in its declared form.** LTI transfers with priors, not
+   a free network. this is the entire reason to use the IBM as the bottleneck
+   rather than any convenient latent — a free transition makes the brain
+   decorative.
+2. **a joint objective.** next-frame prediction on unbounded video PLUS the
+   measured-EEG likelihood on the 90 GiB we hold, fitted together. the second
+   anchors the first: theta must simultaneously predict the next frame AND
+   reproduce real recorded brain state. this is exactly the multi-source product
+   `ibm/forge/fit.py` already implements, with video as one more Task.
+
+### gating dependencies, in order
+- **TRIBE v2 weights are NOT held.** `data/sources/tribe/` and `tribe-v2/` both
+  have `local_root: null`. this is the first blocker and nothing starts without
+  it or a substitute encoder.
+- **the decoder is a different and harder model than the encoder.** TRIBE maps
+  stimulus -> brain. the loop needs brain -> stimulus, which is decoding, which
+  is `eeg_to_image` in the library and is not free. it must be trained, and its
+  own r^2 calibrates how much the loop's output can be believed.
+- **bandwidth.** the measured forcing r^2 was 0.0033 in delta and ~0 above
+  8 Hz (§4.8). a loop whose transition only carries delta cannot predict a video
+  frame 33 ms ahead. either the encoder must target a band the dynamics actually
+  carry, or dt must be chosen to match — and that is a measurement, not a choice.
+
+### why the bottleneck is the point
+64 channels of EEG over a declared band is a far narrower channel than a video
+frame. that narrowness is not a limitation to engineer around — it is what forces
+the model to learn what the brain would have to represent, which is the whole
+claim. a wide bottleneck would let the loop succeed without ever using the
+dynamics.
+
 ## 8. corrections already made — do not re-derive the old numbers
 
 | was reported | actually | why it was wrong |
