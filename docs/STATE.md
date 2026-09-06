@@ -300,7 +300,70 @@ of falling through to the tier. a model needing a tractogram should fall to the
 group connectome and *say so*, not fail. §7's own claim is that models are
 materialized views of ONE implicit model.
 
-### 4.3 no parameter has ever been moved by evidence in a materialization
+### 4.3 JOINT FORGING RAN. the strong claim fails; the scope of the failure matters
+
+`scripts/forge_joint.py`, 4 sources (60 eegmmidb, 60 sleep-edfx nights scored
+WAKE, 16 ds000117 with 102 magnetometers + 70 EEG on the same head, 37 ds004873),
+one `ParameterSpace`, `Method.JOINT`, split by subject 60/40. weighting by
+MEASURED overdispersion phi rather than by size — phi is 3.3 / 31.5 / 7.1 / 1.7,
+and a naive w=1 would have handed sleep-edfx 81% of the corpus's curvature from
+19 heads purely because its recordings are long.
+
+**three findings, and they have different scopes.**
+
+#### (i) across a band gap the coupling is EXACTLY NOMINAL — structural, stands
+ds004873 names 9 `local_excitation`/`thalamocortical_coupling` blocks, because the
+process graph says its signal passes through them. it carries **4e-4 nats** about
+`tau_membrane_s` against eegmmidb's **2729** — a ratio of 6e-7. fitting
+ds004873 ALONE leaves all 9 electro blocks at exactly their prior median. an
+`onset_lag_s` control returns 9e-13, confirming the sweep machinery.
+
+this is not a fitting failure. |H_ei| is flat below 1 Hz to within 1e-3, so once
+the per-recording gain is profiled the BOLD likelihood is CONSTANT in every fast
+time constant. **two processes wired in series in the graph is not the same as one
+measurement constraining the other's parameters — what matters is whether the
+BANDS OVERLAP, and here they do not overlap at all.** the precision-addition story
+is arithmetically correct and empirically vacuous across this gap. this finding is
+independent of tying and stands unconditionally.
+
+#### (ii) `Method.JOINT` on this graph is MULTIMODAL — methodological, stands
+restarting the same joint fit from a prior draw moves the posterior by up to
+**209 marginal sd** — as much as deleting an entire dataset (208 sd). the joint
+hessian is not positive definite at the mode. **so "the posterior moved when I
+added a source" is NOT usable evidence from this machinery; only swept likelihood
+in nats is.** any future joint posterior needs the restart yardstick beside it.
+
+#### (iii) the conflict table falsifies GLOBAL tying, which the architecture does not claim
+18 of 19 live comparisons exceed 3 sigma, to 88 sigma: `alpha_resonator.f0_hz`
+comes out at **4.33 / 10.4 / 17.4 Hz** from three montages; `loop_gain` at
+4.92 vs 1.21; `synaptic_lag_s` differs by an order of magnitude. joint beats each
+source's OWN fit on **0 of 4** and is significantly worse on 2. a positive control
+(same nights, wake vs N2) gives 4 of 6 above 3 sigma including tau_membrane
+8.99 vs 1.58 ms at z=+19, so **the detector has power and the nulls are
+interpretable.**
+
+BUT: the experiment collapsed all 21 blocks to **GLOBAL**, and
+`ei_loop_lti` and `alpha_resonator` both declare **`tying=per_partition`**
+(62 of 108 implementations are per_partition; only 10 are global). so what is
+falsified is "one global parameter set describes a bipolar Fpz-Cz derivation, a
+posterior scalp average and a magnetometer array simultaneously" — a claim the
+architecture explicitly does not make. the agent named this itself as the first of
+three causes it could not separate; the other two are a missing instrument/montage
+factor in the forward model, and genuine cohort differences.
+
+**the open question, now sharp and testable:** re-run with the DECLARED
+per_partition tying and a montage factor. if the conflicts survive that, the
+shared-parameter architecture is falsified. if they collapse, the architecture is
+intact and the GLOBAL collapse was the error. until that is run, (iii) is not
+evidence against the architecture.
+
+#### what does survive
+the joint theta beats the untouched literature prior on all four sources
+(p <= 0.003), with r2 of log psd rising 0.56->0.80, -1.21->0.80, 0.53->0.65,
+0.55->0.92. so the WEAK form holds and the strong form -- that pooling pays for
+itself -- does not, on these four sources under a global collapse.
+
+### 4.3-OLD no parameter has ever been moved by evidence in a materialization
 provenance reports 0 of 123 θ entries moved. `local_excitation`'s 22 parameters
 are shared by 20 of 40 models. if most parameters stay at their priors regardless
 of how much data arrives, the model is an elaborate prior. **joint forging across

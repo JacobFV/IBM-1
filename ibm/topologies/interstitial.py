@@ -66,6 +66,14 @@ def interstitial_radius(sites, *, support: str = "interstitial",
     t = sites.require(support, "interstitial_radius", "interstitial sampling positions")
     xyz = np.asarray(t.xyz, dtype=float)
     sp = t.spacing(np)
+    if t.n == 0:
+        # R selected nothing on this support.  that is a legitimate
+        # materialization -- a request whose region simply does not reach here --
+        # and the default radius is two site spacings, which an empty table has
+        # none of.  an empty edge set with its columns present is the answer;
+        # `np.max` of nothing is a crash three modules from the cause.
+        return B.empty("interstitial", sites.n_total, ("distance_mm", "contact_area_mm2", "resistance"),
+                       note="no sites on {!r}: R selects none of it".format(support))
     r = float(radius_mm) if radius_mm is not None else 2.0 * float(np.max(sp))
 
     i, j, d = B.pairs_within(xyz, r, "interstitial_radius")

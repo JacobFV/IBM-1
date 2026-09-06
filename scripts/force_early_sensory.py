@@ -142,7 +142,12 @@ CACHE = Path(os.environ.get(
     "/tmp/claude-1000/-home-brandonin-Documents-IBM-1/"
     "d6587b2e-c347-48cf-bb14-8df80b8c7706/scratchpad/forcing"))
 
-_RIDGES = np.array([1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7], float)
+#: ridge grid, as a multiple of the design's mean diagonal so it is scale free.
+#: it runs three decades below where the first version started, because the first
+#: version's floor of 1 was above the optimum: a global ridge chosen by the mean
+#: over 208 channels lands on whatever protects the ~150 channels that carry no
+#: auditory response at all, and that is a very large amount of smoothing.
+_RIDGES = np.array([1e-2, 1e-1, 1e0, 3e0, 1e1, 3e1, 1e2, 1e3, 1e4, 1e5], float)
 
 
 # ---------------------------------------------------------------------------
@@ -394,6 +399,40 @@ def load_segments(cache: Path, cochs: dict[str, np.ndarray],
     return segs
 
 
+def channel_mask(segs: list[Segment], factor: float = 20.0) -> dict[str, np.ndarray]:
+    """which channels of each recording are usable, from their variance alone.
+
+    a plain bad-channel rule, and it is here because leaving it out produced the
+    single most misleading number in an earlier run of this script: a mean r^2 of
+    -0.073 on held-out participants whose *median* channel was +0.0009.  the mean
+    was six broken sensors.
+
+    the mechanism is worth writing down because it is not obvious.  each run is
+    scaled by its own per-channel median absolute deviation, which is the right
+    scale for an amplifier whose gain drifts and is deliberately blind to a SQUID
+    jump.  a channel that is saturated in one run therefore comes out with an
+    ordinary MAD and a variance five million times the array median -- and since
+    the lead field is fitted on one story and scored on another, its weight is
+    fitted at one scale and applied at a completely different one.  the resulting
+    r^2 is not small, it is enormous and negative, and it swamps two hundred
+    healthy channels.
+
+    the rule uses no target and no prediction: a channel is bad in a recording if
+    its variance in any segment of that recording exceeds `factor` times the
+    array's median variance.  measured on sub-08, that separates cleanly -- the
+    healthy session's worst channel is at 10x the median and the broken session's
+    worst is at 4,500,000x -- so the threshold is not doing delicate work.  the
+    count of what it drops is printed, because a rejection rule that is not
+    reported is a rejection rule that can be tuned.
+    """
+    out: dict[str, np.ndarray] = {}
+    for rec in sorted({s.recording for s in segs}):
+        mine = [s for s in segs if s.recording == rec]
+        v = np.stack([s.y.var(0) for s in mine])              # (n_seg, n_ch)
+        out[rec] = v.max(0) <= factor * float(np.median(v))
+    return out
+
+
 # ---------------------------------------------------------------------------
 # sufficient statistics in the lagged basis
 # ---------------------------------------------------------------------------
@@ -431,7 +470,8 @@ def _lagged(c: np.ndarray, n_lags: int = N_LAGS) -> np.ndarray:
     return out
 
 
-def accumulate(segs: list[Segment], n_lags: int = N_LAGS) -> dict:
+def accumulate(segs: list[Segment], n_lags: int = N_LAGS,
+               mask: dict[str, np.ndarray] | None = None) -> dict:
     """one pass over the corpus for `X'X`, `X'Y`, `Y'Y` and the counts.
 
     the whole reason the chain-parameter search below is affordable.  every model
@@ -455,7 +495,10 @@ def accumulate(segs: list[Segment], n_lags: int = N_LAGS) -> dict:
     xty = np.zeros((d, n_ch), np.float64)
     yty = np.zeros(n_ch, np.float64)
     n = 0
+    good = np.ones(n_ch, bool)
     for s in segs:
+        if mask is not None and s.recording in mask:
+            good &= mask[s.recording]
         c = s.c - s.c.mean(0, keepdims=True)
         y = s.y - s.y.mean(0, keepdims=True)
         for lo, a, b in _chunks(c.shape[0], n_lags):
@@ -466,7 +509,7 @@ def accumulate(segs: list[Segment], n_lags: int = N_LAGS) -> dict:
             n += x.shape[0]
         yty += np.einsum("tc,tc->c", y, y, dtype=np.float64)
     return {"xtx": xtx, "xty": xty, "yty": yty, "n": n, "p": p, "n_lags": n_lags,
-            "n_ch": n_ch}
+            "n_ch": n_ch, "good": good}
 
 
 # ---------------------------------------------------------------------------
@@ -551,10 +594,13 @@ def fitted_r2(stats: dict, w: np.ndarray, proj: np.ndarray | None = None) -> np.
     # takes minutes, and the ridge sweep evaluates it dozens of times.
     resid = (yty - 2.0 * np.einsum("dc,dc->c", w, xty)
              + np.einsum("dc,de,ec->c", w, xtx, w, optimize=True))
-    return 1.0 - resid / np.maximum(yty, 1e-30)
+    r = 1.0 - resid / np.maximum(yty, 1e-30)
+    good = stats.get("good")
+    return np.where(good, r, np.nan) if good is not None else r
 
 
-def accumulate_by_recording(segs: list[Segment], n_lags: int = N_LAGS) -> dict[str, dict]:
+def accumulate_by_recording(segs: list[Segment], n_lags: int = N_LAGS,
+                            mask: dict[str, np.ndarray] | None = None) -> dict[str, dict]:
     """the same statistics, kept per participant rather than pooled.
 
     the correction that makes this experiment mean anything, and it was found the
@@ -576,9 +622,60 @@ def accumulate_by_recording(segs: list[Segment], n_lags: int = N_LAGS) -> dict[s
     could.
     """
     out: dict[str, dict] = {}
+    if mask is None:
+        mask = channel_mask(segs)
     for key in sorted({s.recording for s in segs}):
-        out[key] = accumulate([s for s in segs if s.recording == key], n_lags)
+        out[key] = accumulate([s for s in segs if s.recording == key], n_lags, mask)
     return out
+
+
+def cached_stats(tag: str, segs_fn, n_lags: int = N_LAGS) -> dict[str, dict]:
+    """`accumulate_by_recording`, memoised on disk under `tag`.
+
+    the pass over the corpus costs about ten minutes and the statistics are a
+    deterministic function of (segments, n_lags), so recomputing them for every
+    experiment on the same split is pure waste.  `segs_fn` is a thunk rather than
+    a list so that a cache hit never touches the six gigabytes of MEG on disk at
+    all -- which is most of the ten minutes.
+    """
+    f = CACHE / f"stats_{tag}_{n_lags}.npz"
+    if f.is_file():
+        d = np.load(f, allow_pickle=False)
+        keys = [str(k) for k in d["keys"]]
+        return {k: {"xtx": d[f"xtx_{i}"], "xty": d[f"xty_{i}"], "yty": d[f"yty_{i}"],
+                    "good": d[f"good_{i}"], "n": int(d["n"][i]), "p": int(d["p"]),
+                    "n_lags": n_lags, "n_ch": int(d["n_ch"])}
+                for i, k in enumerate(keys)}
+    st = accumulate_by_recording(segs_fn(), n_lags)
+    keys = list(st)
+    payload = {"keys": np.array(keys), "n": np.array([st[k]["n"] for k in keys]),
+               "p": np.array(st[keys[0]]["p"]), "n_ch": np.array(st[keys[0]]["n_ch"])}
+    for i, k in enumerate(keys):
+        payload[f"xtx_{i}"] = st[k]["xtx"]
+        payload[f"xty_{i}"] = st[k]["xty"]
+        payload[f"yty_{i}"] = st[k]["yty"]
+        payload[f"good_{i}"] = st[k]["good"]
+    np.savez(f, **payload)
+    return st
+
+
+def summarize(r: np.ndarray) -> str:
+    """a per-channel r^2 vector as the four numbers that are worth reporting.
+
+    the mean over all 208 channels is the headline and it is also the least
+    informative of the four, because most of a whole-head MEG array is nowhere
+    near auditory cortex and contributes noise to it.  the top-decile mean is what
+    a reader who wants to know whether the model found the response should look
+    at, and the best channel is what makes the two comparable to a published
+    figure.  reporting only the mean understates every model here equally;
+    reporting only the best overstates them equally.
+    """
+    v = r[np.isfinite(r)]
+    o = np.sort(v)[::-1]
+    k = max(len(o) // 10, 1)
+    return (f"n {v.size:3d}  mean {float(np.mean(v)):+.5f}  "
+            f"median {float(np.median(v)):+.5f}  "
+            f"top10% {float(np.mean(o[:k])):+.5f}  best {float(o[0]):+.5f}")
 
 
 def _predict(c: np.ndarray, w: np.ndarray, proj: np.ndarray | None,
@@ -598,7 +695,8 @@ def _predict(c: np.ndarray, w: np.ndarray, proj: np.ndarray | None,
 
 
 def predict_r2(segs: list[Segment], w: np.ndarray | dict[str, np.ndarray],
-               proj: np.ndarray | None = None, n_lags: int = N_LAGS) -> np.ndarray:
+               proj: np.ndarray | None = None, n_lags: int = N_LAGS,
+               mask: dict[str, np.ndarray] | None = None) -> np.ndarray:
     """out-of-sample r^2 per channel, from actual predictions on held-out segments.
 
     `w` is either one lead field or a map from participant to lead field; the
@@ -611,22 +709,26 @@ def predict_r2(segs: list[Segment], w: np.ndarray | dict[str, np.ndarray],
     in the projection or the lag ordering, both of which are invisible in a
     quadratic form and obvious in a waveform.
     """
-    num = None
-    den = None
+    if mask is None:
+        mask = channel_mask(segs)
+    num = den = None
     for s in segs:
         wi = w[s.recording] if isinstance(w, dict) else w
         if wi is None:
             continue
+        m = mask.get(s.recording, np.ones(s.y.shape[1], bool)).astype(float)
         c = s.c - s.c.mean(0, keepdims=True)
         y = s.y - s.y.mean(0, keepdims=True)
         r = y - _predict(c, wi, proj, n_lags)
-        num = (r * r).sum(0) if num is None else num + (r * r).sum(0)
-        den = (y * y).sum(0) if den is None else den + (y * y).sum(0)
-    return 1.0 - num / np.maximum(den, 1e-30)
+        a, b = (r * r).sum(0) * m, (y * y).sum(0) * m
+        num = a if num is None else num + a
+        den = b if den is None else den + b
+    return np.where(den > 0, 1.0 - num / np.maximum(den, 1e-30), np.nan)
 
 
 def band_r2(segs: list[Segment], w: np.ndarray | dict[str, np.ndarray], band: Band,
-            proj: np.ndarray | None = None, n_lags: int = N_LAGS) -> tuple[float, int]:
+            proj: np.ndarray | None = None, n_lags: int = N_LAGS,
+            mask: dict[str, np.ndarray] | None = None) -> tuple[float, int]:
     """out-of-sample r^2 inside one band, and how many samples it rests on.
 
     the band restriction is applied to the residual and to the target with the
@@ -634,26 +736,43 @@ def band_r2(segs: list[Segment], w: np.ndarray | dict[str, np.ndarray], band: Ba
     filtering only the prediction would compare a band-limited estimate with a
     broadband target and report a number that cannot reach one however good the
     model is.
+
+    the ratio is formed **per channel and then averaged**, not pooled over the
+    array.  pooling looks equivalent and is not: the channels are scaled by their
+    median absolute deviation, which is deliberately insensitive to a SQUID jump,
+    so a channel carrying two artefacts has an ordinary MAD and an enormous
+    variance.  a pooled sum is then dominated by exactly the channels that carry
+    no signal, and it reported a delta-band r^2 of 0.0001 for a model whose mean
+    per-channel figure over the same data was 0.0013 -- a factor of thirteen, all
+    of it metric and none of it model.  averaging the ratios weights every sensor
+    once, which is what the headline number does, so the two are comparable.
     """
     from scipy.signal import butter, sosfiltfilt
 
     sos = butter(4, [max(band.lo_hz, 0.1), min(band.hi_hz, 0.49 * FS)],
                  btype="band", fs=FS, output="sos")
-    num = den = 0.0
+    if mask is None:
+        mask = channel_mask(segs)
+    num = den = None
     n = 0
     for s in segs:
         wi = w[s.recording] if isinstance(w, dict) else w
         if wi is None:
             continue
+        m = mask.get(s.recording, np.ones(s.y.shape[1], bool)).astype(float)
         c = s.c - s.c.mean(0, keepdims=True)
         y = s.y - s.y.mean(0, keepdims=True)
         pred = _predict(c, wi, proj, n_lags)
         yb = sosfiltfilt(sos, y, axis=0)
         rb = sosfiltfilt(sos, y - pred, axis=0)
-        num += float((rb * rb).sum())
-        den += float((yb * yb).sum())
+        a, b = (rb * rb).sum(0) * m, (yb * yb).sum(0) * m
+        num = a if num is None else num + a
+        den = b if den is None else den + b
         n += y.shape[0]
-    return 1.0 - num / max(den, 1e-30), n
+    if num is None:
+        return 0.0, 0
+    r = np.where(den > 0, 1.0 - num / np.maximum(den, 1e-30), np.nan)
+    return float(np.nanmean(r)), n
 
 
 # ---------------------------------------------------------------------------
@@ -725,27 +844,50 @@ def search_chain(train: dict[str, dict], val: dict[str, dict],
 
 
 def _score(theta: dict, train: dict[str, dict], val: dict[str, dict],
-           n_lags: int) -> tuple[float, float]:
+           n_lags: int) -> tuple[float, dict[str, float]]:
     proj = _projection(tap_basis(theta, n_lags), N_PLACES)
-    subs = [s for s in train if s in val]
-    # the projections are done once per theta rather than once per (theta, ridge).
-    # `P' X'X P` over a 1148-dimensional design is the dominant cost of the whole
-    # search, and recomputing it inside the ridge loop made the sweep eight times
-    # slower for no change in the answer.
-    proj_stats = {s: (proj.T @ train[s]["xtx"] @ proj, proj.T @ train[s]["xty"],
-                      dict(val[s], xtx=proj.T @ val[s]["xtx"] @ proj,
-                           xty=proj.T @ val[s]["xty"]))
-                  for s in subs}
-    per_lam = []
-    for lam in _RIDGES:
-        rs = [float(np.mean(fitted_r2(v, ridge_solve(a, b, lam))))
-              for a, b, v in proj_stats.values()]
-        per_lam.append((float(np.mean(rs)), lam))
-    best, lam = max(per_lam)
-    return best, lam
+    r, lams = select_ridges(train, val, proj)
+    return float(np.mean(list(r.values()))), lams
 
 
-def fit_lead_fields(stats: dict[str, dict], lam: float,
+def select_ridges(train: dict[str, dict], val: dict[str, dict],
+                  proj: np.ndarray | None = None
+                  ) -> tuple[dict[str, float], dict[str, float]]:
+    """the best ridge for each recording, chosen on the validation story.
+
+    per recording and not one global value, which is standard for a temporal
+    response function and is here for a measured reason.  a single ridge picked
+    by the mean over 208 channels is picked by the ~150 of them that carry no
+    auditory response, because those are what the mean is made of; it lands three
+    decades above the optimum for the sensors that do carry one, and it cost a
+    factor of four in r^2 in an earlier run of this script.  the validation story
+    is never the test story, so nothing here is selected against the number that
+    gets reported.
+
+    both models get exactly this treatment.  giving the flexible one a tuned
+    ridge and the constrained one a fixed one would be the sort of asymmetry that
+    makes a comparison worthless in the direction the author was hoping for.
+    """
+    keys = [k for k in train if k in val]
+    # the projections are done once rather than once per ridge.  `P' X'X P` over a
+    # 1148-dimensional design is the dominant cost of the whole search.
+    prepared = {}
+    for k in keys:
+        if proj is None:
+            prepared[k] = (train[k]["xtx"], train[k]["xty"], val[k])
+        else:
+            prepared[k] = (proj.T @ train[k]["xtx"] @ proj, proj.T @ train[k]["xty"],
+                           dict(val[k], xtx=proj.T @ val[k]["xtx"] @ proj,
+                                xty=proj.T @ val[k]["xty"]))
+    best_r, best_lam = {}, {}
+    for k, (a, b, v) in prepared.items():
+        scored = [(float(np.nanmean(fitted_r2(v, ridge_solve(a, b, lam)))), float(lam))
+                  for lam in _RIDGES]
+        best_r[k], best_lam[k] = max(scored)
+    return best_r, best_lam
+
+
+def fit_lead_fields(stats: dict[str, dict], lam: float | dict[str, float],
                     proj: np.ndarray | None = None) -> dict[str, np.ndarray]:
     """one lead field per participant, at a ridge chosen elsewhere.
 
@@ -755,24 +897,20 @@ def fit_lead_fields(stats: dict[str, dict], lam: float,
     model, which is the one this experiment is trying to be sceptical about.
     """
     out = {}
+    default = float(np.median(list(lam.values()))) if isinstance(lam, dict) else float(lam)
     for s, st in stats.items():
+        l = lam.get(s, default) if isinstance(lam, dict) else float(lam)
         if proj is None:
-            out[s] = ridge_solve(st["xtx"], st["xty"], lam)
+            out[s] = ridge_solve(st["xtx"], st["xty"], l)
         else:
-            out[s] = ridge_solve(proj.T @ st["xtx"] @ proj, proj.T @ st["xty"], lam)
+            out[s] = ridge_solve(proj.T @ st["xtx"] @ proj, proj.T @ st["xty"], l)
     return out
 
 
-def _sweep_direct(train: dict[str, dict], val: dict[str, dict]) -> float:
-    """the ridge for the teacher-direct model, chosen the same way as the driven one."""
-    subs = [s for s in train if s in val]
-    scored = []
-    for lam in _RIDGES:
-        rs = [float(np.mean(fitted_r2(val[s], ridge_solve(train[s]["xtx"],
-                                                          train[s]["xty"], lam))))
-              for s in subs]
-        scored.append((float(np.mean(rs)), lam))
-    return max(scored)
+def _sweep_direct(train: dict[str, dict], val: dict[str, dict]):
+    """the ridges for the teacher-direct model, chosen exactly as the driven one's."""
+    r, lams = select_ridges(train, val, None)
+    return float(np.mean(list(r.values()))), lams
 
 
 # ---------------------------------------------------------------------------
@@ -815,14 +953,12 @@ def stage_fit() -> None:
     #: chosen: a lead field shared across people scores nothing at all, and one
     #: shared across a participant's two sessions loses most of what it had,
     #: because the participant is repositioned in the helmet between them.
-    fit_segs = load_segments(meg, cochs, subjects=train_subj, stories=TRAIN_STORIES)
-    val_segs = load_segments(meg, cochs, subjects=train_subj, stories=(VAL_STORY,))
-    print(f"\n{len(fit_segs)} fitting segments, {len(val_segs)} validation segments, "
-          f"{sum(s.y.shape[0] for s in fit_segs) / FS / 60:.1f} min of fitting data")
-
-    train = accumulate_by_recording(fit_segs)
-    val = accumulate_by_recording(val_segs)
-    print(f"accumulated {sum(t['n'] for t in train.values()):,} training samples over "
+    train = cached_stats("train_seen", lambda: load_segments(
+        meg, cochs, subjects=train_subj, stories=TRAIN_STORIES))
+    val = cached_stats("val_seen", lambda: load_segments(
+        meg, cochs, subjects=train_subj, stories=(VAL_STORY,)))
+    print(f"\naccumulated {sum(t['n'] for t in train.values()):,} training samples "
+          f"({sum(t['n'] for t in train.values()) / FS / 60:.0f} min) over "
           f"{len(train)} recordings x {next(iter(train.values()))['n_ch']} channels, "
           f"design dimension {next(iter(train.values()))['xtx'].shape[0]}")
 
@@ -833,12 +969,15 @@ def stage_fit() -> None:
     for k in sorted(THETA0):
         mark = "  <- moved" if theta[k] != THETA0[k] else ""
         print(f"  {k:16s} {THETA0[k]:8.4f} -> {theta[k]:8.4f}{mark}")
-    print(f"  driven: validation r2 {r_val:+.5f} at ridge {lam:g}")
+    print(f"  driven: validation r2 {r_val:+.5f}, per-recording ridges "
+          f"{sorted(set(lam.values()))}")
     r_val_d, lam_d = _sweep_direct(train, val)
-    print(f"  teacher-direct: validation r2 {r_val_d:+.5f} at ridge {lam_d:g}")
+    print(f"  teacher-direct: validation r2 {r_val_d:+.5f}, per-recording ridges "
+          f"{sorted(set(lam_d.values()))}")
 
     proj = _projection(tap_basis(theta), N_PLACES)
     w_driven = fit_lead_fields(train, lam, proj)
+    val_segs = load_segments(meg, cochs, subjects=train_subj, stories=(VAL_STORY,))
 
     # the calibration used *during* fitting: measured on the validation story,
     # which is held out of the statistics above.  the figure quoted as the
@@ -860,7 +999,8 @@ def stage_fit() -> None:
              "downstream of the component being written; it bounds rather than states the "
              "front end's own fidelity")
 
-    np.savez(CACHE / "fit.npz", theta=json.dumps(theta), lam=lam, lam_d=lam_d,
+    np.savez(CACHE / "fit.npz", theta=json.dumps(theta), lam=json.dumps(lam),
+             lam_d=json.dumps(lam_d),
              cal=json.dumps([[b.band.lo_hz, b.band.hi_hz, b.r2, b.n_samples] for b in fits]))
     print("\n" + cal.describe())
     for b in CAL_BANDS:
@@ -868,7 +1008,7 @@ def stage_fit() -> None:
 
 
 def _fit_and_test(fit_segs: list[Segment], test_segs: list[Segment], proj: np.ndarray,
-                  lam: float, lam_d: float, minutes: float | None = None
+                  lam, lam_d, minutes: float | None = None
                   ) -> tuple[np.ndarray, np.ndarray, float]:
     """fit both models' lead fields on one set of segments and score them on another.
 
@@ -907,7 +1047,8 @@ def stage_eval() -> None:
     meg = CACHE / "meg"
     d = np.load(CACHE / "fit.npz", allow_pickle=False)
     theta = json.loads(str(d["theta"]))
-    lam, lam_d = float(d["lam"]), float(d["lam_d"])
+    lam = {k: float(v) for k, v in json.loads(str(d["lam"])).items()}
+    lam_d = {k: float(v) for k, v in json.loads(str(d["lam_d"])).items()}
     proj = _projection(tap_basis(theta), N_PLACES)
     cal_rows = json.loads(str(d["cal"]))
     cal = ForcingCalibration(
@@ -954,13 +1095,18 @@ def stage_eval() -> None:
             continue
         r_dr, r_te, _ = _fit_and_test(fit_segs, test_segs, proj, lam, lam_d)
         per_channel[name] = (r_dr, r_te, len(test_segs))
-        results[name] = dict(driven=float(np.mean(r_dr)), teacher=float(np.mean(r_te)),
-                             driven_best=float(np.max(r_dr)),
-                             teacher_best=float(np.max(r_te)),
+        top = max(r_dr.size // 10, 1)
+        results[name] = dict(driven=float(np.nanmean(r_dr)), teacher=float(np.nanmean(r_te)),
+                             driven_top10=float(np.mean(np.sort(r_dr[np.isfinite(r_dr)])[::-1][:top])),
+                             teacher_top10=float(np.mean(np.sort(r_te[np.isfinite(r_te)])[::-1][:top])),
+                             driven_best=float(np.nanmax(r_dr)),
+                             teacher_best=float(np.nanmax(r_te)),
                              n_test_segments=len(test_segs))
-        ratio = float(np.mean(r_dr)) / max(float(np.mean(r_te)), 1e-12)
-        print(f"{name:44s} {r_dr.size:4d} {0.0:9.5f} {float(np.mean(r_dr)):9.5f} "
-              f"{float(np.mean(r_te)):9.5f} {ratio:15.2f}")
+        ratio = float(np.nanmean(r_dr)) / max(float(np.nanmean(r_te)), 1e-12)
+        print(f"{name:44s} {r_dr.size:4d} {0.0:9.5f} {float(np.nanmean(r_dr)):9.5f} "
+              f"{float(np.nanmean(r_te)):9.5f} {ratio:15.2f}")
+        print(f"{'  driven  ':44s} {summarize(r_dr)}")
+        print(f"{'  teacher ':44s} {summarize(r_te)}")
     print(f"\nbest single channel, held-out participants x held-out story: "
           f"driven r2 {results.get('held-out participants x held-out story', {}).get('driven_best', 0):.4f}, "
           f"teacher r2 {results.get('held-out participants x held-out story', {}).get('teacher_best', 0):.4f}")
@@ -982,9 +1128,9 @@ def stage_eval() -> None:
     for minutes in (2.0, 5.0, 10.0, 20.0, 40.0, None):
         r_dr, r_te, used = _fit_and_test(fit_segs, test_segs, proj, lam, lam_d, minutes)
         label = f"{used:.1f}" if minutes is not None else f"{used:.1f} (all)"
-        ratio = float(np.mean(r_dr)) / max(float(np.mean(r_te)), 1e-12)
-        curve.append((used, float(np.mean(r_dr)), float(np.mean(r_te))))
-        print(f"{label:>26s} {float(np.mean(r_dr)):9.5f} {float(np.mean(r_te)):9.5f} "
+        ratio = float(np.nanmean(r_dr)) / max(float(np.nanmean(r_te)), 1e-12)
+        curve.append((used, float(np.nanmean(r_dr)), float(np.nanmean(r_te))))
+        print(f"{label:>26s} {float(np.nanmean(r_dr)):9.5f} {float(np.nanmean(r_te)):9.5f} "
               f"{ratio:15.2f}")
 
     # the same comparison restricted to sensors that are downstream of the forced
@@ -995,7 +1141,7 @@ def stage_eval() -> None:
     tr_fit = load_segments(meg, cochs, subjects=train_subj, stories=TRAIN_STORIES)
     tr_test = load_segments(meg, cochs, subjects=train_subj, stories=(TEST_STORY,))
     _, r_train, _ = _fit_and_test(tr_fit, tr_test, proj, lam, lam_d)
-    order = np.argsort(r_train)
+    order = np.argsort(np.nan_to_num(r_train, nan=-1e9))
     downstream = order[: int(0.6 * len(order))]
     early = order[int(0.9 * len(order)):]
     loc = tr_fit[0].loc
@@ -1012,7 +1158,7 @@ def stage_eval() -> None:
         print(f"\n{label:44s} {'ch':>4s} {'unforced':>9s} {'driven':>9s} {'teacher':>9s}")
         for name, (r_dr, r_te, n_seg) in per_channel.items():
             print(f"{name:44s} {idx.size:4d} {0.0:9.5f} "
-                  f"{float(np.mean(r_dr[idx])):9.5f} {float(np.mean(r_te[idx])):9.5f}")
+                  f"{float(np.nanmean(r_dr[idx])):9.5f} {float(np.nanmean(r_te[idx])):9.5f}")
 
     # the calibration the forcing actually earns, on the strictest split available.
     strict_fit = load_segments(meg, cochs, subjects=HELD_OUT_SUBJECTS,
@@ -1134,21 +1280,21 @@ def stage_libribrain() -> None:
     best, w_best, lam_best = -np.inf, None, None
     for lam in _RIDGES:
         w = ridge_solve(a_, b_, lam)
-        r = float(np.mean(fitted_r2(val, w, proj)))
+        r = float(np.nanmean(fitted_r2(val, w, proj)))
         if r > best:
             best, w_best, lam_best = r, w, lam
-    r_driven = float(np.mean(predict_r2(test, w_best, proj)))
+    r_driven = float(np.nanmean(predict_r2(test, w_best, proj)))
     print(f"\nheld-out sessions, chain frozen at the meg-masc posterior, lead field "
           f"refitted: r2 = {r_driven:+.5f} (ridge {lam_best:g})")
 
     best_d, w_direct = -np.inf, None
     for lam in _RIDGES:
         w = ridge_solve(tr["xtx"], tr["xty"], lam)
-        r = float(np.mean(fitted_r2(val, w)))
+        r = float(np.nanmean(fitted_r2(val, w)))
         if r > best_d:
             best_d, w_direct = r, w
     print(f"teacher-direct on the same split: r2 = "
-          f"{float(np.mean(predict_r2(test, w_direct))):+.5f}")
+          f"{float(np.nanmean(predict_r2(test, w_direct))):+.5f}")
 
     fits = []
     for band in CAL_BANDS:

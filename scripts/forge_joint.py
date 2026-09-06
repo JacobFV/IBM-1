@@ -7,7 +7,7 @@ that product is the sentence the whole architecture rests on.  §4 says forging
 *has the semantics of* posterior updating and that "this common mechanism covers
 hand-engineered initialization, atlas and literature initialization, statistical
 fitting, pretrained learned processes, heterogeneous supervised forging,
-distillation and subject-specific adaptation".  the middle one of those --
+distillation and subject-specific adaptation".  the fifth of those --
 heterogeneous supervised forging -- has never been run.  `ibm/forge/fit.py` was
 written for it: `Task` carries a `source` and a `weight`, `Method.JOINT` exists,
 and `_partition` does union-find over the parameter blocks tasks share.  every
@@ -960,6 +960,21 @@ def short(key: str) -> str:
     return key.split(":", 1)[1] if ":" in key else key
 
 
+def prior_sd_natural(block) -> float:
+    """one prior sd in the parameter's OWN units, the way `FitReport` counts a shift.
+
+    the same definition `ibm.forge.fit._prior_sd` uses, restated rather than
+    imported because it is one line and importing a private name to report a public
+    number is how a script acquires a dependency nobody expected.
+    """
+    p = block.prior
+    if p.dist == "lognormal":
+        return abs(float(p.scale)) * max(math.exp(float(p.loc)), 1e-30)
+    if p.dist == "uniform":
+        return abs(float(p.scale) - float(p.loc)) / math.sqrt(12.0)
+    return abs(float(p.scale))
+
+
 def prior_sd_u(block) -> float:
     """one prior sd, measured in the UNCONSTRAINED coordinate the fit works in.
 
@@ -1011,6 +1026,9 @@ def main() -> int:
     ap.add_argument("--max-iter", type=int, default=300)
     ap.add_argument("--restarts", type=int, default=3)
     ap.add_argument("--polish", type=int, default=6)
+    ap.add_argument("--cache", type=Path, default=None,
+                    help="pickle the four sources' extracted spectra here and reuse them; "
+                         "reading the bytes is most of the wall time and none of the science")
     ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
 
@@ -1057,6 +1075,7 @@ def main() -> int:
     # -- 2. one parameter space ------------------------------------------
     space = parameter_space()
     theta0 = space.median()
+    theta0_ref = theta0
     rule("2. one ParameterSpace over the processes the four sources are claimed to share")
     print(space.describe())
     print("\nevery tying above was collapsed from the declaration to GLOBAL.  the declared\n"
@@ -1069,15 +1088,33 @@ def main() -> int:
     print("roots come from each card's data/sources/<id>/raw/.location.yaml; nothing here "
           "hardcodes a path.")
 
+    # the cache holds extracted spectra and grey-matter medians, keyed by every
+    # argument that changes them.  it is a convenience and never a shortcut: a
+    # different cohort size, window or epoch cap is a different key and forces a
+    # re-read, so a cached run and a cold run cannot disagree.
+    sig = (args.eeg_subjects, args.sleep_nights, args.meg_subjects, args.fmri_subjects,
+           args.sleep_epochs, args.meg_seconds)
+    cached = None
+    if args.cache is not None and args.cache.is_file():
+        import pickle
+        with args.cache.open("rb") as fh:
+            blob = pickle.load(fh)
+        if blob.get("signature") == sig:
+            cached = blob
+            print(f"reusing the extracted spectra in {args.cache} (same cohort signature)")
+        else:
+            print(f"{args.cache} was written for a different cohort; re-reading")
+
     print("\neegmmidb -- 64-ch scalp EEG at 160 Hz, resting eyes-closed (R02)")
-    eeg_ev, eeg_root = read_eegmmidb(args.eeg_subjects, 4.0)
+    eeg_ev, eeg_root = cached["eeg"] if cached else read_eegmmidb(args.eeg_subjects, 4.0)
     print(f"  {eeg_root}")
     ex = eeg_ev[sorted(eeg_ev)[0]]
     print(f"  {len(eeg_ev)} subjects, one run each.  {ex}")
 
     sleep_band = Band(1.0, 25.0)
     print("\nsleep-edfx -- 2 EEG derivations at 100 Hz, expert-scored, WAKE epochs")
-    sl_ev, sl_root = read_sleep(args.sleep_nights, 4.0, args.sleep_epochs, sleep_band)
+    sl_ev, sl_root = cached["sleep"] if cached else read_sleep(
+        args.sleep_nights, 4.0, args.sleep_epochs, sleep_band)
     sl_nights = sorted(sl_ev)
     sl_subj = sorted({sleep_subject(n) for n in sl_nights})
     print(f"  {sl_root}")
@@ -1089,13 +1126,15 @@ def main() -> int:
           "decades of\n  fall from 1 to 25 Hz.")
 
     print("\nds000117 -- 102 magnetometers and 70 EEG channels, simultaneous, same head")
-    meg_ev, meg_root = read_ds000117(args.meg_subjects, 4.0, args.meg_seconds)
+    meg_ev, meg_root = cached["meg"] if cached else read_ds000117(
+        args.meg_subjects, 4.0, args.meg_seconds)
     print(f"  {meg_root}")
     print(f"  {len(meg_ev)} participants x 2 instruments.  "
           f"{meg_ev[sorted(meg_ev)[0]]['meg']}")
 
     print("\nds004873 -- quantitative CBF/CBV/OEF/CMRO2 and a task BOLD series")
-    fm_recs, fm_root = read_ds004873(args.fmri_subjects, 128 * BOLD_TR_S)
+    fm_recs, fm_root = cached["fmri"] if cached else read_ds004873(
+        args.fmri_subjects, 128 * BOLD_TR_S)
     print(f"  {fm_root}")
     print(f"  {len(fm_recs)} subjects with a complete control map set and a readable epi; "
           f"grey-matter\n  mask {np.median([r['n_voxels'] for r in fm_recs]):.0f} voxels "
@@ -1103,6 +1142,15 @@ def main() -> int:
     n_calc = sum(1 for r in fm_recs if "cmro2_calc" in r)
     print(f"  {n_calc} of them also have a calc CMRO2 map, which is what the coupling ratio "
           "needs.")
+
+    if args.cache is not None and cached is None:
+        import pickle
+        args.cache.parent.mkdir(parents=True, exist_ok=True)
+        with args.cache.open("wb") as fh:
+            pickle.dump({"signature": sig, "eeg": (eeg_ev, eeg_root),
+                         "sleep": (sl_ev, sl_root), "meg": (meg_ev, meg_root),
+                         "fmri": (fm_recs, fm_root)}, fh)
+        print(f"extracted spectra cached in {args.cache}")
 
     # -- 4. splits --------------------------------------------------------
     rule("4. splits: by subject, always")
@@ -1127,7 +1175,13 @@ def main() -> int:
                          "ds004873": {"train": fm_tr, "test": fm_te}}
 
     # -- build the cohorts ------------------------------------------------
-    e_grid = np.arange(-2.0, 3.51, 0.1)
+    # the drive exponent is profiled on a grid rather than optimized, because it is
+    # a nuisance and a grid maximum is reproducible where an inner optimizer's
+    # convergence is not.  the range is wide enough to contain a rising drive and a
+    # very steep one, and the fitted values are printed so that a source sitting on
+    # an edge -- which would mean the model's own rolloff is wrong in a way no
+    # parameter can absorb -- is visible rather than folded into a likelihood.
+    e_grid = np.arange(-2.0, 3.41, 0.2)
     floor_grid = np.array([0.0, 1e-3, 3e-3, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0])
 
     def spectral(name, source, evs, subs, band, kind="electro", floors=None):
@@ -1328,15 +1382,34 @@ def main() -> int:
         gain of a small fraction of a nat means further passes buy nothing.
         """
         tasks = [datasets[k].task(space, weighted=weighted) for k in keys_in]
-        th, rep, gain = theta0, None, float("inf")
+        th, rep, gain, lp0 = theta0, None, float("inf"), None
+        best_th, best_rep, best_lp = None, None, -np.inf
         for _ in range(args.polish):
             with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
-                th_new, rep = fit(space, tasks, method=Method.JOINT, theta0=th,
-                                  max_iter=args.max_iter)
-            gain = rep.log_posterior - rep.log_posterior0
+                th_new, rep_new = fit(space, tasks, method=Method.JOINT, theta0=th,
+                                      max_iter=args.max_iter)
+            lp0 = rep_new.log_posterior0 if lp0 is None else lp0
             th = th_new
+            # a pass may land WORSE than it started -- L-BFGS on a numerically
+            # differentiated objective can walk into the region where a negative
+            # time constant makes the likelihood a flat penalty, and there is no
+            # gradient there to walk back out.  keeping the best point seen is the
+            # one-line guard, and without it a single bad pass silently replaces a
+            # converged answer with a boundary artefact.
+            if rep_new.log_posterior <= best_lp:
+                break
+            gain = rep_new.log_posterior - rep_new.log_posterior0
+            best_th, best_rep, best_lp = th.copy(), rep_new, rep_new.log_posterior
             if gain < 1e-3:                 # a restart that bought nothing; stop
                 break
+        th, rep = best_th, best_rep
+        # `_shift` measures each pass against where that pass started, so after a
+        # polish the report would say nothing moved.  what a reader needs is the
+        # move off the PRIOR, which is the only baseline that means anything, so it
+        # is recomputed here against the prior median for every pass at once.
+        rep.log_posterior0 = lp0
+        rep.shift = {b.key: float((th[b.slice] - theta0_ref[b.slice]).mean()
+                                  / prior_sd_natural(b)) for b in space.blocks}
         print(f"\n--- {label} ---")
         print(rep)
         print(f"  the last of up to {args.polish} restarts-from-its-own-answer gained "
@@ -1554,32 +1627,61 @@ def main() -> int:
                   "        directions were floored to a wide width, so its share of every z "
                   "below is\n        UNDER-stated rather than over-stated.")
 
-    def conflicts(pairs_in, tag: str):
+    def conflicts(pairs_in, tag: str, opinion: float = 0.25):
+        """every pair, on every shared block, with the ones nobody has an opinion on marked.
+
+        the trap this exists to avoid is real and it is easy to fall into.  a source
+        that carries no information about a parameter leaves it exactly at the prior
+        with exactly the prior's width, so `z` against a source that DID move it is
+        large -- and it is not a disagreement between two datasets, it is one dataset
+        disagreeing with the literature, wearing a second dataset's name.  a row is
+        only counted as a conflict when BOTH sides moved that parameter off its prior
+        by more than a quarter of a prior sd, which is `FitReport.moved`'s own
+        threshold.  the rest are printed and labelled `no opinion`.
+        """
         rows = []
         for (ka, ua, sa), (kb, ub, sb) in pairs_in:
+            ta, tb = space.to_natural(ua), space.to_natural(ub)
             for b in space.blocks:
                 if b.key not in ELECTRO:
                     continue
                 s2 = sa[b.slice][0] ** 2 + sb[b.slice][0] ** 2
                 if not np.isfinite(s2) or s2 <= 0:
                     continue
+                psd = prior_sd_natural(b)
+                ma = abs(ta[b.slice][0] - theta0_ref[b.slice][0]) / psd
+                mb = abs(tb[b.slice][0] - theta0_ref[b.slice][0]) / psd
                 z = (ua[b.slice][0] - ub[b.slice][0]) / math.sqrt(s2)
                 rows.append({"a": ka, "b": kb, "param": b.key, "z": float(z),
-                             "theta_a": float(space.to_natural(ua)[b.slice][0]),
-                             "theta_b": float(space.to_natural(ub)[b.slice][0]),
+                             "theta_a": float(ta[b.slice][0]),
+                             "theta_b": float(tb[b.slice][0]),
+                             "moved_a": float(ma), "moved_b": float(mb),
+                             "both_have_an_opinion": bool(ma > opinion and mb > opinion),
                              "sd_a": float(sa[b.slice][0]), "sd_b": float(sb[b.slice][0])})
-        rows.sort(key=lambda r: -abs(r["z"]))
+        rows.sort(key=lambda r: (-int(r["both_have_an_opinion"]), -abs(r["z"])))
         print(f"\n{tag}")
-        print(f"{'parameter':34s} {'a':13s} {'b':13s} {'theta_a':>9s} {'theta_b':>9s} "
+        print(f"{'parameter':32s} {'a':12s} {'b':12s} {'theta_a':>9s} {'theta_b':>9s} "
               f"{'z':>7s}")
         print("-" * 78)
         for r in rows:
-            flag = " ***" if abs(r["z"]) > 3 else (" *" if abs(r["z"]) > 2 else "")
-            print(f"{short(r['param']):34s} {r['a'][:13]:13s} {r['b'][:13]:13s} "
+            if not r["both_have_an_opinion"]:
+                flag = "  no opinion"
+            elif abs(r["z"]) > 3:
+                flag = " ***"
+            elif abs(r["z"]) > 2:
+                flag = " *"
+            else:
+                flag = ""
+            print(f"{short(r['param']):32s} {r['a'][:12]:12s} {r['b'][:12]:12s} "
                   f"{r['theta_a']:9.4g} {r['theta_b']:9.4g} {r['z']:+7.2f}{flag}")
-        n3 = sum(1 for r in rows if abs(r["z"]) > 3)
-        n2 = sum(1 for r in rows if abs(r["z"]) > 2)
-        print(f"{n3} of {len(rows)} comparisons exceed 3 sigma, {n2} exceed 2 sigma")
+        live = [r for r in rows if r["both_have_an_opinion"]]
+        n3 = sum(1 for r in live if abs(r["z"]) > 3)
+        n2 = sum(1 for r in live if abs(r["z"]) > 2)
+        print(f"{n3} of {len(live)} comparisons where both sources actually moved the "
+              f"parameter exceed\n3 sigma, {n2} exceed 2 sigma.  {len(rows) - len(live)} "
+              "further comparisons are marked `no opinion`: one\nside left the parameter at "
+              "its prior, so the large z there is that source against the\nliterature and not "
+              "against another source.")
         return rows
 
     us = {k: space.to_unconstrained(alone[k]) for k in datasets}
@@ -1633,6 +1735,10 @@ def main() -> int:
         if abs(own_gap) < 1e-6:
             print("  its own data closes no gap either, so there is nothing here to "
                   "recover and the\n  fraction is undefined rather than large")
+        elif abs(a1["mean"]) < 0.01 * abs(own_gap):
+            print("  the other three sources left this source's predictions where the prior "
+                  "put them:\n  they moved nothing this instrument can see, which is the same "
+                  "null the swept nats\n  in (b) report from the other direction")
         elif a1["mean"] > 0:
             print(f"  recovered {a1['mean'] / own_gap:.0%} of the gap its own data closes")
         else:
@@ -1664,18 +1770,25 @@ def main() -> int:
                  and transfer[k]["joint_vs_own"]["p"] < 0.05)
     n_worse = sum(1 for k in datasets if transfer[k]["joint_vs_own"]["mean"] < 0
                   and transfer[k]["joint_vs_own"]["p"] < 0.05)
-    print(f"(a) transfer   joint beats the source's own fit on {n_beat} of "
-          f"{len(datasets)} sources, loses on {n_worse}")
+    n_prior = sum(1 for k in datasets if transfer[k]["joint_vs_prior"]["mean"] > 0
+                  and transfer[k]["joint_vs_prior"]["p"] < 0.05)
+    print(f"(a) transfer   the joint theta beats the PRIOR on held-out subjects of "
+          f"{n_prior} of {len(datasets)} sources,\n               and beats the source's own "
+          f"fit on {n_beat} of {len(datasets)}; it is significantly worse than the\n"
+          f"               source's own fit on {n_worse}")
     cross = sweep[key_tau]["ds004873"]
     print(f"(b) cross-band ds004873 carries {cross:.4g} nats about "
           f"{key_tau.split('.')[-1]}, against "
           f"{sweep[key_tau]['eegmmidb']:.4g} from eegmmidb;\n"
           f"               deleting it moves the joint posterior by "
           f"{influence[key_tau]['ds004873']:+.3f} sd")
-    n3 = sum(1 for r in rows_between if abs(r["z"]) > 3)
-    c3 = sum(1 for r in rows_control if abs(r["z"]) > 3)
-    print(f"(c) conflict   {n3} between-source comparisons exceed 3 sigma "
-          f"({len(rows_between)} tested); the W-vs-N2 positive control finds {c3}")
+    live_b = [r for r in rows_between if r["both_have_an_opinion"]]
+    live_c = [r for r in rows_control if r["both_have_an_opinion"]]
+    n3 = sum(1 for r in live_b if abs(r["z"]) > 3)
+    c3 = sum(1 for r in live_c if abs(r["z"]) > 3)
+    print(f"(c) conflict   {n3} of {len(live_b)} live between-source comparisons exceed 3 "
+          f"sigma; the W-vs-N2\n               positive control, which must fire, finds "
+          f"{c3} of {len(live_c)}")
     n_lodo = sum(1 for k in datasets if lodo_res[k]["lodo_vs_prior"]["mean"] > 0
                  and lodo_res[k]["lodo_vs_prior"]["p"] < 0.05)
     print(f"(d) lodo       three sources beat the prior on {n_lodo} of {len(datasets)} "

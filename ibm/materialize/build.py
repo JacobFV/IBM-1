@@ -179,7 +179,18 @@ class _Tiers:
     # -- the three questions ---------------------------------------------
 
     def geometry_for(self, support: str, strict: bool):
-        """a template extent for a support this subject has no segmentation of."""
+        """a template extent for a support this subject has no segmentation of.
+
+        returns the extent AND its rung, and deliberately does not write the
+        ledger: an extent that is offered is not an extent that was used.  the
+        caller records it only once a site table has actually come out of it,
+        because a substitution that then failed to sample -- an r(q) rule that
+        still cannot be evaluated, a budget the template's bounds blow -- would
+        otherwise be reported as structure the model is resting on while the model
+        has no sites there at all.  that is a lie in the more dangerous direction:
+        it names a population dependency that does not exist and hides the real
+        reason the support is empty.
+        """
         sub = self.substrate
         if sub is None:
             return None
@@ -192,8 +203,7 @@ class _Tiers:
         if not self.admits(support, rec.rank):
             self.refuse(support, rec, strict)
             return None
-        self.record(rec)
-        return geom
+        return geom, rec
 
     def edges_for(self, topology: str, sites: Sites, strict: bool, **kw):
         """a topology's edge set, built from the substrate rather than the subject."""
@@ -1043,20 +1053,25 @@ def _sample_sites(request: MaterializationRequest, supports: Sequence[str],
         try:
             t = build_sites(request, (s,), geom, resolver=resolver, cache=cache).tables[s]
         except (MissingData, MissingInput) as exc:
-            sub = None if tiers is None else tiers.geometry_for(s, strict)
-            if sub is not None:
+            got = (tiers.geometry_for(s, strict)
+                   if tiers is not None and _is_geometry_gap(exc, s) else None)
+            if got is not None:
+                sub, rung = got
                 try:
                     t = build_sites(request, (s,), geom.with_geometry(sub), resolver=resolver,
                                     cache=cache).tables[s]
                 except (MissingData, MissingInput, BudgetExceeded) as inner:
                     # the substrate had an extent and it still could not be
-                    # sampled -- a tree with no radii, a budget the template's
-                    # bounds blow.  that is not the subject's gap and reporting it
-                    # as one would send a caller looking for a file.
+                    # sampled -- a budget the template's wider bounds blow, a tree
+                    # with no radii.  no rung is recorded, because nothing was
+                    # substituted, and the message that reaches provenance is the
+                    # inner one: it names why the sampling failed rather than
+                    # sending a caller looking for a file they already have.
                     if strict and isinstance(inner, BudgetExceeded):
                         raise
                     problems.append(str(inner))
                     continue
+                tiers.record(rung)
                 tables[s] = replace(t, offset=offset)
                 offset += t.n
                 continue
@@ -1067,6 +1082,27 @@ def _sample_sites(request: MaterializationRequest, supports: Sequence[str],
         tables[s] = replace(t, offset=offset)
         offset += t.n
     return Sites(tables), problems
+
+
+def _is_geometry_gap(exc: Exception, support: str) -> bool:
+    """is this failure about the support's EXTENT, or about something else entirely?
+
+    the discrimination matters more than it looks.  `octree_sites` evaluates r(q)
+    at every candidate cell, so a resolution rule naming a device anchor the
+    caller never supplied raises `MissingData` from inside the sampler -- the same
+    exception type, from the same call, as an absent segmentation.  substituting a
+    template extent for THAT failure is nonsense twice over: the rule will fail
+    again on the template, and the model ends up reporting that it rests on a
+    population's anatomy when what it is actually missing is a coil position.
+
+    `MissingData` and `MissingInput` both name the thing rather than the symptom,
+    and this reads that name: a gap in `geometry['X']` or in a column of `X` is
+    about the extent of X and is what the substrate can answer.  a gap in
+    `region_weights` or in an anchor is a question nothing in a template can
+    answer, and it stays the caller's.
+    """
+    needed = str(getattr(exc, "needed", ""))
+    return needed.startswith("geometry[") or needed.startswith(f"{support}.")
 
 
 def _named_supports(region: Region) -> frozenset[str]:
