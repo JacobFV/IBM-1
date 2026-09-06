@@ -1,0 +1,10 @@
+frames (3534623, 64) from data/derived/libribrain-paired/cochleagram_250hz.npy
+association embeddings: 19,200,000   total trainable: 26,414,531
+/home/brandonin/Documents/IBM-1/scripts/pretrain_video_loop.py:631: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"{step:5d}  recon {float(recon):.5f}  viab {float(viab):8.3f}  "
+    0  recon 7.35393  viab    0.000  r_eff    2.15  |v|max    65.0  xmod nan       8s
+   25  recon 0.17822  viab    0.000  r_eff    1.56  |v|max    66.0  xmod nan     104s
+   50  recon 0.06747  viab    0.000  r_eff    3.32  |v|max    65.5  xmod nan     137s
+   75  recon 0.06010  viab    0.000  r_eff    3.42  |v|max    65.4  xmod nan     160s
+  100  recon 0.28429  viab    0.000  r_eff    3.41  |v|max    65.4  xmod nan     182s

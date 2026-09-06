@@ -97,7 +97,7 @@ def main():
                 if arm == "bypass":
                     drive = torch.zeros(bs, dyn.n, device=dev)
                     drive[:, model.off:model.off+model.port] = model.to_cortex(model.enc(x))
-                    pred = model.lead(drive[:, model.read_idx.to(dev)])
+                    pred = model.lead_v(model.lead_u(drive[:, model.read_idx.to(dev)]))
                 else:
                     pred, _ = model(x, dyn_steps, dt)
                 loss = F.mse_loss(pred, y)

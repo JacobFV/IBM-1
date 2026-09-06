@@ -263,7 +263,8 @@ class PairedNeuralLoop(nn.Module):
     """
 
     def __init__(self, dyn: CorticalDynamics, n_bands: int = 64, n_sensors: int = 306,
-                 ctx: int = 125, hidden: int = 256, read_sites: int = 4096):
+                 ctx: int = 125, hidden: int = 256, read_sites: int = 4096,
+                 lead_rank: int = 64):
         super().__init__()
         self.dyn, self.ctx, self.n_sensors = dyn, ctx, n_sensors
         self.port = dyn.n // 8
@@ -273,7 +274,21 @@ class PairedNeuralLoop(nn.Module):
         # auditory port: temporal, not occipital
         self.off = dyn.n // 3
         self.read_idx = torch.linspace(0, dyn.n - 1, read_sites).long()
-        self.lead = nn.Linear(read_sites, n_sensors, bias=False)
+        # LOW-RANK lead field, and the rank is a physiological fact rather than a
+        # regularization guess.
+        #
+        # a free 4096 -> 306 linear map is 1.25M parameters and can express almost
+        # any mapping, which is why the paired head reached skill +0.94 with an
+        # effective cortical rank of 1.03: the readout was doing the work and the
+        # cortex was a scalar.  a real MEG lead field cannot do that.  the spatial
+        # degrees of freedom a 306-channel array can resolve is ~60-80 -- the field
+        # is smooth, the sensors are far from the sources, and the operator is
+        # severely ill-conditioned by physics.  factorizing through `lead_rank`
+        # imposes exactly that ceiling, so the readout can no longer substitute for
+        # the dynamics and any variance explained has to come through the cortex.
+        self.lead_rank = lead_rank
+        self.lead_u = nn.Linear(read_sites, lead_rank, bias=False)
+        self.lead_v = nn.Linear(lead_rank, n_sensors, bias=False)
 
     def forward(self, coch_ctx, n_steps: int, dt: float):
         b = coch_ctx.shape[0]
@@ -284,7 +299,7 @@ class PairedNeuralLoop(nn.Module):
         for _ in range(n_steps):
             s = self.dyn.step(s, drive, dt, w)
         idx = self.read_idx.to(s[1].device)
-        return self.lead(s[1][:, idx]), s
+        return self.lead_v(self.lead_u(s[1][:, idx])), s
 
 
 class AudioVisualLoop(nn.Module):

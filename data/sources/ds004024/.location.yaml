@@ -1,0 +1,9 @@
+local_root: data/sources/ds004024/raw
+acquired_at: '2026-09-04'
+files: 1654
+bytes: 29097535025
+gib: 27.1
+checksums: deferred -- see checksums.txt
+note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
+  of record
+source_url: null

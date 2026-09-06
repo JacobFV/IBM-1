@@ -159,7 +159,9 @@ origin_kind: sourced
 urls:
 - https://openneuro.org/datasets/ds004024
 release: 1.0.0
-provenance_note: ''
+provenance_note: moved into this repo from a sibling working directory; the origin above is the source
+  of record, not the machine it was staged on
 provenance_traced_from: a peer programme's card for the same corpus, which read the origin off the held
   dataset_description. the ORIGIN is recorded here; the peer is not cited, because a courier is not a
   source
+local_root: data/sources/ds004024/raw
