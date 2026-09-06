@@ -769,6 +769,97 @@ the model to learn what the brain would have to represent, which is the whole
 claim. a wide bottleneck would let the loop succeed without ever using the
 dynamics.
 
+## 7e. THE CURRICULUM AXES ONLY AN IBM HAS
+
+video next-frame prediction is a conventional self-supervised objective. it is
+worth building because it establishes the loop machinery (§7b) and gives a
+baseline against an industry task -- but **it is scaffolding, not the agenda**,
+and the capture critique in §7d is what a conventional objective earns.
+
+the distinction that matters:
+
+> **conventional curriculum learning orders the DATA, because the optimizer is
+> fixed and sits outside the model. an ibm can order the DYNAMICS, because the
+> optimizer is one of its processes.**
+
+five axes follow, and none of them is available to a transformer.
+
+### 1. the plasticity schedule -- the deepest one
+
+`plasticity` is a declared process. it `writes="parameters"`, reads
+`extracellular.ca`, all four neuromodulators, activity and the interneuron
+classes, and has five implementations including **`learned_plasticity_rule`**.
+
+so the learning rule is inside the model, is itself parameterized, and is itself
+learnable. three things become curriculum variables that are normally fixed:
+
+- **when** learning happens -- phase-gated by the SO/spindle/ripple hierarchy
+  (mechanism 10). identical activity at a different phase has a different
+  learning consequence, and $\phi$ is already a coordinate of the spectral form
+- **where** it happens -- the neuromodulatory projection is spatial, so
+  `neuromodulation` gates plasticity by region rather than globally
+- **the rule itself** -- `learned_plasticity_rule` makes meta-learning
+  structurally native rather than bolted on
+
+**this is the real answer to "conventional".** a transformer's curriculum can only
+be a data ordering. here the optimizer is subject to the curriculum too.
+
+### 2. regime -- the model's own generative mode is a control variable
+
+mechanism 27: wake, quiet rest, NREM, REM are different dynamical regimes, not
+one optimizer. `neuromodulation` writes the parameters that set them, and
+`eval_sleep_state` already classifies them.
+
+so **sleep becomes a training phase** -- alternating a forced-input regime with an
+offline internally-generated one, under a different plasticity rule, is a
+schedule no conventional model can express because it has only one mode. this is
+mechanisms 8, 9, 10 doing what they are for.
+
+### 3. intervention -- act on the substrate, not only on its input
+
+the 21 declared interventions are operations on the dynamics. mapped against the
+affect-engineering primitives (ONTOLOGY.md §8), we already hold entrainment
+(`tacs`, `trns`), gain modulation (`pharmacological`, `anaesthetic`), boundary
+work (`sensory_deprivation`), and focal drive (`dbs`, `tms`, `tfus`).
+
+these are **measured** interventions -- we have data on what tACS and anaesthesia
+actually do -- so an intervention curriculum is anchored to physiology rather than
+invented. a conventional model has no state for a stimulation waveform to act on.
+
+### 4. materialization -- schedule which likelihood term gets weight
+
+there is no standard materialization, so one $\theta$ is trained by many heads at
+once. the dataset-parallel factorization is already the curriculum's algebra:
+
+$$\nabla\log p(\theta|D)=\nabla\log p(\theta)+\sum_d \nabla\log p(D_d|\theta)$$
+
+a curriculum is a **schedule over $d$** -- spectra first, then evoked responses,
+then hemodynamics, then behaviour. this is free, in the sense §7c means: the
+machinery exists and only the schedule is missing.
+
+### 5. developmental -- the principled answer to expansion vs capture
+
+mechanism 26 says lifetime learning searches locally around an already extremely
+non-generic $F_{\theta_0}$. the curriculum that follows recapitulates that:
+spontaneous structured activity (retinal-wave-like) BEFORE structured input, then
+structured input during a window of high plasticity, then a closing critical
+period that consolidates.
+
+**a critical period is literally a scheduled window of expansion followed by
+consolidation** -- which is exactly what §7d says a curriculum needs and what
+predictive loss alone cannot supply. this is the one axis that answers the
+capture problem structurally rather than by adding a regularizer.
+
+### ordering
+
+all five gate on §6.2 (nonlinear, bounded) and axes 2 and 5 additionally need
+mechanisms 8/9/10 and maturation-dependent priors, both absent. so the honest
+sequence is: nonlinearity, then the loop, then axis 4 (free today), then 1 and 3
+(processes exist), then 2 and 5 (need the absent mechanisms).
+
+**but the design should be planned for all five now**, so the video work does not
+calcify into the only path the runtime supports.
+
 ## 7d. THE CURRICULUM HAS AN EXPANSION TERM OR IT IS A CAPTURE CURRICULUM
 
 from ONTOLOGY.md §5, and it is a direct correction to §7b as specified.

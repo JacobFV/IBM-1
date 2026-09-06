@@ -758,8 +758,9 @@ def main() -> int:
             ta, tb = space.to_natural(us_w), space.to_natural(us_n)
             ma = abs(ta[b.slice][0] - theta0_ref[b.slice][0]) / psd
             mb = abs(tb[b.slice][0] - theta0_ref[b.slice][0]) / psd
-            out.append({"param": b.key, "z": float((us_w[b.slice][0] - us_n[b.slice][0])
-                                                   / math.sqrt(s2)),
+            du = float(us_w[b.slice][0] - us_n[b.slice][0])
+            out.append({"param": b.key, "z": du / math.sqrt(s2), "d_u": du,
+                        "sd": float(math.sqrt(s2)),
                         "theta_w": float(ta[b.slice][0]), "theta_n2": float(tb[b.slice][0]),
                         "both_have_an_opinion": bool(ma > 0.25 and mb > 0.25)})
         return out
@@ -767,12 +768,13 @@ def main() -> int:
     rule("4b. the positive control, under both models: the same nights, wake against N2")
     co, cn = ctrl_rows(space_old, res_old, t0_old), ctrl_rows(space_new, res_new, t0_new)
     ci = {r["param"]: r for r in cn}
-    print(f"{'parameter':30s} {'theta W':>10s} {'theta N2':>10s} {'z OLD':>8s} {'z NEW':>8s}")
+    print(f"{'parameter':30s} {'theta W':>10s} {'theta N2':>10s} {'z OLD':>8s} {'z NEW':>8s} "
+          f"{'|du| OLD':>9s} {'|du| NEW':>9s}")
     for r in sorted(co, key=lambda r: -abs(r["z"])):
         n = ci[r["param"]]
         mark = " ***" if r["both_have_an_opinion"] and abs(r["z"]) > 3 else ""
         print(f"{short(r['param']):30s} {n['theta_w']:10.4g} {n['theta_n2']:10.4g} "
-              f"{r['z']:+8.2f} {n['z']:+8.2f}{mark}")
+              f"{r['z']:+8.2f} {n['z']:+8.2f} {abs(r['d_u']):9.3f} {abs(n['d_u']):9.3f}{mark}")
     lo = [r for r in co if r["both_have_an_opinion"]]
     ln = [r for r in cn if r["both_have_an_opinion"]]
     print(f"OLD: {sum(1 for r in lo if abs(r['z']) > 3)} of {len(lo)} live comparisons above "
@@ -900,9 +902,10 @@ def main() -> int:
                         for b in space.blocks},
               "alone": {k: {b.key: float(res["alone"][k][space[b.key].slice][0])
                             for b in space.blocks} for k in keys},
-              "prior_median": {b.key: float(t0[space[b.key].slice][0]) for b in space.blocks}}
-        for tag, space, res, t0 in (("old", space_old, res_old, t0_old),
-                                    ("new", space_new, res_new, t0_new))}
+              "prior_median": {b.key: float(med[space[b.key].slice][0])
+                               for b in space.blocks}}
+        for tag, space, res, med in (("old", space_old, res_old, t0_old),
+                                     ("new", space_new, res_new, t0_new))}
 
     def jsonable(x):
         """numpy out, python in -- once, at the boundary, rather than at 40 call sites.
