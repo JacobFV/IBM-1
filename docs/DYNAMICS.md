@@ -552,6 +552,9 @@ against the six-dimensional proposal in *The Shape of Experience*, "The Geometry
 of Affect" (theshapeofexperience.org/part-2/the-geometry-of-affect). the audit
 below is what ibm-1 could actually compute, not what it aspires to.
 
+the layer above this -- what to take from that framework and what to decline,
+and what it means for curriculum design -- is [ONTOLOGY.md](ONTOLOGY.md).
+
 ### 8.1 the strongest point of contact is the asymmetric metric
 
 that framework requires $d(A\to B)\neq d(B\to A)$ — fear slides into anger

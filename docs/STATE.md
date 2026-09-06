@@ -769,6 +769,47 @@ the model to learn what the brain would have to represent, which is the whole
 claim. a wide bottleneck would let the loop succeed without ever using the
 dynamics.
 
+## 7d. THE CURRICULUM HAS AN EXPANSION TERM OR IT IS A CAPTURE CURRICULUM
+
+from ONTOLOGY.md §5, and it is a direct correction to §7b as specified.
+
+**next-frame prediction on naturalistic video, trained on predictive loss alone,
+is palette resonance by construction.** the loss is minimised by exploiting what
+the model can already represent, so it deepens existing basins and has no term
+that installs new ones. that is the definition of a capture curriculum: immediately
+rewarding, and entropic.
+
+the curriculum rule that follows:
+
+> select stimuli where prediction error is high **and declining** -- not lowest
+> (capture), not highest (noise). track effective rank and the count of distinct
+> metastable sets as the expansion signal. **if loss falls while effective rank
+> and the invariant-set count do not rise, the curriculum is capturing, not
+> teaching.**
+
+and hold at least one expansion measure OUT of the loss, or it stops being a
+diagnostic (ONTOLOGY.md §7).
+
+three further constraints land on the §6 scaling plan and the §7b loop:
+
+1. **scale coupling with capacity.** the 100M parameters live in
+   `cortical_association`; the coupling that makes a landscape traversable lives
+   in `thalamocortical_coupling`, still at prior with one LTI implementation.
+   growing representational capacity ahead of coupling gives a rich landscape
+   with no force field to cross it. check the ratio during training
+2. **the metabolic viability check is a real regularizer.** if lowering loss
+   requires metabolically infeasible activity, the objective is buying predictive
+   performance with physiology the brain could not sustain. `metabolic.atp`,
+   `metabolic.consumption` and the `vascular_flow` delivery bound make this an
+   inequality rather than a vibe
+3. **prune on coupled contribution, never on marginal variance.** rank selection
+   in the low-rank uncertainty forms will otherwise discard exactly the coupled
+   structure we are training to find
+
+`task_cue` is declared and carries no content. **giving it content is the
+concrete form of the curriculum stage below**, and it blocks six of the thirteen
+intervention primitives in ONTOLOGY.md §8.
+
 ## 7c. WHY "BOTH" IS FREE, AND THE CURRICULUM / RL STAGE BEYOND IT
 
 **there is no standard materialization, and most of the model is used in all of
