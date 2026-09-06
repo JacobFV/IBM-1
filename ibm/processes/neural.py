@@ -445,8 +445,15 @@ def shunting_inhibition_rate(x, theta) -> dict:
     e_rev = float(theta.get("e_gaba_a_mv", -70.0))
     g_leak = float(theta.get("g_leak", 1.0))
     tau_m = float(theta.get("tau_membrane_s", 0.015))
-    tau_eff = tau_m * g_leak / (g_leak + np.maximum(g_i, 0.0))
-    return {"neural.exc.potential": -(v - e_rev) * np.maximum(g_i, 0.0) / np.maximum(tau_eff, 1e-6)}
+    # the membrane capacitance implied by the leak pair, C = tau_m * g_leak.  the
+    # inhibitory branch of a conductance-based membrane is LINEAR in g_i; the
+    # shortened effective time constant tau_m*g_leak/(g_leak+g_i) is a CONSEQUENCE
+    # of this term, not a second divisor to apply on top of it.  dividing by it as
+    # well makes dv/dt quadratic in g_i, and STATE.md 4.11 measures what that
+    # costs: 21x too stiff by g_i=20, and divergence in 44% of a swept parameter
+    # grid that this form leaves entirely bounded.
+    return {"neural.exc.potential":
+            -(v - e_rev) * np.maximum(g_i, 0.0) / max(tau_m * g_leak, 1e-9)}
 
 
 # ---------------------------------------------------------------------------

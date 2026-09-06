@@ -616,61 +616,64 @@ the refusal is the smaller change and should probably land first, because it
 converts a silent wrong answer into a build-time gap of the kind §4.6 already
 tracks.
 
-### 4.10 THE NONLINEAR GATE IS A SOLVER PROBLEM, NOT A PHYSICS PROBLEM
+### 4.10 THE DIVERGENCE IS `shunting_inhibition_rate`, AND IT IS FIXED
 
-run on the GB10 (`scripts/sweep_nonlinear_attractors.py`, 96x96 recurrent-weight
-grid x 24 initial conditions x 4 (adaptation, drive) slices = 36,864 classified
-parameter cells). this **corrects §7c fact 2**, which recorded that the one
-nonlinear run diverged at 7.5e15 mV and left the impression that the declared
-nonlinear `f` is unstable.
+run on the GB10 (`scripts/sweep_nonlinear_attractors.py`): 96x96 recurrent-weight
+grid x 24 initial conditions x 4 (adaptation, drive) slices, four sweeps,
+147,456 classified parameter cells. this **resolves §7c fact 2** -- the nonlinear
+run that diverged at 7.5e15 mV.
 
-**it is not.** closing the cortical E/I loop with `wilson_cowan_excitatory` and
-`shunting_inhibition_rate` verbatim and integrating directly:
+**the cause is the quadratic shunting form in §4.11.** the decisive comparison,
+same grid, same everything, only the inhibitory branch differing:
 
-- **bounded at prior medians** at every timestep from 1e-3 down to 1e-5, settling
-  to a single fixed point at v = -66.98 mV, r_e = 4.77 Hz
-- **zero divergence in all 36,864 swept cells.** not one
+| loop | shunting form | diverged cells |
+|---|---|---|
+| two populations | **declared** (quadratic in g_i) | **44.4%** |
+| two populations | conductance-based (linear) | **0.0%** |
+| one population (r_i slaved to v_e) | declared | 0.0% |
+| one population | conductance-based | 0.0% |
 
-so the 7.5e15 divergence is real about the *run* and wrong about the *cause*: it
-is in the windowed spectral solver path, not in the dynamics. **the gate is a
-solver problem.** that is a much better position than the one recorded, and it
-means the next move is instrumenting the harmonic-balance solve, not reparameterizing
-the physics.
+the fix eliminates divergence across the entire swept space. `neural.py` now
+carries the linear form.
 
-#### the substrate CAN carry an attractor landscape -- but only where inhibition is off
+**why the first pass missed it, recorded because the lesson generalizes.** the
+reduced loop slaved the inhibitory rate to the excitatory membrane potential,
+which holds g_i near 0.5 -- where the quadratic error is only 1.5x and nothing
+blows up. it took giving inhibition its own population, with the lower
+half-activation and higher ceiling a fast-spiking interneuron actually has, to
+drive g_i into the range where the error is 11-21x. **a reduction that suppresses
+the variable a bug is quadratic in will report the bug as absent.** the earlier
+conclusion drawn from that reduction -- "bounded at prior medians, so the gate is
+a solver problem not a physics problem" -- was wrong, and wrong in the direction
+of complacency.
 
-both structures the gate asks for exist:
+what survives from it: the loop IS bounded at prior medians (v = -66.98 mV,
+r_e = 4.77 Hz), because prior medians sit in the benign region. boundedness at
+the prior was never the question the gate asks.
+
+#### the substrate can carry an attractor landscape
+
+both structures §6.2 requires exist, and nothing diverges once the shunting form
+is right:
 
 | slice | multistable cells | max spread | oscillatory cells | max swing |
 |---|---|---|---|---|
-| a_gain=0.0, drive=1.0 | 5 / 9216 | 16.5 mV | 0 | — |
-| a_gain=0.05, drive=1.0 | 1 / 9216 | 13.4 mV | 3 / 9216 | 8.3 mV |
-| **a_gain=0.2, drive=1.0** | 5 / 9216 | 9.9 mV | **38 / 9216** | **45.1 mV** |
-| a_gain=0.05, drive=3.0 | 1 / 9216 | 13.4 mV | 1 / 9216 | 7.2 mV |
+| a_gain=0.0, drive=1.0 | 6 / 9216 | 16.5 mV | 0 | — |
+| a_gain=0.05, drive=1.0 | 1 / 9216 | 13.4 mV | 0 | 0.3 mV |
+| a_gain=0.2, drive=1.0 | 4 / 9216 | 9.9 mV | 6 / 9216 | **45.1 mV** |
+| **a_gain=0.05, drive=3.0** | 1 / 9216 | 13.4 mV | **49 / 9216** | 13.5 mV |
 
-**every interesting cell sits at `w_ei` <= 0.0063 -- one grid step from zero.**
-structure dies at the first nonzero inhibition.
+giving inhibition its own population multiplies the oscillatory region ~50x at
+drive=3.0 (1 -> 49 cells) -- that is the E/I oscillation appearing once there is
+a genuine I population to oscillate against, and it is absent from the reduction
+by construction.
 
-two candidate causes, and the first one is measured to be only partial:
-
-1. **§4.11's quadratic shunting.** rerunning with the conductance-based form more
-   than doubles multistability at a_gain=0.2 (5 -> 12 cells) and moves the best
-   multistable point OFF w_ei=0. so the bug is real and costs structure -- but it
-   is not the explanation, because the confinement survives the fix
-2. **the reduction, which is mine and not the model's.** the first version of the
-   sweep slaved the inhibitory rate to the EXCITATORY membrane potential,
-   `r_i -> sigmoid(v_e)`, making inhibition an instantaneous same-gain mirror of
-   excitation. that erases bistability for any appreciable w_ei by construction.
-   `local_inhibition` declares its own population with its own components
-   (`neural.inh.activity`, `neural.inh.gaba_a`, and the pv/sst/vip classes), so
-   the reduction was wrong. rerunning with a separate inhibitory membrane --
-   shorter tau, lower half-activation, steeper slope, higher ceiling -- is the
-   test of whether the confinement is a fact about the model or an artefact of
-   the script
-
-**until that second run lands, the w_ei confinement should not be quoted as a
-property of the model.** the boundedness result and the oscillation
-characterization below do not depend on it.
+**multistability stays at w_ei ~ 0 even with two populations.** that now looks
+like a real property rather than an artefact: bistability here is generated by
+recurrent excitation against a saturating sigmoid, and inhibition linearizes it.
+the regions are small (roughly 0.05% of swept cells), so **theta has to be FIT to
+land in them -- prior medians are not in them.** that is a statement about what
+fitting is for, not a defect.
 
 #### the oscillation is the slow oscillation, and its frequency is fittable
 
@@ -679,12 +682,11 @@ characterized at the strongest oscillatory cell (w_ee=0.385, w_ei=0, a_gain=0.2)
 
 - **0.333 Hz, period 3.0 s, 46.3 mV swing, 37% of time in the UP state**
 
-asymmetric up/down alternation, which is what `wilson_cowan_adaptive`'s docstring
-claims adaptation buys and which no linear form can produce. **a declared claim
-verified by measurement.**
+asymmetric up/down alternation -- what `wilson_cowan_adaptive`'s docstring claims
+adaptation buys and what no linear form can produce. **a declared claim verified
+by measurement.**
 
-the frequency is set by `tau_adaptation_s`, so it is a fittable parameter with a
-measured target:
+`tau_adaptation_s` sets the frequency, so it is fittable against a measured target:
 
 | tau_a (s) | dominant f | swing |
 |---|---|---|
@@ -694,47 +696,50 @@ measured target:
 | 0.50 (prior median) | 0.333 Hz | 46.3 mV |
 | 1.20 | 0.200 Hz | 49.2 mV |
 
-**tau_adaptation_s = 0.30 s puts the model's slow oscillation in the cortical SO
-band**, and the prior is lognormal(0.5, 2.0) so that is well within one sigma —
-a modest, prior-consistent shift, not a fight with the prior. this matters beyond
-spectra: **this is the SO that phase-gates plasticity in mechanism 10.** getting
-its frequency right is a precondition for the NREM curriculum axis in §7e.
+**tau_adaptation_s = 0.30 s puts the slow oscillation in the cortical SO band**,
+well inside the lognormal(0.5, 2.0) prior -- a modest shift, not a fight with the
+prior. this is the SO that phase-gates plasticity in mechanism 10, so its
+frequency is a precondition for the NREM curriculum axis in §7e.
 
-### 4.11 `shunting_inhibition_rate` is quadratic in g_i
+#### what is still open
 
-the declared form is
+the 7.5e15 run should be re-run against the fixed `neural.py` to confirm the
+solver path now converges. the sweep establishes the *dynamics* are bounded
+everywhere with the linear form; it does not by itself prove the windowed
+harmonic-balance solve converges on them.
+
+### 4.11 `shunting_inhibition_rate` WAS quadratic in g_i (FIXED)
+
+the form as declared:
 
     tau_eff = tau_m * g_leak / (g_leak + g_i)
     dv/dt   = -(v - e_rev) * g_i / tau_eff
 
-substituting tau_eff gives `-(v - e_rev) * g_i * (g_leak + g_i) / (tau_m * g_leak)`
--- **quadratic in g_i**. a conductance-based membrane equation with C = tau_m*g_leak
-has that branch LINEAR:
+substituting gives `-(v - e_rev) * g_i * (g_leak + g_i) / (tau_m * g_leak)` --
+**quadratic in g_i**. a conductance-based membrane with C = tau_m*g_leak has that
+branch linear:
 
     dv/dt = -(v - e_rev) * g_i / (tau_m * g_leak)
 
-the conductance is double-counted: once in the numerator, and again through the
-shrinking tau_eff. the emergent membrane time constant IS tau_eff -- that is a
-consequence of the linear form, not something to divide by a second time.
+the conductance was counted twice: once in the numerator, again through the
+shrinking tau_eff. **the shortened tau_eff is a CONSEQUENCE of the linear term,
+not a second divisor** -- which is what makes this an easy error to write and a
+hard one to see, since the docstring's physics is correct and only the algebra
+double-applies it.
 
-measured error, and the stiffness it implies:
+measured error and implied stiffness:
 
-| g_i | declared dv/dt | conductance-based | ratio | implied k (1/s), declared vs correct |
+| g_i | declared dv/dt | correct | ratio | rate constant k (1/s) |
 |---|---|---|---|---|
 | 1.0 | -2000 | -1000 | 2.0x | 133 vs 67 |
 | 5.0 | -30000 | -5000 | 6.0x | 2000 vs 333 |
 | 10.0 | -110000 | -10000 | 11.0x | 7333 vs 667 |
 | 20.0 | -420000 | -20000 | 21.0x | — |
 
-the effective rate constant grows as g_i^2, so the stable explicit timestep
-collapses as 1/g_i^2. the docstring argues the point of division is that it
-cannot misbehave at high inhibitory rate; this form is worst exactly there.
-
-**it does not cause the divergence** -- at prior medians g_i settles at 0.48 where
-the error is only 1.5x, and §4.10 measured boundedness directly. but it is the
-leading candidate for why §4.10's attractor structure vanishes at the first
-nonzero w_ei, which is being tested by rerunning the sweep with the corrected
-form.
+k grows as g_i^2, so the stable explicit timestep collapses as 1/g_i^2. the
+docstring argues the point of division is that it cannot misbehave at high
+inhibitory rate; this form was worst exactly there. fixed in `neural.py`;
+§4.10 has the divergence measurement that justifies it.
 
 ## 5. decisions already made — do not relitigate
 
