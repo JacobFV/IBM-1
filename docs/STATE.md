@@ -11,11 +11,41 @@ updated 2026-09-05.
 
 ## 1. the goal, as currently set
 
-a working implicit brain model that reaches roughly **baseline industry
-performance** on standard tasks. that alone is the innovation, because of what it
-bridges: one substrate, many materializations, heterogeneous evidence, and a
-posterior that says which parts of a prediction rest on measurement and which on
-a prior.
+**this project sits at the bridge between neurophysiology and the cognitive
+structures that emerge from attractor dynamics.** that is the thesis, and it
+decides what counts as progress at every stage.
+
+the two ends are different kinds of claim and the whole design exists to hold
+them together:
+
+- **the neurophysiology end is measured and falsifiable.** declared time
+  constants, conduction delays, transfer functions, connection probabilities —
+  each one a number that can meet data and lose. six have (§3). the machinery
+  for that is what most of this repository is.
+- **the cognitive end is emergent and cannot be declared.** a schema, a working
+  memory, a stable percept is not a parameter you set — it is a property of the
+  *attractor landscape* the dynamics produce once the parameters are right.
+
+the bridge is the claim that the second follows from the first: that if the
+physiology is measured well enough and the dynamics are carried faithfully
+enough, cognitive structure appears as a consequence rather than as an
+architectural addition.
+
+**where we actually are on that bridge, measured:** the neurophysiology end is
+under construction and yielding real corrections. the cognitive end has not
+started, and we know precisely why — **the materialized graph currently has NO
+CYCLE.** `build` selects LTI for all 29 processes, and the one edge that would
+close the cortical loop is potential->rate, whose only f is a sigmoid. a linear
+system has exactly one fixed point. **there is no attractor landscape yet, so
+there is nothing for a cognitive structure to be.** that is not a failure; it is
+the precise statement of the remaining distance, and §7c gives the ordering that
+closes it.
+
+the near-term target is a working implicit brain model at roughly **baseline
+industry performance** on standard tasks. that alone is the innovation, because
+of what it bridges: one substrate, many materializations, heterogeneous evidence,
+and a posterior that says which parts of a prediction rest on measurement and
+which on a prior.
 
 this is a **proving ground**. fitting the model to an encoder during pretraining
 is acceptable — it structures the weights, and careful fine-tuning comes later.
