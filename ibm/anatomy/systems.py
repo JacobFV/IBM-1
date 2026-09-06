@@ -285,3 +285,151 @@ VASCULAR_TERRITORIES = _a(
 
 
 __all__ = [n for n in dir() if n.isupper() and not n.startswith("_")]
+
+
+# ---------------------------------------------------------------------------
+# the peripheral nervous system
+# ---------------------------------------------------------------------------
+#
+# these are partitions and not components, by this file's own rule: a nerve trunk
+# occupies a place and two trunks do not occupy the same place, so they tile.  what
+# runs INSIDE a trunk -- Ia, Ib, II, A-beta, A-delta, C, alpha, gamma, B,
+# postganglionic C -- coexists at every millimetre of it and is therefore declared
+# as components of the neural field (`ibm.fields.neural`, "peripheral traffic,
+# resolved by fibre class").
+#
+# so the pair is: `peripheral_nerves` x fibre-class components = a multidimensional
+# nerve.  neither half is meaningful alone.  a trunk with no fibre vector is a wire
+# with one number on it, and a fibre vector with no trunk has nowhere to be.
+#
+# the frame is `body` rather than `mni152` throughout, and that is not a formality:
+# there is no image in which the median nerve is a path between two brain positions,
+# for exactly the reason `ibm.topologies.afferent` gives about the optic nerve.
+
+CRANIAL_NERVES = _a(
+    "cranial_nerves",
+    "the twelve cranial nerves, with the trigeminal and facial divisions enumerated "
+    "separately because they have different targets and different fibre content.  "
+    "their central nuclei are already in `brainstem_nuclei`; this system is the "
+    "PERIPHERAL course, which that system has no way to name.  several are mixed in "
+    "a way that matters: the facial nerve carries somatic motor, parasympathetic and "
+    "special sensory in one trunk, and the vagus is roughly 80% afferent despite "
+    "being universally described as a motor nerve -- a fact that is invisible unless "
+    "fibre class is a separate axis",
+    ("olfactory_i", "optic_ii", "oculomotor_iii", "trochlear_iv",
+     "trigeminal_v1_ophthalmic", "trigeminal_v2_maxillary", "trigeminal_v3_mandibular",
+     "abducens_vi", "facial_vii_somatic_motor", "facial_vii_parasympathetic",
+     "facial_vii_chorda_tympani", "vestibulocochlear_viii_cochlear",
+     "vestibulocochlear_viii_vestibular", "glossopharyngeal_ix", "vagus_x_pharyngeal",
+     "vagus_x_recurrent_laryngeal", "vagus_x_cardiac", "vagus_x_pulmonary",
+     "vagus_x_abdominal", "accessory_xi", "hypoglossal_xii"),
+    "body", crisp=False, covers="cranial periphery",
+    source="Gray's Anatomy 42e; Standring, cranial nerve courses and fibre content",
+    provenance=Provenance.LITERATURE)
+
+SPINAL_LEVELS = _a(
+    "spinal_levels",
+    "the thirty-one spinal cord segments and their paired roots, C1-Co1.  the "
+    "segmental level is the organizing coordinate of the entire body periphery: a "
+    "dermatome, a myotome, a sympathetic outflow and a reflex arc are all indexed by "
+    "it, and no other declared system can express 'below T6'.  note that segment and "
+    "vertebra diverge caudally -- the cord ends near L1-L2, so lumbosacral roots "
+    "descend as the cauda equina and a segmental lesion and a vertebral lesion are "
+    "different statements",
+    ("c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8",
+     "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12",
+     "l1", "l2", "l3", "l4", "l5", "s1", "s2", "s3", "s4", "s5", "co1"),
+    "body", crisp=True, covers="spinal cord and roots",
+    source="standard segmental anatomy; Gray's Anatomy 42e",
+    provenance=Provenance.LITERATURE)
+
+PERIPHERAL_NERVES = _a(
+    "peripheral_nerves",
+    "named peripheral nerve trunks and the plexuses that form them.  the plexuses are "
+    "included as labels rather than being resolved away because a plexus is where "
+    "segmental level stops predicting peripheral distribution: the median nerve draws "
+    "from C6-T1 and no single level owns it, which is precisely why a dermatome map "
+    "and a peripheral-nerve map disagree and why the pattern of a deficit localizes a "
+    "lesion.  a model that had only levels could not represent a carpal-tunnel "
+    "distribution, and one that had only nerves could not represent a radiculopathy",
+    (# plexuses
+     "cervical_plexus", "brachial_plexus", "lumbar_plexus", "sacral_plexus",
+     # cervical
+     "phrenic", "ansa_cervicalis", "lesser_occipital", "great_auricular",
+     "transverse_cervical", "supraclavicular",
+     # brachial
+     "dorsal_scapular", "long_thoracic", "suprascapular", "lateral_pectoral",
+     "medial_pectoral", "medial_cutaneous_arm", "medial_cutaneous_forearm",
+     "upper_subscapular", "lower_subscapular", "thoracodorsal", "axillary",
+     "musculocutaneous", "median", "ulnar", "radial",
+     "anterior_interosseous", "posterior_interosseous", "superficial_radial",
+     "palmar_digital", "dorsal_digital",
+     # thoracic
+     "intercostal", "subcostal", "thoracoabdominal",
+     # lumbar
+     "iliohypogastric", "ilioinguinal", "genitofemoral",
+     "lateral_femoral_cutaneous", "femoral", "obturator", "saphenous",
+     # sacral
+     "superior_gluteal", "inferior_gluteal", "posterior_femoral_cutaneous",
+     "sciatic", "tibial", "common_fibular", "superficial_fibular", "deep_fibular",
+     "sural", "medial_plantar", "lateral_plantar", "pudendal",
+     # autonomic trunks
+     "sympathetic_chain", "greater_splanchnic", "lesser_splanchnic",
+     "least_splanchnic", "lumbar_splanchnic", "pelvic_splanchnic"),
+    "body", crisp=False, covers="peripheral nerve trunks",
+    source="Gray's Anatomy 42e; Standring. courses are literature, not imaged",
+    provenance=Provenance.LITERATURE)
+
+DERMATOMES = _a(
+    "dermatomes",
+    "the skin territory of each dorsal root, tiling the body surface.  they tile and "
+    "they OVERLAP -- adjacent dermatomes share a wide border, which is why sectioning "
+    "one root produces hypaesthesia rather than anaesthesia -- so `crisp=False` here "
+    "is anatomy and not atlas uncertainty.  the published maps (Keegan-Garrett, "
+    "Foerster, Lee) disagree substantially, and that disagreement is the honest error "
+    "bar on any somatotopic claim this model makes about the trunk or limbs",
+    tuple(f"{seg}_dermatome" for seg in
+          ("c2", "c3", "c4", "c5", "c6", "c7", "c8", "t1", "t2", "t3", "t4", "t5",
+           "t6", "t7", "t8", "t9", "t10", "t11", "t12", "l1", "l2", "l3", "l4",
+           "l5", "s1", "s2", "s3", "s4", "s5")),
+    "body", crisp=False, covers="body surface",
+    source="Lee/Foerster/Keegan-Garrett maps; they disagree and the disagreement is "
+           "recorded rather than resolved",
+    provenance=Provenance.LITERATURE)
+
+MYOTOMES = _a(
+    "myotomes",
+    "the muscle territory of each ventral root.  almost every limb muscle is "
+    "innervated by two or more segments, so this system is emphatically NOT crisp and "
+    "a myotome is a weighting rather than a set -- which is exactly why single-root "
+    "lesions cause weakness rather than paralysis.  it is the motor counterpart of "
+    "`dermatomes` and shares its indexing so that a segmental statement can be made "
+    "about both limbs of a reflex arc at once",
+    tuple(f"{seg}_myotome" for seg in
+          ("c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8", "t1", "t2", "t3", "t4",
+           "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12", "l1", "l2", "l3",
+           "l4", "l5", "s1", "s2", "s3", "s4")),
+    "body", crisp=False, covers="skeletal musculature",
+    source="standard segmental innervation tables; Gray's Anatomy 42e",
+    provenance=Provenance.LITERATURE)
+
+AUTONOMIC_GANGLIA = _a(
+    "autonomic_ganglia",
+    "the ganglia where preganglionic autonomic axons synapse.  they are declared "
+    "because the synapse is the reason `neural.efferent.b_preganglionic` and "
+    "`neural.efferent.c_postganglionic` are separate components: a ganglion is a "
+    "place where divergence happens, and sympathetic divergence ratios of 1:10 or "
+    "more are why a sparse preganglionic outflow produces a diffuse effector "
+    "response.  the parasympathetic ganglia sit near or in their targets and diverge "
+    "far less, which is the structural basis of its finer targeting",
+    ("superior_cervical", "middle_cervical", "stellate", "thoracic_chain",
+     "lumbar_chain", "sacral_chain", "celiac", "superior_mesenteric",
+     "inferior_mesenteric", "aorticorenal", "ciliary", "pterygopalatine",
+     "submandibular", "otic", "intramural_cardiac", "intramural_enteric",
+     "intramural_pelvic", "dorsal_root_ganglion", "trigeminal_ganglion",
+     "geniculate_ganglion", "spiral_ganglion", "vestibular_ganglion",
+     "nodose_ganglion", "jugular_ganglion"),
+    "body", crisp=False, covers="peripheral ganglia",
+    source="Gray's Anatomy 42e; Jaenig, The Integrative Action of the Autonomic "
+           "Nervous System",
+    provenance=Provenance.LITERATURE)

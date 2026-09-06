@@ -251,6 +251,132 @@ AFFERENT_ACTIVITY = _c(
     timescale_s=2e-3, support="body",
     tags=frozenset({"population", "peripheral", "afferent"}))
 
+# -- peripheral traffic, resolved by fibre class ------------------------------
+#
+# `afferent.activity` and `efferent.activity` above are the AGGREGATE traffic in a
+# nerve.  the components below are the same traffic resolved by Erlanger-Gasser /
+# Lloyd fibre class, and they are components rather than partitions for the reason
+# `ibm.anatomy.systems` states in its header: fibre classes coexist in the same
+# trunk at the same millimetre, so they cannot tile space.  a peripheral nerve is a
+# partition; what runs inside it is a component vector.
+#
+# the classes are not a taxonomy for its own sake.  each one has a different
+# conduction velocity, and in a model where "delay dominates this topology in a way
+# it does not dominate the cortical one" (`ibm.topologies.afferent`) a lumped
+# afferent rate asserts that a 100 m/s Ia and a 1 m/s C fibre arrive together --
+# which is wrong by two orders of magnitude and wrong in the direction that
+# destroys every reflex latency the model might otherwise reproduce.
+
+IA_AFFERENT = _c(
+    "neural.afferent.ia",
+    "primary muscle-spindle afferent: group Ia, the largest and fastest myelinated "
+    "sensory fibre (12-20 um, 80-120 m/s).  it reports muscle LENGTH and its RATE OF "
+    "CHANGE, is the afferent limb of the monosynaptic stretch reflex, and its dynamic "
+    "sensitivity is set by gamma-dynamic drive to the intrafusal fibre rather than "
+    "being a fixed property of the receptor.  it is separated from group II because "
+    "the velocity sensitivity is the whole functional difference between them",
+    "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 500.0),
+    timescale_s=2e-3, support="body",
+    tags=frozenset({"population", "peripheral", "afferent", "proprioceptive"}))
+
+IB_AFFERENT = _c(
+    "neural.afferent.ib",
+    "Golgi tendon organ afferent: group Ib, myelinated and nearly as fast as Ia "
+    "(12-20 um, 80-120 m/s), but in series with the tendon rather than in parallel "
+    "with the muscle, so it reports FORCE where Ia reports length.  the pair is what "
+    "lets a controller distinguish a limb that has moved from a limb that is loaded, "
+    "and a model with only one of them cannot tell those apart",
+    "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 500.0),
+    timescale_s=2e-3, support="body",
+    tags=frozenset({"population", "peripheral", "afferent", "proprioceptive"}))
+
+II_AFFERENT = _c(
+    "neural.afferent.ii",
+    "secondary muscle-spindle afferent: group II, medium myelinated (6-12 um, "
+    "35-75 m/s), reporting static muscle length with little velocity sensitivity.  "
+    "it is the tonic position signal that survives when the dynamic Ia response has "
+    "adapted",
+    "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 500.0),
+    timescale_s=2e-3, support="body",
+    tags=frozenset({"population", "peripheral", "afferent", "proprioceptive"}))
+
+ABETA_AFFERENT = _c(
+    "neural.afferent.abeta",
+    "cutaneous mechanoreceptive afferent: A-beta, myelinated (6-12 um, 35-75 m/s), "
+    "carrying touch, vibration and pressure from Merkel, Meissner, Pacinian and "
+    "Ruffini endings.  this is the class the dorsal columns are usually pictured as "
+    "carrying, and it is the one the model had before proprioception was declared",
+    "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 1000.0),
+    timescale_s=2e-3, support="body",
+    tags=frozenset({"population", "peripheral", "afferent", "cutaneous"}))
+
+ADELTA_AFFERENT = _c(
+    "neural.afferent.adelta",
+    "thinly myelinated nociceptive and thermoreceptive afferent: A-delta (1-5 um, "
+    "5-30 m/s), carrying first pain and cold.  it is an order of magnitude slower "
+    "than A-beta, which is why a lumped cutaneous afferent gets the withdrawal-reflex "
+    "latency wrong",
+    "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 200.0),
+    timescale_s=3e-3, support="body",
+    tags=frozenset({"population", "peripheral", "afferent", "nociceptive"}))
+
+C_AFFERENT = _c(
+    "neural.afferent.c",
+    "unmyelinated afferent: C fibre (0.2-1.5 um, 0.5-2 m/s), carrying second pain, "
+    "warmth, itch, affective touch and the great majority of visceral afferent "
+    "traffic.  two orders of magnitude slower than Ia over the same path -- a foot "
+    "C fibre takes most of a second to reach the cord -- and that latency is a "
+    "phenomenon, not an error term",
+    "Hz", band=SLOW, prior="neural_spiking", bounds=(0.0, 100.0),
+    timescale_s=1e-2, support="body",
+    tags=frozenset({"population", "peripheral", "afferent", "nociceptive",
+                    "visceral"}))
+
+ALPHA_EFFERENT = _c(
+    "neural.efferent.alpha",
+    "alpha motoneuron axon traffic: the final common path to EXTRAFUSAL muscle "
+    "fibres (12-20 um, 80-120 m/s).  this is the component that produces force, and "
+    "it is separated from gamma because they are separately controlled and their "
+    "co-activation ratio is itself a motor-control variable",
+    "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 200.0),
+    timescale_s=2e-3, support="body",
+    tags=frozenset({"population", "peripheral", "efferent", "somatic"}))
+
+GAMMA_EFFERENT = _c(
+    "neural.efferent.gamma",
+    "gamma (fusimotor) motoneuron axon traffic to INTRAFUSAL fibres (2-8 um, "
+    "10-45 m/s).  it produces no meaningful force; it sets the gain and the dynamic "
+    "sensitivity of the spindle that reports back on Ia and II.  **this is the one "
+    "efferent whose target is a sensor**, so it is the mechanism by which the "
+    "nervous system controls its own proprioceptive gain -- alpha-gamma "
+    "co-activation is what keeps the spindle loaded while the muscle shortens, and "
+    "without it every spindle falls silent during exactly the movements it is "
+    "needed for",
+    "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 200.0),
+    timescale_s=2e-3, support="body",
+    tags=frozenset({"population", "peripheral", "efferent", "fusimotor"}))
+
+B_EFFERENT = _c(
+    "neural.efferent.b_preganglionic",
+    "preganglionic autonomic axon traffic: B fibres, thinly myelinated (1-3 um, "
+    "3-15 m/s), sympathetic and parasympathetic, running from the cord or brainstem "
+    "to a ganglion.  the synapse in the ganglion is why this is a separate component "
+    "from the postganglionic traffic and not the same signal further along",
+    "Hz", band=SLOW, prior="neural_spiking", bounds=(0.0, 50.0),
+    timescale_s=5e-3, support="body",
+    tags=frozenset({"population", "peripheral", "efferent", "autonomic"}))
+
+C_EFFERENT = _c(
+    "neural.efferent.c_postganglionic",
+    "postganglionic sympathetic axon traffic: unmyelinated C fibres (0.3-1.3 um, "
+    "0.5-2 m/s) from ganglion to effector -- vessels, sweat glands, viscera, "
+    "piloerector muscle.  slow, diffuse and volume-transmitted at the target, which "
+    "is why autonomic effects have seconds-scale onsets that a myelinated model "
+    "cannot produce",
+    "Hz", band=SLOW, prior="neural_spiking", bounds=(0.0, 50.0),
+    timescale_s=1e-2, support="body",
+    tags=frozenset({"population", "peripheral", "efferent", "autonomic"}))
+
 EFFERENT_ACTIVITY = _c(
     "neural.efferent.activity",
     "firing rate of motor and autonomic efferent neurons at their peripheral projection: "

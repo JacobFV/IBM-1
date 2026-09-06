@@ -88,6 +88,29 @@ FORCE = _c(
     "N", band=MECHANICAL, prior="motor_drive", bounds=(0.0, 5000.0), timescale_s=5e-2,
     tags=frozenset({"motor", "observable"}))
 
+LENGTH = _c(
+    "effector.length",
+    "muscle-tendon unit length, normalized to the optimal fibre length L0.  it is "
+    "declared because it is what a spindle transduces and what the force-length "
+    "relation is a function of -- `effector.force` above already says its map from "
+    "activation 'depends on muscle length and shortening velocity', and until now "
+    "neither existed as a state variable, so every implementation of that relation "
+    "had to assume a constant.  1.0 is optimal length; useful range is roughly "
+    "0.5-1.5 L0",
+    "L0", band=MECHANICAL, prior="motor_drive", bounds=(0.0, 2.0), timescale_s=5e-2,
+    tags=frozenset({"motor", "mechanical", "observable"}))
+
+VELOCITY = _c(
+    "effector.velocity",
+    "muscle-tendon shortening velocity in optimal lengths per second, signed: "
+    "negative is shortening (concentric), positive is lengthening (eccentric).  it is "
+    "the variable the force-velocity relation and the spindle's DYNAMIC response are "
+    "functions of, and it is separate from the derivative of `effector.length` in the "
+    "same way `neural.exc.activity` is separate from potential -- a state the plant "
+    "reports, not a quantity recovered by differentiating a noisy signal",
+    "L0/s", band=MECHANICAL, prior="motor_drive", bounds=(-20.0, 20.0),
+    timescale_s=2e-2, tags=frozenset({"motor", "mechanical", "observable"}))
+
 FATIGUE = _c(
     "effector.fatigue",
     "peripheral fatigue: the slowly accumulating loss of force-generating capacity at a "

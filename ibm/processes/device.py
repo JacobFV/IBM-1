@@ -100,6 +100,8 @@ ULTRASOUND_ENVELOPE = Band(0.0, 500.0)
 OPTICAL = Band(0.0, 3.0)
 
 #: peripheral afferent traffic.
+MUSCLE_UNITS = OnSupport("motor_units")
+SKIN_SURFACE = OnSupport("body_surface")
 AFFERENT = Band(0.0, 1000.0)
 
 #: tissue structure over an experiment: constant.
@@ -803,6 +805,18 @@ AFFERENT_PROPAGATION = process(
     process's inputs rather than to its theta.""",
     inputs=(
         within("neural", "afferent.activity", region=BODY, band=AFFERENT),
+        # the fibre-resolved afferent traffic.  it is read separately from the
+        # aggregate because the classes do not arrive together: over a leg trunk a
+        # group Ia leads an unmyelinated C fibre by a factor of a hundred
+        # (`ibm.topologies.nerve`), so a relay that reads only the aggregate has
+        # already thrown away every latency difference the periphery generates.
+        within("neural", "afferent.ia", "afferent.ib", "afferent.ii",
+               region=BODY, band=AFFERENT),
+        within("neural", "afferent.abeta", "afferent.adelta", "afferent.c",
+               region=BODY, band=AFFERENT),
+        within("transduction", "spindle_primary", "spindle_secondary",
+               "golgi_tendon", region=MUSCLE_UNITS, band=AFFERENT),
+        within("transduction", "joint_receptor", region=SKIN_SURFACE, band=AFFERENT),
         within("transduction", "photoreceptor", "hair_cell", "mechanoreceptor",
                "thermoreceptor", "nociceptor", "chemoreceptor", "vestibular",
                "baroreceptor", band=AFFERENT),
@@ -821,6 +835,10 @@ AFFERENT_PROPAGATION = process(
         within("neural", "exc.activity", "exc.potential", region=THALAMUS, band=AFFERENT),
         within("neural", "exc.activity", region=BRAINSTEM, band=AFFERENT),
         within("neural", "afferent.activity", region=BODY, band=AFFERENT),
+        within("neural", "afferent.ia", "afferent.ib", "afferent.ii",
+               region=BODY, band=AFFERENT),
+        within("neural", "afferent.abeta", "afferent.adelta", "afferent.c",
+               region=BODY, band=AFFERENT),
     ),
     topology="afferent_pathway",
     timescale_s=5e-3,

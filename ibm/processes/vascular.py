@@ -266,6 +266,14 @@ VASCULAR_FLOW = process(
     inputs=(
         within("blood", "flow", "pressure", "volume", band=HEMODYNAMIC),
         within("blood", "oxygen_content", "deoxyhemoglobin", band=HEMODYNAMIC),
+        # postganglionic sympathetic traffic to vascular smooth muscle.  this is
+        # what makes the vasculature an EFFECTOR and not only a supply constraint:
+        # `neural.efferent.c_postganglionic` is unmyelinated and volume-transmitted
+        # at the target, which is why vasomotor responses have seconds-scale onsets
+        # that no myelinated pathway in the model could produce.  without this edge
+        # the autonomic outflow declared in `efferent_propagation` reaches nothing.
+        within("neural", "efferent.c_postganglionic", region=OnSupport("body"),
+               band=Band(0.0, 50.0)),
         within("material", "stiffness", band=Band(0.0, 0.001)),
         # the geometry the transport runs over, read and never written.  a segment's
         # resistance is 8 mu L / (pi r^4), so the radius enters at the fourth power and

@@ -151,6 +151,10 @@ VISCERA = OnSupport("viscera")
 DISPLAY = OnSupport("display")
 HEAD = OnSupport("head_volume")
 BODY = OnSupport("body")
+#: the muscle-tendon unit: where spindles and Golgi tendon organs sit.  it is the
+#: same support the motor units are on, because a spindle is IN the muscle it
+#: reports on -- which is the whole reason fusimotor drive can change what it says.
+MUSCLE = OnSupport("motor_units")
 
 
 # ---------------------------------------------------------------------------
@@ -334,6 +338,15 @@ TRANSDUCTION = process(
         within("extracellular", "ph", "k", region=HEAD, band=SLOW_RECEPTOR),
         within("blood", "pressure", "oxygenation", band=SLOW_RECEPTOR),
         # the receptor's memory of its own drive.
+        # the proprioceptive inputs.  `effector.length` and `velocity` are what a
+        # spindle and a tendon organ actually transduce, and `neural.efferent.gamma`
+        # is here because this is the one receptor in the inventory whose GAIN is
+        # under central control: fusimotor drive reloads the intrafusal fibre, so
+        # without reading gamma the spindle would fall silent during exactly the
+        # shortening movements it is needed for.
+        within("effector", "length", "velocity", region=MUSCLE, band=TACTILE),
+        within("effector", "force", region=MUSCLE, band=TACTILE),
+        within("neural", "efferent.gamma", region=BODY, band=AFFERENT),
         within("transduction", "adaptation", band=ADAPTATION),
         # innervation density, which sets how much afferent traffic a given
         # receptor drive actually produces.
@@ -348,8 +361,20 @@ TRANSDUCTION = process(
         within("transduction", "chemoreceptor", region=EPITHELIUM, band=CHEMO),
         within("transduction", "vestibular", region=LABYRINTH, band=VESTIBULAR),
         within("transduction", "baroreceptor", region=VISCERA, band=SLOW_RECEPTOR),
+        within("transduction", "spindle_primary", region=MUSCLE, band=TACTILE),
+        within("transduction", "spindle_secondary", region=MUSCLE, band=SLOW_RECEPTOR),
+        within("transduction", "golgi_tendon", region=MUSCLE, band=TACTILE),
+        within("transduction", "joint_receptor", region=SKIN, band=SLOW_RECEPTOR),
         within("transduction", "adaptation", band=ADAPTATION),
         within("neural", "afferent.activity", region=BODY, band=AFFERENT),
+        # the same traffic resolved by fibre class.  writing both the aggregate and
+        # the classes is deliberate: an implementation that has no opinion about
+        # fibre class still writes `activity`, and one that does writes the vector,
+        # so selecting a coarse implementation costs resolution rather than failing.
+        within("neural", "afferent.ia", "afferent.ib", "afferent.ii",
+               region=BODY, band=AFFERENT),
+        within("neural", "afferent.abeta", region=BODY, band=AFFERENT),
+        within("neural", "afferent.adelta", "afferent.c", region=BODY, band=AFFERENT),
     ),
     topology="local",
     timescale_s=1e-3,

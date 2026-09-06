@@ -455,6 +455,136 @@ VASCULAR_TERRITORIES = _s(
 
 
 # ---------------------------------------------------------------------------
+# the peripheral nervous system
+# ---------------------------------------------------------------------------
+#
+# these six differ in kind from every source above them: there is no probabilistic
+# atlas of the median nerve in a template space, because the peripheral nervous
+# system has never been mapped the way the brain has.  what exists is dissection
+# literature -- consistent, centuries old, and stated as topology and typical
+# course rather than as a per-voxel probability.  that is recorded honestly here
+# rather than dressed up as an atlas.
+#
+# the consequence for materialization is the opposite of the cortical case: these
+# memberships will NOT be silently substituted, because there is nothing to
+# substitute them with.  a request either accepts literature topology or does
+# without the periphery.
+
+CRANIAL_NERVES = _s(
+    system="cranial_nerves",
+    preferred="dissection anatomy: Gray's Anatomy 42e / Standring, cranial nerve course "
+              "and fibre content",
+    card=None,
+    frame="body (no template exists)",
+    crisp=False,
+    n_labels=21,
+    measured_by="cadaveric dissection, replicated for over a century.  fibre content per "
+                "nerve is from degeneration and tracing studies; the vagus being ~80% "
+                "afferent is a fibre count, not an impression",
+    obtained="it is literature.  the in-vivo alternative is high-resolution cranial-nerve "
+             "MR neurography, which resolves the proximal segments of V, VII and VIII and "
+             "essentially nothing distal",
+    substitute="MR neurography for the skull-base segments only",
+    substitute_card=None,
+    lost="the distal course.  a model that needs to know where the chorda tympani goes "
+         "will not learn it from any image, and the literature course is the only "
+         "available answer at any price")
+
+SPINAL_LEVELS = _s(
+    system="spinal_levels",
+    preferred="standard segmental anatomy, 31 segments C1-Co1",
+    card=None,
+    frame="body",
+    crisp=True,
+    n_labels=31,
+    measured_by="root counting; the least contentious fact in this file",
+    obtained="literature.  segment-to-vertebra correspondence is the part that varies "
+             "between people and it is a known offset, not a measurement",
+    substitute="none needed",
+    substitute_card=None,
+    lost="nothing at the level of segment identity.  what is lost is the segment-to-"
+         "VERTEBRA mapping in an individual, which matters only for localizing a "
+         "structural lesion and not for the dynamics")
+
+PERIPHERAL_NERVES = _s(
+    system="peripheral_nerves",
+    preferred="dissection anatomy: Gray's Anatomy 42e / Standring, named trunks and "
+              "plexus formation",
+    card=None,
+    frame="body (no template exists)",
+    crisp=False,
+    n_labels=60,
+    measured_by="cadaveric dissection.  plexus formation varies between individuals more "
+                "than the textbook implies -- prefixed and postfixed brachial plexuses "
+                "shift the whole segmental contribution by one level in a few percent of "
+                "people",
+    obtained="literature.  in vivo, MR neurography and high-resolution ultrasound image "
+             "the large trunks (sciatic, median, ulnar) and nothing smaller",
+    substitute="MR neurography or ultrasound for the major trunks",
+    substitute_card=None,
+    lost="everything distal to the named trunks, and the individual plexus variant.  a "
+         "model fitted to one person's deficit pattern may be fitting their plexus "
+         "variation and calling it a parameter")
+
+DERMATOMES = _s(
+    system="dermatomes",
+    preferred="Lee et al. evidence-based composite; Foerster and Keegan-Garrett as the "
+              "classical alternatives",
+    card=None,
+    frame="body",
+    crisp=False,
+    n_labels=29,
+    measured_by="three incompatible methods: remaining sensation after multiple root "
+                "section (Foerster), hypaesthesia from single-root compression "
+                "(Keegan-Garrett), and pooled clinical evidence (Lee).  they disagree "
+                "substantially over the trunk and the proximal limb",
+    obtained="pick a map and record which one.  the disagreement between them IS the "
+             "error bar and should be propagated rather than resolved by preference",
+    substitute="any of the three; they are not interchangeable and the choice must be "
+               "recorded in provenance",
+    substitute_card=None,
+    lost="precision that was never there.  adjacent dermatomes overlap widely, so any "
+         "crisp map is a fiction -- which is why the declaration sets crisp=False even "
+         "though every published figure draws hard borders")
+
+MYOTOMES = _s(
+    system="myotomes",
+    preferred="standard segmental innervation tables, Gray's Anatomy 42e",
+    card=None,
+    frame="body",
+    crisp=False,
+    n_labels=29,
+    measured_by="clinical correlation of root lesions with weakness, plus stimulation "
+                "studies.  nearly every limb muscle draws from two or more segments, so "
+                "the tables are weightings reported as lists",
+    obtained="literature",
+    substitute="none",
+    substitute_card=None,
+    lost="the weighting.  the tables say biceps is C5-C6 and do not say in what ratio, "
+         "so a materialization must either fit the ratio or assume it uniform, and "
+         "assuming it uniform is a real modelling choice that should be visible")
+
+AUTONOMIC_GANGLIA = _s(
+    system="autonomic_ganglia",
+    preferred="dissection anatomy plus tracing: Gray's Anatomy 42e; Jaenig, The "
+              "Integrative Action of the Autonomic Nervous System",
+    card=None,
+    frame="body",
+    crisp=False,
+    n_labels=24,
+    measured_by="dissection for position; retrograde tracing and ganglion cell counts "
+                "for the divergence ratios, which are the functionally important number "
+                "and are known only to an order of magnitude",
+    obtained="literature.  the sympathetic chain ganglia are visible on high-resolution "
+             "CT and MR in some people; the intramural ganglia are not imageable at all",
+    substitute="CT/MR for the chain and celiac ganglia only",
+    substitute_card=None,
+    lost="the divergence ratios, which is the parameter that decides how diffuse an "
+         "autonomic response is.  1:10 and 1:100 are both quoted for sympathetic "
+         "ganglia and the difference is an order of magnitude in effector recruitment")
+
+
+# ---------------------------------------------------------------------------
 # the invariant
 # ---------------------------------------------------------------------------
 

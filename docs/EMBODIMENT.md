@@ -1,5 +1,10 @@
 # putting it in a body
 
+> **§1–§3 below were the assessment BEFORE the peripheral nervous system was
+> declared. §5 records what was built in response; §2.1's proprioception gap and
+> the fibre-lumping are now closed. §2.2 (spinal circuitry) and §2.3 (cerebellum,
+> efference copy) still stand.**
+
 **yes, the substrate supports materializing a nerve-based input/output model, and
 the interface is better specified than most of the rest of the codebase.** the
 realism problem is not the interface. it is that three things which do most of the
@@ -193,3 +198,108 @@ slow one." 3 and 4 are what make it move like a body.
 CURRICULUM.md stage 4 already name as the closure the whole curriculum is aimed
 at.** a body simulation is not a side quest from the video loop; it is the same
 missing loop with a physical world instead of TRIBEv2 standing in for one.
+
+---
+
+## 5. what was built
+
+### 5.1 the nerves, as partitions
+
+six anatomical systems, 192 labels, all on the `body` frame because there is no
+image in which the median nerve is a path between two brain positions:
+
+| system | labels | content |
+|---|---|---|
+| `cranial_nerves` | 21 | I–XII with V and VII divisions enumerated separately, and the vagus split pharyngeal / recurrent laryngeal / cardiac / pulmonary / abdominal |
+| `spinal_levels` | 31 | C1–Co1 |
+| `peripheral_nerves` | 58 | four plexuses and the named trunks they form, plus the sympathetic chain and splanchnics |
+| `dermatomes` | 29 | root skin territory, `crisp=False` because adjacent dermatomes genuinely overlap |
+| `myotomes` | 29 | root muscle territory, non-crisp because nearly every limb muscle draws from two or more segments |
+| `autonomic_ganglia` | 24 | where preganglionic axons synapse and diverge |
+
+each has an `ibm.anatomy.sources` entry, because the registry refuses a system
+with no recorded provenance. those entries say something the cortical ones do
+not: **there is no probabilistic atlas of the median nerve.** what exists is
+dissection literature, and the consequence is the opposite of the cortical case —
+these memberships will not be silently substituted at materialization, because
+there is nothing to substitute them with.
+
+### 5.2 the fibre classes, as components
+
+ten new components on `neural`, following `ibm.anatomy.systems`'s own rule —
+things that tile are partitions, things that coexist are components, and fibre
+classes coexist in every millimetre of every trunk:
+
+- afferent: `ia` (spindle primary, length + velocity), `ib` (Golgi tendon,
+  force), `ii` (spindle secondary, static length), `abeta` (cutaneous
+  mechanoreception), `adelta` (first pain, cold), `c` (second pain, warmth, itch,
+  most visceral traffic)
+- efferent: `alpha` (extrafusal, force), `gamma` (intrafusal, **the one efferent
+  whose target is a sensor**), `b_preganglionic`, `c_postganglionic`
+
+**so a nerve is the product of a partition and a component vector.** neither half
+means anything alone: a trunk with no fibre vector is a wire with one number on
+it, and a fibre vector with no trunk has nowhere to be.
+
+### 5.3 the topology that makes the multidimensionality bite
+
+`ibm/topologies/nerve.py` declares `peripheral_nerve` with a delay **per fibre
+class**, a composition table per trunk, and literature trunk lengths. measured:
+
+| trunk | Ia | A-beta | A-delta | C |
+|---|---|---|---|---|
+| sciatic | 6 ms | 10 ms | 37 ms | **550 ms** |
+| median | 7 ms | 13 ms | 47 ms | **700 ms** |
+| sural | — | 7 ms | 27 ms | 400 ms |
+
+**a hundredfold spread inside a single trunk.** a topology that gives a nerve one
+`conduction_delay_s` asserts that first and second pain arrive together, that a
+stretch reflex and a thermal percept share a latency, and that fusimotor drive
+reaches the spindle when alpha drive reaches the muscle. it is not an
+approximation, it is a category error.
+
+the composition table carries content too: `sural` has no Ia and no alpha, so
+cutting it costs sensation and no strength; `anterior_interosseous` has no
+A-beta, so cutting it costs strength and no sensation. that asymmetry is anatomy
+the model can only express because presence and absence are declared per trunk.
+
+### 5.4 proprioception, and the loop it closes
+
+four receptors (`spindle_primary`, `spindle_secondary`, `golgi_tendon`,
+`joint_receptor`) and the two plant states they read (`effector.length`,
+`effector.velocity` — which `effector.force`'s own docstring already assumed and
+which did not exist).
+
+everything is wired, with **zero orphaned components**: every one is written by
+some process and read by another. and the result is a genuine cycle —
+
+    effector_activation --length, velocity-->  transduction
+    transduction        --spindle Ia/Ib/II-->  afferent_propagation
+    afferent_propagation --------------------> efferent_propagation
+    efferent_propagation --alpha----------->   effector_activation
+                         --gamma----------->   transduction  (spindle gain)
+
+**this is the first closed feedback cycle in the declared process graph.** note
+it does not change STATE.md §6.2, which is about what `eeg_forward` materializes
+— that request instantiates no periphery, so its graph is still acyclic. what
+changed is that a request which *does* include the periphery now has a loop to
+materialize.
+
+the gamma edge is the one worth pointing at. it makes spindle gain a controlled
+variable, which is what alpha-gamma co-activation needs: without it every spindle
+falls silent during exactly the shortening movements it is needed for.
+
+### 5.5 what this does not fix
+
+- **§2.2 stands.** there is still no spinal circuitry. `spinal_levels` and
+  `myotomes` now exist as the partitions a `segmental_reflex` process would be
+  defined over, and `neural.afferent.ia` is the component its monosynaptic arc
+  would read — but the process is not written, so there is still no stretch
+  reflex, no reciprocal inhibition and no Renshaw feedback
+- **§2.3 stands.** no cerebellar process, no efference copy. the ~75–135 ms loop
+  still has no predictor, so the bandwidth estimate of 2–3 Hz is unchanged
+- **the implementations are declarations.** `transduction` now has proprioceptive
+  outputs, and no implementation computes them yet; the existing eight cover the
+  other receptors. an implementation of the spindle — with its gamma-dependent
+  gain — is the next concrete piece
+- **§2.5 stands.** the fan-in gain problem is upstream of all of this

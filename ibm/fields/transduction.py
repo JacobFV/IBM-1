@@ -100,6 +100,53 @@ MECHANORECEPTOR = _c(
     "mV", band=TACTILE, bounds=(-80.0, 40.0), timescale_s=5e-3,
     tags=frozenset({"receptor", "somatosensory"}))
 
+SPINDLE_PRIMARY = _c(
+    "transduction.spindle_primary",
+    "receptor potential of the muscle-spindle PRIMARY (annulospiral) ending, on "
+    "intrafusal nuclear-bag and nuclear-chain fibres.  its response is dominated by "
+    "the RATE OF CHANGE of muscle length, with a static component on top -- which is "
+    "why it is separated from the secondary ending rather than scaled from it.  its "
+    "gain is not a constant: fusimotor drive (`neural.efferent.gamma`) contracts the "
+    "intrafusal poles and reloads the ending, so this receptor's sensitivity is under "
+    "central control and the model must read gamma to compute it",
+    "mV", band=TACTILE, bounds=(-80.0, 0.0), timescale_s=2e-3,
+    support="motor_units",
+    tags=frozenset({"receptor", "proprioceptive", "mechanical"}))
+
+SPINDLE_SECONDARY = _c(
+    "transduction.spindle_secondary",
+    "receptor potential of the muscle-spindle SECONDARY (flower-spray) ending, "
+    "chiefly on nuclear-chain fibres: a largely static, position-proportional signal "
+    "with little velocity sensitivity.  it is the tonic limb-position signal that "
+    "persists after the primary ending's dynamic response has adapted",
+    "mV", band=SLOW, bounds=(-80.0, 0.0), timescale_s=1e-2,
+    support="motor_units",
+    tags=frozenset({"receptor", "proprioceptive", "mechanical"}))
+
+GOLGI_TENDON = _c(
+    "transduction.golgi_tendon",
+    "receptor potential of the Golgi tendon organ, in SERIES with the muscle at the "
+    "musculotendinous junction rather than in parallel with it.  the series/parallel "
+    "distinction is the entire functional content: a spindle unloads when the muscle "
+    "shortens against no load, while a tendon organ fires harder the harder the "
+    "muscle pulls.  so this reports FORCE and the spindle reports LENGTH, and a "
+    "controller with only one of them cannot separate a limb that moved from a limb "
+    "that met resistance",
+    "mV", band=TACTILE, bounds=(-80.0, 0.0), timescale_s=3e-3,
+    support="motor_units",
+    tags=frozenset({"receptor", "proprioceptive", "mechanical"}))
+
+JOINT_RECEPTOR = _c(
+    "transduction.joint_receptor",
+    "receptor potential of joint-capsule and ligament afferents -- Ruffini-like "
+    "endings, Golgi-type endings and free nerve endings in the capsule.  they signal "
+    "extreme-of-range and capsular stress rather than mid-range position, which is "
+    "why they do not substitute for spindles: a model that used joint receptors as "
+    "its position sense would be blind through most of the working range",
+    "mV", band=SLOW, bounds=(-80.0, 0.0), timescale_s=1e-2,
+    support="body_surface",
+    tags=frozenset({"receptor", "proprioceptive", "mechanical"}))
+
 THERMORECEPTOR = _c(
     "transduction.thermoreceptor",
     "the receptor state of warm and cool cutaneous thermoreceptors, TRP-channel mediated.  "

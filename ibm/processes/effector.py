@@ -241,11 +241,25 @@ EFFERENT_PROPAGATION = process(
         within("neural", "exc.potential", region=MOTOR_CORTEX, band=COMMAND),
         within("neural", "exc.activity", region=BRAINSTEM, band=COMMAND),
         within("neural", "efferent.activity", region=BODY, band=MOTOR),
+        within("neural", "efferent.alpha", "efferent.gamma", region=BODY, band=MOTOR),
+        within("neural", "efferent.b_preganglionic", region=BODY, band=MOTOR),
         within("effector", "drive", "fatigue", region=MOTOR_UNITS, band=DRIVE),
         within("structural", "myelination", "axonal_density", band=STRUCTURE),
     ),
     outputs=(
         within("neural", "efferent.activity", region=BODY, band=MOTOR),
+        # alpha and gamma are separate outputs because they are separately
+        # controlled and their RATIO is a motor-control variable: alpha-gamma
+        # co-activation is what keeps the spindle loaded while the muscle shortens.
+        # a lumped efferent rate cannot express the ratio, so it cannot express
+        # fusimotor set at all, and every spindle in the model would then fall
+        # silent during voluntary movement.
+        within("neural", "efferent.alpha", region=BODY, band=MOTOR),
+        within("neural", "efferent.gamma", region=BODY, band=MOTOR),
+        # autonomic outflow, pre- and postganglionic, separated by the ganglionic
+        # synapse where divergence happens.
+        within("neural", "efferent.b_preganglionic", region=BODY, band=MOTOR),
+        within("neural", "efferent.c_postganglionic", region=BODY, band=MOTOR),
         within("effector", "drive", region=MOTOR_UNITS, band=DRIVE),
     ),
     topology="efferent_pathway",
@@ -437,6 +451,11 @@ EFFECTOR_ACTIVATION = process(
     near their priors and should.""",
     inputs=(
         within("effector", "drive", region=MOTOR_UNITS, band=DRIVE),
+        # alpha drive specifically: gamma produces no meaningful force, so a plant
+        # driven by the lumped efferent rate would generate force from fusimotor
+        # traffic, which is exactly backwards.
+        within("neural", "efferent.alpha", region=BODY, band=DRIVE),
+        within("effector", "length", "velocity", region=MOTOR_UNITS, band=FORCE),
         within("effector", "activation", "force", "fatigue", region=MOTOR_UNITS,
                band=FORCE),
         within("mechanical", "displacement", "velocity", region=HEAD, band=FORCE),
@@ -445,6 +464,13 @@ EFFECTOR_ACTIVATION = process(
     ),
     outputs=(
         within("effector", "activation", "force", region=MOTOR_UNITS, band=FORCE),
+        # the muscle-tendon unit's own kinematic state.  it is an OUTPUT of this
+        # process because the plant is what knows it, and it closes the
+        # proprioceptive loop: `transduction` reads these to drive the spindle and
+        # tendon-organ receptors, which drive Ia/Ib/II, which reach cortex.  before
+        # they existed the force-length and force-velocity relations this process
+        # claims to implement had to assume a constant length.
+        within("effector", "length", "velocity", region=MOTOR_UNITS, band=FORCE),
         within("effector", "fatigue", region=MOTOR_UNITS, band=FATIGUE),
         within("mechanical", "displacement", "velocity", "stress", region=HEAD,
                band=FORCE),

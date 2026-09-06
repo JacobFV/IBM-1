@@ -47,7 +47,7 @@ from ibm.topologies.builders import (
 # are kept adjacent to make that dependency visible rather than incidental.
 from ibm.topologies import (          # noqa: F401  (imported for registration)
     local, surface, laminar, microcircuit, tract, vascular, interstitial, csf,
-    em, mechanical, metabolic, afferent, efferent, device, neuromodulatory,
+    em, mechanical, metabolic, afferent, efferent, device, neuromodulatory, nerve,
 )
 
 # tract_prior is imported after `tract` because it wraps that module's builder.
@@ -74,6 +74,7 @@ from ibm.topologies.afferent import AFFERENT_PATHWAY
 from ibm.topologies.csf import CSF
 from ibm.topologies.device import DEVICE_COUPLING
 from ibm.topologies.efferent import EFFERENT_PATHWAY
+from ibm.topologies.nerve import PERIPHERAL_NERVE
 from ibm.topologies.em import ELECTROMAGNETIC
 from ibm.topologies.interstitial import INTERSTITIAL
 from ibm.topologies.laminar import LAMINAR
@@ -92,5 +93,5 @@ __all__ = [
     "LOCAL", "CORTICAL_SURFACE", "LAMINAR", "MICROCIRCUIT", "TRACTOMETRIC",
     "VASCULAR", "CSF", "INTERSTITIAL", "ELECTROMAGNETIC", "MECHANICAL",
     "METABOLIC_EXCHANGE", "AFFERENT_PATHWAY", "EFFERENT_PATHWAY", "DEVICE_COUPLING",
-    "NEUROMODULATORY_PROJECTION", "tract_prior", "vascular_prior", "microcircuit_prior",
+    "NEUROMODULATORY_PROJECTION", "PERIPHERAL_NERVE", "tract_prior", "vascular_prior", "microcircuit_prior",
 ]
