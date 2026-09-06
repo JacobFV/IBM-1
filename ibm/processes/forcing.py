@@ -69,6 +69,24 @@ precision, and renders as notes that attach to
 `ibm.materialize.provenance.Provenance` without that module needing to know this
 one exists.
 
+**a chain is not a channel, and the band is what decides.**  the joint-forging
+result in this repository makes the point in the other direction and it applies
+here unchanged: two processes wired in series in the declared graph carried
+*exactly nominal* information between them -- 4e-4 nats against 2729 -- because
+their bands did not overlap and the per-recording gain was profiled out.  the
+graph said they were connected and the arithmetic said almost nothing crossed.
+
+the same discipline is therefore mandatory in the other direction.  forcing
+`transduction.hair_cell` from a waveform does **not** constrain everything
+reachable from it; it constrains whatever survives the chain's own transfer
+function into a band the measurement can see.  measured here, that is the delta
+band and essentially nothing above it: the forced chain accounts for r^2 = 0.0033
+of held-out MEG variance in 0.5-4 Hz, 0.0008 in 4-8 Hz, and nothing distinguishable
+from zero in 8-13 or 13-30 Hz.  so `ForcingCalibration` is band-resolved by
+construction and `teacher()` takes a band, because a single overall figure
+applied across a wide band hands the beta band a precision the delta band earned.
+a claim about what forcing constrains that does not name a band is not a claim.
+
 what is *not* here, recorded rather than glossed:
 
 - **no pretrained teacher is used.**  `data/sources/tribe/card.yaml` and
