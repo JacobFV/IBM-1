@@ -52,6 +52,10 @@ is acceptable — it structures the weights, and careful fine-tuning comes later
 what must survive that stage is the bookkeeping: calibrated precision, and
 provenance that records forced versus evolved.
 
+the standard this is all measured against -- cognition as the geometry of a vector
+field, TCT as landscape control, and a 28-mechanism gap list -- is
+[DYNAMICS.md](DYNAMICS.md).
+
 ## 2. what is built and verified
 
 ```

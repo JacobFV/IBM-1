@@ -795,6 +795,10 @@ candidate explicit models include:
 
 all are materialized views of the same implicit model rather than independently defined brain models.
 
+what the four primitives are ultimately FOR -- cognition as the geometry of a
+vector field, and the mechanism inventory ibm-1 is measured against -- is in
+[DYNAMICS.md](DYNAMICS.md).
+
 the sources these are fitted and evaluated against are inventoried in
 [EVIDENCE.md](EVIDENCE.md), and their cards live in `data/sources/`.
 
