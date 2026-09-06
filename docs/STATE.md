@@ -291,7 +291,74 @@ subject file a caller could supply — rather than replacing it with a complaint
 about a template registration nobody asked for. the parcel lookup now runs in the
 subject frame and declines instead of raising.
 
-### 4.2 models do not share the substrate (BEING FIXED)
+### 4.2 RESOLVED: the shared substrate and tier fall-through
+
+`ibm/materialize/substrate.py` — one cached object in `mni152`, ten rungs,
+reachable from the subject through `talairach.xfm` composed with the published
+MNI305->MNI152 affine (92% of the warped white surface lands inside the template
+parenchyma, 97% inside an arterial territory).
+
+**built 6 -> 7, missing-data 34 -> 33, refused 0.** nine of forty models now
+stand on population structure and RECORD WHICH.
+
+**my hypothesis was wrong and the correction is worth more than the claim.** I
+said "most of the 34 were never missing data, they were missing a fall-through".
+false as stated: **1** model was only a missing fall-through (glymphatic), **32**
+had a fall-throughable gap PLUS a real one, **1** had no fall-throughable gap at
+all. counting gap INSTANCES rather than models, 101 were a missing rung:
+
+    geometry['vascular_tree']              28 -> 0   substrate
+    geometry['interstitial']               26 -> 0   the subject's own aseg
+    geometry['csf_space']                  26 -> 0   the subject's own aseg
+    tractometric_streamlines               11 -> 0   group connectome
+    anatomy['vascular_territories']         4 -> 0   Liu arterial atlas
+
+two of those were **an unopened file, not a gap**.
+
+and some previously-invisible gaps got WORSE, which is the machinery working: a
+model that died on the first alphabetical missing geometry never reached its
+later checks. `anchor positions for 'coil'` 7->16, `'probe'` 6->15,
+`thalamic_nuclei` 6->12 — **+63 instances now visible**.
+
+**what actually blocks the library is instruments and periphery, not structure.**
+retina / cochlea / vestibular_organ / viscera / body / motor_units at 25 models
+each, scanner_element 21, display 20, stimulator 19, implanted_array 16. none is
+a fall-through; none has a measured prior in the corpus. that is a different
+problem from the one I diagnosed.
+
+the fall-through does real work where it applies: `bold_forward` gains 440,396
+tractometric edges and 43,213 capillary-exchange edges it had none of;
+`glymphatic` gains a 33,983-node vascular tree.
+
+#### where a population substitute is most dangerous
+1. **a group connectome under a per-subject causal claim.** it predicts a
+   held-out subject's edges at AUC 0.82 and their STRENGTHS at R^2 0.28, leaving
+   x7.4 per edge. a seizure map or virtual lesion computed on it looks exactly
+   like the real thing and is about nobody. `seizure_propagation` now declares
+   `tier_ceilings=(("tractometric", SUBJECT_ONLY),)` and raises
+   `TierCeilingExceeded` rather than silently resecting somebody else's fascicle.
+2. **arterial watersheds** are exactly where individuals differ most and exactly
+   what an infarct model needs — and they are the labels the atlas does not
+   supply, so the danger is deriving them by dilating neighbours.
+3. **tract lengths use parcel-centroid chords**, which are a LOWER bound on arc
+   length, so every conduction delay derived from them is TOO SHORT — the
+   direction that makes long-range coupling look faster than it is. flagged in
+   the tier record, not fixed.
+4. the coarse capillary layer carries the right wall area per unit volume and no
+   within-cell transit heterogeneity, so anything whose nonlinearity lives at
+   capillary scale (oxygen extraction at low saturation) is outside the regime
+   where the coarse-graining commutes.
+
+#### mechanism
+`TierRecord` (ladder, rung, source, and a `cost` string that must never be
+empty); `Provenance.tiers` / `tier_of` / `rests_on_population`;
+`Basis.trustworthy` now FAILS on population structure;
+`MaterializationRequest.max_tier` plus per-piece `tier_ceilings`. the substrate is
+consulted ONLY from inside an `except (MissingData, MissingInput)`, so subject
+data wins by control flow, and `_is_geometry_gap` keeps a missing coil anchor
+from being answered with a template brain.
+
+### 4.2-OLD models do not share the substrate (SUPERSEDED)
 34 of 40 named models were reported as blocked by "missing data". they are not.
 `ibm/materialize/*.py` contains **zero references** to `tract_prior`,
 `vascular_prior` or `microcircuit_prior` — the three measured, tiered priors that
