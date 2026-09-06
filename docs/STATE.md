@@ -719,40 +719,89 @@ the refusal is the smaller change and should probably land first, because it
 converts a silent wrong answer into a build-time gap of the kind §4.6 already
 tracks.
 
-### 4.10 THE DIVERGENCE IS `shunting_inhibition_rate`, AND IT IS FIXED
+### 4.10 THE DIVERGENCE IS AN UNFITTED LOOP GAIN OF 7218
 
-run on the GB10 (`scripts/sweep_nonlinear_attractors.py`): 96x96 recurrent-weight
-grid x 24 initial conditions x 4 (adaptation, drive) slices, four sweeps,
-147,456 classified parameter cells. this **resolves §7c fact 2** -- the nonlinear
-run that diverged at 7.5e15 mV.
+**this section has been rewritten twice and both earlier readings were wrong.
+the authoritative diagnosis is `run_eeg_forward`'s own, which it computes and
+prints, and which was in the script before any of the sweeps below were run.**
 
-**the cause is the quadratic shunting form in §4.11.** the decisive comparison,
-same grid, same everything, only the inhibitory branch differing:
+re-ran the nonlinear materialization against the fixed `neural.py`. it reproduces
+the divergence to the digit -- v spans -7.524e+15 to +7.523e+15 mV -- and reports
+why:
 
-| loop | shunting form | diverged cells |
-|---|---|---|
-| two populations | **declared** (quadratic in g_i) | **44.4%** |
-| two populations | conductance-based (linear) | **0.0%** |
-| one population (r_i slaved to v_e) | declared | 0.0% |
-| one population | conductance-based | 0.0% |
+    resting fixed point: v = -65 mV -> r = 7.59 Hz, dr/dv = 1.753 Hz/mV
+    mean total synaptic weight onto one node: 4118 (horvitz-thompson corrected)
+    |L(0)| = 7218; the loop gain is above unity at DC, so the linearised
+    fixed point is UNSTABLE
 
-the fix eliminates divergence across the entire swept space. `neural.py` now
-carries the linear form.
+and the decomposition is exact:
 
-**why the first pass missed it, recorded because the lesson generalizes.** the
-reduced loop slaved the inhibitory rate to the excitatory membrane potential,
-which holds g_i near 0.5 -- where the quadratic error is only 1.5x and nothing
-blows up. it took giving inhibition its own population, with the lower
-half-activation and higher ceiling a fast-spiking interneuron actually has, to
-drive g_i into the range where the error is 11-21x. **a reduction that suppresses
-the variable a bug is quadratic in will report the bug as absent.** the earlier
-conclusion drawn from that reduction -- "bounded at prior medians, so the gate is
-a solver problem not a physics problem" -- was wrong, and wrong in the direction
-of complacency.
+    |L(0)| = (total synaptic weight onto a node) x (dr/dv)
+           = 4118 x 1.753 = 7219
 
-what survives from it: the loop IS bounded at prior medians (v = -66.98 mV,
-r_e = 4.77 Hz), because prior medians sit in the benign region. boundedness at
-the prior was never the question the gate asks.
+**this is a prior specification problem, not a solver problem and not a fitting
+problem.** every `gain` in the chain is `weak(1.0, 5.0)` -- median 1.0 PER EDGE
+-- and the association term is reweighted by 1/inclusion_prob to stand for a
+dense graph sampled at ~0.6%. so a node with 4118 incoming edges gets an expected
+loop gain of ~4118 for the simple reason that **the gain prior does not know the
+fan-in.**
+
+for |L(0)| < 1 the total weight onto a node must be below 0.570, i.e. **1.39e-04
+per edge against a prior median of 1.0 -- off by three orders of magnitude.**
+cortex is stable, so the true per-edge efficacy must carry that 1/N. this is the
+same scaling any variance-preserving initialization applies, and the declaration
+simply does not apply it.
+
+**the fix is a fan-in-aware gain prior**, which is principled rather than a fudge:
+the prior on a lumped per-edge gain should scale as 1/n_inputs. that is a
+declaration change in the `gain` priors, and it is the concrete content of
+CURRICULUM.md stage 1.
+
+so §7c fact 2 (the divergence) and fact 3 (theta is at prior medians) were never
+two facts. **they are the same fact**, and it is now quantified.
+
+#### what the two earlier readings got wrong, recorded because the pattern repeats
+
+1. **"the shunting stiffness causes it."** tested: a one-population loop is
+   bounded either way, so this looked falsified. it is a REAL bug (§4.11) and it
+   does cause divergence in 44% of a two-population sweep -- but `shunting_rate`
+   is **not selected in this materialization at all** (3 of 51 couplings are
+   Form.RATE and all three are `wilson_cowan_adaptive`; inhibition here is
+   `ei_loop_lti`). the fix is correct, independently justified, and orthogonal to
+   this run
+2. **"the dynamics are bounded, so the gate is a solver problem."** wrong twice
+   over: the reduction that showed boundedness held g_i near 0.5, and boundedness
+   at prior medians was never the question anyway
+
+**the lesson: `run_eeg_forward` already contained the computed diagnosis and I
+ran three sweeps before reading it.** the script prints `|L(0)|` next to the
+stability margin precisely because a margin quoted without the gain beside it is
+misleading -- and that note was written for exactly this mistake.
+
+#### selecting the nonlinearity makes the model unwindowable, and one parameter fixes both
+
+the RATE coupling declares `memory_s = 3.0 * tau_adaptation_s`, so the prior
+median gives the graph a 1.5 s memory -- longer than any conduction delay -- and
+the multi-window plan is **refused twice**: overlap (512 ms) is shorter than the
+memory, and the memory is over half the 2.048 s window.
+
+**the window is chosen against the target, and the request has no way to know
+which implementations the target's trace will select.** window length is
+downstream of implementation selection and is currently upstream of it. that is a
+structural finding independent of the gain.
+
+| tau_a | memory (3x) | fraction of window | refusal 2 | SO frequency |
+|---|---|---|---|---|
+| 0.50 (prior median) | 1.50 s | 0.732 | **refused** | 0.333 Hz (below band) |
+| 0.35 | 1.05 s | 0.513 | **refused** | — |
+| **0.30** | **0.90 s** | **0.439** | **clears** | **0.533 Hz — in band** |
+| 0.20 | 0.60 s | 0.293 | clears | (oscillation gone) |
+
+**tau_adaptation_s = 0.30 s simultaneously puts the slow oscillation in the
+cortical SO band and drops the memory under half the window**, leaving only an
+overlap raise from 512 to 900 ms, which the refusal explicitly permits. below
+0.20 s the oscillation disappears, so the viable band is narrow and the target is
+not arbitrary.
 
 #### the substrate can carry an attractor landscape
 

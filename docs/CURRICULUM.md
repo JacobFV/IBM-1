@@ -26,14 +26,23 @@ each stage names its gate. **a stage does not begin until its gate is measured
 green**, because every one of them trains against something the previous stage
 had to establish.
 
-### stage 0 — solver convergence · NO TRAINING · **BLOCKING**
-the windowed harmonic-balance solve must converge on the fixed `neural.py`.
-STATE.md §4.10 proved the *dynamics* are bounded everywhere with the corrected
-shunting form; it did not prove the *solver* converges on them.
+### stage 0 — fan-in-aware gain prior · NO TRAINING · **BLOCKING**
+**RUN, and the blocker is now identified exactly.** the nonlinear materialization
+reproduces the divergence to the digit and reports `|L(0)| = 7218` — the DC loop
+gain is three orders of magnitude above unity, because the `weak(1.0, 5.0)` gain
+prior is **per edge** and a node has 4118 incoming edges. the prior does not know
+the fan-in (STATE.md §4.10).
 
-- **do**: re-run the materialization that diverged at 7.5e15 mV
-- **gate**: converges, residual below tolerance, no acausal wrap
-- **runs on**: either GB10
+- **do**: scale the lumped per-edge `gain` priors by 1/n_inputs, the same
+  variance-preserving scaling any initialization applies. target: total weight
+  onto a node below 0.570, i.e. ~1.4e-04 per edge
+- **do**: set `tau_adaptation_s` to 0.30 s and raise `eeg_forward`'s overlap from
+  512 to 900 ms — one change that clears the windowing refusal AND puts the SO in
+  band
+- **do**: make window length downstream of implementation selection instead of
+  upstream of it
+- **gate**: `|L(0)| < 1`; the solve converges; multi-window plan not refused
+- **not** a solver problem and **not** a fitting problem — a declaration problem
 - **blocks**: literally everything
 
 ### stage 1 — regime selection · SUPERVISED · gated on 0
@@ -49,6 +58,39 @@ medians.
 - **measure**: invariant-set count, effective rank — **the ONTOLOGY.md §9
   instruction to build the order parameters alongside the nonlinear work lands
   here**, not later
+
+#### the same parameter sets the SO frequency AND makes the model windowable
+
+`run_eeg_forward` declares the RATE coupling's `memory_s = 3.0 *
+tau_adaptation_s`, so selecting the nonlinearity gives the graph a 1.5 s memory
+at the prior median — longer than any conduction delay in the model — and the
+multi-window plan is **refused twice**: the overlap (512 ms) is shorter than the
+memory, and the memory is over half the 2.048 s window so almost nothing in it is
+dynamics.
+
+that is a real architectural finding on its own: **the window is chosen against
+the target, and the request has no way to know which implementations the target's
+trace will select.** window length is downstream of implementation selection and
+is currently upstream of it.
+
+but it also means one parameter carries both constraints:
+
+| tau_a | memory (3·tau) | fraction of window | over half? | SO frequency |
+|---|---|---|---|---|
+| 0.50 (prior median) | 1.50 s | 0.732 | **no — refused** | 0.333 Hz (below band) |
+| 0.35 | 1.05 s | 0.513 | **no — refused** | — |
+| **0.30** | **0.90 s** | **0.439** | **clears** | **0.533 Hz — in band** |
+| 0.20 | 0.60 s | 0.293 | clears | (no oscillation) |
+
+**tau_adaptation_s = 0.30 s is the value that simultaneously puts the slow
+oscillation in the cortical SO band and drops the memory under half the window**,
+leaving only an overlap raise from 512 ms to 900 ms — which the refusal
+explicitly permits. below 0.20 s the oscillation disappears entirely (STATE.md
+§4.10), so the viable band is narrow and the target is not arbitrary.
+
+this is the concrete stage-1 objective: fit `tau_adaptation_s` against measured
+N3 spectra and expect it to land near 0.30 s, then raise `eeg_forward`'s overlap
+to match the fitted memory rather than to a constant.
 
 ### stage 2 — per-source spectral fit · SUPERVISED · gated on 1
 extend the existing `fit_neural_spectra` work onto the nonlinear model.
