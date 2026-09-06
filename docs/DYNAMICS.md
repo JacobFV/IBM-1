@@ -546,6 +546,99 @@ the ordering that follows from §6:
 
 ---
 
+## 8. can we identify cognitive and affective structure in the dynamics?
+
+against the six-dimensional proposal in *The Shape of Experience*, "The Geometry
+of Affect" (theshapeofexperience.org/part-2/the-geometry-of-affect). the audit
+below is what ibm-1 could actually compute, not what it aspires to.
+
+### 8.1 the strongest point of contact is the asymmetric metric
+
+that framework requires $d(A\to B)\neq d(B\to A)$ — fear slides into anger
+easily and the reversal is costly; grief does not retrace backward — and
+concludes it needs a Finsler/Bregman-like divergence rather than a symmetric
+distance.
+
+**a non-gradient flow gives this for free, and a gradient flow forbids it.** if
+$\dot x=-\nabla E(x)$ then transition costs are governed by differences of a
+single scalar and the barrier structure is far more constrained. asymmetric
+transition costs between basins require rotational / non-gradient components in
+$F$. so §1's refusal of a scalar energy is not a stylistic preference — it is the
+structural precondition for the asymmetry that framework treats as the signature
+of affect. **this is a shared prediction and a falsifiable one: if our fitted $F$
+turns out to be near-gradient, the affect geometry cannot be there.**
+
+### 8.2 the six dimensions, against what ibm-1 has
+
+| dim | definition | status in ibm-1 |
+|---|---|---|
+| **arousal** $\mathrm{KL}(b_{t+1}\|b_t)$ | belief update rate | **unusually well-matched.** most substrates have no belief state; §4.1 built one. uncertainty propagates as spectral gaussians, so $b_t$ is a real object and the KL is closed-form |
+| **effective rank** $(\operatorname{tr}C)^2/\operatorname{tr}(C^2)$ | active dimensionality | computable from any trajectory. **meaningless until §6.2** — on an LTI graph it reports the rank of the input through a transfer function, not a property of the brain |
+| **integration** $\Phi$ | irreducibility over the min-information partition | **more tractable here than usual.** the partition search is otherwise superexponential; our topologies (`microcircuit`, `local`, `tractometric`, `cortical_association`) declare the coupling explicitly, so the bipartitions are enumerable over a known structure. use their proxy $\Delta P=L_{\rm pred}[\text{part}]-L_{\rm pred}[\text{full}]$ |
+| **valence** | gradient descent on distance to the viability boundary $\partial V$ | **we have a principled $\partial V$ that most frameworks must stipulate.** mechanism 25 is a real resource term: `metabolism` outputs `metabolic.atp` and `metabolic.consumption`, `vascular_flow` and `neurovascular_coupling` bound delivery. non-viability can be *metabolic infeasibility* rather than a hand-drawn set |
+| **counterfactual weight** | compute on non-actual / total | **structurally blocked.** needs a simulator subregion — mechanisms 8 (replay) and 18 (cerebellar forward model), both absent |
+| **self-model salience** $I(z^{\rm self};a)/H(a)$ | self-model driving action | **structurally blocked.** actions exist (`effector.drive`, `effector.force`), so $a$ is real; the *return* does not — mechanisms 19 (efference copy) and 21 (active sensing), both absent. no $z^{\rm self}$ to take mutual information with |
+
+three computable, one with an unusually good grounding, two blocked by
+mechanisms already on the §6 list in the order already recorded.
+
+### 8.3 the affective periphery exists; the affective centre does not
+
+worth stating precisely, because a name-based search misses it. the machinery
+that IS declared:
+
+- **neuromodulator state**: `extracellular.{dopamine, serotonin, acetylcholine,
+  noradrenaline, adenosine}`, read by `neuromodulation`, which is the one process
+  that `writes="parameters"` — mechanism 15 done properly
+- **interoceptive transduction**: `transduction.baroreceptor` on `viscera`, plus
+  `nociceptor`, `thermoreceptor`, `chemoreceptor`, with `blood.pressure` and
+  `blood.oxygenation` as inputs
+- **the metabolic resource term** that could ground $\partial V$
+
+what is absent is the centre: `amygdalar_nuclei` is referenced **nowhere** outside
+its own definition, and `hypothalamic_nuclei` has no process (§6.1). so ibm-1 can
+represent the autonomic periphery of an affective state and the global
+neuromodulatory regime it induces, and has nothing in between.
+
+### 8.4 the identification bridge is the real problem
+
+**locating a metastable set is well-posed. calling it *grief* is not** — not from
+dynamics alone. geometry gives you $A_i$, basins and transition asymmetries; it
+does not give you labels. labels require paired data where a subject reported
+something.
+
+the corpus already has the right bridge, and does not hold it:
+
+| source | what it supplies | binding |
+|---|---|---|
+| `deap` | 32 subjects × 40 videos, 32ch EEG **+ peripheral physiology**, per-trial valence/arousal/dominance/liking | **unbound**, licence unresolved |
+| `mahnob-hci` | EEG + gaze + physiology + video, emotion labels | unbound |
+| `cmu-mosei`, `iemocap` | affect labels, no neural | unbound |
+
+DEAP is the closest thing to a direct test: it is simultaneously the neural
+signal, the interoceptive channel we already declare, and the valence/arousal
+plane. 60 of 601 cards touch affect; acquiring DEAP is the single highest-value
+one.
+
+### 8.5 the honest answer
+
+**not today.** every one of the six is either trivial or undefined on a system
+with one fixed point (§6.2): no basins to have asymmetric transitions between,
+and an $r_{\rm eff}$ that reports the input.
+
+**after nonlinearity and loop closure:** arousal, effective rank and integration
+become genuinely measurable, valence becomes measurable with a non-arbitrary
+$\partial V$, and the gradient-vs-non-gradient character of the fitted $F$
+becomes a real falsifiable test of §8.1. counterfactual weight and self-model
+salience wait on mechanisms 8, 18, 19, 21.
+
+**what we would have is the geometry, and geometry is not yet phenomenology.**
+that is the correct ceiling to claim, and it is still a lot: an affect framework
+that makes structural predictions about $F$ can be *tested against a fitted $F$*,
+which is not something the field can currently do.
+
+---
+
 ## references
 
 [1] Attractor and integrator networks in the brain. *Nat Rev Neurosci* (2022).
