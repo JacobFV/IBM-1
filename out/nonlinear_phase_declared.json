@@ -1,0 +1,77 @@
+{
+  "shunt": "declared",
+  "grid": 96,
+  "n_ic": 24,
+  "dt": 5e-05,
+  "t_total": 4.0,
+  "slices": [
+    {
+      "adaptation_gain": 0.0,
+      "drive_gain": 1.0,
+      "diverged_frac": 0.0,
+      "oscillatory_frac": 0.0,
+      "multistable_frac": 0.0005425347480922937,
+      "max_spread_mv": 16.47309112548828,
+      "max_swing_mv": 0.0,
+      "n_cells": 9216,
+      "multistable_at": {
+        "w_ee": 0.2210526317358017,
+        "w_ei": 0.0
+      }
+    },
+    {
+      "adaptation_gain": 0.05,
+      "drive_gain": 1.0,
+      "diverged_frac": 0.0,
+      "oscillatory_frac": 0.00032552084303461015,
+      "multistable_frac": 0.00010850694525288418,
+      "max_spread_mv": 13.412338256835938,
+      "max_swing_mv": 8.275989532470703,
+      "n_cells": 9216,
+      "multistable_at": {
+        "w_ee": 0.24631579220294952,
+        "w_ei": 0.0
+      },
+      "oscillatory_at": {
+        "w_ee": 0.3663158118724823,
+        "w_ei": 0.0063157896511256695
+      }
+    },
+    {
+      "adaptation_gain": 0.2,
+      "drive_gain": 1.0,
+      "diverged_frac": 0.0,
+      "oscillatory_frac": 0.004123263992369175,
+      "multistable_frac": 0.0005425347480922937,
+      "max_spread_mv": 9.923454284667969,
+      "max_swing_mv": 45.0969352722168,
+      "n_cells": 9216,
+      "multistable_at": {
+        "w_ee": 0.3852631747722626,
+        "w_ei": 0.0
+      },
+      "oscillatory_at": {
+        "w_ee": 0.3852631747722626,
+        "w_ei": 0.0
+      }
+    },
+    {
+      "adaptation_gain": 0.05,
+      "drive_gain": 3.0,
+      "diverged_frac": 0.0,
+      "oscillatory_frac": 0.00010850694525288418,
+      "multistable_frac": 0.00010850694525288418,
+      "max_spread_mv": 13.412681579589844,
+      "max_swing_mv": 7.192775726318359,
+      "n_cells": 9216,
+      "multistable_at": {
+        "w_ee": 0.08210526406764984,
+        "w_ei": 0.0
+      },
+      "oscillatory_at": {
+        "w_ee": 0.12000000476837158,
+        "w_ei": 0.0063157896511256695
+      }
+    }
+  ]
+}

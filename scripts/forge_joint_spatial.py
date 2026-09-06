@@ -233,13 +233,24 @@ FLAT = Mixture("flat", np.zeros(1), np.ones(1), 0.0, 0.0)
 
 
 def scaled(th: dict[str, dict[str, float]], g: dict[str, float] | None, a: float):
-    """theta at anterior-posterior coordinate `a`."""
+    """theta at anterior-posterior coordinate `a`, or None where the exponent runs away.
+
+    the guard is not decoration.  L-BFGS on a numerically differentiated objective
+    will walk a gradient coefficient out to several tens before the likelihood
+    stops it, and `exp` of that overflows rather than returning inf -- python's
+    `math.exp` raises where numpy's would warn.  refusing the point returns it to
+    the caller as an unusable shape, which is already how a negative time constant
+    is handled, so the optimizer sees one flat penalty region instead of a crash.
+    """
     if g is None or a == 0.0:
         return th
     out = {k: dict(v) for k, v in th.items()}
     for key in ELECTRO:
         impl, name = key.rsplit(".", 1)
-        out[impl][name] = th[impl][name] * math.exp(g[short(key)] * a)
+        e = g[short(key)] * a
+        if not -50.0 < e < 50.0:
+            return None
+        out[impl][name] = th[impl][name] * math.exp(e)
     return out
 
 
@@ -290,7 +301,11 @@ class SpatialDataset(Dataset):
         key = repr(sorted((k, tuple(sorted(v.items()))) for k, v in th.items()))
 
         def build():
-            return [base(factor.axis, scaled(th, g, float(ai))) for ai in m.a]
+            out = []
+            for ai in m.a:
+                sc = scaled(th, g, float(ai))
+                out.append(None if sc is None else base(factor.axis, sc))
+            return out
 
         parts = CACHE.get(key, factor.axis, m.k, build)
         if any(p is None for p in parts):
