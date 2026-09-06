@@ -1,9 +1,9 @@
 # putting it in a body
 
 > **§1–§3 below were the assessment BEFORE the peripheral nervous system was
-> declared. §5 records what was built in response; §2.1's proprioception gap and
-> the fibre-lumping are now closed. §2.2 (spinal circuitry) and §2.3 (cerebellum,
-> efference copy) still stand.**
+> declared. §5 records the periphery and §8 the cord. §2.1 (proprioception),
+> the fibre-lumping, and §2.2 (spinal circuitry) are now CLOSED. §2.3 —
+> cerebellum and efference copy — still stands.**
 
 **yes, the substrate supports materializing a nerve-based input/output model, and
 the interface is better specified than most of the rest of the codebase.** the
@@ -363,3 +363,50 @@ that would close a stretch reflex locally -- Ia → alpha monosynaptic, Ib →
 inhibitory interneuron, Renshaw recurrent -- is a process over `spinal_levels`
 that does not exist. so the wires are there and the reflexes are not: every
 correction has to go all the way to cortex and back.
+
+---
+
+## 8. the cord
+
+`ibm/processes/spinal.py` declares `segmental_reflex` with four arcs, closing
+§2.2. it reads the Ia/Ib/II traffic the periphery now produces and writes alpha
+and gamma drive directly — the same components `efferent_propagation` writes,
+because a motoneuron pool sums descending and segmental input and no experiment
+separates them at the axon. **what separates them is latency, which is measurable
+and is the entire content of an H-reflex.**
+
+| arc | synapses | sign | what it buys |
+|---|---|---|---|
+| `monosynaptic_stretch_lti` | 1 | + | length feedback; the only monosynaptic reflex, so its latency is a clean fitting target |
+| `reciprocal_inhibition_lti` | 2 | − | makes the reflex joint-level rather than muscle-level; without it a model co-contracts where it should reciprocate |
+| `autogenic_inhibition_lti` | 2 | − | force feedback. with the stretch arc it approximates impedance control — length resists displacement, force yields to load, and the gain ratio sets limb stiffness |
+| `renshaw_recurrent_lti` | 2 | − | pool gain control; never leaves the cord, so it is the fastest arc |
+
+the inhibitory gains are `normal` and not `weak` priors, because `weak` is
+lognormal-backed and cannot express a negative median. the sign is anatomy — these
+synapses are glycinergic — so it is not something the prior should leave free to
+flip.
+
+**the bandwidth change, computed from the declared nerve table:**
+
+| muscle | nerve | Ia in | alpha out | loop | bandwidth |
+|---|---|---|---|---|---|
+| biceps brachii | musculocutaneous | 3.0 ms | 3.0 ms | 7.0 ms | 35.7 Hz |
+| tibialis anterior | deep fibular | 3.5 ms | 3.5 ms | 8.0 ms | 31.2 Hz |
+| soleus | tibial | 5.0 ms | 5.0 ms | 11.0 ms | 22.7 Hz |
+| first dorsal interosseous | ulnar | 7.0 ms | 7.0 ms | 15.0 ms | 16.7 Hz |
+
+against **1.8–3.3 Hz** for the long cortical loop (§2.3). these are trunk-only
+delays and therefore optimistic by §6.1's admission, but even doubled they leave
+the segmental arc most of a decade faster. **it is a different control regime, not
+an incremental gain**, and it is why load compensation is possible at all.
+
+the fitting consequence is the one `effector.py` predicted: a model without a cord
+"will attribute those to descending command because descending command is the only
+thing it has", so corticospinal gain absorbs reflex gain and is then reported as a
+property of cortex. that error is now avoidable.
+
+**still open:** the interneurons are implicit — Ia-inhibitory, Ib and Renshaw
+cells are real populations folded into transfer functions, which asserts their
+only contribution is a delay and a sign. flexor-withdrawal and crossed-extensor
+need multi-segmental interneuron chains and are absent entirely.

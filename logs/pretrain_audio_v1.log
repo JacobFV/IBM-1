@@ -1,0 +1,8 @@
+frames (416354, 64) from /home/brandonin/Documents/win-data/derived/sherlock-cochleagram.npy
+association embeddings: 19,200,000   total trainable: 29,098,371
+/home/brandonin/Documents/IBM-1/scripts/pretrain_video_loop.py:322: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"{step:5d}  recon {float(recon):.5f}  viab {float(viab):9.3f}  "
+    0  recon 2.98907  viab     0.000  r_eff    3.50  |v|max    64.7  gn 140.93       7s
+   25  recon 2.88942  viab     0.000  r_eff    3.35  |v|max    64.8  gn 387.30      67s
+   50  recon 2.45913  viab     0.000  r_eff    1.93  |v|max    65.1  gn 407.29     129s

@@ -145,6 +145,45 @@ class CorticalDynamics(nn.Module):
         return (torch.full_like(z, self.e_rest), z, z.clone(), z.clone())
 
 
+class AudioLoop(nn.Module):
+    """cochleagram frame -> cortical drive -> dynamics -> next cochleagram frame.
+
+    the same loop as `VideoLoop` with a different port.  the input is the output
+    of `transduction:gammatone_cochleagram` -- ERB-spaced bands, phase-blind --
+    so the pretraining signal enters through the representation the model's own
+    cochlea produces rather than through a spectrogram chosen for convenience.
+    drive reaches a temporal-lobe subset instead of an occipital one; the cortical
+    parameters in between are SHARED with the video loop, which is the whole point
+    of there being no standard materialization (STATE.md 7c).
+    """
+
+    def __init__(self, dyn: CorticalDynamics, n_bands: int = 64, ctx: int = 8,
+                 hidden: int = 256):
+        super().__init__()
+        self.dyn, self.n_bands, self.ctx = dyn, n_bands, ctx
+        self.enc = nn.Sequential(
+            nn.Flatten(), nn.Linear(n_bands * ctx, hidden), nn.GELU(),
+            nn.Linear(hidden, hidden), nn.GELU())
+        self.n_in = dyn.n // 8
+        self.to_cortex = nn.Linear(hidden, self.n_in)
+        self.from_cortex = nn.Linear(dyn.n // 8, hidden)
+        self.dec = nn.Sequential(nn.Linear(hidden, hidden), nn.GELU(),
+                                 nn.Linear(hidden, n_bands))
+
+    def forward(self, ctx, n_steps: int, dt: float):
+        b = ctx.shape[0]
+        h = self.enc(ctx)
+        drive = torch.zeros(b, self.dyn.n, device=ctx.device)
+        # the auditory port sits in the middle of the sheet, not the posterior pole
+        off = self.dyn.n // 3
+        drive[:, off:off + self.n_in] = self.to_cortex(h)
+        s = self.dyn.init_state(b, ctx.device)
+        for _ in range(n_steps):
+            s = self.dyn.step(s, drive, dt)
+        read = s[1][:, -self.dyn.n // 8:]
+        return self.dec(self.from_cortex(read)), s
+
+
 class VideoLoop(nn.Module):
     """frame -> cortical drive -> dynamics -> cortical state -> next frame."""
 
@@ -183,6 +222,26 @@ class VideoLoop(nn.Module):
 # the diagnostics that are NOT the loss
 # ---------------------------------------------------------------------------
 
+def viability_penalty(v, lo=-90.0, hi=50.0):
+    """how far the membrane potential is outside the range a neuron can occupy.
+
+    ONTOLOGY.md §7 defines the alignment relation as viability-manifold
+    containment and asks whether minimising the loss drives the model outside its
+    own viability set.  measured on run v1: it does.  |v|max drifted 64 -> 430 mV
+    over 375 steps while the loss fell, because nothing stopped the encoder from
+    driving cortex arbitrarily hard and a 430 mV membrane predicts frames just
+    fine.  it is not a brain, so the association weights learned under it mean
+    nothing.
+
+    this is the check working, not a surprise: an objective is parasitic on its
+    substrate exactly when lowering the loss requires physiology the substrate
+    could not sustain.  the penalty is the regularizer that makes the objective
+    mutualistic instead, and it is one-sided -- zero cost anywhere inside the
+    range, so it constrains nothing the model is entitled to do.
+    """
+    return (F.relu(v - hi) ** 2 + F.relu(lo - v) ** 2).mean()
+
+
 def effective_rank(x):
     """(tr C)^2 / tr(C^2) -- ONTOLOGY.md's expansion signal."""
     x = x - x.mean(0, keepdim=True)
@@ -204,6 +263,10 @@ def main():
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--frames", default="/home/brandonin/Documents/win-data/derived/"
                                         "koyaanisqatsi-full/frames_64x64.npy")
+    ap.add_argument("--viability-weight", type=float, default=1e-3,
+                    help="ONTOLOGY.md §7: cost of leaving the physiological range")
+    ap.add_argument("--modality", choices=("video", "audio"), default="video")
+    ap.add_argument("--ckpt", default="", help="where to save weights")
     ap.add_argument("--out", default="out/pretrain_video.json")
     a = ap.parse_args()
 
@@ -214,7 +277,8 @@ def main():
     print(f"frames {frames.shape} from {a.frames}", flush=True)
 
     dyn = CorticalDynamics(a.sites, a.embed, a.k, dev).to(dev)
-    model = VideoLoop(dyn).to(dev)
+    model = (AudioLoop(dyn, n_bands=frames.shape[-1]) if a.modality == "audio"
+             else VideoLoop(dyn)).to(dev)
     n_assoc = dyn.embed.numel()
     n_tot = sum(p.numel() for p in model.parameters())
     print(f"association embeddings: {n_assoc:,}   total trainable: {n_tot:,}", flush=True)
@@ -225,14 +289,22 @@ def main():
     t0 = time.time()
 
     for step in range(a.steps):
-        i = np.random.randint(0, n_frames - 2, size=a.batch)
-        x = torch.from_numpy(np.ascontiguousarray(frames[i])).to(dev)
-        y = torch.from_numpy(np.ascontiguousarray(frames[i + 1])).to(dev)
-        x = (x.permute(0, 3, 1, 2).float() / 127.5) - 1.0
-        y = (y.permute(0, 3, 1, 2).float() / 127.5) - 1.0
+        if a.modality == "audio":
+            ctx = 8
+            i = np.random.randint(ctx, n_frames - 2, size=a.batch)
+            x = torch.from_numpy(np.stack([frames[j - ctx:j] for j in i])).float().to(dev)
+            y = torch.from_numpy(np.ascontiguousarray(frames[i])).float().to(dev)
+        else:
+            i = np.random.randint(0, n_frames - 2, size=a.batch)
+            x = torch.from_numpy(np.ascontiguousarray(frames[i])).to(dev)
+            y = torch.from_numpy(np.ascontiguousarray(frames[i + 1])).to(dev)
+            x = (x.permute(0, 3, 1, 2).float() / 127.5) - 1.0
+            y = (y.permute(0, 3, 1, 2).float() / 127.5) - 1.0
 
         pred, s = model(x, a.dyn_steps, a.dt)
-        loss = F.mse_loss(pred, y)
+        recon = F.mse_loss(pred, y)
+        viab = viability_penalty(s[0])
+        loss = recon + a.viability_weight * viab
         opt.zero_grad(set_to_none=True)
         loss.backward()
         gn = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -242,17 +314,24 @@ def main():
             with torch.no_grad():
                 r_eff = effective_rank(s[1][:, ::max(dyn.n // 512, 1)].float())
                 vmax = float(s[0].abs().max())
-            rec = {"step": step, "loss": float(loss), "r_eff": r_eff,
-                   "v_absmax": vmax, "grad_norm": float(gn),
+            rec = {"step": step, "loss": float(loss.detach()),
+                   "recon": float(recon.detach()), "viability": float(viab.detach()),
+                   "r_eff": r_eff, "v_absmax": vmax, "grad_norm": float(gn),
                    "sec": round(time.time() - t0, 1)}
             log["steps"].append(rec)
-            print(f"{step:5d}  loss {float(loss):.5f}  r_eff {r_eff:7.2f}  "
-                  f"|v|max {vmax:8.1f}  gn {float(gn):7.3f}  "
+            print(f"{step:5d}  recon {float(recon):.5f}  viab {float(viab):9.3f}  "
+                  f"r_eff {r_eff:7.2f}  |v|max {vmax:7.1f}  gn {float(gn):6.2f}  "
                   f"{time.time()-t0:6.0f}s", flush=True)
             if not math.isfinite(float(loss)):
                 print("DIVERGED", flush=True); break
+        if a.ckpt and step % 500 == 0 and step:
+            torch.save({"model": model.state_dict(), "step": step}, a.ckpt)
 
     import os
+    if a.ckpt:
+        os.makedirs(os.path.dirname(a.ckpt) or ".", exist_ok=True)
+        torch.save({"model": model.state_dict(), "config": vars(a)}, a.ckpt)
+        print(f"wrote {a.ckpt}", flush=True)
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     json.dump(log, open(a.out, "w"), indent=2)
     print(f"wrote {a.out}", flush=True)

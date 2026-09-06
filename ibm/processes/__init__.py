@@ -120,6 +120,12 @@ except ImportError:  # pragma: no cover - written concurrently
     effector = None  # type: ignore[assignment]
 
 try:
+    # the reflex arcs that close inside the cord, without reaching the brain.
+    from ibm.processes import spinal  # noqa: F401
+except ImportError:  # pragma: no cover
+    spinal = None  # type: ignore[assignment]
+
+try:
     # brain, body or device field state into device element state, and back.
     from ibm.processes import device  # noqa: F401
 except ImportError:  # pragma: no cover - written concurrently
@@ -175,6 +181,7 @@ __all__ = [
     "plasticity",
     "transduction",
     "effector",
+    "spinal",
     "device",
     "observation",
     "intervention",
