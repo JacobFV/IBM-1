@@ -286,6 +286,9 @@ embodiment -- whether this can be put in a body simulation, and what breaks --
 is [EMBODIMENT.md](EMBODIMENT.md). it is mechanism 21 with a physical world in
 place of TRIBEv2.
 
+what was actually RUN, and what it showed, is [TRAINING.md](TRAINING.md).
+this document is the plan; that one is the record.
+
 ## 5. the critical path
 
 1. **stage 0** — solver convergence. blocks everything
