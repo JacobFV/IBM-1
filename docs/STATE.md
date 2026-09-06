@@ -844,6 +844,10 @@ docstring argues the point of division is that it cannot misbehave at high
 inhibitory rate; this form was worst exactly there. fixed in `neural.py`;
 §4.10 has the divergence measurement that justifies it.
 
+the concrete training trajectory -- which materialized model, which objective,
+which source, which gate -- is [CURRICULUM.md](CURRICULUM.md). §7b-§7e are its
+principles; that document is the schedule.
+
 ## 5. decisions already made — do not relitigate
 
 - **the laplacian is over TIME, for one state variable.** not over space. fields
@@ -915,9 +919,14 @@ gradient on the SHARED θ. the product over d IS the parallelization strategy.
 **hardware.** this machine: NVIDIA GB10, 121 GB unified, 20 cores — keep under
 half. reachable remote: `promaxgb10-4dfb` (also `gb10-direct`), another GB10,
 119 GB, 20 cores, 1.3 T free, currently **bare** — no repo, no data, no torch.
-`spark-gb10` and `spark-ec4d` are unreachable. **local torch is CPU-only
-(2.14.0+cpu), so the GB10 here is idle.** getting CUDA torch onto aarch64
-Blackwell (sm_121) is the gating step for anything at 0.5 mm.
+`spark-gb10` and `spark-ec4d` are unreachable, as is the RTX Pro 6000.
+
+**RESOLVED.** both machines now run torch 2.14.0+cu130 on aarch64 with CUDA
+available — `pip install torch --index-url https://download.pytorch.org/whl/cu130`
+is all it took, and the wheel exists for this arch. `gb10-direct` holds the repo
+(seals pass there) and has already run 147,456-cell parameter sweeps at 16.6
+TFLOP/s fp32 with 106 of 128 GB free. the remote is no longer bare and CUDA is no
+longer the gating step.
 
 ## 7. sensory forcing
 

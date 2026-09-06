@@ -795,6 +795,9 @@ candidate explicit models include:
 
 all are materialized views of the same implicit model rather than independently defined brain models.
 
+the training trajectory that puts all of it to work is
+[CURRICULUM.md](CURRICULUM.md).
+
 what the four primitives are ultimately FOR -- cognition as the geometry of a
 vector field, and the mechanism inventory ibm-1 is measured against -- is in
 [DYNAMICS.md](DYNAMICS.md).
