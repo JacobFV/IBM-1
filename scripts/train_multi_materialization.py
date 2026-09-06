@@ -36,6 +36,7 @@ information it carries, and a long recording is not many independent samples.
 from __future__ import annotations
 
 import argparse
+import os
 import os, json, time, math
 import numpy as np, torch, torch.nn.functional as F
 
@@ -166,7 +167,6 @@ def main():
             except Exception as e:
                 print(f"  upload failed: {e}", flush=True)
 
-    import os
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
     json.dump(log, open(a.out, "w"), indent=2)
     print(f"wrote {a.out}", flush=True)

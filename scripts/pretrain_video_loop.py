@@ -635,7 +635,6 @@ def main():
             except Exception as e:
                 print(f"  upload failed: {e}", flush=True)
 
-    import os
     if a.ckpt:
         os.makedirs(os.path.dirname(a.ckpt) or ".", exist_ok=True)
         torch.save({"model": model.state_dict(), "config": vars(a)}, a.ckpt)
