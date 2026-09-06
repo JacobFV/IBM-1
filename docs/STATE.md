@@ -706,6 +706,69 @@ the model to learn what the brain would have to represent, which is the whole
 claim. a wide bottleneck would let the loop succeed without ever using the
 dynamics.
 
+## 7c. WHY "BOTH" IS FREE, AND THE CURRICULUM / RL STAGE BEYOND IT
+
+**there is no standard materialization, and most of the model is used in all of
+them.** 15 processes appear in 5+ of the 40 named models carrying 271 parameters;
+`local_excitation` alone is in 20 of 40. so a video-loop materialization, an
+audio-loop one, a text one and a measured-EEG one are not competing training
+regimes — they are **more terms in the same product**:
+
+    p(theta | D)  ∝  p(theta) · Π_d p(D_d | theta)
+
+`ibm/forge/fit.py` already takes a sequence of `Task`s. a closed loop is one more
+Task with a next-frame likelihood; a measured recording is one more Task with a
+spectral likelihood. they share theta by construction, not by arrangement. that
+is the whole reason the implicit/explicit split was worth building, and it means
+the answer to "measured forcing or closed loop" is both, at no architectural
+cost.
+
+### the stage beyond: curriculum, schema, reinforcement
+the intended arc after the modality loops is: ordered curriculum -> a stable
+cognitive schema -> reinforcement learning on cognitive tasks.
+
+**the architecture already declares the path RL needs**, which is worth stating
+because it was not designed for it:
+
+- `neuromodulation` has `writes="parameters"` and targets `local_excitation`,
+  `local_inhibition`, `laminar_propagation`, `lateral_cortical_propagation`,
+  `tract_propagation` and more. a reward signal reaching theta THROUGH a
+  modulator is the biological story and it is already the declared mechanism.
+- `plasticity` also writes parameters, targeting `local_excitation` and
+  `tract_propagation`.
+- actions have a route out: `efferent_propagation` -> `effector.drive` and
+  `neural.efferent.activity`; `effector_activation` -> `effector.{activation,
+  force, fatigue}`.
+
+so reward -> neuromodulator -> plasticity -> theta is a declared path, not
+something to bolt on.
+
+### the sequencing constraint that decides when this can start
+**a stable cognitive schema requires nonlinear dynamics, and ours are not yet
+stable.** three measured facts, all in this document:
+
+1. the LTI graph HAS NO CYCLE (§ run_eeg_forward). the one edge that would close
+   the cortical loop is potential->rate, whose only f is a sigmoid, and `build`
+   selects LTI for all 29 processes. a linear system has one fixed point — it
+   cannot hold multiple attractors, so it cannot have a schema, a working memory,
+   or a persistent state to reinforce.
+2. 27 `Form.RATE` implementations exist, so the nonlinearity is declared and
+   available. but the one nonlinear run attempted DIVERGED (7.5e15 mV) at prior
+   parameters, and `ei_loop_lti`'s return path has min|1+L| = 0.327 at 38.6 Hz —
+   marginal, with the minimum landing on PING gamma from time constants alone.
+3. theta is still at prior medians everywhere (§4.3).
+
+so the order is forced: **fit theta through the modality loops FIRST, then select
+the RATE implementations, then check the nonlinear dynamics are bounded and have
+the attractor structure a schema requires, and only then curriculum and RL.**
+attempting RL on a linear graph would train a reward model with no state to
+condition on; attempting it on an unfitted nonlinear one would train against
+divergence.
+
+what makes the ordering testable rather than a guess: boundedness, stability
+margin and attractor count are all measurable on a materialized model, and
+`run_eeg_forward` already measures the first two.
+
 ## 8. corrections already made — do not re-derive the old numbers
 
 | was reported | actually | why it was wrong |
