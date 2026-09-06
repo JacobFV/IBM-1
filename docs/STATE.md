@@ -407,6 +407,25 @@ materialized views of ONE implicit model.
 SURVIVES — see 4.3b. the strong shared-parameter claim is falsified across
 modalities, not merely under a GLOBAL collapse.**
 
+**verified independently against the evidence files, on all 54 comparisons rather
+than the 19 live ones 4.3b tabulates** — and the full set makes the verdict
+stronger, not weaker:
+
+| arm | mean \|z\| | mean \|d_u\| | >=3 sigma |
+|---|---|---|---|
+| OLD (global, flat) | 18.39 | 1.884 | 34 / 54 |
+| NEW, real montages | 5.03 | 1.013 | 15 / 54 |
+| placebo: montages SHUFFLED | 7.48 | **0.944** | 16 / 54 |
+| placebo: uniform montage, gradients free | 6.86 | 1.582 | **13 / 54** |
+
+**the scrambled assignment absorbs MORE disagreement than the correct one**
+(0.944 vs 1.013), and the uniform placebo leaves the FEWEST comparisons above
+3 sigma. the three arms are statistically indistinguishable on the count. so the
+absorption is nine extra degrees of spectral freedom and not the forward model,
+which is exactly what 4.3b concluded and what the placebos were built to detect.
+**a fit that improves as much when you lie to it about which montage goes with
+which source has not learned anything about montages.**
+
 `scripts/forge_joint.py`, 4 sources (60 eegmmidb, 60 sleep-edfx nights scored
 WAKE, 16 ds000117 with 102 magnetometers + 70 EEG on the same head, 37 ds004873),
 one `ParameterSpace`, `Method.JOINT`, split by subject 60/40. weighting by
