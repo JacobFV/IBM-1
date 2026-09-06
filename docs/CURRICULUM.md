@@ -150,6 +150,31 @@ correlated. that is what learning an occipito-temporal association means.
 - **control**: a video-only run at the same horizon. if joint does not beat it on
   video, the shared cortex bought nothing
 
+### stage 3b — the PAIRED materialization · RUNNING · the anchor
+stimulus → cortex → **measured** neural activity. this is the stage that stops the
+cortex being decorative.
+
+in the self-supervised loops both encoder and decoder are learned, so nothing
+prevents the model routing information *around* the dynamics and using them as a
+delay line — and a video generator with a decorative brain still shows a falling
+loss. here the target is MEG a real head produced while hearing this stimulus, so
+the cortical state cannot be arbitrary: it must be the state that generates this
+field.
+
+- **data**: LibriBrain, 306-channel MEG at 250 Hz during the *Study in Scarlet*
+  audiobook. **235.6 minutes paired** (3,534,623 samples). chapter identity is not
+  recorded anywhere, so it is recovered by matching each run's chapter-time span
+  against the 14 wav durations; the MEG-to-chapter offset is constant within a run
+  (18–25 s) and read from the events' `timemeg − timechapter`
+- **readout**: a linear map from cortical rate to sensors, which is what a lead
+  field IS. learned here because the sites are a spherical stand-in; stage 2 is
+  where a measured forward model replaces it
+- **early result**: MSE on standardized MEG **0.568 → 0.133 by step 100**, i.e.
+  ~87% of MEG variance explained, and **effective rank RISES (2.4 → 3.0)** rather
+  than collapsing. the paired objective cannot be minimized by collapsing the
+  representation, which is exactly why it belongs before the self-supervised
+  stages rather than after them
+
 ### stage 5 — multi-materialization schedule · SUPERVISED · **free today**
 `∇log p(θ|D) = ∇log p(θ) + Σ_d ∇log p(D_d|θ)`. a curriculum is a schedule over
 `d`: spectra → evoked → hemodynamic → behaviour.

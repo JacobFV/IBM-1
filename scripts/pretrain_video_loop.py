@@ -223,6 +223,49 @@ class AudioLoop(nn.Module):
         return self.dec(self.from_cortex(read)), s
 
 
+class PairedNeuralLoop(nn.Module):
+    """stimulus -> cortex -> MEASURED neural activity.
+
+    the materialization that stops the cortex being decorative.  in the
+    self-supervised loops both the encoder and the decoder are learned, so nothing
+    prevents the model routing information around the dynamics and using them as a
+    delay line -- and a video generator with a decorative brain would still show a
+    falling loss.  here the target is MEG a real head produced while hearing this
+    stimulus, so the cortical state cannot be arbitrary: it has to be the state
+    that generates this field.
+
+    the readout is a linear map from cortical rate to sensors, which is what a
+    lead field IS.  it is learned rather than computed from a head model because
+    the sites here are a spherical stand-in rather than a subject's cortex -- so
+    this stage learns the instrument along with the dynamics, and CURRICULUM.md
+    stage 2 is where a measured forward model replaces it.
+    """
+
+    def __init__(self, dyn: CorticalDynamics, n_bands: int = 64, n_sensors: int = 306,
+                 ctx: int = 25, hidden: int = 256, read_sites: int = 4096):
+        super().__init__()
+        self.dyn, self.ctx, self.n_sensors = dyn, ctx, n_sensors
+        self.port = dyn.n // 8
+        self.enc = nn.Sequential(nn.Flatten(), nn.Linear(n_bands * ctx, hidden),
+                                 nn.GELU(), nn.Linear(hidden, hidden), nn.GELU())
+        self.to_cortex = nn.Linear(hidden, self.port)
+        # auditory port: temporal, not occipital
+        self.off = dyn.n // 3
+        self.read_idx = torch.linspace(0, dyn.n - 1, read_sites).long()
+        self.lead = nn.Linear(read_sites, n_sensors, bias=False)
+
+    def forward(self, coch_ctx, n_steps: int, dt: float):
+        b = coch_ctx.shape[0]
+        drive = torch.zeros(b, self.dyn.n, device=coch_ctx.device)
+        drive[:, self.off:self.off + self.port] = self.to_cortex(self.enc(coch_ctx))
+        s = self.dyn.init_state(b, coch_ctx.device)
+        w = self.dyn.edge_weights()
+        for _ in range(n_steps):
+            s = self.dyn.step(s, drive, dt, w)
+        idx = self.read_idx.to(s[1].device)
+        return self.lead(s[1][:, idx]), s
+
+
 class AudioVisualLoop(nn.Module):
     """one cortex, two ports, two predictions -- and the association between them.
 
@@ -401,7 +444,9 @@ def main():
                                         "koyaanisqatsi-full/frames_64x64.npy")
     ap.add_argument("--viability-weight", type=float, default=1e-1,
                     help="ONTOLOGY.md §7: cost of leaving the physiological range")
-    ap.add_argument("--modality", choices=("video", "audio", "av"), default="video")
+    ap.add_argument("--modality", choices=("video", "audio", "av", "paired"),
+                    default="video")
+    ap.add_argument("--neural", default="", help="measured neural target, (T, sensors)")
     ap.add_argument("--horizon", type=int, default=8,
                     help="predict t+H, not t+1.  at 25 fps consecutive frames barely "
                          "differ, so a 1-step target is close to an identity map and "
@@ -423,7 +468,11 @@ def main():
 
     coch = np.load(a.audio_frames, mmap_mode="r") if a.audio_frames else None
     dyn = CorticalDynamics(a.sites, a.embed, a.k, dev, long_range=a.long_range).to(dev)
-    if a.modality == "av":
+    neural = np.load(a.neural, mmap_mode="r") if a.neural else None
+    if a.modality == "paired":
+        model = PairedNeuralLoop(dyn, n_bands=frames.shape[-1],
+                                 n_sensors=neural.shape[-1]).to(dev)
+    elif a.modality == "av":
         model = AudioVisualLoop(dyn, n_bands=coch.shape[-1]).to(dev)
     elif a.modality == "audio":
         model = AudioLoop(dyn, n_bands=frames.shape[-1]).to(dev)
@@ -440,7 +489,15 @@ def main():
 
     for step in range(a.steps):
         H, ctx = a.horizon, 8
-        if a.modality == "av":
+        if a.modality == "paired":
+            ctx = 25                      # 100 ms of cochleagram at 250 Hz
+            lim = min(n_frames, neural.shape[0]) - H - 2
+            i = np.random.randint(ctx, lim, size=a.batch)
+            x = torch.from_numpy(np.stack([frames[j - ctx:j] for j in i])).float().to(dev)
+            y = torch.from_numpy(np.ascontiguousarray(neural[i + H])).float().to(dev)
+            pred, s = model(x, a.dyn_steps, a.dt)
+            recon = F.mse_loss(pred, y)
+        elif a.modality == "av":
             lim = min(n_frames, coch.shape[0]) - H - 2
             i = np.random.randint(ctx, lim, size=a.batch)
             xv = torch.from_numpy(np.ascontiguousarray(frames[i])).to(dev)
@@ -483,7 +540,11 @@ def main():
                 # collapse.  64 samples cost one extra forward per 25 steps and
                 # make the number mean something.
                 mb = 16
-                if a.modality == "av":
+                if a.modality == "paired":
+                    jj = np.random.randint(25, min(n_frames, neural.shape[0]) - H - 2, size=mb)
+                    mx = torch.from_numpy(np.stack([frames[j-25:j] for j in jj])).float().to(dev)
+                    _, ms = model(mx, a.dyn_steps, a.dt)
+                elif a.modality == "av":
                     lim = min(n_frames, coch.shape[0]) - H - 2
                     jj = np.random.randint(ctx, lim, size=mb)
                     mv = torch.from_numpy(np.ascontiguousarray(frames[jj])).to(dev)
@@ -516,8 +577,9 @@ def main():
                 print("DIVERGED", flush=True); break
         if a.ckpt and a.upload_every and step % a.upload_every == 0 and step:
             from ibm.release import CheckpointName, sidecar, upload
-            obj = ("av" if a.modality == "av" else f"nfh{a.horizon}")
-            nm = CheckpointName(modality={"video": "v", "audio": "a", "av": "av"}[a.modality],
+            obj = {"av": "av", "paired": "meg"}.get(a.modality, f"nfh{a.horizon}")
+            nm = CheckpointName(modality={"video": "v", "audio": "a", "av": "av",
+                                          "paired": "p"}[a.modality],
                                 sites=a.sites, embed=a.embed, degree=a.k,
                                 objective=obj, viability_weight=a.viability_weight,
                                 step=step)
