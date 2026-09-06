@@ -284,6 +284,7 @@ def tract_transfer(basis, tract_length_mm: float = 80.0, velocity_m_s: float = 3
 
 
 def association_transfer(basis, distance_mm: float = 40.0, inclusion_prob: float = 1.0,
+                        fan_in: float = 1.0,
                          velocity_m_s: float = 4.0, velocity_cv: float = 0.4,
                          length_constant_mm: float = 40.0, tau_ampa_s: float = 3e-3,
                          tau_nmda_decay_s: float = 0.1, nmda_fraction: float = 0.2,
@@ -331,6 +332,16 @@ def association_transfer(basis, distance_mm: float = 40.0, inclusion_prob: float
     mean_s = (distance_mm * 1e-3) / max(velocity_m_s, 1e-6)
     weight = gain * float(np.exp(-distance_mm / max(length_constant_mm, 1e-6)))
     weight /= max(float(inclusion_prob), 1e-6)
+    # fan-in normalization.  `gain` is a per-EDGE prior, and a cortical node has
+    # thousands of incoming association edges after the horvitz-thompson
+    # correction, so an O(1) per-edge gain gives a loop gain of O(fan_in) -- 7218
+    # measured, three orders of magnitude above unity, and the linearised fixed
+    # point is unstable before any data is seen (STATE.md 4.10).  dividing by the
+    # fan-in makes `gain` a prior on the TOTAL drive a node receives, which is the
+    # quantity physiology actually constrains and the same 1/N any
+    # variance-preserving initialization applies.  default 1.0 leaves callers that
+    # have not been updated exactly as they were.
+    weight /= max(float(fan_in), 1.0)
     return weight * series(
         delay_dispersion(basis, mean_s, velocity_cv * mean_s),
         synaptic_drive_transfer(basis, tau_ampa_s=tau_ampa_s,
@@ -470,10 +481,29 @@ def shunting_inhibition_rate(x, theta) -> dict:
 #: per column node over 10^4 nodes is 10^5 numbers no eeg dataset distinguishes,
 #: whereas one per cortical area, factorized, is a few thousand and is what a
 #: multi-subject corpus can actually move.
+#: PER_SITE, not EMBEDDING.  the EMBEDDING form ties to ~360 cortical areas and is
+#: therefore resolution-INDEPENDENT -- 2,882 parameters whether the mesh has 13k
+#: nodes or 570k -- which is why refining the mesh never produced a bigger model.
+#: that tying was right while the only evidence was a few hundred subject-hours of
+#: resting EEG, and `nn.param_count` states the objection to changing it: at 10^5
+#: positions "no available dataset distinguishes" the embeddings.
+#:
+#: the closed loop is the answer to that objection.  naturalistic video and speech
+#: with simultaneous recording is not a few hundred subject-hours of one montage;
+#: it is the regime in which 10^5 embeddings become identifiable, and it is exactly
+#: the fine cortico-cortical connectivity that the macro structure was never
+#: supposed to determine.  ARCHITECTURE.md's division of labour is that tractography
+#: constrains the coarse modular graph and the fine graph is LEARNED -- PER_SITE is
+#: how that sentence is written down.
+#:
+#: the posterior on these will stay near the prior wherever the data is thin, which
+#: is the declared and correct behaviour rather than a failure.
+ASSOCIATION_EMBED_DIM = 128
+
 ASSOCIATION_KERNEL = _nn.DistanceMessagePassing(
-    channels_in=1, channels_out=1, embed_dim=8,
+    channels_in=1, channels_out=1, embed_dim=ASSOCIATION_EMBED_DIM,
     geometric_feature="distance_mm", length_scale_mm=40.0,
-    learn_length_scale=True, tying=Tying.EMBEDDING, symmetric=True)
+    learn_length_scale=True, tying=Tying.PER_SITE, symmetric=True)
 
 
 def association_learned_kernel(x, theta) -> dict:

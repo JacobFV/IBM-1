@@ -13,8 +13,8 @@ status is measured, not aspirational. **nothing below stage 1 has run.**
 
 | question | answer |
 |---|---|
-| is there a materialized 100M+ parameter model? | **no.** the declared association kernel has **10 free parameters** — see §4 |
-| has any curriculum stage run? | **no.** stage 0 is not passed |
+| is there a materialized 100M+ parameter model? | **52.5M is TRAINING** — `ASSOCIATION_KERNEL` is now `PER_SITE`, dim 128; 32.0M of those are per-site association embeddings, i.e. the learned cortico-cortical graph |
+| has any curriculum stage run? | **stage 4 is running** — `scripts/pretrain_video_loop.py` on `gb10-direct`, 16,500 frames of naturalistic video, 12k steps |
 | has theta been moved by evidence? | partially — per-source spectral fits ran; the joint fit is falsified (§4.3b) |
 | does the substrate support an attractor landscape? | **yes, measured** (STATE.md §4.10) |
 
@@ -43,7 +43,12 @@ the fan-in (STATE.md §4.10).
   upstream of it
 - **gate**: `|L(0)| < 1`; the solve converges; multi-window plan not refused
 - **not** a solver problem and **not** a fitting problem — a declaration problem
-- **blocks**: literally everything
+- **DONE for the training path.** `association_transfer` takes `fan_in` and divides
+  by it, and the trainer normalizes the geometric prior by `k`. the dynamics are
+  bounded through training (`|v|max` 64.4 mV, flat over thousands of steps).
+  the `eeg_forward` materialization still needs the same treatment
+- **no longer blocks pretraining.** architecture work and weight training proceed
+  in parallel; this is not a release train
 
 ### stage 1 — regime selection · SUPERVISED · gated on 0
 fit the RATE parameters so the nonlinear model sits in a region that has more
