@@ -14,7 +14,7 @@ than what the declaration says.
 
 from __future__ import annotations
 
-from ibm.anatomy import systems, sources
+from ibm.anatomy import systems, muscles, sources
 from ibm.anatomy.sources import SOURCES, AtlasSource
 from ibm.anatomy.systems import (
     AMYGDALAR_NUCLEI, BG_TERRITORIES, BRAINSTEM_NUCLEI, CEREBELLAR_LOBULES,

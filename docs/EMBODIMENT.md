@@ -303,3 +303,63 @@ falls silent during exactly the shortening movements it is needed for.
   other receptors. an implementation of the spindle — with its gamma-dependent
   gain — is the next concrete piece
 - **§2.5 stands.** the fan-in gain problem is upstream of all of this
+
+---
+
+## 6. the wire list
+
+`ibm/embodiment.py` derives the I/O contract from the declarations, so it cannot
+drift out of sync the way a hand-written interface document would.
+`python -m ibm.embodiment` prints it.
+
+**483 ports over 96 named muscles and 9 receptor surfaces:**
+
+| group | count | direction | content |
+|---|---|---|---|
+| `motor_out` | 186 | ibm-1 → simulator | per muscle, an **alpha** drive and a **gamma** drive |
+| `plant_in` | 288 | simulator → ibm-1 | per muscle, length (L0), velocity (L0/s), force (N) |
+| `sensor_in` | 9 | simulator → ibm-1 | luminance, sound pressure, skin pressure/displacement/temperature, vestibular acceleration, chemical, blood pressure, oxygenation |
+
+`ibm/anatomy/muscles.py` is what makes this addressable: 96 muscles, each with its
+nerve, its root levels, and a relative spindle density. that table is the
+difference between "the model has a motor system" and "the model has a socket
+labelled `biceps_brachii`".
+
+**the gamma wire is the one to not omit.** it is not a refinement: without
+fusimotor drive the spindle unloads whenever the muscle shortens, so a simulator
+that ignores gamma gets a brain whose proprioception switches off during exactly
+the movements it is needed for. measured on `spindle_prochazka`:
+
+| state | gamma = 0 | gamma = 50 Hz |
+|---|---|---|
+| rest, L=1.00 | 10.0 Hz | 25.0 Hz |
+| stretched, L=1.10 | 30.0 Hz | 45.0 Hz |
+| fast stretch, v=+2 | 121.9 Hz | 228.8 Hz |
+| **shortening, v=-2** | **10.0 Hz (floor)** | **25.0 Hz** |
+
+### 6.1 known deficiency in the quoted latencies
+
+the per-port delay is the **trunk** delay from `ibm.topologies.nerve`, not the
+full path from the cord. `abductor_hallucis.alpha_drive` reports 2.0 ms because
+`medial_plantar` is a 200 mm distal segment; the real cord-to-muscle path is most
+of a metre and closer to 10 ms. **the root-to-trunk segment is missing from the
+length table**, so every distal port currently understates its latency by roughly
+the length of the limb. the fibre-class RATIOS within a trunk are right, and the
+absolute values are short. fixing it is a length-table addition, not a structural
+change.
+
+## 7. so: is there a wire for everything?
+
+**for muscles and proprioception, yes** — 474 of the 483 ports, derived from the
+declarations, with fibre-resolved latencies and working receptor implementations.
+
+**for the rest, partly.** the 9 sensor ports are one per modality, not one per
+receptor field: there is a `skin.pressure` port and not a port per dermatome,
+because the dermatome partition exists and no builder instantiates sites on it
+yet. a simulator can drive the skin, but not yet drive *a patch of* skin by name.
+
+**and §2.2 still stands.** every port is a conduction path. the cord circuitry
+that would close a stretch reflex locally -- Ia → alpha monosynaptic, Ib →
+inhibitory interneuron, Renshaw recurrent -- is a process over `spinal_levels`
+that does not exist. so the wires are there and the reflexes are not: every
+correction has to go all the way to cortex and back.

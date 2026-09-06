@@ -60,6 +60,8 @@ the type system does not check.
 
 from __future__ import annotations
 
+import numpy as np
+
 from ibm.processes.base import (
     constant_gain,
     double_exponential,
@@ -400,6 +402,76 @@ TRANSDUCTION = process(
 # ---------------------------------------------------------------------------
 # implementations: eight receptor classes, one process
 # ---------------------------------------------------------------------------
+
+def spindle_afferent(x, theta) -> dict:
+    """muscle spindle: length and velocity into Ia and II firing, gated by gamma.
+
+    the form is Prochazka's, which is the one that has actually been fitted to
+    recorded Ia traffic: a fractional-power velocity term plus a linear length
+    term plus an offset.  the fractional power matters -- a spindle's velocity
+    response is strongly compressive, so a linear velocity term overestimates the
+    afferent burst during fast stretch by an order of magnitude.
+
+    what this implementation adds over `mechanoreceptor_slow`, whose docstring
+    names the gap: **fusimotor drive is an input here.**  gamma-dynamic traffic
+    contracts the intrafusal poles and reloads the ending, so it multiplies the
+    velocity sensitivity and adds a bias.  without it the spindle unloads whenever
+    the muscle shortens and falls silent during exactly the movements it is needed
+    for, which is why alpha-gamma co-activation exists.
+    """
+    length = np.asarray(x["effector.length"], dtype=float)
+    vel = np.asarray(x["effector.velocity"], dtype=float)
+    gamma = np.asarray(x.get("neural.efferent.gamma", 0.0), dtype=float)
+
+    l0 = float(theta.get("rest_length_l0", 1.0))
+    k_p = float(theta.get("position_gain_hz", 200.0))
+    k_v = float(theta.get("velocity_gain_hz", 65.0))
+    power = float(theta.get("velocity_power", 0.5))
+    bias = float(theta.get("bias_hz", 10.0))
+    g_dyn = float(theta.get("gamma_dynamic_gain", 0.02))
+    g_bias = float(theta.get("gamma_bias_hz", 0.3))
+    r_max = float(theta.get("r_max_hz", 300.0))
+
+    # fusimotor set: gamma multiplies velocity sensitivity and adds tonic drive
+    dyn = 1.0 + g_dyn * gamma
+    stretch = np.maximum(length - l0, 0.0)
+    # signed fractional power: only lengthening excites, shortening unloads
+    lengthening = np.maximum(vel, 0.0)
+    r_ia = bias + g_bias * gamma + k_p * stretch + dyn * k_v * lengthening ** power
+    # the secondary ending is static: position, essentially no velocity term
+    r_ii = bias + g_bias * gamma + k_p * stretch
+    return {
+        "transduction.spindle_primary": np.clip(-80.0 + 0.2 * r_ia, -80.0, 0.0),
+        "transduction.spindle_secondary": np.clip(-80.0 + 0.2 * r_ii, -80.0, 0.0),
+        "neural.afferent.ia": np.clip(r_ia, 0.0, r_max),
+        "neural.afferent.ii": np.clip(r_ii, 0.0, r_max),
+    }
+
+
+def golgi_tendon_afferent(x, theta) -> dict:
+    """Golgi tendon organ: force into Ib firing, logarithmically compressed.
+
+    in SERIES with the muscle rather than in parallel with it, and that is the
+    whole functional content.  a spindle unloads when the muscle shortens against
+    no load; a tendon organ fires harder the harder the muscle pulls.  so this
+    reports force where the spindle reports length, and a controller with only one
+    of them cannot tell a limb that moved from a limb that met resistance.
+
+    the compression is real and large: a tendon organ's dynamic range spans three
+    orders of magnitude of force, which a linear map cannot cover without either
+    saturating at rest or being useless at load.
+    """
+    force = np.asarray(x["effector.force"], dtype=float)
+    k = float(theta.get("force_gain_hz", 40.0))
+    f0 = float(theta.get("force_scale_n", 1.0))
+    bias = float(theta.get("bias_hz", 5.0))
+    r_max = float(theta.get("r_max_hz", 200.0))
+    r_ib = bias + k * np.log1p(np.maximum(force, 0.0) / max(f0, 1e-9))
+    return {
+        "transduction.golgi_tendon": np.clip(-80.0 + 0.3 * r_ib, -80.0, 0.0),
+        "neural.afferent.ib": np.clip(r_ib, 0.0, r_max),
+    }
+
 
 implementation(
     name="photoreceptor_cascade",
@@ -932,3 +1004,74 @@ implementation(
 )
 
 __all__ = ["TRANSDUCTION"]
+
+
+implementation(
+    name="spindle_prochazka",
+    process="transduction",
+    doc="""the muscle spindle with fusimotor drive as an input.
+
+    `mechanoreceptor_slow` folds the spindle into the cutaneous slowly-adapting
+    class and says why that is wrong: "the thing that makes a spindle genuinely
+    different -- fusimotor drive, which lets the nervous system set the
+    sensitivity of its own sensor -- is *not* representable here".  this
+    implementation is that gap closed, by the simpler of the two available routes:
+    gamma is read as an INPUT rather than as efferent pressure on theta.  the
+    schema permits either; reading it is cheaper and keeps the process graph
+    acyclic in parameters while still closing the loop in state.
+
+    it writes both the receptor potentials and the Ia/II rates directly, because
+    the spindle is one of the few receptors where the afferent code is better
+    characterized than the receptor potential.""",
+    form=Form.RATE,
+    fn=spindle_afferent,
+    params={
+        "rest_length_l0": normal(1.0, 0.05, units="L0", provenance=Provenance.LITERATURE,
+                                 note="the length at which the ending is just loaded"),
+        "position_gain_hz": lognormal(200.0, 2.0, units="Hz per L0",
+                                      provenance=Provenance.LITERATURE,
+                                      source="Prochazka & Gorassini, cat Ia recordings"),
+        "velocity_gain_hz": lognormal(65.0, 2.0, units="Hz per (L0/s)^p",
+                                      provenance=Provenance.LITERATURE,
+                                      source="Prochazka, fractional-power velocity term"),
+        "velocity_power": normal(0.5, 0.1, units="dimensionless",
+                                 provenance=Provenance.LITERATURE,
+                                 note="strongly compressive; a linear term overestimates "
+                                      "the stretch burst by an order of magnitude"),
+        "bias_hz": lognormal(10.0, 2.0, units="Hz", provenance=Provenance.LITERATURE),
+        "gamma_dynamic_gain": weak(0.02, 5.0, units="per Hz",
+                                   note="how much fusimotor drive multiplies velocity "
+                                        "sensitivity.  this parameter IS fusimotor set"),
+        "gamma_bias_hz": weak(0.3, 5.0, units="Hz per Hz"),
+        "r_max_hz": lognormal(300.0, 1.5, units="Hz", provenance=Provenance.LITERATURE),
+    },
+    tying=Tying.PER_PARTITION,
+    provenance=Provenance.LITERATURE,
+    source="Prochazka 1999; Mileusnic & Loeb 2006 for the intrafusal mechanics this "
+           "lumps")
+
+implementation(
+    name="golgi_tendon_log",
+    process="transduction",
+    doc="""the Golgi tendon organ: force, logarithmically compressed.
+
+    in series with the muscle rather than in parallel with it, which is the entire
+    difference from a spindle.  the pair is what lets a controller separate
+    kinematics from kinetics, and a model with only spindles will attribute every
+    load change to a length change.""",
+    form=Form.RATE,
+    fn=golgi_tendon_afferent,
+    params={
+        "force_gain_hz": lognormal(40.0, 2.0, units="Hz per log unit",
+                                   provenance=Provenance.LITERATURE),
+        "force_scale_n": lognormal(1.0, 5.0, units="N",
+                                   provenance=Provenance.WEAK,
+                                   note="the force at which the log becomes linear; it "
+                                        "scales with muscle size and is not one number "
+                                        "for the body"),
+        "bias_hz": lognormal(5.0, 2.0, units="Hz", provenance=Provenance.LITERATURE),
+        "r_max_hz": lognormal(200.0, 1.5, units="Hz", provenance=Provenance.LITERATURE),
+    },
+    tying=Tying.PER_PARTITION,
+    provenance=Provenance.LITERATURE,
+    source="Houk & Henneman; Crago et al. on the logarithmic force relation")

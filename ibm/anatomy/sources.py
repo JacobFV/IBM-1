@@ -584,6 +584,31 @@ AUTONOMIC_GANGLIA = _s(
          "ganglia and the difference is an order of magnitude in effector recruitment")
 
 
+SKELETAL_MUSCLES = _s(
+    system="skeletal_muscles",
+    preferred="standard innervation tables (Gray's Anatomy 42e) for nerve and root; "
+              "Banks (2006) spindle counts for density",
+    card=None,
+    frame="body",
+    crisp=True,
+    n_labels=96,
+    measured_by="innervation by dissection and by clinical lesion correlation, and it is "
+                "about as settled as anatomy gets.  spindle density is NOT: Banks' counts "
+                "come from a small number of cadavers, vary by an order of magnitude "
+                "between muscles, and are the weakest number in this entry",
+    obtained="literature.  in an individual, the innervation is not imaged at all -- it "
+             "is inferred from the deficit pattern, which is the reverse direction",
+    substitute="none for innervation.  for spindle density, a uniform value, which is "
+               "wrong in nameable places: extraocular muscles have no conventional "
+               "spindles and intrinsic hand muscles have roughly twice a limb muscle's",
+    substitute_card=None,
+    lost="the ~640 named muscles reduced to the major ones.  what is lost is the small "
+         "deep muscles -- the rotatores, the interossei individually, the intrinsic "
+         "laryngeals beyond three -- each of which is below the resolution of any "
+         "measurement this model will be fitted against, and all of which would still "
+         "matter to a body simulation that cared about fine posture")
+
+
 # ---------------------------------------------------------------------------
 # the invariant
 # ---------------------------------------------------------------------------
