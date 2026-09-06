@@ -1,0 +1,6 @@
+frames (16500, 64, 64, 3) from /home/brandonin/Documents/win-data/derived/koyaanisqatsi-full/frames_64x64.npy
+association embeddings: 19,200,000   total trainable: 33,352,838
+/home/brandonin/Documents/IBM-1/scripts/pretrain_video_loop.py:483: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"{step:5d}  recon {float(recon):.5f}  viab {float(viab):8.3f}  "
+    0  recon 0.47828  viab    0.000  r_eff    5.53  |v|max    64.5  xmod nan       6s

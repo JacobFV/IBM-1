@@ -131,20 +131,44 @@ class CorticalDynamics(nn.Module):
         self.v_half, self.slope, self.r_max = -55.0, 4.0, 100.0
         self.e_rest, self.e_rev = -65.0, -70.0
 
-    def association(self, r):
-        """message passing on the learned kernel.  r: (B, N)."""
+    def edge_weights(self):
+        """the learned association weights, one per edge.  (N, k).
+
+        computed ONCE per forward and reused across the dynamics steps.  building
+        it inside the step loop rebuilt an (N, k, embed) tensor -- 6 GB at 250k
+        sites -- eight times per forward, which was both the memory ceiling and
+        most of the runtime.  the weights are constant within a forward because
+        the embeddings are, so recomputing them was pure waste.
+        """
         e = F.normalize(self.embed, dim=-1)
         sim = (e.unsqueeze(1) * e[self.idx]).sum(-1)          # (N, k)
-        w = self.geo * torch.sigmoid(4.0 * sim)               # (N, k)
+        # TANH, not sigmoid: the weights must be able to be NEGATIVE.
+        #
+        # a strictly positive, fan-in-normalized kernel is a diffusion operator.
+        # applying it eight times per forward is eight rounds of weighted
+        # averaging, which drives every site toward the graph's mean and destroys
+        # rank by construction -- measured: effective rank fell 1.57 -> 1.01 with
+        # 512 sites and a ceiling of 15, i.e. the cortical state became genuinely
+        # rank-one while reconstruction got WORSE.
+        #
+        # that is ONTOLOGY.md 4's flat-force-field pathology, and its cause here
+        # is structural rather than a tuning failure: cortical association is not
+        # all-excitatory, and a kernel that cannot subtract can only blur.  tanh
+        # lets the learned factor place opposition between sites, which is what
+        # keeps a representation from washing out.
+        return self.geo * torch.tanh(2.0 * sim)
+
+    def association(self, r, w):
+        """message passing on the cached kernel.  r: (B, N), w: (N, k)."""
         return (r[:, self.idx] * w).sum(-1)                   # (B, N)
 
     def rate(self, v):
         return self.r_max * torch.sigmoid((v - self.v_half) / self.slope)
 
-    def step(self, s, drive, dt):
+    def step(self, s, drive, dt, w):
         v, r, a, gi = s
         r_inf = self.rate(v)
-        assoc = self.association(r)
+        assoc = self.association(r, w)
         g_e = self.w_ee * r / self.r_max + self.w_assoc * assoc / self.r_max
         dv = (-(v - self.e_rest) + 20.0 * g_e - a + drive) / self.tau_m
         # conductance-based shunting, LINEAR in g_i (STATE.md 4.11)
@@ -192,8 +216,9 @@ class AudioLoop(nn.Module):
         off = self.dyn.n // 3
         drive[:, off:off + self.n_in] = self.to_cortex(h)
         s = self.dyn.init_state(b, ctx.device)
+        w = self.dyn.edge_weights()
         for _ in range(n_steps):
-            s = self.dyn.step(s, drive, dt)
+            s = self.dyn.step(s, drive, dt, w)
         read = s[1][:, -self.dyn.n // 8:]
         return self.dec(self.from_cortex(read)), s
 
@@ -254,8 +279,9 @@ class AudioVisualLoop(nn.Module):
         if drop != "audio":
             drive[:, self.tmp[0]:self.tmp[1]] = self.a_in(self.a_enc(coch_ctx))
         s = self.dyn.init_state(b, frame.device)
+        w = self.dyn.edge_weights()
         for _ in range(n_steps):
-            s = self.dyn.step(s, drive, dt)
+            s = self.dyn.step(s, drive, dt, w)
         r = s[1]
         v = self.v_dec(self.v_out(r[:, self.v_read[0]:self.v_read[1]]))
         a = self.a_dec(self.a_out(r[:, self.a_read[0]:self.a_read[1]]))
@@ -274,7 +300,10 @@ class AudioVisualLoop(nn.Module):
         tmp = e[self.tmp[0]:self.tmp[1]]
         m = min(2048, occ.shape[0], tmp.shape[0])
         sim = occ[:m] @ tmp[:m].T
-        return float(torch.sigmoid(4.0 * sim).mean())
+        # magnitude, not signed mean: an inhibitory occipito-temporal projection is
+        # coupling too, and averaging signed weights would report a strongly
+        # coupled push-pull pair as zero.
+        return float(torch.tanh(2.0 * sim).abs().mean())
 
 
 class VideoLoop(nn.Module):
@@ -336,9 +365,23 @@ def viability_penalty(v, lo=-90.0, hi=50.0):
 
 
 def effective_rank(x):
-    """(tr C)^2 / tr(C^2) -- ONTOLOGY.md's expansion signal."""
+    """(tr C)^2 / tr(C^2) -- ONTOLOGY.md's expansion signal.
+
+    computed over SITES, not over the batch.  the first version of this took the
+    covariance across samples, which caps the answer at batch_size - 1: at batch 4
+    it could never report more than 3, and "collapse to 1.0" was partly the metric
+    reporting its own ceiling.  the quantity we actually want is the dimensionality
+    of the cortical state ACROSS THE SHEET -- how many independent directions the
+    population is using -- which is a covariance over sites accumulated over
+    whatever samples are to hand, and is bounded by the number of sites rather
+    than by the batch.
+    """
+    x = x.reshape(-1, x.shape[-1]) if x.dim() > 2 else x
     x = x - x.mean(0, keepdim=True)
-    c = (x.T @ x) / max(x.shape[0] - 1, 1)
+    n = x.shape[0]
+    if n < 2:
+        return float("nan")
+    c = (x.T @ x) / (n - 1)
     t1 = torch.diagonal(c).sum()
     t2 = (c * c).sum()
     return float((t1 * t1 / t2.clamp_min(1e-12)).item())
@@ -431,7 +474,33 @@ def main():
 
         if step % 25 == 0 or step == a.steps - 1:
             with torch.no_grad():
-                r_eff = effective_rank(s[1][:, ::max(dyn.n // 512, 1)].float())
+                # (batch x subsampled sites) flattened: the covariance is across
+                # the 512 retained sites, so the ceiling is 512 rather than batch-1
+                # a dedicated measurement pass at a larger batch.  the training
+                # batch is 4, and an effective rank estimated from 4 samples has a
+                # ceiling of 3 whatever the model is doing -- so measuring on the
+                # training batch reports the metric's own ceiling and calls it
+                # collapse.  64 samples cost one extra forward per 25 steps and
+                # make the number mean something.
+                mb = 16
+                if a.modality == "av":
+                    lim = min(n_frames, coch.shape[0]) - H - 2
+                    jj = np.random.randint(ctx, lim, size=mb)
+                    mv = torch.from_numpy(np.ascontiguousarray(frames[jj])).to(dev)
+                    mv = (mv.permute(0, 3, 1, 2).float() / 127.5) - 1.0
+                    ma = torch.from_numpy(np.stack([coch[j-ctx:j] for j in jj])).float().to(dev)
+                    _, _, ms = model(mv, ma, a.dyn_steps, a.dt)
+                elif a.modality == "audio":
+                    jj = np.random.randint(ctx, n_frames - H - 2, size=mb)
+                    mx = torch.from_numpy(np.stack([frames[j-ctx:j] for j in jj])).float().to(dev)
+                    _, ms = model(mx, a.dyn_steps, a.dt)
+                else:
+                    jj = np.random.randint(0, n_frames - H - 2, size=mb)
+                    mx = torch.from_numpy(np.ascontiguousarray(frames[jj])).to(dev)
+                    mx = (mx.permute(0, 3, 1, 2).float() / 127.5) - 1.0
+                    _, ms = model(mx, a.dyn_steps, a.dt)
+                sub = ms[1][:, ::max(dyn.n // 512, 1)].float()
+                r_eff = effective_rank(sub)
                 vmax = float(s[0].abs().max())
             rec = {"step": step, "loss": float(loss.detach()),
                    "recon": float(recon.detach()), "viability": float(viab.detach()),

@@ -5,3 +5,12 @@ Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pyto
   print(f"{step:5d}  recon {float(recon):.5f}  viab {float(viab):8.3f}  "
     0  recon 0.62475  viab    0.000  r_eff    1.60  |v|max    64.5  xmod nan       3s
    25  recon 0.22548  viab    0.000  r_eff    2.27  |v|max    64.5  xmod nan      52s
+   50  recon 0.14548  viab    0.000  r_eff    1.31  |v|max    64.5  xmod nan      99s
+   75  recon 0.13215  viab    0.000  r_eff    1.37  |v|max    64.5  xmod nan     146s
+  100  recon 0.13012  viab    0.000  r_eff    1.29  |v|max    64.7  xmod nan     193s
+  125  recon 0.15503  viab    0.001  r_eff    1.01  |v|max    99.3  xmod nan     240s
+  150  recon 0.09412  viab    0.001  r_eff    1.03  |v|max    97.1  xmod nan     287s
+  175  recon 0.10979  viab    0.000  r_eff    1.00  |v|max    91.2  xmod nan     335s
+  200  recon 0.13269  viab    0.000  r_eff    1.02  |v|max    79.9  xmod nan     383s
+  225  recon 0.12229  viab    0.000  r_eff    1.02  |v|max    82.7  xmod nan     432s
+  250  recon 0.13359  viab    0.000  r_eff    1.01  |v|max    87.7  xmod nan     483s

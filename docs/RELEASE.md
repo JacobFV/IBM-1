@@ -59,3 +59,48 @@ the pair is an experiment, not redundancy: the joint model must explain both
 streams with one association kernel, and `cross_modal_weight` measures whether it
 did. **if the joint run does not beat the video control on video, the shared
 cortex bought nothing.**
+
+## 4. a positive association kernel is a diffusion operator
+
+the single most useful thing the held-out diagnostic has caught, and it is
+structural rather than a tuning failure.
+
+with `w_ij = geo * sigmoid(...)` every association weight is **positive**, and the
+kernel is fan-in normalized. applying it once is a weighted average; applying it
+eight times per forward is eight rounds of averaging, which drives every site
+toward the graph mean. **rank is destroyed by construction.** measured, with the
+corrected metric (512 sites, ceiling 15):
+
+| kernel | r_eff over 150 steps | recon |
+|---|---|---|
+| `sigmoid` — positive only | 1.57 → **1.01** | 2.04 → **6.66** (diverging) |
+| `tanh` — signed | 3.46 → **3.40**, stable | 1.56 → **1.48**, falling |
+
+a rank-one cortical state means all 512 sampled sites are doing the same thing:
+ONTOLOGY.md §4's flat-force-field pathology, arrived at from the opposite
+direction. **cortical association is not all-excitatory, and a kernel that cannot
+subtract can only blur.** `tanh` lets the learned factor place opposition between
+sites, and that is what stops the representation washing out.
+
+this also corrects a claim made earlier in the session: the first report of
+"effective rank collapsing" was measured over a batch of 4, where the metric's
+ceiling is 3. the *relative* decline was real, the magnitude was not, and the
+metric now takes its covariance across sites from a dedicated 16-sample pass.
+
+## 5. throughput, measured
+
+caching the edge weights per forward instead of rebuilding the `(N, k, embed)`
+similarity inside every dynamics step gave **4× — 2.76 s/step → 0.67 s/step** at
+68.9M parameters, 250k sites, batch 4. it was also the memory ceiling: that
+tensor is 6 GB at 250k sites and was being built eight times per forward.
+
+| | measured |
+|---|---|
+| step time | 0.67 s |
+| steps/hour | 5,373 |
+| samples/hour | 21,493 |
+| one epoch over the 11-minute movie | 4,125 steps = **0.77 GB10-hours** |
+
+**not yet applied**: batch is 4, precision is fp32, there is no `torch.compile`.
+batch 32 + bf16 + compile is conservatively 6× on this shape, and the estimates in
+CURRICULUM.md assume it is available.
