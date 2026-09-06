@@ -423,11 +423,12 @@ the model's own reported accuracy on that stream. if a teacher explains a fracti
 of a variable's variance it may contribute at most
 
 $$
-\Delta J_{\text{distilled}} = \frac{1}{(1-r^2)\operatorname{Var}[x]}
+\Delta J_{\text{distilled}} = \frac{r^2}{(1-r^2)\operatorname{Var}[x]}
 $$
 
-so an encoder reporting $r^2=0.1$ contributes about a tenth of what a perfect measurement
-would. distilling at unit precision is the fastest way to make a model hold a teacher's
+which gives the teacher a posterior weight of exactly $r^2$, so an encoder reporting
+$r^2=0.1$ moves the posterior a tenth of the way.  the numerator matters: without it a
+teacher explaining NOTHING still takes half the posterior. distilling at unit precision is the fastest way to make a model hold a teacher's
 biases as firmly as its own measurements.
 
 two corrections are mandatory beyond the nominal figure. reported accuracy holds on the

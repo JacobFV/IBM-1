@@ -475,6 +475,84 @@ bbbd, studyforrest, NSD); no receptor density, cell density or cortical thicknes
 capped at 0.5 Hz, which sits *at* the cardiac fundamental a plethysmograph
 measures, so every pulse-oximetry binding is clipped at its own signal.
 
+## 4.8 SENSORY FORCING RAN — delta band only, and it corrected the §4 formula
+
+`ibm/processes/forcing.py` + `scripts/force_early_sensory.py`. `AUDITORY_CHAIN` is
+nine links validated at runtime by `check_chain()` against the sealed registry —
+which **caught two links naming a process that does not write the component
+claimed**. new `Intervention` `naturalistic_stream` (continuous, unrepeated, both
+modalities clamped jointly: no baseline and no repeat, so what is constrained is
+the MAP rather than a mean evoked response). no new component, no new process —
+the front ends are two more `f` for the already-declared `transduction`, so no
+learned latent enters the state graph.
+
+front end actually run: `gammatone_cochleagram`, 28 filters at Greenwood-spaced
+CFs, ERB bandwidths, compression 0.3, 100 Hz. **no pretrained teacher** —
+`tribe` and `tribe-v2` both have `local_root: null`. **no visual arm** —
+ds003688's `stimuli/` holds annotation tables and zero media; the film is not in
+the deposit, and `ForcingCalibration.unmeasured` refuses the retinal front end a
+precision rather than inventing one.
+
+### the numbers (meg-masc, 4 participants AND 1 story held out, 208 ch, 903k samples)
+
+    band        r^2
+    0.5-4 Hz   +0.0033
+    4-8 Hz     +0.0008
+    8-13 Hz    -0.0001
+    13-30 Hz   -0.0000
+    overall    +0.00103   (top decile 0.0038, best channel 0.0052)
+
+    split                                  unforced   driven   teacher-direct  ratio
+    seen participants, held-out story       0.00000   0.00152     0.00197       0.77
+    held-out participants, val story        0.00000   0.00105     0.00151       0.70
+    held-out participants x held-out story  0.00000   0.00129     0.00180       0.72
+
+**vs teacher-direct: no.** the declared chain reaches 72% of a free TRF's r^2
+with 112 free numbers per sensor against 1148 — buying constraint but NOT data
+efficiency, and the gap does not close with less adaptation data (0.59 at 5 min,
+0.70 at 20, 0.72 at 44). out-of-distribution transfer to libribrain (different
+person, scanner, 306-ch array, different book) degrades delta r^2 by **1.4x**,
+comfortably inside the declared 3x lognormal inflation prior — **the first
+empirical check of that prior in this registry.**
+
+### what it constrains, and in which band
+**delta, 0.5-4 Hz, and essentially nothing above.** the joint-forging lesson
+applied in mirror, and made structural: `ForcingCalibration` is band-resolved and
+`teacher()` takes a band, because a chain existing does not mean it carries
+information. **a claim about what forcing constrains that does not name a band is
+not a claim.**
+
+within that band it constrains the phase-resolved transfer rather than a marginal
+second moment. ten chain time constants moved off their literature priors, ALL IN
+THE SAME DIRECTION and **all hitting the top of their grid** — afferent delay
+15->45 ms, thalamic relay 12->40, NMDA 100->200, TRN GABA-B 150->300. so the
+constraint is ONE-SIDED: the data ask for a slower chain than the priors and this
+experiment cannot say how much slower. `loop_gain` and `tau_cortex_s` did not
+move at all, consistent with the loop's resonance living at 10 Hz where the
+measured r^2 is zero.
+
+### THE FORMULA IN §4 WAS WRONG AND IS NOW FIXED
+`dJ = 1/((1-r^2)Var[x])` does not vanish as r^2 -> 0: it tends to
+`1/Var[x]`, one prior-equivalent, so **a teacher explaining NOTHING takes half
+the posterior and halves the variable's variance.** corrected in ARCHITECTURE.md
+and EVIDENCE.md to
+
+    dJ = r^2 / ((1 - r^2) Var[x])
+
+which gives the teacher a posterior weight of exactly r^2. the error is invisible
+where teachers are good and dominant where they are weak — exactly the regime a
+first forcing experiment lives in. at the measured r^2 = 0.0033 the old form
+credits a shrinkage of 0.25 where the correct one gives 0.003.
+
+### three measurement errors, each of which produced a confident wrong number first
+1. a case mismatch between events (`The_Black_Willow_3.wav`) and audio files
+   (lowercase) silently dropped the largest story — **half the corpus**.
+   `load_segments` now refuses rather than skipping.
+2. a lead field pooled across people, or across one participant's two sessions,
+   **averages to zero** — a channel index is not an anatomical label, and the
+   montage moves between visits.
+3. six saturated sensors turned a +0.0009 median into a **-0.073 mean**.
+
 ## 5. decisions already made — do not relitigate
 
 - **the laplacian is over TIME, for one state variable.** not over space. fields

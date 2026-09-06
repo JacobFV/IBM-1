@@ -514,18 +514,26 @@ and therefore carries a precision, and the precision is not free: it is calibrat
 the teacher's own reported accuracy on the variable it is writing.
 
 if a teacher explains a fraction $r^2$ of the variance of a state variable, the residual
-variance is $(1-r^2)\operatorname{Var}[x]$, so the precision it may contribute is
+variance is $(1-r^2)\operatorname{Var}[x]$ and the precision it may contribute is
 
 $$
 \Delta J_{\text{distilled}}
 =
-\frac{1}{(1-r^2)\operatorname{Var}[x]}
+\frac{r^2}{(1-r^2)\operatorname{Var}[x]}
 $$
 
-a stimulus-to-brain encoder reporting $r^2=0.1$ — a respectable figure for that task —
-contributes roughly a tenth of the precision a perfect measurement would. distilling it
+which gives the teacher a posterior weight of exactly $r^2$: a teacher explaining a tenth
+of a variable's variance moves that variable's posterior a tenth of the way. distilling
 at unit precision instead is the fastest way to make a model hold a teacher's biases as
 firmly as its own measurements.
+
+**the numerator is not decoration, and an earlier version of this document omitted it.**
+without it $\Delta J \to 1/\operatorname{Var}[x]$ as $r^2 \to 0$ — one prior-equivalent
+of precision — so a teacher explaining *nothing* takes half the posterior and halves the
+variable's variance. the error is invisible where teachers are good and dominant where
+they are weak, which is exactly the regime a first forcing experiment lives in: an
+auditory chain measured at $r^2 = 0.0033$ would have been credited with a shrinkage of
+0.25 rather than 0.003.
 
 two corrections are mandatory beyond the nominal figure.
 
