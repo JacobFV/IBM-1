@@ -251,6 +251,79 @@ AFFERENT_ACTIVITY = _c(
     timescale_s=2e-3, support="body",
     tags=frozenset({"population", "peripheral", "afferent"}))
 
+# -- cerebellar populations --------------------------------------------------
+#
+# declared as components rather than partitions for the file-header reason:
+# granule, Purkinje, mossy and climbing populations coexist within the same cubic
+# millimetre of cerebellar cortex.  `cerebellar_lobules` and `cerebellar_microzones`
+# are the partitions; these are what lives in them.
+
+MOSSY_ACTIVITY = _c(
+    "neural.mossy.activity",
+    "mossy-fibre input rate to the cerebellar cortex: the CONTEXT signal, carrying "
+    "corticopontine command copy, proprioceptive afferent traffic and vestibular "
+    "state together.  it is the input a granule layer expands, and its content is "
+    "deliberately heterogeneous because that heterogeneity is what makes the "
+    "expansion informative",
+    "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 300.0),
+    timescale_s=3e-3, tags=frozenset({"population", "cerebellar", "afferent"}))
+
+GRANULE_ACTIVITY = _c(
+    "neural.granule.activity",
+    "granule-cell rate.  granule cells outnumber every other neuron in the brain "
+    "combined, and the reason is computational rather than incidental: they "
+    "recode a few thousand mossy inputs into an enormous sparse basis, so that "
+    "patterns which overlap at the input are nearly orthogonal at the parallel "
+    "fibres.  a single Purkinje cell can then learn an arbitrary function of "
+    "context by adjusting one weight per basis element, which is the whole reason "
+    "cerebellar learning is fast and local",
+    "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 200.0),
+    timescale_s=3e-3, tags=frozenset({"population", "cerebellar", "excitatory"}))
+
+PURKINJE_ACTIVITY = _c(
+    "neural.purkinje.activity",
+    "Purkinje simple-spike rate: the cerebellar cortex's sole output, and "
+    "inhibitory.  everything the cerebellum computes leaves as a MODULATION OF "
+    "INHIBITION onto the deep nuclei, which is why cerebellar output is a "
+    "correction to an ongoing command rather than a command",
+    "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 200.0),
+    timescale_s=3e-3, tags=frozenset({"population", "cerebellar", "inhibitory"}))
+
+CLIMBING_ACTIVITY = _c(
+    "neural.climbing.activity",
+    "climbing-fibre (inferior olive) rate: the TEACHING signal, and the one "
+    "population in the model whose firing rate is near-constant by design -- about "
+    "1 Hz, because each complex spike is a discrete error event rather than a rate "
+    "code.  it is what makes cerebellar plasticity supervised where cortical "
+    "plasticity is correlational, and its low rate is the reason a cerebellar "
+    "error signal cannot be read as ordinary drive",
+    "Hz", band=SLOW, prior="neural_spiking", bounds=(0.0, 20.0),
+    timescale_s=1e-2, tags=frozenset({"population", "cerebellar", "teaching"}))
+
+DEEP_NUCLEAR_ACTIVITY = _c(
+    "neural.deep_nuclear.activity",
+    "deep cerebellar nuclear rate: the actual output of the cerebellum, "
+    "tonically active and sculpted by Purkinje inhibition.  separate from "
+    "`purkinje.activity` because the sign inverts here -- more Purkinje firing is "
+    "LESS nuclear output -- and a model that skipped this step would have the "
+    "cerebellum's effect on behaviour backwards",
+    "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 300.0),
+    timescale_s=5e-3, tags=frozenset({"population", "cerebellar", "output"}))
+
+EFFERENCE_COPY = _c(
+    "neural.efference_copy.activity",
+    "corollary discharge: a copy of the outgoing motor command routed back into "
+    "sensory and cerebellar circuits.  it is a separate component from "
+    "`efferent.alpha` and not a read of it, because the copy branches centrally "
+    "and therefore arrives WITHOUT the peripheral conduction delay -- which is the "
+    "entire point.  the copy beats the sensory consequence back to the predictor "
+    "by tens of milliseconds, and that head start is what makes forward "
+    "prediction possible at all.  without it, self-caused and externally-caused "
+    "sensory change are indistinguishable and perception during saccades, "
+    "locomotion and speech is ambiguous",
+    "Hz", band=WIDE, prior="neural_spiking", bounds=(0.0, 300.0),
+    timescale_s=2e-3, tags=frozenset({"population", "efference_copy"}))
+
 # -- peripheral traffic, resolved by fibre class ------------------------------
 #
 # `afferent.activity` and `efferent.activity` above are the AGGREGATE traffic in a

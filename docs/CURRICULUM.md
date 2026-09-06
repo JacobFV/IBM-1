@@ -128,6 +128,28 @@ frame → TRIBEv2 → EEG → IBM dynamics → EEG′ → TRIBEv2 → next frame
   falls. if loss falls and they do not, the run is capturing and must stop
 - **hold out**: at least one expansion measure, or it stops being a diagnostic
 
+### stage 4b — the audio-visual materialization · RUNNING
+one cortex, two ports, two predictions. video drives an occipital port, audio a
+temporal one, and **the cortical parameters between them are the same tensor** —
+so the model must explain both streams with one association kernel, and the only
+way to beat two independent models is to use the fact that the streams are
+correlated. that is what learning an occipito-temporal association means.
+
+- **the audio must be the video's OWN soundtrack.** pairing these frames with an
+  unrelated audiobook presents two independent streams, and the correct thing to
+  learn would be that vision and hearing do not interact. so the Koyaanisqatsi
+  score is cochleagrammed at exactly 25 fps: 16,498 audio frames against 16,500
+  video frames, indexing the same instants
+- **long-range association edges are required.** a pure k-NN graph is a local
+  sheet on which occipital and temporal sites are not connected at all, so no
+  amount of training could associate them. 25% of each node's degree is spent on
+  distant partners drawn uniformly — the minimal declaration of patchy
+  association fibres — and the learned factor is free to keep or discard them
+- **measured by `cross_modal_weight`**, read off the learned kernel rather than
+  inferred from behaviour
+- **control**: a video-only run at the same horizon. if joint does not beat it on
+  video, the shared cortex bought nothing
+
 ### stage 5 — multi-materialization schedule · SUPERVISED · **free today**
 `∇log p(θ|D) = ∇log p(θ) + Σ_d ∇log p(D_d|θ)`. a curriculum is a schedule over
 `d`: spectra → evoked → hemodynamic → behaviour.
