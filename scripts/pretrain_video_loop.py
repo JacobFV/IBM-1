@@ -39,6 +39,7 @@ the result to a brain.
 from __future__ import annotations
 
 import argparse
+import os
 import json
 import math
 import time
@@ -502,6 +503,13 @@ def main():
     coch = np.load(a.audio_frames, mmap_mode="r") if a.audio_frames else None
     dyn = CorticalDynamics(a.sites, a.embed, a.k, dev, long_range=a.long_range).to(dev)
     neural = np.load(a.neural, mmap_mode="r") if a.neural else None
+    # robust rescaling, applied at load so the stored array stays untouched.
+    # the array was standardized by a per-run std that MEG artifacts dominate, so
+    # 99.9% of values sat under 0.1 and predicting zero scored 0.0065 -- an MSE of
+    # 0.05 looked like 95% variance explained and was in fact 8x WORSE than zero.
+    megsc = (np.load(a.neural.replace("meg_250hz", "meg_scale"))
+             if a.neural and os.path.exists(a.neural.replace("meg_250hz", "meg_scale"))
+             else None)
     if a.modality == "paired":
         model = PairedNeuralLoop(dyn, n_bands=frames.shape[-1],
                                  n_sensors=neural.shape[-1]).to(dev)

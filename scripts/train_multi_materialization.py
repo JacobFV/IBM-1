@@ -35,7 +35,8 @@ information it carries, and a long recording is not many independent samples.
 """
 from __future__ import annotations
 
-import argparse, json, time, math
+import argparse
+import os, json, time, math
 import numpy as np, torch, torch.nn.functional as F
 
 import importlib.util
@@ -74,6 +75,10 @@ def main():
     vcoch = np.load(a.video_audio, mmap_mode="r")
     pstim = np.load(a.paired_stim, mmap_mode="r")
     pneur = np.load(a.paired_neural, mmap_mode="r")
+    # see the note in pretrain_video_loop: the stored MEG is scaled by a std that
+    # artifacts dominate, so it is rescaled at load by a recorded median/IQR.
+    _sc = a.paired_neural.replace("meg_250hz", "meg_scale")
+    megsc = np.load(_sc) if os.path.exists(_sc) else None
     print(f"video {frames.shape} + {vcoch.shape} | paired {pstim.shape} -> {pneur.shape}",
           flush=True)
 
@@ -119,7 +124,10 @@ def main():
         lim = min(len(pstim), len(pneur)) - 2
         j = np.random.randint(pctx, lim, size=a.batch)
         xp = torch.from_numpy(np.stack([pstim[q - pctx:q] for q in j])).float().to(dev)
-        yp = torch.from_numpy(np.ascontiguousarray(pneur[j])).float().to(dev)
+        yn = np.ascontiguousarray(pneur[j]).astype(np.float32)
+        if megsc is not None:
+            yn = np.clip((yn - megsc[0]) / megsc[1], -6, 6)
+        yp = torch.from_numpy(yn).to(dev)
         pp, sp = pr(xp, a.dyn_steps, a.dt)
         l_pr = F.mse_loss(pp, yp)
         viab_pr = P.viability_penalty(sp[0])
