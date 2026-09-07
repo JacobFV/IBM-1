@@ -6,3 +6,11 @@ Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pyto
   "r_eff": r_eff, "v_absmax": float(s[0].abs().max()),
     0  train 8.7741  held 22.6726  SKILL -20.566  r_eff  9.63  |v|   65.3       7s
   100  train 1.2192  held 1.3791  SKILL -0.312  r_eff  2.94  |v|   65.5     377s
+  200  train 1.1679  held 1.2780  SKILL -0.216  r_eff  1.43  |v|   65.6     787s
+  300  train 1.1080  held 1.1840  SKILL -0.126  r_eff  1.56  |v|   65.7    1165s
+  400  train 1.1462  held 1.2079  SKILL -0.149  r_eff  2.89  |v|   65.8    1574s
+  500  train 1.3063  held 1.1720  SKILL -0.115  r_eff  3.41  |v|   65.9    1950s
+  600  train 1.0995  held 1.1857  SKILL -0.128  r_eff  5.89  |v|   66.1    2360s
+  700  train 1.1049  held 1.1624  SKILL -0.106  r_eff  3.09  |v|   66.2    2737s
+  800  train 1.0525  held 1.1915  SKILL -0.133  r_eff  4.58  |v|   66.3    3146s
+  900  train 1.1545  held 1.1147  SKILL -0.060  r_eff  7.22  |v|   66.5    3517s
