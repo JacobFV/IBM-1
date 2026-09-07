@@ -77,12 +77,23 @@ wrong point on the curve while the training data is eleven minutes of one film.
 14 GB intermediate that autograd was keeping; batch size, bf16 and
 `torch.compile` are the remaining unclaimed ~6×.
 
-### bandwidth is a real constraint
-the ISP allows roughly **200 GB/day**. that is a planning constraint, not a
-footnote: acquiring the 10+ hours of varied video the next milestone needs is
-measured in days of downloading, and re-downloading anything already held is a
-waste of a scarce resource. **do not delete a held corpus to reclaim disk** —
-637 GB is free.
+### bandwidth policy
+**HuggingFace traffic is unmetered for planning purposes** — checkpoint uploads,
+migrations and weight downloads are not budgeted and should not be deferred for
+bandwidth reasons.
+
+**everything else carries a 300 GB ceiling.** that is corpus acquisition:
+OpenNeuro, OSF, Dryad, archive.org. spend it on PAIRED stimulus-brain data, which
+is the scarce resource. unpaired naturalistic video is not worth a byte of it —
+it is effectively free and effectively unlimited, and the self-supervised term
+that consumes it is the *volume* term, not the constraining one.
+
+spent so far this cycle: ~50 GB (THINGS-EEG2 40.4, THINGS images 5, a discarded
+public-domain film experiment ~6). **~250 GB remains**, which covers narratives
+(ds002345, 144 GB) with room over.
+
+**do not delete a held corpus to reclaim disk** — 600+ GB is free, and a
+re-download costs budget that paired data should get instead.
 
 ---
 

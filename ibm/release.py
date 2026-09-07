@@ -51,7 +51,12 @@ from pathlib import Path
 #: r4  multi-step prediction horizon; cross-modal ports
 DYNAMICS_REV = "r4"
 
-REPO_ID = "brandonin/ibm-1"
+#: the programme's account, not the machine account the work was started under.
+#: a run still holding the old value uploads to a repo that no longer exists and
+#: prints a failure -- harmless, because `torch.save` happens BEFORE the upload
+#: (a convenience must not be able to destroy the artefact), so the weights are on
+#: local disk either way and can be pushed afterwards.
+REPO_ID = "jacob-valdez/ibm-1"
 
 
 def git_sha() -> str:

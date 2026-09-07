@@ -655,6 +655,42 @@ _ready = {st.id for st in frontier()[0]}
 registry["curriculum"] = [dict(id=st.id, title=st.title, deps=list(st.deps), gate=st.gate,
                                status=("ready" if st.id in _ready and st.status.name == "BLOCKED" else st.status.name.lower()))
                           for st in STAGES]
+# ------------------------------------------------------------ the source cards ----
+import yaml  # noqa: E402
+
+cards, skipped = [], []
+for n, d in enumerate(sorted((ROOT / "data/sources").iterdir()), 1):
+    f = d / "card.yaml"
+    if not f.exists():
+        continue
+    try:
+        c = yaml.safe_load(f.read_text())
+    except Exception:
+        skipped.append(d.name)
+        continue
+    streams = c.get("streams") or []
+    measured = [st for st in streams if st.get("kind") == "measured"] or streams
+    desc = ""
+    for st in measured + streams:
+        for k in ("systematic_bias", "notes"):
+            if st.get(k):
+                desc = first_sentence(str(st[k]))
+                break
+        if desc:
+            break
+    if not desc:
+        desc = first_sentence(str(c.get("citation") or ""))
+    cards.append(dict(
+        n=len(cards) + 1, id=c.get("id") or d.name, title=str(c.get("title") or d.name),
+        provider=str(c.get("provider") or ""), access=str(c.get("access") or ""), binding=str(c.get("binding") or ""),
+        use=list(c.get("use") or []), streams=len(streams),
+        kinds=sorted({str(st.get("kind")) for st in streams if st.get("kind")}),
+        desc=desc, url=f"https://github.com/JacobFV/IBM-1/blob/main/data/sources/{d.name}/card.yaml",
+    ))
+CARDS = ROOT / "site/data/cards.js"
+CARDS.write_text("window.IBM_CARDS = " + json.dumps(cards, separators=(",", ":"), ensure_ascii=False) + ";\n")
+print(f"wrote {CARDS} ({CARDS.stat().st_size/1e3:.0f} kB): {len(cards)} cards, skipped {skipped}")
+
 REG = ROOT / "site/data/registry.js"
 REG.write_text("window.IBM_REGISTRY = " + json.dumps(registry, separators=(",", ":")) + ";\n")
 print(f"wrote {REG} ({REG.stat().st_size/1e3:.0f} kB): {len(registry['fields'])} fields, "
