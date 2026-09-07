@@ -1,0 +1,13 @@
+ckpt/visual_contrastive_v2.pt: step 5800, trained top-1 35.00%
+  full       top-1 30.12% +/- 3.14  (60.2x chance)
+  frozen     top-1 17.15% +/- 2.04  (34.3x chance)
+  no_assoc   top-1 17.07% +/- 1.98  (34.1x chance)
+  bypass     top-1 15.02% +/- 2.82  (30.0x chance)
+
+  arm         top-1     x chance   retained
+  full        30.12%      60.2    100.0%
+  frozen      17.15%      34.3     56.9%
+  no_assoc    17.07%      34.1     56.7%
+  bypass      15.02%      30.0     49.9%
+
+  bypass retains 49.9% of full  ->  DYNAMICS CONTRIBUTE -- bypassing loses most of the retrieval

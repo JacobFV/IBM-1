@@ -36,6 +36,51 @@ already written.
 
 ---
 
+## 2026-09-07 (afternoon) — what the retrieval is actually made of
+
+the 30k-site visual run finished 8,000 steps and its checkpoint was stamped
+**35.00%**. that number is a single held-out pool of 200, and the evaluations
+around it sat between 24.0% and 31.5%. measured honestly over 20 pools the
+checkpoint is **30.12% ± 3.14** — 60x chance. the stamp was a lucky draw, which
+is ledger row 9 recurring in the same run that recorded it, so the gate was
+changed rather than noted: it now reads the mean over 8 pools, seeded on the
+step so runs stay comparable, with the sd carried into the sidecar.
+
+the four-arm ablation separates who earns the 30.12%:
+
+| arm | top-1 | retained | what it removes |
+|---|---|---|---|
+| full | 30.12% ± 3.14 | 100% | — |
+| frozen | 17.15% ± 2.04 | 56.9% | the learned association, kept at init |
+| no_assoc | 17.07% ± 1.98 | 56.7% | association entirely |
+| bypass | 15.02% ± 2.82 | 49.9% | the dynamics |
+
+read down the column rather than across. dynamics with no association are worth
+**2.05 points** over no dynamics at all. a randomly initialised association is
+worth **0.08 points** beyond none — nothing. *learning* it is worth **12.97
+points**. so the learned cortico-cortical connectivity is not a contributor
+among several, it is the largest single one, and its share has now compounded
+15% -> 24% -> 35% -> **43.1%** across successive runs.
+
+one number moved against us and is recorded as such: bypass retention rose from
+41% to 49.9%, so the dynamics' own share fell from 59% to 50.1% as the
+association's grew. the substrate is still load-bearing by a wide margin, but
+half the retrieval now survives skipping it.
+
+s7.joint was still marked RUNNING in `ibm/curriculum.py` while the process
+holding it had been killed hours earlier — the first thing another agent reads
+to find the frontier pointed at a run that did not exist. it is FAILED against
+its own gate now, with the structural claim (32.0M shared substrate against
+9.9M and 3.0M heads) kept and the performance claim withdrawn.
+
+the 150k-site run on the remote box briefly looked like a collapse: effective
+rank fell 5.52 -> 1.83 by step 250, which is the documented stop condition. it
+was not stopped, because the 30k run did the same thing (4.62 -> 2.43 at step
+200) and went on to 26.5% by step 1,800 and r_eff 8.5 by the end. against that
+trajectory the 150k run is ahead — 3.75% ± 0.71 at step 250 against 2.00% at
+200. **the check is the one CLAUDE.md already prescribes: compare against a case
+whose answer you know, not against the quantity's own earlier value.**
+
 ## 2026-09-07 — the visual term works
 
 **the cortex beats the encoder it was supposed to merely not obstruct.**

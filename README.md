@@ -49,11 +49,22 @@ python -m ibm.curriculum                                       # the training DA
   swing.
 - **The cortex beats the encoder it was meant to merely not obstruct.** Image →
   cortical dynamics → embedding, contrastively aligned with measured 64-channel EEG
-  (THINGS-EEG2), concept-disjoint held-out split: **26.6% top-1 over 20 pools of
-  200 — 53× chance**, against a dynamics-free control reaching 21.5% on the same
-  pairs. Bypassing the dynamics retains 41%; freezing the learned association
-  retains 65%, and that association's contribution grew 15% → 24% → 35% over one
-  run as it trained.
+  (THINGS-EEG2), concept-disjoint held-out split: **30.1% ± 3.1 top-1 over 20 pools
+  of 200 — 60× chance**, against a dynamics-free control reaching 21.5% on the same
+  pairs. Severing the model four ways separates who earns it:
+
+  | arm | top-1 | retained |
+  |---|---|---|
+  | full | 30.1% | 100% |
+  | association reset to init | 17.1% | 57% |
+  | association zeroed | 17.1% | 57% |
+  | dynamics bypassed | 15.0% | 50% |
+
+  Read down the column: the dynamics without a learned kernel are worth 2 points
+  over no dynamics at all, a *randomly initialised* association is worth nothing
+  beyond that — and learning it is worth **13 points**. The learned
+  cortico-cortical connectivity is the largest single contributor in the model,
+  and its share has compounded 15% → 24% → 35% → **43%** across successive runs.
 - **A body to inhabit.** 96 named muscles with nerve and root levels, 58 nerve
   trunks with fibre-class-resolved conduction (group Ia at 6 ms against
   unmyelinated C at 550 ms down the same sciatic nerve), four spinal reflex arcs,
