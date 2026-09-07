@@ -624,6 +624,37 @@ for mat in out["materializations"]:
 
 OUT.parent.mkdir(parents=True, exist_ok=True)
 OUT.write_text("window.IBM_GRAPH = " + json.dumps(out, separators=(",", ":")) + ";\n")
+
+
+# ------------------------------------------------ the registry, for the lists ----
+def first_sentence(doc):
+    d = re.sub(r"\s+", " ", (doc or "").strip())
+    m = re.match(r"(.+?[.!?])(\s|$)", d)
+    return (m.group(1) if m else d)[:220]
+
+
+from ibm.registry import REGISTRY as R  # noqa: E402
+
+registry = dict(
+    fields=[dict(id=f.name, doc=first_sentence(f.doc), support=f.support,
+                 components=[dict(id=c.id, units=c.units, doc=first_sentence(c.doc))
+                             for c in R.components.values() if c.field == f.name])
+            for f in R.fields.values()],
+    anatomy=[dict(id=a.name, doc=first_sentence(a.doc), frame=a.frame, labels=list(a.labels))
+             for a in R.anatomies.values()],
+    topologies=[dict(id=t.name, doc=first_sentence(t.doc), on=list(t.on), directed=bool(t.directed))
+                for t in R.topologies.values()],
+    processes=[dict(id=p.id, doc=first_sentence(p.doc), topology=p.topology, timescale_s=p.timescale_s,
+                    inputs=sorted({v for sel in p.inputs for v in sel.vars}),
+                    outputs=sorted({v for sel in p.outputs for v in sel.vars}))
+               for p in R.processes.values()],
+    supports=[dict(id=s.name, kind=getattr(s, "kind", None)) for s in R.supports.values()],
+)
+REG = ROOT / "site/data/registry.js"
+REG.write_text("window.IBM_REGISTRY = " + json.dumps(registry, separators=(",", ":")) + ";\n")
+print(f"wrote {REG} ({REG.stat().st_size/1e3:.0f} kB): {len(registry['fields'])} fields, "
+      f"{sum(len(f['components']) for f in registry['fields'])} components, {len(registry['anatomy'])} systems, "
+      f"{len(registry['topologies'])} topologies, {len(registry['processes'])} processes")
 print(f"wrote {OUT} ({OUT.stat().st_size/1e6:.2f} MB)")
 print(out["counts"])
 for mat in materializations:

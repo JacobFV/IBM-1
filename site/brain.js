@@ -71,15 +71,17 @@ window.IBMBrain = (function () {
       gl_Position = projectionMatrix * mv;
     }`;
   const POINT_FS = `
-    varying vec3 vC; varying float vW; varying float vD;
+    varying vec3 vC; varying float vW; varying float vD; uniform float light;
     void main(){
       vec2 q = gl_PointCoord - 0.5; float d = length(q);
       if (d > 0.5) discard;
       float w = clamp(vW, 0.0, 1.0);
       float a = smoothstep(0.5, 0.3, d);
       float lum = mix(0.28, 1.0, w);
-      vec3 c = mix(vC * lum, vec3(1.0), 0.14 * w * (1.0 - smoothstep(0.0, 0.25, d)));
-      float alpha = a * mix(0.10, 1.0, w) * mix(1.0, mix(0.45, 0.8, w), vD);
+      vec3 dark = mix(vC * lum, vec3(1.0), 0.14 * w * (1.0 - smoothstep(0.0, 0.25, d)));
+      vec3 pale = mix(vC * mix(0.9, 0.72, w), vec3(0.55), 0.35 * (1.0 - w));
+      vec3 c = mix(dark, pale, light);
+      float alpha = a * mix(mix(0.10, 0.28, light), 1.0, w) * mix(1.0, mix(0.45, 0.8, w), vD);
       gl_FragColor = vec4(c, alpha);
     }`;
   const LINE_VS = `
@@ -87,20 +89,23 @@ window.IBMBrain = (function () {
     void main(){ vC = color; vW = clamp(w, 0.0, 1.0); vec4 mv = modelViewMatrix * vec4(position, 1.0);
       vD = clamp((-mv.z - 260.0) / 260.0, 0.0, 1.0); gl_Position = projectionMatrix * mv; }`;
   const LINE_FS = `
-    varying vec3 vC; varying float vW; varying float vD;
-    void main(){ float alpha = mix(0.03, 0.42, vW) * mix(1.0, 0.4, vD);
-      gl_FragColor = vec4(mix(vC, vec3(1.0), 0.15 * vW), alpha); }`;
+    varying vec3 vC; varying float vW; varying float vD; uniform float light;
+    void main(){ float alpha = mix(mix(0.03, 0.06, light), mix(0.42, 0.55, light), vW) * mix(1.0, 0.4, vD);
+      vec3 c = mix(mix(vC, vec3(1.0), 0.15 * vW), vC * 0.6, light);
+      gl_FragColor = vec4(c, alpha); }`;
   const SHEET_VS = `
     attribute float w; attribute vec3 color; varying vec3 vC; varying float vW; varying float vD;
     void main(){ vC = color; vW = clamp(w, 0.0, 1.0); vec4 mv = modelViewMatrix * vec4(position, 1.0);
       vD = clamp((-mv.z - 260.0) / 260.0, 0.0, 1.0); gl_Position = projectionMatrix * mv; }`;
   const SHEET_FS = `
-    varying vec3 vC; varying float vW; varying float vD; uniform float base;
+    varying vec3 vC; varying float vW; varying float vD; uniform float base; uniform float light;
     void main(){ float alpha = base * mix(0.25, 1.0, vW) * mix(1.0, 0.5, vD);
-      gl_FragColor = vec4(mix(vC, vec3(0.5, 0.55, 0.7), 0.25), alpha); }`;
+      vec3 c = mix(mix(vC, vec3(0.5, 0.55, 0.7), 0.25), mix(vC, vec3(0.35, 0.38, 0.45), 0.3), light);
+      gl_FragColor = vec4(c, alpha); }`;
 
   // ------------------------------------------------------------ scene ----
-  function createScene(renderer) {
+  function createScene(renderer, opts) {
+    const light = { value: opts && opts.light ? 1 : 0 };
     const scene = new THREE.Scene();
     const pivot = new THREE.Group();
     scene.add(pivot);
@@ -113,14 +118,14 @@ window.IBMBrain = (function () {
     pgeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     pgeo.setAttribute('size', new THREE.BufferAttribute(size, 1));
     pgeo.setAttribute('w', new THREE.BufferAttribute(wCur, 1));
-    const points = new THREE.Points(pgeo, new THREE.ShaderMaterial({ uniforms: { pr: { value: renderer.getPixelRatio() } }, vertexShader: POINT_VS, fragmentShader: POINT_FS, transparent: true, depthWrite: false }));
+    const points = new THREE.Points(pgeo, new THREE.ShaderMaterial({ uniforms: { pr: { value: renderer.getPixelRatio() }, light }, vertexShader: POINT_VS, fragmentShader: POINT_FS, transparent: true, depthWrite: false }));
     points.renderOrder = 5;
 
     const lgeo = new THREE.BufferGeometry();
     lgeo.setAttribute('position', new THREE.BufferAttribute(epos, 3));
     lgeo.setAttribute('color', new THREE.BufferAttribute(ecol, 3));
     lgeo.setAttribute('w', new THREE.BufferAttribute(ew, 1));
-    const lines = new THREE.LineSegments(lgeo, new THREE.ShaderMaterial({ vertexShader: LINE_VS, fragmentShader: LINE_FS, transparent: true, depthWrite: false }));
+    const lines = new THREE.LineSegments(lgeo, new THREE.ShaderMaterial({ uniforms: { light }, vertexShader: LINE_VS, fragmentShader: LINE_FS, transparent: true, depthWrite: false }));
     lines.renderOrder = 4;
 
     // the cortical sheet: the same triangulation the edges came from, as a translucent surface
@@ -129,7 +134,7 @@ window.IBMBrain = (function () {
     cgeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     cgeo.setAttribute('w', new THREE.BufferAttribute(wCur, 1));
     cgeo.setIndex(new THREE.BufferAttribute(cortexIndex, 1));
-    const sheet = new THREE.Mesh(cgeo, new THREE.ShaderMaterial({ uniforms: { base: { value: 0.13 } }, vertexShader: SHEET_VS, fragmentShader: SHEET_FS, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    const sheet = new THREE.Mesh(cgeo, new THREE.ShaderMaterial({ uniforms: { base: { value: 0.13 }, light }, vertexShader: SHEET_VS, fragmentShader: SHEET_FS, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
     sheet.renderOrder = 2;
 
     // subcortical structures as convex volumes
@@ -137,7 +142,7 @@ window.IBMBrain = (function () {
     hgeo.setAttribute('position', new THREE.BufferAttribute(hpos, 3));
     hgeo.setAttribute('color', new THREE.BufferAttribute(hcol, 3));
     hgeo.setAttribute('w', new THREE.BufferAttribute(hw, 1));
-    const hulls = new THREE.Mesh(hgeo, new THREE.ShaderMaterial({ uniforms: { base: { value: 0.2 } }, vertexShader: SHEET_VS, fragmentShader: SHEET_FS, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    const hulls = new THREE.Mesh(hgeo, new THREE.ShaderMaterial({ uniforms: { base: { value: 0.2 }, light }, vertexShader: SHEET_VS, fragmentShader: SHEET_FS, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
     hulls.renderOrder = 3;
 
     // the scalp: the subject's outer-skin BEM surface, as a ghost of the head
@@ -147,9 +152,21 @@ window.IBMBrain = (function () {
     sgeo.setIndex(new THREE.BufferAttribute(sidx, 1));
     const scalp = new THREE.Mesh(sgeo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.05, depthWrite: false, side: THREE.BackSide }));
     const scalpWire = new THREE.Mesh(sgeo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.07, depthWrite: false, wireframe: true }));
+    if (light.value) { scalp.material.color.setRGB(0.5, 0.5, 0.5); scalpWire.material.color.setRGB(0.45, 0.45, 0.5); scalp.material.opacity = 0.07; scalpWire.material.opacity = 0.16; }
+
+    // pulses: a small pool of travelling points, driven by the view
+    const PN = 480;
+    const ppos = new Float32Array(PN * 3), pcol = new Float32Array(PN * 3), psize = new Float32Array(PN), pw = new Float32Array(PN);
+    const pgeo2 = new THREE.BufferGeometry();
+    pgeo2.setAttribute('position', new THREE.BufferAttribute(ppos, 3));
+    pgeo2.setAttribute('color', new THREE.BufferAttribute(pcol, 3));
+    pgeo2.setAttribute('size', new THREE.BufferAttribute(psize, 1));
+    pgeo2.setAttribute('w', new THREE.BufferAttribute(pw, 1));
+    const pulses = new THREE.Points(pgeo2, new THREE.ShaderMaterial({ uniforms: { pr: { value: renderer.getPixelRatio() }, light }, vertexShader: POINT_VS, fragmentShader: POINT_FS, transparent: true, depthWrite: false, depthTest: false }));
+    pulses.renderOrder = 6; pulses.frustumCulled = false;
     scalp.renderOrder = 0; scalpWire.renderOrder = 1;
 
-    pivot.add(scalp, scalpWire, sheet, hulls, lines, points);
+    pivot.add(scalp, scalpWire, sheet, hulls, lines, points, pulses);
 
     function syncDerived() {
       for (let e = 0; e < E; e++) { const [a, b] = G.edges[e]; const v = Math.min(wCur[a], wCur[b]); ew[2 * e] = v; ew[2 * e + 1] = v; }
@@ -158,7 +175,8 @@ window.IBMBrain = (function () {
       lgeo.attributes.w.needsUpdate = true; hgeo.attributes.w.needsUpdate = true;
     }
     function setScalp(v) { scalp.material.opacity = 0.05 * v; scalpWire.material.opacity = 0.07 * v; }
-    return { scene, pivot, wCur, syncDerived, setScalp };
+    function setPulses(fn) { fn(ppos, pcol, psize, pw, PN); pgeo2.attributes.position.needsUpdate = true; pgeo2.attributes.color.needsUpdate = true; pgeo2.attributes.size.needsUpdate = true; pgeo2.attributes.w.needsUpdate = true; }
+    return { scene, pivot, wCur, syncDerived, setScalp, setPulses, PN };
   }
 
   // ------------------------------------------------- weights per mode ----
@@ -340,6 +358,59 @@ window.IBMBrain = (function () {
     return r < 18 ? null : { az: Math.atan2(w[0], w[2]), el: Math.max(0.05, Math.min(0.75, Math.atan2(w[1], r) * 0.6 + 0.2)) };
   }
 
+  // --- pulses ---------------------------------------------------------------
+  // a pulse is a short trail moving along one arc from an input node, over
+  // the model's focus, to an output node.  ~3 s each, spawned continuously
+  // while a materialization is selected, cyan on the way in, amber on the way out.
+  function makePulses(S) {
+    const IN = [0.39, 0.83, 0.9], OUT = [0.94, 0.7, 0.29];
+    const TRAIL = 8, MAXP = Math.floor(S.PN / TRAIL);
+    const live = [];
+    let model = null, spawnAt = 0;
+    const world = (p) => toWorld(p);
+    const arc = (a, b) => {
+      // an arc over the surface: the midpoint pushed away from the brain's centre
+      const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
+      const L = Math.hypot(m[0], m[1], m[2]) || 1;
+      const d = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+      const k = (Math.max(95, L) + d * 0.25) / L;
+      return [m[0] * k, m[1] * k, m[2] * k];
+    };
+    const bez = (a, c, b, t) => { const u = 1 - t; return [u * u * a[0] + 2 * u * t * c[0] + t * t * b[0], u * u * a[1] + 2 * u * t * c[1] + t * t * b[1], u * u * a[2] + 2 * u * t * c[2] + t * t * b[2]]; };
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    function set(m) { model = m; live.length = 0; }
+    function spawn(now) {
+      const ins = model.inputs.filter((x) => x._nodes.length), outs = model.outputs.filter((x) => x._nodes.length);
+      const src = ins.length ? world(G.nodes[pick(pick(ins)._nodes)].p) : world(pick(model.inputs).anchor);
+      const dst = outs.length ? world(G.nodes[pick(pick(outs)._nodes)].p) : world(model.focus_anchor);
+      const mid = world(G.nodes[pick(model._hot)].p);
+      live.push({ t0: now, dur: 2600 + Math.random() * 1200, a: src, c1: arc(src, mid), m: mid, c2: arc(mid, dst), b: dst });
+    }
+    function tick(now, S_) {
+      if (model && now > spawnAt && live.length < MAXP) { spawn(now); spawnAt = now + 140 + Math.random() * 120; }
+      for (let i = live.length - 1; i >= 0; i--) if (now - live[i].t0 > live[i].dur) live.splice(i, 1);
+      S_.setPulses((pos, col, size, w, PN) => {
+        w.fill(0);
+        live.forEach((p, k) => {
+          const u = (now - p.t0) / p.dur;
+          for (let j = 0; j < TRAIL; j++) {
+            const uu = u - j * 0.012;
+            const idx = k * TRAIL + j;
+            if (uu < 0 || uu > 1) { w[idx] = 0; continue; }
+            const q = uu < 0.5 ? bez(p.a, p.c1, p.m, uu * 2) : bez(p.m, p.c2, p.b, (uu - 0.5) * 2);
+            pos[3 * idx] = q[0]; pos[3 * idx + 1] = q[1]; pos[3 * idx + 2] = q[2];
+            const mixc = Math.min(1, Math.max(0, (uu - 0.35) / 0.3));
+            col[3 * idx] = IN[0] + (OUT[0] - IN[0]) * mixc; col[3 * idx + 1] = IN[1] + (OUT[1] - IN[1]) * mixc; col[3 * idx + 2] = IN[2] + (OUT[2] - IN[2]) * mixc;
+            const fade = Math.min(1, uu * 8) * Math.min(1, (1 - uu) * 8);
+            size[idx] = (j === 0 ? 5.2 : 3.6 - j * 0.35);
+            w[idx] = (j === 0 ? 1 : 0.7 - j * 0.08) * fade;
+          }
+        });
+      });
+    }
+    return { set, tick, get active() { return !!model; } };
+  }
+
   // --- the interactive opener -------------------------------------------
   function createHero(els) {
     const { hero, canvas, svg, ring, selTitle, selGroup, selDoc, selMeta, inCol, outCol, closeBtn, hint } = els;
@@ -349,6 +420,7 @@ window.IBMBrain = (function () {
     const S = createScene(renderer);
     const camera = cameraFor(1);
     const anim = makeAnimator(S.wCur);
+    const pulses = makePulses(S);
     S.wCur.set(rest); S.syncDerived();
     const state = { selected: null, hover: null };
     const orbit = { az: -0.65, el: 0.32, dist: 430, tAz: -0.65, tEl: 0.32, tDist: 430, vAz: 0, vEl: 0, dragging: false, lastX: 0, lastY: 0, idle: 0, glide: 0.12 };
@@ -462,6 +534,7 @@ window.IBMBrain = (function () {
       const regions = m.regions.length ? m.regions.join(', ') : (m.systems.length ? m.systems.join(', ') : m.supports.join(', ') || 'whole substrate');
       selMeta.innerHTML = `<span><b>names</b> ${regions}</span><span><b>window</b> ${m.window_n} × ${dtText}</span><span><b>nodes lit</b> ${m._hot.length} of ${N}</span>`;
       buildAnnotations(m);
+      setTimeout(() => { if (state.selected === id) pulses.set(m); }, reduceMotion ? 0 : 900);
       const f = focusAzimuth(m.focus_anchor);
       if (f) { let d = f.az - orbit.tAz; d = Math.atan2(Math.sin(d), Math.cos(d)); orbit.tAz += d; orbit.tEl = f.el; }
       orbit.tDist *= 470 / 430; orbit.glide = 0.045;
@@ -471,6 +544,7 @@ window.IBMBrain = (function () {
       if (!state.selected) return;
       const m = byId[state.selected];
       state.selected = null;
+      pulses.set(null);
       hero.classList.remove('has-selection');
       anim.start(weightsFor(null), { origin: m.focus_anchor, base: 450, spread: 650, baseDelay: 120, inward: false });
       ringItems.forEach((it) => it.el.classList.remove('is-active', 'is-hover'));
@@ -528,8 +602,10 @@ window.IBMBrain = (function () {
       const g = orbit.dragging ? 0.2 : orbit.glide;
       orbit.az += (orbit.tAz - orbit.az) * g; orbit.el += (orbit.tEl - orbit.el) * g; orbit.dist += (orbit.tDist - orbit.dist) * g * 0.8;
       placeCamera(camera, orbit.az, orbit.el, orbit.dist);
+      window.IBM_ZOOM = 430 / orbit.dist;
       S.pivot.updateMatrixWorld();
       if (anim.tick(now)) S.syncDerived();
+      if (pulses.active || now < 100) pulses.tick(now, S);
       renderer.render(S.scene, camera);
       drawLeaders();
       requestAnimationFrame(frame);
@@ -548,13 +624,23 @@ window.IBMBrain = (function () {
   // a figure element carries data-snap; its spec says what to light, where to
   // look from, and what to annotate.  rendered once through one shared
   // offscreen renderer and copied into the figure's own canvas.
-  let snapRenderer = null, snapScene = null;
+  let snapRenderer = null, snapScenes = {};
+  function isLight() {
+    const t = document.documentElement.dataset.theme;
+    if (t === 'dark') return false; if (t === 'light') return true;
+    return !window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
   function snapshot(fig, spec) {
     if (!snapRenderer) {
       snapRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
       snapRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      snapScene = createScene(snapRenderer);
+      snapRenderer.setClearColor(0x000000, 0);
     }
+    const light = isLight();
+    const key = light ? 'light' : 'dark';
+    if (!snapScenes[key]) snapScenes[key] = createScene(snapRenderer, { light });
+    const snapScene = snapScenes[key];
+    fig.dataset.theme = key;
     const out = fig.querySelector('canvas'), svg = fig.querySelector('svg'), labels = fig.querySelector('.snap-labels');
     ensureMarkers(svg);
     const W = fig.clientWidth, H = Math.round(W * (spec.aspect || 0.66));
@@ -622,7 +708,10 @@ window.IBMBrain = (function () {
     }, { rootMargin: '300px 0px' });
     figs.forEach((f) => io.observe(f));
     let t = null;
-    window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => figs.forEach((f) => { if (f.classList.contains('rendered')) { const s = specs[f.dataset.snap]; if (s) snapshot(f, s); } }), 250); });
+    const redo = () => { clearTimeout(t); t = setTimeout(() => figs.forEach((f) => { if (f.classList.contains('rendered')) { const s = specs[f.dataset.snap]; if (s) snapshot(f, s); } }), 250); };
+    window.addEventListener('resize', redo);
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redo);
+    new MutationObserver(redo).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
 
   return { G, byId, MATS, createHero, mountSnapshots, weightsFor, A, finish, nodesWhere, group, region, hemi, rest, N };
