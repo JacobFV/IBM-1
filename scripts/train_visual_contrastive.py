@@ -124,13 +124,13 @@ def main() -> None:
                 torch.save({"model": model.state_dict(), "step": step,
                             "top1": top1, "config": vars(a)}, a.ckpt)
             print(f"{step:5d}  loss {float(loss):.4f}  top-1 {100*top1:5.2f}%  "
-                  f"({100*top1/(1/a.pool):.0f}x chance)  r_eff {r_eff:5.2f}  "
+                  f"({top1*a.pool:.1f}x chance)  r_eff {r_eff:5.2f}  "
                   f"{time.time()-t0:6.0f}s{flag}", flush=True)
 
     log["best_top1"] = best
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
     json.dump(log, open(a.out, "w"), indent=2)
-    print(f"best held-out top-1: {100*best:.2f}% ({100*best/(1/a.pool):.0f}x chance)",
+    print(f"best held-out top-1: {100*best:.2f}% ({best*a.pool:.1f}x chance)",
           flush=True)
 
 
