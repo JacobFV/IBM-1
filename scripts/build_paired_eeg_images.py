@@ -27,7 +27,7 @@ import zipfile
 import numpy as np
 
 EEG_DIR = "data/sources/things-eeg2/raw"
-IMG_DIR = "data/sources/things-images/raw/object_images"
+IMG_DIR = "data/sources/things-eeg2/raw/imageset"
 OUT = "data/derived/things-paired"
 SIZE = 64
 
@@ -43,25 +43,27 @@ def load_subject(zip_path: str, split: str) -> tuple[np.ndarray, list[str]]:
     return x.mean(1).astype(np.float32), list(d["ch_names"])
 
 
-def image_order() -> list[str]:
-    """the THINGS image list in concept order.
+def image_order(split: str) -> list[str]:
+    """the image order THINGS-EEG2 declares, read from its own metadata.
 
-    reconstructed from the directory rather than assumed: concepts sorted, then
-    images within a concept sorted, which is the order the THINGS-EEG2 arrays
-    follow.  the caller checks the count against the array length and refuses to
-    pair if they disagree, because a silent off-by-one here would train the model
-    on systematically mismatched image/response pairs and every downstream number
-    would be meaningless.
+    an earlier version RECONSTRUCTED this by walking the full THINGS image
+    directory in sorted order and taking the first n.  it was wrong for 16,530 of
+    16,540 pairs -- 0.06% agreement -- because THINGS-EEG2 uses ten images from
+    each of 1,654 concepts while a directory walk takes every image from the first
+    1,162 concepts alphabetically.  the counts matched, so the count check passed,
+    and every downstream result was measured on mismatched pairs: regression at
+    chance in both directions, retrieval at chance, and training loss collapsing to
+    0.014 because arbitrary pairings are perfectly memorisable.
+
+    the lesson is not "check the count".  it is that an ordering must come from the
+    dataset that defines it, never from a reconstruction that happens to be the
+    right length.
     """
-    out = []
-    for concept in sorted(os.listdir(IMG_DIR)):
-        p = os.path.join(IMG_DIR, concept)
-        if not os.path.isdir(p):
-            continue
-        for img in sorted(os.listdir(p)):
-            if img.lower().endswith((".jpg", ".jpeg", ".png")):
-                out.append(os.path.join(p, img))
-    return out
+    m = np.load(os.path.join(IMG_DIR, "image_metadata.npy"), allow_pickle=True).item()
+    concepts = m[f"{'train' if split == 'training' else 'test'}_img_concepts"]
+    files = m[f"{'train' if split == 'training' else 'test'}_img_files"]
+    sub = "training_images" if split == "training" else "test_images"
+    return [os.path.join(IMG_DIR, sub, c, f) for c, f in zip(concepts, files)]
 
 
 def load_images(paths: list[str], size: int = SIZE) -> np.ndarray:
@@ -117,21 +119,21 @@ def main() -> None:
     np.save(f"{OUT}/evoked_{a.split}_persubject.npy", E)
     np.save(f"{OUT}/evoked_{a.split}_groupmean.npy", G)
 
-    paths = image_order()
+    paths = image_order(a.split)
     n_img = E.shape[1]
-    print(f"images on disk: {len(paths)}   EEG expects: {n_img}", flush=True)
-    if a.split == "test":
-        print("  test split is a 200-image subset whose identity is not recoverable "
-              "from the directory alone -- images NOT written for this split, and "
-              "the evoked arrays are still usable for anything that does not need "
-              "the stimulus", flush=True)
-    elif len(paths) < n_img:
-        print(f"  REFUSING to pair: {len(paths)} images for {n_img} responses. "
-              "a silent off-by-one here trains on mismatched pairs", flush=True)
+    print(f"declared image order: {len(paths)}   EEG expects: {n_img}", flush=True)
+    if len(paths) != n_img:
+        print(f"  REFUSING to pair: the declared order has {len(paths)} entries for "
+              f"{n_img} responses", flush=True)
     else:
-        imgs = load_images(paths[:n_img])
-        np.save(f"{OUT}/images_{a.split}.npy", imgs)
-        print(f"  wrote images {imgs.shape}", flush=True)
+        missing = [p for p in paths[:20] if not os.path.exists(p)]
+        if missing:
+            print(f"  REFUSING to pair: {missing[0]} does not exist", flush=True)
+        else:
+            imgs = load_images(paths)
+            np.save(f"{OUT}/images_{a.split}.npy", imgs)
+            np.save(f"{OUT}/image_paths_{a.split}.npy", np.array(paths))
+            print(f"  wrote images {imgs.shape} in the DECLARED order", flush=True)
 
     np.save(f"{OUT}/channels.npy", np.array(chans))
     print(f"\nwrote {OUT}: {E.shape[0]} subjects, {n_img} images, "

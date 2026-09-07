@@ -27,6 +27,13 @@ ONSET, KEEP, DEC = 20, 50, 2
 def main() -> None:
     import argparse
     ap = argparse.ArgumentParser()
+    ap.add_argument("--target", choices=("groupmean", "persubject"), default="groupmean",
+                    help="groupmean averages the evoked response over 9 subjects, which "
+                         "suppresses everything except the generic ERP shape -- and that "
+                         "shape is identical for every image, so predicting the mean is "
+                         "optimal by construction. persubject keeps one subject, where "
+                         "image-specific structure survives at the cost of SNR")
+    ap.add_argument("--subject", type=int, default=0)
     ap.add_argument("--split", choices=("contiguous", "random"), default="contiguous",
                     help="contiguous is by image index, and THINGS orders by concept, "
                          "so train and test hold DISJOINT object categories -- the model "
@@ -36,7 +43,11 @@ def main() -> None:
     a = ap.parse_args()
     dev = "cuda" if torch.cuda.is_available() else "cpu"
     imgs = np.load(f"{D}/images_training.npy", mmap_mode="r")
-    ev = np.load(f"{D}/evoked_training_groupmean.npy", mmap_mode="r")
+    if a.target == "persubject":
+        _e = np.load(f"{D}/evoked_training_persubject.npy", mmap_mode="r")
+        ev = _e[a.subject]
+    else:
+        ev = np.load(f"{D}/evoked_training_groupmean.npy", mmap_mode="r")
     n = min(len(imgs), len(ev))
     ntr = int(n * 0.8)
     if a.split == "random":
@@ -57,7 +68,7 @@ def main() -> None:
     base = float((tgt(np.sort(te_idx)[::13]) ** 2).mean())
     T = tgt(np.arange(0, 4)).shape[-1]
     C = ev.shape[1]
-    print(f"baseline {base:.4f} | target {C} channels x {T} samples | "
+    print(f"[{a.target}] baseline {base:.4f} | target {C} channels x {T} samples | "
           f"{a.split} split: {len(tr_idx):,} train / {len(te_idx):,} test", flush=True)
 
     m = nn.Sequential(
