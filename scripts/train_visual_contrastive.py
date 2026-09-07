@@ -15,6 +15,11 @@ retrieval is reported on a held-out pool of concept-disjoint images, against
 peaked at step 500 and decayed to 4.5% by 4000 while training loss kept falling,
 which is ordinary overfitting on 13k pairs.  so the best held-out score is tracked
 and the checkpoint is written when it improves, rather than at a fixed interval.
+
+the score that gate reads is the MEAN over several pools, not one.  a single pool
+of 200 carries sd ~2.8 points, and taking the best single draw across a few hundred
+evaluations selects the lucky pool rather than the better weights -- the same shape
+of error as reporting a metric against the wrong population.
 """
 from __future__ import annotations
 
@@ -51,6 +56,11 @@ def main() -> None:
     ap.add_argument("--dt", type=float, default=2e-2)
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--pool", type=int, default=200)
+    ap.add_argument("--eval-pools", type=int, default=8,
+                    help="held-out pools averaged per evaluation.  a single pool of "
+                         "200 has sd ~2.8 points, so checkpointing on the best single "
+                         "draw selects lucky pools rather than better weights -- the "
+                         "mean over several pools is what the checkpoint gate reads")
     ap.add_argument("--n-steps", type=int, default=4,
                     help="dynamics passes before reading the embedding; this "
                          "head uses one state, so it does not need an epoch")
@@ -105,17 +115,26 @@ def main() -> None:
         opt.step()
 
         if step % a.eval_every == 0:
+            accs = []
             with torch.no_grad():
-                j = np.random.randint(ntr, n - 1, a.pool)
-                xt = torch.from_numpy(np.ascontiguousarray(imgs[j])).to(dev)
-                xt = (xt.permute(0, 3, 1, 2).float() / 127.5) - 1
-                yt = torch.from_numpy(eeg(j)).to(dev)
-                zct, st = model.embed_image(xt, substeps=a.substeps, dt=a.dt, n_steps=a.n_steps)
-                sim = zct @ model.embed_eeg(yt).T
-                top1 = float((sim.argmax(1) ==
-                              torch.arange(len(j), device=dev)).float().mean())
+                # the pools are drawn from a generator seeded on the STEP, so every
+                # evaluation within a run sees a fresh sample while two runs compared
+                # against each other see the same one at the same step.
+                rng = np.random.default_rng(90_000 + step)
+                for _ in range(a.eval_pools):
+                    j = rng.integers(ntr, n - 1, a.pool)
+                    xt = torch.from_numpy(np.ascontiguousarray(imgs[j])).to(dev)
+                    xt = (xt.permute(0, 3, 1, 2).float() / 127.5) - 1
+                    yt = torch.from_numpy(eeg(j)).to(dev)
+                    zct, st = model.embed_image(xt, substeps=a.substeps, dt=a.dt,
+                                                n_steps=a.n_steps)
+                    sim = zct @ model.embed_eeg(yt).T
+                    accs.append(float((sim.argmax(1) ==
+                                       torch.arange(len(j), device=dev)).float().mean()))
                 r_eff = P.effective_rank(st[1][:, ::max(dyn.n // 512, 1)].float())
+            top1, top1_sd = float(np.mean(accs)), float(np.std(accs))
             rec = {"step": step, "loss": float(loss.detach()), "top1": top1,
+                   "top1_sd": top1_sd, "pools": a.eval_pools,
                    "chance": 1.0 / a.pool, "r_eff": r_eff,
                    "v_absmax": float(s[0].abs().max()), "sec": round(time.time() - t0, 1)}
             log["steps"].append(rec)
@@ -125,10 +144,11 @@ def main() -> None:
                 flag = "  <- best, checkpointed"
                 os.makedirs(os.path.dirname(a.ckpt) or ".", exist_ok=True)
                 torch.save({"model": model.state_dict(), "step": step,
-                            "top1": top1, "config": vars(a)}, a.ckpt)
-            print(f"{step:5d}  loss {float(loss):.4f}  top-1 {100*top1:5.2f}%  "
-                  f"({top1*a.pool:.1f}x chance)  r_eff {r_eff:5.2f}  "
-                  f"{time.time()-t0:6.0f}s{flag}", flush=True)
+                            "top1": top1, "top1_sd": top1_sd, "config": vars(a)},
+                           a.ckpt)
+            print(f"{step:5d}  loss {float(loss):.4f}  top-1 {100*top1:5.2f}% "
+                  f"+/-{100*top1_sd:.2f}  ({top1*a.pool:.1f}x chance)  "
+                  f"r_eff {r_eff:5.2f}  {time.time()-t0:6.0f}s{flag}", flush=True)
 
     log["best_top1"] = best
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
