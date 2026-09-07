@@ -37,3 +37,10 @@ Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pyto
  6400  loss 0.0695  top-1 30.50%  (61.0x chance)  r_eff  8.30   14948s
  6600  loss 0.0752  top-1 24.50%  (49.0x chance)  r_eff  8.04   15415s
  6800  loss 0.0585  top-1 30.00%  (60.0x chance)  r_eff  7.50   15870s
+ 7000  loss 0.0845  top-1 30.50%  (61.0x chance)  r_eff  8.40   16332s
+ 7200  loss 0.0947  top-1 24.00%  (48.0x chance)  r_eff  8.08   16784s
+ 7400  loss 0.0534  top-1 31.50%  (63.0x chance)  r_eff  8.19   17250s
+ 7600  loss 0.1365  top-1 26.00%  (52.0x chance)  r_eff  8.53   17719s
+ 7800  loss 0.0744  top-1 27.00%  (54.0x chance)  r_eff  7.90   18164s
+ 8000  loss 0.0700  top-1 32.00%  (64.0x chance)  r_eff  7.95   18609s
+best held-out top-1: 35.00% (70.0x chance)

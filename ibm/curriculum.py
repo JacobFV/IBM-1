@@ -190,9 +190,18 @@ STAGES: tuple[Stage, ...] = (
           "magnitude and cost -0.06% to sever. STOPPED at 29,000 and checkpointed "
           "(m-multi.s300k step029000) so the negative result is citable. what it "
           "does show survives: bypass +35.1%, long-range +27.09%. the remaining "
-          "route to this gate is a CONTRASTIVE auditory term -- regression was the "
-          "wrong objective for the visual branch too, and changing it there took "
-          "the term from skill +0.011 to 53x chance",
+          "CONTRASTIVE route recorded here is WITHDRAWN by measurement: the "
+          "control was run and sits at chance -- held-out top-1 0.0-1.0 against "
+          "0.5 chance over 13 evaluations, while its training loss falls "
+          "5.04 -> 2.83 -- so the objective was not what was wrong. "
+          "scripts/check_pairing.py then asked the corpus for the 1-8 Hz "
+          "speech-envelope tracking it must carry, and it does not: max |r| "
+          "0.0312 over 306 channels x 10 lags against a circular-shift null of "
+          "0.0278, p = 0.157. this gate is blocked on the DERIVATION, not on an "
+          "objective -- data/derived/libribrain-paired must pass "
+          "scripts/check_pairing.py before another auditory term is built on "
+          "it, and the +0.036 ceiling quoted above is suspended for the same "
+          "reason: it was measured against those same arrays",
           "both"),
 
     Stage("s8.curriculum", "expansion-aware stimulus selection", ("s6.scale",),
