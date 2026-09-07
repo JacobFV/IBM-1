@@ -650,6 +650,11 @@ registry = dict(
                for p in R.processes.values()],
     supports=[dict(id=s.name, kind=getattr(s, "kind", None)) for s in R.supports.values()],
 )
+from ibm.curriculum import STAGES, frontier  # noqa: E402
+_ready = {st.id for st in frontier()[0]}
+registry["curriculum"] = [dict(id=st.id, title=st.title, deps=list(st.deps), gate=st.gate,
+                               status=("ready" if st.id in _ready and st.status.name == "BLOCKED" else st.status.name.lower()))
+                          for st in STAGES]
 REG = ROOT / "site/data/registry.js"
 REG.write_text("window.IBM_REGISTRY = " + json.dumps(registry, separators=(",", ":")) + ";\n")
 print(f"wrote {REG} ({REG.stat().st_size/1e3:.0f} kB): {len(registry['fields'])} fields, "

@@ -357,7 +357,8 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 
 /* ================================================================= lineup */
 .body-wide { max-width: none; }
-.body-wide > .lede, .body-wide > .note { max-width: 68ch; }
+.body-wide > .lede, .body-wide > .note, .body-wide > .body-para { max-width: 68ch; }
+.body-para { margin: 8px 0 0; }
 .lineup { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px 28px; margin: 24px 0 40px; }
 .line { display: grid; gap: 0; align-content: start; }
 .line .snap { margin: 0 0 12px; border-bottom: 1px solid var(--rule); }
@@ -371,15 +372,6 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 .status-open { color: var(--half); }
 .status-declared { color: var(--muted); }
 .h-plain { margin: 8px 0 12px; font-size: 1.15rem; font-weight: 600; }
-.compute { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin: 12px 0 36px; border-top: 1px solid var(--text); }
-.compute > div { display: grid; gap: 6px; align-content: start; padding: 14px 14px 14px 0; border-right: 1px solid var(--rule); margin-right: 14px; }
-.compute > div:last-child { border-right: 0; margin-right: 0; }
-.compute b { font-family: var(--display); font-weight: 400; font-size: 1.5rem; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
-.compute span { font-size: 0.86rem; line-height: 1.4; color: var(--muted); }
-.traj { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin: 0 0 24px; }
-.traj > div { border-top: 1px solid var(--rule); padding-top: 10px; }
-.traj .mono { color: var(--accent); }
-.traj p { margin: 6px 0 0; font-size: 0.94rem; line-height: 1.5; }
 .wrong { margin: 6px 0 24px; padding: 0; list-style: none; counter-reset: wrong; display: grid; gap: 12px; }
 .wrong li { counter-increment: wrong; padding-left: 34px; position: relative; font-size: 0.96rem; line-height: 1.5; }
 .wrong li::before { content: counter(wrong); position: absolute; left: 0; top: 0.15em; font-family: var(--mono); font-size: 0.7rem; color: var(--fail); }
@@ -418,3 +410,29 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 .tip-link:hover { text-decoration: underline; }
 .tip-link::after { content: " →"; }
 .hero .ref { color: inherit; }
+
+/* ==================================================================== dag */
+.dag { margin: 12px 0 8px; }
+.dag svg { display: block; width: 100%; height: auto; overflow: visible; font-family: var(--mono); }
+.dag .edge { fill: none; stroke: var(--rule); stroke-width: 1.2; }
+.dag .edge.lit { stroke: var(--muted); }
+.dag .node circle { stroke-width: 1.5; fill: var(--paper); stroke: var(--rule); }
+.dag .node text.n { fill: var(--muted); font-size: 11px; text-anchor: middle; dominant-baseline: central; font-weight: 500; }
+.dag .node text.t { fill: var(--muted); font-size: 10.5px; text-anchor: middle; letter-spacing: 0.02em; }
+.dag .node.done circle { fill: var(--moved); stroke: var(--moved); }
+.dag .node.done text.n { fill: var(--paper); }
+.dag .node.done text.t { fill: var(--text); }
+.dag .node.running circle { fill: var(--half); stroke: var(--half); animation: dag-pulse 1.6s ease-in-out infinite; }
+.dag .node.running text.n { fill: var(--paper); }
+.dag .node.running text.t { fill: var(--text); }
+.dag .node.failed circle { stroke: var(--fail); fill: var(--paper); }
+.dag .node.failed text.n { fill: var(--fail); }
+.dag .node.ready circle { stroke: var(--muted); stroke-dasharray: 3 2; }
+@keyframes dag-pulse { 0%, 100% { opacity: 1; r: 13; } 50% { opacity: 0.55; r: 15; } }
+@media (prefers-reduced-motion: reduce) { .dag .node.running circle { animation: none; } }
+.dag-key { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 10px 0 0; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.dag-key span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; border: 1.5px solid var(--rule); }
+.dag-key .k-done::before { background: var(--moved); border-color: var(--moved); }
+.dag-key .k-running::before { background: var(--half); border-color: var(--half); }
+.dag-key .k-failed::before { border-color: var(--fail); }
+.dag-key .k-ready::before { border-style: dashed; border-color: var(--muted); }

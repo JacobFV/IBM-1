@@ -22,6 +22,26 @@
         <p class="reg-io"><span>${p.inputs.map((v) => `<code>${v}</code>`).join(' ')}</span><i>→</i><span>${p.outputs.map((v) => `<code>${v}</code>`).join(' ')}</span></p></div>`).join(''));
   }
 
+  // ---- the curriculum as a DAG: columns by dependency depth, status by colour
+  const dagEl = $('dag');
+  if (dagEl && R && R.curriculum) {
+    const stages = R.curriculum, byId = Object.fromEntries(stages.map((s) => [s.id, s]));
+    const depth = {}; const d = (id) => depth[id] != null ? depth[id] : (depth[id] = byId[id].deps.length ? 1 + Math.max(...byId[id].deps.map(d)) : 0);
+    stages.forEach((s) => d(s.id));
+    const cols = []; stages.forEach((s) => { (cols[depth[s.id]] = cols[depth[s.id]] || []).push(s); });
+    const CW = 160, RH = 66, PADX = 56, PADY = 30, rows = Math.max(...cols.map((c) => c.length));
+    const W = PADX * 2 + CW * (cols.length - 1), H = PADY * 2 + RH * (rows - 1) + 26;
+    const pos = {};
+    cols.forEach((c, ci) => { const off = (rows - c.length) / 2; c.forEach((s, ri) => { pos[s.id] = [PADX + ci * CW, PADY + (off + ri) * RH]; }); });
+    const short = (id) => id.replace(/^s/, '').split('.')[0];
+    const SHORT = { 's0.gain': 'gain prior', 's0.window': 'window', 's1.regime': 'regime', 's2.spectra': 'spectral fit', 's3.paired': 'paired MEG', 's4.selfsup': 'self-supervised AV', 's4b.crossmodal': 'cross-modal', 's4c.longrange': 'long-range', 's5.ablate': 'ablation', 's6.scale': 'scale', 's7.joint': 'joint schedule', 's8.curriculum': 'curriculum', 's9.rl': 'schema, then RL' };
+    const edges = stages.flatMap((s) => s.deps.map((dep) => { const a = pos[dep], b = pos[s.id]; const lit = byId[dep].status === 'done';
+      return `<path class="edge${lit ? ' lit' : ''}" d="M${a[0] + 14},${a[1]} C${a[0] + CW * 0.55},${a[1]} ${b[0] - CW * 0.55},${b[1]} ${b[0] - 14},${b[1]}"/>`; })).join('');
+    const nodes = stages.map((s) => { const [x, y] = pos[s.id]; return `<g class="node ${s.status}" transform="translate(${x},${y})"><title>${s.id} — ${s.title}. gate: ${esc(s.gate)}</title><circle r="13"/><text class="n">${short(s.id)}</text><text class="t" y="27">${esc(SHORT[s.id] || s.title)}</text></g>`; }).join('');
+    dagEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="curriculum stages">${edges}${nodes}</svg>
+      <p class="dag-key"><span class="k-done">done</span><span class="k-running">running</span><span class="k-ready">runnable</span><span>blocked</span><span class="k-failed">gate failed</span></p>`;
+  }
+
   // ---- references: an underlined phrase opens a note with a link to read more
   const tip = $('tip');
   if (tip) {

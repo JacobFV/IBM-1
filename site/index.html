@@ -146,17 +146,8 @@
         <li><b>8</b> vascular geometry</li>
       </ul>
       <p class="display-math">∇ log p(θ | D) = ∇ log p(θ) + Σ<sub>d</sub> ∇ log p(D<sub>d</sub> | θ)</p>
-      <p>a curriculum is a schedule over <i>d</i>: <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/CURRICULUM.md" data-doc="docs/CURRICULUM.md" data-tip="the curriculum DAG, its gates, and the live frontier">thirteen gated stages</a>, five complete, three running. a stage does not begin until its gate is measured green.</p>
-      <ol class="stages">
-        <li><span>fan-in-aware gain prior</span><small>|L(0)| = 7218 was a declaration problem: per-edge gain on nodes with 4118 incoming edges</small></li>
-        <li><span>regime selection</span><small>fitted to sleep-EDFx N3: slow oscillation at 1.000 Hz, τ<sub>adapt</sub> = 0.12 s</small></li>
-        <li><span>per-source spectral fit</span><small>joint θ beats the literature prior on all four sources, each source's own fit on none</small></li>
-        <li><span>forced sensory alignment</span><small>forcing constrains delta and essentially nothing above it</small></li>
-        <li><span>the closed video loop</span><small>unbounded data; bandwidth-bound</small></li>
-        <li><span>audio-visual materialization</span><small>68.9M parameters, 4 hours on one GB10; cross-modal edges 4.4× baseline</small></li>
-        <li><span>the paired MEG anchor</span><small>running; skill at chance</small></li>
-        <li><span>multi-materialization, development, schema, reinforcement</span><small>gated on <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/DYNAMICS.md" data-doc="docs/DYNAMICS.md" data-tip="cognition as trajectory in a vector field, and what that commits to">a multi-attractor landscape</a>, which the substrate now admits but is not yet fitted into</small></li>
-      </ol>
+      <p>a curriculum is a schedule over <i>d</i>. the stages, as they stand:</p>
+      <figure class="dag" id="dag" aria-label="the curriculum as a DAG"></figure>
     </div>
   </section>
 
@@ -228,19 +219,7 @@
       </div>
 
       <p class="models-note">trained weights publish to <a href="https://huggingface.co/brandonin/ibm-1">huggingface.co/brandonin/ibm-1</a>, named by modality, site count, embedding, degree, dynamics revision, objective and git sha; each link is that run's latest checkpoint. WIP entries are declared and build, but have no trained weights yet.</p>
-      <div class="compute">
-        <div><b>2 × GB10</b><span>121 GB and 119 GB unified memory, a 200G link between them</span></div>
-        <div><b>300k sites</b><span>the operating point: 93.7M parameters, 2.30 s per step</span></div>
-        <div><b>11 minutes</b><span>of video. data, not compute, binds the next milestone</span></div>
-        <div><b>200 GB / day</b><span>the ISP's ceiling; the next corpus is measured in days of downloading</span></div>
-      </div>
-
-      <div class="traj">
-        <div><span class="mono">weeks</span><p>naturalistic video at scale. one parameter set beating each single-corpus fit on its own held-out split.</p></div>
-        <div><span class="mono">months</span><p>re-run the ablation against the corrected long-range prior. wire the four subcortical processes whose anatomy is declared and unused.</p></div>
-        <div><span class="mono">the gate</span><p>fit θ into the multistable regions, about 0.05% of the swept space. nothing cognitive means anything before that.</p></div>
-      </div>
-      <p class="note"><b><a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/PROGRAMME.md" data-doc="docs/PROGRAMME.md" data-tip="trajectory and falsification, in the programme document">what would falsify it.</a></b> the joint schedule failing to beat single-corpus fits; or severed long-range edges still costing nothing after the prior fix. both are measurable now, and both come before scaling.</p>
+      <p class="body-para">it runs on two GB10 boxes at 300k sites, 93.7M parameters, 2.3 s per step. the binding constraint is data, not compute: eleven minutes of one film, and a 200 GB-a-day connection. next comes naturalistic video at scale, the ablation re-run against the corrected long-range prior, the four subcortical processes whose anatomy is declared and unwired, and fitting θ into the multistable regions of parameter space, without which nothing cognitive means anything.</p>
     </div>
   </section>
 
