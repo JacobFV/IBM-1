@@ -13,6 +13,16 @@ reproduced effects in the field.  for evoked designs it is a stimulus-locked
 deflection.  if the canonical effect is not there, no objective will rescue the
 term, and a negative result from it says nothing about the modality.
 
+**this test has a floor, and the floor is measured.**  injecting a known coupling
+into one channel of real MEG at a known SNR, the gate returns PASS at r ~ 0.058
+(finding the right channel and the right lag) and FAIL at r ~ 0.023.  so a FAIL
+means "nothing above about r = 0.05 at a single channel and lag" -- it does NOT
+mean "nothing".  a real effect can live under that floor, because this statistic
+takes the single best sample of a response rather than pooling its shape.  when a
+FAIL matters, follow it with a forward TRF, which regresses on all lags jointly
+and evaluates held out; that is both the sensitive instrument and the one the
+literature uses.
+
 three things this gets right that a naive version does not:
 
 *the band*.  broadband MEG carries far more power above 8 Hz than in the band the
@@ -68,6 +78,9 @@ def main() -> None:
                     help="the band the effect is DEFINED in, not the recorded band")
     ap.add_argument("--lag-ms", type=float, nargs=2, default=(20.0, 200.0))
     ap.add_argument("--minutes", type=float, default=20.0)
+    ap.add_argument("--skip-minutes", type=float, default=0.0,
+                    help="start the window here, so disjoint windows can replicate "
+                         "the test instead of resting on one draw")
     ap.add_argument("--shifts", type=int, default=50)
     ap.add_argument("--min-shift-s", type=float, default=30.0)
     a = ap.parse_args()
@@ -75,14 +88,15 @@ def main() -> None:
     stim = np.load(a.stim, mmap_mode="r")
     neur = np.load(a.neural, mmap_mode="r")
     n = min(len(stim), len(neur))
-    N = min(n, int(a.minutes * 60 * a.fs))
+    off = int(a.skip_minutes * 60 * a.fs)
+    N = min(n - off, int(a.minutes * 60 * a.fs))
     step = max(1, int(round(a.fs * 0.02)))
     lags = list(range(int(a.lag_ms[0] * a.fs / 1000),
                       int(a.lag_ms[1] * a.fs / 1000) + 1, step))
 
-    env = np.asarray(stim[:N]).astype(np.float64)
+    env = np.asarray(stim[off:off + N]).astype(np.float64)
     env = env.mean(1) if env.ndim > 1 else env
-    Y = np.asarray(neur[:N]).astype(np.float64)
+    Y = np.asarray(neur[off:off + N]).astype(np.float64)
     if a.scale:
         sc = np.load(a.scale)
         Y = np.clip((Y - sc[0]) / sc[1], -6, 6)
@@ -113,10 +127,12 @@ def main() -> None:
         print("\nPASS -- the canonical coupling is present.  a negative result from "
               "this corpus is about the model.")
     else:
-        print("\nFAIL -- the canonical coupling is ABSENT.  a negative result from "
-              "this corpus is about the ARRAYS, and no objective will rescue a term "
-              "built on them.  check the pairing order and the derivation before "
-              "spending another GPU-hour here.")
+        print("\nFAIL -- no coupling ABOVE THIS TEST'S FLOOR (measured at r ~ 0.05 "
+              "for a single channel and lag; it misses r ~ 0.02).  that is a reason "
+              "to suspect the arrays and to check the pairing order and the "
+              "derivation -- it is NOT proof the effect is absent.  before "
+              "concluding anything about the corpus, run a forward TRF, which pools "
+              "the whole response shape instead of its best single sample.")
 
 
 if __name__ == "__main__":

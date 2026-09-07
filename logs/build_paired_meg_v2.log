@@ -1,0 +1,29 @@
+cochleagramming 14 chapters at 250 Hz
+  studyinscarlet_01_doyle_64kb.wav (268235, 64) 1073s
+  studyinscarlet_02_doyle_64kb.wav (336225, 64) 1345s
+  studyinscarlet_03_doyle_64kb.wav (361113, 64) 1445s
+  studyinscarlet_04_doyle_64kb.wav (229972, 64) 920s
+  studyinscarlet_05_doyle_64kb.wav (234798, 64) 939s
+  studyinscarlet_06_doyle_64kb.wav (312075, 64) 1248s
+  studyinscarlet_07_doyle_64kb.wav (311702, 64) 1247s
+  studyinscarlet_08_doyle_64kb.wav (372261, 64) 1489s
+  studyinscarlet_09_doyle_64kb.wav (249289, 64) 997s
+  studyinscarlet_10_doyle_64kb.wav (189103, 64) 756s
+  studyinscarlet_11_doyle_64kb.wav (323967, 64) 1296s
+  studyinscarlet_12_doyle_64kb.wav (346256, 64) 1385s
+  studyinscarlet_13_doyle_64kb.wav (412757, 64) 1651s
+  studyinscarlet_14_doyle_64kb.wav (215853, 64) 863s
+  sub-0_ses-10_task-Sherlock1_run-1 -> studyinscarlet_10_doyle_64kb.wav  rate +4665 ppm  resid 0.095s  760s paired
+  sub-0_ses-11_task-Sherlock1_run-2 -> studyinscarlet_11_doyle_64kb.wav  rate +4837 ppm  resid 0.059s  1302s paired
+  sub-0_ses-12_task-Sherlock1_run-2 -> studyinscarlet_12_doyle_64kb.wav  rate +4582 ppm  resid 0.091s  1391s paired
+  sub-0_ses-1_task-Sherlock1_run-1 -> studyinscarlet_01_doyle_64kb.wav  rate +4757 ppm  resid 0.115s  1078s paired
+  sub-0_ses-2_task-Sherlock1_run-1 -> studyinscarlet_02_doyle_64kb.wav  rate +4805 ppm  resid 0.160s  1351s paired
+  sub-0_ses-3_task-Sherlock1_run-1 -> studyinscarlet_03_doyle_64kb.wav  rate +4738 ppm  resid 0.081s  1451s paired
+  sub-0_ses-4_task-Sherlock1_run-1 -> studyinscarlet_04_doyle_64kb.wav  rate +4979 ppm  resid 0.085s  924s paired
+  sub-0_ses-5_task-Sherlock1_run-1 -> studyinscarlet_05_doyle_64kb.wav  rate +5345 ppm  resid 0.126s  944s paired
+  sub-0_ses-6_task-Sherlock1_run-1 -> studyinscarlet_06_doyle_64kb.wav  rate +5310 ppm  resid 0.082s  1255s paired  [chose by coupling r=0.0195]
+  sub-0_ses-7_task-Sherlock1_run-1 -> studyinscarlet_07_doyle_64kb.wav  rate +4327 ppm  resid 0.043s  1252s paired  [chose by coupling r=0.0290]
+  sub-0_ses-8_task-Sherlock1_run-1 -> studyinscarlet_08_doyle_64kb.wav  rate +4843 ppm  resid 0.105s  1496s paired
+  sub-0_ses-9_task-Sherlock1_run-1 -> studyinscarlet_09_doyle_64kb.wav  rate +4268 ppm  resid 0.094s  1001s paired
+
+saved (3551894, 64) cochleagram and (3551894, 306) MEG = 236.8 minutes paired

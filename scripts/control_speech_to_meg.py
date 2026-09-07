@@ -28,7 +28,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-D = "data/derived/libribrain-paired"
+import os as _os
+D = _os.environ.get("IBM_PAIRED_MEG", "data/derived/libribrain-paired")
 CTX = 125          # 500 ms of cochleagram at 250 Hz
 GAP = 2500         # 10 s guard band between train and test
 

@@ -27,7 +27,7 @@ pattern is worth more than any single row.
 | 8 | the image→EEG target carries no stimulus information | the pairing was **99.94% wrong** — 10 of 16,540. THINGS-EEG2 uses ten images from each of 1,654 concepts; a directory walk takes every image from the first 1,162 | reading the order the dataset declares |
 | 9 | contrastive retrieval reaches 18.5% | single-pool, sd 2.8. and the run **checkpointed on best single pool**, selecting for lucky draws | averaging 20 pools |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
-| 11 | speech→MEG is a hard problem — three objectives all failed on it | the derived arrays carry **no detectable 1-8 Hz envelope tracking**: max \|r\| 0.0312 over 306ch x 10 lags against a circular-shift null of 0.0278, p = 0.157. all three negatives were measured against arrays that may not contain the signal | asking the corpus for the one effect it must have, against a null built the same way |
+| 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
 
 **the shape they share:** a quantity computed correctly and then compared against
 the wrong thing — the wrong population, the wrong units, the wrong split, the
@@ -36,6 +36,70 @@ caught by a measurement that could have been run first, and several by one I had
 already written.
 
 ---
+
+## 2026-09-07 (late) — the auditory corpus was fine; the clock was not
+
+**the previous entry is overturned, and the branch it wrote off is alive.**
+
+it concluded the LibriBrain arrays carry no speech tracking. that was measured
+correctly and read too far. two corrections, in order.
+
+*first, the gate has a floor, and it had never been checked against a case whose
+answer was known* — CLAUDE.md's own rule, skipped when the gate was written.
+injecting a known coupling into one channel of real MEG: it returns PASS at
+r ~ 0.058, finding the right channel and the right lag, and FAIL at r ~ 0.023. so
+a FAIL means "nothing above ~0.05", not "nothing". that floor is now measured, in
+the docstring, and in the failure message.
+
+*second, and this is the finding:* `build_paired_meg.py` asserted that
+`timemeg - timechapter` "is constant within a run" and sliced the MEG at its
+median. it is not constant. its standard deviation is **1.0-2.1 seconds** in
+every run, because the clocks run at different RATES — fitting
+`tmeg = a*tchap + b` gives **a - 1 of 4,300-5,300 ppm, consistently across all 12
+runs**, and drops the residual to 0.04-0.16 s, a factor of 15-20.
+
+0.48% over a 1,400 s chapter is ~6.7 s of accumulated drift, so a median offset
+is correct in the middle of a run and off by ±3.4 s at its ends. speech tracking
+is a 1-8 Hz effect; ±3.4 s smears it across 3-27 cycles. **the effect was never
+absent — it was averaged away by the builder.**
+
+the cochleagram is now RESAMPLED onto the MEG clock through the fitted line. the
+same gate, same nulls, five disjoint windows:
+
+| window | v1 (median offset) | v2 (drift corrected) |
+|---|---|---|
+| 0-20 min | r=0.0312 p=0.171 | r=0.0703 **p=0.024** |
+| 25-45 min | r=0.0274 p=0.463 | r=0.0853 **p=0.024** |
+| 50-70 min | r=0.0234 p=0.902 | r=0.0734 **p=0.024** |
+
+0 of 40 circular shifts reach the observed value in any v2 window, and the peak
+sits at **140 ms** — the auditory M100/M150 range. that is textbook cortical
+speech tracking, and it replicates.
+
+a second false assertion in the same docstring, also now measured: "14 chapters
+with distinct lengths, so the match is unambiguous". two chapters differ by 1.5 s
+and two runs sit between them. those are chosen by which candidate actually
+couples — well-posed only once the drift is out — and both resolve to the chapter
+matching their session index.
+
+**what this suspends is larger than what it settles.** the +0.036 regression
+ceiling, `paired_v5`'s 10,000 steps below the zero baseline, the joint MEG head's
+-0.003 held-out skill, and this morning's contrastive control at chance were all
+measured against arrays whose audio and neural streams drift up to 3.4 s apart.
+none of them is evidence about the modality, the objective, or the model.
+
+what is NOT yet claimed: that the term now trains. the contrastive control rerun
+on v2 sits at 1-2.5% against 0.5% chance — better than v1's flat chance, and
+notably it no longer memorises (loss holds at 4.43 against ln(128) = 4.85, where
+v1 fell to 2.83 while held-out stayed at chance). the corpus demonstrably carries
+the signal now; extracting it at 200 ms windows is a separate open question.
+
+a note on instruments: a forward TRF on the same v2 arrays reports p = 0.286 and
+looks like a contradiction. it is not — it is the weaker test here. it scores only
+the 20% held-out block, and bandpassing to 1-8 Hz leaves ~3,600 effective samples
+there against ~19,000 for the gate's full-window correlation, which is why its
+null is 2.4x wider. **the more elaborate method is not automatically the more
+powerful one.**
 
 ## 2026-09-07 (evening) — the auditory corpus does not contain the effect
 
