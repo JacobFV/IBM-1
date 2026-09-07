@@ -53,7 +53,7 @@ def cortex():
     the triangulation among them, which is the mesh the site draws."""
     src = mne.setup_source_space("sample", spacing="oct5", surface="pial",
                                  subjects_dir=SUBJECTS, add_dist=False)
-    xyz, region, hemi, edges, offset = [], [], [], set(), 0
+    xyz, region, hemi, edges, tris, offset = [], [], [], set(), [], 0
     for h, s in zip(("lh", "rh"), src):
         labels = mne.read_labels_from_annot("sample", "aparc", h, subjects_dir=SUBJECTS)
         vert_label = {}
@@ -69,10 +69,11 @@ def cortex():
             hemi.append(h)
         for tri in s["use_tris"]:
             a, b, c = (idx[int(t)] for t in tri)
+            tris.append((a, b, c))
             for e in ((a, b), (b, c), (a, c)):
                 edges.add((min(e), max(e)))
         offset += len(used)
-    return np.array(xyz), region, hemi, sorted(edges)
+    return np.array(xyz), region, hemi, sorted(edges), tris
 
 
 def aparc_colors():
@@ -145,7 +146,7 @@ def sensors():
 
 
 # ------------------------------------------------ assemble the node table ----
-cx_xyz, cx_region, cx_hemi, cx_edges = cortex()
+cx_xyz, cx_region, cx_hemi, cx_edges, cx_tris = cortex()
 APARC = aparc_colors()
 nodes = []   # dicts: p, group, region, color, support
 for p, r, h in zip(cx_xyz, cx_region, cx_hemi):
@@ -155,7 +156,7 @@ edges = [(a, b) for a, b in cx_edges]
 
 sub_start = len(nodes)
 for p, name, color, group in subcortex():
-    nodes.append(dict(p=p, group=group, region=name, hemi="l" if p[0] < 0 else "r",
+    nodes.append(dict(p=p, group=group, region=name, hemi="m" if name == "brainstem" else ("l" if p[0] < 0 else "r"),
                       color=color, support="tissue"))
 # edges inside each subcortical structure: 3 nearest neighbours within 2x spacing
 sub_pts = np.array([n["p"] for n in nodes[sub_start:]])
@@ -563,6 +564,28 @@ def q(v):
     return [round(float(x), 1) for x in v]
 
 
+def scalp_mesh():
+    """the subject's own outer-skin BEM surface (surface RAS, mm)."""
+    v, f = mne.read_surface(SUBJECTS / "sample/bem/outer_skin.surf")
+    return dict(name="scalp", xyz=[q(x) for x in v], faces=[[int(a), int(b), int(c)] for a, b, c in f])
+
+
+def hull_meshes():
+    """a convex hull per subcortical structure and side, over the exported nodes."""
+    from scipy.spatial import ConvexHull
+    out = []
+    keys = sorted({(n["region"], n["hemi"]) for n in nodes[sub_start:spine_start]})
+    for region, hemi in keys:
+        idx = [i for i in range(sub_start, spine_start) if nodes[i]["region"] == region and nodes[i]["hemi"] == hemi]
+        if len(idx) < 5:
+            continue
+        hull = ConvexHull(P[idx])
+        out.append(dict(name=region, hemi=hemi, color=nodes[idx[0]]["color"], group=nodes[idx[0]]["group"],
+                        nodes=[idx[0], idx[-1] + 1] if idx == list(range(idx[0], idx[-1] + 1)) else idx,
+                        faces=[[idx[a], idx[b], idx[c]] for a, b, c in hull.simplices]))
+    return out
+
+
 def ranges(idx):
     """run-length encode a sorted index list as [start, stop) pairs."""
     idx = sorted(set(int(i) for i in idx))
@@ -584,6 +607,9 @@ out = dict(
     nodes=[dict(p=q(n["p"]), g=n["group"], r=n["region"], h=n["hemi"], c=n["color"],
                 **({"s": 1} if n.get("synthetic") else {})) for n in nodes],
     edges=[[int(a), int(b)] for a, b in edges],
+    cortex_faces=[[int(a), int(b), int(c)] for a, b, c in cx_tris],
+    hulls=hull_meshes(),
+    scalp=scalp_mesh(),
     regions={r: APARC.get(r, "#999") for r in sorted(set(cx_region))},
     subcortical={v[0]: v[1] for v in ASEG.values()},
     materializations=materializations,
