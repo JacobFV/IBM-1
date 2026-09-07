@@ -12,3 +12,13 @@ __pycache__/
 # corpus payloads: hundreds of GB, tracked by card + origin URL, not by git
 data/sources/*/raw/
 data/derived/
+
+# training checkpoints: hundreds of MB each, published to HuggingFace
+# (brandonin/ibm-1) with a sidecar. git is the wrong store for weights.
+ckpt/
+# regenerable decoder/tractography cache
+.cache/
+# rendered clips and prediction dumps
+out/*.pt
+out/*.gif
+out/*.npy
