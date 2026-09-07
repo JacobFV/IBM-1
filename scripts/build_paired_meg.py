@@ -36,7 +36,7 @@ import csv, glob, os, re
 import av, h5py, numpy as np
 
 ROOT = "/home/brandonin/Documents/IBM-1/data/sources/libribrain/raw/Sherlock1"
-OUT = "/home/brandonin/Documents/IBM-1/data/derived/libribrain-paired-v2"
+OUT = "/home/brandonin/Documents/IBM-1/data/derived/libribrain-paired-v3"
 FS, N_BANDS, RATE = 16000, 64, 250          # MEG is 250 Hz; cochleagram matches it
 
 
@@ -86,9 +86,25 @@ def main():
             continue
         tmeg = np.array([float(r["timemeg"]) for r in rows])
         tchap = np.array([float(r["timechapter"]) for r in rows])
-        # tmeg = a*tchap + b.  `a` is NOT 1: the clocks differ by ~4,800 ppm.
+        # tmeg = a*tchap + b is the first-order story; `a` is NOT 1, the clocks
+        # differ by ~4,800 ppm.  but the residual around that line is structured,
+        # so the map is built piecewise through knots instead.
         a_rate, b_off = (float(v) for v in np.polyfit(tchap, tmeg, 1))
-        resid = float((tmeg - (a_rate * tchap + b_off)).std())
+        lin_resid = float((tmeg - (a_rate * tchap + b_off)).std())
+        nb = max(4, int((tchap.max() - tchap.min()) // 30))
+        edges = np.quantile(tchap, np.linspace(0, 1, nb + 1))
+        kc, km = [], []
+        for i in range(nb):
+            m = (tchap >= edges[i]) & (tchap <= edges[i + 1])
+            if m.sum() < 5:
+                continue
+            q, w = np.polyfit(tchap[m], tmeg[m], 1)
+            for c in (edges[i], edges[i + 1]):
+                kc.append(float(c)); km.append(float(q * c + w))
+        kc, km = np.array(kc), np.array(km)
+        o = np.argsort(kc); kc, km = kc[o], km[o]
+        km = np.maximum.accumulate(km)                  # the map must be monotone
+        resid = float((tmeg - np.interp(tchap, kc, km)).std())
         span = tchap.max()
         cand = sorted((abs(durs[k] - span), k) for k in durs if durs[k] >= span - 1.0)
         if not cand:
@@ -109,10 +125,10 @@ def main():
             """
             coch = cochs[key]
             c = centres[key]
-            f = lambda i: ((i / RATE - b_off) / a_rate - c) * RATE
-            i0 = max(0, int(np.ceil(b_off * RATE)))
-            i1 = min(meg.shape[1] - 1, int(np.floor(a_rate * ((len(coch) - 1) / RATE + c)
-                                                    * RATE + b_off * RATE)))
+            # meg time -> chapter time is the knot map read backwards
+            f = lambda i: (np.interp(i / RATE, km, kc) - c) * RATE
+            i0 = max(0, int(np.ceil(km[0] * RATE)))
+            i1 = min(meg.shape[1] - 1, int(np.floor(km[-1] * RATE)))
             if i1 - i0 < RATE * 60:
                 return None
             idx = np.arange(i0, i1 + 1)
@@ -148,7 +164,7 @@ def main():
         X.append(xr); Y.append(m)
         chosen = "" if len(picks) == 1 else f"  [chose by coupling r={r:.4f}]"
         print(f"  {stem} -> {os.path.basename(key)}  "
-              f"rate {1e6*(a_rate-1):+.0f} ppm  resid {resid:.3f}s  "
+              f"rate {1e6*(a_rate-1):+.0f} ppm  resid {lin_resid:.3f}->{resid:.3f}s  "
               f"{len(xr)/RATE:.0f}s paired{chosen}", flush=True)
 
     if not X:

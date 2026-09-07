@@ -37,6 +37,47 @@ already written.
 
 ---
 
+## 2026-09-07 (later) — the residual was signal, and it was measurable
+
+the linear fit left 43-160 ms of residual and that was treated as noise to
+tolerate. it is not. across the 12 runs, **residual predicts coupling at
+r = -0.697** (R2 = 0.49 with run length in the model), while run length on its own
+explains nothing (+0.004) and the clock rate itself nothing (-0.089). the
+best-aligned run couples at r = 0.100, the worst at 0.029. the slope is **-0.54
+of coupling per second of residual** — so the leftover was signal being discarded,
+and its size said how much.
+
+that is a prediction, so it was used as one. a piecewise-linear map through ~30 s
+knots takes the residual from 43-160 ms to **11-21 ms**. at -0.54/s that predicts
+about +0.044 of coupling. measured, on five disjoint windows:
+
+| window | v2 (linear) | v3 (piecewise) |
+|---|---|---|
+| 0-20 min | r=0.0703 PASS | r=0.1094 PASS |
+| 25-45 min | r=0.0853 PASS | r=0.1265 PASS |
+| 50-70 min | r=0.0734 PASS | r=0.1264 PASS |
+| 75-95 min | r=0.0394 PASS | r=0.1379 PASS |
+| 100-120 min | r=0.0340 fail | r=0.0412 PASS |
+
+**5 of 5**, mean coupling 0.0605 -> 0.1083, a factor of 1.79. predicted +0.044,
+observed +0.048. the window v2 could not pass now passes.
+
+the three builds in order: v1 (median offset) 0 of 5 windows, mean r ~ 0.027;
+v2 (one line) 4 of 5, 0.0605; v3 (piecewise) 5 of 5, **0.1083** — which is inside
+the published range for cortical speech tracking rather than at the edge of
+detection.
+
+the per-run table (`logs/perrun_gate.log`) is what made this findable: 10 of 12
+runs passed individually, and the two that did not were the shortest run (12.7
+min, underpowered at r=0.051) and the run with the worst linear residual (0.160 s)
+— which is the relationship above, visible before it was fitted. both previously
+ambiguous chapters pass, 07 at r=0.100, confirming that choosing them by coupling
+was right.
+
+**this does not yet say the term trains.** the contrastive control on v2 reached
+2.0% against 0.5% chance. v3 is a better corpus, not a result. controls at 200 ms
+and 1 s windows are running.
+
 ## 2026-09-07 (late) — the auditory corpus was fine; the clock was not
 
 **the previous entry is overturned, and the branch it wrote off is alive.**
@@ -71,10 +112,18 @@ same gate, same nulls, five disjoint windows:
 | 0-20 min | r=0.0312 p=0.171 | r=0.0703 **p=0.024** |
 | 25-45 min | r=0.0274 p=0.463 | r=0.0853 **p=0.024** |
 | 50-70 min | r=0.0234 p=0.902 | r=0.0734 **p=0.024** |
+| 75-95 min | r=0.0255 p=0.707 | r=0.0394 **p=0.024** |
+| 100-120 min | r=0.0241 p=0.902 | r=0.0340 p=0.098 |
 
-0 of 40 circular shifts reach the observed value in any v2 window, and the peak
-sits at **140 ms** — the auditory M100/M150 range. that is textbook cortical
-speech tracking, and it replicates.
+**4 of 5**, and the peak sits at **140 ms** — the auditory M100/M150 range. v1
+fails all five; v2 passes four with 0 of 40 shifts reaching the observed value.
+
+the honest qualifier is the trend down that column: 0.070, 0.085, 0.073, 0.039,
+0.034. the effect halves across the file. the concatenation is ordered by run, so
+a window blends runs and that decay is more likely to be about WHICH runs than
+about time — the per-run breakdown is in `logs/perrun_gate.log`. the correction
+is real and replicated; it is **not** uniform, and the run-level variation is not
+yet explained.
 
 a second false assertion in the same docstring, also now measured: "14 chapters
 with distinct lengths, so the match is unambiguous". two chapters differ by 1.5 s

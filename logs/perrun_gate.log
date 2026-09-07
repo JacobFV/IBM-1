@@ -1,0 +1,14 @@
+12 runs
+                           chapter     ppm   resid    min        r       p
+  studyinscarlet_10_doyle_64kb.wav    4665   0.095   12.7   0.0505   0.073 fail
+  studyinscarlet_11_doyle_64kb.wav    4837   0.059   21.7   0.0873   0.024 PASS
+  studyinscarlet_12_doyle_64kb.wav    4582   0.091   23.2   0.0820   0.024 PASS
+  studyinscarlet_01_doyle_64kb.wav    4757   0.115   18.0   0.0648   0.024 PASS
+  studyinscarlet_02_doyle_64kb.wav    4805   0.160   22.5   0.0289   0.268 fail
+  studyinscarlet_03_doyle_64kb.wav    4738   0.081   24.2   0.0336   0.024 PASS
+  studyinscarlet_04_doyle_64kb.wav    4979   0.085   15.4   0.0980   0.024 PASS
+  studyinscarlet_05_doyle_64kb.wav    5345   0.126   15.7   0.0502   0.024 PASS
+  studyinscarlet_06_doyle_64kb.wav    5310   0.082   20.9   0.0804   0.024 PASS
+  studyinscarlet_07_doyle_64kb.wav    4327   0.043   20.9   0.1004   0.024 PASS
+  studyinscarlet_08_doyle_64kb.wav    4843   0.105   24.9   0.0752   0.024 PASS
+  studyinscarlet_09_doyle_64kb.wav    4268   0.094   16.7   0.0616   0.024 PASS

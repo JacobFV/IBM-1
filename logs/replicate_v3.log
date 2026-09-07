@@ -1,0 +1,8 @@
+      window           v2 (linear)        v3 (piecewise)
+   0- 20min  r=0.0703 p=0.024 PASS  r=0.1094 p=0.024 PASS
+  25- 45min  r=0.0853 p=0.024 PASS  r=0.1265 p=0.024 PASS
+  50- 70min  r=0.0734 p=0.024 PASS  r=0.1264 p=0.024 PASS
+  75- 95min  r=0.0394 p=0.024 PASS  r=0.1379 p=0.024 PASS
+ 100-120min  r=0.0340 p=0.098 fail  r=0.0412 p=0.024 PASS
+
+  mean coupling  v2 0.0605  ->  v3 0.1083  (1.79x)
