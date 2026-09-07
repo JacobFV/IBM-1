@@ -280,11 +280,6 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 .corpus li { break-inside: avoid; padding: 6px 0; border-bottom: 1px solid var(--rule); display: flex; gap: 12px; align-items: baseline; }
 .corpus b { font-family: var(--display); font-weight: 500; font-size: 1.1rem; min-width: 2ch; text-align: right; font-variant-numeric: tabular-nums; }
 
-.stages { margin: 6px 0 22px; padding: 0; list-style: none; counter-reset: stage -1; display: grid; }
-.stages li { counter-increment: stage; display: grid; grid-template-columns: 34px 1fr; gap: 0 12px; padding: 10px 0; border-bottom: 1px solid var(--rule); }
-.stages li::before { content: counter(stage); font-family: var(--mono); font-size: 0.7rem; color: var(--accent); padding-top: 4px; grid-row: 1 / 3; }
-.stages span { font-family: var(--display); font-weight: 500; font-variation-settings: "opsz" 24; font-size: 1.02rem; }
-.stages small { font-size: 0.86rem; color: var(--muted); line-height: 1.4; }
 
 .next { margin: 8px 0 22px; padding: 0; list-style: none; display: grid; gap: 10px; }
 .next li { padding-left: 18px; position: relative; }
@@ -419,24 +414,51 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 .tip-link::after { content: " →"; }
 .hero .ref { color: inherit; }
 
-/* ==================================================================== dag */
-.dag { margin: 12px 0 8px; }
-.dag svg { display: block; width: 100%; max-width: 760px; height: auto; overflow: visible; }
-.dag .edge { fill: none; stroke: var(--rule); stroke-width: 1.2; }
-.dag .edge.lit { stroke: var(--muted); }
-.dag .node .box { fill: var(--paper); stroke: var(--rule); stroke-width: 1; }
-.dag .node .bar { fill: var(--rule); }
-.dag .node text.n { fill: var(--text); font-family: var(--serif); font-size: 12.5px; font-weight: 600; }
-.dag .node text.t { fill: var(--muted); font-family: var(--mono); font-size: 8.8px; letter-spacing: 0.02em; }
-.dag .node.done .bar { fill: var(--moved); }
-.dag .node .check { fill: none; stroke: var(--moved); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.dag .node.done .box { stroke: color-mix(in srgb, var(--moved) 55%, var(--rule)); }
-.dag .node.running .bar { fill: var(--half); animation: dag-pulse 1.6s ease-in-out infinite; }
-.dag .node.running .box { stroke: var(--half); animation: dag-pulse 1.6s ease-in-out infinite; }
-.dag .node.failed .bar { fill: var(--fail); }
-.dag .node.failed .box { stroke: color-mix(in srgb, var(--fail) 60%, var(--rule)); }
-.dag .node.ready .box { stroke-dasharray: 3 2; stroke: var(--muted); }
-.dag .node.blocked text.n { fill: var(--muted); }
+/* ================================================================= stages */
+.stages { position: relative; margin: 8px 0 0; }
+.stages .rail { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+.stages .rail path { fill: none; stroke: var(--rule); stroke-width: 1.3; }
+.stages .rail path.lit { stroke: var(--muted); }
+.stages ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 22px; }
+.stage { display: grid; grid-template-columns: 28px 1fr; gap: 0 18px; align-items: start; position: relative; }
+.stage .dot { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-family: var(--mono); font-size: 0.72rem; font-weight: 500; color: var(--muted); background: var(--paper); border: 1.5px solid var(--rule); box-sizing: border-box; position: relative; z-index: 1; }
+.stage .dot svg { width: 14px; height: 14px; fill: none; stroke: var(--paper); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.stage.done .dot { background: var(--moved); border-color: var(--moved); }
+.stage.running .dot { background: var(--half); border-color: var(--half); color: var(--paper); animation: dag-pulse 1.6s ease-in-out infinite; }
+.stage.ready .dot { border-style: dashed; border-color: var(--muted); }
+.stage.failed .dot { border-color: var(--fail); color: var(--fail); }
+.stage.blocked .dot { color: var(--muted); }
+.stage-text h4 { margin: 3px 0 4px; font-size: 1.02rem; font-weight: 600; line-height: 1.25; display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.stage-text h4 small { font-family: var(--mono); font-weight: 400; font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.stage.done h4 small { color: var(--moved); } .stage.running h4 small { color: var(--half); } .stage.failed h4 small { color: var(--fail); }
+.stage-text p { margin: 0; font-size: 0.9rem; line-height: 1.45; color: var(--text); max-width: 60ch; }
+.stage-text p.gate { margin-top: 4px; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.03em; color: var(--muted); }
+.stage.blocked .stage-text p:not(.gate), .stage.ready .stage-text p:not(.gate) { color: var(--muted); }
 @keyframes dag-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
-@media (prefers-reduced-motion: reduce) { .dag .node.running .bar, .dag .node.running .box { animation: none; } }
-@media (max-width: 600px) { .dag svg { min-width: 620px; } .dag { overflow-x: auto; } }
+@media (prefers-reduced-motion: reduce) { .stage.running .dot { animation: none; } }
+
+/* =================================================================== deck */
+.deck { margin: 4px 0 34px; }
+.deck-head { display: flex; align-items: baseline; gap: 14px; padding: 0 0 10px; }
+.deck-count { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.deck-nav { margin-left: auto; display: flex; gap: 6px; }
+.deck-nav button { appearance: none; background: none; border: 1px solid var(--rule); color: var(--text); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 0.9rem; line-height: 1; }
+.deck-nav button:hover { border-color: var(--accent); color: var(--accent); }
+.deck-scroll { display: flex; gap: 18px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; padding: 18px 12px 26px; margin: 0 -12px; cursor: grab; scrollbar-width: none; perspective: 1100px; }
+.deck-scroll::-webkit-scrollbar { display: none; }
+.deck-scroll.dragging { cursor: grabbing; scroll-snap-type: none; user-select: none; }
+.card { flex: 0 0 214px; height: 318px; scroll-snap-align: center; box-sizing: border-box; padding: 12px 13px 12px; display: grid; grid-template-rows: auto auto auto 1fr auto; gap: 6px; background: color-mix(in srgb, var(--paper) 80%, var(--paper-2)); border: 1px solid var(--rule); border-radius: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22), inset 0 0 0 1px color-mix(in srgb, var(--rule) 50%, transparent); transform-style: preserve-3d; will-change: transform; transition: opacity 0.15s; position: relative; }
+.card::before { content: ""; position: absolute; inset: 5px; border: 1px solid color-mix(in srgb, var(--rule) 70%, transparent); border-radius: 5px; pointer-events: none; }
+.card-top { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.08em; }
+.card-n { color: var(--accent); text-decoration: none; font-weight: 500; }
+.card-n:hover { text-decoration: underline; }
+.card-access { text-transform: uppercase; color: var(--muted); font-size: 0.56rem; letter-spacing: 0.14em; }
+.card[data-access="held"] .card-access { color: var(--moved); }
+.card[data-access="priority"] .card-access { color: var(--half); }
+.card-title { margin: 2px 0 0; font-size: 0.92rem; font-weight: 600; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.card-prov { margin: 0; font-family: var(--mono); font-size: 0.6rem; color: var(--muted); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-desc { margin: 0; font-size: 0.78rem; line-height: 1.4; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+.card-use { margin: 0; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.card-use span { font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 6px; border: 1px solid var(--rule); border-radius: 2px; color: var(--muted); }
+.card-use .card-streams { margin-left: auto; border: 0; padding: 0; }
+@media (max-width: 600px) { .card { flex-basis: 190px; height: 300px; } }

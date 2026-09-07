@@ -119,22 +119,11 @@
   <section class="sec">
     <div class="margin"><span class="mono">§3</span><span>corpus and curriculum</span></div>
     <div class="body">
-      <p><a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/EVIDENCE.md" data-doc="docs/EVIDENCE.md" data-tip="the evidence inventory: datasets, atlases, tools and what each constrains">601 cards committed</a> from a candidate index of 26,399 datasets (2.55 PB); 36 held on disk, provenance traced to origin. the flagship derived array is 235.6 minutes of MEG aligned to an audiobook's cochleagram.</p>
-      <ul class="corpus">
-        <li><b>52</b> hemodynamic and metabolic</li>
-        <li><b>36</b> effector, autonomic, interoceptive</li>
-        <li><b>36</b> sensory boundary and stimuli</li>
-        <li><b>31</b> scalp electromagnetic</li>
-        <li><b>23</b> simultaneous multimodal</li>
-        <li><b>22</b> intracranial electromagnetic</li>
-        <li><b>17</b> stimulation response</li>
-        <li><b>11</b> structural and microstructural</li>
-        <li><b>10</b> oracle, synthetic, negative control</li>
-        <li><b>8</b> vascular geometry</li>
-      </ul>
-      <p class="display-math">∇ log p(θ | D) = ∇ log p(θ) + Σ<sub>d</sub> ∇ log p(D<sub>d</sub> | θ)</p>
-      <p>a curriculum is a schedule over <i>d</i>. the stages, as they stand:</p>
-      <figure class="dag" id="dag" aria-label="the curriculum as a DAG"></figure>
+      <div class="deck" id="deck">
+        <div class="deck-head"><a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/EVIDENCE.md" data-doc="docs/EVIDENCE.md" data-tip="the evidence inventory: datasets, atlases, tools and what each constrains">601 source cards</a><span class="deck-count" id="deck-count"></span><span class="deck-nav"><button type="button" id="deck-prev" aria-label="previous">←</button><button type="button" id="deck-next" aria-label="next">→</button></span></div>
+        <div class="deck-scroll" id="deck-scroll"></div>
+      </div>
+      <div class="stages" id="dag" aria-label="the curriculum stages"></div>
     </div>
   </section>
 
@@ -214,6 +203,7 @@
 <script src="background.js"></script>
 <script src="data/graph.js"></script>
 <script src="data/registry.js"></script>
+<script src="data/cards.js"></script>
 <script src="brain.js"></script>
 <script src="site.js"></script>
 </body>

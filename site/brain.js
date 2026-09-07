@@ -493,15 +493,21 @@ window.IBMBrain = (function () {
     const px_ = new Float32Array(TISSUE.length), py_ = new Float32Array(TISSUE.length);
     function projectTissue() { for (let k = 0; k < TISSUE.length; k++) { const q = project(G.nodes[TISSUE[k]].p); px_[k] = q[0]; py_[k] = q[1]; } }
     function reach(ox, oy, dx, dy) {
-      const band = 11; let best = 0, far = 0;
+      // the farthest tissue node within a band of the ray; if the band is
+      // empty, the node nearest the ray among the outer third of the cloud
+      const band = 14; let best = 0, far = 0, nearOff = Infinity, nearAlong = 0;
       for (let k = 0; k < TISSUE.length; k++) {
         const ax = px_[k] - ox, ay = py_[k] - oy, along = ax * dx + ay * dy;
         if (along > far) far = along;
-        if (along <= best) continue;
-        if (Math.abs(ax * dy - ay * dx) > band) continue;
-        best = along;
       }
-      return (best || far) + 4;
+      for (let k = 0; k < TISSUE.length; k++) {
+        const ax = px_[k] - ox, ay = py_[k] - oy, along = ax * dx + ay * dy;
+        if (along < far * 0.66) continue;
+        const off = Math.abs(ax * dy - ay * dx);
+        if (off <= band) { if (along > best) best = along; }
+        else if (off < nearOff) { nearOff = off; nearAlong = along; }
+      }
+      return (best || nearAlong || far) + 4;
     }
 
     // selected mode annotations
@@ -579,7 +585,9 @@ window.IBMBrain = (function () {
           const [x0, y0] = edgePoint(it.el, it.side);
           const L = Math.hypot(x0 - ox, y0 - oy) || 1, dx = (x0 - ox) / L, dy = (y0 - oy) / L;
           const r = reach(ox, oy, dx, dy);
-          it.line.setAttribute('d', curve(x0, y0, ox + dx * r, oy + dy * r, 0.12, [W / 2, H / 2]));
+          // glide toward the new outline point rather than jumping to it
+          it.r = it.r == null ? r : it.r + (r - it.r) * 0.12;
+          it.line.setAttribute('d', curve(x0, y0, ox + dx * it.r, oy + dy * it.r, 0.12, [W / 2, H / 2]));
           it.line.style.opacity = '';
         });
         if (hoverAnn.item && !compact) {

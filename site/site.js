@@ -22,39 +22,94 @@
         <p class="reg-io"><span>${p.inputs.map((v) => `<code>${v}</code>`).join(' ')}</span><i>→</i><span>${p.outputs.map((v) => `<code>${v}</code>`).join(' ')}</span></p></div>`).join(''));
   }
 
-  // ---- the curriculum as a DAG: columns by dependency depth, status by colour
+  // ---- the curriculum: one stage per row, a coloured dot on a rail, curved deps
   const dagEl = $('dag');
   if (dagEl && R && R.curriculum) {
     const stages = R.curriculum, byId = Object.fromEntries(stages.map((s) => [s.id, s]));
     const depth = {}; const d = (id) => depth[id] != null ? depth[id] : (depth[id] = byId[id].deps.length ? 1 + Math.max(...byId[id].deps.map(d)) : 0);
     stages.forEach((s) => d(s.id));
-    // top down: depth is the row, siblings spread across the row; a node is a
-    // titled card with one line of status, coloured by its state
-    const NW = 214, NH = 46, GAP = 24, W = 760, RH = 98, PADY = 24;
-    const rows = []; stages.forEach((s) => { (rows[depth[s.id]] = rows[depth[s.id]] || []).push(s); });
-    const H = PADY * 2 + RH * (rows.length - 1) + NH;
-    const pos = {};
-    rows.forEach((r, ri) => { const total = r.length * NW + (r.length - 1) * GAP, x0 = (W - total) / 2; r.forEach((s, ci) => { pos[s.id] = [x0 + ci * (NW + GAP) + NW / 2, PADY + NH / 2 + ri * RH]; }); });
-    const TEXT = {
-      's0.gain': ['fan-in-aware gain prior', '|L(0)| < 1 at prior medians'],
-      's0.window': ['window follows implementation', '2.048 s window, τ = 0.30 s'],
-      's1.regime': ['nonlinear regime', 'slow oscillation fitted at 1.000 Hz'],
-      's2.spectra': ['per-source spectral fit', 'redo; do not inherit scalp values'],
-      's3.paired': ['paired stimulus → MEG', 'skill at chance; rank gate open'],
-      's4.selfsup': ['self-supervised AV', 'rank rose while loss fell'],
-      's4b.crossmodal': ['cross-modal association', '4.4× baseline, but inert'],
-      's4c.longrange': ['long-range reach', 'flat patchy prior; ablation pending'],
-      's5.ablate': ['is the cortex load-bearing?', 'bypass +324%: yes'],
-      's6.scale': ['scale data and parameters', 'bandwidth-bound: video first'],
-      's7.joint': ['one schedule, both likelihoods', '32.0M shared, 12.9M in heads'],
-      's8.curriculum': ['expansion-aware selection', 'waits on scale'],
-      's9.rl': ['cognitive schema, then RL', 'needs a multi-attractor landscape'],
+    const order = stages.slice().sort((a, b) => depth[a.id] - depth[b.id] || stages.indexOf(a) - stages.indexOf(b));
+    const NOTE = {
+      's0.gain': 'the divergence was a declaration problem: gain was per edge and a node has 4118 incoming edges. association transfer now divides by fan-in.',
+      's0.window': 'selecting the nonlinearity gives the graph a 1.5 s memory, longer than half the window. τ = 0.30 s puts the slow oscillation in band and the plan clears.',
+      's1.regime': 'fitted, not argued: the slow-oscillation peak across eight scored N3 nights is 1.000 ± 0.296 Hz, and τ = 0.12 s puts the model there with a 43.5 mV swing.',
+      's2.spectra': 'the existing values are scalp quantities reported as cortical. redo; do not inherit. the global joint fit is falsified and is not to be re-attempted.',
+      's3.paired': 'cochleagram to MEG through the cortex. the variance gate passed and the rank gate failed, which is the decorative-cortex signature; the honest skill is at chance.',
+      's4.selfsup': '20,000 steps: reconstruction 1.77 → 0.185 while effective rank rose 1.42 → 2.97.',
+      's4b.crossmodal': 'occipito-temporal weights at 4.4× the random-pair baseline, but severing every long-range edge costs +0.1%. magnitude is not contribution.',
+      's4c.longrange': 'long-range edges took the local distance prior and started 7× weaker. they now take a flat patchy prior; the ablation has to be re-run to confirm severing them costs.',
+      's5.ablate': 'the pivotal node. bypass +324%, frozen +180%, association zeroed +180%, local only +0.1%. the cortex is load-bearing and its long-range half is inert.',
+      's6.scale': 'eleven minutes of one film is memorization territory. data binds the first milestone, not compute.',
+      's7.joint': 'one substrate, two likelihood terms, a single optimizer step. at 250k sites the shared kernel is 32.0M and the heads 12.9M.',
+      's8.curriculum': 'predictive loss alone is a capture curriculum. select where error is high and declining; hold one expansion measure out of the loss.',
+      's9.rl': 'needs the regime stage for attractors to exist at all, and basal ganglia, hippocampal indexing and replay, whose anatomy is declared and whose processes are not written.',
     };
-    const edges = stages.flatMap((s) => s.deps.map((dep) => { const a = pos[dep], b = pos[s.id]; const lit = byId[dep].status === 'done';
-      return `<path class="edge${lit ? ' lit' : ''}" d="M${a[0]},${a[1] + NH / 2} C${a[0]},${a[1] + RH * 0.5} ${b[0]},${b[1] - RH * 0.5} ${b[0]},${b[1] - NH / 2}"/>`; })).join('');
-    const nodes = stages.map((s) => { const [x, y] = pos[s.id]; const [t, sub] = TEXT[s.id] || [s.title, s.gate];
-      return `<g class="node ${s.status}" transform="translate(${x - NW / 2},${y - NH / 2})"><title>${s.id} — ${esc(s.title)}. gate: ${esc(s.gate)}</title><rect class="box" width="${NW}" height="${NH}" rx="3"/><rect class="bar" width="3" height="${NH}" rx="1.5"/><text class="n" x="12" y="19">${esc(t)}</text><text class="t" x="12" y="35">${esc(sub)}</text>${s.status === 'done' ? `<path class="check" d="M${NW - 22},23 l4.5,4.5 l9,-10"/>` : ''}</g>`; }).join('');
-    dagEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="curriculum stages">${edges}${nodes}</svg>`;
+    const num = (id) => id.replace(/^s/, '').split('.')[0];
+    dagEl.innerHTML = `<svg class="rail" aria-hidden="true"></svg><ol>${order.map((s) => `
+      <li class="stage ${s.status}" data-id="${s.id}"><span class="dot">${s.status === 'done' ? '<svg viewBox="0 0 16 16"><path d="M3.5,8.5 l3,3 l6,-7"/></svg>' : num(s.id)}</span>
+        <div class="stage-text"><h4>${esc(s.title)}<small>${s.status === 'ready' ? 'runnable' : s.status === 'failed' ? 'gate failed' : s.status}</small></h4><p>${esc(NOTE[s.id] || '')}</p><p class="gate">gate · ${esc(s.gate)}</p></div></li>`).join('')}</ol>`;
+    const rail = dagEl.querySelector('.rail');
+    const drawRail = () => {
+      const box = dagEl.getBoundingClientRect();
+      const at = {}; dagEl.querySelectorAll('.stage').forEach((li) => { const r = li.querySelector('.dot').getBoundingClientRect(); at[li.dataset.id] = [r.left - box.left + r.width / 2, r.top - box.top + r.height / 2]; });
+      rail.setAttribute('viewBox', `0 0 ${box.width} ${box.height}`); rail.setAttribute('width', box.width); rail.setAttribute('height', box.height);
+      const idx = Object.fromEntries(order.map((s, k) => [s.id, k]));
+      rail.innerHTML = stages.flatMap((s) => s.deps.map((dep) => {
+        const a = at[dep], b = at[s.id]; if (!a || !b) return '';
+        const gap = idx[s.id] - idx[dep], lit = byId[dep].status === 'done';
+        if (gap === 1) return `<path class="${lit ? 'lit' : ''}" d="M${a[0]},${a[1] + 14} L${b[0]},${b[1] - 14}"/>`;
+        const bow = 22 + 10 * gap;
+        return `<path class="${lit ? 'lit' : ''}" d="M${a[0]},${a[1] + 14} C${a[0] - bow},${a[1] + 40} ${b[0] - bow},${b[1] - 40} ${b[0]},${b[1] - 14}"/>`;
+      })).join('');
+    };
+    drawRail(); window.addEventListener('resize', drawRail);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawRail);
+  }
+
+  // ---- the corpus as a deck of cards: horizontal, swipeable, in perspective
+  const deck = $('deck-scroll');
+  if (deck && window.IBM_CARDS) {
+    const cards = window.IBM_CARDS;
+    const pad = (n) => String(n).padStart(3, '0');
+    deck.innerHTML = cards.map((c) => `
+      <article class="card" data-access="${c.access}">
+        <div class="card-top"><a class="card-n" href="${c.url}" target="_blank" rel="noopener">#${pad(c.n)}</a><span class="card-access">${esc(c.access)}</span></div>
+        <h4 class="card-title">${esc(c.title)}</h4>
+        <p class="card-prov">${esc(c.provider)}</p>
+        <p class="card-desc">${esc(c.desc)}</p>
+        <p class="card-use">${c.use.map((u) => `<span>${esc(u)}</span>`).join('')}<span class="card-streams">${c.streams} stream${c.streams === 1 ? '' : 's'}</span></p>
+      </article>`).join('');
+    const held = cards.filter((c) => c.access === 'held').length;
+    $('deck-count').textContent = `${held} held · ${cards.filter((c) => c.binding === 'bound').length} bound`;
+    const els = Array.from(deck.children);
+    let raf = null;
+    const place = () => {
+      raf = null;
+      const mid = deck.scrollLeft + deck.clientWidth / 2;
+      els.forEach((el) => {
+        const c = el.offsetLeft + el.offsetWidth / 2, dx = (c - mid) / deck.clientWidth;
+        if (Math.abs(dx) > 1.2) { el.style.transform = ''; el.style.opacity = '0'; return; }
+        const t = Math.max(-1, Math.min(1, dx * 1.6));
+        el.style.transform = `perspective(1100px) rotateY(${(-t * 42).toFixed(1)}deg) translateZ(${(-Math.abs(t) * 160).toFixed(0)}px)`;
+        el.style.opacity = (1 - Math.abs(t) * 0.45).toFixed(2);
+        el.style.zIndex = String(100 - Math.round(Math.abs(t) * 50));
+      });
+    };
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(place); };
+    deck.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    // drag to swipe with a mouse; touch scrolls natively
+    let drag = null;
+    deck.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') return; drag = { x: e.clientX, left: deck.scrollLeft, moved: false }; deck.classList.add('dragging'); });
+    deck.addEventListener('pointermove', (e) => { if (!drag) return; const dx = e.clientX - drag.x; if (Math.abs(dx) > 4) drag.moved = true; deck.scrollLeft = drag.left - dx; });
+    const end = () => { deck.classList.remove('dragging'); setTimeout(() => { drag = null; }, 0); };
+    deck.addEventListener('pointerup', end); deck.addEventListener('pointercancel', end); deck.addEventListener('pointerleave', end);
+    deck.addEventListener('click', (e) => { if (drag && drag.moved) e.preventDefault(); }, true);
+    const step = () => (els[0] ? els[0].offsetWidth + 18 : 240) * 3;
+    $('deck-prev').addEventListener('click', () => deck.scrollBy({ left: -step(), behavior: 'smooth' }));
+    $('deck-next').addEventListener('click', () => deck.scrollBy({ left: step(), behavior: 'smooth' }));
+    place();
+    setTimeout(place, 300);
   }
 
   // ---- references: an underlined phrase opens a note with a link to read more
