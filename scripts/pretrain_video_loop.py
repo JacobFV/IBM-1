@@ -302,6 +302,72 @@ class PairedNeuralLoop(nn.Module):
         return self.lead_v(self.lead_u(s[1][:, idx])), s
 
 
+class VisualEvokedLoop(nn.Module):
+    """image -> occipital drive -> dynamics -> the EVOKED RESPONSE as it unfolds.
+
+    the most physiologically direct materialisation in the file.  every other head
+    reads one cortical state and maps it to one output; here the target is a
+    64-channel time series over -0.2 to +0.79 s, and the model produces it by
+    running the dynamics and reading the lead field OUT AT EVERY STEP.  the evoked
+    response is not something the cortex emits at the end -- it IS the trajectory,
+    sampled by the sensors as it happens.
+
+    that makes it the sharpest test of the dynamics available: a model that gets
+    the P1/N1 timing right has to have the right time constants, not merely the
+    right steady state.  and the target is unusually clean, because THINGS-EEG2
+    retains repetitions -- averaging buys sqrt(80) on the test split.
+
+    the lead field is rank-limited for the reason `PairedNeuralLoop` documents: a
+    free readout substitutes for the cortex and reaches high accuracy at rank 1.
+    64 channels resolve fewer spatial degrees of freedom than 306, so the ceiling
+    here is lower still.
+    """
+
+    def __init__(self, dyn: CorticalDynamics, n_sensors: int = 64, n_times: int = 100,
+                 img: int = 64, hidden: int = 256, read_sites: int = 4096,
+                 lead_rank: int = 32):
+        super().__init__()
+        self.dyn, self.n_sensors, self.n_times = dyn, n_sensors, n_times
+        self.port = dyn.n // 8
+        self.enc = nn.Sequential(
+            nn.Conv2d(3, 32, 4, 2, 1), nn.GELU(), nn.Conv2d(32, 64, 4, 2, 1), nn.GELU(),
+            nn.Conv2d(64, 128, 4, 2, 1), nn.GELU(), nn.Flatten(),
+            nn.Linear(128 * 8 * 8, hidden), nn.GELU())
+        self.to_cortex = nn.Linear(hidden, self.port)
+        self.read_idx = torch.linspace(0, dyn.n - 1, read_sites).long()
+        self.lead_u = nn.Linear(read_sites, lead_rank, bias=False)
+        self.lead_v = nn.Linear(lead_rank, n_sensors, bias=False)
+
+    def forward(self, img, n_steps: int, dt: float, substeps: int = 8):
+        """one output sample per EEG sample, several integrator steps per output.
+
+        the sampling interval and the integrator step are different quantities and
+        conflating them diverges.  the EEG is sampled at 100 Hz, so an output is
+        due every 10 ms -- but the membrane constant is 15 ms, and an explicit
+        Euler step of 10 ms against a 15 ms constant is unstable: measured, |v|
+        reached 1.9e6 mV within one forward.  so `dt` is the OUTPUT interval and it
+        is integrated in `substeps` pieces.
+        """
+        b = img.shape[0]
+        drive = torch.zeros(b, self.dyn.n, device=img.device)
+        drive[:, :self.port] = self.to_cortex(self.enc(img))   # occipital port
+        s = self.dyn.init_state(b, img.device)
+        w = self.dyn.edge_weights()
+        idx = self.read_idx.to(img.device)
+        zero = torch.zeros_like(drive)
+        h = dt / substeps
+        out = []
+        # the stimulus arrives at t=0; the first samples are pre-stimulus baseline,
+        # so no drive is delivered until the onset index.
+        onset = int(round(0.2 * self.n_times / 0.99))
+        for t in range(self.n_times):
+            d = drive if t >= onset else zero
+            for _ in range(substeps):
+                s = self.dyn.step(s, d, h, w)
+            out.append(self.lead_v(self.lead_u(s[1][:, idx])))
+        return torch.stack(out, -1), s        # (B, sensors, time)
+
+
 class AudioVisualLoop(nn.Module):
     """one cortex, two ports, two predictions -- and the association between them.
 

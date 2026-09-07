@@ -1,0 +1,26 @@
+  SKIP sub-09__63_channels.zip: not a zip (851521536 bytes) -- refetch it
+9 subjects, split=training
+  sub-01__63_channels.zi   (16540, 64, 100)
+  sub-02__63_channels.zi   (16540, 64, 100)
+  sub-03__63_channels.zi   (16540, 64, 100)
+  sub-04__63_channels.zi   (16540, 64, 100)
+  sub-05__63_channels.zi   (16540, 64, 100)
+  sub-06__63_channels.zi   (16540, 64, 100)
+  sub-07__63_channels.zi   (16540, 64, 100)
+  sub-08__63_channels.zi   (16540, 64, 100)
+  sub-10__63_channels.zi   (16540, 64, 100)
+
+evoked: (9, 16540, 64, 100)  subjects x images x channels x time
+images on disk: 26107   EEG expects: 16540
+    0/16540
+    2000/16540
+    4000/16540
+    6000/16540
+    8000/16540
+    10000/16540
+    12000/16540
+    14000/16540
+    16000/16540
+  wrote images (16540, 64, 64, 3)
+
+wrote data/derived/things-paired: 9 subjects, 16540 images, 64 channels, 100 samples (-0.2 to +0.79 s at 100 Hz)
