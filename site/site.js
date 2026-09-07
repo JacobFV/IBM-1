@@ -28,18 +28,33 @@
     const stages = R.curriculum, byId = Object.fromEntries(stages.map((s) => [s.id, s]));
     const depth = {}; const d = (id) => depth[id] != null ? depth[id] : (depth[id] = byId[id].deps.length ? 1 + Math.max(...byId[id].deps.map(d)) : 0);
     stages.forEach((s) => d(s.id));
-    const cols = []; stages.forEach((s) => { (cols[depth[s.id]] = cols[depth[s.id]] || []).push(s); });
-    const CW = 160, RH = 66, PADX = 56, PADY = 30, rows = Math.max(...cols.map((c) => c.length));
-    const W = PADX * 2 + CW * (cols.length - 1), H = PADY * 2 + RH * (rows - 1) + 26;
+    // top down: depth is the row, siblings spread across the row; a node is a
+    // titled card with one line of status, coloured by its state
+    const NW = 214, NH = 46, GAP = 24, W = 760, RH = 98, PADY = 24;
+    const rows = []; stages.forEach((s) => { (rows[depth[s.id]] = rows[depth[s.id]] || []).push(s); });
+    const H = PADY * 2 + RH * (rows.length - 1) + NH;
     const pos = {};
-    cols.forEach((c, ci) => { const off = (rows - c.length) / 2; c.forEach((s, ri) => { pos[s.id] = [PADX + ci * CW, PADY + (off + ri) * RH]; }); });
-    const short = (id) => id.replace(/^s/, '').split('.')[0];
-    const SHORT = { 's0.gain': 'gain prior', 's0.window': 'window', 's1.regime': 'regime', 's2.spectra': 'spectral fit', 's3.paired': 'paired MEG', 's4.selfsup': 'self-supervised AV', 's4b.crossmodal': 'cross-modal', 's4c.longrange': 'long-range', 's5.ablate': 'ablation', 's6.scale': 'scale', 's7.joint': 'joint schedule', 's8.curriculum': 'curriculum', 's9.rl': 'schema, then RL' };
+    rows.forEach((r, ri) => { const total = r.length * NW + (r.length - 1) * GAP, x0 = (W - total) / 2; r.forEach((s, ci) => { pos[s.id] = [x0 + ci * (NW + GAP) + NW / 2, PADY + NH / 2 + ri * RH]; }); });
+    const TEXT = {
+      's0.gain': ['fan-in-aware gain prior', '|L(0)| < 1 at prior medians'],
+      's0.window': ['window follows implementation', '2.048 s window, τ = 0.30 s'],
+      's1.regime': ['nonlinear regime', 'slow oscillation fitted at 1.000 Hz'],
+      's2.spectra': ['per-source spectral fit', 'redo; do not inherit scalp values'],
+      's3.paired': ['paired stimulus → MEG', 'skill at chance; rank gate open'],
+      's4.selfsup': ['self-supervised AV', 'rank rose while loss fell'],
+      's4b.crossmodal': ['cross-modal association', '4.4× baseline, but inert'],
+      's4c.longrange': ['long-range reach', 'flat patchy prior; ablation pending'],
+      's5.ablate': ['is the cortex load-bearing?', 'bypass +324%: yes'],
+      's6.scale': ['scale data and parameters', 'bandwidth-bound: video first'],
+      's7.joint': ['one schedule, both likelihoods', '32.0M shared, 12.9M in heads'],
+      's8.curriculum': ['expansion-aware selection', 'waits on scale'],
+      's9.rl': ['cognitive schema, then RL', 'needs a multi-attractor landscape'],
+    };
     const edges = stages.flatMap((s) => s.deps.map((dep) => { const a = pos[dep], b = pos[s.id]; const lit = byId[dep].status === 'done';
-      return `<path class="edge${lit ? ' lit' : ''}" d="M${a[0] + 14},${a[1]} C${a[0] + CW * 0.55},${a[1]} ${b[0] - CW * 0.55},${b[1]} ${b[0] - 14},${b[1]}"/>`; })).join('');
-    const nodes = stages.map((s) => { const [x, y] = pos[s.id]; return `<g class="node ${s.status}" transform="translate(${x},${y})"><title>${s.id} — ${s.title}. gate: ${esc(s.gate)}</title><circle r="13"/><text class="n">${short(s.id)}</text><text class="t" y="27">${esc(SHORT[s.id] || s.title)}</text></g>`; }).join('');
-    dagEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="curriculum stages">${edges}${nodes}</svg>
-      <p class="dag-key"><span class="k-done">done</span><span class="k-running">running</span><span class="k-ready">runnable</span><span>blocked</span><span class="k-failed">gate failed</span></p>`;
+      return `<path class="edge${lit ? ' lit' : ''}" d="M${a[0]},${a[1] + NH / 2} C${a[0]},${a[1] + RH * 0.5} ${b[0]},${b[1] - RH * 0.5} ${b[0]},${b[1] - NH / 2}"/>`; })).join('');
+    const nodes = stages.map((s) => { const [x, y] = pos[s.id]; const [t, sub] = TEXT[s.id] || [s.title, s.gate];
+      return `<g class="node ${s.status}" transform="translate(${x - NW / 2},${y - NH / 2})"><title>${s.id} — ${esc(s.title)}. gate: ${esc(s.gate)}</title><rect class="box" width="${NW}" height="${NH}" rx="3"/><rect class="bar" width="3" height="${NH}" rx="1.5"/><text class="n" x="12" y="19">${esc(t)}</text><text class="t" x="12" y="35">${esc(sub)}</text>${s.status === 'done' ? `<path class="check" d="M${NW - 22},23 l4.5,4.5 l9,-10"/>` : ''}</g>`; }).join('');
+    dagEl.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="curriculum stages">${edges}${nodes}</svg>`;
   }
 
   // ---- references: an underlined phrase opens a note with a link to read more
