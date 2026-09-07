@@ -223,6 +223,14 @@ def centroid(idx):
     return P[list(idx)].mean(0) if len(idx) else center
 
 
+def shell_top(idx):
+    """the crown of a sensor array: its centroid lifted to the array's own radius."""
+    pts = P[list(idx)]
+    c = pts.mean(0)
+    r = np.linalg.norm(pts - c, axis=1).mean()
+    return c + np.array([0.0, 0.0, r])
+
+
 def cortex_idx(labels=None):
     return [i for i in range(sub_start) if labels is None or nodes[i]["region"] in labels]
 
@@ -311,7 +319,7 @@ COMP_LABEL = {
     "structural.myelination": "myelination", "structural.fiber_orientation": "fibre orientation",
 }
 
-SCANNER_ANCHOR = center + np.array([0.0, -5.0, 118.0])
+SCANNER_ANCHOR = center + np.array([0.0, -5.0, 96.0])
 BODY_ANCHOR = None  # filled from the spinal stub
 
 
@@ -376,11 +384,11 @@ for mid, m in MODELS.items():
         if d.support == "sensor_array" and d.name in ("eeg", "psg", "optodes"):
             idx = EEG if d.name != "psg" else EEG[::10][:6]
             devices.append(dict(name=d.name, support=d.support, role=d.role, n=d.n_elements,
-                                anchor=centroid(idx).tolist(), nodes=idx, note=d.note))
+                                anchor=shell_top(EEG).tolist(), nodes=idx, note=d.note))
             dev_nodes |= set(idx)
         elif d.support == "sensor_array" and d.name == "meg":
             devices.append(dict(name=d.name, support=d.support, role=d.role, n=d.n_elements,
-                                anchor=centroid(MEG).tolist(), nodes=MEG, note=d.note))
+                                anchor=shell_top(MEG).tolist(), nodes=MEG, note=d.note))
             dev_nodes |= set(MEG)
         elif d.support == "sensor_array" and d.name == "emg":
             devices.append(dict(name=d.name, support=d.support, role=d.role, n=d.n_elements,
@@ -446,11 +454,11 @@ for mid, m in MODELS.items():
 
     # inputs: observations (likelihoods) and interventions (clamped state)
     inputs = []
-    for o in m.request.observations:
+    for o in dict.fromkeys(m.request.observations):
         if o == "eeg":
-            a, n = centroid(EEG), EEG
+            a, n = shell_top(EEG), EEG
         elif o == "meg":
-            a, n = centroid(MEG), MEG
+            a, n = shell_top(MEG), MEG
         elif o in ("bold", "asl_perfusion", "pet", "structural_mri", "dwi_microstructure"):
             a, n = SCANNER_ANCHOR, []
         elif o in ("ecog", "ieeg", "lfp", "intracortical_spikes", "dc_potential"):
@@ -459,9 +467,9 @@ for mid, m in MODELS.items():
                    "produced_audio", "ecg", "ppg"):
             a, n = BODY_ANCHOR, spine_idx[-2:]
         elif o == "polysomnography":
-            a, n = centroid(EEG[::10][:6]), EEG[::10][:6]
+            a, n = shell_top(EEG), EEG[::10][:6]
         elif o == "fnirs":
-            a, n = centroid(EEG), EEG
+            a, n = shell_top(EEG), EEG
         elif o in ("temperature", "tissue_displacement"):
             a, n = dev_anchor("stimulator", fallback=focus_c), []
         elif o == "csf_flow_velocity":
@@ -472,7 +480,7 @@ for mid, m in MODELS.items():
             a, n = focus_c, []
         inputs.append(dict(id=o, kind="observation", label=OBS_LABEL.get(o, o.replace("_", " ")),
                            anchor=np.asarray(a).tolist(), nodes=list(n)))
-    for o in m.request.interventions:
+    for o in dict.fromkeys(m.request.interventions):
         if o in ("visual_stimulus",):
             a, n = centroid(RETINA) + np.array([0, 22, 0]), RETINA
         elif o in ("auditory_stimulus",):
@@ -509,7 +517,7 @@ for mid, m in MODELS.items():
                 a, n = BODY_ANCHOR, spine_idx
             elif field == "device":
                 d = devices[0] if devices else None
-                a, n = (np.asarray(d["anchor"]), d["nodes"]) if d else (centroid(EEG), EEG)
+                a, n = (np.asarray(d["anchor"]), d["nodes"]) if d else (shell_top(EEG), EEG)
             elif field == "electromagnetic":
                 d = dev_by_support.get("sensor_array") or dev_by_support.get("stimulator")
                 a = np.asarray(d["anchor"]) if d else scalp_point(focus_c)
@@ -541,11 +549,12 @@ for mid, m in MODELS.items():
         doc=doc, window_dt_s=m.request.window.dt, window_n=m.request.window.n,
         regions=sorted(cortical_labels), systems=sorted(
             {s for k, s, _ in acc if k == "anat"}),
-        supports=sorted(supports), observations=list(m.request.observations),
-        interventions=list(m.request.interventions), targets=[v for t in m.request.targets for v in t.vars],
+        supports=sorted(supports), observations=list(dict.fromkeys(m.request.observations)),
+        interventions=list(dict.fromkeys(m.request.interventions)), targets=[v for t in m.request.targets for v in t.vars],
         devices=[dict(name=d["name"], support=d["support"], role=d["role"], n=d["n"],
                       anchor=d["anchor"], nodes=d["nodes"], note=d["note"]) for d in devices],
-        inputs=inputs, outputs=outputs, involved=involved, hot=hot, focus_anchor=focus_c.tolist(),
+        inputs=inputs, outputs=outputs, involved=involved, hot=hot,
+        whole=not (cortical_labels or sub_groups or any(d.get("near") for d in devices)), focus_anchor=focus_c.tolist(),
         constrained=list(m.constrained), prior_dominated=list(m.prior_dominated),
     ))
 

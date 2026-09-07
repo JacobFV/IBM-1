@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ibm-1 · implicit brain model</title>
+<meta name="description" content="ibm-1 is a multiscale probabilistic dynamical substrate — fields, anatomy, topologies, processes — from which task-specific explicit brain models are lazily materialized.">
+<meta property="og:title" content="ibm-1 · implicit brain model">
+<meta property="og:description" content="one posterior, forty views. a physics-first brain substrate whose EEG forward model, hemodynamic model and video predictor are materializations of the same implicit structure.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2307090f'/%3E%3Ccircle cx='11' cy='13' r='2.2' fill='%23f0b34a'/%3E%3Ccircle cx='21' cy='11' r='2.2' fill='%2363d3e6'/%3E%3Ccircle cx='17' cy='21' r='2.2' fill='%23e69422'/%3E%3Cpath d='M11 13L21 11L17 21Z' fill='none' stroke='%23e9e7e0' stroke-opacity='.5' stroke-width='.8'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<!-- ============================================================ hero -->
+<section id="hero" class="hero" aria-label="the substrate and its materializations">
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
+  <svg id="hero-leaders" class="leaders" aria-hidden="true">
+    <defs>
+      <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0.8 L7,4 L0,7.2" fill="none" stroke="currentColor" stroke-width="1.1"/>
+      </marker>
+    </defs>
+  </svg>
+
+  <h1 class="wordmark" aria-label="IBM-1"><span>IBM</span><span class="wm-dash">-</span><span>1</span></h1>
+  <p class="hero-sub">implicit brain model <span class="hero-sub-sep">·</span> one posterior, forty views</p>
+
+  <nav id="ring" class="ring" aria-label="materializations"></nav>
+
+  <aside id="selected" class="selected" aria-live="polite">
+    <button id="sel-close" class="sel-close" type="button" aria-label="return to the implicit model (esc)">×<span class="sel-close-hint">esc</span></button>
+    <div class="sel-head">
+      <span id="sel-group" class="sel-group"></span>
+      <h2 id="sel-title" class="sel-title"></h2>
+      <p id="sel-doc" class="sel-doc"></p>
+      <div id="sel-meta" class="sel-meta"></div>
+    </div>
+    <div class="ann-col ann-col-in"><span class="ann-col-title">inputs</span><div id="inputs"></div></div>
+    <div class="ann-col ann-col-out"><span class="ann-col-title">outputs</span><div id="outputs"></div></div>
+  </aside>
+
+  <p id="hero-hint" class="hero-hint">drag to orbit · ctrl + scroll to zoom · click a materialization</p>
+  <a class="hero-down" href="#paper" aria-label="read on">↓</a>
+</section>
+
+<!-- =========================================================== paper -->
+<main id="paper" class="paper">
+
+  <header class="masthead">
+    <p class="eyebrow">a research substrate · updated 2026-09-05 · <a href="https://github.com/JacobFV/IBM-1">github.com/JacobFV/IBM-1</a></p>
+    <p class="standfirst">ibm-1 is a multiscale probabilistic dynamical substrate — <em>fields, anatomy, topologies, processes</em> — from which task-specific explicit brain models are lazily materialized. an EEG forward model, a hemodynamic model and a next-frame video predictor are views of one posterior, not three models.</p>
+    <p class="standfirst-2">it sits at the bridge between measured neurophysiology and the cognitive structure that emerges from attractor dynamics. the physiology end is declared, falsifiable, and has already lost six arguments to data. the cognitive end is not declared at all, because a schema or a percept is a property of the vector field, not a parameter you set.</p>
+  </header>
+
+  <figure class="stats" aria-label="what has been built and verified">
+    <div><b>13</b><span>fields</span></div>
+    <div><b>91</b><span>components</span></div>
+    <div><b>22</b><span>supports</span></div>
+    <div><b>16</b><span>topologies</span></div>
+    <div><b>29</b><span>processes</span></div>
+    <div><b>40</b><span>materializations</span></div>
+    <div><b>601</b><span>source cards<i>117 bound</i></span></div>
+    <div><b>464</b><span>declared parameters<i>283 literature</i></span></div>
+    <figcaption>verified by running, not by inspection: seals strict, 0 errors, 53,154 lines of python.</figcaption>
+  </figure>
+
+  <!-- primitives -->
+  <section class="sec">
+    <div class="margin"><span class="mono">§1</span><span>the four primitives</span></div>
+    <div class="body">
+      <p class="lede">resolution, bandwidth, datasets, observations, interventions and explicit models are all expressed through four primitives rather than introduced as additional ones.</p>
+      <div class="prims">
+        <div class="prim"><span class="mono">fields</span><span class="math">F = { x(q) : q ∈ Ω }</span><p>an indexed family of state variables. a component is a kind of physical quantity — membrane potential, K⁺ concentration, flow rate — and never an encoding of something else. fields do not share a support: the cortical sheet, the vascular tree and a sensor array are different domains with different notions of distance.</p></div>
+        <div class="prim"><span class="mono">anatomy</span><span class="math">a(q) ∈ [0,1]ᵏ</span><p>partitioning systems that map a position into soft memberships over named partitions: 34 cortical areas, 31 thalamic nuclei, 36 brainstem nuclei, 96 skeletal muscles. an atlas is evidence about where things are, not a coordinate system.</p></div>
+        <div class="prim"><span class="mono">topologies</span><span class="math">T(i, j)</span><p>which materialized state variables may interact through some class of process. tracts, laminar circuits, the vascular tree, the lead field from cortex to a contact. spatial structure lives entirely here; there is no universal spatial operator.</p></div>
+        <div class="prim"><span class="mono">processes</span><span class="math">P = (I, O, T, f, θ)</span><p>dynamics over state variables connected by one or more topologies. the pair (f, θ) is implementation — linear, conductance-based, learned — selected per regime and swappable without touching the declaration.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- materialization -->
+  <section class="sec">
+    <div class="margin"><span class="mono">§2</span><span>materialization</span></div>
+    <div class="body">
+      <p>an explicit model is a lazy materialization of the implicit one:</p>
+      <p class="display-math">M = materialize(R, r, B, F, A, T, P)</p>
+      <p>you name spatial regions <i>R</i>, a resolution <i>r(q)</i> over those regions, a bandwidth <i>B(q)</i>, and which fields, anatomies, topologies and processes you need. dependency tracing then instantiates only the state variables and processes reachable from the target. the same field can exist at 1 mm across the whole brain and at 50 µm around an electrode at the same time, without instantiating 50 µm state everywhere. resolution earns its cost only where coarse-graining stops commuting with the dynamics.</p>
+      <p>because the process graph is finite, the core clique is shared across nearly every materialization; <i>R</i>, <i>r</i> and <i>B</i> are the only levers by which the forty entries in the library differ. every materialized model carries provenance: which <i>f</i> was selected per process, which parameters were moved off their prior by evidence and which were not, and where a process was run outside the regime in which its <i>f</i> is meaningful. a prediction resting on prior-dominated structure is not presented with the confidence of one resting on constrained structure.</p>
+      <p class="note">the graph in the opener is this idea drawn literally. every cortical, subcortical and sensor position is the mne <code>sample</code> subject's own — an oct5 sampling of its pial surface coloured by its FreeSurfer parcellation, its aseg segmentation, its digitised EEG cap and the 102 magnetometer positions of its MEG array. click a materialization and what lights up is read off the request symbolically: the regions it names, the devices it declares, the state it targets. the retina, cochlea and spinal stub are drawn for orientation; this subject has no geometry for them, and neither does the model pretend to.</p>
+    </div>
+  </section>
+
+  <blockquote class="pull">
+    <p>the implicit structure exists independently of what any instrument can observe or any materialization can afford. evidence constrains what it constrains; elsewhere the structure remains at its prior. that is the machinery working, not failing.</p>
+    <cite>docs/ARCHITECTURE.md</cite>
+  </blockquote>
+
+  <!-- falsification -->
+  <section class="sec">
+    <div class="margin"><span class="mono">§3</span><span>ten claims put where they could fail</span></div>
+    <div class="body">
+      <p class="lede">six did. this is the system working, and the list is the most valuable thing in the state document.</p>
+      <div class="table-wrap">
+      <table class="claims">
+        <thead><tr><th>declared claim</th><th>what the data said</th><th class="num">outcome</th></tr></thead>
+        <tbody>
+          <tr><td>the thalamocortical resonance is alpha (10 Hz prior)</td><td>13.45 Hz — a spindle. held-out +5503 nats/night, p = 7.2e-11, in 100% of unseen participants</td><td class="num"><span class="tag tag-moved">prior moved</span></td></tr>
+          <tr><td>the neurovascular chain predicts BOLD</td><td>r = −0.11, permutation p = 0.38</td><td class="num"><span class="tag tag-fail">failed</span></td></tr>
+          <tr><td>Grubb's law holds</td><td>slope 0.066 against a declared 0.38, 5.2 prior sd away</td><td class="num"><span class="tag tag-fail">failed</span></td></tr>
+          <tr><td>MEG resolves finer source structure than EEG</td><td>per channel, 49.8% vs 63.0%, p = 0.0033</td><td class="num"><span class="tag tag-fail">failed</span></td></tr>
+          <tr><td>Murray's law in the capillary bed</td><td>does not hold in the measured microvasculature</td><td class="num"><span class="tag tag-fail">failed</span></td></tr>
+          <tr><td>the capillary bed carries most of the resistance</td><td>6–27% of dissipation. it is 85% of the <i>length</i></td><td class="num"><span class="tag tag-fail">wrong</span></td></tr>
+          <tr><td>the canonical laminar cascade</td><td>L4→L2/3 and L5→L6 confirm; L6→L4 sits 3× <i>below</i> distance</td><td class="num"><span class="tag tag-half">half</span></td></tr>
+          <tr><td>tractography is reliable edge by edge</td><td>recovery 0.456, false discovery rate 0.725</td><td class="num"><span class="tag tag-fail">no</span></td></tr>
+          <tr><td>consensus across pipelines is evidence</td><td>ρ <i>rises</i> with threshold, 0.317 → 0.556; 91 pipelines are worth 3.08 votes</td><td class="num"><span class="tag tag-fail">no</span></td></tr>
+          <tr><td>thresholding improves tractography</td><td>FDR flat near 0.73 across a 100× range while recovery falls to 0.150</td><td class="num"><span class="tag tag-fail">no</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p>what did hold, held exactly. delay carried as a phase ramp: 24 edges declared at 2.17–23.84 ms, measured at 2.17–23.84 ms, pointwise agreement 4.4e-16. a real EEG observation moved the posterior 2.03 prior sd inside its band, and outside that band the maximum change was zero — band-limited fusion is not approximately composable, it is composable. the spectrum is made by the solve: an output β of 1.57 with a 9.77 Hz peak at 32.7× background, from a drive whose own β is 0.17.</p>
+    </div>
+  </section>
+
+  <!-- the cortex is load-bearing -->
+  <section class="sec">
+    <div class="margin"><span class="mono">§4</span><span>what the cortex is for</span></div>
+    <div class="body">
+      <p class="lede">a video generator with a decorative brain still shows a falling loss. a real head's MEG prices any cortical state that does not produce that field.</p>
+      <p>the paired MEG stage is the anchor of the curriculum and the reason it comes early. in a self-supervised loop both encoder and decoder are learned, so nothing stops the model routing information <i>around</i> the dynamics and using them as a delay line. the first eval harness caught exactly this in its first use: targets had been standardized by an artifact-dominated per-run variance, so predicting zero scored 0.0065, and what had been reported as 91–97% of variance explained was in fact a skill of −12 to −4. every metric is now skill against explicit baselines, including trivial ones.</p>
+      <div class="arc">
+        <div class="arc-step"><span class="arc-n">−0.5</span><span class="arc-l">skill, 100 ms context</span><span class="arc-d">worse than predicting nothing</span></div>
+        <div class="arc-step"><span class="arc-n">+0.90</span><span class="arc-l">500 ms context</span><span class="arc-d">speech tracking is spread over 0–400 ms of lag</span></div>
+        <div class="arc-step"><span class="arc-n">+0.941</span><span class="arc-l">free 4096→306 readout</span><span class="arc-d">effective cortical rank 1.03 — the decorative-cortex signature</span></div>
+        <div class="arc-step arc-step-hi"><span class="arc-n">+0.957</span><span class="arc-l">lead field at rank 64</span><span class="arc-d">rank 3.42: the ~60–80 spatial degrees of freedom a 306-channel array resolves</span></div>
+      </div>
+      <p>constraining the readout to MEG physics made the cortex carry the signal. accuracy went up while the model used three times the cortical dimensions.</p>
+
+      <h3>measured, not argued</h3>
+      <p>ablation of the audio-visual checkpoint over 24 held-out batches. bypassing the cortex triples the loss; severing every long-range edge costs nothing.</p>
+      <div class="bars">
+        <div class="bar"><span class="bar-l">full</span><span class="bar-t"><i style="--v:.237"></i></span><span class="bar-n">0.180</span></div>
+        <div class="bar"><span class="bar-l">local only</span><span class="bar-t"><i style="--v:.237"></i></span><span class="bar-n">0.180</span></div>
+        <div class="bar"><span class="bar-l">frozen</span><span class="bar-t"><i style="--v:.661"></i></span><span class="bar-n">0.503</span></div>
+        <div class="bar"><span class="bar-l">no association</span><span class="bar-t"><i style="--v:.661"></i></span><span class="bar-n">0.503</span></div>
+        <div class="bar bar-hi"><span class="bar-l">bypass cortex</span><span class="bar-t"><i style="--v:1"></i></span><span class="bar-n">0.761</span></div>
+      </div>
+      <p class="caption">reconstruction loss, lower is better. the long-range result is the open item: those edges now take a flat patchy prior, and the fix is not confirmed until the ablation is re-run.</p>
+
+      <h3>a kernel that cannot subtract can only blur</h3>
+      <p>with all-positive, fan-in-normalized association weights, eight applications per forward are eight rounds of averaging: effective rank fell 1.57 → 1.01 while reconstruction <i>diverged</i> 2.04 → 6.66. a signed kernel holds rank at 3.40 and reconstruction falls 1.56 → 1.48. cortical association is not all-excitatory. on the audio-visual run the occipito-temporal edges came out at mean |w| 0.618 against 0.139 for random pairs — 4.4× the baseline, net excitatory, and genuinely signed.</p>
+      <p>the objective was once parasitic on its substrate: |v|max drifted 64 → 430 mV while the loss kept falling, because a 430 mV membrane predicts frames perfectly well. a one-sided viability penalty is what makes the objective mutualistic, and it is in the checkpoint name for that reason.</p>
+    </div>
+  </section>
+
+  <blockquote class="pull">
+    <p>cognition is not primarily symbols being passed around. it is the trajectory generated by a nonlinear vector field.</p>
+    <cite>docs/DYNAMICS.md</cite>
+  </blockquote>
+
+  <!-- corpus -->
+  <section class="sec">
+    <div class="margin"><span class="mono">§5</span><span>the corpus</span></div>
+    <div class="body">
+      <p>a row in the index is a candidate; a directory in <code>data/sources</code> is a commitment. the candidate index holds 26,399 datasets, 2.55 PB. 601 cards have been committed — 251 datasets, 136 atlases, 125 tools, 46 models, 30 standards, 13 derived geometries — and 117 are bound to bytes on disk, 816 GiB of them. most of those licences prohibit redistribution, so the repository commits where the bytes are and what they hashed to; acquiring them is a separate, local act.</p>
+      <ul class="corpus">
+        <li><b>52</b> hemodynamic and metabolic</li>
+        <li><b>36</b> effector, autonomic, interoceptive</li>
+        <li><b>36</b> sensory boundary and stimuli</li>
+        <li><b>31</b> scalp electromagnetic</li>
+        <li><b>23</b> simultaneous multimodal</li>
+        <li><b>22</b> intracranial electromagnetic</li>
+        <li><b>17</b> stimulation response</li>
+        <li><b>11</b> structural and microstructural</li>
+        <li><b>10</b> oracle, synthetic, negative control</li>
+        <li><b>8</b> vascular geometry</li>
+        <li><b>5</b> population and clinical priors</li>
+      </ul>
+      <p>the flagship derived array is 235.6 minutes of paired MEG: 3,534,623 samples at 250 Hz across 306 channels, aligned to a cochleagram of the <i>Study in Scarlet</i> audiobook by recovering a chapter identity the dataset does not record.</p>
+    </div>
+  </section>
+
+  <!-- curriculum -->
+  <section class="sec">
+    <div class="margin"><span class="mono">§6</span><span>the curriculum</span></div>
+    <div class="body">
+      <p>the organizing identity is</p>
+      <p class="display-math">∇ log p(θ | D) = ∇ log p(θ) + Σ<sub>d</sub> ∇ log p(D<sub>d</sub> | θ)</p>
+      <p>a curriculum is a schedule over <i>d</i>. materializations are more terms in the same product rather than competing regimes, and the factorization is the parallelization: the multi-materialization trainer fits an audio-visual head and a paired-MEG head onto one shared 32.0M-parameter substrate in a single optimizer step, so anything the two teach each other has to pass through the association kernel. the stages are a gated DAG, and a stage does not begin until its gate is measured green.</p>
+      <ol class="stages">
+        <li><span>fan-in-aware gain prior</span><small>the divergence was a declaration problem: |L(0)| = 7218 because the gain prior was per edge and a node has 4118 incoming edges</small></li>
+        <li><span>regime selection</span><small>against sleep-EDFx N3; swept at τ<sub>adapt</sub> = 0.30 s: zero divergence, oscillation and multistability both present</small></li>
+        <li><span>per-source spectral fit</span><small>joint θ beats the literature prior on all four sources, and beats each source's own fit on none</small></li>
+        <li><span>forced sensory alignment</span><small>forcing constrains delta and essentially nothing above it: 0.5–4 Hz r² +0.0033, 8–13 Hz −0.0001</small></li>
+        <li><span>the closed video loop</span><small>unbounded data, and the stage where per-site tying finally has something to spend 73M parameters on</small></li>
+        <li><span>audio-visual materialization</span><small>68.9M parameters, 20,000 steps, 4 hours on one GB10; recon 1.77 → 0.185</small></li>
+        <li><span>the paired MEG anchor</span><small>skill +0.957 at cortical rank 3.42 through a rank-64 lead field</small></li>
+        <li><span>multi-materialization, then development, then schema</span><small>critical periods, cognitive schema and RL are declared as stages, not yet reached</small></li>
+      </ol>
+      <p>sequencing matters for capacity too. the declared association kernel is resolution-independent by construction — 2,882 parameters whether there are 13.5k sites or 570k — and flipping to per-site tying at 0.5 mm buys 73M parameters whose posterior equals their prior. a larger model and not a better one, which is why it waits for the closed loop's unbounded data. throughput: caching edge weights per forward rather than rebuilding the similarity inside every dynamics step took a step from 2.76 s to 0.67 s at 250k sites, so one epoch over the 11-minute movie is 0.77 GB10-hours.</p>
+    </div>
+  </section>
+
+  <blockquote class="pull">
+    <p>a claim about what forcing constrains that does not name a band is not a claim.</p>
+    <cite>docs/STATE.md</cite>
+  </blockquote>
+
+  <!-- status -->
+  <section class="sec">
+    <div class="margin"><span class="mono">§7</span><span>where it stands</span></div>
+    <div class="body">
+      <p class="lede">the honest distance to the cognitive end is that there is no cycle yet.</p>
+      <p>the materialized graph currently selects a linear implementation for all 29 processes, and a linear system has exactly one fixed point. there is no attractor landscape, so there is nothing for a cognitive structure to be. the periphery — 6 anatomical systems, 192 nerve labels, 483 ports over 96 named muscles and 9 receptor surfaces — produced the first closed feedback cycle in the <i>declared</i> process graph, with segmental reflex bandwidth at 16.7–35.7 Hz against 1.8–3.3 Hz for the long cortical loop. the EEG forward materialization is still acyclic.</p>
+      <ul class="next">
+        <li><b>stage 0 convergence.</b> |L(0)| &lt; 1 is unblocked for the training path and still owed for <code>eeg_forward</code>.</li>
+        <li><b>re-run the ablation.</b> long-range edges now take a flat patchy prior; the fix is not confirmed until the cortex ablation is repeated.</li>
+        <li><b>give the task cue content.</b> the seam where the cognitive stage enters.</li>
+      </ul>
+      <p class="note">gaps stated plainly: no held-out split evaluation, no free-running rollout evaluation, no seed or variance reporting. every result on this page is one run. weights live in a private hugging face repository; no licence has been declared for the code yet.</p>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <div>
+      <p class="mono">ibm-1 · 0.1.0</p>
+      <p>jacob valdez, with claude as co-author on the recent commits.</p>
+    </div>
+    <div>
+      <p class="mono">read</p>
+      <p><a href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md">architecture</a> · <a href="https://github.com/JacobFV/IBM-1/blob/main/docs/STATE.md">state</a> · <a href="https://github.com/JacobFV/IBM-1/blob/main/docs/CURRICULUM.md">curriculum</a> · <a href="https://github.com/JacobFV/IBM-1/blob/main/docs/EVIDENCE.md">evidence</a> · <a href="https://github.com/JacobFV/IBM-1/blob/main/docs/DYNAMICS.md">dynamics</a> · <a href="https://github.com/JacobFV/IBM-1/blob/main/docs/EMBODIMENT.md">embodiment</a></p>
+    </div>
+    <div>
+      <p class="mono">the figure</p>
+      <p>mne <code>sample</code> subject, surface RAS. positions and colours are FreeSurfer's; the graph is regenerated by <code>scripts/export_site_graph.py</code>.</p>
+    </div>
+  </footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="data/graph.js"></script>
+<script src="hero.js"></script>
+</body>
+</html>
