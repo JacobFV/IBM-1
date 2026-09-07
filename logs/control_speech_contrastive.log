@@ -1,0 +1,18 @@
+[contrastive] pool 200, chance 0.50%  window 50 samples (200 ms)
+params 6,300,672
+/home/brandonin/Documents/IBM-1/scripts/control_speech_to_meg.py:134: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  {step:5d}  loss {float(loss):.4f}  top-1 {100*top1:5.2f}%  "
+      0  loss 5.0407  top-1  0.50%  (1.0x chance)
+    500  loss 4.6902  top-1  1.00%  (2.0x chance)
+   1000  loss 4.3331  top-1  0.00%  (0.0x chance)
+   1500  loss 4.1420  top-1  1.00%  (2.0x chance)
+   2000  loss 3.9657  top-1  0.50%  (1.0x chance)
+   2500  loss 3.9711  top-1  0.50%  (1.0x chance)
+   3000  loss 3.6417  top-1  1.00%  (2.0x chance)
+   3500  loss 3.6041  top-1  0.50%  (1.0x chance)
+   4000  loss 3.3475  top-1  0.00%  (0.0x chance)
+   4500  loss 3.2132  top-1  0.50%  (1.0x chance)
+   5000  loss 2.9833  top-1  0.50%  (1.0x chance)
+   5500  loss 3.1582  top-1  0.00%  (0.0x chance)
+   6000  loss 2.8349  top-1  1.00%  (2.0x chance)

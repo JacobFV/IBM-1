@@ -78,7 +78,7 @@ def main() -> None:
         m = nn.Sequential(
             nn.Conv1d(stim.shape[1], 128, 5, padding=2), nn.GELU(),
             nn.Conv1d(128, 128, 5, stride=2, padding=2), nn.GELU(),
-            nn.Flatten(), nn.Linear(128 * (CTX // 2 + 1), 512), nn.GELU(),
+            nn.Flatten(), nn.Linear(128 * ((CTX + 1) // 2), 512), nn.GELU(),
             nn.Linear(512, C)).to(dev)
         opt = torch.optim.AdamW(m.parameters(), lr=3e-4, weight_decay=1e-4)
         print(f"params {sum(p.numel() for p in m.parameters()):,}", flush=True)
@@ -102,12 +102,12 @@ def main() -> None:
         se = nn.Sequential(
             nn.Conv1d(stim.shape[1], 128, 5, padding=2), nn.GELU(),
             nn.Conv1d(128, 128, 5, stride=2, padding=2), nn.GELU(),
-            nn.Flatten(), nn.Linear(128 * (CTX // 2 + 1), 512), nn.GELU(),
+            nn.Flatten(), nn.Linear(128 * ((CTX + 1) // 2), 512), nn.GELU(),
             nn.Linear(512, 128)).to(dev)
         me = nn.Sequential(
             nn.Conv1d(C, 128, 5, padding=2), nn.GELU(),
             nn.Conv1d(128, 128, 5, stride=2, padding=2), nn.GELU(),
-            nn.Flatten(), nn.Linear(128 * (a.win // 2 + 1), 512), nn.GELU(),
+            nn.Flatten(), nn.Linear(128 * ((a.win + 1) // 2), 512), nn.GELU(),
             nn.Linear(512, 128)).to(dev)
         temp = nn.Parameter(torch.tensor(0.07, device=dev))
         opt = torch.optim.AdamW(list(se.parameters()) + list(me.parameters()) + [temp],

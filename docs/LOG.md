@@ -27,6 +27,7 @@ pattern is worth more than any single row.
 | 8 | the image→EEG target carries no stimulus information | the pairing was **99.94% wrong** — 10 of 16,540. THINGS-EEG2 uses ten images from each of 1,654 concepts; a directory walk takes every image from the first 1,162 | reading the order the dataset declares |
 | 9 | contrastive retrieval reaches 18.5% | single-pool, sd 2.8. and the run **checkpointed on best single pool**, selecting for lucky draws | averaging 20 pools |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
+| 11 | speech→MEG is a hard problem — three objectives all failed on it | the derived arrays carry **no detectable 1-8 Hz envelope tracking**: max \|r\| 0.0312 over 306ch x 10 lags against a circular-shift null of 0.0278, p = 0.157. all three negatives were measured against arrays that may not contain the signal | asking the corpus for the one effect it must have, against a null built the same way |
 
 **the shape they share:** a quantity computed correctly and then compared against
 the wrong thing — the wrong population, the wrong units, the wrong split, the
@@ -35,6 +36,60 @@ caught by a measurement that could have been run first, and several by one I had
 already written.
 
 ---
+
+## 2026-09-07 (evening) — the auditory corpus does not contain the effect
+
+the auditory branch has produced three negative results: waveform regression
+peaking at skill +0.036, `paired_v5` below the zero baseline for 10,000 steps,
+and the joint MEG head at held-out -0.003 after 29,000. the obvious reading was
+that speech -> MEG is simply hard.
+
+the contrastive control was the remaining hope, because changing the OBJECTIVE
+is exactly what rescued the visual branch (+0.011 regression -> 53x chance
+retrieval). it was never run. it is now, and it sits at **chance**: training loss
+falls 5.04 -> 2.83 against ln(128) = 4.85, while held-out top-1 never leaves
+0.0-1.0% against 0.5% chance across 13 evaluations. no peak, at any point.
+
+**so the objective was not the problem, and the next question was whether the
+arrays are.** ledger row 8 is a negative result produced by a broken pairing, so
+before recording a fourth, the corpus was asked whether it carries the one effect
+it must: 1-8 Hz speech-envelope tracking in MEG, among the most reproduced
+findings in the field.
+
+it does not. max |r| over 306 channels x 10 lags is 0.0312, against a
+circular-shift null whose mean is 0.0278 — **7 of 50 shifts reach the observed
+value, p = 0.157**. broadband and GFP versions are worse (p = 0.51).
+
+that does not merely add a negative result, it **suspends three**. the +0.036
+ceiling, the 10,000 steps below baseline and the -0.003 held-out skill were all
+measured against arrays that do not demonstrably contain the signal. none of them
+is evidence about the modality, and `s7.joint`'s stated route — rebuild the
+auditory term contrastively — is withdrawn as written, four hours after it was
+written here.
+
+getting to that took two wrong readings of the same number, both recorded because
+the reasoning matters more than the answer:
+
+- the first check declared "no coupling" against a threshold of |r| < 0.02
+  **chosen out of the air**. right conclusion, no baseline — the ledger's own
+  shape.
+- the correction called r = 0.0106 a 6-sigma effect using the i.i.d. standard
+  error 1/sqrt(N). both signals are heavily autocorrelated; the measured
+  circular-shift null is sd 0.0145, **eight times wider** than that formula
+  claims. the effective N is nowhere near the nominal one.
+
+the arbiter in both cases was a null built by the same procedure as the
+statistic. that is now `scripts/check_pairing.py`, and it is a **gate**: run it
+on a paired corpus before building a term, because it costs under a minute and
+row 8 cost three hours. it fixes the band (the effect is defined in 1-8 Hz;
+broadband is the right quantity in the wrong units), the null (circular shifts,
+not a formula), and the statistic (a grid maximum needs a grid-maximum null).
+
+what is NOT claimed: that LibriBrain is unusable. the failure could be the
+pairing order, the resampling, or the derivation, and the raw corpus is untouched
+by this measurement. what is claimed is that **the derived arrays under
+`data/derived/libribrain-paired` should not carry another training term until
+they pass the gate.**
 
 ## 2026-09-07 (afternoon) — what the retrieval is actually made of
 
