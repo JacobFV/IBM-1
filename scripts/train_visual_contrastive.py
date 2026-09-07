@@ -51,6 +51,9 @@ def main() -> None:
     ap.add_argument("--dt", type=float, default=2e-2)
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--pool", type=int, default=200)
+    ap.add_argument("--n-steps", type=int, default=4,
+                    help="dynamics passes before reading the embedding; this "
+                         "head uses one state, so it does not need an epoch")
     ap.add_argument("--eval-every", type=int, default=100)
     ap.add_argument("--ckpt", default="ckpt/visual_contrastive.pt")
     ap.add_argument("--out", default="out/visual_contrastive.json")
@@ -90,7 +93,7 @@ def main() -> None:
         x = torch.from_numpy(np.ascontiguousarray(imgs[i])).to(dev)
         x = (x.permute(0, 3, 1, 2).float() / 127.5) - 1
         y = torch.from_numpy(eeg(i)).to(dev)
-        zc, s = model.embed_image(x, substeps=a.substeps, dt=a.dt)
+        zc, s = model.embed_image(x, substeps=a.substeps, dt=a.dt, n_steps=a.n_steps)
         ze = model.embed_eeg(y)
         logits = zc @ ze.T / temp.clamp(0.01, 1.0)
         lbl = torch.arange(len(i), device=dev)
@@ -107,7 +110,7 @@ def main() -> None:
                 xt = torch.from_numpy(np.ascontiguousarray(imgs[j])).to(dev)
                 xt = (xt.permute(0, 3, 1, 2).float() / 127.5) - 1
                 yt = torch.from_numpy(eeg(j)).to(dev)
-                zct, st = model.embed_image(xt, substeps=a.substeps, dt=a.dt)
+                zct, st = model.embed_image(xt, substeps=a.substeps, dt=a.dt, n_steps=a.n_steps)
                 sim = zct @ model.embed_eeg(yt).T
                 top1 = float((sim.argmax(1) ==
                               torch.arange(len(j), device=dev)).float().mean())

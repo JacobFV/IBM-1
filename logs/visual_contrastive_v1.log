@@ -3,3 +3,4 @@
 Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
   "v_absmax": float(s[0].abs().max()), "sec": round(time.time() - t0, 1)}
     0  loss 4.9356  top-1  0.50%  (100x chance)  r_eff  3.68      31s  <- best, checkpointed
+  100  loss 4.3597  top-1  1.00%  (200x chance)  r_eff  1.95    1611s  <- best, checkpointed

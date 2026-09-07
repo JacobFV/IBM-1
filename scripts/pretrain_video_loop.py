@@ -344,14 +344,26 @@ class VisualContrastiveLoop(nn.Module):
             nn.Flatten(), nn.Linear(128 * ((n_times + 1) // 2), 512), nn.GELU(),
             nn.Linear(512, dim))
 
-    def embed_image(self, img, substeps: int = 4, dt: float = 2e-2):
+    def embed_image(self, img, substeps: int = 4, dt: float = 2e-2,
+                    n_steps: int | None = None):
+        """run the dynamics, then read the FINAL state into the embedding.
+
+        `n_steps` is decoupled from `n_times` on purpose.  the evoked head needed
+        one integrator pass per output sample because its target was the whole
+        trajectory; this head reads one state, so simulating the full 500 ms costs
+        100 dynamics steps to use exactly one of them.  measured, that was 15.8
+        s/step -- 35 hours for the run -- against a dynamics-free control that
+        reached its answer in minutes.  what the embedding needs is enough
+        propagation for the drive to reach the readout sites, not a physiological
+        epoch length.
+        """
         b = img.shape[0]
         drive = torch.zeros(b, self.dyn.n, device=img.device)
         drive[:, :self.port] = self.to_cortex(self.enc(img))
         s = self.dyn.init_state(b, img.device)
         w = self.dyn.edge_weights()
         h = dt / substeps
-        for _ in range(self.n_times * substeps):
+        for _ in range((n_steps if n_steps is not None else self.n_times) * substeps):
             s = self.dyn.step(s, drive, h, w)
         z = self.cortex_head(s[1][:, self.read_idx.to(img.device)])
         return F.normalize(z, dim=-1), s

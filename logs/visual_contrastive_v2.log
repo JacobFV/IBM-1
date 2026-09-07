@@ -1,0 +1,6 @@
+16,540 pairs | 64 ch x 25 samples | params 10,271,371 (3,840,000 association) | pool 200, chance 0.50%
+/home/brandonin/Documents/IBM-1/scripts/train_visual_contrastive.py:120: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  "v_absmax": float(s[0].abs().max()), "sec": round(time.time() - t0, 1)}
+    0  loss 4.9174  top-1  0.50%  (1.0x chance)  r_eff  4.62       4s  <- best, checkpointed
+  200  loss 4.1081  top-1  2.00%  (4.0x chance)  r_eff  2.43     482s  <- best, checkpointed
