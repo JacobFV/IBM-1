@@ -78,23 +78,38 @@
         <p class="card-desc">${esc(c.desc)}</p>
       </article>`).join('');
     const els = Array.from(deck.children);
-    const FADE = 1.2;
+    const GAP = 18;
+    const step = () => (els[0] ? els[0].offsetWidth : 214) + GAP;   // a card and its gap
+    // the scroller runs the full width of the window rather than the text
+    // column, so no card is sliced off against a column edge.  the tail is
+    // half a window wide so the last card can still reach the centre; the
+    // lead-in is shorter, so the deck starts as a shelf rather than one card.
+    const host = deck.parentElement;
+    const fit = () => {
+      const vw = document.documentElement.clientWidth, centre = (vw - step() + GAP) / 2;
+      deck.style.width = vw + 'px';
+      deck.style.marginLeft = -host.getBoundingClientRect().left + 'px';
+      deck.style.paddingLeft = Math.max(12, Math.min(2.2 * step(), centre)) + 'px';
+      deck.style.paddingRight = Math.max(12, centre) + 'px';
+    };
     let raf = null;
     const place = () => {
       raf = null;
-      const mid = deck.scrollLeft + deck.clientWidth / 2;
+      const half = deck.clientWidth / 2, mid = deck.scrollLeft + half, s = step();
+      const fade = 1.25 * s;  // a card leaves the fan before the edge, so none is cut by it
       els.forEach((el) => {
-        const c = el.offsetLeft + el.offsetWidth / 2, dx = (c - mid) / deck.clientWidth;
-        if (Math.abs(dx) > FADE) { el.style.transform = ''; el.style.opacity = '0'; return; }
-        const t = Math.max(-1, Math.min(1, dx * 1.6));
+        const d = el.offsetLeft + el.offsetWidth / 2 - mid, off = Math.abs(d);
+        const o = Math.max(0, Math.min(1, (half - off) / fade));
+        if (o <= 0) { el.style.transform = ''; el.style.opacity = '0'; return; }
+        const t = Math.max(-1, Math.min(1, d / (2 * s)));
         el.style.transform = `perspective(1100px) rotateY(${(-t * 42).toFixed(1)}deg) translateZ(${(-Math.abs(t) * 160).toFixed(0)}px)`;
-        el.style.opacity = Math.max(0, 1 - Math.abs(dx) / FADE).toFixed(2);
+        el.style.opacity = o.toFixed(2);
         el.style.zIndex = String(100 - Math.round(Math.abs(t) * 50));
       });
     };
     const schedule = () => { if (!raf) raf = requestAnimationFrame(place); };
     deck.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule);
+    window.addEventListener('resize', () => { fit(); schedule(); });
     // drag to swipe with a mouse; touch scrolls natively
     let drag = null;
     deck.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') return; drag = { x: e.clientX, left: deck.scrollLeft, moved: false }; deck.classList.add('dragging'); });
@@ -102,8 +117,8 @@
     const end = () => { deck.classList.remove('dragging'); setTimeout(() => { drag = null; }, 0); };
     deck.addEventListener('pointerup', end); deck.addEventListener('pointercancel', end); deck.addEventListener('pointerleave', end);
     deck.addEventListener('click', (e) => { if (drag && drag.moved) e.preventDefault(); }, true);
-    place();
-    setTimeout(place, 300);
+    fit(); place();
+    setTimeout(() => { fit(); place(); }, 300);
   }
 
   // ---- references: an underlined phrase opens a note with a link to read more

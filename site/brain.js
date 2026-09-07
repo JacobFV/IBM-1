@@ -27,10 +27,12 @@ window.IBMBrain = (function () {
   const E = G.edges.length;
   const epos = new Float32Array(E * 6), ecol = new Float32Array(E * 6);
   const ADJ = Array.from({ length: N }, () => []);
+  const EDGE_IDX = new Map(); // min(a,b)*N+max(a,b) -> edge index, so a pulse can light the edge it's crossing
   for (let e = 0; e < E; e++) {
     const [a, b] = G.edges[e];
     for (let k = 0; k < 3; k++) { epos[6 * e + k] = pos[3 * a + k]; epos[6 * e + 3 + k] = pos[3 * b + k]; ecol[6 * e + k] = col[3 * a + k]; ecol[6 * e + 3 + k] = col[3 * b + k]; }
     ADJ[a].push(b); ADJ[b].push(a);
+    EDGE_IDX.set((a < b ? a : b) * N + (a < b ? b : a), e);
   }
   // shortest hop path from src to dst over the model's own edges (BFS); `within`
   // restricts the walk to a node set so a pulse stays inside its materialization.
@@ -136,19 +138,24 @@ window.IBMBrain = (function () {
     const wCur = new Float32Array(N);
     const ew = new Float32Array(E * 2);
     const hw = new Float32Array(HV);
+    // display buffers for points/edges: the true selection weight (wCur/ew)
+    // plus a transient pulse glow, recomputed fresh each frame by applyGlow
+    // so a travelling signal is nothing but nodes and edges briefly lighter.
+    const wGlow = new Float32Array(N);
+    const ewGlow = new Float32Array(E * 2);
 
     const pgeo = new THREE.BufferGeometry();
     pgeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     pgeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     pgeo.setAttribute('size', new THREE.BufferAttribute(size, 1));
-    pgeo.setAttribute('w', new THREE.BufferAttribute(wCur, 1));
+    pgeo.setAttribute('w', new THREE.BufferAttribute(wGlow, 1));
     const points = new THREE.Points(pgeo, new THREE.ShaderMaterial({ uniforms: { pr: { value: renderer.getPixelRatio() }, light }, vertexShader: POINT_VS, fragmentShader: POINT_FS, transparent: true, depthWrite: false }));
     points.renderOrder = 5;
 
     const lgeo = new THREE.BufferGeometry();
     lgeo.setAttribute('position', new THREE.BufferAttribute(epos, 3));
     lgeo.setAttribute('color', new THREE.BufferAttribute(ecol, 3));
-    lgeo.setAttribute('w', new THREE.BufferAttribute(ew, 1));
+    lgeo.setAttribute('w', new THREE.BufferAttribute(ewGlow, 1));
     const lines = new THREE.LineSegments(lgeo, new THREE.ShaderMaterial({ uniforms: { light }, vertexShader: LINE_VS, fragmentShader: LINE_FS, transparent: true, depthWrite: false }));
     lines.renderOrder = 4;
 
@@ -177,30 +184,31 @@ window.IBMBrain = (function () {
     const scalp = new THREE.Mesh(sgeo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.05, depthWrite: false, side: THREE.BackSide }));
     const scalpWire = new THREE.Mesh(sgeo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.07, depthWrite: false, wireframe: true }));
     if (light.value) { scalp.material.color.setRGB(0.5, 0.5, 0.5); scalpWire.material.color.setRGB(0.45, 0.45, 0.5); scalp.material.opacity = 0.07; scalpWire.material.opacity = 0.16; }
-
-    // pulses: a small pool of travelling points, driven by the view
-    const PN = 480;
-    const ppos = new Float32Array(PN * 3), pcol = new Float32Array(PN * 3), psize = new Float32Array(PN), pw = new Float32Array(PN);
-    const pgeo2 = new THREE.BufferGeometry();
-    pgeo2.setAttribute('position', new THREE.BufferAttribute(ppos, 3));
-    pgeo2.setAttribute('color', new THREE.BufferAttribute(pcol, 3));
-    pgeo2.setAttribute('size', new THREE.BufferAttribute(psize, 1));
-    pgeo2.setAttribute('w', new THREE.BufferAttribute(pw, 1));
-    const pulses = new THREE.Points(pgeo2, new THREE.ShaderMaterial({ uniforms: { pr: { value: renderer.getPixelRatio() }, light }, vertexShader: POINT_VS, fragmentShader: POINT_FS, transparent: true, depthWrite: false, depthTest: false }));
-    pulses.renderOrder = 6; pulses.frustumCulled = false;
     scalp.renderOrder = 0; scalpWire.renderOrder = 1;
 
-    pivot.add(scalp, scalpWire, sheet, hulls, lines, points, pulses);
+    pivot.add(scalp, scalpWire, sheet, hulls, lines, points);
 
     function syncDerived() {
       for (let e = 0; e < E; e++) { const [a, b] = G.edges[e]; const v = Math.min(wCur[a], wCur[b]); ew[2 * e] = v; ew[2 * e + 1] = v; }
       for (let v = 0; v < HV; v++) hw[v] = wCur[hullNode[v]];
+      wGlow.set(wCur); ewGlow.set(ew);
       pgeo.attributes.w.needsUpdate = true; cgeo.attributes.w.needsUpdate = true;
       lgeo.attributes.w.needsUpdate = true; hgeo.attributes.w.needsUpdate = true;
     }
+    // a pulse's contribution: nodeFlash(N)/edgeFlash(E) in [0,1], laid over
+    // the true selection weight fresh each call so nothing here can drift.
+    function applyGlow(nodeFlash, edgeFlash) {
+      for (let i = 0; i < N; i++) { const v = wCur[i] + nodeFlash[i]; wGlow[i] = v > 1 ? 1 : v; }
+      for (let e = 0; e < E; e++) {
+        const f = edgeFlash[e];
+        if (f <= 0) { ewGlow[2 * e] = ew[2 * e]; ewGlow[2 * e + 1] = ew[2 * e + 1]; continue; }
+        const v0 = ew[2 * e] + f, v1 = ew[2 * e + 1] + f;
+        ewGlow[2 * e] = v0 > 1 ? 1 : v0; ewGlow[2 * e + 1] = v1 > 1 ? 1 : v1;
+      }
+      pgeo.attributes.w.needsUpdate = true; lgeo.attributes.w.needsUpdate = true;
+    }
     function setScalp(v) { scalp.material.opacity = 0.05 * v; scalpWire.material.opacity = 0.07 * v; }
-    function setPulses(fn) { fn(ppos, pcol, psize, pw, PN); pgeo2.attributes.position.needsUpdate = true; pgeo2.attributes.color.needsUpdate = true; pgeo2.attributes.size.needsUpdate = true; pgeo2.attributes.w.needsUpdate = true; }
-    return { scene, pivot, wCur, syncDerived, setScalp, setPulses, PN };
+    return { scene, pivot, wCur, syncDerived, setScalp, applyGlow };
   }
 
   // ------------------------------------------------- weights per mode ----
@@ -272,12 +280,29 @@ window.IBMBrain = (function () {
     if (nodes.length <= 10) return 'fan';
     return 'lasso';
   }
-  function curve(x0, y0, x1, y1, bulge, away) {
+  // which side of its chord an arc bows to.  `away` means "bow away from this
+  // point", but a leader aimed nearly straight at it has no side: the offset of
+  // the chord's midpoint is then almost parallel to the chord, so the sign is
+  // decided by a pixel of drift and flips from frame to frame as the brain
+  // turns.  so: a small offset is a tie, broken the same way every time, and a
+  // side already chosen holds until the offset clearly crosses over.  `state`
+  // is any object that lives as long as the leader does.
+  const BOW_TIE = 0.06, BOW_FLIP = 0.12;
+  function bowSign(nx, ny, mx, my, L, away, state) {
+    if (!away) return 1;
+    const p = (nx * (mx - away[0]) + ny * (my - away[1])) / L;
+    if (!state) return Math.abs(p) > BOW_TIE ? Math.sign(p) : 1;
+    if (!state._bow) state._bow = Math.abs(p) > BOW_TIE ? Math.sign(p) : 1;
+    else if (p * state._bow < -BOW_FLIP) state._bow = -state._bow;
+    return state._bow;
+  }
+  function curve(x0, y0, x1, y1, bulge, away, state) {
     // a single quadratic arc whose control point bows to one side of the chord
     const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy) || 1;
     const nx = -dy / L, ny = dx / L;
-    let sgn = away ? Math.sign(nx * ((x0 + x1) / 2 - away[0]) + ny * ((y0 + y1) / 2 - away[1])) || 1 : 1;
-    const mx = (x0 + x1) / 2 + nx * bulge * L * sgn, my = (y0 + y1) / 2 + ny * bulge * L * sgn;
+    const cx0 = (x0 + x1) / 2, cy0 = (y0 + y1) / 2;
+    const sgn = bowSign(nx, ny, cx0, cy0, L, away, state);
+    const mx = cx0 + nx * bulge * L * sgn, my = cy0 + ny * bulge * L * sgn;
     return `M${x0.toFixed(1)},${y0.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`;
   }
   function hull2d(pts) {
@@ -328,7 +353,7 @@ window.IBMBrain = (function () {
     if (kind === 'point' || pts.length === 0) {
       const q = ctx.project(a.anchor);
       const tx = Math.max(8, Math.min(ctx.w - 8, q[0])), ty = Math.max(8, Math.min(ctx.h - 8, q[1]));
-      a.svg.trunk.setAttribute('d', curve(labelPt[0], labelPt[1], tx, ty, bulge, away));
+      a.svg.trunk.setAttribute('d', curve(labelPt[0], labelPt[1], tx, ty, bulge, away, a));
       a.svg.trunk.setAttribute('marker-end', 'url(#arrow)');
       return;
     }
@@ -342,7 +367,7 @@ window.IBMBrain = (function () {
       const r = Math.max(...targets.map((q) => Math.hypot(q[0] - tc[0], q[1] - tc[1])));
       const dx = labelPt[0] - tc[0], dy = labelPt[1] - tc[1], L = Math.hypot(dx, dy) || 1;
       const hub = [tc[0] + dx / L * (r * 0.6 + 30), tc[1] + dy / L * (r * 0.6 + 30)];
-      a.svg.trunk.setAttribute('d', curve(labelPt[0], labelPt[1], hub[0], hub[1], bulge, away));
+      a.svg.trunk.setAttribute('d', curve(labelPt[0], labelPt[1], hub[0], hub[1], bulge, away, a));
       a.svg.branches.setAttribute('d', targets.map((q) => curve(hub[0], hub[1], q[0], q[1], 0.12, away)).join(' '));
       a.svg.branches.setAttribute('marker-end', 'url(#arrow-small)');
       a.svg.dot.setAttribute('r', '2.2'); a.svg.dot.setAttribute('cx', hub[0].toFixed(1)); a.svg.dot.setAttribute('cy', hub[1].toFixed(1));
@@ -356,7 +381,7 @@ window.IBMBrain = (function () {
     h.forEach((q) => { const d = Math.hypot(q[0] - labelPt[0], q[1] - labelPt[1]); if (d < bd) { bd = d; best = q; } });
     const dx = best[0] - c[0], dy = best[1] - c[1], L = Math.hypot(dx, dy) || 1;
     const end = [best[0] + dx / L * 11, best[1] + dy / L * 11];
-    a.svg.trunk.setAttribute('d', curve(labelPt[0], labelPt[1], end[0], end[1], bulge, away));
+    a.svg.trunk.setAttribute('d', curve(labelPt[0], labelPt[1], end[0], end[1], bulge, away, a));
     a.svg.dot.setAttribute('r', '2.4'); a.svg.dot.setAttribute('cx', end[0].toFixed(1)); a.svg.dot.setAttribute('cy', end[1].toFixed(1));
   }
   function ensureMarkers(svg) {
@@ -385,17 +410,14 @@ window.IBMBrain = (function () {
   // --- pulses ---------------------------------------------------------------
   // a signal travels the model's own wiring: a short lead from the input's
   // sensor or region to the nearest node with real edges, a shortest hop path
-  // over those edges toward the output, then a short lead back out. the head
-  // of each trail is a light; every node it passes blips once as it arrives,
-  // so the pulse reads as flowing through the mesh, not floating past it.
+  // over those edges toward the output, then a short lead back out. there is
+  // no travelling marker for it -- a pulse is only the nodes and edges along
+  // its current position glowing a little brighter, fading behind it as it goes.
   function makePulses(S) {
-    const IN = [0.39, 0.83, 0.9], OUT = [0.94, 0.7, 0.29];
-    const TRAIL = 6, MOVE_MAX = 40, MOVE_N = MOVE_MAX * TRAIL, FLASH_N = S.PN - MOVE_N;
-    const live = [], flashes = [];
-    let model = null, spawnAt = 0;
-    const world = (p) => toWorld(p);
+    const live = [];
+    const nodeFlash = new Float32Array(N), edgeFlash = new Float32Array(E);
+    let model = null, spawnAt = 0, idleFrames = 0;
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    const lerpc = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 
     function traversable(m) {
       if (m._travArr) return m._travArr;
@@ -419,7 +441,7 @@ window.IBMBrain = (function () {
       if (onMesh.length) return { lead: null, node: pick(onMesh) };
       return { lead: x.anchor, node: nearestOn(x.anchor, travArr) };
     }
-    function set(m) { model = m; live.length = 0; flashes.length = 0; }
+    function set(m) { model = m; live.length = 0; }
     function spawn(now) {
       traversable(model);
       const trav = model._trav, travArr = model._travArr;
@@ -436,74 +458,47 @@ window.IBMBrain = (function () {
         keep.push(path[path.length - 1]);
         path = keep;
       }
-      const wp = [], nodeAt = [];
-      if (from.lead) { wp.push(world(from.lead)); nodeAt.push(-1); }
-      path.forEach((i) => { wp.push(world(G.nodes[i].p)); nodeAt.push(i); });
-      if (to.lead) { wp.push(world(to.lead)); nodeAt.push(-1); }
-      if (wp.length < 2) return;
-      const segLen = []; let total = 0;
-      for (let k = 0; k < wp.length - 1; k++) { const d = Math.hypot(wp[k][0] - wp[k + 1][0], wp[k][1] - wp[k + 1][1], wp[k][2] - wp[k + 1][2]) || 0.001; segLen.push(d); total += d; }
-      const dur = Math.max(900, Math.min(5200, total / 0.1));
-      live.push({ t0: now, dur, wp, segLen, total, nodeAt, seg: 0, lastSeg: -1, hop: 0 });
-    }
-    // world position at fraction u along the whole lead-path-lead route
-    function posOnPath(p, u) {
-      const target = u * p.total; let acc = 0;
-      for (let k = 0; k < p.segLen.length; k++) {
-        const d = p.segLen[k];
-        if (acc + d >= target || k === p.segLen.length - 1) {
-          const t = d > 0 ? Math.min(1, Math.max(0, (target - acc) / d)) : 1;
-          p.seg = k;
-          return lerpc(p.wp[k], p.wp[k + 1], t);
-        }
-        acc += d;
+      const nodeAt = [];
+      if (from.lead) nodeAt.push(-1);
+      path.forEach((i) => nodeAt.push(i));
+      if (to.lead) nodeAt.push(-1);
+      if (nodeAt.length < 2) return;
+      const pts = nodeAt.map((i, k) => i >= 0 ? G.nodes[i].p : (k === 0 ? from.lead : to.lead));
+      const segLen = [], segEdge = []; let total = 0;
+      for (let k = 0; k < pts.length - 1; k++) {
+        const a = pts[k], b = pts[k + 1];
+        segLen.push(Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) || 0.001);
+        total += segLen[k];
+        const ai = nodeAt[k], bi = nodeAt[k + 1];
+        segEdge.push(ai >= 0 && bi >= 0 ? EDGE_IDX.get((ai < bi ? ai : bi) * N + (ai < bi ? bi : ai)) : undefined);
       }
-      p.seg = p.segLen.length - 1;
-      return p.wp[p.wp.length - 1];
-    }
-    function pushFlash(node, u, now) {
-      if (node < 0 || flashes.length >= FLASH_N) return;
-      const c = u < 0.5 ? IN : OUT;
-      flashes.push({ t0: now, dur: 340, p: world(G.nodes[node].p), c });
+      const dur = Math.max(800, Math.min(4200, total / 0.13));
+      live.push({ t0: now, dur, segLen, total, nodeAt, segEdge });
     }
     function tick(now, S_) {
-      if (model && now > spawnAt && live.length < MOVE_MAX) { spawn(now); spawnAt = now + 160 + Math.random() * 140; }
-      for (let i = live.length - 1; i >= 0; i--) {
-        const p = live[i];
-        if (now - p.t0 > p.dur) { pushFlash(p.nodeAt[p.nodeAt.length - 1], 1, now); live.splice(i, 1); }
-      }
-      for (let i = flashes.length - 1; i >= 0; i--) if (now - flashes[i].t0 > flashes[i].dur) flashes.splice(i, 1);
-      S_.setPulses((pos, col, size, w, PN) => {
-        w.fill(0);
-        live.forEach((p, k) => {
-          const u = Math.min(1, (now - p.t0) / p.dur);
-          for (let j = 0; j < TRAIL; j++) {
-            const uu = u - j * 0.02;
-            const idx = k * TRAIL + j;
-            if (uu < 0 || uu > 1) continue;
-            const at = posOnPath(p, uu);
-            if (j === 0 && p.seg > p.lastSeg) {
-              for (let s = Math.max(0, p.lastSeg + 1); s <= p.seg; s++) { if (p.hop++ % 2 === 0) pushFlash(p.nodeAt[s], uu, now); }
-              p.lastSeg = p.seg;
-            }
-            pos[3 * idx] = at[0]; pos[3 * idx + 1] = at[1]; pos[3 * idx + 2] = at[2];
-            const mixc = Math.min(1, Math.max(0, (uu - 0.35) / 0.3));
-            col[3 * idx] = IN[0] + (OUT[0] - IN[0]) * mixc; col[3 * idx + 1] = IN[1] + (OUT[1] - IN[1]) * mixc; col[3 * idx + 2] = IN[2] + (OUT[2] - IN[2]) * mixc;
-            const fade = Math.min(1, uu * 10) * Math.min(1, (1 - uu) * 10);
-            size[idx] = (j === 0 ? 4.4 : 3.0 - j * 0.32);
-            w[idx] = (j === 0 ? 1 : 0.6 - j * 0.09) * fade;
-          }
-        });
-        flashes.forEach((f, k) => {
-          const idx = MOVE_N + (k % FLASH_N), u = (now - f.t0) / f.dur, fade = 1 - u;
-          pos[3 * idx] = f.p[0]; pos[3 * idx + 1] = f.p[1]; pos[3 * idx + 2] = f.p[2];
-          col[3 * idx] = f.c[0]; col[3 * idx + 1] = f.c[1]; col[3 * idx + 2] = f.c[2];
-          size[idx] = 6 + u * 4.5;
-          w[idx] = Math.max(w[idx], fade * fade * 0.95);
-        });
+      if (model && now > spawnAt && live.length < 40) { spawn(now); spawnAt = now + 120 + Math.random() * 160; }
+      for (let i = live.length - 1; i >= 0; i--) if (now - live[i].t0 > live[i].dur) live.splice(i, 1);
+      for (let i = 0; i < N; i++) nodeFlash[i] *= 0.88;
+      for (let e = 0; e < E; e++) edgeFlash[e] *= 0.82;
+      live.forEach((p) => {
+        const target = Math.min(1, (now - p.t0) / p.dur) * p.total;
+        let acc = 0;
+        for (let k = 0; k < p.segLen.length; k++) {
+          const d = p.segLen[k];
+          if (acc + d < target && k < p.segLen.length - 1) { acc += d; continue; }
+          const t = d > 0 ? Math.min(1, Math.max(0, (target - acc) / d)) : 1;
+          const a = p.nodeAt[k], b = p.nodeAt[k + 1];
+          if (a >= 0 && (1 - t) > nodeFlash[a]) nodeFlash[a] = 1 - t;
+          if (b >= 0 && t > nodeFlash[b]) nodeFlash[b] = t;
+          const eidx = p.segEdge[k];
+          if (eidx != null) { const f = 1 - Math.abs(t - 0.5) * 2; if (f > edgeFlash[eidx]) edgeFlash[eidx] = f; }
+          break;
+        }
       });
+      idleFrames = model || live.length ? 0 : idleFrames + 1;
+      S_.applyGlow(nodeFlash, edgeFlash);
     }
-    return { set, tick, get active() { return !!model; } };
+    return { set, tick, get active() { return !!model || live.length > 0 || idleFrames < 50; } };
   }
 
   // --- the interactive opener -------------------------------------------
@@ -573,6 +568,7 @@ window.IBMBrain = (function () {
         it.x = cxp + rx * c; it.y = cy + ry * Math.sin(t); it.t = t;
         it.side = Math.abs(c) < 0.1 ? 'c' : c < 0 ? 'l' : 'r';
         it.el.style.left = it.x + 'px'; it.el.style.top = it.y + 'px'; it.el.dataset.side = it.side;
+        it._bow = 0;  // the label moved; let its leader choose a side again
       });
     }
     function edgePoint(el, side) {
@@ -676,7 +672,7 @@ window.IBMBrain = (function () {
           const r = reach(ox, oy, dx, dy);
           // glide toward the new outline point rather than jumping to it
           it.r = it.r == null ? r : it.r + (r - it.r) * 0.12;
-          it.line.setAttribute('d', curve(x0, y0, ox + dx * it.r, oy + dy * it.r, 0.12, [W / 2, H / 2]));
+          it.line.setAttribute('d', curve(x0, y0, ox + dx * it.r, oy + dy * it.r, 0.12, [W / 2, H / 2], it));
           it.line.style.opacity = '';
         });
         if (hoverAnn.item && !compact) {
