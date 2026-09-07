@@ -634,6 +634,12 @@ def main():
             if not math.isfinite(float(loss)):
                 print("DIVERGED", flush=True); break
         if a.ckpt and a.upload_every and step % a.upload_every == 0 and step:
+            # SAVE FIRST.  this used to sit after the `ibm.release` import, so a
+            # missing PYTHONPATH threw before torch.save ran and a 2000-step run
+            # kept nothing at all.  the weights are the artefact; publishing them
+            # is a convenience, and a convenience must never be able to destroy
+            # the artefact.
+            torch.save({"model": model.state_dict(), "step": step}, a.ckpt)
             from ibm.release import CheckpointName, sidecar, upload
             obj = {"av": "av", "paired": "meg"}.get(a.modality, f"nfh{a.horizon}")
             nm = CheckpointName(modality={"video": "v", "audio": "a", "av": "av",

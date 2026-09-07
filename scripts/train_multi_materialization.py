@@ -153,6 +153,9 @@ def main():
                 print("DIVERGED", flush=True); break
 
         if a.ckpt and a.upload_every and step and step % a.upload_every == 0:
+            # save before anything that can raise; see the note in the sibling script
+            torch.save({"dyn": dyn.state_dict(), "av": av.state_dict(),
+                        "paired": pr.state_dict(), "step": step}, a.ckpt)
             from ibm.release import CheckpointName, sidecar, upload
             nm = CheckpointName(modality="multi", sites=a.sites, embed=a.embed,
                                 degree=a.k, objective="av+meg",
