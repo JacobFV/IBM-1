@@ -22,6 +22,34 @@
         <p class="reg-io"><span>${p.inputs.map((v) => `<code>${v}</code>`).join(' ')}</span><i>→</i><span>${p.outputs.map((v) => `<code>${v}</code>`).join(' ')}</span></p></div>`).join(''));
   }
 
+  // ---- references: an underlined phrase opens a note with a link to read more
+  const tip = $('tip');
+  if (tip) {
+    const text = tip.querySelector('.tip-text'), link = tip.querySelector('.tip-link');
+    let current = null, hideT = null;
+    const show = (el) => {
+      clearTimeout(hideT);
+      if (current && current !== el) current.classList.remove('is-open');
+      current = el; el.classList.add('is-open');
+      text.textContent = el.dataset.tip; link.href = el.href; link.textContent = el.dataset.doc;
+      tip.hidden = false;
+      const r = el.getBoundingClientRect(), w = tip.offsetWidth;
+      let x = r.left + window.scrollX; if (x + w > window.scrollX + window.innerWidth - 12) x = window.scrollX + window.innerWidth - 12 - w;
+      tip.style.left = Math.max(8, x) + 'px'; tip.style.top = (r.bottom + window.scrollY + 8) + 'px';
+    };
+    const hide = () => { hideT = setTimeout(() => { tip.hidden = true; if (current) current.classList.remove('is-open'); current = null; }, 180); };
+    document.querySelectorAll('a.ref').forEach((el) => {
+      el.addEventListener('mouseenter', () => show(el));
+      el.addEventListener('mouseleave', hide);
+      el.addEventListener('focus', () => show(el));
+      el.addEventListener('blur', hide);
+      el.addEventListener('click', (e) => { if (current !== el || tip.hidden) { e.preventDefault(); show(el); } });
+    });
+    tip.addEventListener('mouseenter', () => clearTimeout(hideT));
+    tip.addEventListener('mouseleave', hide);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !tip.hidden) { tip.hidden = true; if (current) current.classList.remove('is-open'); } });
+  }
+
   const B = window.IBMBrain;
   if (!B) return;
   B.createHero({

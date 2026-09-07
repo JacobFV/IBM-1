@@ -396,3 +396,25 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
   .compute > div { border-right: 0; margin-right: 0; border-bottom: 1px solid var(--rule); }
   .snap .ann-snap { max-width: 14ch; }
 }
+
+/* ================================================================= models */
+.models { list-style: none; margin: 8px 0 0; padding: 8px 0 0; border-top: 1px solid var(--rule); display: grid; gap: 5px; }
+.models li { display: flex; align-items: baseline; gap: 8px; font-size: 0.8rem; min-width: 0; }
+.models code { font-size: 0.7rem; background: none; padding: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.models b { font-family: var(--mono); font-size: 0.7rem; font-weight: 500; color: var(--accent); margin-left: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.models i { font-family: var(--mono); font-style: normal; font-size: 0.58rem; letter-spacing: 0.12em; color: var(--muted); white-space: nowrap; }
+.models .wip code { color: var(--muted); }
+.models a.model { display: flex; align-items: baseline; gap: 8px; min-width: 0; width: 100%; text-decoration: none; }
+.models a.model:hover code { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 0.16em; }
+.models .hf { font-size: 0.8rem; line-height: 1; }
+.models-note { font-size: 0.86rem; color: var(--muted); max-width: 68ch; margin: 0 0 8px; }
+
+/* ============================================================= references */
+.ref { color: inherit; text-decoration: underline; text-decoration-style: dotted; text-decoration-color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 0.2em; cursor: help; }
+.ref:hover, .ref.is-open { color: var(--accent); text-decoration-style: solid; }
+.tip { position: absolute; z-index: 20; max-width: 30ch; padding: 10px 12px; font-size: 0.84rem; line-height: 1.4; color: var(--text); background: var(--paper); border: 1px solid var(--rule); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18); display: grid; gap: 6px; }
+.tip[hidden] { display: none; }
+.tip-link { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.06em; color: var(--accent); text-decoration: none; }
+.tip-link:hover { text-decoration: underline; }
+.tip-link::after { content: " →"; }
+.hero .ref { color: inherit; }

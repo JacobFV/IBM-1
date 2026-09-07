@@ -47,8 +47,8 @@
 
   <header class="masthead">
     <p class="eyebrow">a research programme · updated 2026-09-06 · <a href="https://github.com/JacobFV/IBM-1">github.com/JacobFV/IBM-1</a></p>
-    <p class="standfirst">ibm-1 declares a brain once — fields, anatomy, topologies, processes — and materializes task-specific models from it lazily. an EEG forward model, a hemodynamic model and an audio-visual predictor are projections of one parameter set.</p>
-    <p class="standfirst-2">the bet: most of the model is shared, so every corpus constrains every task. so far it stands. bypassing the shared cortex costs 324% more loss.</p>
+    <p class="standfirst">ibm-1 declares a brain once — fields, anatomy, topologies, processes — and <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md" data-doc="docs/ARCHITECTURE.md" data-tip="the four primitives, materialization, and why resolution earns its cost">materializes task-specific models from it lazily</a>. an EEG forward model, a hemodynamic model and an audio-visual predictor are projections of one parameter set.</p>
+    <p class="standfirst-2">the bet: most of the model is shared, so every corpus constrains every task. so far it stands. <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/TRAINING.md" data-doc="docs/TRAINING.md" data-tip="the runs, the ablation table, and what each run actually showed">bypassing the shared cortex costs 324% more loss</a>.</p>
   </header>
 
   <figure class="stats" aria-label="what has been built">
@@ -60,7 +60,7 @@
     <div><b>40</b><span>materializations</span></div>
     <div><b>601</b><span>source cards<i>36 held, 817 GB</i></span></div>
     <div><b>66k</b><span>lines<i>5,397 of specification</i></span></div>
-    <figcaption>the registry validates on every load: a process that reads what nothing writes, a band a component cannot carry, or a dangling selector is refused.</figcaption>
+    <figcaption><a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/PROGRAMME.md" data-doc="docs/PROGRAMME.md" data-tip="programme state: what exists, what it runs on, where it goes">the registry validates on every load</a>: a process that reads what nothing writes, a band a component cannot carry, or a dangling selector is refused.</figcaption>
   </figure>
 
   <!-- §1 design -->
@@ -75,10 +75,10 @@
       </div>
       <figure class="snap" data-snap="anatomy">
         <canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div>
-        <figcaption><b>fig. 1</b> the mne <code>sample</code> subject as drawn here: pial surface at oct5 coloured by its parcellation, aseg structures as volumes, its outer skin as a ghost, its digitised electrodes.</figcaption>
+        <figcaption><b>fig. 1</b> <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/scripts/export_site_graph.py" data-doc="scripts/export_site_graph.py" data-tip="the export script that draws these figures from the subject's own geometry">the mne <code>sample</code> subject as drawn here</a>: pial surface at oct5 coloured by its parcellation, aseg structures as volumes, its outer skin as a ghost, its digitised electrodes.</figcaption>
       </figure>
       <p class="display-math">M = materialize(R, r, B, F, A, T, P)</p>
-      <p>an explicit model names regions <i>R</i>, a resolution <i>r(q)</i> and a bandwidth <i>B(q)</i>; dependency tracing instantiates only what is reachable from the target. the same field can sit at 1 mm across the brain and 50 µm around an electrode at once. the forty entries in the library differ only in <i>R</i>, <i>r</i> and <i>B</i>, and each carries provenance: which implementation ran, which parameters evidence moved, and where a process ran outside its regime.</p>
+      <p>an explicit model names regions <i>R</i>, a resolution <i>r(q)</i> and a bandwidth <i>B(q)</i>; <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md" data-doc="docs/ARCHITECTURE.md" data-tip="materialization and provenance, in the architecture document">dependency tracing instantiates only what is reachable from the target</a>. the same field can sit at 1 mm across the brain and 50 µm around an electrode at once. the forty entries in the library differ only in <i>R</i>, <i>r</i> and <i>B</i>, and each carries provenance: which implementation ran, which parameters evidence moved, and where a process ran outside its regime.</p>
       <figure class="snap" data-snap="materialize">
         <canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div>
         <figcaption><b>fig. 2</b> <code>eeg_forward</code> read off its request: scalp EEG at sixty contacts in, head-volume and contact potentials out. what lights up is what the trace instantiates.</figcaption>
@@ -124,7 +124,7 @@
         <canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div>
         <figcaption><b>fig. 3</b> <code>meg_to_text</code>, the anchor: a real head's MEG prices any cortical state that does not produce that field. skill is reported against a zero baseline on a guarded contiguous split.</figcaption>
       </figure>
-      <p class="note">every metric is skill against an explicit baseline. a loss without a baseline is not a result.</p>
+      <p class="note">every metric is skill against an explicit baseline. <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/ibm/evaluate.py" data-doc="ibm/evaluate.py" data-tip="the evaluator: skill against explicit baselines on guarded contiguous splits">a loss without a baseline is not a result</a>.</p>
     </div>
   </section>
 
@@ -132,7 +132,7 @@
   <section class="sec">
     <div class="margin"><span class="mono">§3</span><span>corpus and curriculum</span></div>
     <div class="body">
-      <p>601 cards committed from a candidate index of 26,399 datasets (2.55 PB); 36 held on disk, provenance traced to origin. the flagship derived array is 235.6 minutes of MEG aligned to an audiobook's cochleagram.</p>
+      <p><a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/EVIDENCE.md" data-doc="docs/EVIDENCE.md" data-tip="the evidence inventory: datasets, atlases, tools and what each constrains">601 cards committed</a> from a candidate index of 26,399 datasets (2.55 PB); 36 held on disk, provenance traced to origin. the flagship derived array is 235.6 minutes of MEG aligned to an audiobook's cochleagram.</p>
       <ul class="corpus">
         <li><b>52</b> hemodynamic and metabolic</li>
         <li><b>36</b> effector, autonomic, interoceptive</li>
@@ -146,7 +146,7 @@
         <li><b>8</b> vascular geometry</li>
       </ul>
       <p class="display-math">∇ log p(θ | D) = ∇ log p(θ) + Σ<sub>d</sub> ∇ log p(D<sub>d</sub> | θ)</p>
-      <p>a curriculum is a schedule over <i>d</i>: thirteen gated stages, five complete, three running. a stage does not begin until its gate is measured green.</p>
+      <p>a curriculum is a schedule over <i>d</i>: <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/CURRICULUM.md" data-doc="docs/CURRICULUM.md" data-tip="the curriculum DAG, its gates, and the live frontier">thirteen gated stages</a>, five complete, three running. a stage does not begin until its gate is measured green.</p>
       <ol class="stages">
         <li><span>fan-in-aware gain prior</span><small>|L(0)| = 7218 was a declaration problem: per-edge gain on nodes with 4118 incoming edges</small></li>
         <li><span>regime selection</span><small>fitted to sleep-EDFx N3: slow oscillation at 1.000 Hz, τ<sub>adapt</sub> = 0.12 s</small></li>
@@ -155,7 +155,7 @@
         <li><span>the closed video loop</span><small>unbounded data; bandwidth-bound</small></li>
         <li><span>audio-visual materialization</span><small>68.9M parameters, 4 hours on one GB10; cross-modal edges 4.4× baseline</small></li>
         <li><span>the paired MEG anchor</span><small>running; skill at chance</small></li>
-        <li><span>multi-materialization, development, schema, reinforcement</span><small>gated on a multi-attractor landscape, which the substrate now admits but is not yet fitted into</small></li>
+        <li><span>multi-materialization, development, schema, reinforcement</span><small>gated on <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/DYNAMICS.md" data-doc="docs/DYNAMICS.md" data-tip="cognition as trajectory in a vector field, and what that commits to">a multi-attractor landscape</a>, which the substrate now admits but is not yet fitted into</small></li>
       </ol>
     </div>
   </section>
@@ -177,7 +177,7 @@
             <span class="mono">forward models</span>
             <h3>every instrument, from the same tissue</h3>
             <p>EEG, MEG, ECoG, laminar LFP, fNIRS and BOLD as observations of ordinary state. <code>eeg_forward</code> solves a real 60-channel boundary-element lead field.</p>
-            <span class="status status-built">materializes · lead field real · fusion exact in band</span>
+            <ul class="models"><li><a class="model" href="https://huggingface.co/brandonin/ibm-1/tree/main/checkpoints" title="ibm1.m-multi.s300k.e128.k48.dyn-r4.obj-av+meg"><span class="hf" aria-hidden="true">🤗</span><code>ibm1.m-multi.s300k.e128.k48.dyn-r4.obj-av+meg</code><b>93.7M</b></a></li><li class="wip"><code>eeg_forward</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>meg_forward</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>bold_forward</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>fnirs_forward</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>ecog_forward</code><b>38.4M</b><i>WIP</i></li></ul>
           </div>
         </article>
         <article class="line">
@@ -186,7 +186,7 @@
             <span class="mono">decoding</span>
             <h3>stimulus and language through the cortex</h3>
             <p><code>meg_to_text</code>, <code>speech_envelope</code>, <code>eeg_to_image</code>, <code>inner_speech</code>, sharing the sensory chain with the forward models.</p>
-            <span class="status status-open">running · skill at chance · data-bound</span>
+            <ul class="models"><li><a class="model" href="https://huggingface.co/brandonin/ibm-1/tree/main/checkpoints" title="ibm1.m-av.s250k.e128.k48.dyn-r4.obj-av"><span class="hf" aria-hidden="true">🤗</span><code>ibm1.m-av.s250k.e128.k48.dyn-r4.obj-av</code><b>68.9M</b></a></li><li><a class="model" href="https://huggingface.co/brandonin/ibm-1/tree/main/checkpoints" title="ibm1.m-multi.s250k.e128.k48.dyn-r4.obj-av+meg"><span class="hf" aria-hidden="true">🤗</span><code>ibm1.m-multi.s250k.e128.k48.dyn-r4.obj-av+meg</code><b>78.6M</b></a></li><li><a class="model" href="https://huggingface.co/brandonin/ibm-1/tree/main/checkpoints" title="ibm1.m-p.s150k.e128.k48.dyn-r4.obj-meg"><span class="hf" aria-hidden="true">🤗</span><code>ibm1.m-p.s150k.e128.k48.dyn-r4.obj-meg</code><b>26.4M</b></a></li><li class="wip"><code>meg_to_text</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>speech_envelope</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>eeg_to_image</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>inner_speech</code><b>38.4M</b><i>WIP</i></li></ul>
           </div>
         </article>
         <article class="line">
@@ -195,7 +195,7 @@
             <span class="mono">stimulation</span>
             <h3>TMS, tES, focused ultrasound, DBS</h3>
             <p>an intervention is clamped state, not an input. a coil's field at 20 µs, a transducer's pressure at 100 ns, a lead's potential 100 µm from its contacts.</p>
-            <span class="status status-declared">declared · builds · not yet fitted</span>
+            <ul class="models"><li class="wip"><code>tms_response</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>tes_response</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>tfus_response</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>dbs_response</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>tms_eeg_tep</code><b>38.4M</b><i>WIP</i></li></ul>
           </div>
         </article>
         <article class="line">
@@ -203,8 +203,8 @@
           <div class="line-text">
             <span class="mono">state and disorder</span>
             <h3>sleep, anaesthesia, seizure, pharmacology</h3>
-            <p>slow thalamocortical trajectories as neuromodulator fields. the slow oscillation is fitted, not argued.</p>
-            <span class="status status-built">regime fitted · landscape admitted, not yet fitted into</span>
+            <p>slow thalamocortical trajectories as neuromodulator fields. <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/STATE.md" data-doc="docs/STATE.md" data-tip="the state document: every measured number and the claims that failed">the slow oscillation is fitted, not argued</a>.</p>
+            <ul class="models"><li class="wip"><code>sleep_dynamics</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>anesthesia</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>seizure_propagation</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>pharmaco</code><b>38.4M</b><i>WIP</i></li></ul>
           </div>
         </article>
         <article class="line">
@@ -212,8 +212,8 @@
           <div class="line-text">
             <span class="mono">the embodied loop</span>
             <h3>arrays, effectors, a body to close on</h3>
-            <p>implanted arrays write motor drive into 96 named muscles through 58 nerve trunks with fibre-class delays; a 483-port interface a simulator can plug into.</p>
-            <span class="status status-built">periphery connectable · first closed cycle in the declared graph</span>
+            <p>implanted arrays write motor drive into 96 named muscles through 58 nerve trunks with fibre-class delays; <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/EMBODIMENT.md" data-doc="docs/EMBODIMENT.md" data-tip="the periphery: muscles, nerves, reflex arcs and the simulator contract">a 483-port interface a simulator can plug into</a>.</p>
+            <ul class="models"><li class="wip"><code>invasive_bci</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>handwriting_bci</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>motor_mapping</code><b>38.4M</b><i>WIP</i></li></ul>
           </div>
         </article>
         <article class="line">
@@ -222,11 +222,12 @@
             <span class="mono">surrogates</span>
             <h3>the cheap views</h3>
             <p>parcel-level neural masses built to run ten thousand times; resting-state, coarse in space and band. cheap is a materialization choice, not another model.</p>
-            <span class="status status-declared">declared · builds</span>
+            <ul class="models"><li class="wip"><code>macro_surrogate</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>connectome_gnn</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>encoding_model</code><b>38.4M</b><i>WIP</i></li><li class="wip"><code>resting_state_fc</code><b>38.4M</b><i>WIP</i></li></ul>
           </div>
         </article>
       </div>
 
+      <p class="models-note">trained weights publish to <a href="https://huggingface.co/brandonin/ibm-1">huggingface.co/brandonin/ibm-1</a>, named by modality, site count, embedding, degree, dynamics revision, objective and git sha. a WIP count is the shared association kernel at the 300k-site operating point, which a new head rides on; the head itself is not built.</p>
       <div class="compute">
         <div><b>2 × GB10</b><span>121 GB and 119 GB unified memory, a 200G link between them</span></div>
         <div><b>300k sites</b><span>the operating point: 93.7M parameters, 2.30 s per step</span></div>
@@ -239,25 +240,13 @@
         <div><span class="mono">months</span><p>re-run the ablation against the corrected long-range prior. wire the four subcortical processes whose anatomy is declared and unused.</p></div>
         <div><span class="mono">the gate</span><p>fit θ into the multistable regions, about 0.05% of the swept space. nothing cognitive means anything before that.</p></div>
       </div>
-      <p class="note"><b>what would falsify it.</b> the joint schedule failing to beat single-corpus fits; or severed long-range edges still costing nothing after the prior fix. both are measurable now, and both come before scaling.</p>
+      <p class="note"><b><a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/PROGRAMME.md" data-doc="docs/PROGRAMME.md" data-tip="trajectory and falsification, in the programme document">what would falsify it.</a></b> the joint schedule failing to beat single-corpus fits; or severed long-range edges still costing nothing after the prior fix. both are measurable now, and both come before scaling.</p>
     </div>
   </section>
 
-  <footer class="colophon">
-    <div>
-      <p class="mono">ibm-1 · 0.1.0</p>
-      <p>jacob valdez, with claude as co-author on the recent commits. no licence declared yet.</p>
-    </div>
-    <div>
-      <p class="mono">read</p>
-      <p><a href="https://github.com/JacobFV/IBM-1/blob/main/docs/PROGRAMME.md">programme</a> · <a href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md">architecture</a> · <a href="https://github.com/JacobFV/IBM-1/blob/main/docs/STATE.md">state</a> · <a href="https://github.com/JacobFV/IBM-1/blob/main/docs/CURRICULUM.md">curriculum</a> · <a href="https://github.com/JacobFV/IBM-1/blob/main/docs/TRAINING.md">training</a> · <a href="https://github.com/JacobFV/IBM-1/blob/main/docs/DYNAMICS.md">dynamics</a></p>
-    </div>
-    <div>
-      <p class="mono">the figures</p>
-      <p>mne <code>sample</code> subject, surface RAS. regenerated by <code>scripts/export_site_graph.py</code>.</p>
-    </div>
-  </footer>
 </main>
+
+<div id="tip" class="tip" role="tooltip" hidden><span class="tip-text"></span><a class="tip-link" href="#"></a></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="background.js"></script>
