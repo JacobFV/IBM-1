@@ -176,14 +176,23 @@ STAGES: tuple[Stage, ...] = (
           "one theta, scheduled across d",
           "paired + self-supervised together",
           "joint beats each branch on its own held-out set",
-          Status.RUNNING,
+          Status.FAILED,
           "grad log p(theta|D) = grad log p(theta) + sum_d grad log p(D_d|theta). "
-          "ibm/forge/fit.py already takes a sequence of Tasks; only the schedule is "
-          "missing. BUILT and running: scripts/train_multi_materialization.py holds "
-          "one CorticalDynamics and accumulates gradients from an AV head and a "
+          "BUILT and RUN: scripts/train_multi_materialization.py held one "
+          "CorticalDynamics and accumulated gradients from an AV head and a "
           "paired-MEG head before a single optimizer step. at 250k sites the shared "
-          "substrate is 32.0M and the two heads are 9.9M and 3.0M, so most of the "
-          "model is shared -- which is the architecture's own claim, measured",
+          "substrate was 32.0M against heads of 9.9M and 3.0M, so most of the model "
+          "WAS shared -- the architecture's structural claim, measured. the "
+          "PERFORMANCE claim failed: the gate asks that joint beat each branch on "
+          "its own held-out set, and after 29,000 steps the MEG branch sat at "
+          "held-out skill -0.003 against a measured regression ceiling of +0.036, "
+          "while the cross-modal edges the joint term exists to build reached 0.885 "
+          "magnitude and cost -0.06% to sever. STOPPED at 29,000 and checkpointed "
+          "(m-multi.s300k step029000) so the negative result is citable. what it "
+          "does show survives: bypass +35.1%, long-range +27.09%. the remaining "
+          "route to this gate is a CONTRASTIVE auditory term -- regression was the "
+          "wrong objective for the visual branch too, and changing it there took "
+          "the term from skill +0.011 to 53x chance",
           "both"),
 
     Stage("s8.curriculum", "expansion-aware stimulus selection", ("s6.scale",),
