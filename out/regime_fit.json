@@ -1,0 +1,11 @@
+{
+  "measured_hz": 1.0,
+  "measured_sd": 0.2955111623883522,
+  "n_recordings": 8,
+  "tau_adaptation_s": 0.2,
+  "w_ee": 0.45,
+  "adaptation_gain": 0.25,
+  "model_hz": 0.7333333333333332,
+  "swing_mv": 49.70213208436381,
+  "abs_err_hz": 0.26666666666666683
+}

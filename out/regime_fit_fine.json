@@ -1,0 +1,10 @@
+{
+  "target_hz": 1.0,
+  "target_sd": 0.2955,
+  "tau_adaptation_s": 0.12,
+  "w_ee": 0.45,
+  "adaptation_gain": 0.25,
+  "model_hz": 0.9999999999999998,
+  "swing_mv": 43.464325096106876,
+  "err_sd": 7.514199828258251e-16
+}

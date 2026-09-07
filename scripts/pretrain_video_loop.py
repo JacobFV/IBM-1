@@ -552,7 +552,16 @@ def main():
             lim = min(n_frames, neural.shape[0]) - H - 2
             i = np.random.randint(ctx, lim, size=a.batch)
             x = torch.from_numpy(np.stack([frames[j - ctx:j] for j in i])).float().to(dev)
-            y = torch.from_numpy(np.ascontiguousarray(neural[i + H])).float().to(dev)
+            # APPLY the scale that was loaded 30 lines up.  it was loaded and then
+            # never referenced -- a dead variable -- so training minimized MSE
+            # against the RAW MEG array, whose mean-square is 4.7e-5.  that made
+            # the printed loss look like 0.005 while the model was 160x WORSE than
+            # predicting zero in its own units.  the comment at the load site
+            # describes exactly this trap and the fix was never wired in.
+            yr = np.ascontiguousarray(neural[i + H])
+            if megsc is not None:
+                yr = np.clip((yr - megsc[0]) / megsc[1], -6.0, 6.0)
+            y = torch.from_numpy(yr.astype(np.float32)).to(dev)
             pred, s = model(x, a.dyn_steps, a.dt)
             recon = F.mse_loss(pred, y)
         elif a.modality == "av":
@@ -639,7 +648,8 @@ def main():
             # kept nothing at all.  the weights are the artefact; publishing them
             # is a convenience, and a convenience must never be able to destroy
             # the artefact.
-            torch.save({"model": model.state_dict(), "step": step}, a.ckpt)
+            torch.save({"model": model.state_dict(), "step": step,
+                        "config": vars(a)}, a.ckpt)
             from ibm.release import CheckpointName, sidecar, upload
             obj = {"av": "av", "paired": "meg"}.get(a.modality, f"nfh{a.horizon}")
             nm = CheckpointName(modality={"video": "v", "audio": "a", "av": "av",

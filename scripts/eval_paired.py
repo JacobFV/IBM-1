@@ -18,7 +18,12 @@ ap.add_argument("--batches", type=int, default=40)
 a = ap.parse_args()
 
 d = torch.load(a.ckpt, map_location="cpu", weights_only=False)
-cfg = d.get("config", {}); sd = d["model"]
+sd = d["model"]
+if "config" not in d:
+    raise SystemExit("checkpoint has no config: refusing to evaluate against "
+                     "hard-coded defaults, which would silently use dyn_steps=6 "
+                     "where the trainer's own default is 8")
+cfg = d["config"]
 dev = "cuda" if torch.cuda.is_available() else "cpu"
 n_sites, embed = sd["dyn.embed"].shape; k = sd["dyn.idx"].shape[1]
 stim = np.load(a.stim, mmap_mode="r"); neur = np.load(a.neural, mmap_mode="r")

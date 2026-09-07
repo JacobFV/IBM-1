@@ -779,7 +779,15 @@ implementation(
         # which clears the causality refusal that 0.50 s cannot.  below 0.20 s the
         # oscillation disappears entirely, so the viable band is narrow and this is
         # not a free parameter dressed as one.
-        "tau_adaptation_s": lognormal(0.30, 2.0, units="s", provenance=Provenance.LITERATURE,
+        # 0.12 s, FITTED (s1.regime, scripts/fit_regime.py).  the slow-oscillation
+        # peak measured in 8 scored sleep-edfx N3 recordings is 1.000 +/- 0.296 Hz,
+        # and 0.12 s is the adaptation constant that puts this model's own SO at
+        # exactly 1.000 Hz with a 43.5 mV swing.  the earlier 0.30 s was argued
+        # from the middle of the published 0.5-1.0 Hz band and the windowing
+        # constraint; this is the value the recordings actually imply, and it
+        # satisfies the window constraint more comfortably (memory 0.36 s, 0.18 of
+        # a 2.048 s window, against a 0.50 ceiling).
+        "tau_adaptation_s": lognormal(0.12, 2.0, units="s", provenance=Provenance.FIT,
                                       source="calcium- and sodium-activated potassium currents, "
                                              "0.1-2 s; the median is set by the SO band and the "
                                              "window constraint jointly"),
