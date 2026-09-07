@@ -378,6 +378,24 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 .models .wip b { color: var(--muted); }
 .models a.model:hover code { color: var(--accent); }
 .models .hf { font-size: 0.8rem; line-height: 1; }
+/* a model that has weights: the name is a link that opens its checkpoints */
+.models .model-toggle { appearance: none; background: none; border: 0; padding: 0; margin: 0; text-align: left; cursor: pointer; font-family: inherit; }
+.models .model-toggle code { text-decoration: underline; text-decoration-style: dotted; text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
+.models .model-toggle:hover code, .models .model-toggle[aria-expanded="true"] code { color: var(--accent); text-decoration-style: solid; }
+.models .model-toggle::after { content: "▸"; order: -1; font-size: 0.6rem; color: var(--accent); transition: transform 0.15s; }
+.models .model-toggle[aria-expanded="true"]::after { content: "▾"; }
+.models .model-toggle em { font-family: var(--mono); font-style: normal; font-size: 0.6rem; letter-spacing: 0.06em; color: var(--muted); margin-left: auto; }
+.models .model-toggle em + b { margin-left: 10px; }
+.ckpts[hidden] { display: none; }   /* the display rule below would beat the UA one */
+.ckpts { list-style: none; margin: 4px 0 6px; padding: 6px 0 6px 18px; display: grid; gap: 4px; max-height: 13.5em; overflow: auto; border-left: 1px solid var(--rule); }
+.ckpts .model { font-size: 0.74rem; }
+.ckpts code { font-size: 0.66rem; color: var(--muted); display: flex; min-width: 0; }
+/* the step is what distinguishes one checkpoint from the next, so the run name
+   gives way to it rather than the other way round */
+.ckpts code i { font-style: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 2ch; }
+.ckpts code span { white-space: nowrap; }
+.ckpts b { color: var(--muted); font-size: 0.66rem; }
+.ckpts a.model:hover code, .ckpts a.model:hover b { color: var(--accent); }
 
 /* ============================================================= references */
 .ref { color: inherit; text-decoration: underline; text-decoration-style: dotted; text-decoration-color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 0.2em; cursor: help; }

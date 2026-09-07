@@ -111,7 +111,7 @@ learning:
 should be an ablation.
 
 ## 5. checkpoints
-`brandonin/ibm-1` on HuggingFace, private, uploaded by the trainer every
+`jacob-valdez/ibm-1` on HuggingFace, uploaded by the trainer every
 `--upload-every` steps. naming schema and its rationale: RELEASE.md.
 **known defect**: remote checkpoints are stamped `git-unknown` because the remote
 has no git repo — the sha should be passed in, not computed there.

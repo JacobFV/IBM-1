@@ -94,7 +94,7 @@ primitives.
 
 ## Weights
 
-Checkpoints publish to **[brandonin/ibm-1](https://huggingface.co/brandonin/ibm-1)**
+Checkpoints publish to **[jacob-valdez/ibm-1](https://huggingface.co/jacob-valdez/ibm-1)**
 with a naming schema that records substrate size, dynamics revision and the exact
 commit of the ontology they were trained against, so any result is reproducible
 against the declaration that produced it:

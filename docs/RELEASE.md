@@ -1,7 +1,7 @@
 # checkpoints: naming, contents, and where they go
 
-`ibm/release.py`. weights are published to **`brandonin/ibm-1`** on HuggingFace
-(private), uploaded every `--upload-every` steps by the trainer itself, so a run
+`ibm/release.py`. weights are published to **`jacob-valdez/ibm-1`** on HuggingFace,
+uploaded every `--upload-every` steps by the trainer itself, so a run
 that dies has already shipped everything up to its last interval.
 
 ## 1. why the name is elaborate

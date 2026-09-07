@@ -87,17 +87,18 @@ window.IBMBrain = (function () {
 
   // ----------------------------------------------------------- shaders ----
   const POINT_VS = `
-    attribute float size; attribute float w; attribute vec3 color;
-    varying vec3 vC; varying float vW; varying float vD; uniform float pr;
+    attribute float size; attribute float w; attribute vec3 color; attribute float f; attribute float u;
+    varying vec3 vC; varying float vW; varying float vD; varying float vF; varying float vU; uniform float pr;
     void main(){
-      vC = color; vW = w;
+      vC = color; vW = w; vF = f; vU = u;
       vec4 mv = modelViewMatrix * vec4(position, 1.0);
       vD = clamp((-mv.z - 260.0) / 260.0, 0.0, 1.0);
       gl_PointSize = size * (0.7 + 1.1 * w) * (420.0 / -mv.z) * pr;
       gl_Position = projectionMatrix * mv;
     }`;
   const POINT_FS = `
-    varying vec3 vC; varying float vW; varying float vD; uniform float light;
+    varying vec3 vC; varying float vW; varying float vD; varying float vF; varying float vU; uniform float light;
+    vec3 traced(float u){ return mix(vec3(0.96, 0.26, 0.30), vec3(0.63, 0.35, 0.98), clamp(u, 0.0, 1.0)); }
     void main(){
       vec2 q = gl_PointCoord - 0.5; float d = length(q);
       if (d > 0.5) discard;
@@ -108,16 +109,23 @@ window.IBMBrain = (function () {
       vec3 pale = mix(vC * mix(0.9, 0.72, w), vec3(0.55), 0.35 * (1.0 - w));
       vec3 c = mix(dark, pale, light);
       float alpha = a * mix(mix(0.10, 0.28, light), 1.0, w) * mix(1.0, mix(0.45, 0.8, w), vD);
+      float g = clamp(vF, 0.0, 1.0);
+      c = mix(c, traced(vU), clamp(g * 2.2, 0.0, 1.0));   // the route reads as its own colour, not a tint
+      alpha = max(alpha, a * clamp(g * 1.7, 0.0, 1.0) * 0.95);
       gl_FragColor = vec4(c, alpha);
     }`;
   const LINE_VS = `
-    attribute float w; attribute vec3 color; varying vec3 vC; varying float vW; varying float vD;
-    void main(){ vC = color; vW = clamp(w, 0.0, 1.0); vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    attribute float w; attribute vec3 color; attribute float f; attribute float u;
+    varying vec3 vC; varying float vW; varying float vD; varying float vF; varying float vU;
+    void main(){ vC = color; vW = clamp(w, 0.0, 1.0); vF = f; vU = u; vec4 mv = modelViewMatrix * vec4(position, 1.0);
       vD = clamp((-mv.z - 260.0) / 260.0, 0.0, 1.0); gl_Position = projectionMatrix * mv; }`;
   const LINE_FS = `
-    varying vec3 vC; varying float vW; varying float vD; uniform float light;
+    varying vec3 vC; varying float vW; varying float vD; varying float vF; varying float vU; uniform float light;
     void main(){ float alpha = mix(mix(0.03, 0.06, light), mix(0.42, 0.55, light), vW) * mix(1.0, 0.4, vD);
       vec3 c = mix(mix(vC, vec3(1.0), 0.15 * vW), vC * 0.6, light);
+      float g = clamp(vF, 0.0, 1.0);
+      c = mix(c, mix(vec3(0.96, 0.26, 0.30), vec3(0.63, 0.35, 0.98), clamp(vU, 0.0, 1.0)), clamp(g * 2.2, 0.0, 1.0));
+      alpha = max(alpha, clamp(g * 1.7, 0.0, 1.0) * mix(0.9, 0.5, vD));
       gl_FragColor = vec4(c, alpha); }`;
   const SHEET_VS = `
     attribute float w; attribute vec3 color; varying vec3 vC; varying float vW; varying float vD;
@@ -143,12 +151,18 @@ window.IBMBrain = (function () {
     // so a travelling signal is nothing but nodes and edges briefly lighter.
     const wGlow = new Float32Array(N);
     const ewGlow = new Float32Array(E * 2);
+    // and the trace itself: how lit a node or edge is by a pulse (f), and where
+    // along that pulse's path it sits (u), which is what colours it
+    const fGlow = new Float32Array(N), uGlow = new Float32Array(N);
+    const efGlow = new Float32Array(E * 2), euGlow = new Float32Array(E * 2);
 
     const pgeo = new THREE.BufferGeometry();
     pgeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     pgeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     pgeo.setAttribute('size', new THREE.BufferAttribute(size, 1));
     pgeo.setAttribute('w', new THREE.BufferAttribute(wGlow, 1));
+    pgeo.setAttribute('f', new THREE.BufferAttribute(fGlow, 1));
+    pgeo.setAttribute('u', new THREE.BufferAttribute(uGlow, 1));
     const points = new THREE.Points(pgeo, new THREE.ShaderMaterial({ uniforms: { pr: { value: renderer.getPixelRatio() }, light }, vertexShader: POINT_VS, fragmentShader: POINT_FS, transparent: true, depthWrite: false }));
     points.renderOrder = 5;
 
@@ -156,6 +170,8 @@ window.IBMBrain = (function () {
     lgeo.setAttribute('position', new THREE.BufferAttribute(epos, 3));
     lgeo.setAttribute('color', new THREE.BufferAttribute(ecol, 3));
     lgeo.setAttribute('w', new THREE.BufferAttribute(ewGlow, 1));
+    lgeo.setAttribute('f', new THREE.BufferAttribute(efGlow, 1));
+    lgeo.setAttribute('u', new THREE.BufferAttribute(euGlow, 1));
     const lines = new THREE.LineSegments(lgeo, new THREE.ShaderMaterial({ uniforms: { light }, vertexShader: LINE_VS, fragmentShader: LINE_FS, transparent: true, depthWrite: false }));
     lines.renderOrder = 4;
 
@@ -197,15 +213,22 @@ window.IBMBrain = (function () {
     }
     // a pulse's contribution: nodeFlash(N)/edgeFlash(E) in [0,1], laid over
     // the true selection weight fresh each call so nothing here can drift.
-    function applyGlow(nodeFlash, edgeFlash) {
-      for (let i = 0; i < N; i++) { const v = wCur[i] + nodeFlash[i]; wGlow[i] = v > 1 ? 1 : v; }
+    function applyGlow(nodeFlash, edgeFlash, nodeU, edgeU) {
+      for (let i = 0; i < N; i++) {
+        const f = nodeFlash[i], v = wCur[i] + f;
+        wGlow[i] = v > 1 ? 1 : v; fGlow[i] = f; uGlow[i] = nodeU[i];
+      }
       for (let e = 0; e < E; e++) {
         const f = edgeFlash[e];
+        efGlow[2 * e] = efGlow[2 * e + 1] = f;
+        euGlow[2 * e] = euGlow[2 * e + 1] = edgeU[e];
         if (f <= 0) { ewGlow[2 * e] = ew[2 * e]; ewGlow[2 * e + 1] = ew[2 * e + 1]; continue; }
         const v0 = ew[2 * e] + f, v1 = ew[2 * e + 1] + f;
         ewGlow[2 * e] = v0 > 1 ? 1 : v0; ewGlow[2 * e + 1] = v1 > 1 ? 1 : v1;
       }
       pgeo.attributes.w.needsUpdate = true; lgeo.attributes.w.needsUpdate = true;
+      pgeo.attributes.f.needsUpdate = true; lgeo.attributes.f.needsUpdate = true;
+      pgeo.attributes.u.needsUpdate = true; lgeo.attributes.u.needsUpdate = true;
     }
     function setScalp(v) { scalp.material.opacity = 0.05 * v; scalpWire.material.opacity = 0.07 * v; }
     return { scene, pivot, wCur, syncDerived, setScalp, applyGlow };
@@ -413,9 +436,17 @@ window.IBMBrain = (function () {
   // over those edges toward the output, then a short lead back out. there is
   // no travelling marker for it -- a pulse is only the nodes and edges along
   // its current position glowing a little brighter, fading behind it as it goes.
+  // the route it took stays lit behind it, dimmer and slowly fading, and every
+  // node and edge on it is coloured by where it sits along that route: red at
+  // the input, purple at the output.  so what the trace instantiated is not
+  // only lit but legible as a path from one to the other.
   function makePulses(S) {
     const live = [];
     const nodeFlash = new Float32Array(N), edgeFlash = new Float32Array(E);
+    const nodeTrail = new Float32Array(N), edgeTrail = new Float32Array(E);
+    const nodeU = new Float32Array(N), edgeU = new Float32Array(E);
+    const nodeLit = new Float32Array(N), edgeLit = new Float32Array(E);
+    const TRAIL = 0.5, TRAIL_DECAY = 0.994;
     let model = null, spawnAt = 0, idleFrames = 0;
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -441,7 +472,12 @@ window.IBMBrain = (function () {
       if (onMesh.length) return { lead: null, node: pick(onMesh) };
       return { lead: x.anchor, node: nearestOn(x.anchor, travArr) };
     }
-    function set(m) { model = m; live.length = 0; }
+    function set(m) {
+      model = m; live.length = 0;
+      // a new materialization traces its own routes; letting go of one lets its
+      // routes fade out instead (the decay below), so nothing is left frozen
+      if (m) { nodeTrail.fill(0); edgeTrail.fill(0); nodeFlash.fill(0); edgeFlash.fill(0); }
+    }
     function spawn(now) {
       traversable(model);
       const trav = model._trav, travArr = model._travArr;
@@ -473,13 +509,23 @@ window.IBMBrain = (function () {
         segEdge.push(ai >= 0 && bi >= 0 ? EDGE_IDX.get((ai < bi ? ai : bi) * N + (ai < bi ? bi : ai)) : undefined);
       }
       const dur = Math.max(800, Math.min(4200, total / 0.13));
+      // lay the whole route down at once: it is the dependency trace, and it
+      // should read as one path from input to output, not only where the head is
+      const last = nodeAt.length - 1;
+      for (let k = 0; k <= last; k++) {
+        const i = nodeAt[k], u = last ? k / last : 0;
+        if (i >= 0 && nodeTrail[i] < TRAIL) { nodeTrail[i] = TRAIL; nodeU[i] = u; }
+        const e = k < last ? segEdge[k] : undefined;
+        if (e != null && edgeTrail[e] < TRAIL) { edgeTrail[e] = TRAIL; edgeU[e] = u; }
+      }
       live.push({ t0: now, dur, segLen, total, nodeAt, segEdge });
     }
     function tick(now, S_) {
       if (model && now > spawnAt && live.length < 40) { spawn(now); spawnAt = now + 120 + Math.random() * 160; }
       for (let i = live.length - 1; i >= 0; i--) if (now - live[i].t0 > live[i].dur) live.splice(i, 1);
-      for (let i = 0; i < N; i++) nodeFlash[i] *= 0.88;
-      for (let e = 0; e < E; e++) edgeFlash[e] *= 0.82;
+      const td = model ? TRAIL_DECAY : 0.9;   // with nothing selected, the routes clear away
+      for (let i = 0; i < N; i++) { nodeFlash[i] *= 0.88; nodeTrail[i] *= td; }
+      for (let e = 0; e < E; e++) { edgeFlash[e] *= 0.82; edgeTrail[e] *= td; }
       live.forEach((p) => {
         const target = Math.min(1, (now - p.t0) / p.dur) * p.total;
         let acc = 0;
@@ -487,16 +533,19 @@ window.IBMBrain = (function () {
           const d = p.segLen[k];
           if (acc + d < target && k < p.segLen.length - 1) { acc += d; continue; }
           const t = d > 0 ? Math.min(1, Math.max(0, (target - acc) / d)) : 1;
-          const a = p.nodeAt[k], b = p.nodeAt[k + 1];
-          if (a >= 0 && (1 - t) > nodeFlash[a]) nodeFlash[a] = 1 - t;
-          if (b >= 0 && t > nodeFlash[b]) nodeFlash[b] = t;
+          const a = p.nodeAt[k], b = p.nodeAt[k + 1], last = p.nodeAt.length - 1;
+          if (a >= 0 && (1 - t) > nodeFlash[a]) { nodeFlash[a] = 1 - t; nodeU[a] = last ? k / last : 0; }
+          if (b >= 0 && t > nodeFlash[b]) { nodeFlash[b] = t; nodeU[b] = last ? (k + 1) / last : 1; }
           const eidx = p.segEdge[k];
-          if (eidx != null) { const f = 1 - Math.abs(t - 0.5) * 2; if (f > edgeFlash[eidx]) edgeFlash[eidx] = f; }
+          if (eidx != null) { const f = 1 - Math.abs(t - 0.5) * 2; if (f > edgeFlash[eidx]) { edgeFlash[eidx] = f; edgeU[eidx] = last ? k / last : 0; } }
           break;
         }
       });
+      // the head is bright, the route it left behind is a steady undertone
+      for (let i = 0; i < N; i++) { const t = nodeTrail[i], f = nodeFlash[i]; nodeLit[i] = f > t ? f : t; }
+      for (let e = 0; e < E; e++) { const t = edgeTrail[e], f = edgeFlash[e]; edgeLit[e] = f > t ? f : t; }
       idleFrames = model || live.length ? 0 : idleFrames + 1;
-      S_.applyGlow(nodeFlash, edgeFlash);
+      S_.applyGlow(nodeLit, edgeLit, nodeU, edgeU);
     }
     return { set, tick, get active() { return !!model || live.length > 0 || idleFrames < 50; } };
   }

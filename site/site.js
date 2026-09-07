@@ -182,6 +182,40 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { layout(); place(); });
   }
 
+  // ---- §4: a model is a name; the checkpoints released for it live inside it
+  // (site/data/releases.js, written by scripts/export_releases.py from the hub)
+  const REL = window.IBM_RELEASES;
+  const params = (n) => n == null ? '—' : n >= 1e9 ? (n / 1e9).toFixed(1) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? Math.round(n / 1e3) + 'k' : String(n);
+  const ckptsOf = (el) => (REL && REL.models && REL.models[el.dataset.model]) || null;
+  const hf = '<span class="hf" aria-hidden="true">\u{1f917}</span>';
+  if (REL) {
+    document.querySelectorAll('.lineup li[data-model]').forEach((li) => {
+      const cks = ckptsOf(li);
+      if (!cks || !cks.length) return;
+      const name = esc(li.querySelector('code').textContent), id = 'ck-' + li.dataset.model;
+      li.className = 'released';
+      li.innerHTML = `<button class="model model-toggle" type="button" aria-expanded="false" aria-controls="${id}">
+          ${hf}<code>${name}</code><em>${cks.length} ckpt${cks.length === 1 ? '' : 's'}</em><b>(${params(cks[0].params)})</b></button>
+        <ul class="ckpts" id="${id}" hidden>${cks.map((c) => `
+          <li><a class="model" href="${c.url}" target="_blank" rel="noopener" title="${esc(c.name)}">${hf}<code><i>${esc(c.name.split('.step')[0])}</i><span>.step${String(c.step).padStart(6, '0')}</span></code><b>(${params(c.params)})</b></a></li>`).join('')}</ul>`;
+      const btn = li.querySelector('.model-toggle'), list = li.querySelector('.ckpts');
+      btn.addEventListener('click', () => {
+        const open = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!open));
+        list.hidden = open;
+      });
+    });
+    // the note beside "explicit maps" names the same models, linked to the newest
+    const tmpl = $('tip-maps');
+    if (tmpl) tmpl.content.querySelectorAll('li[data-model]').forEach((li) => {
+      const cks = ckptsOf(li);
+      if (!cks || !cks.length) return;
+      const name = esc(li.querySelector('code').textContent), c = cks[0];
+      li.className = '';
+      li.innerHTML = `<a class="model" href="${c.url}" target="_blank" rel="noopener" title="${esc(c.name)}">${hf}<code>${name}</code><b>(${params(c.params)})</b></a>`;
+    });
+  }
+
   // ---- references: an underlined phrase opens a note with a link to read more
   const tip = $('tip');
   if (tip) {

@@ -182,7 +182,7 @@ both should be run before scaling further.
   baselines, splits contiguous with a guard band. a loss without a baseline is not
   a result, and that is not a stylistic preference here, it is the lesson of §4
 - `docs/TRAINING.md` — the runs and what they showed
-- `docs/RELEASE.md` — checkpoint naming; weights publish to `brandonin/ibm-1`
+- `docs/RELEASE.md` — checkpoint naming; weights publish to `jacob-valdez/ibm-1`
 - corpora are in `data/sources/<id>/raw`, gitignored; `card.yaml` names the origin
 - **do not commit weights or caches.** history was rewritten once to remove 2.9 GB
   of them
