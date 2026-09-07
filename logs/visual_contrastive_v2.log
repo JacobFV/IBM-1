@@ -4,3 +4,9 @@ Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pyto
   "v_absmax": float(s[0].abs().max()), "sec": round(time.time() - t0, 1)}
     0  loss 4.9174  top-1  0.50%  (1.0x chance)  r_eff  4.62       4s  <- best, checkpointed
   200  loss 4.1081  top-1  2.00%  (4.0x chance)  r_eff  2.43     482s  <- best, checkpointed
+  400  loss 3.5578  top-1  3.00%  (6.0x chance)  r_eff  2.89     956s  <- best, checkpointed
+  600  loss 2.8011  top-1 10.50%  (21.0x chance)  r_eff  2.96    1430s  <- best, checkpointed
+  800  loss 2.2217  top-1  9.50%  (19.0x chance)  r_eff  3.31    1902s
+ 1000  loss 1.7378  top-1 18.50%  (37.0x chance)  r_eff  3.06    2376s  <- best, checkpointed
+ 1200  loss 1.0861  top-1 15.00%  (30.0x chance)  r_eff  3.01    2850s
+ 1400  loss 1.0208  top-1 17.00%  (34.0x chance)  r_eff  3.27    3327s
