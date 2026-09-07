@@ -132,16 +132,20 @@ STAGES: tuple[Stage, ...] = (
           "the geometric prior on long-range edges",
           "none -- a declaration change",
           "severing long-range edges costs > 5% loss",
-          Status.RUNNING,
+          Status.DONE,
           "the distance prior exp(-d/40mm) is applied to long-range edges too, and a "
           "uniform-random partner on a 127 mm sphere is ~85 mm away, so those edges "
           "carry 7x less geometric weight than local ones before learning starts. the "
           "learned factor cannot overcome it. real association fibres are long-range "
           "AND strong -- they need a patchy, distance-INDEPENDENT prior, which is what "
           "topologies/association.py already argues for and the trainer does not do. "
-          "APPLIED: long-range edges now take the median LOCAL geometric weight "
-          "instead of exp(-d/40mm), so the learned factor decides which survive. "
-          "needs a rerun of the ablation to confirm severing them now costs",
+          "APPLIED and ABLATED. the fix WORKED for long-range in general: severing "
+          "every long-range edge now costs +27.09%% where it cost +0.1%% before. but "
+          "severing the CROSS-MODAL edges specifically costs -0.06%% -- still inert. "
+          "so the model learned to use long-range communication WITHIN modality and "
+          "not between them. and dropping the audio drive entirely costs only "
+          "+3.94%%, so the joint objective is video-dominated: the audio term is "
+          "under-weighted, not the topology under-connected",
           "either"),
 
     Stage("s5.ablate", "is the cortex load-bearing?", ("s4.selfsup",),
