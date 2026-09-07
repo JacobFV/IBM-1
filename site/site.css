@@ -310,7 +310,8 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 
 /* ================================================================ figures */
 .snap { position: relative; margin: 28px 0 32px; background: none; color: var(--fig-note); overflow: hidden; }
-.snap canvas { display: block; width: 100%; height: var(--snap-h, auto); }
+.snap canvas { display: block; width: 100%; height: var(--snap-h, auto); cursor: grab; touch-action: pan-y; user-select: none; }
+.snap.dragging canvas { cursor: grabbing; }
 .snap .leaders { position: absolute; left: 0; top: 0; width: 100%; height: var(--snap-h, 100%); pointer-events: none; }
 .snap-labels { position: absolute; inset: 0; height: var(--snap-h, 100%); pointer-events: none; }
 .snap .ann-snap { position: absolute; transform: translateY(-50%); animation: none; max-width: 21ch; color: var(--fig-note); }

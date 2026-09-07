@@ -608,7 +608,7 @@ window.IBMBrain = (function () {
       if (!orbit.dragging) {
         orbit.tAz += orbit.vAz; orbit.tEl += orbit.vEl; orbit.vAz *= 0.92; orbit.vEl *= 0.92;
         orbit.tEl = Math.max(-1.3, Math.min(1.3, orbit.tEl));
-        if (!reduceMotion && orbit.idle > 4 && !state.selected) orbit.tAz += dt * 0.06;
+        if (!reduceMotion && orbit.idle > 15 && !state.selected) orbit.tAz += dt * 0.06;
       }
       orbit.glide += (0.12 - orbit.glide) * 0.02;
       const g = orbit.dragging ? 0.2 : orbit.glide;
@@ -632,51 +632,47 @@ window.IBMBrain = (function () {
     return { select, deselect };
   }
 
-  // --- static snapshots for the article -----------------------------------
+  // --- live figures for the article --------------------------------------
   // a figure element carries data-snap; its spec says what to light, where to
-  // look from, and what to annotate.  rendered once through one shared
-  // offscreen renderer and copied into the figure's own canvas.
+  // look from, and what to annotate.  every figure is a view: one shared
+  // offscreen renderer draws whichever are on screen, a drag orbits them, and
+  // after fifteen idle seconds they turn on their own.
+  const IDLE_MS = 15000;
   let snapRenderer = null, snapScenes = {};
+  const views = [];
   function isLight() {
     const t = document.documentElement.dataset.theme;
     if (t === 'dark') return false; if (t === 'light') return true;
     return !window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
-  function snapshot(fig, spec) {
+  function sceneFor(light) {
     if (!snapRenderer) {
       snapRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
       snapRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       snapRenderer.setClearColor(0x000000, 0);
     }
-    const light = isLight();
     const key = light ? 'light' : 'dark';
     if (!snapScenes[key]) snapScenes[key] = createScene(snapRenderer, { light });
-    const snapScene = snapScenes[key];
-    fig.dataset.theme = key;
-    const out = fig.querySelector('canvas'), svg = fig.querySelector('svg'), labels = fig.querySelector('.snap-labels');
-    ensureMarkers(svg);
+    return snapScenes[key];
+  }
+  function layoutView(v) {
+    const { fig, spec } = v;
     const W = fig.clientWidth, H = Math.round(W * (spec.aspect || 0.66));
+    if (!W) return false;
+    v.W = W; v.H = H;
     fig.style.setProperty('--snap-h', H + 'px');
     const pr = snapRenderer.getPixelRatio();
-    snapRenderer.setSize(W, H, false);
-    out.width = W * pr; out.height = H * pr; out.style.width = W + 'px'; out.style.height = H + 'px';
-    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    const camera = cameraFor(W / H);
-    const dist = (spec.dist || 430) * Math.max(1, 1.15 / Math.min(1, W / H));
-    placeCamera(camera, spec.az == null ? -0.65 : spec.az, spec.el == null ? 0.3 : spec.el, dist);
-    const w = spec.weights ? spec.weights() : weightsFor(spec.model || null, false);
-    snapScene.wCur.set(w); snapScene.syncDerived();
-    snapScene.setScalp(spec.scalp == null ? 1 : spec.scalp);
-    snapScene.pivot.updateMatrixWorld();
-    snapRenderer.render(snapScene.scene, camera);
-    out.getContext('2d').drawImage(snapRenderer.domElement, 0, 0, out.width, out.height);
-    // annotations
-    svg.querySelectorAll('g').forEach((g) => g.remove()); labels.innerHTML = '';
-    const project = projector(camera, W, H);
-    const ctx = { project, w: W, h: H, centre: [W / 2, H / 2] };
-    const items = spec.annotations ? spec.annotations() : [];
+    v.out.width = W * pr; v.out.height = H * pr; v.out.style.width = W + 'px'; v.out.style.height = H + 'px';
+    v.svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    v.camera = cameraFor(W / H);
+    v.orbit.dist = (spec.dist || 430) * Math.max(1, 1.15 / Math.min(1, W / H));
+    // labels: placed once per layout from the spec's own view, leaders follow the orbit
+    v.svg.querySelectorAll('g').forEach((g) => g.remove()); v.labels.innerHTML = '';
+    v.items = spec.annotations ? spec.annotations() : [];
+    placeCamera(v.camera, spec.az == null ? -0.65 : spec.az, spec.el == null ? 0.3 : spec.el, v.orbit.dist);
+    const project = projector(v.camera, W, H);
     const left = [], right = [];
-    items.forEach((a) => { const q = project(a.anchor); a._px = q; (a.side ? a.side === 'l' : q[0] < W / 2) ? left.push(a) : right.push(a); });
+    v.items.forEach((a) => { const q = project(a.anchor); a._px = q; (a.side ? a.side === 'l' : q[0] < W / 2) ? left.push(a) : right.push(a); });
     const place = (list, side) => {
       list.sort((p, q) => p._px[1] - q._px[1]);
       const gap = H / (list.length + 1);
@@ -685,14 +681,93 @@ window.IBMBrain = (function () {
         el.className = 'ann ann-snap ann-' + (a.cls || 'note'); el.dataset.side = side;
         el.innerHTML = (a.kind_label ? `<span class="ann-kind">${a.kind_label}</span>` : '') + `<span class="ann-label">${a.label}</span>` + (a.sub ? `<span class="ann-id">${a.sub}</span>` : '');
         el.style.top = Math.round(gap * (k + 1)) + 'px';
-        labels.appendChild(el);
-        a.svg = makeAnnotationSVG(svg, 'ann-' + (a.cls || 'note'));
-        const r = el.getBoundingClientRect(), f = fig.getBoundingClientRect();
-        const pt = side === 'l' ? [r.right - f.left + 4, r.top - f.top + r.height / 2] : [r.left - f.left - 4, r.top - f.top + r.height / 2];
-        drawAnnotation(a, pt, side, ctx);
+        v.labels.appendChild(el);
+        a.svg = makeAnnotationSVG(v.svg, 'ann-' + (a.cls || 'note'));
+        a.el = el; a._side = side;
       });
     };
     place(left, 'l'); place(right, 'r');
+    return true;
+  }
+  function renderView(v) {
+    const light = isLight();
+    const S = sceneFor(light);
+    v.fig.dataset.theme = light ? 'light' : 'dark';
+    if (!v.weights) v.weights = v.spec.weights ? v.spec.weights() : weightsFor(v.spec.model || null, false);
+    snapRenderer.setSize(v.W, v.H, false);
+    S.wCur.set(v.weights); S.syncDerived();
+    S.setScalp(v.spec.scalp == null ? 1 : v.spec.scalp);
+    placeCamera(v.camera, v.orbit.az, v.orbit.el, v.orbit.dist);
+    S.pivot.updateMatrixWorld();
+    snapRenderer.render(S.scene, v.camera);
+    const g2 = v.out.getContext('2d');
+    g2.clearRect(0, 0, v.out.width, v.out.height);
+    g2.drawImage(snapRenderer.domElement, 0, 0, v.out.width, v.out.height);
+    const project = projector(v.camera, v.W, v.H);
+    const ctx = { project, w: v.W, h: v.H, centre: [v.W / 2, v.H / 2] };
+    const f = v.fig.getBoundingClientRect();
+    v.items.forEach((a) => {
+      const r = a.el.getBoundingClientRect();
+      const pt = a._side === 'l' ? [r.right - f.left + 4, r.top - f.top + r.height / 2] : [r.left - f.left - 4, r.top - f.top + r.height / 2];
+      drawAnnotation(a, pt, a._side, ctx);
+    });
+    v.fig.classList.add('rendered');
+  }
+  function mountView(fig, spec) {
+    sceneFor(isLight());
+    const v = {
+      fig, spec, out: fig.querySelector('canvas'), svg: fig.querySelector('svg'), labels: fig.querySelector('.snap-labels'),
+      orbit: { az: spec.az == null ? -0.65 : spec.az, el: spec.el == null ? 0.3 : spec.el, dist: 430, tAz: 0, tEl: 0, vAz: 0, vEl: 0, dragging: false, lastX: 0, lastY: 0 },
+      items: [], weights: null, visible: false, dirty: true, lastTouch: performance.now(), camera: null, W: 0, H: 0,
+    };
+    v.orbit.tAz = v.orbit.az; v.orbit.tEl = v.orbit.el;
+    ensureMarkers(v.svg);
+    const c = v.out;
+    c.addEventListener('pointerdown', (e) => { c.setPointerCapture(e.pointerId); v.orbit.dragging = true; v.orbit.lastX = e.clientX; v.orbit.lastY = e.clientY; v.orbit.vAz = 0; v.orbit.vEl = 0; v.lastTouch = performance.now(); fig.classList.add('dragging'); });
+    c.addEventListener('pointermove', (e) => {
+      if (!v.orbit.dragging) return;
+      const dx = e.clientX - v.orbit.lastX, dy = e.clientY - v.orbit.lastY;
+      v.orbit.lastX = e.clientX; v.orbit.lastY = e.clientY;
+      v.orbit.tAz -= dx * 0.008; v.orbit.tEl = Math.max(-1.3, Math.min(1.3, v.orbit.tEl + dy * 0.008));
+      v.orbit.vAz = -dx * 0.008; v.orbit.vEl = dy * 0.008; v.lastTouch = performance.now(); v.dirty = true;
+    });
+    const up = () => { v.orbit.dragging = false; v.lastTouch = performance.now(); fig.classList.remove('dragging'); };
+    c.addEventListener('pointerup', up); c.addEventListener('pointercancel', up);
+    views.push(v);
+    return v;
+  }
+  function viewsLoop(now) {
+    let any = false;
+    for (const v of views) {
+      if (!v.visible) continue;
+      if (!v.camera && !layoutView(v)) continue;
+      const o = v.orbit;
+      let moving = v.dirty;
+      if (!o.dragging) {
+        if (Math.abs(o.vAz) > 1e-4 || Math.abs(o.vEl) > 1e-4) { o.tAz += o.vAz; o.tEl += o.vEl; o.vAz *= 0.9; o.vEl *= 0.9; o.tEl = Math.max(-1.3, Math.min(1.3, o.tEl)); moving = true; }
+        if (!reduceMotion && now - v.lastTouch > IDLE_MS) { o.tAz += 0.0012; moving = true; }
+      } else moving = true;
+      const dAz = o.tAz - o.az, dEl = o.tEl - o.el;
+      if (Math.abs(dAz) > 1e-4 || Math.abs(dEl) > 1e-4) { o.az += dAz * 0.18; o.el += dEl * 0.18; moving = true; }
+      if (moving) { renderView(v); v.dirty = false; any = true; }
+    }
+    requestAnimationFrame(viewsLoop);
+  }
+  function mountSnapshots(specs) {
+    const figs = Array.from(document.querySelectorAll('[data-snap]'));
+    figs.forEach((fig) => { const spec = specs[fig.dataset.snap]; if (spec) mountView(fig, spec); });
+    const eager = /[?&]eager/.test(location.search);
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => { const v = views.find((x) => x.fig === en.target); if (v) { v.visible = en.isIntersecting; if (v.visible) v.dirty = true; } });
+    }, { rootMargin: '200px 0px' });
+    views.forEach((v) => { io.observe(v.fig); if (eager) { v.visible = true; } });
+    const redo = () => { views.forEach((v) => { v.camera = null; v.dirty = true; }); };
+    const rethemed = () => { views.forEach((v) => { v.dirty = true; }); };
+    let t = null;
+    window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(redo, 200); });
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', rethemed);
+    new MutationObserver(rethemed).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    requestAnimationFrame(viewsLoop);
   }
 
   // annotation helpers for specs
@@ -702,29 +777,6 @@ window.IBMBrain = (function () {
     model_io: (id) => { const m = byId[id]; return m.inputs.map((x) => ({ label: x.label, sub: x.id, kind_label: x.kind === 'intervention' ? 'clamped' : 'observed', cls: 'in', side: 'l', _nodes: x._nodes, anchor: x.anchor })).concat(m.outputs.map((x) => ({ label: x.label, sub: x.id, kind_label: x.field, cls: 'out', side: 'r', _nodes: x._nodes, anchor: x.anchor }))); },
   };
   const finish = (items) => items.map((a) => { if (!a.anchor) a.anchor = centroid(a._nodes); return a; });
-
-  function mountSnapshots(specs) {
-    const figs = Array.from(document.querySelectorAll('[data-snap]'));
-    const pending = new Set(figs);
-    if (/[?&]eager/.test(location.search)) {
-      figs.forEach((fig) => { const spec = specs[fig.dataset.snap]; if (spec) { try { snapshot(fig, spec); fig.classList.add('rendered'); } catch (err) { console.error('snapshot', fig.dataset.snap, err); } } });
-      return;
-    }
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((en) => {
-        if (!en.isIntersecting) return;
-        const fig = en.target, spec = specs[fig.dataset.snap];
-        if (spec) { try { snapshot(fig, spec); fig.classList.add('rendered'); } catch (err) { console.error('snapshot', fig.dataset.snap, err); } }
-        pending.delete(fig); io.unobserve(fig);
-      });
-    }, { rootMargin: '300px 0px' });
-    figs.forEach((f) => io.observe(f));
-    let t = null;
-    const redo = () => { clearTimeout(t); t = setTimeout(() => figs.forEach((f) => { if (f.classList.contains('rendered')) { const s = specs[f.dataset.snap]; if (s) snapshot(f, s); } }), 250); };
-    window.addEventListener('resize', redo);
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redo);
-    new MutationObserver(redo).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-  }
 
   return { G, byId, MATS, createHero, mountSnapshots, weightsFor, A, finish, nodesWhere, group, region, hemi, rest, N };
 })();
