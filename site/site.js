@@ -10,7 +10,7 @@
     const fill = (id, n, html) => { $('n-' + id).textContent = n; $('list-' + id).innerHTML = html; };
     fill('fields', `${R.fields.length} fields · ${R.fields.reduce((a, f) => a + f.components.length, 0)} components`, R.fields.map((f) => `
       <div class="reg-item"><div class="reg-head"><code>${f.id}</code><span>${esc(f.doc)}</span></div>
-        <ul class="reg-comps">${f.components.map((c) => `<li><code>${c.id.replace(f.id + '.', '')}</code><small>${esc(c.units || '')}</small><span>${esc(c.doc)}</span></li>`).join('')}</ul></div>`).join(''));
+        <ul class="reg-comps">${f.components.map((c) => `<li><span class="comp-id"><code>${c.id.replace(f.id + '.', '')}</code>${c.units ? `<small>${esc(c.units)}</small>` : ''}</span><span>${esc(c.doc)}</span></li>`).join('')}</ul></div>`).join(''));
     fill('anatomy', `${R.anatomy.length} systems · ${R.anatomy.reduce((a, s) => a + s.labels.length, 0)} labels`, R.anatomy.map((a) => `
       <div class="reg-item"><div class="reg-head"><code>${a.id}</code><span>${esc(a.doc)}</span><small>${a.frame} · ${a.labels.length}</small></div>
         <p class="reg-labels">${a.labels.map((l) => `<span>${esc(l)}</span>`).join('')}</p></div>`).join(''));
@@ -19,7 +19,7 @@
     const ts = (s) => s >= 1 ? `${s} s` : s >= 1e-3 ? `${+(s * 1e3).toPrecision(3)} ms` : s >= 1e-6 ? `${+(s * 1e6).toPrecision(3)} µs` : `${+(s * 1e9).toPrecision(3)} ns`;
     fill('processes', `${R.processes.length}`, R.processes.map((p) => `
       <div class="reg-item"><div class="reg-head"><code>${p.id}</code><span>${esc(p.doc)}</span><small>${p.topology || ''}${p.timescale_s ? ' · ' + ts(p.timescale_s) : ''}</small></div>
-        <p class="reg-io"><span>${p.inputs.map((v) => `<code>${v}</code>`).join(' ')}</span><i>→</i><span>${p.outputs.map((v) => `<code>${v}</code>`).join(' ')}</span></p></div>`).join(''));
+        <p class="reg-io"><i>in</i><span>${p.inputs.map((v) => `<code>${v}</code>`).join(' ')}</span><i>out</i><span>${p.outputs.map((v) => `<code>${v}</code>`).join(' ')}</span></p></div>`).join(''));
   }
 
   // ---- the curriculum: one stage per row, a coloured dot on a rail, curved deps
@@ -66,71 +66,138 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawRail);
   }
 
-  // ---- the corpus as a deck of cards: horizontal, swipeable, in perspective
+  // ---- the corpus as an endless deck: one card in focus, the rest fanned
+  // behind it and fading out.  the list is a ring -- swiping never reaches an
+  // end -- so the cards are a small pool of elements re-filled as it turns,
+  // placed by transform rather than by scrolling six hundred of them.
   const deck = $('deck-scroll');
-  if (deck && window.IBM_CARDS) {
-    const cards = window.IBM_CARDS;
+  if (deck && window.IBM_CARDS && window.IBM_CARDS.length) {
+    const CARDS = window.IBM_CARDS, NC = CARDS.length;
     const pad = (n) => String(n).padStart(3, '0');
-    deck.innerHTML = cards.map((c) => `
-      <article class="card" data-access="${c.access}">
-        <a class="card-n" href="${c.url}" target="_blank" rel="noopener">#${pad(c.n)}</a>
-        <h4 class="card-title">${esc(c.title)}</h4>
-        <p class="card-desc">${esc(c.desc)}</p>
-      </article>`).join('');
-    const els = Array.from(deck.children);
-    const GAP = 18;
-    const step = () => (els[0] ? els[0].offsetWidth : 214) + GAP;   // a card and its gap
-    // the scroller runs the full width of the window rather than the text
-    // column, so no card is sliced off against a column edge.  the tail is
-    // half a window wide so the last card can still reach the centre; the
-    // lead-in is shorter, so the deck starts as a shelf rather than one card.
-    const host = deck.parentElement;
-    const fit = () => {
-      const vw = document.documentElement.clientWidth, centre = (vw - step() + GAP) / 2;
-      deck.style.width = vw + 'px';
-      deck.style.marginLeft = -host.getBoundingClientRect().left + 'px';
-      deck.style.paddingLeft = Math.max(12, Math.min(2.2 * step(), centre)) + 'px';
-      deck.style.paddingRight = Math.max(12, centre) + 'px';
+    const mod = (a, b) => ((a % b) + b) % b;
+    const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+    const pool = [];
+    let cardW = 214, pitch = 146, span = 4;      // span: cards from focus to invisible
+    let at = 0, vel = 0, snap = null, raf = null, drag = null, wheelT = null, dragEnded = 0;
+
+    const grow = (n) => {
+      while (pool.length < n) {
+        const el = document.createElement('article');
+        el.className = 'card';
+        el.innerHTML = '<a class="card-n" target="_blank" rel="noopener"></a><h4 class="card-title"></h4><p class="card-desc"></p>';
+        deck.appendChild(el);
+        pool.push({ el, n: el.querySelector('.card-n'), t: el.querySelector('.card-title'), d: el.querySelector('.card-desc'), idx: -1 });
+      }
+      while (pool.length > n) pool.pop().el.remove();
     };
-    let raf = null;
+    // the deck is as wide as the window, not the text column, so no card is cut
+    // off against a column edge; it fades out well before the page edge anyway.
+    const layout = () => {
+      const vw = document.documentElement.clientWidth;
+      deck.style.width = vw + 'px';
+      deck.style.marginLeft = -deck.parentElement.getBoundingClientRect().left + 'px';
+      if (!pool.length) grow(3);
+      cardW = pool[0].el.offsetWidth || 214;
+      pitch = cardW * 0.72;                      // the cards overlap: a denser fan
+      span = Math.max(3.2, (vw / 2 - cardW * 0.25) / pitch);
+      grow(Math.min(27, 2 * Math.ceil(span) + 3));
+    };
     const place = () => {
-      raf = null;
-      const half = deck.clientWidth / 2, mid = deck.scrollLeft + half, s = step();
-      const fade = 1.25 * s;  // a card leaves the fan before the edge, so none is cut by it
-      els.forEach((el) => {
-        const d = el.offsetLeft + el.offsetWidth / 2 - mid, off = Math.abs(d);
-        const o = Math.max(0, Math.min(1, (half - off) / fade));
-        if (o <= 0) { el.style.transform = ''; el.style.opacity = '0'; return; }
-        const t = Math.max(-1, Math.min(1, d / (2 * s)));
-        el.style.transform = `perspective(1100px) rotateY(${(-t * 42).toFixed(1)}deg) translateZ(${(-Math.abs(t) * 160).toFixed(0)}px)`;
-        el.style.opacity = o.toFixed(2);
-        el.style.zIndex = String(100 - Math.round(Math.abs(t) * 50));
+      const base = Math.round(at), frac = at - base, mid = (pool.length - 1) / 2;
+      pool.forEach((s, n) => {
+        const j = n - mid, k = j - frac, i = mod(base + j, NC);
+        if (s.idx !== i) {
+          const c = CARDS[i];
+          s.idx = i; s.n.textContent = '#' + pad(c.n); s.n.href = c.url;
+          s.t.textContent = c.title; s.d.textContent = c.desc; s.el.dataset.access = c.access;
+        }
+        const o = clamp(1.12 * (1 - Math.abs(k) / span), 0, 1);
+        s.el.style.opacity = o.toFixed(3);
+        s.el.hidden = o <= 0;
+        if (o <= 0) return;
+        const t = clamp(k / 2.4, -1, 1);
+        // the card in focus keeps a little clearance; behind it they pack tight
+        const x = k * pitch + (k < 0 ? -1 : 1) * Math.min(Math.abs(k), 1) * cardW * 0.1;
+        s.el.style.transform = `translateX(-50%) translateX(${x.toFixed(1)}px) rotateY(${(-t * 46).toFixed(1)}deg) translateZ(${(-Math.abs(t) * 170).toFixed(0)}px)`;
+        s.el.style.zIndex = String(100 - Math.round(Math.abs(k) * 10));
       });
     };
-    const schedule = () => { if (!raf) raf = requestAnimationFrame(place); };
-    deck.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', () => { fit(); schedule(); });
-    // drag to swipe with a mouse; touch scrolls natively
-    let drag = null;
-    deck.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') return; drag = { x: e.clientX, left: deck.scrollLeft, moved: false }; deck.classList.add('dragging'); });
-    deck.addEventListener('pointermove', (e) => { if (!drag) return; const dx = e.clientX - drag.x; if (Math.abs(dx) > 4) drag.moved = true; deck.scrollLeft = drag.left - dx; });
-    const end = () => { deck.classList.remove('dragging'); setTimeout(() => { drag = null; }, 0); };
-    deck.addEventListener('pointerup', end); deck.addEventListener('pointercancel', end); deck.addEventListener('pointerleave', end);
-    deck.addEventListener('click', (e) => { if (drag && drag.moved) e.preventDefault(); }, true);
-    fit(); place();
-    setTimeout(() => { fit(); place(); }, 300);
+    // momentum after a swipe, then a settle onto whichever card is nearest
+    const tick = () => {
+      raf = null;
+      if (snap != null) {
+        at += (snap - at) * 0.2;
+        if (Math.abs(snap - at) < 0.002) { at = snap; snap = null; }
+      } else if (Math.abs(vel) > 2e-4) {
+        at += vel; vel *= 0.93;
+        if (Math.abs(vel) <= 2e-4) { vel = 0; snap = Math.round(at); }
+      }
+      place();
+      if (snap != null || Math.abs(vel) > 2e-4) raf = requestAnimationFrame(tick);
+    };
+    const run = () => { if (!raf) raf = requestAnimationFrame(tick); };
+
+    deck.addEventListener('pointerdown', (e) => {
+      if (e.button) return;
+      deck.setPointerCapture(e.pointerId);
+      drag = { x: e.clientX, at, moved: false, t: performance.now(), v: 0 };
+      vel = 0; snap = null; deck.classList.add('dragging');
+    });
+    deck.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      const dx = e.clientX - drag.x, was = at, now = performance.now();
+      if (Math.abs(dx) > 4) drag.moved = true;
+      at = drag.at - dx / pitch;
+      drag.v = (at - was) / Math.max(8, now - drag.t) * 16;
+      drag.t = now;
+      place();
+    });
+    const release = () => {
+      if (!drag) return;
+      vel = clamp(drag.v, -0.5, 0.5);
+      if (Math.abs(vel) < 0.004) { vel = 0; snap = Math.round(at); }
+      if (drag.moved) dragEnded = performance.now();
+      drag = null; deck.classList.remove('dragging');
+      run();
+    };
+    deck.addEventListener('pointerup', release);
+    deck.addEventListener('pointercancel', release);
+    deck.addEventListener('click', (e) => { if (performance.now() - dragEnded < 120) e.preventDefault(); }, true);
+    // a horizontal wheel (or shift-wheel) turns the deck; a plain one scrolls the page
+    deck.addEventListener('wheel', (e) => {
+      const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : (e.shiftKey ? e.deltaY : 0);
+      if (!dx) return;
+      e.preventDefault();
+      snap = null; vel = 0; at += dx / pitch / 3; place();
+      clearTimeout(wheelT); wheelT = setTimeout(() => { snap = Math.round(at); run(); }, 140);
+    }, { passive: false });
+    deck.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      vel = 0; snap = Math.round(snap == null ? at : snap) + (e.key === 'ArrowRight' ? 1 : -1); run();
+    });
+    window.addEventListener('resize', () => { layout(); place(); });
+    layout(); place();
+    setTimeout(() => { layout(); place(); }, 300);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { layout(); place(); });
   }
 
   // ---- references: an underlined phrase opens a note with a link to read more
   const tip = $('tip');
   if (tip) {
     const text = tip.querySelector('.tip-text'), link = tip.querySelector('.tip-link');
+    const extra = tip.querySelector('.tip-extra');
     let current = null, hideT = null;
     const show = (el) => {
       clearTimeout(hideT);
       if (current && current !== el) current.classList.remove('is-open');
       current = el; el.classList.add('is-open');
       text.textContent = el.dataset.tip; link.href = el.href; link.textContent = el.dataset.doc;
+      // a note may carry a list of its own -- the models an explicit map can be
+      const list = el.dataset.tipList && document.getElementById(el.dataset.tipList);
+      extra.innerHTML = list ? list.innerHTML : '';
+      extra.hidden = !list;
+      tip.classList.toggle('tip-wide', !!list);
       tip.hidden = false;
       const r = el.getBoundingClientRect(), w = tip.offsetWidth;
       let x = r.left + window.scrollX; if (x + w > window.scrollX + window.innerWidth - 12) x = window.scrollX + window.innerWidth - 12 - w;

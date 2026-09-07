@@ -42,7 +42,7 @@
 <main id="paper" class="paper">
 
   <header class="masthead">
-    <p class="standfirst">The Implicit Brain Model (IBM-1) is a multimodal foundation model of whole-brain state and dynamics which can be <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization" data-doc="docs/ARCHITECTURE.md" data-tip="nothing is computed until a task asks for it — dependency tracing instantiates only what's reachable from the target">lazily</a> <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization" data-doc="docs/ARCHITECTURE.md" data-tip="an explicit model names a region, a resolution and a bandwidth, then traces which state and processes that actually requires">materialized</a> into explicit maps for training and applications. By learning a perspective-agnostic representation of the brain rather than one tied to a particular measurement modality, IBM-1 can train end-to-end across heterogeneous data sources that would otherwise be difficult or impossible to combine.</p>
+    <p class="standfirst">The Implicit Brain Model (IBM-1) is a multimodal foundation model of whole-brain state and dynamics which can be <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization" data-doc="docs/ARCHITECTURE.md" data-tip="nothing is computed until a task asks for it — dependency tracing instantiates only what's reachable from the target">lazily</a> <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization" data-doc="docs/ARCHITECTURE.md" data-tip="an explicit model names a region, a resolution and a bandwidth, then traces which state and processes that actually requires">materialized</a> into <a class="ref" href="#programme" data-doc="25 other models" data-tip="An explicit map is a runnable model traced out of the substrate: name a region, a resolution and a bandwidth, and only the state and processes that request actually reaches are instantiated. Among them:" data-tip-list="tip-maps">explicit maps</a> for training and applications. By learning a perspective-agnostic representation of the brain rather than one tied to a particular measurement modality, IBM-1 can train end-to-end across heterogeneous data sources that would otherwise be difficult or impossible to combine.</p>
   </header>
 
   <!-- §1 design -->
@@ -100,7 +100,7 @@
     <div class="margin"><span class="mono">§3</span><span>corpus and curriculum</span></div>
     <div class="body">
       <div class="deck" id="deck">
-        <div class="deck-scroll" id="deck-scroll"></div>
+        <div class="deck-scroll" id="deck-scroll" tabindex="0" role="group" aria-label="the corpus, card by card (drag, or use the arrow keys)"></div>
       </div>
       <div class="stages" id="dag" aria-label="the curriculum stages"></div>
     </div>
@@ -160,7 +160,9 @@
 
 </main>
 
-<div id="tip" class="tip" role="tooltip" hidden><span class="tip-text"></span><a class="tip-link" href="#"></a></div>
+<div id="tip" class="tip" role="tooltip" hidden><span class="tip-text"></span><div class="tip-extra" hidden></div><a class="tip-link" href="#"></a></div>
+
+<template id="tip-maps"><ul class="models"><li><a class="model" href="https://huggingface.co/jacobvaldez/ibm-1/blob/main/checkpoints/ibm1.m-multi.s300k.e128.k48.dyn-r4.obj-av+meg.vw1.step003000.git-unknown.pt"><span class="hf" aria-hidden="true">🤗</span><code>audio-visual + MEG predictor</code><b>(93.7M)</b></a></li><li><a class="model" href="https://huggingface.co/jacobvaldez/ibm-1/blob/main/checkpoints/ibm1.m-av.s250k.e128.k48.dyn-r4.obj-av.vw1.step019000.git-unknown.pt"><span class="hf" aria-hidden="true">🤗</span><code>audio-visual predictor</code><b>(68.9M)</b></a></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>EEG forward model</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>EEG to image decoder</code><b>(WIP)</b></span></li></ul></template>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="background.js"></script>

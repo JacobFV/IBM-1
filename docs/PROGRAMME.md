@@ -9,6 +9,9 @@ read this first, then `python -m ibm.curriculum` for the live frontier.
 
 ---
 
+the chronological record -- what was tried, what it measured, and the ledger of
+claims that were withdrawn -- is [LOG.md](LOG.md).
+
 ## 1. the one-paragraph version
 
 IBM-1 declares a brain once, as four primitives — fields, anatomy, topologies,
