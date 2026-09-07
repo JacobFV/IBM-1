@@ -1,0 +1,24 @@
+images (16540, 64, 64, 3) | evoked (16540, 64, 100) | pairs 16,540
+held-out zero baseline: 1.0458  (train 0-13,232, test 13,232-16,540, contiguous by image)
+params 7,199,883 (3,840,000 association)
+/home/brandonin/Documents/IBM-1/scripts/train_visual_evoked.py:139: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  "r_eff": r_eff, "v_absmax": float(s[0].abs().max()),
+    0  train 8.8963  held 22.4792  SKILL -20.495  r_eff  9.03  |v|   65.3       3s
+  100  train 1.3607  held 1.2316  SKILL -0.178  r_eff  1.17  |v|   65.6     206s
+  200  train 1.2096  held 1.2640  SKILL -0.209  r_eff  1.67  |v|   65.6     409s
+  300  train 1.1718  held 1.1717  SKILL -0.120  r_eff  1.96  |v|   65.7     611s
+  400  train 1.1346  held 1.2205  SKILL -0.167  r_eff  3.73  |v|   65.8     814s
+  500  train 1.1729  held 1.1627  SKILL -0.112  r_eff  2.73  |v|   66.0    1016s
+  600  train 1.1684  held 1.1138  SKILL -0.065  r_eff  3.18  |v|   66.1    1218s
+  700  train 1.1320  held 1.1295  SKILL -0.080  r_eff  6.38  |v|   66.2    1421s
+  800  train 1.1326  held 1.1130  SKILL -0.064  r_eff  5.62  |v|   66.4    1623s
+  900  train 1.2128  held 1.1387  SKILL -0.089  r_eff  5.58  |v|   66.7    1826s
+ 1000  train 1.0682  held 1.1129  SKILL -0.064  r_eff  3.69  |v|   66.9    2028s
+visual_evoked_v3.pt:   0%|          | 0.00/46.4M [00:00<?, ?B/s]visual_evoked_v3.pt:   1%|▏         | 655k/46.4M [00:00<00:09, 4.96MB/s]visual_evoked_v3.pt:   3%|▎         | 1.18M/46.4M [00:00<00:10, 4.15MB/s]visual_evoked_v3.pt:   4%|▍         | 1.97M/46.4M [00:00<00:09, 4.76MB/s]visual_evoked_v3.pt:   6%|▌         | 2.56M/46.4M [00:00<00:09, 4.83MB/s]visual_evoked_v3.pt:   7%|▋         | 3.34M/46.4M [00:00<00:07, 5.41MB/s]visual_evoked_v3.pt:   9%|▉         | 4.33M/46.4M [00:00<00:06, 6.15MB/s]visual_evoked_v3.pt:  12%|█▏        | 5.51M/46.4M [00:00<00:06, 6.42MB/s]visual_evoked_v3.pt:  15%|█▍        | 6.88M/46.4M [00:01<00:05, 6.62MB/s]visual_evoked_v3.pt:  18%|█▊        | 8.39M/46.4M [00:01<00:05, 7.16MB/s]visual_evoked_v3.pt:  20%|█▉        | 9.24M/46.4M [00:01<00:05, 7.09MB/s]visual_evoked_v3.pt:  22%|██▏       | 10.2M/46.4M [00:01<00:04, 7.25MB/s]visual_evoked_v3.pt:  24%|██▍       | 11.3M/46.4M [00:01<00:04, 7.81MB/s]visual_evoked_v3.pt:  27%|██▋       | 12.3M/46.4M [00:01<00:04, 7.80MB/s]visual_evoked_v3.pt:  29%|██▉       | 13.6M/46.4M [00:01<00:04, 7.90MB/s]visual_evoked_v3.pt:  32%|███▏      | 14.8M/46.4M [00:02<00:03, 8.01MB/s]visual_evoked_v3.pt:  35%|███▍      | 16.1M/46.4M [00:02<00:08, 3.43MB/s]visual_evoked_v3.pt:  43%|████▎     | 20.2M/46.4M [00:03<00:03, 6.60MB/s]visual_evoked_v3.pt:  47%|████▋     | 21.8M/46.4M [00:03<00:03, 6.80MB/s]visual_evoked_v3.pt:  50%|████▉     | 23.1M/46.4M [00:03<00:03, 6.57MB/s]visual_evoked_v3.pt:  53%|█████▎    | 24.7M/46.4M [00:03<00:03, 6.65MB/s]visual_evoked_v3.pt:  56%|█████▌    | 26.1M/46.4M [00:04<00:03, 6.64MB/s]visual_evoked_v3.pt:  59%|█████▉    | 27.5M/46.4M [00:04<00:02, 6.49MB/s]visual_evoked_v3.pt:  62%|██████▏   | 29.0M/46.4M [00:04<00:02, 6.63MB/s]visual_evoked_v3.pt:  65%|██████▌   | 30.4M/46.4M [00:04<00:02, 6.58MB/s]visual_evoked_v3.pt:  68%|██████▊   | 31.8M/46.4M [00:04<00:02, 6.74MB/s]visual_evoked_v3.pt:  70%|███████   | 32.5M/46.4M [00:05<00:03, 3.85MB/s]visual_evoked_v3.pt:  78%|███████▊  | 36.2M/46.4M [00:05<00:01, 6.56MB/s]visual_evoked_v3.pt:  81%|████████  | 37.7M/46.4M [00:05<00:01, 6.91MB/s]visual_evoked_v3.pt:  84%|████████▍ | 39.1M/46.4M [00:06<00:01, 7.19MB/s]visual_evoked_v3.pt:  87%|████████▋ | 40.5M/46.4M [00:06<00:00, 6.18MB/s]visual_evoked_v3.pt:  91%|█████████▏| 42.4M/46.4M [00:06<00:00, 6.98MB/s]visual_evoked_v3.pt:  94%|█████████▍| 43.9M/46.4M [00:06<00:00, 6.96MB/s]visual_evoked_v3.pt:  97%|█████████▋| 45.2M/46.4M [00:07<00:00, 6.24MB/s]visual_evoked_v3.pt: 100%|██████████| 46.4M/46.4M [00:07<00:00, 5.93MB/s]
+  uploaded jacob-valdez/ibm-1/checkpoints/ibm1.m-ve.s30k.e128.k48.dyn-r4.obj-evoked.vw1.step001000.git-2dd94f7.pt
+ 1100  train 1.1083  held 1.1086  SKILL -0.060  r_eff  6.93  |v|   67.1    2242s
+ 1200  train 1.1145  held 1.0515  SKILL -0.005  r_eff  6.16  |v|   67.5    2444s
+ 1300  train 1.0734  held 1.1335  SKILL -0.084  r_eff  7.86  |v|   67.6    2647s
+ 1400  train 1.1210  held 1.0895  SKILL -0.042  r_eff  8.61  |v|   68.3    2849s
+ 1500  train 1.1612  held 1.1178  SKILL -0.069  r_eff  5.87  |v|   70.5    3060s

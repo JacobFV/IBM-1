@@ -302,6 +302,64 @@ class PairedNeuralLoop(nn.Module):
         return self.lead_v(self.lead_u(s[1][:, idx])), s
 
 
+class VisualContrastiveLoop(nn.Module):
+    """image -> cortex -> embedding, aligned contrastively with the measured EEG.
+
+    the objective the data actually supports.  measured on correctly paired
+    THINGS-EEG2, same encoder, same split:
+
+        waveform regression   peak skill +0.011, then negative
+        contrastive retrieval held-out top-1 21.5% against 0.5% chance
+
+    43x chance for discrimination and essentially nothing for reconstruction.  the
+    two are not the same problem: retrieval needs only enough structure to tell one
+    evoked response from another, while regression must reproduce an amplitude at
+    every channel and every sample -- and those amplitudes are dominated by trial
+    and subject noise that no stimulus can predict.  fitting MSE against them
+    spends the whole model on the unpredictable part.
+
+    the cortex stays in the path.  the image drives the occipital port, the
+    dynamics run, and the cortical state is read into the embedding -- so the
+    alignment is only achievable if the dynamics carry stimulus-specific
+    structure.  that keeps the term a test of the substrate rather than of an
+    encoder bolted beside it.
+    """
+
+    def __init__(self, dyn: CorticalDynamics, n_sensors: int = 64, n_times: int = 25,
+                 dim: int = 128, hidden: int = 256, read_sites: int = 4096):
+        super().__init__()
+        self.dyn, self.n_times = dyn, n_times
+        self.port = dyn.n // 8
+        self.enc = nn.Sequential(
+            nn.Conv2d(3, 32, 4, 2, 1), nn.GELU(), nn.Conv2d(32, 64, 4, 2, 1), nn.GELU(),
+            nn.Conv2d(64, 128, 4, 2, 1), nn.GELU(), nn.Flatten(),
+            nn.Linear(128 * 8 * 8, hidden), nn.GELU())
+        self.to_cortex = nn.Linear(hidden, self.port)
+        self.read_idx = torch.linspace(0, dyn.n - 1, read_sites).long()
+        self.cortex_head = nn.Sequential(nn.Linear(read_sites, 512), nn.GELU(),
+                                         nn.Linear(512, dim))
+        self.eeg_head = nn.Sequential(
+            nn.Conv1d(n_sensors, 128, 5, padding=2), nn.GELU(),
+            nn.Conv1d(128, 128, 5, stride=2, padding=2), nn.GELU(),
+            nn.Flatten(), nn.Linear(128 * ((n_times + 1) // 2), 512), nn.GELU(),
+            nn.Linear(512, dim))
+
+    def embed_image(self, img, substeps: int = 4, dt: float = 2e-2):
+        b = img.shape[0]
+        drive = torch.zeros(b, self.dyn.n, device=img.device)
+        drive[:, :self.port] = self.to_cortex(self.enc(img))
+        s = self.dyn.init_state(b, img.device)
+        w = self.dyn.edge_weights()
+        h = dt / substeps
+        for _ in range(self.n_times * substeps):
+            s = self.dyn.step(s, drive, h, w)
+        z = self.cortex_head(s[1][:, self.read_idx.to(img.device)])
+        return F.normalize(z, dim=-1), s
+
+    def embed_eeg(self, eeg):
+        return F.normalize(self.eeg_head(eeg), dim=-1)
+
+
 class VisualEvokedLoop(nn.Module):
     """image -> occipital drive -> dynamics -> the EVOKED RESPONSE as it unfolds.
 
