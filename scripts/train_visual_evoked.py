@@ -57,6 +57,13 @@ def main() -> None:
                          "time dimension: this head runs the dynamics once per output "
                          "sample where every other head runs them once per example")
     ap.add_argument("--eval-every", type=int, default=100)
+    ap.add_argument("--crop-ms", type=float, default=500.0,
+                    help="keep 0..crop_ms of the epoch. the stored window is -200 to "
+                         "+790 ms, but this head's cost is LINEAR in the number of "
+                         "output samples -- it runs the dynamics once per sample -- and "
+                         "the pre-stimulus baseline is by construction signal-free while "
+                         "everything after ~500 ms is late/endogenous. cropping to the "
+                         "evoked window is a 2x saving that discards no evoked response")
     ap.add_argument("--ckpt", default="ckpt/visual_evoked.pt")
     ap.add_argument("--upload-every", type=int, default=1000)
     ap.add_argument("--out", default="out/visual_evoked.json")
@@ -68,7 +75,11 @@ def main() -> None:
     imgs = np.load(f"{D}/images_training.npy", mmap_mode="r")
     ev = np.load(f"{D}/evoked_training_groupmean.npy", mmap_mode="r")
     n = min(len(imgs), len(ev))
-    n_sensors, n_times = ev.shape[1], ev.shape[2] // a.decimate
+    # the stored epoch is -0.2..+0.79 s at 100 Hz.  index 20 is stimulus onset.
+    onset_i = 20
+    keep = int(round(a.crop_ms / 10.0))
+    n_sensors = ev.shape[1]
+    n_times = len(range(onset_i, min(onset_i + keep, ev.shape[2]), a.decimate))
     print(f"images {imgs.shape} | evoked {ev.shape} | pairs {n:,}", flush=True)
 
     # a robust scale, computed on the TRAIN portion only.  a scale fitted over the
@@ -83,7 +94,7 @@ def main() -> None:
 
     def target(i):
         y = (np.asarray(ev[i]).astype(np.float32) - med) / scale
-        return np.clip(y, -6.0, 6.0)[..., ::a.decimate]
+        return np.clip(y, -6.0, 6.0)[..., onset_i:onset_i + keep:a.decimate]
 
     base_zero = float((target(np.arange(n_train, n, 13)) ** 2).mean())
     print(f"held-out zero baseline: {base_zero:.4f}  "

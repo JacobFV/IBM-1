@@ -1,0 +1,8 @@
+images (16540, 64, 64, 3) | evoked (16540, 64, 100) | pairs 16,540
+held-out zero baseline: 1.0541  (train 0-13,232, test 13,232-16,540, contiguous by image)
+params 12,003,633 (7,680,000 association)
+/home/brandonin/Documents/IBM-1/scripts/train_visual_evoked.py:128: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  "r_eff": r_eff, "v_absmax": float(s[0].abs().max()),
+    0  train 8.4833  held 23.4966  SKILL -21.291  r_eff  5.47  |v|   65.4      26s
+  100  train 1.2364  held 1.2477  SKILL -0.184  r_eff  1.37  |v|   65.6    1719s

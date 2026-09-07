@@ -359,9 +359,10 @@ class VisualEvokedLoop(nn.Module):
         out = []
         # the stimulus arrives at t=0; the first samples are pre-stimulus baseline,
         # so no drive is delivered until the onset index.
-        onset = int(round(0.2 * self.n_times / 0.99))
+        # the target is cropped to begin at stimulus onset, so drive is present
+        # from the first sample; there is no baseline phase to withhold it for.
         for t in range(self.n_times):
-            d = drive if t >= onset else zero
+            d = drive
             for _ in range(substeps):
                 s = self.dyn.step(s, d, h, w)
             out.append(self.lead_v(self.lead_u(s[1][:, idx])))
