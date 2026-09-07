@@ -400,13 +400,12 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 
 /* ================================================================= models */
 .models { list-style: none; margin: 8px 0 0; padding: 8px 0 0; border-top: 1px solid var(--rule); display: grid; gap: 5px; }
-.models li { display: flex; align-items: baseline; gap: 8px; font-size: 0.8rem; min-width: 0; }
+.models li { min-width: 0; }
+.models .model { display: flex; align-items: baseline; gap: 8px; min-width: 0; width: 100%; font-size: 0.8rem; color: inherit; text-decoration: none; }
 .models code { font-size: 0.7rem; background: none; padding: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .models b { font-family: var(--mono); font-size: 0.7rem; font-weight: 500; color: var(--accent); margin-left: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.models i { font-family: var(--mono); font-style: normal; font-size: 0.58rem; letter-spacing: 0.12em; color: var(--muted); white-space: nowrap; }
-.models .wip code { color: var(--muted); }
-.models a.model { display: flex; align-items: baseline; gap: 8px; min-width: 0; width: 100%; text-decoration: none; }
-.models a.model:hover code { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 0.16em; }
+.models .wip b { color: var(--muted); }
+.models a.model:hover code { color: var(--accent); }
 .models .hf { font-size: 0.8rem; line-height: 1; }
 .models-note { font-size: 0.86rem; color: var(--muted); max-width: 68ch; margin: 0 0 8px; }
 
