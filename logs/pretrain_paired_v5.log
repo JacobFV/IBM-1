@@ -120,3 +120,4 @@ Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pyto
  2600  recon 1.60426  viab    0.000  r_eff    1.15  |v|max    93.2  xmod nan    2211s
  2625  recon 1.37411  viab    0.000  r_eff    1.17  |v|max    94.1  xmod nan    2230s
  2650  recon 1.67396  viab    0.000  r_eff    1.09  |v|max    94.3  xmod nan    2248s
+ 2675  recon 1.08342  viab    0.001  r_eff    1.10  |v|max    96.9  xmod nan    2265s
