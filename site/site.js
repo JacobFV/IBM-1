@@ -138,8 +138,8 @@
   if (!B) return;
   B.createHero({
     hero: $('hero'), canvas: $('hero-canvas'), svg: $('hero-leaders'), ring: $('ring'),
-    selTitle: $('sel-title'), selGroup: $('sel-group'), selDoc: $('sel-doc'), selMeta: $('sel-meta'),
-    inCol: $('inputs'), outCol: $('outputs'), closeBtn: $('sel-close'), hint: $('hero-hint'),
+    selTitle: $('sel-title'), selDoc: $('sel-doc'),
+    inCol: $('inputs'), outCol: $('outputs'), closeBtn: $('sel-close'),
   });
 
   const { A, finish, nodesWhere, group, rest, N } = B;

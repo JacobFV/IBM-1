@@ -26,9 +26,33 @@ window.IBMBrain = (function () {
   }
   const E = G.edges.length;
   const epos = new Float32Array(E * 6), ecol = new Float32Array(E * 6);
+  const ADJ = Array.from({ length: N }, () => []);
   for (let e = 0; e < E; e++) {
     const [a, b] = G.edges[e];
     for (let k = 0; k < 3; k++) { epos[6 * e + k] = pos[3 * a + k]; epos[6 * e + 3 + k] = pos[3 * b + k]; ecol[6 * e + k] = col[3 * a + k]; ecol[6 * e + 3 + k] = col[3 * b + k]; }
+    ADJ[a].push(b); ADJ[b].push(a);
+  }
+  // shortest hop path from src to dst over the model's own edges (BFS); `within`
+  // restricts the walk to a node set so a pulse stays inside its materialization.
+  function bfsPath(src, dst, within) {
+    if (src === dst) return [src];
+    const prev = new Int32Array(N).fill(-1), seen = new Uint8Array(N);
+    seen[src] = 1;
+    const q = [src];
+    for (let qi = 0; qi < q.length && !seen[dst]; qi++) {
+      const nb = ADJ[q[qi]];
+      for (let i = 0; i < nb.length; i++) {
+        const v = nb[i];
+        if (seen[v] || (within && !within.has(v))) continue;
+        seen[v] = 1; prev[v] = q[qi];
+        if (v === dst) break;
+        q.push(v);
+      }
+    }
+    if (!seen[dst]) return null;
+    const path = [dst];
+    for (let u = dst; u !== src; ) { u = prev[u]; path.push(u); }
+    return path.reverse();
   }
   const cortexIndex = new Uint16Array(G.cortex_faces.flat());
   // hulls: non-indexed triangles over node positions, remembering which node each vertex is
@@ -359,52 +383,123 @@ window.IBMBrain = (function () {
   }
 
   // --- pulses ---------------------------------------------------------------
-  // a pulse is a short trail moving along one arc from an input node, over
-  // the model's focus, to an output node.  ~3 s each, spawned continuously
-  // while a materialization is selected, cyan on the way in, amber on the way out.
+  // a signal travels the model's own wiring: a short lead from the input's
+  // sensor or region to the nearest node with real edges, a shortest hop path
+  // over those edges toward the output, then a short lead back out. the head
+  // of each trail is a light; every node it passes blips once as it arrives,
+  // so the pulse reads as flowing through the mesh, not floating past it.
   function makePulses(S) {
     const IN = [0.39, 0.83, 0.9], OUT = [0.94, 0.7, 0.29];
-    const TRAIL = 8, MAXP = Math.floor(S.PN / TRAIL);
-    const live = [];
+    const TRAIL = 6, MOVE_MAX = 40, MOVE_N = MOVE_MAX * TRAIL, FLASH_N = S.PN - MOVE_N;
+    const live = [], flashes = [];
     let model = null, spawnAt = 0;
     const world = (p) => toWorld(p);
-    const arc = (a, b) => {
-      // an arc over the surface: the midpoint pushed away from the brain's centre
-      const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
-      const L = Math.hypot(m[0], m[1], m[2]) || 1;
-      const d = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
-      const k = (Math.max(95, L) + d * 0.25) / L;
-      return [m[0] * k, m[1] * k, m[2] * k];
-    };
-    const bez = (a, c, b, t) => { const u = 1 - t; return [u * u * a[0] + 2 * u * t * c[0] + t * t * b[0], u * u * a[1] + 2 * u * t * c[1] + t * t * b[1], u * u * a[2] + 2 * u * t * c[2] + t * t * b[2]]; };
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    function set(m) { model = m; live.length = 0; }
+    const lerpc = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+
+    function traversable(m) {
+      if (m._travArr) return m._travArr;
+      const set_ = new Set();
+      m._inv.forEach((i) => { if (ADJ[i].length) set_.add(i); });
+      if (set_.size < 8) m._hot.forEach((i) => { if (ADJ[i].length) set_.add(i); });
+      m._trav = set_; m._travArr = Array.from(set_);
+      return m._travArr;
+    }
+    function nearestOn(anchor, arr) {
+      let best = arr[0], bd = Infinity;
+      for (let i = 0; i < arr.length; i++) {
+        const p = G.nodes[arr[i]].p, d = (p[0] - anchor[0]) ** 2 + (p[1] - anchor[1]) ** 2 + (p[2] - anchor[2]) ** 2;
+        if (d < bd) { bd = d; best = arr[i]; }
+      }
+      return best;
+    }
+    // where a signal enters/leaves the mesh: on it already, or a lead in from an anchor
+    function endpoint(x, trav, travArr) {
+      const onMesh = (x._nodes || []).filter((i) => trav.has(i));
+      if (onMesh.length) return { lead: null, node: pick(onMesh) };
+      return { lead: x.anchor, node: nearestOn(x.anchor, travArr) };
+    }
+    function set(m) { model = m; live.length = 0; flashes.length = 0; }
     function spawn(now) {
-      const ins = model.inputs.filter((x) => x._nodes.length), outs = model.outputs.filter((x) => x._nodes.length);
-      const src = ins.length ? world(G.nodes[pick(pick(ins)._nodes)].p) : world(pick(model.inputs).anchor);
-      const dst = outs.length ? world(G.nodes[pick(pick(outs)._nodes)].p) : world(model.focus_anchor);
-      const mid = world(G.nodes[pick(model._hot)].p);
-      live.push({ t0: now, dur: 2600 + Math.random() * 1200, a: src, c1: arc(src, mid), m: mid, c2: arc(mid, dst), b: dst });
+      traversable(model);
+      const trav = model._trav, travArr = model._travArr;
+      if (!travArr.length) return;
+      const ins = model.inputs.filter((x) => (x._nodes && x._nodes.length) || x.anchor);
+      const outs = model.outputs.filter((x) => (x._nodes && x._nodes.length) || x.anchor);
+      if (!ins.length || !outs.length) return;
+      const from = endpoint(pick(ins), trav, travArr), to = endpoint(pick(outs), trav, travArr);
+      let path = bfsPath(from.node, to.node, trav) || bfsPath(from.node, to.node, null) || [from.node, to.node];
+      if (path.length > 44) {
+        // an even subsample keeps long crossings a fixed, readable length
+        const keep = [path[0]], step = (path.length - 1) / 43;
+        for (let k = 1; k < 43; k++) keep.push(path[Math.round(k * step)]);
+        keep.push(path[path.length - 1]);
+        path = keep;
+      }
+      const wp = [], nodeAt = [];
+      if (from.lead) { wp.push(world(from.lead)); nodeAt.push(-1); }
+      path.forEach((i) => { wp.push(world(G.nodes[i].p)); nodeAt.push(i); });
+      if (to.lead) { wp.push(world(to.lead)); nodeAt.push(-1); }
+      if (wp.length < 2) return;
+      const segLen = []; let total = 0;
+      for (let k = 0; k < wp.length - 1; k++) { const d = Math.hypot(wp[k][0] - wp[k + 1][0], wp[k][1] - wp[k + 1][1], wp[k][2] - wp[k + 1][2]) || 0.001; segLen.push(d); total += d; }
+      const dur = Math.max(900, Math.min(5200, total / 0.1));
+      live.push({ t0: now, dur, wp, segLen, total, nodeAt, seg: 0, lastSeg: -1, hop: 0 });
+    }
+    // world position at fraction u along the whole lead-path-lead route
+    function posOnPath(p, u) {
+      const target = u * p.total; let acc = 0;
+      for (let k = 0; k < p.segLen.length; k++) {
+        const d = p.segLen[k];
+        if (acc + d >= target || k === p.segLen.length - 1) {
+          const t = d > 0 ? Math.min(1, Math.max(0, (target - acc) / d)) : 1;
+          p.seg = k;
+          return lerpc(p.wp[k], p.wp[k + 1], t);
+        }
+        acc += d;
+      }
+      p.seg = p.segLen.length - 1;
+      return p.wp[p.wp.length - 1];
+    }
+    function pushFlash(node, u, now) {
+      if (node < 0 || flashes.length >= FLASH_N) return;
+      const c = u < 0.5 ? IN : OUT;
+      flashes.push({ t0: now, dur: 340, p: world(G.nodes[node].p), c });
     }
     function tick(now, S_) {
-      if (model && now > spawnAt && live.length < MAXP) { spawn(now); spawnAt = now + 140 + Math.random() * 120; }
-      for (let i = live.length - 1; i >= 0; i--) if (now - live[i].t0 > live[i].dur) live.splice(i, 1);
+      if (model && now > spawnAt && live.length < MOVE_MAX) { spawn(now); spawnAt = now + 160 + Math.random() * 140; }
+      for (let i = live.length - 1; i >= 0; i--) {
+        const p = live[i];
+        if (now - p.t0 > p.dur) { pushFlash(p.nodeAt[p.nodeAt.length - 1], 1, now); live.splice(i, 1); }
+      }
+      for (let i = flashes.length - 1; i >= 0; i--) if (now - flashes[i].t0 > flashes[i].dur) flashes.splice(i, 1);
       S_.setPulses((pos, col, size, w, PN) => {
         w.fill(0);
         live.forEach((p, k) => {
-          const u = (now - p.t0) / p.dur;
+          const u = Math.min(1, (now - p.t0) / p.dur);
           for (let j = 0; j < TRAIL; j++) {
-            const uu = u - j * 0.012;
+            const uu = u - j * 0.02;
             const idx = k * TRAIL + j;
-            if (uu < 0 || uu > 1) { w[idx] = 0; continue; }
-            const q = uu < 0.5 ? bez(p.a, p.c1, p.m, uu * 2) : bez(p.m, p.c2, p.b, (uu - 0.5) * 2);
-            pos[3 * idx] = q[0]; pos[3 * idx + 1] = q[1]; pos[3 * idx + 2] = q[2];
+            if (uu < 0 || uu > 1) continue;
+            const at = posOnPath(p, uu);
+            if (j === 0 && p.seg > p.lastSeg) {
+              for (let s = Math.max(0, p.lastSeg + 1); s <= p.seg; s++) { if (p.hop++ % 2 === 0) pushFlash(p.nodeAt[s], uu, now); }
+              p.lastSeg = p.seg;
+            }
+            pos[3 * idx] = at[0]; pos[3 * idx + 1] = at[1]; pos[3 * idx + 2] = at[2];
             const mixc = Math.min(1, Math.max(0, (uu - 0.35) / 0.3));
             col[3 * idx] = IN[0] + (OUT[0] - IN[0]) * mixc; col[3 * idx + 1] = IN[1] + (OUT[1] - IN[1]) * mixc; col[3 * idx + 2] = IN[2] + (OUT[2] - IN[2]) * mixc;
-            const fade = Math.min(1, uu * 8) * Math.min(1, (1 - uu) * 8);
-            size[idx] = (j === 0 ? 5.2 : 3.6 - j * 0.35);
-            w[idx] = (j === 0 ? 1 : 0.7 - j * 0.08) * fade;
+            const fade = Math.min(1, uu * 10) * Math.min(1, (1 - uu) * 10);
+            size[idx] = (j === 0 ? 4.4 : 3.0 - j * 0.32);
+            w[idx] = (j === 0 ? 1 : 0.6 - j * 0.09) * fade;
           }
+        });
+        flashes.forEach((f, k) => {
+          const idx = MOVE_N + (k % FLASH_N), u = (now - f.t0) / f.dur, fade = 1 - u;
+          pos[3 * idx] = f.p[0]; pos[3 * idx + 1] = f.p[1]; pos[3 * idx + 2] = f.p[2];
+          col[3 * idx] = f.c[0]; col[3 * idx + 1] = f.c[1]; col[3 * idx + 2] = f.c[2];
+          size[idx] = 6 + u * 4.5;
+          w[idx] = Math.max(w[idx], fade * fade * 0.95);
         });
       });
     }
@@ -413,7 +508,7 @@ window.IBMBrain = (function () {
 
   // --- the interactive opener -------------------------------------------
   function createHero(els) {
-    const { hero, canvas, svg, ring, selTitle, selGroup, selDoc, selMeta, inCol, outCol, closeBtn, hint } = els;
+    const { hero, canvas, svg, ring, selTitle, selDoc, inCol, outCol, closeBtn } = els;
     ensureMarkers(svg);
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -541,12 +636,7 @@ window.IBMBrain = (function () {
       anim.start(weightsFor(id, false), { origin: m.focus_anchor, base: 500, spread: 900, baseDelay: 350 });
       ringItems.forEach((it) => it.el.classList.toggle('is-active', it.m.id === id));
       selTitle.textContent = m.id.replace(/_/g, ' ');
-      selGroup.textContent = m.group_title;
       selDoc.textContent = m.doc;
-      const dt = m.window_dt_s;
-      const dtText = dt >= 1 ? `${dt} s` : dt >= 1e-3 ? `${+(dt * 1e3).toPrecision(3)} ms` : dt >= 1e-6 ? `${+(dt * 1e6).toPrecision(3)} µs` : `${+(dt * 1e9).toPrecision(3)} ns`;
-      const regions = m.regions.length ? m.regions.join(', ') : (m.systems.length ? m.systems.join(', ') : m.supports.join(', ') || 'whole substrate');
-      selMeta.innerHTML = `<span><b>names</b> ${regions}</span><span><b>window</b> ${m.window_n} × ${dtText}</span><span><b>nodes lit</b> ${m._hot.length} of ${N}</span>`;
       buildAnnotations(m);
       setTimeout(() => { if (state.selected === id) pulses.set(m); }, reduceMotion ? 0 : 900);
       const f = focusAzimuth(m.focus_anchor);
@@ -633,7 +723,6 @@ window.IBMBrain = (function () {
     resize(); orbit.dist = orbit.tDist; placeCamera(camera, orbit.az, orbit.el, orbit.dist);
     requestAnimationFrame(frame);
     hero.classList.add('ready');
-    if (hint) setTimeout(() => hint.classList.add('fade'), 9000);
     const hash = new URLSearchParams(location.hash.slice(1)).get('m');
     if (hash && byId[hash]) select(hash);
     return { select, deselect };
