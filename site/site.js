@@ -30,24 +30,24 @@
     stages.forEach((s) => d(s.id));
     const order = stages.slice().sort((a, b) => depth[a.id] - depth[b.id] || stages.indexOf(a) - stages.indexOf(b));
     const NOTE = {
-      's0.gain': 'the divergence was a declaration problem: gain was per edge and a node has 4118 incoming edges. association transfer now divides by fan-in.',
-      's0.window': 'selecting the nonlinearity gives the graph a 1.5 s memory, longer than half the window. τ = 0.30 s puts the slow oscillation in band and the plan clears.',
-      's1.regime': 'fitted, not argued: the slow-oscillation peak across eight scored N3 nights is 1.000 ± 0.296 Hz, and τ = 0.12 s puts the model there with a 43.5 mV swing.',
-      's2.spectra': 'the existing values are scalp quantities reported as cortical. redo; do not inherit. the global joint fit is falsified and is not to be re-attempted.',
-      's3.paired': 'cochleagram to MEG through the cortex. the variance gate passed and the rank gate failed, which is the decorative-cortex signature; the honest skill is at chance.',
-      's4.selfsup': '20,000 steps: reconstruction 1.77 → 0.185 while effective rank rose 1.42 → 2.97.',
-      's4b.crossmodal': 'occipito-temporal weights at 4.4× the random-pair baseline, but severing every long-range edge costs +0.1%. magnitude is not contribution.',
-      's4c.longrange': 'long-range edges took the local distance prior and started 7× weaker. they now take a flat patchy prior; the ablation has to be re-run to confirm severing them costs.',
-      's5.ablate': 'the pivotal node. bypass +324%, frozen +180%, association zeroed +180%, local only +0.1%. the cortex is load-bearing and its long-range half is inert.',
-      's6.scale': 'eleven minutes of one film is memorization territory. data binds the first milestone, not compute.',
-      's7.joint': 'one substrate, two likelihood terms, a single optimizer step. at 250k sites the shared kernel is 32.0M and the heads 12.9M.',
-      's8.curriculum': 'predictive loss alone is a capture curriculum. select where error is high and declining; hold one expansion measure out of the loss.',
-      's9.rl': 'needs the regime stage for attractors to exist at all, and basal ganglia, hippocampal indexing and replay, whose anatomy is declared and whose processes are not written.',
+      's0.gain': 'early on, the simulation kept blowing up. the cause: signal strength was set per connection, and some spots in the model have thousands of connections feeding into them at once, so their combined signal was way too strong. the fix scales each connection down by how many others feed into the same place.',
+      's0.window': 'the model needs to remember enough of the recent past to catch a slow brain rhythm, without wasting effort holding onto more than that. giving it about a third of a second of memory turned out to be the sweet spot.',
+      's1.regime': 'real deep-sleep recordings show the brain\'s slowest wave rising and falling about once per second — measured across eight nights of sleep, not assumed. tuning the model\'s internal timing to match produces waves of a realistic size.',
+      's2.spectra': 'some of the frequency numbers used so far were actually measured at the scalp, then mislabeled as if they described activity inside the brain — so they need to be re-measured properly. an earlier attempt to fit everything in one shot turned out wrong and will not be repeated.',
+      's3.paired': 'this stage tries to predict real brain-scan recordings straight from sound. it looked promising by one measure, but a stricter check showed it wasn\'t really learning anything yet — just dressing up its numbers. honestly scored, it currently does no better than a coin flip.',
+      's4.selfsup': 'the model was trained to guess what happens next in audio and video it has already seen, with no answer key. over the course of training it got substantially better at that guessing game, and started drawing on a richer variety of internal patterns to do it.',
+      's4b.crossmodal': 'the connections linking the model\'s vision areas to its hearing and memory areas did grow noticeably stronger than chance would predict. but cutting those same long-distance connections barely changed performance — so despite looking meaningful, they are not yet doing real work.',
+      's4c.longrange': 'the model\'s long-distance connections were starting out far too weak, because they inherited an assumption meant for short, local ones. they now start from a fairer baseline, and the earlier cutting test needs to be re-run to see whether it matters now.',
+      's5.ablate': 'the key question: does the shared brain-like core actually matter, or could it be skipped? removing it, freezing it, or switching off what it had learned to associate all made the model much worse — so it clearly matters. but its long-distance wiring specifically isn\'t pulling its weight yet.',
+      's6.scale': 'training on just eleven minutes of one film risks the model simply memorizing that clip rather than learning general patterns. more computing power won\'t fix that — what\'s needed next is more varied footage.',
+      's7.joint': 'the model learns from two different kinds of data — video and brain recordings — at the same time, in one combined update, instead of alternating between them. most of its parameters are shared across both; only a smaller piece is specific to each.',
+      's8.curriculum': 'training only on whatever is easiest to predict lets a model coast on shortcuts. instead, examples are chosen where it is still making mistakes but steadily improving, and progress is checked against a separate measure that isn\'t part of what it\'s optimizing for.',
+      's9.rl': 'this stage — teaching the model to act toward a goal through trial and reward — can\'t start until earlier stages give it stable internal "concepts" to reason with, and until the brain regions for habit, memory, and replaying past experience, which exist only as placeholders today, are actually built.',
     };
     const num = (id) => id.replace(/^s/, '').split('.')[0];
     dagEl.innerHTML = `<svg class="rail" aria-hidden="true"></svg><ol>${order.map((s) => `
       <li class="stage ${s.status}" data-id="${s.id}"><span class="dot">${s.status === 'done' ? '<svg viewBox="0 0 16 16"><path d="M3.5,8.5 l3,3 l6,-7"/></svg>' : num(s.id)}</span>
-        <div class="stage-text"><h4>${esc(s.title)}<small>${s.status === 'ready' ? 'runnable' : s.status === 'failed' ? 'gate failed' : s.status}</small></h4><p>${esc(NOTE[s.id] || '')}</p><p class="gate">gate · ${esc(s.gate)}</p></div></li>`).join('')}</ol>`;
+        <div class="stage-text"><h4>${esc(s.title)}<small>${s.status === 'ready' ? 'runnable' : s.status === 'failed' ? 'gate failed' : s.status}</small></h4><p>${esc(NOTE[s.id] || '')}</p></div></li>`).join('')}</ol>`;
     const rail = dagEl.querySelector('.rail');
     const drawRail = () => {
       const box = dagEl.getBoundingClientRect();
@@ -73,25 +73,22 @@
     const pad = (n) => String(n).padStart(3, '0');
     deck.innerHTML = cards.map((c) => `
       <article class="card" data-access="${c.access}">
-        <div class="card-top"><a class="card-n" href="${c.url}" target="_blank" rel="noopener">#${pad(c.n)}</a><span class="card-access">${esc(c.access)}</span></div>
+        <a class="card-n" href="${c.url}" target="_blank" rel="noopener">#${pad(c.n)}</a>
         <h4 class="card-title">${esc(c.title)}</h4>
-        <p class="card-prov">${esc(c.provider)}</p>
         <p class="card-desc">${esc(c.desc)}</p>
-        <p class="card-use">${c.use.map((u) => `<span>${esc(u)}</span>`).join('')}<span class="card-streams">${c.streams} stream${c.streams === 1 ? '' : 's'}</span></p>
       </article>`).join('');
-    const held = cards.filter((c) => c.access === 'held').length;
-    $('deck-count').textContent = `${held} held · ${cards.filter((c) => c.binding === 'bound').length} bound`;
     const els = Array.from(deck.children);
+    const FADE = 1.2;
     let raf = null;
     const place = () => {
       raf = null;
       const mid = deck.scrollLeft + deck.clientWidth / 2;
       els.forEach((el) => {
         const c = el.offsetLeft + el.offsetWidth / 2, dx = (c - mid) / deck.clientWidth;
-        if (Math.abs(dx) > 1.2) { el.style.transform = ''; el.style.opacity = '0'; return; }
+        if (Math.abs(dx) > FADE) { el.style.transform = ''; el.style.opacity = '0'; return; }
         const t = Math.max(-1, Math.min(1, dx * 1.6));
         el.style.transform = `perspective(1100px) rotateY(${(-t * 42).toFixed(1)}deg) translateZ(${(-Math.abs(t) * 160).toFixed(0)}px)`;
-        el.style.opacity = (1 - Math.abs(t) * 0.45).toFixed(2);
+        el.style.opacity = Math.max(0, 1 - Math.abs(dx) / FADE).toFixed(2);
         el.style.zIndex = String(100 - Math.round(Math.abs(t) * 50));
       });
     };
@@ -105,9 +102,6 @@
     const end = () => { deck.classList.remove('dragging'); setTimeout(() => { drag = null; }, 0); };
     deck.addEventListener('pointerup', end); deck.addEventListener('pointercancel', end); deck.addEventListener('pointerleave', end);
     deck.addEventListener('click', (e) => { if (drag && drag.moved) e.preventDefault(); }, true);
-    const step = () => (els[0] ? els[0].offsetWidth + 18 : 240) * 3;
-    $('deck-prev').addEventListener('click', () => deck.scrollBy({ left: -step(), behavior: 'smooth' }));
-    $('deck-next').addEventListener('click', () => deck.scrollBy({ left: step(), behavior: 'smooth' }));
     place();
     setTimeout(place, 300);
   }
@@ -168,7 +162,6 @@
       ]),
     },
     materialize: { model: 'eeg_forward', az: -0.5, el: 0.28, dist: 440, aspect: 0.62, annotations: () => A.model_io('eeg_forward') },
-    meg: { model: 'meg_to_text', az: -1.35, el: 0.18, dist: 430, aspect: 0.62, annotations: () => A.model_io('meg_to_text') },
     l_forward: { model: 'eeg_forward', az: -0.6, el: 0.3, dist: 470, aspect: 0.8 },
     l_decode: { model: 'meg_to_text', az: -1.3, el: 0.2, dist: 470, aspect: 0.8 },
     l_stim: { model: 'tms_response', az: -0.9, el: 0.55, dist: 470, aspect: 0.8 },

@@ -47,7 +47,7 @@
 
   <header class="masthead">
     <p class="standfirst">ibm-1 declares a brain once — fields, anatomy, topologies, processes — and <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md" data-doc="docs/ARCHITECTURE.md" data-tip="the four primitives, materialization, and why resolution earns its cost">materializes task-specific models from it lazily</a>. an EEG forward model, a hemodynamic model and an audio-visual predictor are projections of one parameter set.</p>
-    <p class="standfirst-2">the bet: most of the model is shared, so every corpus constrains every task. so far it stands. <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/TRAINING.md" data-doc="docs/TRAINING.md" data-tip="the runs, the ablation table, and what each run actually showed">bypassing the shared cortex costs 324% more loss</a>.</p>
+    <p class="standfirst-2">the central hypothesis is architectural: most of the model is shared, so every corpus constrains every task. it has held under test — <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/TRAINING.md" data-doc="docs/TRAINING.md" data-tip="the runs, the ablation table, and what each run actually showed">bypassing the shared cortex costs 324% more loss</a>.</p>
   </header>
 
   <figure class="stats" aria-label="what has been built">
@@ -108,10 +108,6 @@
         </tbody>
       </table>
       </div>
-      <figure class="snap" data-snap="meg">
-        <canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div>
-        <figcaption><b>fig. 3</b> <code>meg_to_text</code>, the anchor: a real head's MEG prices any cortical state that does not produce that field. skill is reported against a zero baseline on a guarded contiguous split.</figcaption>
-      </figure>
     </div>
   </section>
 
@@ -120,7 +116,6 @@
     <div class="margin"><span class="mono">§3</span><span>corpus and curriculum</span></div>
     <div class="body">
       <div class="deck" id="deck">
-        <div class="deck-head"><a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/EVIDENCE.md" data-doc="docs/EVIDENCE.md" data-tip="the evidence inventory: datasets, atlases, tools and what each constrains">601 source cards</a><span class="deck-count" id="deck-count"></span><span class="deck-nav"><button type="button" id="deck-prev" aria-label="previous">←</button><button type="button" id="deck-next" aria-label="next">→</button></span></div>
         <div class="deck-scroll" id="deck-scroll"></div>
       </div>
       <div class="stages" id="dag" aria-label="the curriculum stages"></div>
@@ -132,32 +127,25 @@
   <section class="sec sec-lineup" id="programme">
     <div class="margin"><span class="mono">§4</span><span>what is being built</span></div>
     <div class="body body-wide">
-      <p class="lede">six lines of work, each a different instrument pressed against the same parameter set.</p>
       <div class="lineup">
         <article class="line">
           <figure class="snap snap-small" data-snap="l_forward"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
           <div class="line-text">
             <span class="mono">forward models</span>
-            <h3>every instrument, from the same tissue</h3>
-            <p>EEG, MEG, ECoG, laminar LFP, fNIRS and BOLD as observations of ordinary state. <code>eeg_forward</code> solves a real 60-channel boundary-element lead field.</p>
-            <ul class="models"><li><a class="model" href="https://huggingface.co/brandonin/ibm-1/blob/main/checkpoints/ibm1.m-multi.s300k.e128.k48.dyn-r4.obj-av+meg.vw1.step003000.git-unknown.pt" title="ibm1.m-multi.s300k.e128.k48.dyn-r4.obj-av+meg.vw1.step003000.git-unknown.pt"><span class="hf" aria-hidden="true">🤗</span><code>ibm1.m-multi.s300k.e128.k48.dyn-r4.obj-av+meg</code><b>(93.7M)</b></a></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>eeg_forward</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>meg_forward</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>bold_forward</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>fnirs_forward</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>ecog_forward</code><b>(WIP)</b></span></li></ul>
+            <ul class="models"><li><a class="model" href="https://huggingface.co/jacobvaldez/ibm-1/blob/main/checkpoints/ibm1.m-multi.s300k.e128.k48.dyn-r4.obj-av+meg.vw1.step003000.git-unknown.pt" title="ibm1.m-multi.s300k.e128.k48.dyn-r4.obj-av+meg.vw1.step003000.git-unknown.pt"><span class="hf" aria-hidden="true">🤗</span><code>ibm1.m-multi.s300k.e128.k48.dyn-r4.obj-av+meg</code><b>(93.7M)</b></a></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>eeg_forward</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>meg_forward</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>bold_forward</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>fnirs_forward</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>ecog_forward</code><b>(WIP)</b></span></li></ul>
           </div>
         </article>
         <article class="line">
           <figure class="snap snap-small" data-snap="l_decode"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
           <div class="line-text">
             <span class="mono">decoding</span>
-            <h3>stimulus and language through the cortex</h3>
-            <p><code>meg_to_text</code>, <code>speech_envelope</code>, <code>eeg_to_image</code>, <code>inner_speech</code>, sharing the sensory chain with the forward models.</p>
-            <ul class="models"><li><a class="model" href="https://huggingface.co/brandonin/ibm-1/blob/main/checkpoints/ibm1.m-av.s250k.e128.k48.dyn-r4.obj-av.vw1.step019000.git-unknown.pt" title="ibm1.m-av.s250k.e128.k48.dyn-r4.obj-av.vw1.step019000.git-unknown.pt"><span class="hf" aria-hidden="true">🤗</span><code>ibm1.m-av.s250k.e128.k48.dyn-r4.obj-av</code><b>(68.9M)</b></a></li><li><a class="model" href="https://huggingface.co/brandonin/ibm-1/blob/main/checkpoints/ibm1.m-multi.s250k.e128.k48.dyn-r4.obj-av+meg.vw1.step004000.git-unknown.pt" title="ibm1.m-multi.s250k.e128.k48.dyn-r4.obj-av+meg.vw1.step004000.git-unknown.pt"><span class="hf" aria-hidden="true">🤗</span><code>ibm1.m-multi.s250k.e128.k48.dyn-r4.obj-av+meg</code><b>(78.6M)</b></a></li><li><a class="model" href="https://huggingface.co/brandonin/ibm-1/blob/main/checkpoints/ibm1.m-p.s150k.e128.k48.dyn-r4.obj-meg.vw1.step008500.git-64118c1.pt" title="ibm1.m-p.s150k.e128.k48.dyn-r4.obj-meg.vw1.step008500.git-64118c1.pt"><span class="hf" aria-hidden="true">🤗</span><code>ibm1.m-p.s150k.e128.k48.dyn-r4.obj-meg</code><b>(26.4M)</b></a></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>meg_to_text</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>speech_envelope</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>eeg_to_image</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>inner_speech</code><b>(WIP)</b></span></li></ul>
+            <ul class="models"><li><a class="model" href="https://huggingface.co/jacobvaldez/ibm-1/blob/main/checkpoints/ibm1.m-av.s250k.e128.k48.dyn-r4.obj-av.vw1.step019000.git-unknown.pt" title="ibm1.m-av.s250k.e128.k48.dyn-r4.obj-av.vw1.step019000.git-unknown.pt"><span class="hf" aria-hidden="true">🤗</span><code>ibm1.m-av.s250k.e128.k48.dyn-r4.obj-av</code><b>(68.9M)</b></a></li><li><a class="model" href="https://huggingface.co/jacobvaldez/ibm-1/blob/main/checkpoints/ibm1.m-multi.s250k.e128.k48.dyn-r4.obj-av+meg.vw1.step004000.git-unknown.pt" title="ibm1.m-multi.s250k.e128.k48.dyn-r4.obj-av+meg.vw1.step004000.git-unknown.pt"><span class="hf" aria-hidden="true">🤗</span><code>ibm1.m-multi.s250k.e128.k48.dyn-r4.obj-av+meg</code><b>(78.6M)</b></a></li><li><a class="model" href="https://huggingface.co/jacobvaldez/ibm-1/blob/main/checkpoints/ibm1.m-p.s150k.e128.k48.dyn-r4.obj-meg.vw1.step008500.git-64118c1.pt" title="ibm1.m-p.s150k.e128.k48.dyn-r4.obj-meg.vw1.step008500.git-64118c1.pt"><span class="hf" aria-hidden="true">🤗</span><code>ibm1.m-p.s150k.e128.k48.dyn-r4.obj-meg</code><b>(26.4M)</b></a></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>meg_to_text</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>speech_envelope</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>eeg_to_image</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>inner_speech</code><b>(WIP)</b></span></li></ul>
           </div>
         </article>
         <article class="line">
           <figure class="snap snap-small" data-snap="l_stim"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
           <div class="line-text">
             <span class="mono">stimulation</span>
-            <h3>TMS, tES, focused ultrasound, DBS</h3>
-            <p>an intervention is clamped state, not an input. a coil's field at 20 µs, a transducer's pressure at 100 ns, a lead's potential 100 µm from its contacts.</p>
             <ul class="models"><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>tms_response</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>tes_response</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>tfus_response</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>dbs_response</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>tms_eeg_tep</code><b>(WIP)</b></span></li></ul>
           </div>
         </article>
@@ -165,8 +153,6 @@
           <figure class="snap snap-small" data-snap="l_state"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
           <div class="line-text">
             <span class="mono">state and disorder</span>
-            <h3>sleep, anaesthesia, seizure, pharmacology</h3>
-            <p>slow thalamocortical trajectories as neuromodulator fields. <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/STATE.md" data-doc="docs/STATE.md" data-tip="the state document: every measured number and the claims that failed">the slow oscillation is fitted, not argued</a>.</p>
             <ul class="models"><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>sleep_dynamics</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>anesthesia</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>seizure_propagation</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>pharmaco</code><b>(WIP)</b></span></li></ul>
           </div>
         </article>
@@ -174,8 +160,6 @@
           <figure class="snap snap-small" data-snap="l_body"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
           <div class="line-text">
             <span class="mono">the embodied loop</span>
-            <h3>arrays, effectors, a body to close on</h3>
-            <p>implanted arrays write motor drive into 96 named muscles through 58 nerve trunks with fibre-class delays; <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/EMBODIMENT.md" data-doc="docs/EMBODIMENT.md" data-tip="the periphery: muscles, nerves, reflex arcs and the simulator contract">a 483-port interface a simulator can plug into</a>.</p>
             <ul class="models"><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>invasive_bci</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>handwriting_bci</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>motor_mapping</code><b>(WIP)</b></span></li></ul>
           </div>
         </article>
@@ -183,15 +167,10 @@
           <figure class="snap snap-small" data-snap="l_surrogate"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
           <div class="line-text">
             <span class="mono">surrogates</span>
-            <h3>the cheap views</h3>
-            <p>parcel-level neural masses built to run ten thousand times; resting-state, coarse in space and band. cheap is a materialization choice, not another model.</p>
             <ul class="models"><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>macro_surrogate</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>connectome_gnn</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>encoding_model</code><b>(WIP)</b></span></li><li class="wip"><span class="model"><span class="hf" aria-hidden="true">🤗</span><code>resting_state_fc</code><b>(WIP)</b></span></li></ul>
           </div>
         </article>
       </div>
-
-      <p class="models-note">trained weights publish to <a href="https://huggingface.co/brandonin/ibm-1">huggingface.co/brandonin/ibm-1</a>, named by modality, site count, embedding, degree, dynamics revision, objective and git sha; each link is that run's latest checkpoint. WIP entries are declared and build, but have no trained weights yet.</p>
-      <p class="body-para">it runs on two GB10 boxes at 300k sites, 93.7M parameters, 2.3 s per step. the binding constraint is data, not compute: eleven minutes of one film, and a 200 GB-a-day connection. next comes naturalistic video at scale, the ablation re-run against the corrected long-range prior, the four subcortical processes whose anatomy is declared and unwired, and fitting θ into the multistable regions of parameter space, without which nothing cognitive means anything.</p>
     </div>
   </section>
 

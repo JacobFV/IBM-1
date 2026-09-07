@@ -518,8 +518,7 @@ window.IBMBrain = (function () {
       const make = (colEl, item, kind) => {
         const el = document.createElement('div');
         el.className = 'ann ann-' + kind + (item.kind === 'intervention' ? ' ann-int' : '');
-        const eyebrow = kind === 'in' ? (item.kind === 'intervention' ? 'clamped' : 'observed') : (item.field || 'target');
-        el.innerHTML = `<span class="ann-kind">${eyebrow}</span><span class="ann-label">${item.label}</span><span class="ann-id">${item.id}</span>`;
+        el.innerHTML = `<span class="ann-label">${item.label}</span><span class="ann-id">${item.id}</span>`;
         colEl.appendChild(el);
         annItems.push({ el, svg: makeAnnotationSVG(svg, 'ann-' + kind), anchor: item.anchor, _nodes: item._nodes, kind, side: kind === 'in' ? 'l' : 'r' });
       };
@@ -687,7 +686,7 @@ window.IBMBrain = (function () {
       list.forEach((a, k) => {
         const el = document.createElement('div');
         el.className = 'ann ann-snap ann-' + (a.cls || 'note'); el.dataset.side = side;
-        el.innerHTML = (a.kind_label ? `<span class="ann-kind">${a.kind_label}</span>` : '') + `<span class="ann-label">${a.label}</span>` + (a.sub ? `<span class="ann-id">${a.sub}</span>` : '');
+        el.innerHTML = `<span class="ann-label">${a.label}</span>` + (a.sub ? `<span class="ann-id">${a.sub}</span>` : '');
         el.style.top = Math.round(gap * (k + 1)) + 'px';
         v.labels.appendChild(el);
         a.svg = makeAnnotationSVG(v.svg, 'ann-' + (a.cls || 'note'));

@@ -40,6 +40,7 @@ versioned in the same repo as the weights: a checkpoint trained before
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -60,6 +61,16 @@ REPO_ID = "jacob-valdez/ibm-1"
 
 
 def git_sha() -> str:
+    """the ontology commit these weights were trained against.
+
+    IBM_GIT_SHA is honoured first because the remote box holds no git repository:
+    28 of 66 published checkpoints carry `git-unknown` for that reason alone, and
+    a checkpoint whose declaration cannot be identified is not reproducible.  the
+    launcher passes the sha it has.
+    """
+    env = os.environ.get("IBM_GIT_SHA", "").strip()
+    if env:
+        return env[:7]
     try:
         return subprocess.check_output(["git", "rev-parse", "--short=7", "HEAD"],
                                        text=True).strip()
