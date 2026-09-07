@@ -166,7 +166,7 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 .ann-col-out .ann-col-title { color: var(--out); }
 .ann-col > div { display: flex; flex-direction: column; gap: 12px; }
 .ann-col-out > div { align-items: flex-end; }
-.ann { display: grid; gap: 2px; padding: 8px 10px; border-left: 1px solid var(--in); background: rgba(7, 9, 15, 0.45); backdrop-filter: blur(4px); max-width: 24ch;
+.ann { display: grid; gap: 2px; padding: 4px 10px; border-left: 1px solid var(--in); max-width: 24ch;
   animation: ann-in 0.6s 0.9s cubic-bezier(.2,.7,.2,1) both; }
 .ann-out { border-left: 0; border-right: 1px solid var(--out); text-align: right; }
 .ann-int { border-left-color: var(--clamp); }
@@ -313,7 +313,7 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 .snap canvas { display: block; width: 100%; height: var(--snap-h, auto); }
 .snap .leaders { position: absolute; left: 0; top: 0; width: 100%; height: var(--snap-h, 100%); pointer-events: none; }
 .snap-labels { position: absolute; inset: 0; height: var(--snap-h, 100%); pointer-events: none; }
-.snap .ann-snap { position: absolute; transform: translateY(-50%); animation: none; max-width: 21ch; background: var(--fig-panel); backdrop-filter: blur(3px); color: var(--fig-note); }
+.snap .ann-snap { position: absolute; transform: translateY(-50%); animation: none; max-width: 21ch; color: var(--fig-note); }
 .snap .ann-snap[data-side="l"] { left: 10px; }
 .snap .ann-snap[data-side="r"] { right: 10px; border-left: 0; border-right: 1px solid currentColor; text-align: right; }
 .snap .ann-snap.ann-in { border-color: var(--fig-in); } .snap .ann-snap.ann-in .ann-kind { color: var(--fig-in); }

@@ -486,13 +486,22 @@ window.IBMBrain = (function () {
       if (side === 'r') return [r.left - h.left - 4, y];
       return [r.left - h.left + r.width / 2, r.top - h.top + (r.top - h.top < h.height / 2 ? r.height + 2 : -2)];
     }
-    const up = new THREE.Vector3(), tmp = new THREE.Vector3();
-    function silhouette(t) {
-      const [cx0, cy0] = project(cx);
-      up.set(0, 1, 0).applyQuaternion(camera.quaternion);
-      const w = toWorld(cx); tmp.set(w[0] + up.x * 78, w[1] + up.y * 78, w[2] + up.z * 78).project(camera);
-      const r = Math.hypot((tmp.x * 0.5 + 0.5) * W - cx0, (-tmp.y * 0.5 + 0.5) * H - cy0);
-      return [cx0 + r * 1.02 * Math.cos(t), cy0 + r * 0.98 * Math.sin(t), 0];
+    // where the brain's outline is along a ray from its centre: the farthest
+    // projected tissue node within a narrow band of the ray, so the arrow lands
+    // on the silhouette as it currently stands, not on a bounding ellipse.
+    const TISSUE = nodesWhere((i) => group[i] !== 'eeg' && group[i] !== 'meg' && group[i] !== 'retina' && group[i] !== 'cochlea' && group[i] !== 'spinal');
+    const px_ = new Float32Array(TISSUE.length), py_ = new Float32Array(TISSUE.length);
+    function projectTissue() { for (let k = 0; k < TISSUE.length; k++) { const q = project(G.nodes[TISSUE[k]].p); px_[k] = q[0]; py_[k] = q[1]; } }
+    function reach(ox, oy, dx, dy) {
+      const band = 11; let best = 0, far = 0;
+      for (let k = 0; k < TISSUE.length; k++) {
+        const ax = px_[k] - ox, ay = py_[k] - oy, along = ax * dx + ay * dy;
+        if (along > far) far = along;
+        if (along <= best) continue;
+        if (Math.abs(ax * dy - ay * dx) > band) continue;
+        best = along;
+      }
+      return (best || far) + 4;
     }
 
     // selected mode annotations
@@ -561,14 +570,17 @@ window.IBMBrain = (function () {
       const compact = hero.classList.contains('compact');
       const ctx = { project, w: W, h: H, centre: [W / 2, H / 2] };
       if (!state.selected) {
+        if (!compact) projectTissue();
+        const [ox, oy] = project(cx);
         ringItems.forEach((it) => {
           if (compact) { it.line.setAttribute('d', ''); return; }
           const hovered = state.hover === it.m.id;
           if (hovered) { it.line.setAttribute('d', ''); return; }
-          const [ax, ay, az] = it.m.whole ? silhouette(it.t) : project(it.m.focus_anchor);
           const [x0, y0] = edgePoint(it.el, it.side);
-          it.line.setAttribute('d', curve(x0, y0, ax, ay, 0.16, [W / 2, H / 2]));
-          it.line.style.opacity = az > 1 ? 0 : '';
+          const L = Math.hypot(x0 - ox, y0 - oy) || 1, dx = (x0 - ox) / L, dy = (y0 - oy) / L;
+          const r = reach(ox, oy, dx, dy);
+          it.line.setAttribute('d', curve(x0, y0, ox + dx * r, oy + dy * r, 0.12, [W / 2, H / 2]));
+          it.line.style.opacity = '';
         });
         if (hoverAnn.item && !compact) {
           const [x0, y0] = edgePoint(hoverAnn.item.el, hoverAnn.item.side);

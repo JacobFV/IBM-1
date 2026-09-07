@@ -1,0 +1,31 @@
+# ibm-1 source card. schema: data/schema/source.schema.json
+id: things-images
+title: THINGS -- 1,854 object concepts, 26,107 naturalistic object images
+provider: THINGS initiative (Hebart et al., NIMH)
+urls:
+- https://osf.io/jum2f/
+- https://doi.org/10.1371/journal.pone.0223792
+origin_kind: sourced
+access: held
+binding: bound
+local_root: data/sources/things-images/raw
+licence:
+  name: research and non-commercial use only
+  redistribution: forbidden without permission of the image owners
+  commercial: forbidden
+  notes: >
+    the image archive is password-protected and the password file IS the licence
+    agreement: use for research and non-commercial purposes, no distribution and
+    no alteration without the owner's permission.  that is compatible with this
+    programme -- the images are training input for a research model, they live
+    under a gitignored raw/ directory, and nothing derived from them
+    redistributes them.  the metadata and features carry CC-BY separately.
+citation_required: true
+citations:
+- Hebart M.N. et al. THINGS: A database of 1,854 object concepts and more than 26,000
+  naturalistic object images. PLoS ONE 14(10):e0223792 (2019).
+- Stoinski L.M., Perkuhn J. & Hebart M.N. THINGSplus. Behav Res 56, 1583-1603 (2024).
+purpose: >
+  the stimulus half of THINGS-EEG2.  the EEG is meaningless without the images that
+  evoked it, and this is the visual-pathway counterpart to the audiobook that
+  LibriBrain's MEG was recorded against.
