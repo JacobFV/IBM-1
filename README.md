@@ -47,9 +47,13 @@ python -m ibm.curriculum                                       # the training DA
   overnight recordings is **1.000 ± 0.296 Hz**; one declared parameter — the
   adaptation time constant — reproduces exactly 1.000 Hz at 0.12 s, with a 43.5 mV
   swing.
-- **Cross-modal association is learned.** Occipito-temporal edge weights reach
-  **4.4×** the random-pair baseline, signed, from a joint audio-visual
-  materialisation over one substrate.
+- **The cortex beats the encoder it was meant to merely not obstruct.** Image →
+  cortical dynamics → embedding, contrastively aligned with measured 64-channel EEG
+  (THINGS-EEG2), concept-disjoint held-out split: **26.6% top-1 over 20 pools of
+  200 — 53× chance**, against a dynamics-free control reaching 21.5% on the same
+  pairs. Bypassing the dynamics retains 41%; freezing the learned association
+  retains 65%, and that association's contribution grew 15% → 24% → 35% over one
+  run as it trained.
 - **A body to inhabit.** 96 named muscles with nerve and root levels, 58 nerve
   trunks with fibre-class-resolved conduction (group Ia at 6 ms against
   unmyelinated C at 550 ms down the same sciatic nerve), four spinal reflex arcs,
@@ -63,18 +67,25 @@ python -m ibm.curriculum                                       # the training DA
 
 Stated plainly, because the next report has to be consistent with this one:
 
-- **no task performance yet** — stimulus→brain skill hovers at chance
+- **retrieval, not reconstruction** — the visual result above is discrimination.
+  Waveform regression on the same data peaks at skill **+0.011**; speech→MEG peaks
+  at **+0.036**. Those are the ceilings, and no head here beats them.
 - **no video generation** — predictions reproduce frame statistics, not content
 - **single-seed** — nothing here is replicated across seeds
-- **11 minutes of video** — data, not compute, binds the next milestone
+- **11 minutes of video** — data, not compute, binds the self-supervised milestone
 
-Four confident internal results were overturned by measurement during the build: a
-collapsing representation, a diffusion operator masquerading as a connectivity
-kernel, an objective driving the model outside physiological range, and a loss
-computed in the wrong units that flattered itself by 280×. Each was caught by an
-instrument built to catch it. **`ibm/evaluate.py` reports every metric as skill
-against explicit baselines, including trivial ones, because a trivial baseline is
-what caught the worst of them.**
+**Ten** confident internal results have been overturned by measurement so far, and
+[`docs/LOG.md`](docs/LOG.md) keeps the ledger with the check that caught each one.
+They share a shape: a quantity computed correctly and then compared against the
+wrong thing — the wrong population, the wrong units, the wrong split, or no
+baseline. Not one was a modelling error. The worst was a loss computed in the
+wrong units that flattered itself by 280× while never beating a zero baseline; the
+largest was an image-EEG pairing that was 99.94% wrong and produced three hours of
+confident negative results about a corpus that was fine.
+
+**`ibm/evaluate.py` reports every metric as skill against explicit baselines,
+including trivial ones, because a trivial baseline is what caught the worst of
+them.**
 
 ## Layout
 
@@ -84,7 +95,7 @@ ibm/            the declaration: fields, anatomy, topologies, processes, registr
   curriculum.py the training DAG, with gates as predicates
 scripts/        materialisation, fitting, training, acquisition, evaluation
 docs/           ARCHITECTURE · DYNAMICS · ONTOLOGY · EMBODIMENT · CURRICULUM ·
-                TRAINING · PROGRAMME · EVIDENCE · STATE · RELEASE
+                TRAINING · PROGRAMME · LOG · EVIDENCE · STATE · RELEASE
 data/sources/   601 source cards; payloads under raw/ (gitignored)
 ```
 
