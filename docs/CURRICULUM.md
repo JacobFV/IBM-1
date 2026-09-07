@@ -289,6 +289,9 @@ place of TRIBEv2.
 what was actually RUN, and what it showed, is [TRAINING.md](TRAINING.md).
 this document is the plan; that one is the record.
 
+programme-level orientation -- what exists, the compute it runs on, and the
+anticipated trajectory -- is [PROGRAMME.md](PROGRAMME.md).
+
 ## 5. the critical path
 
 1. **stage 0** — solver convergence. blocks everything
