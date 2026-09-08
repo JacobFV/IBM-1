@@ -73,13 +73,18 @@ python -m ibm.curriculum                                       # the training DA
   | association zeroed | 28.0% | 44% |
   | dynamics bypassed | 26.0% | 41% |
 
-  Read down the column: the dynamics without a learned kernel are worth 2 points
-  over no dynamics at all, a *randomly initialised* association is worth nothing
-  beyond that — and learning it is worth **35 points**. Inside a model that has
-  one, the learned cortico-cortical connectivity is the largest single
-  contributor by a wide margin. That is a narrower claim than the one above it:
-  the substrate earns its keep within this model without being the best way to
-  read EEG.
+  Read down the column: learning the association is worth **35 points** here.
+  Measured across training stages and scales, though, that figure is a property
+  of *how long the model trained*, not of the architecture — at step 1,800 the
+  learned association is worth nothing measurable, and it grows to 15, then 25,
+  then 35 points.
+
+  The stable quantity is different. What the dynamics add over their own bypass
+  is **34–37.5 points in every checkpoint measured**, across a 3× range of
+  training and a 5× range of substrate size. What grows is the *bypass* — the
+  encoder learns a shortcut around the dynamics (6.5% → 10.5% → 26.0%), which is
+  why the substrate's apparent "share" falls with training even though its
+  contribution does not.
 - **A body to inhabit.** 96 named muscles with nerve and root levels, 58 nerve
   trunks with fibre-class-resolved conduction (group Ia at 6 ms against
   unmyelinated C at 550 ms down the same sciatic nerve), four spinal reflex arcs,

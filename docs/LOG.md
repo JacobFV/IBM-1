@@ -38,6 +38,50 @@ already written.
 
 ---
 
+## 2026-09-08 — the dynamics contribute a constant amount; the bypass is learned
+
+evaluating four checkpoints on the designated test set — two scales and three
+training stages — separates two things that had been reported as one.
+
+| model | step | full | frozen | bypass | dynamics pts | dyn share | assoc pts |
+|---|---|---|---|---|---|---|---|
+| 30k | 1800 | 40.5 | 43.0 | 6.5 | 34.0 | 84% | **-2.5** |
+| 30k | 3600 | 47.0 | 32.0 | 10.5 | 36.5 | 78% | 15.0 |
+| 150k | 2500 | 45.5 | 20.5 | 8.5 | 37.0 | 81% | 25.0 |
+| 30k | 5800 | 63.5 | 28.0 | 26.0 | 37.5 | 59% | 35.5 |
+
+**the dynamics contribute 34-37.5 points in every row.** across a 3x range of
+training and a 5x range of substrate size, what the cortex adds over its own
+bypass barely moves. that is a far more stable quantity than anything else here.
+
+**what moves is the bypass, and it is LEARNED**: 6.5 -> 10.5 -> 26.0 as the 30k
+model trains, a factor of four. so the "dynamics share" falling from 84% to 59%,
+which was recorded earlier as a point against the substrate, is not the dynamics
+weakening. it is the encoder progressively learning a shortcut around them while
+their own contribution stays flat. those are different mechanisms and only the
+second is happening.
+
+**at step 1800 the learned association is worth nothing measurable** — frozen
+(43.0) is 2.5 points ABOVE full (40.5), which at n = 200 is 0.72 sd and therefore
+indistinguishable, but it is certainly not the "largest single contributor" the
+README claimed on the strength of the 5800 checkpoint. that contribution grows
+with training: -2.5, then 15.0, then 35.5. the compounding story holds; the claim
+that it is a property of the architecture rather than of a training stage does
+not.
+
+on scale: the 150k model at step 2500 (45.5%) sits between the 30k model at 1800
+and 3600, so **5x the sites buys nothing on accuracy at matched steps** while
+costing 11x per step. one thing does favour it: its learned association carries
+25.0 points against 15.0 for 30k at a comparable stage, and its bypass is weaker
+(8.5 against 10.5). more substrate does put more of the work into the substrate.
+that is the scaling argument, and it is about where the computation sits rather
+than about the score.
+
+the run is left going, because it is the only model in the 10-100M band and it is
+still climbing (20.44% on the trainsplit holdout at 2500, best so far). but it is
+not yet earning its compute on accuracy, and that should be said plainly rather
+than discovered later.
+
 ## 2026-09-07 (night, later) — on the designated test set the cortex does not beat the control
 
 **the README's headline claim does not survive the corpus's own test set.**
