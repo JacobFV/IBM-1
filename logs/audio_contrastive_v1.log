@@ -1,0 +1,46 @@
+3,526,485 samples (235 min) | 306 ch | win 250 (1000 ms) | params 16,695,787 (3,840,000 association) | pool 200, chance 0.50% | CONTROL CEILING 7.12% (14.2x)
+/home/brandonin/Documents/IBM-1/scripts/train_audio_contrastive.py:151: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"{step:5d}  loss {float(loss):.4f}  top-1 {100*top1:5.2f}% "
+    0  loss 4.1590  top-1  0.50% +/-0.00  (1.0x)  r_eff  3.43       9s  <- best, checkpointed
+  200  loss 4.1589  top-1  0.50% +/-0.00  (1.0x)  r_eff  2.16     268s
+  400  loss 4.1589  top-1  0.50% +/-0.00  (1.0x)  r_eff  1.91     525s
+  600  loss 4.1589  top-1  0.50% +/-0.00  (1.0x)  r_eff  1.14     782s
+  800  loss 4.1589  top-1  0.50% +/-0.00  (1.0x)  r_eff  1.10    1040s
+ 1000  loss 3.7049  top-1  1.62% +/-0.48  (3.2x)  r_eff  1.26    1298s  <- best, checkpointed
+ 1200  loss 3.6994  top-1  2.25% +/-0.79  (4.5x)  r_eff  1.57    1555s  <- best, checkpointed
+ 1400  loss 3.4215  top-1  3.19% +/-0.86  (6.4x)  r_eff  1.39    1812s  <- best, checkpointed
+ 1600  loss 3.5637  top-1  2.69% +/-0.70  (5.4x)  r_eff  1.35    2069s
+ 1800  loss 3.7405  top-1  2.69% +/-0.70  (5.4x)  r_eff  1.41    2327s
+ 2000  loss 3.6421  top-1  3.00% +/-1.27  (6.0x)  r_eff  1.60    2583s
+ 2200  loss 3.4376  top-1  3.31% +/-0.56  (6.6x)  r_eff  1.69    2841s  <- best, checkpointed
+ 2400  loss 3.5130  top-1  4.37% +/-0.93  (8.7x)  r_eff  1.62    3098s  <- best, checkpointed
+ 2600  loss 3.5602  top-1  3.81% +/-1.41  (7.6x)  r_eff  1.79    3355s
+ 2800  loss 3.4831  top-1  3.81% +/-0.83  (7.6x)  r_eff  1.74    3612s
+ 3000  loss 3.5899  top-1  4.94% +/-1.21  (9.9x)  r_eff  1.76    3962s  <- best, checkpointed
+ 3200  loss 3.5822  top-1  3.75% +/-1.46  (7.5x)  r_eff  1.56    4219s
+ 3400  loss 3.4236  top-1  3.56% +/-0.88  (7.1x)  r_eff  1.59    4475s
+ 3600  loss 3.2513  top-1  4.75% +/-1.06  (9.5x)  r_eff  1.66    4732s
+ 3800  loss 3.4479  top-1  4.50% +/-0.61  (9.0x)  r_eff  1.77    4988s
+ 4000  loss 3.3527  top-1  5.25% +/-0.71  (10.5x)  r_eff  1.75    5245s  <- best, checkpointed
+ 4200  loss 3.3358  top-1  4.87% +/-1.11  (9.7x)  r_eff  1.85    5502s
+ 4400  loss 3.1794  top-1  5.31% +/-1.27  (10.6x)  r_eff  1.89    5759s  <- best, checkpointed
+ 4600  loss 3.4059  top-1  4.25% +/-1.22  (8.5x)  r_eff  1.96    6016s
+ 4800  loss 3.2654  top-1  5.37% +/-1.49  (10.7x)  r_eff  1.73    6273s  <- best, checkpointed
+ 5000  loss 3.2639  top-1  4.87% +/-1.27  (9.7x)  r_eff  1.84    6530s
+ 5200  loss 3.3183  top-1  4.87% +/-1.22  (9.7x)  r_eff  1.92    6787s
+ 5400  loss 3.1748  top-1  5.94% +/-1.63  (11.9x)  r_eff  1.87    7044s  <- best, checkpointed
+ 5600  loss 3.4025  top-1  4.81% +/-1.32  (9.6x)  r_eff  1.74    7334s
+ 5800  loss 2.9503  top-1  5.50% +/-0.71  (11.0x)  r_eff  1.87    7592s
+ 6000  loss 3.2583  top-1  5.31% +/-1.56  (10.6x)  r_eff  1.89    7850s
+ 6200  loss 3.2434  top-1  4.56% +/-1.42  (9.1x)  r_eff  1.89    8108s
+ 6400  loss 3.4159  top-1  5.81% +/-1.52  (11.6x)  r_eff  2.04    8358s
+ 6600  loss 3.1824  top-1  6.75% +/-2.18  (13.5x)  r_eff  1.77    8712s  <- best, checkpointed
+ 6800  loss 3.4862  top-1  6.31% +/-1.37  (12.6x)  r_eff  1.83    9227s
+ 7000  loss 3.0265  top-1  5.06% +/-1.16  (10.1x)  r_eff  1.81    9543s
+ 7200  loss 3.2623  top-1  5.25% +/-1.09  (10.5x)  r_eff  1.83    9785s
+ 7400  loss 3.0975  top-1  4.69% +/-0.86  (9.4x)  r_eff  1.95   10030s
+ 7600  loss 2.8237  top-1  4.75% +/-1.22  (9.5x)  r_eff  2.19   10273s
+ 7800  loss 3.2023  top-1  5.94% +/-1.16  (11.9x)  r_eff  2.20   10518s
+ 8000  loss 3.2347  top-1  5.44% +/-1.70  (10.9x)  r_eff  1.90   10762s
+best 6.75% (13.5x) against a control ceiling of 7.12% (14.2x)

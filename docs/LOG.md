@@ -38,6 +38,36 @@ already written.
 
 ---
 
+## 2026-09-08 — the auditory cortex term matches its own ceiling, and no more
+
+the first auditory term with the cortex in the path finished 8,000 steps on the
+repaired corpus. best held-out **6.75% ± 2.18** (13.5x chance) at step 6,600,
+against the dynamics-free control's **7.12% ± 1.71** (14.2x).
+
+the gap is 0.37 points against a combined sd of 2.07 — **0.18 sd**. the two are
+indistinguishable. the cortex neither beats its control nor loses to it.
+
+that is the same verdict the visual branch received yesterday on the designated
+test set, arrived at independently on a different modality: the substrate matches
+a purpose-built encoder rather than beating it. two modalities, two controls, the
+same answer. the pattern is now the finding, and any claim that the substrate
+*outperforms* a task-specific baseline should be treated as withdrawn until
+something measures otherwise.
+
+what is NOT withdrawn is the ablation result, which asks a different question and
+still says the dynamics do the work *inside* a model that has them.
+
+the term is worth keeping for the reason the architecture exists: it is one
+parameter set shared with the visual term, not a second encoder. matching a
+specialist while sharing a substrate is the actual bet. but it is a weaker claim
+than the one this branch was set up to make, and the run does not yet test it --
+the shared-substrate version is the next thing to build.
+
+one caveat on the number: 200 ms windows reached 4.62% and 1 s reached 7.12% for
+the control, so window length matters more than anything else measured here. the
+cortex term used 1 s. a longer window has not been tried and is the cheapest
+remaining lever.
+
 ## 2026-09-08 — the dynamics contribute a constant amount; the bypass is learned
 
 evaluating four checkpoints on the designated test set — two scales and three
