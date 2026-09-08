@@ -651,6 +651,101 @@ class VideoLoop(nn.Module):
         return self.dec(self.from_cortex(read)), s
 
 
+class VideoViaEEGLoop(nn.Module):
+    """frame -> cortex -> SENSOR PROJECTION -> next frame.
+
+    every other head in this file reads the cortical state directly.  this one
+    does not: the decoder sees only what a sensor array can see of the cortex --
+    `n_sensors` channels through a rank-limited lead field -- and has to
+    reconstruct frame t+H from that alone.  the cortical state is never handed to
+    it.
+
+    that makes the neural readout **load-bearing for the video task** rather than
+    a second head hanging off a shared trunk.  if the projection carries nothing
+    about the stimulus, the video prediction fails, and no amount of decoder
+    capacity rescues it.  in the ordinary paired setup the neural head can sit at
+    chance for 26,000 steps while the video branch trains happily around it, which
+    is exactly what m-multi did.
+
+    **what this can and cannot claim.**  nothing here supervises the projection
+    against measured EEG -- there is no corpus with simultaneous film and
+    recording -- so the 64 channels are not "EEG" in any measured sense.  what is
+    load-bearing is the *lead-field readout*: the claim under test is that what
+    the sensors can observe of the cortex suffices to continue the film.  calling
+    it an EEG prediction without that qualifier would be the kind of claim this
+    project keeps having to withdraw.
+
+    two comparisons make the number mean something, and both are cheap:
+
+    *the direct loop* (`VideoLoop`, recon 0.011 at 40k steps) reads the cortical
+    state with no bottleneck at all.  it is the upper bound.
+
+    *a random projection of identical width* (`--control random`) replaces the
+    learned lead field with a frozen random matrix.  without it, a good result
+    would only show that a 64 x T bottleneck is wide enough -- which is a fact
+    about the width, not about the readout.  this separates the two.
+    """
+
+    def __init__(self, dyn: CorticalDynamics, img: int = 64, n_sensors: int = 64,
+                 n_times: int = 8, hidden: int = 256, read_sites: int = 4096,
+                 lead_rank: int = 32, control: str = "learned"):
+        super().__init__()
+        self.dyn, self.n_sensors, self.n_times = dyn, n_sensors, n_times
+        self.n_in = dyn.n // 8
+        self.enc = nn.Sequential(
+            nn.Conv2d(3, 32, 4, 2, 1), nn.GELU(), nn.Conv2d(32, 64, 4, 2, 1), nn.GELU(),
+            nn.Conv2d(64, 128, 4, 2, 1), nn.GELU(), nn.Flatten(),
+            nn.Linear(128 * 8 * 8, hidden), nn.GELU())
+        self.to_cortex = nn.Linear(hidden, self.n_in)
+        self.read_idx = torch.linspace(0, dyn.n - 1, read_sites).long()
+        # the lead field is factorised through `lead_rank` for the reason
+        # PairedNeuralLoop documents: a free sites->sensors map is ill-conditioned
+        # by physics, and an unconstrained one lets the readout substitute for the
+        # cortex.  MEG resolves ~60-80 spatial degrees of freedom; 64-channel EEG
+        # fewer still.
+        self.lead_u = nn.Linear(read_sites, lead_rank, bias=False)
+        self.lead_v = nn.Linear(lead_rank, n_sensors, bias=False)
+        if control == "random":
+            for m in (self.lead_u, self.lead_v):
+                m.weight.requires_grad_(False)
+        self.control = control
+        # the decoder sees ONLY the sensor trace.  this is the whole point of the
+        # materialisation and the one thing not to relax if it underperforms.
+        self.dec = nn.Sequential(
+            nn.Flatten(), nn.Linear(n_sensors * n_times, hidden), nn.GELU(),
+            nn.Linear(hidden, 128 * 8 * 8), nn.GELU(),
+            nn.Unflatten(1, (128, 8, 8)),
+            nn.ConvTranspose2d(128, 64, 4, 2, 1), nn.GELU(),
+            nn.ConvTranspose2d(64, 32, 4, 2, 1), nn.GELU(),
+            nn.ConvTranspose2d(32, 3, 4, 2, 1))
+
+    def forward(self, frame, n_steps: int, dt: float):
+        """run the dynamics, sample the sensors AS THE STATE EVOLVES, decode.
+
+        the sensor trace is read at every step rather than once at the end,
+        because an evoked response is not something the cortex emits when it
+        finishes -- it IS the trajectory, sampled while it happens.  that also
+        gives the decoder a time series rather than a single vector, which is what
+        a real recording would hand it.
+        """
+        b = frame.shape[0]
+        drive = torch.zeros(b, self.dyn.n, device=frame.device)
+        drive[:, :self.n_in] = self.to_cortex(self.enc(frame))
+        s = self.dyn.init_state(b, frame.device)
+        w = self.dyn.edge_weights()
+        idx = self.read_idx.to(frame.device)
+        every = max(1, n_steps // self.n_times)
+        trace = []
+        for i in range(n_steps):
+            s = self.dyn.step(s, drive, dt, w)
+            if i % every == 0 and len(trace) < self.n_times:
+                trace.append(self.lead_v(self.lead_u(s[1][:, idx])))
+        while len(trace) < self.n_times:
+            trace.append(trace[-1])
+        sensors = torch.stack(trace, -1)                 # (b, n_sensors, n_times)
+        return self.dec(sensors), sensors, s
+
+
 # ---------------------------------------------------------------------------
 # the diagnostics that are NOT the loss
 # ---------------------------------------------------------------------------
@@ -849,15 +944,36 @@ def main():
                 sub = ms[1][:, ::max(dyn.n // 512, 1)].float()
                 r_eff = effective_rank(sub)
                 vmax = float(s[0].abs().max())
+            # a recon loss is not a result.  for CONTINUATION the baseline that
+            # matters is persistence -- emitting frame t for frame t+H, which is
+            # free -- and on a 25 fps film it is very strong.  measured on the
+            # 40k-step video run: recon 0.01235 against persistence 0.00985, i.e.
+            # skill -0.25.  the model was 25% WORSE than doing nothing while its
+            # loss fell 50x and its clips looked increasingly sharp, because at
+            # horizon 8 frame t+H resembles frame t.  reporting recon alone hid
+            # that for the whole run, so the baseline is computed here now.
+            persist = float("nan")
+            if a.modality in ("video", "av"):
+                with torch.no_grad():
+                    kk = np.random.randint(0, n_frames - H - 2, size=64)
+                    pa = torch.from_numpy(np.ascontiguousarray(frames[kk])).to(dev)
+                    pb = torch.from_numpy(np.ascontiguousarray(frames[kk + H])).to(dev)
+                    f_ = lambda t: (t.permute(0, 3, 1, 2).float() / 127.5) - 1.0
+                    persist = float(((f_(pa) - f_(pb)) ** 2).mean())
             rec = {"step": step, "loss": float(loss.detach()),
                    "recon": float(recon.detach()), "viability": float(viab.detach()),
+                   "persistence_mse": persist,
+                   "skill_vs_persistence": (1 - float(recon.detach()) / persist
+                                            if persist == persist else float("nan")),
                    "r_eff": r_eff, "v_absmax": vmax, "grad_norm": float(gn),
                    "sec": round(time.time() - t0, 1)}
             log["steps"].append(rec)
             xm = (model.cross_modal_weight() if a.modality == "av" else float("nan"))
             rec["cross_modal"] = xm
-            print(f"{step:5d}  recon {float(recon):.5f}  viab {float(viab):8.3f}  "
-                  f"r_eff {r_eff:7.2f}  |v|max {vmax:7.1f}  xmod {xm:.4f}  "
+            sk = rec["skill_vs_persistence"]
+            print(f"{step:5d}  recon {float(recon):.5f}  SKILLvsPERSIST {sk:+.4f}  "
+                  f"viab {float(viab):8.3f}  r_eff {r_eff:7.2f}  "
+                  f"|v|max {vmax:7.1f}  xmod {xm:.4f}  "
                   f"{time.time()-t0:6.0f}s", flush=True)
             if not math.isfinite(float(loss)):
                 print("DIVERGED", flush=True); break
