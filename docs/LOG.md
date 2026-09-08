@@ -39,6 +39,45 @@ already written.
 
 ---
 
+## 2026-09-08 — 42x the data removed the overfitting and not the failure
+
+the video corpus went from 11 minutes of one film to **15.2 hours across 13
+public-domain features**, and the split became by FILM rather than by frame, so
+the test asks about footage the model has never seen instead of about frames
+adjacent to its training set.
+
+that fixed exactly what it should have, and nothing else:
+
+| steps | skill vs persistence | train | held | overfit |
+|---|---|---|---|---|
+| 0-2,000 | -2.82 ± 3.17 | 0.194 | 0.155 | 0.80x |
+| 2,000-6,000 | -1.53 ± 0.21 | 0.133 | 0.115 | 0.87x |
+| 6,000-10,000 | -1.34 ± 0.19 | 0.117 | 0.108 | 0.93x |
+| 10,000-14,000 | -1.37 ± 0.21 | 0.114 | 0.102 | 0.89x |
+| 14,000-20,000 | -1.20 ± 0.28 | 0.107 | 0.099 | 0.93x |
+
+**the overfitting is gone** — held-out error now sits *below* training error
+(0.93x), against the 9x gap the via-EEG arms showed on the old corpus. the
+acquisition did its job and the data argument is settled: this term is no longer
+data-bound.
+
+**the failure survived it.** the model is still **2.20x worse than persistence**
+on held-out films, improving about 0.03 of skill per 1,000 steps and flattening.
+best ever -0.81 at step 14,000. so the honest reading of ledger row 13 changes:
+losing to persistence was not an artefact of eleven minutes of unusually static
+film. it is what this materialisation does.
+
+one supporting number: persistence MSE is 0.044 on these films against 0.0086 on
+Koyaanisqatsi, so the trivial baseline here is five times weaker and the model
+still cannot clear it.
+
+what this does not say: that the substrate is at fault. the same VideoLoop
+architecture, the same encoder and decoder, would have to be run without the
+dynamics before any of this attaches to the cortex rather than to the
+frame-prediction setup around it. that ablation is the next thing to run, and
+until it does, "video continuation does not work" is the claim, not "the cortex
+cannot do video".
+
 ## 2026-09-08 — video through the sensor projection: negative, twice over
 
 the materialisation the user asked for: frame -> cortex -> sensor projection ->

@@ -50,7 +50,21 @@ H = cfg.get("horizon", 8); ds = cfg.get("dyn_steps", 8); dt = cfg.get("dt", 5e-3
 frames = np.load(a.frames, mmap_mode="r")
 coch = np.load(a.audio_frames, mmap_mode="r") if a.audio_frames else None
 dyn = P.CorticalDynamics(n_sites, embed, k, dev, long_range=cfg.get("long_range", .25))
-mod = cfg.get("modality", "av")
+# `modality` may be absent even when a config is present -- train_video_multifilm
+# never declared one, and defaulting to "av" built an AudioVisualLoop against a
+# cochleagram that was never loaded.  the earlier fix only covered a config that
+# was missing ENTIRELY, which is why this recurred.  infer instead of assuming:
+# without audio frames the model cannot be audio-visual, and the state dict says
+# so directly.
+mod = cfg.get("modality")
+if not mod:
+    mod = "av" if (coch is not None and any(k.startswith("aud") or "coch" in k
+                                            for k in sd)) else "video"
+    print(f"config declares no modality; inferred '{mod}' from the inputs", flush=True)
+if mod == "av" and coch is None:
+    print("WARNING: modality says 'av' but no --audio-frames given; "
+          "rendering as video", flush=True)
+    mod = "video"
 model = (P.AudioVisualLoop(dyn, n_bands=coch.shape[-1]) if mod == "av"
          else P.VideoLoop(dyn)).to(dev)
 model.load_state_dict(sd); model.eval()
