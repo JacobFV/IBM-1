@@ -1,0 +1,286 @@
+{
+  "config": {
+    "init": "ckpt/ibm1_implicit.pt",
+    "sites": 30000,
+    "embed": 128,
+    "k": 48,
+    "long_range": 0.25,
+    "objectives": "visual_eeg,audio_meg,video,audio_visual,optic_nerve,cochlear_nerve,visual_eeg_s00,visual_eeg_s01,visual_eeg_s02,visual_eeg_s03,visual_eeg_s04,visual_eeg_s05,visual_eeg_s06,visual_eeg_s07,visual_eeg_s08,visual_eeg_s09",
+    "phases": "",
+    "steps": 60000,
+    "batch": 48,
+    "lr": 0.0003,
+    "pool": 200,
+    "eval_pools": 8,
+    "warm_start": "ckpt/visual_contrastive_v2.pt,ckpt/audio_contrastive_v1.pt,ckpt/video_fixedread.pt",
+    "consolidate_every": 500,
+    "eval_every": 500,
+    "ckpt": "ckpt/ibm1_curriculum16.pt",
+    "out": "out/curriculum16.json"
+  },
+  "steps": [
+    {
+      "step": 0,
+      "phase": {
+        "video": 0.15,
+        "audio_visual": 0.15,
+        "visual_eeg": 0.125,
+        "audio_meg": 0.125,
+        "visual_eeg_s00": 0.025,
+        "visual_eeg_s01": 0.025,
+        "visual_eeg_s02": 0.025,
+        "visual_eeg_s03": 0.025,
+        "visual_eeg_s04": 0.025,
+        "visual_eeg_s05": 0.025,
+        "visual_eeg_s06": 0.025,
+        "visual_eeg_s07": 0.025,
+        "visual_eeg_s08": 0.025,
+        "visual_eeg_s09": 0.025,
+        "optic_nerve": 0.1,
+        "cochlear_nerve": 0.1
+      },
+      "sec": 9.7,
+      "visual_eeg": {
+        "top1": 0.26749999821186066,
+        "sd": 0.022079406417625333,
+        "x_chance": 53.49999964237213,
+        "report": "top-1 26.75%+/-2.21 ( 53.5x)"
+      },
+      "audio_meg": {
+        "top1": 0.05374999903142452,
+        "sd": 0.011110242904288728,
+        "ceiling": 0.0712,
+        "collapsed": false,
+        "report": "top-1  5.37%+/-1.11 ( 10.7x, ceiling 7.12%)"
+      },
+      "video": {
+        "held": 0.07530248910188675,
+        "persistence": 0.05036754533648491,
+        "skill_vs_persistence": -0.49505973735312514,
+        "report": "skill vs persistence -0.4951"
+      },
+      "audio_visual": {
+        "held": 0.5329689979553223,
+        "persistence": 0.03646233305335045,
+        "skill_vs_persistence": -13.616974650950066,
+        "report": "skill vs persistence -13.6170"
+      },
+      "optic_nerve": {
+        "top1": 0.004999999888241291,
+        "sd": 0.0,
+        "collapsed": true,
+        "report": "top-1  0.50%+/-0.00 (  1.0x)  COLLAPSED"
+      },
+      "cochlear_nerve": {
+        "top1": 0.004999999888241291,
+        "sd": 0.0,
+        "ceiling": 0.0712,
+        "collapsed": true,
+        "report": "top-1  0.50%+/-0.00 (  1.0x, ceiling 7.12%)  COLLAPSED"
+      },
+      "visual_eeg_s00": {
+        "top1": 0.04874999914318323,
+        "sd": 0.01192424006847899,
+        "x_chance": 9.749999828636646,
+        "report": "top-1  4.87%+/-1.19 (  9.7x)"
+      },
+      "visual_eeg_s01": {
+        "top1": 0.041249998612329364,
+        "sd": 0.01053268681525509,
+        "x_chance": 8.249999722465873,
+        "report": "top-1  4.12%+/-1.05 (  8.2x)"
+      },
+      "visual_eeg_s02": {
+        "top1": 0.053124998696148396,
+        "sd": 0.016758860112669808,
+        "x_chance": 10.624999739229679,
+        "report": "top-1  5.31%+/-1.68 ( 10.6x)"
+      },
+      "visual_eeg_s03": {
+        "top1": 0.03249999927356839,
+        "sd": 0.011180339741723916,
+        "x_chance": 6.499999854713678,
+        "report": "top-1  3.25%+/-1.12 (  6.5x)"
+      },
+      "visual_eeg_s04": {
+        "top1": 0.03999999910593033,
+        "sd": 0.005590168777549146,
+        "x_chance": 7.999999821186066,
+        "report": "top-1  4.00%+/-0.56 (  8.0x)"
+      },
+      "visual_eeg_s05": {
+        "top1": 0.05312499823048711,
+        "sd": 0.011162856381326748,
+        "x_chance": 10.624999646097422,
+        "report": "top-1  5.31%+/-1.12 ( 10.6x)"
+      },
+      "visual_eeg_s06": {
+        "top1": 0.04999999841675162,
+        "sd": 0.009013878632940188,
+        "x_chance": 9.999999683350325,
+        "report": "top-1  5.00%+/-0.90 ( 10.0x)"
+      },
+      "visual_eeg_s07": {
+        "top1": 0.0718749980442226,
+        "sd": 0.010879308612435188,
+        "x_chance": 14.374999608844519,
+        "report": "top-1  7.19%+/-1.09 ( 14.4x)"
+      },
+      "visual_eeg_s08": {
+        "top1": 0.04312499915249646,
+        "sd": 0.0096622652072256,
+        "x_chance": 8.624999830499291,
+        "report": "top-1  4.31%+/-0.97 (  8.6x)"
+      },
+      "visual_eeg_s09": {
+        "top1": 0.06374999834224582,
+        "sd": 0.01165922323125028,
+        "x_chance": 12.749999668449163,
+        "report": "top-1  6.37%+/-1.17 ( 12.7x)"
+      }
+    },
+    {
+      "step": 500,
+      "phase": {
+        "video": 0.15,
+        "audio_visual": 0.15,
+        "visual_eeg": 0.125,
+        "audio_meg": 0.125,
+        "visual_eeg_s00": 0.025,
+        "visual_eeg_s01": 0.025,
+        "visual_eeg_s02": 0.025,
+        "visual_eeg_s03": 0.025,
+        "visual_eeg_s04": 0.025,
+        "visual_eeg_s05": 0.025,
+        "visual_eeg_s06": 0.025,
+        "visual_eeg_s07": 0.025,
+        "visual_eeg_s08": 0.025,
+        "visual_eeg_s09": 0.025,
+        "optic_nerve": 0.1,
+        "cochlear_nerve": 0.1
+      },
+      "sec": 754.2,
+      "visual_eeg": {
+        "top1": 0.29499999806284904,
+        "sd": 0.027156950020849814,
+        "x_chance": 58.99999961256981,
+        "report": "top-1 29.50%+/-2.72 ( 59.0x)"
+      },
+      "audio_meg": {
+        "top1": 0.051874999422580004,
+        "sd": 0.012975337481285834,
+        "ceiling": 0.0712,
+        "collapsed": false,
+        "report": "top-1  5.19%+/-1.30 ( 10.4x, ceiling 7.12%)"
+      },
+      "video": {
+        "held": 0.06927140057086945,
+        "persistence": 0.05007126182317734,
+        "skill_vs_persistence": -0.38345625911118164,
+        "report": "skill vs persistence -0.3835"
+      },
+      "audio_visual": {
+        "held": 0.26599767804145813,
+        "persistence": 0.042720675468444824,
+        "skill_vs_persistence": -5.226438957828148,
+        "report": "skill vs persistence -5.2264"
+      },
+      "optic_nerve": {
+        "top1": 0.004999999888241291,
+        "sd": 0.0,
+        "collapsed": true,
+        "report": "top-1  0.50%+/-0.00 (  1.0x)  COLLAPSED"
+      },
+      "cochlear_nerve": {
+        "top1": 0.004999999888241291,
+        "sd": 0.0,
+        "ceiling": 0.0712,
+        "collapsed": true,
+        "report": "top-1  0.50%+/-0.00 (  1.0x, ceiling 7.12%)  COLLAPSED"
+      },
+      "visual_eeg_s00": {
+        "top1": 0.07499999832361937,
+        "sd": 0.008660253844272825,
+        "x_chance": 14.999999664723873,
+        "report": "top-1  7.50%+/-0.87 ( 15.0x)"
+      },
+      "visual_eeg_s01": {
+        "top1": 0.049374998081475496,
+        "sd": 0.012608899519133592,
+        "x_chance": 9.8749996162951,
+        "report": "top-1  4.94%+/-1.26 (  9.9x)"
+      },
+      "visual_eeg_s02": {
+        "top1": 0.06749999709427357,
+        "sd": 0.020615527215537593,
+        "x_chance": 13.499999418854713,
+        "report": "top-1  6.75%+/-2.06 ( 13.5x)"
+      },
+      "visual_eeg_s03": {
+        "top1": 0.05062499805353582,
+        "sd": 0.009822645801478042,
+        "x_chance": 10.124999610707164,
+        "report": "top-1  5.06%+/-0.98 ( 10.1x)"
+      },
+      "visual_eeg_s04": {
+        "top1": 0.043124999036081135,
+        "sd": 0.01599560421643928,
+        "x_chance": 8.624999807216227,
+        "report": "top-1  4.31%+/-1.60 (  8.6x)"
+      },
+      "visual_eeg_s05": {
+        "top1": 0.08312499709427357,
+        "sd": 0.01028879809981252,
+        "x_chance": 16.624999418854713,
+        "report": "top-1  8.31%+/-1.03 ( 16.6x)"
+      },
+      "visual_eeg_s06": {
+        "top1": 0.0574999984819442,
+        "sd": 0.02633913297573198,
+        "x_chance": 11.49999969638884,
+        "report": "top-1  5.75%+/-2.63 ( 11.5x)"
+      },
+      "visual_eeg_s07": {
+        "top1": 0.09249999606981874,
+        "sd": 0.023584950920896856,
+        "x_chance": 18.499999213963747,
+        "report": "top-1  9.25%+/-2.36 ( 18.5x)"
+      },
+      "visual_eeg_s08": {
+        "top1": 0.05437499831896275,
+        "sd": 0.021277555447481573,
+        "x_chance": 10.87499966379255,
+        "report": "top-1  5.44%+/-2.13 ( 10.9x)"
+      },
+      "visual_eeg_s09": {
+        "top1": 0.0631249975413084,
+        "sd": 0.017309227193490453,
+        "x_chance": 12.62499950826168,
+        "report": "top-1  6.31%+/-1.73 ( 12.6x)"
+      }
+    }
+  ],
+  "consolidations": [
+    {
+      "step": 500,
+      "drift_cos": [
+        1.0,
+        0.99656081199646,
+        0.9983582496643066,
+        0.9786957502365112,
+        0.9958409070968628,
+        0.9969926476478577,
+        0.9963486790657043,
+        0.9956681728363037,
+        0.9960187077522278,
+        0.9942167401313782,
+        0.9957122206687927,
+        0.9964356422424316,
+        0.9965298175811768,
+        0.9966694116592407,
+        0.9945929050445557,
+        0.9967368841171265
+      ]
+    }
+  ]
+}
