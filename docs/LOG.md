@@ -40,6 +40,54 @@ already written.
 
 ---
 
+## 2026-09-08 — the video branch fails under three objectives; and 5x the sites costs 6.5 points
+
+**video, third objective, same answer.** rebuilt as discrimination — frame t
+drives the cortex, the state aligns contrastively with an embedding of frame
+t+50, negatives from other positions in the same film — and it never once beat
+its baseline:
+
+| steps | model top-1 | persistence top-1 | ratio | r_eff |
+|---|---|---|---|---|
+| 0-1,000 | 1.56% | 43.99% | 0.04 | 4.28 |
+| 1,000-2,500 | 3.64% | 31.80% | 0.11 | 1.33 |
+| 2,500-4,000 | 5.30% | 21.75% | 0.24 | 1.42 |
+| 4,000-6,000 | 6.71% | 25.42% | 0.26 | 1.57 |
+
+**0 of 24 evaluations above persistence**, best ratio 0.26, and effective rank
+collapsed from 4.28 to ~1.5. so the cortical state after 8 dynamics steps carries
+*less* about the future than the input frame's own embedding does — the dynamics
+are destroying information rather than propagating it.
+
+that is now three objectives on the same branch: direct L2 (blur, -1.08 skill),
+residual L2 (degenerates to zero, ratio 0.019), contrastive (0.26 of baseline).
+the honest summary is that **video continuation does not work in any form tried
+here**, and the common factor is the readout, not the loss. one caveat kept for
+the record: the contrastive run trained its target encoder jointly, which lets
+the baseline drift down (44% -> 25%) — the model still never approached even the
+degraded baseline, but a fixed target encoder is the cleaner design.
+
+**scaling, measured on the designated test set.** the 150k-site model at step
+5,500 against the 30k model at 5,800, same evaluation, same arms:
+
+| | 30k @ 5,800 | 150k @ 5,500 |
+|---|---|---|
+| full | **63.50%** | 57.00% |
+| frozen | 28.00% | 22.50% |
+| no_assoc | 28.00% | 22.50% |
+| bypass | 26.00% | 16.50% |
+| bypass retained | 40.9% | **28.9%** |
+| dynamics contribute | 37.5 pts | **40.5 pts** |
+
+5x the substrate, 18 hours of GPU, and it is **6.5 points worse**. what improved
+is where the computation sits: the bypass path is much weaker (28.9% retained
+against 40.9%) and the dynamics contribute 40.5 points against 37.5. so more
+substrate does move work into the substrate — it just does not buy accuracy.
+
+that is the scaling answer as it stands, and it should be stated as such rather
+than left implied: on this task, at this data scale, parameters are not the
+binding constraint.
+
 ## 2026-09-08 — MSE cannot do this task at either parameterisation
 
 the ablation left the objective as the only suspect, so the decoder was changed

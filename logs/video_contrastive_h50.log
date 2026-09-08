@@ -1,0 +1,31 @@
+train 28 films (3,391,879 frames, 37.7 h) | held out 2 films (2.51 h)
+negatives are other positions IN THE SAME FILM; chance = 1.56%
+trainable 13,479,020 (3,840,000 association)
+/home/brandonin/Documents/IBM-1/scripts/train_video_contrastive.py:166: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"{step:6d}  loss {float(loss):.4f}  top-1 {100*m:5.2f}% +/-{100*sd_:.2f}  "
+     0  loss 4.1612  top-1  1.56% +/-0.00  persistence 40.62%  chance 1.56%  r_eff  7.63      2s  <- best
+   250  loss 4.1589  top-1  1.56% +/-0.00  persistence 40.23%  chance 1.56%  r_eff  3.98    145s
+   500  loss 4.1589  top-1  1.56% +/-0.00  persistence 47.07%  chance 1.56%  r_eff  3.10    287s
+   750  loss 4.1589  top-1  1.56% +/-0.00  persistence 48.05%  chance 1.56%  r_eff  2.40    430s
+  1000  loss 4.1589  top-1  1.56% +/-0.00  persistence 55.66%  chance 1.56%  r_eff  1.66    572s
+  1250  loss 4.1589  top-1  1.56% +/-0.00  persistence 46.48%  chance 1.56%  r_eff  1.15    714s
+  1500  loss 4.0350  top-1  4.69% +/-1.35  persistence 21.68%  chance 1.56%  r_eff  1.14    857s  <- best
+  1750  loss 3.9674  top-1  4.10% +/-1.90  persistence 22.46%  chance 1.56%  r_eff  1.26    999s
+  2000  loss 3.7379  top-1  4.88% +/-1.65  persistence 20.51%  chance 1.56%  r_eff  1.29   1142s  <- best
+  2250  loss 3.7327  top-1  5.08% +/-2.44  persistence 24.02%  chance 1.56%  r_eff  1.46   1284s  <- best
+  2500  loss 3.6169  top-1  4.49% +/-2.40  persistence 21.68%  chance 1.56%  r_eff  1.35   1426s
+  2750  loss 3.2853  top-1  4.30% +/-1.30  persistence 20.51%  chance 1.56%  r_eff  1.28   1569s
+  3000  loss 3.8458  top-1  6.45% +/-2.64  persistence 18.16%  chance 1.56%  r_eff  1.51   1711s  <- best
+  3250  loss 3.7034  top-1  5.66% +/-1.55  persistence 24.61%  chance 1.56%  r_eff  1.44   1854s
+  3500  loss 3.5732  top-1  4.88% +/-1.45  persistence 21.88%  chance 1.56%  r_eff  1.41   1996s
+  3750  loss 3.3951  top-1  6.05% +/-1.82  persistence 23.63%  chance 1.56%  r_eff  1.54   2139s
+  4000  loss 3.4643  top-1  7.23% +/-1.74  persistence 23.44%  chance 1.56%  r_eff  1.44   2281s  <- best
+  4250  loss 3.5168  top-1  8.79% +/-2.20  persistence 24.61%  chance 1.56%  r_eff  1.69   2424s  <- best
+  4500  loss 3.2398  top-1  6.84% +/-1.34  persistence 24.61%  chance 1.56%  r_eff  1.38   2566s
+  4750  loss 3.3045  top-1  8.59% +/-2.71  persistence 21.68%  chance 1.56%  r_eff  1.52   2708s
+  5000  loss 4.1025  top-1  4.49% +/-2.40  persistence 32.23%  chance 1.56%  r_eff  1.44   2850s
+  5250  loss 3.4830  top-1  5.47% +/-1.35  persistence 27.54%  chance 1.56%  r_eff  1.51   2991s
+  5500  loss 3.3812  top-1  5.86% +/-2.17  persistence 25.20%  chance 1.56%  r_eff  1.83   3133s
+  5750  loss 3.5457  top-1  6.45% +/-1.82  persistence 24.02%  chance 1.56%  r_eff  1.74   3275s
+  6000  loss 3.2733  top-1 13.67% +/-3.89  persistence 33.40%  chance 1.56%  r_eff  2.93   3418s  <- best
