@@ -39,6 +39,40 @@ already written.
 
 ---
 
+## 2026-09-08 — the cortex is not what loses to persistence
+
+the ablation the previous entry said had to run, on held-out films with the same
+persistence baseline computed on the same batches:
+
+| arm | MSE | skill vs persistence | vs full |
+|---|---|---|---|
+| full | 0.09908 ± 0.00521 | -1.08 | 1.00x |
+| frozen | 0.25807 ± 0.01684 | -4.42 | 2.60x |
+| no_assoc | 0.25709 ± 0.01678 | -4.40 | 2.59x |
+| **bypass** | 0.43666 ± 0.04434 | **-8.17** | **4.41x** |
+
+**bypassing the dynamics costs 4.41x.** the substrate is carrying this task more
+heavily than any other measured here — retrieval retains 41-50% under bypass,
+video retains 23%. and the learned association is doing real work too: freezing
+it at initialisation costs 2.6x.
+
+so the two facts sit together and both are true. **the dynamics do the work, and
+the whole thing still loses to copying the previous frame.** the failure is not
+the cortex; removing the cortex makes it four times worse.
+
+that leaves the objective. MSE frame regression at horizon 8 is precisely the
+shape of failure this programme has already diagnosed once: on the visual branch,
+waveform regression peaked at skill +0.011 while contrastive retrieval on the
+same pairs reached 53x chance — the same encoder, the same data, a different
+question. an L2 loss over 64x64 frames is minimised by blur, and blur loses to
+persistence by construction, because persistence at least keeps the edges.
+
+the next thing to try on video is therefore an objective change, not more data
+(15.2 h did not help) and not more substrate (the substrate is already the part
+that works). that is the third time the answer has been "you asked the wrong
+question of the data", and it is worth stating as a pattern rather than as three
+incidents.
+
 ## 2026-09-08 — 42x the data removed the overfitting and not the failure
 
 the video corpus went from 11 minutes of one film to **15.2 hours across 13
