@@ -869,7 +869,17 @@ def main():
             # the artefact.
             torch.save({"model": model.state_dict(), "step": step,
                         "config": vars(a)}, a.ckpt)
-            from ibm.release import CheckpointName, sidecar, upload
+            # the artefact is saved above and must not be endangered by what
+            # follows.  the earlier fix moved torch.save ABOVE this import so a
+            # throw could not destroy the weights; it still killed the RUN, which
+            # is the same lesson one level out -- publishing is a convenience and
+            # a convenience must not be able to stop the training either.
+            try:
+                from ibm.release import CheckpointName, sidecar, upload
+            except Exception as e:
+                print(f"  [{step}] saved {a.ckpt}; publish unavailable ({e})",
+                      flush=True)
+                continue
             obj = {"av": "av", "paired": "meg"}.get(a.modality, f"nfh{a.horizon}")
             nm = CheckpointName(modality={"video": "v", "audio": "a", "av": "av",
                                           "paired": "p"}[a.modality],
