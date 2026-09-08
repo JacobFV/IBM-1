@@ -1,0 +1,5 @@
+initialised from ckpt/ibm1_implicit.pt: 34 fused sources
+    visual_eeg_s07: head warm-started from visual_contrastive_v2.pt (22 tensors)
+  visual_eeg_s07   10,271,372 params (3,840,000 kernel)
+     0  visual_eeg_s07 top-1  7.00%+/-1.52 ( 14.0x)      14s
+   135  visual_eeg_s07 top-1 17.37%+/-1.78 ( 34.7x)     274s

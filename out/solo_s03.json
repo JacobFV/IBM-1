@@ -1,0 +1,50 @@
+{
+  "config": {
+    "init": "ckpt/ibm1_implicit.pt",
+    "sites": 30000,
+    "embed": 128,
+    "k": 48,
+    "long_range": 0.25,
+    "objectives": "visual_eeg_s03",
+    "phases": "",
+    "steps": 135,
+    "batch": 48,
+    "lr": 0.0003,
+    "pool": 200,
+    "eval_pools": 8,
+    "warm_start": "ckpt/visual_contrastive_v2.pt,ckpt/audio_contrastive_v1.pt,ckpt/video_fixedread.pt",
+    "consolidate_every": 0,
+    "eval_every": 135,
+    "ckpt": "ckpt/solo_s03.pt",
+    "out": "out/solo_s03.json"
+  },
+  "steps": [
+    {
+      "step": 0,
+      "phase": {
+        "visual_eeg_s03": 0.3
+      },
+      "sec": 3.7,
+      "visual_eeg_s03": {
+        "top1": 0.03562499943654984,
+        "sd": 0.014882351329880092,
+        "x_chance": 7.1249998873099685,
+        "report": "top-1  3.56%+/-1.49 (  7.1x)"
+      }
+    },
+    {
+      "step": 135,
+      "phase": {
+        "visual_eeg_s03": 0.5
+      },
+      "sec": 268.5,
+      "visual_eeg_s03": {
+        "top1": 0.06437499914318323,
+        "sd": 0.01666536460092432,
+        "x_chance": 12.874999828636646,
+        "report": "top-1  6.44%+/-1.67 ( 12.9x)"
+      }
+    }
+  ],
+  "consolidations": []
+}

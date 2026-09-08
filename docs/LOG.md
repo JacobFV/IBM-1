@@ -31,6 +31,7 @@ pattern is worth more than any single row.
 | 14 | the residual objective beats persistence (skill +0.0003, printed as "BEATS PERSISTENCE") | the model emits a residual **3.9% of the true magnitude with cosine -0.0016** -- it learned to output ZERO, which *is* persistence. it was reproducing the baseline, not beating it | measuring the predicted residual's size and direction, which the loss cannot distinguish |
 | 15 | MSE cannot do video at either parameterisation; video continuation does not work in any form tried | three of the four failures read `s[1][:, -n//8:]`, the eighth of the sheet the drive never reaches -- across-batch state sd there is **0.000004 against 0.003099** in the driven region, 775x less, and a readout probe scores **chance from N=1 onward** where the drive itself scores 99.80%. reading the whole sheet takes the same objective from -1.08 to **-0.149** | asking whether the readout can identify the frame that drove it -- a question with a known answer |
 | 16 | next-frame video training learns cortical wiring that transfers to EEG (91.5% recovery) | pairing each frame with a **RANDOM** frame from the same film -- temporal structure destroyed, everything else identical -- still transfers **83-86%**. only ~5 of the 35.5 points depend on prediction. the mechanism is gradient flow through the dynamics, not next-frame learning | running the shuffled-target control, which the saturation-by-step-2,500 should have prompted immediately |
+| 17 | the shared kernel is carrying the ten per-subject terms -- their mean doubled from 4.97% to 11.09% while each got only 3% of the budget | a SOLO run of one subject for the same 135 own steps, same warm start, same kernel, reaches **17.37%** where the shared run reaches 15.44%. s03 is a wash. sharing is neutral to slightly negative; the doubling is what 135 steps buys either way | running the matched-step solo control instead of reading the trajectory |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
 
@@ -41,6 +42,53 @@ caught by a measurement that could have been run first, and several by one I had
 already written.
 
 ---
+
+## 2026-09-08 — fourteen materializations train, and sharing does not pay for itself
+
+fourteen terms against one kernel: the group-mean visual term, speech->MEG, video
+continuation, the audio-visual loop, and ten per-subject visual terms built from
+`evoked_training_persubject` (10, 16540, 64, 100). at step 4,500, **none
+collapsed**, and twelve improved:
+
+| term | step 0 | step 4,500 |
+|---|---|---|
+| visual_eeg (group mean) | 26.75% | 27.50% |
+| audio_meg | 5.37% | 5.25% |
+| video | -0.495 | -0.297 |
+| audio_visual (cold start) | -13.16 | **-1.25** |
+| ten per-subject terms, mean | 4.97% | **11.09%** |
+
+the per-subject mean more than doubled while each term received about 3% of the
+step budget, and `audio_visual` -- the only term with no warm start -- improved
+tenfold. that reads like the shared substrate carrying the load, and an earlier
+status note said exactly that.
+
+**the control says otherwise.** each subject term took roughly 135 of its own
+gradient steps by step 4,500. running one subject SOLO for exactly 135 steps, from
+the same warm start and the same fused kernel, with nothing else touching it:
+
+| subject | solo, 135 own steps | shared, ~135 own steps + 4,365 from others |
+|---|---|---|
+| s07 | **17.37% ± 1.78** | 15.44% |
+| s03 | 6.44% ± 1.67 | 6.69% |
+
+s07 does **better alone** — 17.37% against 15.44%, about one sd — despite the
+shared run having 4,365 additional kernel updates from the other thirteen terms.
+s03 is a wash (6.44 vs 6.69). so on two subjects, sharing is **neutral to
+slightly negative**, not the multiplier the trajectory suggested.
+
+what the trajectory actually showed was warm-starting plus each term's own steps.
+attributing it to the shared kernel required the comparison that was not run
+until now, and the honest reading is that **the doubling is what 135 steps of
+this task buys, with or without sharing.**
+
+that does not sink the architecture: fourteen materializations do train
+simultaneously without collapse, on one 3.84M kernel, and the storage and
+publication argument for that is unaffected. but the *performance* argument --
+that a corpus constraining the substrate helps every other materialisation -- is
+not supported by this measurement, and it is the third time a shared-substrate
+claim has failed a control (joint fitting, cross-modal binding, and now
+multi-subject sharing).
 
 ## 2026-09-08 — the transfer is not about next-frame prediction
 
