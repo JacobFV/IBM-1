@@ -147,7 +147,14 @@ class AudioMEG:
                 torch.from_numpy(g).to(self.dev))
 
     def loss(self, rng):
-        x, y = self._batch(self.ctx, self.ntr - self.win, self.a.batch // 2, rng)
+        # FULL batch, not half.  contrastive collapse is driven by too few
+        # negatives, and halving this to save memory put audio at 32 while the
+        # other terms ran at 64 -- combined with the lowest phase weight, it
+        # collapsed completely by step 1,000: every audio embedding identical
+        # (pairwise cos +0.9999), every MEG embedding identical (+1.0000), one
+        # distinct prediction out of 24, reported as exactly 0.50% +/- 0.00.
+        # the standalone audio run reached 6.75% at batch 64.
+        x, y = self._batch(self.ctx, self.ntr - self.win, self.a.batch, rng)
         z, s = self.model.embed_audio(x, substeps=4, dt=2e-2, n_steps=4)
         lg = z @ self.model.embed_meg(y).T / self.temp.clamp(0.01, 1.0)
         lb = torch.arange(len(x), device=self.dev)
@@ -166,9 +173,14 @@ class AudioMEG:
             accs.append(float((sim.argmax(1) ==
                         torch.arange(len(x), device=self.dev)).float().mean()))
         m, sd = float(np.mean(accs)), float(np.std(accs))
-        return {"top1": m, "sd": sd, "ceiling": self.CEILING,
+        # exactly 1/pool with zero variance is the signature of collapse, not of
+        # chance: genuine chance on a pool of 200 varies ~0.5 points between
+        # draws.  say so rather than printing a number that reads as "training".
+        flag = "  COLLAPSED" if (sd == 0.0 and abs(m - self.chance) < 1e-9) else ""
+        return {"top1": m, "sd": sd, "ceiling": self.CEILING, "collapsed": bool(flag),
                 "report": f"top-1 {100*m:5.2f}%+/-{100*sd:4.2f} "
-                          f"({m/self.chance:5.1f}x, ceiling {100*self.CEILING:.2f}%)"}
+                          f"({m/self.chance:5.1f}x, ceiling {100*self.CEILING:.2f}%)"
+                          f"{flag}"}
 
 
 class VideoNext:
@@ -246,8 +258,8 @@ def main() -> None:
     ap.add_argument("--long-range", type=float, default=0.25)
     ap.add_argument("--objectives", default="visual_eeg,audio_meg,video")
     ap.add_argument("--phases",
-                    default="0.33:video=0.5;visual_eeg=0.3;audio_meg=0.2,"
-                            "0.66:video=0.3;visual_eeg=0.4;audio_meg=0.3,"
+                    default="0.33:video=0.34;visual_eeg=0.33;audio_meg=0.33,"
+                            "0.66:video=0.3;visual_eeg=0.35;audio_meg=0.35,"
                             "1.0:video=0.2;visual_eeg=0.4;audio_meg=0.4")
     ap.add_argument("--steps", type=int, default=30000)
     ap.add_argument("--batch", type=int, default=64)
