@@ -98,7 +98,11 @@ def main() -> None:
     dyn = P.CorticalDynamics(a.sites, a.embed, a.k, dev, long_range=a.long_range).to(dev)
     model = P.VideoLoop(dyn).to(dev)
     # the cortical readout becomes an embedding rather than a frame
-    head = nn.Sequential(nn.Linear(dyn.n // 8, 512), nn.GELU(),
+    # read the WHOLE sheet: the anterior eighth carries 775x less stimulus-
+    # dependent variation than the driven region (probe_readout.py), so a readout
+    # confined to it returns intrinsic activity uncorrelated with the input.
+    whole_sheet = torch.linspace(0, dyn.n - 1, 4096).long().to(dev)
+    head = nn.Sequential(nn.Linear(4096, 512), nn.GELU(),
                          nn.Linear(512, 128)).to(dev)
     tgt = TargetEnc().to(dev)
     temp = nn.Parameter(torch.tensor(0.07, device=dev))
@@ -117,7 +121,7 @@ def main() -> None:
         w = dyn.edge_weights()
         for _ in range(a.dyn_steps):
             s = dyn.step(s, drive, a.dt, w)
-        return F.normalize(head(s[1][:, -dyn.n // 8:]), dim=-1), s
+        return F.normalize(head(s[1][:, whole_sheet]), dim=-1), s
 
     log = {"config": vars(a), "n_params": tot, "chance": 1.0 / a.batch, "steps": []}
     best, t0 = -1e9, time.time()

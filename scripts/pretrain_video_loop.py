@@ -225,7 +225,9 @@ class AudioLoop(nn.Module):
             nn.Linear(hidden, hidden), nn.GELU())
         self.n_in = dyn.n // 8
         self.to_cortex = nn.Linear(hidden, self.n_in)
-        self.from_cortex = nn.Linear(dyn.n // 8, hidden)
+        self.read_sites = 4096
+        self.read_idx = torch.linspace(0, dyn.n - 1, self.read_sites).long()
+        self.from_cortex = nn.Linear(self.read_sites, hidden)
         self.dec = nn.Sequential(nn.Linear(hidden, hidden), nn.GELU(),
                                  nn.Linear(hidden, n_bands))
 
@@ -626,7 +628,9 @@ class VideoLoop(nn.Module):
         # drive reaches a posterior subset -- the occipital port
         self.n_in = dyn.n // 8
         self.to_cortex = nn.Linear(hidden, self.n_in)
-        self.from_cortex = nn.Linear(dyn.n // 8, hidden)
+        self.read_sites = 4096
+        self.read_idx = torch.linspace(0, dyn.n - 1, self.read_sites).long()
+        self.from_cortex = nn.Linear(self.read_sites, hidden)
         self.dec = nn.Sequential(
             nn.Linear(hidden, 128 * 8 * 8), nn.GELU(),
             nn.Unflatten(1, (128, 8, 8)),
@@ -647,7 +651,15 @@ class VideoLoop(nn.Module):
         w = self.dyn.edge_weights()
         for _ in range(n_steps):
             s = self.dyn.step(s, drive, dt, w)
-        read = s[1][:, -self.dyn.n // 8:]          # anterior readout
+        # READ THE WHOLE SHEET, not the anterior eighth.  measured on an untrained
+        # sheet: with the drive entering the first eighth, the across-batch
+        # standard deviation of the state at N=8 is 0.003099 in the driven region
+        # and 0.000004 in the anterior eighth -- 775x less.  the sheet is active
+        # there (|r| ~ 8) but that activity is drive-INDEPENDENT, so the anterior
+        # readout was returning intrinsic dynamics uncorrelated with the stimulus.
+        # every loop in this file that WORKS reads linspace(0, n-1); every loop
+        # that failed read the anterior eighth.
+        read = s[1][:, self.read_idx.to(s[1].device)]
         return self.dec(self.from_cortex(read)), s
 
 
