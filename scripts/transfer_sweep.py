@@ -89,8 +89,17 @@ def main() -> None:
             w = torch.load(f, map_location="cpu", weights_only=False)["model"]["dyn.embed"]
         except Exception as e:
             print(f"{os.path.basename(f):26s}  skip ({type(e).__name__})"); continue
-        if w.shape != own.shape:
-            print(f"{os.path.basename(f):26s}  skip (shape {tuple(w.shape)})"); continue
+        if w.shape[1] != own.shape[1]:
+            print(f"{os.path.basename(f):26s}  skip (embed {w.shape[1]})"); continue
+        if w.shape[0] != own.shape[0]:
+            # a 150k kernel is not incomparable, only differently sampled.  carry
+            # it to the evaluation resolution the same way fusion does, so a
+            # higher-resolution run can be measured and weighted rather than
+            # silently dropped -- which is what happened to the 150k run.
+            fu = importlib.util.spec_from_file_location(
+                "fuse", os.path.join(os.path.dirname(__file__), "fuse_implicit.py"))
+            FU = importlib.util.module_from_spec(fu); fu.loader.exec_module(FU)
+            w = FU.resample(w.float(), w.shape[0], own.shape[0])
         v = score(w.to(dev))
         rec = (v - base) / max(top - base, 1e-9)
         res["runs"][os.path.basename(f)] = {"top1": v, "recovered": rec}
