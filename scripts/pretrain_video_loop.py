@@ -372,6 +372,83 @@ class VisualContrastiveLoop(nn.Module):
         return F.normalize(self.eeg_head(eeg), dim=-1)
 
 
+class AudioContrastiveLoop(nn.Module):
+    """cochleagram -> cortex -> embedding, aligned contrastively with measured MEG.
+
+    the auditory twin of `VisualContrastiveLoop`, and it exists now because the
+    corpus it needs was only fixed on 2026-09-07.  before that the LibriBrain
+    arrays were misaligned by up to +/-3.4 s -- the builder assumed the audio and
+    MEG clocks shared a rate when they differ by ~4,800 ppm -- and every auditory
+    result measured against them, four in total, was void.
+
+    the ceiling this has to beat is measured, not assumed.  two convnets with no
+    dynamics in the path, on the same corpus and split, averaged over 8 held-out
+    pools of 200:
+
+        200 ms window   4.62% +/- 0.99    9.2x chance
+        1 s    window   7.12% +/- 1.71   14.2x chance
+
+    so the bar is **14.2x**, and the window matters: the coupling sits at a 140 ms
+    lag, and 200 ms barely contains one response.  the default window here is 1 s
+    for that reason rather than by analogy with the visual head.
+
+    two things differ from the visual loop, both forced by the data:
+
+    *the port is temporal, not occipital*.  auditory cortex is a different patch of
+    the sheet, so the drive enters a different slice of the site index.
+
+    *the input is a window, not a frame*.  an image is one drive vector; a
+    cochleagram window is a time series, and it is encoded to one drive vector
+    before the dynamics run.  that discards the stimulus's own temporal structure
+    inside the window, which is a real limitation and the first thing to revisit if
+    this underperforms the ceiling -- driving the dynamics continuously would test
+    the substrate harder, at a cost the visual head measured as prohibitive
+    (15.8 s/step when one integrator pass was spent per output sample).
+    """
+
+    def __init__(self, dyn: CorticalDynamics, n_sensors: int = 306,
+                 n_bands: int = 64, stim_len: int = 250, n_times: int = 25,
+                 dim: int = 128, hidden: int = 256, read_sites: int = 4096):
+        super().__init__()
+        self.dyn, self.n_times = dyn, n_times
+        # auditory cortex is not the occipital port the visual head drives; take a
+        # different slice of the sheet so the two terms do not collide when a
+        # single substrate carries both.
+        self.port = dyn.n // 8
+        self.port_lo = dyn.n // 4
+        self.enc = nn.Sequential(
+            nn.Conv1d(n_bands, 64, 5, stride=2, padding=2), nn.GELU(),
+            nn.Conv1d(64, 128, 5, stride=2, padding=2), nn.GELU(),
+            nn.Conv1d(128, 128, 5, stride=2, padding=2), nn.GELU(),
+            nn.Flatten(), nn.Linear(128 * ((stim_len + 7) // 8), hidden), nn.GELU())
+        self.to_cortex = nn.Linear(hidden, self.port)
+        self.read_idx = torch.linspace(0, dyn.n - 1, read_sites).long()
+        self.cortex_head = nn.Sequential(nn.Linear(read_sites, 512), nn.GELU(),
+                                         nn.Linear(512, dim))
+        self.meg_head = nn.Sequential(
+            nn.Conv1d(n_sensors, 128, 5, padding=2), nn.GELU(),
+            nn.Conv1d(128, 128, 5, stride=2, padding=2), nn.GELU(),
+            nn.Flatten(), nn.Linear(128 * ((n_times + 1) // 2), 512), nn.GELU(),
+            nn.Linear(512, dim))
+
+    def embed_audio(self, coch, substeps: int = 4, dt: float = 2e-2,
+                    n_steps: int | None = None):
+        """encode the window, drive the temporal port, run, read the final state."""
+        b = coch.shape[0]
+        drive = torch.zeros(b, self.dyn.n, device=coch.device)
+        drive[:, self.port_lo:self.port_lo + self.port] = self.to_cortex(self.enc(coch))
+        s = self.dyn.init_state(b, coch.device)
+        w = self.dyn.edge_weights()
+        h = dt / substeps
+        for _ in range((n_steps if n_steps is not None else self.n_times) * substeps):
+            s = self.dyn.step(s, drive, h, w)
+        z = self.cortex_head(s[1][:, self.read_idx.to(coch.device)])
+        return F.normalize(z, dim=-1), s
+
+    def embed_meg(self, meg):
+        return F.normalize(self.meg_head(meg), dim=-1)
+
+
 class VisualEvokedLoop(nn.Module):
     """image -> occipital drive -> dynamics -> the EVOKED RESPONSE as it unfolds.
 
