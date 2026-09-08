@@ -54,6 +54,14 @@ def main() -> None:
                          "skill 0 and can only improve on it")
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--holdout-films", type=int, default=2)
+    ap.add_argument("--shuffle-targets", action="store_true",
+                    help="pair each frame t with a RANDOM frame t+H from elsewhere "
+                         "in the film.  the image statistics, the encoder's input "
+                         "distribution and the gradient magnitudes are unchanged; "
+                         "only the temporal correspondence is destroyed.  if the "
+                         "cortical kernel still transfers to the EEG task under "
+                         "this, the transfer is a property of running gradients "
+                         "through the dynamics and not of learning to predict")
     ap.add_argument("--eval-every", type=int, default=250)
     ap.add_argument("--snapshot-every", type=int, default=0,
                     help="also save an unconditional checkpoint every N steps.  the "
@@ -90,7 +98,9 @@ def main() -> None:
         for _ in range(m):
             v = pool[rng.integers(len(pool))]
             i = int(rng.integers(0, len(v) - a.horizon - 1))
-            xs.append(np.asarray(v[i])); ys.append(np.asarray(v[i + a.horizon]))
+            j = (int(rng.integers(0, len(v) - 1)) if a.shuffle_targets
+                 else i + a.horizon)
+            xs.append(np.asarray(v[i])); ys.append(np.asarray(v[j]))
         f = lambda t: (torch.from_numpy(np.stack(t)).to(dev)
                        .permute(0, 3, 1, 2).float() / 127.5) - 1.0
         return f(xs), f(ys)
