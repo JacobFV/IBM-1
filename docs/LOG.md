@@ -29,6 +29,7 @@ pattern is worth more than any single row.
 | 12 | the cortex beats the dynamics-free encoder on vision | it wins on the training-split holdout (30.12% vs 26.81%) and **loses on the corpus's designated test set** (63.50% vs 66.50%), where the two are indistinguishable anyway -- 0.89 sd, six images out of 200. the quoted 21.5% control was also a single pool | building `images_test.npy`, which had never existed, and selecting the control the same way the model was selected |
 | 13 | the video loop is learning continuation (recon 0.540 -> 0.011, a 50x fall, and visibly sharper clips) | **25% WORSE than persistence** on held-out frames: model 0.01235 against persistence 0.00985, skill -0.2535. it looked right because at horizon 8 on 25 fps film, frame t+8 resembles frame t. skill against the ZERO baseline was +0.9787 -- the flattering comparison, and the meaningless one | computing the persistence baseline, which the loop had never logged |
 | 14 | the residual objective beats persistence (skill +0.0003, printed as "BEATS PERSISTENCE") | the model emits a residual **3.9% of the true magnitude with cosine -0.0016** -- it learned to output ZERO, which *is* persistence. it was reproducing the baseline, not beating it | measuring the predicted residual's size and direction, which the loss cannot distinguish |
+| 15 | MSE cannot do video at either parameterisation; video continuation does not work in any form tried | three of the four failures read `s[1][:, -n//8:]`, the eighth of the sheet the drive never reaches -- across-batch state sd there is **0.000004 against 0.003099** in the driven region, 775x less, and a readout probe scores **chance from N=1 onward** where the drive itself scores 99.80%. reading the whole sheet takes the same objective from -1.08 to **-0.149** | asking whether the readout can identify the frame that drove it -- a question with a known answer |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
 
@@ -39,6 +40,46 @@ caught by a measurement that could have been run first, and several by one I had
 already written.
 
 ---
+
+## 2026-09-08 — the readout fix is worth 0.93 of skill, and three negatives were about one line
+
+reading the whole sheet instead of the anterior eighth, same objective, same
+corpus, same split:
+
+| steps | skill vs persistence | residual ratio | cosine |
+|---|---|---|---|
+| 0-5,000 | -1.073 | 1.257 | +0.246 |
+| 5,000-10,000 | -0.417 | 1.027 | +0.265 |
+| 10,000-15,000 | -0.388 | 0.993 | +0.260 |
+| 15,000-20,000 | -0.400 | 0.994 | +0.260 |
+| **broken readout** | **-0.66 best** | **0.019** | **+0.002** |
+
+best **-0.149** at step 13,000 against the broken version's -0.66, so the fix is
+worth **0.93 of skill** on the same task. and the diagnostic numbers move
+together with it: the model now emits a residual **0.99x the true magnitude with
+cosine +0.26** where the broken one emitted 1.9% of the magnitude with no
+direction at all. that is the difference between predicting motion badly and
+predicting nothing.
+
+it is still 1.2x behind persistence, so the branch has not turned. but the
+failures it was diagnosed with were mostly not about objectives:
+
+| failure | readout | now |
+|---|---|---|
+| direct L2, -1.08 | anterior | **-0.149** with the fix |
+| residual L2, degenerate | anterior | untested, but the degeneracy was the same erasure |
+| contrastive, 0.26 of baseline | anterior | untested |
+| via-EEG, both arms | whole sheet | **stands** — that one was never affected |
+
+so "MSE cannot do this task at either parameterisation" and "video continuation
+does not work in any form tried" were both written against a model that could not
+see its own input. the objective diagnosis may still be right; it has not been
+tested on a working readout, and that is now the cheap experiment rather than the
+conclusion.
+
+what survives untouched: the via-EEG result, which used `linspace(0, n-1)` from
+the start — its learned lead field was no better than a frozen random projection
+of the same width, and that comparison had nothing to do with this bug.
 
 ## 2026-09-08 — the video branch fails under three objectives; and 5x the sites costs 6.5 points
 
