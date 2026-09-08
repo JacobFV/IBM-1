@@ -377,6 +377,19 @@ def main() -> None:
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--pool", type=int, default=200)
     ap.add_argument("--eval-pools", type=int, default=8)
+    ap.add_argument("--warm-start", default="ckpt/visual_contrastive_v2.pt,"
+                                            "ckpt/audio_contrastive_v1.pt,"
+                                            "ckpt/video_fixedread.pt",
+                    help="checkpoints whose HEADS initialise matching materialisations.  "
+                         "splitting a step budget 14 ways gives each contrastive term "
+                         "a few dozen steps per thousand, and a contrastive head needs "
+                         "hundreds to escape the trivial all-embeddings-equal solution "
+                         "-- measured: 11 of 14 terms sat at exactly 0.50%% +/- 0.00 at "
+                         "step 1,000, which is collapse and not chance.  starting from "
+                         "a head already trained on the same architecture skips that "
+                         "phase.  it is not a shortcut around the result: the KERNEL "
+                         "still comes from the fused implicit model and is what the run "
+                         "is measuring")
     ap.add_argument("--consolidate-every", type=int, default=500)
     ap.add_argument("--eval-every", type=int, default=1000)
     ap.add_argument("--ckpt", default="ckpt/ibm1_curriculum.pt")
@@ -431,6 +444,33 @@ def main() -> None:
         dyns[n] = dy
         objs[n] = OBJECTIVES[n](dy, dev, a)
         objs[n].name = n
+        # warm-start the head from a trained one of the same architecture, when
+        # there is one.  every visual_eeg* term is a VisualContrastiveLoop and
+        # every audio term an AudioContrastiveLoop, so the head transfers exactly.
+        # match the source to the objective TYPE, not to whatever happens to share
+        # tensor names.  the first version accepted any checkpoint matching a
+        # quarter of the head, which warm-started audio_meg and video from the
+        # VISUAL checkpoint on 8 and 10 incidental tensors -- different modalities
+        # wearing the same parameter names.
+        want = ("visual" if n.startswith("visual_eeg") else
+                "audio" if n.startswith("audio_meg") else
+                "video" if n in ("video", "audio_visual") else "")
+        cands = [x for x in a.warm_start.split(",")
+                 if x and os.path.exists(x) and want and want in os.path.basename(x)]
+        for w in cands:
+            try:
+                src = torch.load(w, map_location="cpu", weights_only=False)["model"]
+            except Exception:
+                continue
+            tgt = objs[n].model.state_dict()
+            share = {k: v for k, v in src.items()
+                     if k in tgt and tgt[k].shape == v.shape and not k.startswith("dyn.")}
+            if len(share) >= max(4, len(tgt) // 2):
+                tgt.update(share)
+                objs[n].model.load_state_dict(tgt)
+                print(f"    {n}: head warm-started from {os.path.basename(w)} "
+                      f"({len(share)} tensors)", flush=True)
+                break
         opts[n] = torch.optim.AdamW(list(dy.parameters()) + objs[n].params(),
                                     lr=a.lr, weight_decay=1e-4)
         tot = sum(p.numel() for p in dy.parameters()) + \
