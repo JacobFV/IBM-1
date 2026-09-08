@@ -26,7 +26,23 @@ sp = importlib.util.spec_from_file_location("pt", "scripts/pretrain_video_loop.p
 P = importlib.util.module_from_spec(sp); sp.loader.exec_module(P)
 
 d = torch.load(a.ckpt, map_location="cpu", weights_only=False)
-cfg = d.get("config", {}); sd = d.get("model") or d.get("av")
+sd = d.get("model") or d.get("av")
+# the publish path used to rewrite the checkpoint without `config`, so every
+# checkpoint this loop published before 36a66a2 -- all 68 on HuggingFace -- lacks
+# it.  the field is not lost: `sidecar()` writes the same dict to the .json
+# beside the weights.  read that when the checkpoint does not carry its own,
+# rather than silently defaulting `modality` to "av" and building the wrong model.
+cfg = d.get("config") or {}
+if not cfg:
+    import json
+    side = a.ckpt[:-3] + ".json" if a.ckpt.endswith(".pt") else ""
+    if side and __import__("os").path.exists(side):
+        cfg = json.load(open(side)).get("config", {})
+        print(f"config recovered from {side}", flush=True)
+    else:
+        print("WARNING: no config in the checkpoint and no sidecar beside it; "
+              "falling back to defaults, which may build the wrong model",
+              flush=True)
 dev = "cuda" if torch.cuda.is_available() else "cpu"
 n_sites, embed = sd["dyn.embed"].shape; k = sd["dyn.idx"].shape[1]
 H = cfg.get("horizon", 8); ds = cfg.get("dyn_steps", 8); dt = cfg.get("dt", 5e-3)
