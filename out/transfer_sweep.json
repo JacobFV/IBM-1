@@ -1,0 +1,46 @@
+{
+  "ceiling": 0.6349999904632568,
+  "floor": 0.2800000011920929,
+  "runs": {
+    "video_contrastive.pt": {
+      "top1": 0.2800000011920929,
+      "recovered": 0.0
+    },
+    "video_contrastive_h50.pt": {
+      "top1": 0.26999998092651367,
+      "recovered": -0.02816907202197346
+    },
+    "video_fixedread.pt": {
+      "top1": 0.6049999594688416,
+      "recovered": 0.9154928678842861
+    },
+    "video_multifilm.pt": {
+      "top1": 0.23999999463558197,
+      "recovered": -0.11267607821237774
+    },
+    "video_residual.pt": {
+      "top1": 0.2800000011920929,
+      "recovered": 0.0
+    },
+    "video_v6.pt": {
+      "top1": 0.19999998807907104,
+      "recovered": -0.22535215642475548
+    },
+    "video_v6_fixed.pt": {
+      "top1": 0.2199999988079071,
+      "recovered": -0.169014096331015
+    },
+    "video_v6_step2000.pt": {
+      "top1": 0.26999998092651367,
+      "recovered": -0.02816907202197346
+    },
+    "video_via_eeg_learned.pt": {
+      "top1": 0.5999999642372131,
+      "recovered": 0.9014083738484026
+    },
+    "video_via_eeg_random.pt": {
+      "top1": 0.2849999964237213,
+      "recovered": 0.01408449403588351
+    }
+  }
+}

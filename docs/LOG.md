@@ -41,6 +41,51 @@ already written.
 
 ---
 
+## 2026-09-08 — transfer is decided by the readout, not by task performance
+
+sweeping every video checkpoint on disk through the transplant test. EEG-trained
+kernel is the ceiling (63.50%), a random kernel the floor (28.00%), designated
+test set, chance 0.50%:
+
+| video run | corpus | readout | own task | top-1 | recovered |
+|---|---|---|---|---|---|
+| video_fixedread | 37.7 h | whole sheet, learned | **-0.149** | 60.50% | **91.5%** |
+| video_via_eeg_learned | 37.7 h | whole sheet, learned | **-5.80** | 60.00% | **90.1%** |
+| video_via_eeg_random | 37.7 h | whole sheet, **frozen** | -4.75 | 28.50% | 1.4% |
+| video_multifilm | 37.7 h | anterior | -0.66 | 24.00% | -11.3% |
+| video_contrastive | 37.7 h | anterior | 0.26 ratio | 28.00% | 0.0% |
+| video_residual | 37.7 h | anterior | degenerate | 28.00% | 0.0% |
+| video_v6 | 11 min | anterior | -0.25 | 20.00% | -22.5% |
+
+**the corpus is controlled** — six of these trained on the same 37.7 hours. the
+variable that separates them is the readout, and it is a clean 2x2:
+
+- whole sheet **and learned** -> transfers ~90%
+- whole sheet, **frozen** readout -> nothing (1.4%)
+- anterior readout -> **worse than random** (-11% to -22%)
+
+two consequences, and neither was expected.
+
+**task performance does not predict transfer.** `video_via_eeg_learned` failed
+its own task about as badly as anything here — skill **-5.80** against
+persistence, which is why the previous entry recorded it as a clean negative —
+and it produced the second-best cortical wiring in the programme. meanwhile
+`video_multifilm` did four times better on video (-0.66) and its wiring is
+*worse than random*. so the volume term does not have to succeed at its own task
+to be worth running, and its own score is the wrong thing to select it on.
+
+**a broken readout is worse than no training at all.** the anterior-readout runs
+do not land near the random floor, they land 11-22 points below it. training
+through a readout that cannot see the drive does not leave the wiring
+uninformative — it actively organises it around a signal that is not there.
+
+what this revises: the via-EEG result was written up as "negative on both
+questions it was built to ask". that stands for its own questions -- the learned
+lead field still did not beat a frozen random projection *on video prediction*.
+but on the architecture's actual claim the two arms separate completely, 90.1%
+against 1.4%, and the learned readout is what made the difference. the run was
+not a dead end; it was measured against the wrong objective.
+
 ## 2026-09-08 — next-frame video training learns wiring that transfers to EEG
 
 **the strongest evidence the shared-substrate bet has yet received, and it comes
