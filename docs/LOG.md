@@ -37,6 +37,37 @@ already written.
 
 ---
 
+## 2026-09-07 (night) — the auditory ceiling, measured honestly
+
+the dynamics-free speech->MEG control on the v3 corpus, averaged over 8 held-out
+pools of 200 rather than one:
+
+| window | top-1 | vs chance |
+|---|---|---|
+| 200 ms | 4.62% ± 0.99 | **9.2x** |
+| 1 s | 7.12% ± 1.71 | **14.2x** |
+
+stable across the last six evaluations in both cases (200 ms spans 3.81-5.31, 1 s
+spans 6.37-7.37), so this is a level and not a lucky draw. on v1 the same control
+sat at 0.0-1.0% across 13 evaluations — 0-2x chance — while its training loss fell
+to 2.83. that is the difference the alignment fix made, and it is not subtle.
+
+the single-pool version of this run printed 8x at one step and 17x at another,
+which is ledger row 9 recurring for the third time in one day: recorded in the
+ledger, fixed in the visual trainer, and left standing in this script until the
+numbers it produced were about to be quoted. the control now averages pools and
+prints the sd.
+
+**this is a CEILING, not a result.** it is what a pair of convnets extract with no
+dynamics in the path, and it is the number any cortex-in-the-path auditory term
+has to beat. for calibration, the visual side's dynamics-free control reached
+21.5% (43x) and the cortex model then reached 30.1% (60x). the auditory ceiling
+is roughly a third of the visual one — real, and much weaker.
+
+the longer window is genuinely better (7.12 against 4.62, sds ~1-1.7), which is
+what the coupling geometry predicted: the tracking sits at a 140 ms lag, so a
+200 ms window barely contains one response.
+
 ## 2026-09-07 (later) — the residual was signal, and it was measurable
 
 the linear fit left 43-160 ms of residual and that was treated as noise to
