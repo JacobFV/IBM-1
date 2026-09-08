@@ -225,7 +225,111 @@ class VideoNext:
                 "report": f"skill vs persistence {sk:+.4f}"}
 
 
-OBJECTIVES = {"visual_eeg": VisualEEG, "audio_meg": AudioMEG, "video": VideoNext}
+class VisualEEGSubject(VisualEEG):
+    """image -> cortex -> embedding, against ONE subject's evoked response.
+
+    THINGS-EEG2 ships 10 subjects, and `build_paired_eeg_images.py` keeps the
+    per-subject array alongside the group mean for exactly this reason: a
+    subject-specific forward model is the eventual target, and averaging away the
+    between-subject variance now would discard what that needs.
+
+    ten subjects sharing one kernel is the architecture's claim in its cleanest
+    form.  the stimulus is identical across them, so anything the kernel learns is
+    common structure and anything the head learns is that subject's head, skull
+    and cortical folding.  if the shared substrate is real, ten subjects should
+    cost far less than ten times one subject.
+
+    the group-mean term is kept separately: averaging 10 subjects buys sqrt(10) of
+    SNR, so it is an easier task and a different one, not a substitute.
+    """
+
+    def __init__(self, dyn, dev, a, subject: int):
+        self.subject = subject
+        self.dev, self.a = dev, a
+        self.imgs = np.load(f"{THINGS}/images_training.npy", mmap_mode="r")
+        ev = np.load(f"{THINGS}/evoked_training_persubject.npy", mmap_mode="r")[subject]
+        self.ev = ev
+        self.n = min(len(self.imgs), len(ev))
+        self.ntr = int(self.n * 0.8)
+        s = np.asarray(ev[:self.ntr:7]).astype(np.float32)
+        self.med = np.median(s, 0)
+        self.iqr = ((np.percentile(s, 75, 0) - np.percentile(s, 25, 0)) / 1.349).clip(1e-9)
+        T = self._eeg(np.arange(4)).shape[-1]
+        self.model = P.VisualContrastiveLoop(dyn, n_sensors=ev.shape[1], n_times=T).to(dev)
+        self.temp = nn.Parameter(torch.tensor(0.07, device=dev))
+        self.chance = 1.0 / a.pool
+        self.name = f"visual_eeg_s{subject:02d}"
+
+
+class AudioVisual:
+    """film frame + its cochleagram -> cortex -> next frame.
+
+    the only term here that drives the sheet from TWO ports at once, so it is the
+    only one that can test cross-modal binding.  the last attempt at that measured
+    cross-modal edge magnitude at 0.885 while severing those exact edges cost
+    -0.06% -- magnitude without contribution -- and dropping the audio drive
+    entirely cost only +3.94%, so the objective was video-dominated.  it is
+    included at a low weight to keep that question alive rather than to carry the
+    schedule.
+    """
+    name = "audio_visual"
+
+    def __init__(self, dyn, dev, a):
+        self.dev, self.a = dev, a
+        fr = sorted(glob.glob(f"{FILM}/*_frames.npy"))
+        co = [f.replace("_frames.npy", "_coch.npy") for f in fr]
+        keep = [(f, c) for f, c in zip(fr, co) if os.path.exists(c)]
+        self.TRf = [np.load(f, mmap_mode="r") for f, _ in keep[:-2]]
+        self.TRc = [np.load(c, mmap_mode="r") for _, c in keep[:-2]]
+        self.TEf = [np.load(f, mmap_mode="r") for f, _ in keep[-2:]]
+        self.TEc = [np.load(c, mmap_mode="r") for _, c in keep[-2:]]
+        # AudioVisualLoop defaults to ctx=8 cochleagram frames; pass ours through
+        # rather than assuming, since a mismatch shows up as an opaque shape error
+        # inside the encoder rather than at construction.
+        self.H, self.ctx = 8, 8
+        self.model = P.AudioVisualLoop(dyn, n_bands=self.TRc[0].shape[1],
+                                       ctx=self.ctx).to(dev)
+
+    def params(self):
+        return [p for n, p in self.model.named_parameters() if not n.startswith("dyn.")]
+
+    def _batch(self, F_, C_, m, rng):
+        xs, cs, ys = [], [], []
+        for _ in range(m):
+            j = rng.integers(len(F_))
+            v, c = F_[j], C_[j]
+            lim = min(len(v), len(c)) - self.H - 1
+            i = int(rng.integers(self.ctx, lim))
+            xs.append(np.asarray(v[i])); ys.append(np.asarray(v[i + self.H]))
+            cs.append(np.asarray(c[i - self.ctx:i]))
+        f = lambda t: (torch.from_numpy(np.stack(t)).to(self.dev)
+                       .permute(0, 3, 1, 2).float() / 127.5) - 1.0
+        return f(xs), torch.from_numpy(np.stack(cs)).float().to(self.dev), f(ys)
+
+    def loss(self, rng):
+        x, c, y = self._batch(self.TRf, self.TRc, max(4, self.a.batch // 8), rng)
+        pred, _, s = self.model(x, c, 8, 5e-3)
+        return F.mse_loss(pred, y) + 1e-1 * P.viability_penalty(s[0])
+
+    @torch.no_grad()
+    def evaluate(self, step):
+        rng = np.random.default_rng(90_000 + step)
+        x, c, y = self._batch(self.TEf, self.TEc, 32, rng)
+        pred, _, _ = self.model(x, c, 8, 5e-3)
+        held = float(F.mse_loss(pred, y)); per = float(F.mse_loss(x, y))
+        return {"held": held, "persistence": per,
+                "skill_vs_persistence": 1 - held / per,
+                "report": f"skill vs persistence {1-held/per:+.4f}"}
+
+
+OBJECTIVES = {"visual_eeg": VisualEEG, "audio_meg": AudioMEG, "video": VideoNext,
+              "audio_visual": AudioVisual}
+# ten per-subject visual terms, built from the array the pairing builder keeps
+# for exactly this purpose.  they share the stimulus, so what the kernel learns
+# across them is common structure and what each head learns is that subject.
+for _s in range(10):
+    OBJECTIVES[f"visual_eeg_s{_s:02d}"] = (
+        lambda dyn, dev, a, _i=_s: VisualEEGSubject(dyn, dev, a, _i))
 
 
 def parse_phases(spec: str):
@@ -256,11 +360,18 @@ def main() -> None:
     ap.add_argument("--embed", type=int, default=128)
     ap.add_argument("--k", type=int, default=48)
     ap.add_argument("--long-range", type=float, default=0.25)
-    ap.add_argument("--objectives", default="visual_eeg,audio_meg,video")
-    ap.add_argument("--phases",
-                    default="0.33:video=0.34;visual_eeg=0.33;audio_meg=0.33,"
-                            "0.66:video=0.3;visual_eeg=0.35;audio_meg=0.35,"
-                            "1.0:video=0.2;visual_eeg=0.4;audio_meg=0.4")
+    ap.add_argument("--objectives",
+                    default="visual_eeg,audio_meg,video,audio_visual," +
+                            ",".join(f"visual_eeg_s{i:02d}" for i in range(10)),
+                    help="14 materializations by default: the group-mean visual "
+                         "term, speech->MEG, video continuation, the audio-visual "
+                         "loop, and TEN per-subject visual terms sharing one "
+                         "kernel -- which is the architecture's claim in its "
+                         "cleanest form, since the stimulus is identical across "
+                         "subjects and only head, skull and folding differ")
+    ap.add_argument("--phases", default="",
+                    help="explicit schedule; empty means build one from GROUPS, "
+                         "which is the only readable way to schedule 14 terms")
     ap.add_argument("--steps", type=int, default=30000)
     ap.add_argument("--batch", type=int, default=64)
     ap.add_argument("--lr", type=float, default=3e-4)
@@ -275,7 +386,28 @@ def main() -> None:
     dev = "cuda" if torch.cuda.is_available() else "cpu"
     torch.manual_seed(0)
     names = [n for n in a.objectives.split(",") if n]
-    phases = parse_phases(a.phases)
+    if a.phases:
+        phases = parse_phases(a.phases)
+    else:
+        # schedule by GROUP, then split each group's mass evenly across its
+        # members.  writing 14 weights by hand three times over is unreadable and
+        # is how a term silently ends up at zero -- which is what collapsed the
+        # audio head when it sat at 0.2 with half the batch.
+        def grp(n):
+            if n.startswith("visual_eeg_s"): return "subjects"
+            if n in ("video", "audio_visual"): return "selfsup"
+            return "paired"
+        GROUPS = [(0.33, {"selfsup": .40, "paired": .30, "subjects": .30}),
+                  (0.66, {"selfsup": .25, "paired": .35, "subjects": .40}),
+                  (1.00, {"selfsup": .15, "paired": .35, "subjects": .50})]
+        phases = []
+        for until, gw in GROUPS:
+            members = {}
+            for g, w in gw.items():
+                ms = [n for n in names if grp(n) == g]
+                for m in ms:
+                    members[m] = w / len(ms)
+            phases.append((until, members))
 
     # one kernel per objective: a replica that trains independently between
     # consolidations.  they start identical, so the first consolidation is a no-op
@@ -298,6 +430,7 @@ def main() -> None:
             dy.embed.data.copy_(init.to(dev))
         dyns[n] = dy
         objs[n] = OBJECTIVES[n](dy, dev, a)
+        objs[n].name = n
         opts[n] = torch.optim.AdamW(list(dy.parameters()) + objs[n].params(),
                                     lr=a.lr, weight_decay=1e-4)
         tot = sum(p.numel() for p in dy.parameters()) + \
