@@ -886,7 +886,13 @@ def main():
                                 sites=a.sites, embed=a.embed, degree=a.k,
                                 objective=obj, viability_weight=a.viability_weight,
                                 step=step)
-            torch.save({"model": model.state_dict(), "step": step, "name": str(nm)}, a.ckpt)
+            # this rewrite used to DROP `config`, which the first save above wrote.
+            # every loader needs it -- render_predictions.py reads `modality` from
+            # it and, finding nothing, defaulted to "av", built an AudioVisualLoop
+            # with no cochleagram and threw.  a checkpoint that cannot be loaded is
+            # not a checkpoint.
+            torch.save({"model": model.state_dict(), "step": step,
+                        "name": str(nm), "config": vars(a)}, a.ckpt)
             meta = sidecar(nm, geometry="spherical shell, area-matched to the measured "
                                         "202,437 mm^2 white surface",
                            n_params=n_tot, n_assoc=n_assoc,
