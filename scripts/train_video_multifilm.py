@@ -45,6 +45,13 @@ def main() -> None:
     ap.add_argument("--dyn-steps", type=int, default=8)
     ap.add_argument("--dt", type=float, default=5e-3)
     ap.add_argument("--horizon", type=int, default=8)
+    ap.add_argument("--target", choices=("direct", "residual"), default="residual",
+                    help="what the decoder predicts.  'direct' emits frame t+H and "
+                         "is minimised by blur, which loses to persistence by "
+                         "construction because persistence keeps the edges -- "
+                         "measured at skill -1.08.  'residual' emits the CHANGE, so "
+                         "a zero output IS persistence and the model starts at "
+                         "skill 0 and can only improve on it")
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--holdout-films", type=int, default=2)
     ap.add_argument("--eval-every", type=int, default=250)
@@ -90,7 +97,8 @@ def main() -> None:
     dyn = P.CorticalDynamics(a.sites, a.embed, a.k, dev, long_range=a.long_range).to(dev)
     model = P.VideoLoop(dyn).to(dev)
     tot = sum(p.numel() for p in model.parameters())
-    print(f"params {tot:,} ({dyn.embed.numel():,} association)", flush=True)
+    print(f"params {tot:,} ({dyn.embed.numel():,} association) | target={a.target}",
+          flush=True)
     opt = torch.optim.AdamW(model.parameters(), lr=a.lr, weight_decay=1e-4)
 
     log = {"config": vars(a), "n_params": tot, "train_films": tr_f,
@@ -100,7 +108,11 @@ def main() -> None:
     rng = np.random.default_rng(0)
     for step in range(a.steps + 1):
         x, y = draw(TR, a.batch, rng)
-        pred, s = model(x, a.dyn_steps, a.dt)
+        out, s = model(x, a.dyn_steps, a.dt)
+        # residual: the decoder emits the CHANGE and it is added to frame t, so the
+        # zero output is exactly persistence.  the model cannot do worse than the
+        # trivial baseline by blurring -- it has to spend capacity on what moves.
+        pred = (x + out) if a.target == "residual" else out
         loss = F.mse_loss(pred, y) + 1e-1 * P.viability_penalty(s[0])
         opt.zero_grad(set_to_none=True)
         loss.backward()
@@ -110,7 +122,8 @@ def main() -> None:
         if step % a.eval_every == 0:
             with torch.no_grad():
                 xt, yt = draw(TE, 128, np.random.default_rng(1000 + step))
-                pt, st = model(xt, a.dyn_steps, a.dt)
+                ot, st = model(xt, a.dyn_steps, a.dt)
+                pt = (xt + ot) if a.target == "residual" else ot
                 held = float(F.mse_loss(pt, yt))
                 p_ = float(F.mse_loss(xt, yt))
                 r_eff = P.effective_rank(st[1][:, ::max(dyn.n // 512, 1)].float())
