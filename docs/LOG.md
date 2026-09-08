@@ -41,6 +41,53 @@ already written.
 
 ---
 
+## 2026-09-08 — next-frame video training learns wiring that transfers to EEG
+
+**the strongest evidence the shared-substrate bet has yet received, and it comes
+from the cheapest corpus.**
+
+`dyn.embed` is the cortical wiring -- w_ij = M[parcel] x exp(-d/l) x
+sigma(<e_i,e_j>), only the third factor trains. both the video run and the
+EEG-aligned run move it essentially all the way from initialisation (cosine
++0.001 in each case), so magnitude says both reshaped it. magnitude has misled
+this project twice, so the question was asked by TRANSFER: take the kernel the
+**next-frame video run** learned -- 40 hours of public-domain film, no EEG
+anywhere in it -- and drop it into the visual-contrastive model, changing nothing
+else. designated THINGS-EEG2 test set, 200 images, chance 0.50%:
+
+| kernel | top-1 |
+|---|---|
+| own (EEG-trained) | 63.50% |
+| **video-trained, transplanted** | **60.50%** |
+| random | 28.00% |
+| zeroed | 28.00% |
+
+the video kernel recovers **32.5 of the 35.5 points** the EEG-trained kernel is
+worth — **92%** — having never seen an EEG recording.
+
+and it is the structure, not the statistics. three matched controls:
+
+| control | top-1 |
+|---|---|
+| video, as trained | 60.50% |
+| same values, shuffled across sites | 28.50% |
+| site-vectors intact, assigned to wrong sites | **15.50%** |
+| fresh noise at matched RMS | 28.00% |
+
+shuffling returns it to random, and permuting *which site gets which embedding*
+is **worse than random** — the site-to-site correspondence is the thing that
+carries. so this is learned cortical structure, not a magnitude effect.
+
+what this changes: the self-supervised video term has been judged by whether it
+beats persistence on its own task, where it still loses by 1.2x. by the
+architecture's actual claim — that a corpus constraining the substrate
+constrains every materialisation — it is the most productive term measured. the
+video branch's value is not its own prediction quality.
+
+what this does not show: that the transfer runs the other way, or that video
+wiring plus more video keeps improving EEG retrieval. both are cheap and neither
+has been run.
+
 ## 2026-09-08 — the readout fix is worth 0.93 of skill, and three negatives were about one line
 
 reading the whole sheet instead of the anterior eighth, same objective, same

@@ -1,0 +1,27 @@
+{
+  "full": {
+    "mse": 0.06709609397997458,
+    "sd": 0.00692387795708435,
+    "persistence": 0.04754905976975957,
+    "skill_vs_persistence": -0.4110919186386648
+  },
+  "frozen": {
+    "mse": 0.0968768543874224,
+    "sd": 0.00846593435662626,
+    "persistence": 0.04754905976975957,
+    "skill_vs_persistence": -1.0374084126272147
+  },
+  "no_assoc": {
+    "mse": 0.09696203377097845,
+    "sd": 0.008468865465783923,
+    "persistence": 0.04754905976975957,
+    "skill_vs_persistence": -1.0391998125827238
+  },
+  "bypass": {
+    "mse": 0.2591275541732709,
+    "sd": 0.01182495556776158,
+    "persistence": 0.04754905976975957,
+    "skill_vs_persistence": -4.449688288853858
+  },
+  "verdict": "the dynamics ARE carrying the task -- bypass is materially worse, so the gap to persistence is capacity or objective, not the substrate"
+}

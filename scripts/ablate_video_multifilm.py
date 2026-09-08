@@ -89,7 +89,17 @@ def main() -> None:
         for r in range(a.batches):
             x, y = draw(np.random.default_rng(500 + r))
             if arm == "bypass":
-                pred = model.dec(model.from_cortex(model.to_cortex(model.enc(x))))
+                # build the drive and read it AT THE READOUT SITES without running
+                # the dynamics -- the same shape the trained path sees, minus the
+                # substrate.  the old form fed to_cortex's n/8 output straight into
+                # from_cortex, which was only width-compatible while the readout
+                # was also n/8; since the readout fix it is 4096 sites spanning the
+                # sheet, and the arm has to skip the dynamics without also changing
+                # the readout geometry it is being compared against.
+                drive = torch.zeros(len(x), dyn.n, device=dev)
+                drive[:, :model.n_in] = model.to_cortex(model.enc(x))
+                pred = model.dec(model.from_cortex(
+                    drive[:, model.read_idx.to(dev)]))
             else:
                 pred, _ = model(x, ds, dt)
             mse.append(float(F.mse_loss(pred, y)))

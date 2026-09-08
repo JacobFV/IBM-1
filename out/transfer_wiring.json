@@ -1,0 +1,19 @@
+{
+  "own": {
+    "top1": 0.6349999904632568,
+    "top5": 0.8899999856948853
+  },
+  "video": {
+    "top1": 0.6049999594688416,
+    "top5": 0.8849999904632568
+  },
+  "random": {
+    "top1": 0.2800000011920929,
+    "top5": 0.699999988079071
+  },
+  "zeroed": {
+    "top1": 0.2800000011920929,
+    "top5": 0.699999988079071
+  },
+  "verdict": "next-frame training produces TRANSFERABLE cortical structure"
+}
