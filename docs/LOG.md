@@ -28,6 +28,7 @@ pattern is worth more than any single row.
 | 9 | contrastive retrieval reaches 18.5% | single-pool, sd 2.8. and the run **checkpointed on best single pool**, selecting for lucky draws | averaging 20 pools |
 | 12 | the cortex beats the dynamics-free encoder on vision | it wins on the training-split holdout (30.12% vs 26.81%) and **loses on the corpus's designated test set** (63.50% vs 66.50%), where the two are indistinguishable anyway -- 0.89 sd, six images out of 200. the quoted 21.5% control was also a single pool | building `images_test.npy`, which had never existed, and selecting the control the same way the model was selected |
 | 13 | the video loop is learning continuation (recon 0.540 -> 0.011, a 50x fall, and visibly sharper clips) | **25% WORSE than persistence** on held-out frames: model 0.01235 against persistence 0.00985, skill -0.2535. it looked right because at horizon 8 on 25 fps film, frame t+8 resembles frame t. skill against the ZERO baseline was +0.9787 -- the flattering comparison, and the meaningless one | computing the persistence baseline, which the loop had never logged |
+| 14 | the residual objective beats persistence (skill +0.0003, printed as "BEATS PERSISTENCE") | the model emits a residual **3.9% of the true magnitude with cosine -0.0016** -- it learned to output ZERO, which *is* persistence. it was reproducing the baseline, not beating it | measuring the predicted residual's size and direction, which the loss cannot distinguish |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
 
@@ -38,6 +39,49 @@ caught by a measurement that could have been run first, and several by one I had
 already written.
 
 ---
+
+## 2026-09-08 — MSE cannot do this task at either parameterisation
+
+the ablation left the objective as the only suspect, so the decoder was changed
+to emit the RESIDUAL and add it to frame t. a zero output is then exactly
+persistence, so the model starts level with the trivial baseline and can only
+improve by spending capacity on what moves. it cannot buy a lower loss by
+blurring toward the mean.
+
+it worked structurally and failed substantively. skill opened at -0.32 against
+the direct objective's -11.13, reached -0.002 by step 250, and printed
+**"BEATS PERSISTENCE +0.0003"** at step 750.
+
+that line was false, and the check that caught it is the point of this entry.
+skill at ±0.002 of persistence is consistent with two very different models — one
+that learned the motion, and one that learned to emit **zero**, which *is*
+persistence. the loss cannot separate them. the residual's size and direction
+can:
+
+    predicted residual RMS   0.00768
+    true      residual RMS   0.19937
+    ratio                    0.039
+    cosine(pred, true)      -0.0016
+
+**3.9% of the true magnitude, and exactly no correlation in direction.** the
+model emits nothing. "matching persistence" here means *reproducing* it, not
+competing with it, and a run left alone would have reported a win.
+
+so both parameterisations fail, and they fail the same way for the same reason.
+MSE asks for the conditional mean of the target. for direct prediction that mean
+is a blur; for residual prediction it is zero. **neither is motion**, and no
+amount of data or substrate changes what an L2 loss is minimised by — 15.2 h did
+not, and the substrate is the part that works (bypass costs 4.41x).
+
+the trainer now prints `res` and `cos` beside skill every eval, refuses to stamp
+BEATS PERSISTENCE unless the residual has real size and direction, and **will not
+checkpoint a degenerate model** — the gate reads ratio > 0.15 and cos > 0.1
+alongside skill.
+
+what this leaves: pixel-space L2 is the wrong question, the third time this
+programme has reached that conclusion on a different branch. the visual term went
+from skill +0.011 to 53x chance by changing the question from reconstruction to
+discrimination. video needs the same move.
 
 ## 2026-09-08 — the cortex is not what loses to persistence
 

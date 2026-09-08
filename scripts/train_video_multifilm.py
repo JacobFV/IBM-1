@@ -125,6 +125,19 @@ def main() -> None:
                 ot, st = model(xt, a.dyn_steps, a.dt)
                 pt = (xt + ot) if a.target == "residual" else ot
                 held = float(F.mse_loss(pt, yt))
+                # skill at +/-0.002 of persistence is consistent with two very
+                # different models: one that learned the motion, and one that
+                # learned to emit ZERO -- which IS persistence.  the loss cannot
+                # separate them, so the residual's size and direction are reported
+                # beside it.  measured at step 750 of the first residual run:
+                # ratio 0.039, cosine -0.0016, i.e. fully degenerate while the
+                # log line read "BEATS PERSISTENCE".
+                res_t = yt - xt
+                res_p = ot if a.target == "residual" else (ot - xt)
+                ratio = float(res_p.pow(2).mean().sqrt() /
+                              res_t.pow(2).mean().sqrt().clamp_min(1e-9))
+                cos = float(F.cosine_similarity(res_p.flatten(1),
+                                                res_t.flatten(1)).mean())
                 p_ = float(F.mse_loss(xt, yt))
                 r_eff = P.effective_rank(st[1][:, ::max(dyn.n // 512, 1)].float())
             skill = 1 - held / p_
@@ -132,17 +145,21 @@ def main() -> None:
                                  "held": held, "persistence": p_,
                                  "skill_vs_persistence": skill,
                                  "skill_vs_zero": 1 - held / zero_mse,
+                                 "residual_ratio": ratio, "residual_cos": cos,
                                  "r_eff": r_eff, "sec": round(time.time() - t0, 1)})
             flag = ""
-            if skill > best:
+            if skill > best and ratio > 0.15 and cos > 0.1:
                 best = skill
                 flag = "  <- best"
                 os.makedirs(os.path.dirname(a.ckpt) or ".", exist_ok=True)
                 torch.save({"model": model.state_dict(), "step": step,
                             "skill_vs_persistence": skill, "config": vars(a)}, a.ckpt)
-            mark = "  BEATS PERSISTENCE" if skill > 0 else ""
+            # a "win" that comes from emitting nothing is not a win.
+            mark = ("  BEATS PERSISTENCE" if (skill > 0 and ratio > 0.15 and cos > 0.1)
+                    else "  [degenerate: emits ~nothing]" if ratio < 0.15 else "")
             print(f"{step:6d}  train {float(loss):.5f}  held {held:.5f}  "
-                  f"persist {p_:.5f}  SKILL {skill:+.4f}  r_eff {r_eff:5.2f}  "
+                  f"persist {p_:.5f}  SKILL {skill:+.4f}  res {ratio:.3f} "
+                  f"cos {cos:+.3f}  r_eff {r_eff:5.2f}  "
                   f"{time.time()-t0:5.0f}s{flag}{mark}", flush=True)
 
     log["best_skill"] = best
