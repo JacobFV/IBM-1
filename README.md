@@ -12,11 +12,16 @@ constrains every task.
 ibm = (fields, anatomy, topologies, processes)
 ```
 
-**That bet is testable, and so far it holds.** Bypassing the shared cortical
-dynamics in a trained model costs **+324%** loss; resetting the learned
-cortico-cortical weights costs **+180%**. The substrate is load-bearing rather
-than decorative — which was the failure mode that would have made every other
-number here meaningless.
+**That bet is testable, and it holds in one direction only.** Bypassing the shared
+cortical dynamics in a trained model costs **+324%** loss; resetting the learned
+cortico-cortical weights costs **+180%**; on visual retrieval, bypassing costs 37
+of 63 points. The substrate is load-bearing rather than decorative — the failure
+mode that would have made every other number here meaningless.
+
+It does **not** follow that the substrate is the best tool for these tasks: a
+dynamics-free encoder matches it on the THINGS-EEG2 test set. Being load-bearing
+inside the model and beating a purpose-built baseline are different claims, and
+only the first is established.
 
 ---
 
@@ -47,24 +52,34 @@ python -m ibm.curriculum                                       # the training DA
   overnight recordings is **1.000 ± 0.296 Hz**; one declared parameter — the
   adaptation time constant — reproduces exactly 1.000 Hz at 0.12 s, with a 43.5 mV
   swing.
-- **The cortex beats the encoder it was meant to merely not obstruct.** Image →
-  cortical dynamics → embedding, contrastively aligned with measured 64-channel EEG
-  (THINGS-EEG2), concept-disjoint held-out split: **30.1% ± 3.1 top-1 over 20 pools
-  of 200 — 60× chance**, against a dynamics-free control reaching 21.5% on the same
-  pairs. Severing the model four ways separates who earns it:
+- **The cortex is load-bearing inside the model — but it does not beat a
+  dynamics-free encoder.** Image → cortical dynamics → embedding, contrastively
+  aligned with measured 64-channel EEG (THINGS-EEG2). On the corpus's **designated
+  test set** (200 concepts, 80 repetitions each, so the pool is the whole set and
+  chance is 1/200 exactly) the model reaches **63.5% top-1, 127× chance**. A
+  separately trained dynamics-free control, selected the same way, reaches
+  **66.5%** — the two are indistinguishable (0.89 sd; six images out of 200), and
+  the directional claim this line used to make has been withdrawn. On the
+  training-split holdout the ordering reverses (30.1% vs 26.8%), which is why the
+  set has to be named whenever the number is.
+
+  What survives, and was always the stronger evidence, is what happens when the
+  model is damaged. Severing it four ways on the designated set:
 
   | arm | top-1 | retained |
   |---|---|---|
-  | full | 30.1% | 100% |
-  | association reset to init | 17.1% | 57% |
-  | association zeroed | 17.1% | 57% |
-  | dynamics bypassed | 15.0% | 50% |
+  | full | 63.5% | 100% |
+  | association reset to init | 28.0% | 44% |
+  | association zeroed | 28.0% | 44% |
+  | dynamics bypassed | 26.0% | 41% |
 
   Read down the column: the dynamics without a learned kernel are worth 2 points
   over no dynamics at all, a *randomly initialised* association is worth nothing
-  beyond that — and learning it is worth **13 points**. The learned
-  cortico-cortical connectivity is the largest single contributor in the model,
-  and its share has compounded 15% → 24% → 35% → **43%** across successive runs.
+  beyond that — and learning it is worth **35 points**. Inside a model that has
+  one, the learned cortico-cortical connectivity is the largest single
+  contributor by a wide margin. That is a narrower claim than the one above it:
+  the substrate earns its keep within this model without being the best way to
+  read EEG.
 - **A body to inhabit.** 96 named muscles with nerve and root levels, 58 nerve
   trunks with fibre-class-resolved conduction (group Ia at 6 ms against
   unmyelinated C at 550 ms down the same sciatic nerve), four spinal reflex arcs,

@@ -66,6 +66,11 @@ def main() -> None:
     ap.add_argument("--subject", type=int, default=0)
     ap.add_argument("--pool", type=int, default=200, help="retrieval pool; chance = 1/pool")
     ap.add_argument("--steps", type=int, default=4000)
+    ap.add_argument("--eval-on", choices=("trainsplit", "designated"),
+                    default="trainsplit",
+                    help="'designated' scores the THINGS-EEG2 test set: 200 images "
+                         "at 80 repetitions each, so the pool IS the set and chance "
+                         "is 1/200 by construction")
     ap.add_argument("--batch", type=int, default=256)
     a = ap.parse_args()
 
@@ -86,6 +91,9 @@ def main() -> None:
         y = (np.asarray(ev[i]).astype(np.float32) - med) / iqr
         return np.clip(y, -6, 6)[..., ONSET:ONSET + KEEP:DEC]
 
+    TEST_I = np.load(f"{D}/images_test.npy")
+    TEST_E = np.clip((np.load(f"{D}/evoked_test_groupmean.npy").astype(np.float32)
+                      - med) / iqr, -6, 6)[..., ONSET:ONSET + KEEP:DEC]
     T = eeg(np.arange(4)).shape[-1]
     C = ev.shape[1]
     ie, ee = ImgEnc().to(dev), EegEnc(C, T).to(dev)
@@ -110,14 +118,21 @@ def main() -> None:
 
         if step % 500 == 0:
             with torch.no_grad():
-                j = np.random.randint(ntr, n - 1, a.pool)
-                xt = torch.from_numpy(np.ascontiguousarray(imgs[j])).to(dev)
-                xt = (xt.permute(0, 3, 1, 2).float() / 127.5) - 1
-                yt = torch.from_numpy(eeg(j)).to(dev)
+                if a.eval_on == "designated":
+                    xt = torch.from_numpy(np.ascontiguousarray(TEST_I)).to(dev)
+                    xt = (xt.permute(0, 3, 1, 2).float() / 127.5) - 1
+                    yt = torch.from_numpy(TEST_E).to(dev)
+                    m = len(TEST_I)
+                else:
+                    j = np.random.randint(ntr, n - 1, a.pool)
+                    xt = torch.from_numpy(np.ascontiguousarray(imgs[j])).to(dev)
+                    xt = (xt.permute(0, 3, 1, 2).float() / 127.5) - 1
+                    yt = torch.from_numpy(eeg(j)).to(dev)
+                    m = len(j)
                 s = ie(xt) @ ee(yt).T
-                top1 = float((s.argmax(1) == torch.arange(len(j), device=dev)).float().mean())
+                top1 = float((s.argmax(1) == torch.arange(m, device=dev)).float().mean())
             print(f"  {step:5d}  loss {float(loss):.4f}  held-out top-1 "
-                  f"{100*top1:.2f}%  (chance {100/a.pool:.2f}%)", flush=True)
+                  f"{100*top1:.2f}%  ({top1*m:.1f}x chance, pool {m})", flush=True)
 
 
 if __name__ == "__main__":

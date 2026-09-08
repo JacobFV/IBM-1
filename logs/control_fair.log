@@ -1,0 +1,13 @@
+  step  trainsplit(sel)   designated
+     0            0.50%        0.50%
+   500           26.00%       66.00%
+  1000           25.87%       66.00%
+  1500           24.00%       66.00%
+  2000           22.62%       64.50%
+  2500           23.69%       61.50%
+  3000           23.37%       63.00%
+
+selected at step 1400 by trainsplit (26.81%)
+  -> DESIGNATED TEST SET: 66.50%  (133.0x chance)
+
+  cortex model (same selection rule): 63.50%

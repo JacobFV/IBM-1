@@ -26,6 +26,7 @@ pattern is worth more than any single row.
 | 7 | paired MEG reaches skill +0.90 | the normalisation was loaded and never applied; training minimised against an array with 3e4 less variance and **never beat the zero baseline in either coordinate system** | an independent eval disagreeing by 280x |
 | 8 | the image→EEG target carries no stimulus information | the pairing was **99.94% wrong** — 10 of 16,540. THINGS-EEG2 uses ten images from each of 1,654 concepts; a directory walk takes every image from the first 1,162 | reading the order the dataset declares |
 | 9 | contrastive retrieval reaches 18.5% | single-pool, sd 2.8. and the run **checkpointed on best single pool**, selecting for lucky draws | averaging 20 pools |
+| 12 | the cortex beats the dynamics-free encoder on vision | it wins on the training-split holdout (30.12% vs 26.81%) and **loses on the corpus's designated test set** (63.50% vs 66.50%), where the two are indistinguishable anyway -- 0.89 sd, six images out of 200. the quoted 21.5% control was also a single pool | building `images_test.npy`, which had never existed, and selecting the control the same way the model was selected |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
 
@@ -36,6 +37,57 @@ caught by a measurement that could have been run first, and several by one I had
 already written.
 
 ---
+
+## 2026-09-07 (night, later) — on the designated test set the cortex does not beat the control
+
+**the README's headline claim does not survive the corpus's own test set.**
+
+`images_test.npy` had never been built. the evoked test responses were there --
+200 concepts at **80 repetitions** each against training's 4, a factor of sqrt(20)
+in target SNR -- and their images were not, so the designated set had never been
+usable. it is built now, in the order `image_metadata.npy` declares.
+
+it also removes the last sampling artefact: 200 images means a pool of 200 IS the
+whole set, chance is 1/200 by construction, and the measurement is deterministic.
+ledger row 9 cannot recur there.
+
+the trained checkpoint scores **63.50%** on it — 127x chance, top-5 89.0%, median
+rank 1. that looked like a large improvement on the 30.12% we report, and it is
+not: it is the same model on a cleaner target. the two numbers are not
+comparable and neither should be quoted as progress over the other.
+
+then the control, selected the same way the cortex checkpoint was — best on the
+training-split holdout, then scored on the designated set:
+
+| | trainsplit (selection) | designated test |
+|---|---|---|
+| dynamics-free control | 26.81% | **66.50%** (133x) |
+| cortex model | 30.12% | 63.50% (127x) |
+
+**the control wins on the designated set.** it loses on the split we had been
+reporting and wins on the one the corpus was built to be scored on.
+
+the honest statement is not "the control beats the cortex" either: at p ~ 0.65 and
+n = 200 the standard deviation of a proportion is 3.37 points, so a 3-point gap is
+**0.89 sd — six images**. the two are *indistinguishable* on this set. what dies is
+the directional claim, which the README states as a headline: "the cortex beats
+the encoder it was meant to merely not obstruct."
+
+three things follow, and none of them is that the substrate is worthless:
+
+- the **ablation** result is untouched and was always the stronger evidence.
+  bypassing the dynamics inside the trained model costs it 37.5 points on this set
+  (63.50 -> 26.00), and a randomly initialised association is worth nothing beyond
+  no association at all. the cortex is load-bearing *within* the model that has
+  one. that is a different claim from beating a separately-trained encoder, and
+  only the second one just failed.
+- the 21.5% control figure we have been quoting was itself a **single pool**.
+  measured over 8, the control reaches 26.81% on the trainsplit — so the visual
+  margin was always narrower than reported.
+- the control **peaks at step 500 and decays to 35% by 3000** on the designated
+  set. quoting its peak selects a checkpoint on the evaluation set; quoting its
+  final value flatters the model it is a control for. matched selection is the
+  only defensible comparison and it is what the table above uses.
 
 ## 2026-09-07 (night) — the auditory ceiling, measured honestly
 

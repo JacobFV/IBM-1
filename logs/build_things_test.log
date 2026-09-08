@@ -1,0 +1,18 @@
+10 subjects, split=test
+  sub-01__63_channels.zi   (200, 64, 100)
+  sub-02__63_channels.zi   (200, 64, 100)
+  sub-03__63_channels.zi   (200, 64, 100)
+  sub-04__63_channels.zi   (200, 64, 100)
+  sub-05__63_channels.zi   (200, 64, 100)
+  sub-06__63_channels.zi   (200, 64, 100)
+  sub-07__63_channels.zi   (200, 64, 100)
+  sub-08__63_channels.zi   (200, 64, 100)
+  sub-09__63_channels.zi   (200, 64, 100)
+  sub-10__63_channels.zi   (200, 64, 100)
+
+evoked: (10, 200, 64, 100)  subjects x images x channels x time
+declared image order: 200   EEG expects: 200
+    0/200
+  wrote images (200, 64, 64, 3) in the DECLARED order
+
+wrote data/derived/things-paired: 10 subjects, 200 images, 64 channels, 100 samples (-0.2 to +0.79 s at 100 Hz)

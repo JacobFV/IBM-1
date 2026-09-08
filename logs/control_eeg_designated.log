@@ -1,0 +1,13 @@
+[groupmean] 16,540 pairs, 64 ch x 25 samples, pool 200 (chance 0.50%)
+/home/brandonin/Documents/IBM-1/scripts/control_eeg_retrieval.py:134: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  {step:5d}  loss {float(loss):.4f}  held-out top-1 "
+      0  loss 5.6402  held-out top-1 1.00%  (2.0x chance, pool 200)
+    500  loss 0.4940  held-out top-1 61.50%  (123.0x chance, pool 200)
+   1000  loss 0.1340  held-out top-1 53.00%  (106.0x chance, pool 200)
+   1500  loss 0.0696  held-out top-1 45.50%  (91.0x chance, pool 200)
+   2000  loss 0.0519  held-out top-1 42.50%  (85.0x chance, pool 200)
+   2500  loss 0.0219  held-out top-1 37.50%  (75.0x chance, pool 200)
+   3000  loss 0.0314  held-out top-1 35.00%  (70.0x chance, pool 200)
+   3500  loss 0.0333  held-out top-1 34.50%  (69.0x chance, pool 200)
+   4000  loss 0.0222  held-out top-1 32.00%  (64.0x chance, pool 200)
