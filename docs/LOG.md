@@ -30,6 +30,7 @@ pattern is worth more than any single row.
 | 13 | the video loop is learning continuation (recon 0.540 -> 0.011, a 50x fall, and visibly sharper clips) | **25% WORSE than persistence** on held-out frames: model 0.01235 against persistence 0.00985, skill -0.2535. it looked right because at horizon 8 on 25 fps film, frame t+8 resembles frame t. skill against the ZERO baseline was +0.9787 -- the flattering comparison, and the meaningless one | computing the persistence baseline, which the loop had never logged |
 | 14 | the residual objective beats persistence (skill +0.0003, printed as "BEATS PERSISTENCE") | the model emits a residual **3.9% of the true magnitude with cosine -0.0016** -- it learned to output ZERO, which *is* persistence. it was reproducing the baseline, not beating it | measuring the predicted residual's size and direction, which the loss cannot distinguish |
 | 15 | MSE cannot do video at either parameterisation; video continuation does not work in any form tried | three of the four failures read `s[1][:, -n//8:]`, the eighth of the sheet the drive never reaches -- across-batch state sd there is **0.000004 against 0.003099** in the driven region, 775x less, and a readout probe scores **chance from N=1 onward** where the drive itself scores 99.80%. reading the whole sheet takes the same objective from -1.08 to **-0.149** | asking whether the readout can identify the frame that drove it -- a question with a known answer |
+| 16 | next-frame video training learns cortical wiring that transfers to EEG (91.5% recovery) | pairing each frame with a **RANDOM** frame from the same film -- temporal structure destroyed, everything else identical -- still transfers **83-86%**. only ~5 of the 35.5 points depend on prediction. the mechanism is gradient flow through the dynamics, not next-frame learning | running the shuffled-target control, which the saturation-by-step-2,500 should have prompted immediately |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
 
@@ -40,6 +41,41 @@ caught by a measurement that could have been run first, and several by one I had
 already written.
 
 ---
+
+## 2026-09-08 — the transfer is not about next-frame prediction
+
+**the control I should have run before reporting it.** yesterday's entry claimed
+next-frame video training learns cortical wiring that transfers to the EEG task,
+on the strength of a 91.5% recovery. destroying the temporal correspondence
+entirely -- pairing each frame with a RANDOM frame from the same film, leaving
+image statistics, encoder inputs and gradient magnitudes untouched -- costs
+almost nothing:
+
+| step | real next-frame task | shuffled targets |
+|---|---|---|
+| 2,500 | 88.7% | **83.1%** |
+| 5,000 | 90.1% | **81.7%** |
+| 7,500 | 91.5% | **85.9%** |
+
+so **~5 points of a 35.5-point range** is what actually depends on predicting the
+next frame. the other 83% comes from something that never needed temporal
+structure at all.
+
+that also explains why the curve saturated by step 2,500 and why the run's own
+skill did not predict transfer: the mechanism was never the prediction task. the
+fine-grained curve shows it arriving fast and stopping — 35.2% at 250 steps,
+60.6% at 500, 78.9% at 1,000, 88.7% by 2,000 and flat.
+
+what survives: gradient descent through the dynamics on natural images *does*
+produce a kernel that transfers, and a random kernel recovers 0%. that is still a
+real effect and still cheap. it is just not the claim that was made, and the
+claim as written -- "next-frame training pushes cortical wiring into shape" --
+overstated the mechanism by an order of magnitude.
+
+the next control is running: **noise inputs**, gaussian at matched moments with
+no image structure whatsoever. if that also transfers, the effect is not about
+vision at all but about any gradient flow organising the kernel, and what is
+being measured is closer to a property of the optimiser than of the corpus.
 
 ## 2026-09-08 — transfer is decided by the readout, not by task performance
 

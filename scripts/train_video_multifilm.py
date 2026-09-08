@@ -54,6 +54,13 @@ def main() -> None:
                          "skill 0 and can only improve on it")
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--holdout-films", type=int, default=2)
+    ap.add_argument("--noise-inputs", action="store_true",
+                    help="replace the film entirely with gaussian noise at matched "
+                         "mean and variance.  --shuffle-targets already showed that "
+                         "destroying TEMPORAL structure costs only ~5 points of "
+                         "transfer; this asks whether natural image statistics "
+                         "matter either, or whether any gradient flow through the "
+                         "dynamics organises the kernel")
     ap.add_argument("--shuffle-targets", action="store_true",
                     help="pair each frame t with a RANDOM frame t+H from elsewhere "
                          "in the film.  the image statistics, the encoder's input "
@@ -103,7 +110,12 @@ def main() -> None:
             xs.append(np.asarray(v[i])); ys.append(np.asarray(v[j]))
         f = lambda t: (torch.from_numpy(np.stack(t)).to(dev)
                        .permute(0, 3, 1, 2).float() / 127.5) - 1.0
-        return f(xs), f(ys)
+        X, Y = f(xs), f(ys)
+        if a.noise_inputs:
+            # matched first and second moments, no image structure at all
+            X = torch.randn_like(X) * X.std() + X.mean()
+            Y = torch.randn_like(Y) * Y.std() + Y.mean()
+        return X, Y
 
     rng_te = np.random.default_rng(7)
     with torch.no_grad():
