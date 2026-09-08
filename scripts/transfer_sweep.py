@@ -84,7 +84,7 @@ def main() -> None:
     print(f"  random kernel (floor)        {100*base:5.2f}%")
     print(f"\n{'video run':26s} {'top-1':>7s} {'recovered':>10s}")
     res = {"ceiling": top, "floor": base, "runs": {}}
-    for f in sorted(glob.glob("ckpt/video*.pt")):
+    for f in sorted(glob.glob(os.environ.get("SWEEP_GLOB","ckpt/video*.pt"))):
         try:
             w = torch.load(f, map_location="cpu", weights_only=False)["model"]["dyn.embed"]
         except Exception as e:
