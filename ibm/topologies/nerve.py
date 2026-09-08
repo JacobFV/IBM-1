@@ -145,6 +145,28 @@ TRUNK_COMPOSITION: dict[str, tuple[str, ...]] = {
 #: same reason `ibm.topologies.afferent` states its stage table that way: adult
 #: path lengths vary by a factor of two with body size, and anything that depends
 #: sharply on one of these should fit it.
+# provenance, adopted from IHM-1's schema.  every one of their records carries
+# `evidence_kind`, `geometry_kind` and `measured_axon_geometry: false`, plus an
+# explicit `limitations` list saying the centrelines are inferred rather than
+# dissected.  the table below was bare floats with no provenance at all -- a
+# reader could not tell which came from a source and which I typed from memory,
+# and this repo's ledger is 17 rows of numbers that turned out to be compared
+# against the wrong thing.
+#
+# what these lengths ARE: the anatomical length of the named trunk, typed from
+# standard references.  what they are NOT: the conduction route from receptor to
+# relay, which is longer by the root and cord segment.  IHM-1 measures the route
+# over a real body mesh and the two disagree systematically where that segment
+# dominates -- lateral_plantar 888 mm measured against 200 typed here (4.4x),
+# oculomotor 142 against 45 (3.2x) -- while agreeing within ~20% on limb trunks
+# where it does not (median 587 against 700, radial 526 against 650).
+#
+# FOR A CONDUCTION DELAY THE ROUTE IS THE RIGHT QUANTITY.  prefer
+# `ibm.topologies.ihm_bridge.routes()`, which uses IHM's measured length where
+# one exists and falls back here with `length_source` saying which was used.
+LENGTH_EVIDENCE = "typed_from_reference_anatomy; trunk length, not conduction route"
+LENGTH_SUPERSEDED_BY = "ibm.topologies.ihm_bridge.routes"
+
 TRUNK_LENGTH_MM: dict[str, float] = {
     # cranial: tens of millimetres, not hundreds.  the optic nerve is 40-50 mm
     # from globe to chiasm; the whole retinogeniculate path is under 80 mm.
