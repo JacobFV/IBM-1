@@ -322,8 +322,107 @@ class AudioVisual:
                 "report": f"skill vs persistence {1-held/per:+.4f}"}
 
 
+class OpticNerve(VisualEEG):
+    """image -> OPTIC NERVE -> occipital cortex -> measured EEG.
+
+    the same corpus and target as `visual_eeg`, and a different question.  that
+    term drives `drive[:, :dyn.n // 8]` -- an arbitrary eighth of a seeded random
+    point cloud, called occipital in a comment.  this one drives the sites
+    `cortical_regions` labels occipital, through a nerve declared in
+    `ibm/topologies/nerve.py` with a length and three retinal ganglion
+    populations whose conduction velocities differ by a factor of three.
+
+    so it is the ablation for the anatomy itself.  run beside `visual_eeg` on
+    identical data, the difference between them is what the declared pathway is
+    worth -- and if it is worth nothing, that is the finding, because the
+    embodiment story rests on these routes meaning something.
+    """
+    name = "optic_nerve"
+
+    def __init__(self, dyn, dev, a):
+        VisualEEG.__init__(self, dyn, dev, a)
+        T = self._eeg(np.arange(4)).shape[-1]
+        self.model = P.CranialNerveLoop(dyn, nerve="optic", lobe="occipital",
+                                        n_sensors=self.ev.shape[1], n_times=T).to(dev)
+        self.temp = nn.Parameter(torch.tensor(0.07, device=dev))
+
+    def loss(self, rng):
+        x, y = self._batch(0, self.ntr, self.a.batch, rng)
+        z, s = self.model.embed_stimulus(x)
+        lg = z @ self.model.embed_eeg(y).T / self.temp.clamp(0.01, 1.0)
+        lb = torch.arange(len(x), device=self.dev)
+        return 0.5 * (F.cross_entropy(lg, lb) + F.cross_entropy(lg.T, lb)) \
+            + 1e-1 * P.viability_penalty(s[0])
+
+    @torch.no_grad()
+    def evaluate(self, step):
+        accs = []
+        rng = np.random.default_rng(90_000 + step)
+        for _ in range(self.a.eval_pools):
+            x, y = self._batch(self.ntr, self.n - 1, self.a.pool, rng)
+            z, _ = self.model.embed_stimulus(x)
+            sim = z @ self.model.embed_eeg(y).T
+            accs.append(float((sim.argmax(1) ==
+                        torch.arange(len(x), device=self.dev)).float().mean()))
+        m, sd = float(np.mean(accs)), float(np.std(accs))
+        flag = "  COLLAPSED" if (sd == 0.0 and abs(m - self.chance) < 1e-9) else ""
+        return {"top1": m, "sd": sd, "collapsed": bool(flag),
+                "report": f"top-1 {100*m:5.2f}%+/-{100*sd:4.2f} "
+                          f"({m/self.chance:5.1f}x){flag}"}
+
+
+class CochlearNerve(AudioMEG):
+    """cochleagram -> COCHLEAR NERVE -> temporal cortex -> measured MEG.
+
+    the auditory twin, and the same ablation.  type I fibres are 95% of the nerve
+    and myelinated at 25 m/s; type II are unmyelinated at 3 m/s, so over 25 mm
+    they arrive 1.0 ms and 8.3 ms after the same transient.  `audio_meg` drives
+    `dyn.n // 4` and calls it temporal; this drives the sites the region
+    assignment actually labels temporal.
+    """
+    name = "cochlear_nerve"
+
+    def __init__(self, dyn, dev, a):
+        AudioMEG.__init__(self, dyn, dev, a)
+        self.model = P.CranialNerveLoop(dyn, nerve="cochlear", lobe="temporal",
+                                        n_sensors=self.neur.shape[1],
+                                        n_times=self.win).to(dev)
+        self.temp = nn.Parameter(torch.tensor(0.07, device=dev))
+
+    def loss(self, rng):
+        x, y = self._batch(self.ctx, self.ntr - self.win, self.a.batch, rng)
+        z, s = self.model.embed_stimulus(x)
+        lg = z @ self.model.embed_eeg(y).T / self.temp.clamp(0.01, 1.0)
+        lb = torch.arange(len(x), device=self.dev)
+        return 0.5 * (F.cross_entropy(lg, lb) + F.cross_entropy(lg.T, lb)) \
+            + 1e-1 * P.viability_penalty(s[0])
+
+    @torch.no_grad()
+    def evaluate(self, step):
+        accs = []
+        rng = np.random.default_rng(90_000 + step)
+        for _ in range(self.a.eval_pools):
+            x, y = self._batch(self.ntr + self.gap, self.n - self.win - 1,
+                               self.a.pool, rng)
+            z, _ = self.model.embed_stimulus(x)
+            sim = z @ self.model.embed_eeg(y).T
+            accs.append(float((sim.argmax(1) ==
+                        torch.arange(len(x), device=self.dev)).float().mean()))
+        m, sd = float(np.mean(accs)), float(np.std(accs))
+        flag = "  COLLAPSED" if (sd == 0.0 and abs(m - self.chance) < 1e-9) else ""
+        return {"top1": m, "sd": sd, "ceiling": self.CEILING, "collapsed": bool(flag),
+                "report": f"top-1 {100*m:5.2f}%+/-{100*sd:4.2f} "
+                          f"({m/self.chance:5.1f}x, ceiling {100*self.CEILING:.2f}%)"
+                          f"{flag}"}
+
+
 OBJECTIVES = {"visual_eeg": VisualEEG, "audio_meg": AudioMEG, "video": VideoNext,
-              "audio_visual": AudioVisual}
+              "audio_visual": AudioVisual,
+              # the nerve-routed pair: same data and target as visual_eeg and
+              # audio_meg, but entering through a DECLARED pathway into the lobe
+              # the region assignment names, rather than an index slice.  run
+              # beside them, the difference is what the anatomy is worth.
+              "optic_nerve": OpticNerve, "cochlear_nerve": CochlearNerve}
 # ten per-subject visual terms, built from the array the pairing builder keeps
 # for exactly this purpose.  they share the stimulus, so what the kernel learns
 # across them is common structure and what each head learns is that subject.
@@ -362,6 +461,7 @@ def main() -> None:
     ap.add_argument("--long-range", type=float, default=0.25)
     ap.add_argument("--objectives",
                     default="visual_eeg,audio_meg,video,audio_visual," +
+                            "optic_nerve,cochlear_nerve," +
                             ",".join(f"visual_eeg_s{i:02d}" for i in range(10)),
                     help="14 materializations by default: the group-mean visual "
                          "term, speech->MEG, video continuation, the audio-visual "
@@ -409,10 +509,11 @@ def main() -> None:
         def grp(n):
             if n.startswith("visual_eeg_s"): return "subjects"
             if n in ("video", "audio_visual"): return "selfsup"
+            if n.endswith("_nerve"): return "nerve"
             return "paired"
-        GROUPS = [(0.33, {"selfsup": .40, "paired": .30, "subjects": .30}),
-                  (0.66, {"selfsup": .25, "paired": .35, "subjects": .40}),
-                  (1.00, {"selfsup": .15, "paired": .35, "subjects": .50})]
+        GROUPS = [(0.33, {"selfsup": .30, "paired": .25, "subjects": .25, "nerve": .20}),
+                  (0.66, {"selfsup": .20, "paired": .25, "subjects": .35, "nerve": .20}),
+                  (1.00, {"selfsup": .15, "paired": .25, "subjects": .40, "nerve": .20})]
         phases = []
         for until, gw in GROUPS:
             members = {}
