@@ -27,6 +27,7 @@ pattern is worth more than any single row.
 | 8 | the image→EEG target carries no stimulus information | the pairing was **99.94% wrong** — 10 of 16,540. THINGS-EEG2 uses ten images from each of 1,654 concepts; a directory walk takes every image from the first 1,162 | reading the order the dataset declares |
 | 9 | contrastive retrieval reaches 18.5% | single-pool, sd 2.8. and the run **checkpointed on best single pool**, selecting for lucky draws | averaging 20 pools |
 | 12 | the cortex beats the dynamics-free encoder on vision | it wins on the training-split holdout (30.12% vs 26.81%) and **loses on the corpus's designated test set** (63.50% vs 66.50%), where the two are indistinguishable anyway -- 0.89 sd, six images out of 200. the quoted 21.5% control was also a single pool | building `images_test.npy`, which had never existed, and selecting the control the same way the model was selected |
+| 13 | the video loop is learning continuation (recon 0.540 -> 0.011, a 50x fall, and visibly sharper clips) | **25% WORSE than persistence** on held-out frames: model 0.01235 against persistence 0.00985, skill -0.2535. it looked right because at horizon 8 on 25 fps film, frame t+8 resembles frame t. skill against the ZERO baseline was +0.9787 -- the flattering comparison, and the meaningless one | computing the persistence baseline, which the loop had never logged |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
 
@@ -37,6 +38,43 @@ caught by a measurement that could have been run first, and several by one I had
 already written.
 
 ---
+
+## 2026-09-08 — video through the sensor projection: negative, twice over
+
+the materialisation the user asked for: frame -> cortex -> sensor projection ->
+next frame, with the decoder seeing **only** the projection and never the
+cortical state, so the neural readout is load-bearing by construction rather than
+a head hanging beside a video branch. that construction is right — it is exactly
+what m-multi lacked, where the MEG head sat at chance for 29,000 steps while the
+video branch trained happily around it.
+
+the result is negative on both questions it was built to ask, over steps
+8,000-13,250:
+
+| arm | held MSE | skill vs persistence | train | overfit |
+|---|---|---|---|---|
+| learned lead field | 0.05871 ± 0.00359 | **-5.80** | 0.00682 | 8.6x |
+| frozen random projection | 0.05542 ± 0.00232 | **-4.75** | 0.00562 | 9.9x |
+
+*first*, both are catastrophically worse than persistence (MSE 0.00864). routing
+continuation through a 64 x 8 sensor bottleneck costs roughly 6x the trivial
+baseline.
+
+*second, and this is the one the control existed for*: the learned lead field is
+**not better than a frozen random projection of identical width** — it is 0.77 sd
+*worse*, i.e. indistinguishable. whatever the bottleneck contributes is a fact
+about its width, not about the readout being a lead field. without that arm a
+reader would have taken the first result as "the projection is too narrow" when
+the projection being *learned* buys nothing at all.
+
+the honest qualifier: both arms overfit ~9x (train 0.006 against held 0.055) on
+11 minutes of film. so this is not yet evidence that the architecture cannot
+work — it is evidence that it cannot be evaluated on this corpus. the binding
+constraint is data, which `docs/PROGRAMME.md` has said since the beginning and
+which every video result here keeps re-demonstrating.
+
+both runs were stopped at 13,250 of 20,000 rather than left to reconfirm a flat
+held loss for another hour.
 
 ## 2026-09-08 — the auditory cortex term matches its own ceiling, and no more
 

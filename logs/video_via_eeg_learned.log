@@ -1,0 +1,60 @@
+16,500 frames | train 0-13,200 | test 13,450-16,500 | horizon 8 | bottleneck 64x8 = 512 floats vs 12,288 in a frame | arm=learned
+trainable params 9,602,030
+baselines on held-out: zero 0.58843  persistence 0.00864
+/home/brandonin/Documents/IBM-1/scripts/train_video_via_eeg.py:135: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"{step:6d}  train {float(loss):.5f}  held {held:.5f}  "
+     0  train 0.63126  held 0.58831  SKILL vs persistence -67.0824  vs zero +0.0002  sensor r_eff  1.84      1s  <- best
+   250  train 0.04736  held 0.06207  SKILL vs persistence -6.1830  vs zero +0.8945  sensor r_eff  1.11     66s  <- best
+   500  train 0.02958  held 0.05744  SKILL vs persistence -5.6468  vs zero +0.9024  sensor r_eff  1.23    134s  <- best
+   750  train 0.02950  held 0.05307  SKILL vs persistence -5.1421  vs zero +0.9098  sensor r_eff  1.41    199s  <- best
+  1000  train 0.02428  held 0.05358  SKILL vs persistence -5.2009  vs zero +0.9089  sensor r_eff  1.57    263s
+  1250  train 0.01989  held 0.06275  SKILL vs persistence -6.2615  vs zero +0.8934  sensor r_eff  1.56    328s
+  1500  train 0.02050  held 0.05745  SKILL vs persistence -5.6484  vs zero +0.9024  sensor r_eff  1.69    391s
+  1750  train 0.01532  held 0.05830  SKILL vs persistence -5.7473  vs zero +0.9009  sensor r_eff  1.65    456s
+  2000  train 0.01699  held 0.05843  SKILL vs persistence -5.7621  vs zero +0.9007  sensor r_eff  1.95    520s
+  2250  train 0.01275  held 0.06104  SKILL vs persistence -6.0635  vs zero +0.8963  sensor r_eff  2.28    583s
+  2500  train 0.01266  held 0.05941  SKILL vs persistence -5.8753  vs zero +0.8990  sensor r_eff  1.99    648s
+  2750  train 0.00911  held 0.05707  SKILL vs persistence -5.6049  vs zero +0.9030  sensor r_eff  2.09    712s
+  3000  train 0.01503  held 0.05679  SKILL vs persistence -5.5725  vs zero +0.9035  sensor r_eff  2.30    776s
+  3250  train 0.01980  held 0.05664  SKILL vs persistence -5.5544  vs zero +0.9037  sensor r_eff  2.19    840s
+  3500  train 0.00890  held 0.05898  SKILL vs persistence -5.8251  vs zero +0.8998  sensor r_eff  2.42    905s
+  3750  train 0.02138  held 0.06092  SKILL vs persistence -6.0504  vs zero +0.8965  sensor r_eff  2.03    969s
+  4000  train 0.01124  held 0.05437  SKILL vs persistence -5.2921  vs zero +0.9076  sensor r_eff  2.14   1033s
+  4250  train 0.00990  held 0.05839  SKILL vs persistence -5.7577  vs zero +0.9008  sensor r_eff  2.07   1097s
+  4500  train 0.00964  held 0.05688  SKILL vs persistence -5.5822  vs zero +0.9033  sensor r_eff  2.00   1162s
+  4750  train 0.01140  held 0.05938  SKILL vs persistence -5.8714  vs zero +0.8991  sensor r_eff  2.36   1226s
+  5000  train 0.01175  held 0.05654  SKILL vs persistence -5.5428  vs zero +0.9039  sensor r_eff  2.21   1290s
+  5250  train 0.01718  held 0.05265  SKILL vs persistence -5.0930  vs zero +0.9105  sensor r_eff  2.23   1354s  <- best
+  5500  train 0.01088  held 0.05850  SKILL vs persistence -5.7695  vs zero +0.9006  sensor r_eff  2.33   1419s
+  5750  train 0.01693  held 0.05730  SKILL vs persistence -5.6306  vs zero +0.9026  sensor r_eff  2.46   1483s
+  6000  train 0.01234  held 0.05871  SKILL vs persistence -5.7938  vs zero +0.9002  sensor r_eff  2.20   1547s
+  6250  train 0.00732  held 0.05899  SKILL vs persistence -5.8266  vs zero +0.8998  sensor r_eff  2.11   1611s
+  6500  train 0.00940  held 0.06642  SKILL vs persistence -6.6866  vs zero +0.8871  sensor r_eff  1.98   1675s
+  6750  train 0.00809  held 0.05629  SKILL vs persistence -5.5141  vs zero +0.9043  sensor r_eff  2.38   1739s
+  7000  train 0.01542  held 0.05194  SKILL vs persistence -5.0113  vs zero +0.9117  sensor r_eff  1.96   1804s  <- best
+  7250  train 0.00636  held 0.06288  SKILL vs persistence -6.2771  vs zero +0.8931  sensor r_eff  1.87   1868s
+  7500  train 0.01256  held 0.05801  SKILL vs persistence -5.7131  vs zero +0.9014  sensor r_eff  1.95   1932s
+  7750  train 0.00908  held 0.06143  SKILL vs persistence -6.1086  vs zero +0.8956  sensor r_eff  2.29   1997s
+  8000  train 0.00676  held 0.05897  SKILL vs persistence -5.8240  vs zero +0.8998  sensor r_eff  2.28   2061s
+  8250  train 0.00660  held 0.06017  SKILL vs persistence -5.9637  vs zero +0.8977  sensor r_eff  2.29   2126s
+  8500  train 0.00855  held 0.05293  SKILL vs persistence -5.1259  vs zero +0.9100  sensor r_eff  2.30   2191s
+  8750  train 0.00493  held 0.05084  SKILL vs persistence -4.8835  vs zero +0.9136  sensor r_eff  1.94   2255s  <- best
+  9000  train 0.00898  held 0.05685  SKILL vs persistence -5.5787  vs zero +0.9034  sensor r_eff  2.38   2319s
+  9250  train 0.00649  held 0.05957  SKILL vs persistence -5.8942  vs zero +0.8988  sensor r_eff  2.34   2384s
+  9500  train 0.00664  held 0.06002  SKILL vs persistence -5.9461  vs zero +0.8980  sensor r_eff  2.36   2448s
+  9750  train 0.00911  held 0.05661  SKILL vs persistence -5.5515  vs zero +0.9038  sensor r_eff  2.51   2512s
+ 10000  train 0.00716  held 0.06521  SKILL vs persistence -6.5468  vs zero +0.8892  sensor r_eff  2.46   2576s
+ 10250  train 0.00707  held 0.06518  SKILL vs persistence -6.5429  vs zero +0.8892  sensor r_eff  2.74   2641s
+ 10500  train 0.00619  held 0.06071  SKILL vs persistence -6.0255  vs zero +0.8968  sensor r_eff  2.34   2704s
+ 10750  train 0.00711  held 0.05507  SKILL vs persistence -5.3732  vs zero +0.9064  sensor r_eff  2.21   2769s
+ 11000  train 0.01296  held 0.06409  SKILL vs persistence -6.4172  vs zero +0.8911  sensor r_eff  2.82   2833s
+ 11250  train 0.00447  held 0.05779  SKILL vs persistence -5.6876  vs zero +0.9018  sensor r_eff  2.70   2897s
+ 11500  train 0.00558  held 0.06095  SKILL vs persistence -6.0532  vs zero +0.8964  sensor r_eff  2.91   2961s
+ 11750  train 0.00475  held 0.05937  SKILL vs persistence -5.8711  vs zero +0.8991  sensor r_eff  2.43   3025s
+ 12000  train 0.00861  held 0.05821  SKILL vs persistence -5.7362  vs zero +0.9011  sensor r_eff  2.25   3090s
+ 12250  train 0.00773  held 0.05864  SKILL vs persistence -5.7861  vs zero +0.9003  sensor r_eff  2.61   3154s
+ 12500  train 0.00559  held 0.05531  SKILL vs persistence -5.4004  vs zero +0.9060  sensor r_eff  2.32   3218s
+ 12750  train 0.00419  held 0.06114  SKILL vs persistence -6.0760  vs zero +0.8961  sensor r_eff  2.57   3282s
+ 13000  train 0.00701  held 0.05419  SKILL vs persistence -5.2715  vs zero +0.9079  sensor r_eff  2.50   3346s
+ 13250  train 0.00353  held 0.05991  SKILL vs persistence -5.9329  vs zero +0.8982  sensor r_eff  2.23   3411s
