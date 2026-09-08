@@ -640,8 +640,13 @@ class VideoLoop(nn.Module):
         drive = torch.zeros(b, self.dyn.n, device=frame.device)
         drive[:, :self.n_in] = self.to_cortex(h)
         s = self.dyn.init_state(b, frame.device)
+        # edge weights are built ONCE and reused across the integration, which is
+        # what `edge_weights` exists for.  this call was left passing dt as the
+        # last positional argument when `step` gained `w`, so the video loop had
+        # not run since that refactor.
+        w = self.dyn.edge_weights()
         for _ in range(n_steps):
-            s = self.dyn.step(s, drive, dt)
+            s = self.dyn.step(s, drive, dt, w)
         read = s[1][:, -self.dyn.n // 8:]          # anterior readout
         return self.dec(self.from_cortex(read)), s
 
