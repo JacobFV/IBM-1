@@ -41,6 +41,9 @@ def main() -> None:
     ap.add_argument("--batch", type=int, default=128)
     ap.add_argument("--pool", type=int, default=200)
     ap.add_argument("--win", type=int, default=50, help="MEG samples per contrastive window")
+    ap.add_argument("--eval-pools", type=int, default=8,
+                    help="held-out pools averaged per evaluation; a single pool of "
+                         "200 has sd ~2.8 points")
     a = ap.parse_args()
 
     dev = "cuda" if torch.cuda.is_available() else "cpu"
@@ -125,15 +128,23 @@ def main() -> None:
             loss = 0.5 * (F.cross_entropy(logits, lbl) + F.cross_entropy(logits.T, lbl))
             opt.zero_grad(set_to_none=True); loss.backward(); opt.step()
             if step % 500 == 0:
+                # one pool of 200 carries sd ~2.8 points, so a single draw cannot
+                # separate 8x chance from 11x.  the same fix as the visual trainer:
+                # average several pools, drawn from a generator seeded on the step
+                # so runs stay comparable at matched steps.
+                accs = []
                 with torch.no_grad():
-                    j = np.random.randint(ntr + GAP, n - a.win - 1, a.pool)
-                    xt = torch.from_numpy(coch(j)).to(dev).permute(0, 2, 1)
-                    yt = torch.from_numpy(meg_win(j)).to(dev)
-                    sim = F.normalize(se(xt), dim=-1) @ F.normalize(me(yt), dim=-1).T
-                    top1 = float((sim.argmax(1) ==
-                                  torch.arange(len(j), device=dev)).float().mean())
-                print(f"  {step:5d}  loss {float(loss):.4f}  top-1 {100*top1:5.2f}%  "
-                      f"({top1*a.pool:.1f}x chance)", flush=True)
+                    rng = np.random.default_rng(90_000 + step)
+                    for _ in range(a.eval_pools):
+                        j = rng.integers(ntr + GAP, n - a.win - 1, a.pool)
+                        xt = torch.from_numpy(coch(j)).to(dev).permute(0, 2, 1)
+                        yt = torch.from_numpy(meg_win(j)).to(dev)
+                        sim = F.normalize(se(xt), dim=-1) @ F.normalize(me(yt), dim=-1).T
+                        accs.append(float((sim.argmax(1) ==
+                                    torch.arange(len(j), device=dev)).float().mean()))
+                top1, sd_ = float(np.mean(accs)), float(np.std(accs))
+                print(f"  {step:5d}  loss {float(loss):.4f}  top-1 {100*top1:5.2f}% "
+                      f"+/-{100*sd_:.2f}  ({top1*a.pool:.1f}x chance)", flush=True)
 
 
 if __name__ == "__main__":
