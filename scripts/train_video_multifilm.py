@@ -55,6 +55,15 @@ def main() -> None:
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--holdout-films", type=int, default=2)
     ap.add_argument("--eval-every", type=int, default=250)
+    ap.add_argument("--snapshot-every", type=int, default=0,
+                    help="also save an unconditional checkpoint every N steps.  the "
+                         "`best` gate selects on skill against persistence, and "
+                         "skill does NOT predict what this run is actually for: "
+                         "wiring that transfers.  video_via_eeg_learned scored "
+                         "-5.80 on its own task and transferred 90.1%%, while "
+                         "video_multifilm scored -0.66 and transferred worse than "
+                         "random.  snapshots let transfer be measured as a function "
+                         "of steps rather than inferred from the wrong metric")
     ap.add_argument("--ckpt", default="ckpt/video_multifilm.pt")
     ap.add_argument("--out", default="out/video_multifilm.json")
     a = ap.parse_args()
@@ -155,6 +164,10 @@ def main() -> None:
                 torch.save({"model": model.state_dict(), "step": step,
                             "skill_vs_persistence": skill, "config": vars(a)}, a.ckpt)
             # a "win" that comes from emitting nothing is not a win.
+            if a.snapshot_every and step % a.snapshot_every == 0 and step:
+                snap = a.ckpt.replace(".pt", f".step{step:06d}.pt")
+                torch.save({"model": model.state_dict(), "step": step,
+                            "skill_vs_persistence": skill, "config": vars(a)}, snap)
             mark = ("  BEATS PERSISTENCE" if (skill > 0 and ratio > 0.15 and cos > 0.1)
                     else "  [degenerate: emits ~nothing]" if ratio < 0.15 else "")
             print(f"{step:6d}  train {float(loss):.5f}  held {held:.5f}  "
