@@ -73,6 +73,48 @@ def cortical_sites(n: int, device, seed: int = 0):
     return pos.to(device)
 
 
+LOBES = ("occipital", "temporal", "parietal", "frontal", "central")
+
+
+def cortical_regions(pos):
+    """assign every site a lobe from its position, so a "port" means something.
+
+    until now every loop in this file drove `drive[:, :dyn.n // 8]` and called it
+    the occipital port in a comment.  the site order is a seeded RNG over a
+    sphere, so that slice is an arbitrary eighth of a random point cloud -- the
+    name asserted an anatomy the index did not have.  the same habit is what cost
+    the video branch: `s[1][:, -n//8:]` was called the anterior readout and turned
+    out to carry 775x less stimulus signal than the driven region.
+
+    this is a geometric convention on the spherical proxy, NOT an atlas.  the
+    axes are the radiological ones -- x left-right, y posterior-anterior, z
+    inferior-superior -- and the boundaries are declared here rather than implied
+    by an index.  a real materialisation reads `ibm/materialize/build.py` step 4,
+    which turns symbolic regions into per-site weights against actual anatomy;
+    this is the stand-in, and it is labelled as one so it can be replaced without
+    hunting for slices.
+    """
+    x, y, z = pos[:, 0], pos[:, 1], pos[:, 2]
+    r = pos.norm(dim=1).clamp_min(1e-6)
+    yn, zn, xn = y / r, z / r, x.abs() / r
+    lab = torch.full((len(pos),), 4, dtype=torch.long, device=pos.device)  # central
+    # thresholds are set to the published lobe fractions, not to round numbers.
+    # for uniform sampling on a sphere the coordinate is uniform in [-1, 1], so a
+    # cut at -0.75 takes 12.5% -- close to the ~10-12% occipital cortex actually
+    # occupies.  a cut at -0.35 takes 32%, which is what the first version of
+    # this did and would have made "occipital" a third of the brain.
+    lab[yn < -0.75] = 0                                    # occipital  ~12%
+    lab[(zn < -0.10) & (xn > 0.40) & (yn >= -0.75)] = 1    # temporal   ~20%
+    lab[(zn > 0.35) & (yn < 0.20) & (yn >= -0.75)] = 2     # parietal
+    lab[yn > 0.55] = 3                                     # frontal    ~22%
+    return lab
+
+
+def region_index(pos, lobe: str):
+    """the site indices belonging to one lobe."""
+    return (cortical_regions(pos) == LOBES.index(lobe)).nonzero(as_tuple=True)[0]
+
+
 def knn_edges(pos, k: int, chunk: int = 4096):
     """k nearest neighbours, chunked so the N x N distance matrix is never formed."""
     n = pos.shape[0]
@@ -449,6 +491,135 @@ class AudioContrastiveLoop(nn.Module):
 
     def embed_meg(self, meg):
         return F.normalize(self.meg_head(meg), dim=-1)
+
+
+class CranialNerveLoop(nn.Module):
+    """receptor -> named cranial nerve -> the lobe it projects to -> measured EEG.
+
+    the first materialisation in this file whose input path is DECLARED rather
+    than asserted.  every other loop drives `drive[:, :dyn.n // 8]` and calls it
+    the occipital port in a comment; the site order is a seeded RNG over a sphere,
+    so that slice is an arbitrary eighth of a random point cloud.  here the drive
+    enters the sites `cortical_regions` labels occipital (or temporal), through a
+    nerve that exists in `ibm/topologies/nerve.py` with a measured length and a
+    measured per-fibre-class conduction velocity.
+
+    **the fibre classes are the point, not decoration.**  the optic nerve carries
+    three retinal ganglion populations that differ in speed by a factor of three
+    -- magnocellular at 20 m/s, parvocellular at 12, koniocellular at 6 -- so over
+    50 mm they arrive 2.5, 4.2 and 8.3 ms apart.  a model given one conduction
+    delay asserts they arrive together, and then every latency it predicts is
+    wrong by whatever the lumping chose.  each class gets its own encoder and its
+    own arrival step, and the drive is the sum of what has arrived by then.
+
+    the split is functional as well as temporal: magno is achromatic and
+    high-contrast, parvo is chromatic and fine, konio carries blue-yellow.  they
+    are encoded from different transforms of the same image rather than from
+    three copies of it, so severing one costs a specific thing.
+
+    for hearing the same structure runs over the cochlear nerve into temporal
+    cortex, with type I fibres (95% of the nerve, myelinated, 25 m/s) against
+    type II (unmyelinated, 3 m/s).
+
+    the target is the measured evoked response, so this is supervised on real
+    neural data rather than self-supervised -- which is what makes it a test of
+    the pathway rather than of an encoder.
+    """
+
+    def __init__(self, dyn: CorticalDynamics, nerve: str = "optic",
+                 lobe: str = "occipital", n_sensors: int = 64, n_times: int = 25,
+                 dim: int = 128, hidden: int = 256, read_sites: int = 4096,
+                 dt: float = 1e-3):
+        super().__init__()
+        self.dyn, self.nerve, self.lobe, self.n_times = dyn, nerve, lobe, n_times
+        from ibm.topologies.nerve import (TRUNK_COMPOSITION, TRUNK_LENGTH_MM,
+                                          FIBRE_VELOCITY_M_S)
+        if nerve not in TRUNK_COMPOSITION:
+            raise ValueError(f"{nerve} is not a declared trunk")
+        self.classes = list(TRUNK_COMPOSITION[nerve])
+        length_m = TRUNK_LENGTH_MM.get(nerve, 50.0) * 1e-3
+        # arrival step per class, from the declaration -- not a hyperparameter
+        self.delays_s = {c: length_m / FIBRE_VELOCITY_M_S[c][1] for c in self.classes}
+        self.arrive = {c: max(0, int(round(d / dt))) for c, d in self.delays_s.items()}
+        # the integration step must RESOLVE the delays or the fibre classes are
+        # decoration.  the optic nerve spans 2.5-8.3 ms across its three
+        # populations; at the dt=2e-2 the other loops use, all three round to
+        # step 0 and arrive together -- precisely the lumping this class exists
+        # to avoid.  dt=1e-3 separates them into steps 2, 4 and 8.
+        span = max(self.delays_s.values()) - min(self.delays_s.values())
+        if len(set(self.arrive.values())) < len(self.classes) and span > 0:
+            raise ValueError(
+                f"dt={dt:g}s cannot resolve {nerve}'s fibre delays "
+                f"({', '.join(f'{c}={1000*d:.1f}ms' for c, d in self.delays_s.items())}"
+                f") -- they collapse to steps {sorted(set(self.arrive.values()))}. "
+                f"use dt <= {span/2:.4g}s or state that the classes are lumped.")
+        self.dt = dt
+        self.port = region_index(dyn.pos, lobe)
+        self.n_port = len(self.port)
+
+        vis = nerve == "optic"
+        self.enc = nn.ModuleDict()
+        for c in self.classes:
+            self.enc[c] = (nn.Sequential(
+                nn.Conv2d(3, 32, 4, 2, 1), nn.GELU(), nn.Conv2d(32, 64, 4, 2, 1),
+                nn.GELU(), nn.Conv2d(64, 128, 4, 2, 1), nn.GELU(), nn.Flatten(),
+                nn.Linear(128 * 8 * 8, hidden), nn.GELU()) if vis else
+                nn.Sequential(
+                nn.Conv1d(64, 64, 5, stride=2, padding=2), nn.GELU(),
+                nn.Conv1d(64, 128, 5, stride=2, padding=2), nn.GELU(), nn.Flatten(),
+                nn.Linear(128 * 63, hidden), nn.GELU()))
+        self.to_cortex = nn.ModuleDict(
+            {c: nn.Linear(hidden, self.n_port) for c in self.classes})
+        self.read_idx = torch.linspace(0, dyn.n - 1, read_sites).long()
+        self.head = nn.Sequential(nn.Linear(read_sites, 512), nn.GELU(),
+                                  nn.Linear(512, dim))
+        self.eeg_head = nn.Sequential(
+            nn.Conv1d(n_sensors, 128, 5, padding=2), nn.GELU(),
+            nn.Conv1d(128, 128, 5, stride=2, padding=2), nn.GELU(),
+            nn.Flatten(), nn.Linear(128 * ((n_times + 1) // 2), 512), nn.GELU(),
+            nn.Linear(512, dim))
+
+    def channels(self, x):
+        """split the stimulus into what each fibre class actually carries."""
+        if self.nerve != "optic":
+            return {c: x for c in self.classes}
+        grey = x.mean(1, keepdim=True).expand_as(x)
+        out = {}
+        for c in self.classes:
+            if c == "retinal_magno":
+                out[c] = grey                                   # achromatic
+            elif c == "retinal_parvo":
+                out[c] = x - grey                               # chromatic detail
+            else:
+                out[c] = torch.stack([x[:, 2] - x[:, :2].mean(1)] * 3, 1)  # blue-yellow
+        return out
+
+    def embed_stimulus(self, x, substeps: int = 4, dt: float | None = None,
+                       n_steps: int | None = None, drop: str = ""):
+        dt = self.dt if dt is None else dt
+        # run at least until the slowest class has arrived and propagated
+        n_steps = (max(self.arrive.values()) + 8) if n_steps is None else n_steps
+        b = x.shape[0]
+        ch = self.channels(x)
+        pend = {c: self.to_cortex[c](self.enc[c](ch[c]))
+                for c in self.classes if c != drop}
+        s = self.dyn.init_state(b, x.device)
+        w = self.dyn.edge_weights()
+        idx = self.port.to(x.device)
+        h = dt / substeps
+        for step in range(n_steps):
+            drive = torch.zeros(b, self.dyn.n, device=x.device)
+            # a class contributes only once its conduction delay has elapsed
+            arrived = [c for c in pend if self.arrive[c] <= step]
+            if arrived:
+                drive[:, idx] = sum(pend[c] for c in arrived)
+            for _ in range(substeps):
+                s = self.dyn.step(s, drive, h, w)
+        z = self.head(s[1][:, self.read_idx.to(x.device)])
+        return F.normalize(z, dim=-1), s
+
+    def embed_eeg(self, eeg):
+        return F.normalize(self.eeg_head(eeg), dim=-1)
 
 
 class VisualEvokedLoop(nn.Module):

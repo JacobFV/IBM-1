@@ -53,6 +53,20 @@ from ibm.vocabulary import Provenance
 #: names are the component suffixes on `ibm.fields.neural`, so a table lookup here
 #: and a component id are the same string by construction.
 FIBRE_VELOCITY_M_S: dict[str, tuple[float, float, float]] = {
+    # -- special sense: cranial afferents, which are not somatic fibres --------
+    # the somatic classes above are named by axon diameter in a peripheral nerve.
+    # the optic nerve is not a peripheral nerve at all -- it is a CNS tract,
+    # myelinated by oligodendrocytes, and its axons are retinal ganglion cells
+    # whose classes differ by receptive field and contrast sensitivity rather
+    # than by the A-alpha/A-beta scheme.  forcing them into `abeta` would assert
+    # a conduction velocity that is not measured and a class that does not exist.
+    "retinal_magno":    (15.0,  20.0,  25.0),   # parasol RGC, fast, achromatic
+    "retinal_parvo":    ( 8.0,  12.0,  16.0),   # midget RGC, slow, chromatic
+    "retinal_konio":    ( 3.0,   6.0,  10.0),   # bistratified, slowest
+    "cochlear_type1":   (15.0,  25.0,  35.0),   # spiral ganglion I, 95% of fibres
+    "cochlear_type2":   ( 1.0,   3.0,   6.0),   # unmyelinated, outer hair cells
+    "vestibular":       (15.0,  25.0,  35.0),
+    "olfactory":        ( 0.2,   0.5,   1.0),   # unmyelinated, the slowest tract
     "ia":               (80.0, 100.0, 120.0),   # A-alpha, 12-20 um
     "ib":               (80.0, 100.0, 120.0),   # A-alpha, 12-20 um
     "ii":               (35.0,  55.0,  75.0),   # A-beta,   6-12 um
@@ -75,6 +89,26 @@ MIXED = SENSORY + ("alpha", "gamma")
 AUTONOMIC = ("b_preganglionic", "c_postganglionic", "c")
 
 TRUNK_COMPOSITION: dict[str, tuple[str, ...]] = {
+    # -- cranial nerves ------------------------------------------------------
+    # absent until now, which meant the model had no declared route for vision,
+    # hearing, balance or visceral afference -- the training loops drove raw
+    # index slices named "occipital" and "temporal" by comment only.
+    "optic": ("retinal_magno", "retinal_parvo", "retinal_konio"),
+    "cochlear": ("cochlear_type1", "cochlear_type2"),
+    "vestibular": ("vestibular",),
+    "olfactory": ("olfactory",),
+    # the vagus is ~80% AFFERENT despite being called a motor nerve, which the
+    # module docstring already flags as the case separate axes exist to express.
+    # it is the main gut-to-brain route and the one an embodied model needs.
+    "vagus": ("abeta", "adelta", "c", "b_preganglionic", "c_postganglionic"),
+    "glossopharyngeal": ("abeta", "adelta", "c", "b_preganglionic"),
+    "trigeminal": ("abeta", "adelta", "c", "alpha"),
+    "facial": ("alpha", "abeta", "b_preganglionic"),
+    "hypoglossal": ("alpha",),
+    "accessory": ("alpha",),
+    "oculomotor": ("alpha", "b_preganglionic"),
+    "trochlear": ("alpha",),
+    "abducens": ("alpha",),
     # -- mixed limb nerves: the common case ---------------------------------
     "median": MIXED, "ulnar": MIXED, "radial": MIXED, "musculocutaneous": MIXED,
     "axillary": MIXED, "femoral": MIXED, "obturator": MIXED, "sciatic": MIXED,
@@ -112,6 +146,12 @@ TRUNK_COMPOSITION: dict[str, tuple[str, ...]] = {
 #: path lengths vary by a factor of two with body size, and anything that depends
 #: sharply on one of these should fit it.
 TRUNK_LENGTH_MM: dict[str, float] = {
+    # cranial: tens of millimetres, not hundreds.  the optic nerve is 40-50 mm
+    # from globe to chiasm; the whole retinogeniculate path is under 80 mm.
+    "optic": 50.0, "cochlear": 25.0, "vestibular": 25.0, "olfactory": 10.0,
+    "vagus": 350.0, "glossopharyngeal": 60.0, "trigeminal": 50.0,
+    "facial": 60.0, "hypoglossal": 50.0, "accessory": 120.0,
+    "oculomotor": 45.0, "trochlear": 60.0, "abducens": 55.0,
     "median": 700.0, "ulnar": 700.0, "radial": 650.0, "musculocutaneous": 300.0,
     "axillary": 150.0, "superficial_radial": 400.0,
     "anterior_interosseous": 350.0, "posterior_interosseous": 300.0,
