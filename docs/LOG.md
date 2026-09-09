@@ -44,6 +44,38 @@ already written.
 
 ---
 
+## 2026-09-09 — 128 sites is below the plateau, and IHM-1 is running 128
+
+the sweep now has the arm that matters for the embodiment.  one term, one task,
+identical settings, resolution the only variable:
+
+| step | 128 sites | 512 sites | 2,048 sites |
+|---|---|---|---|
+| 2,000 | 17.44% | 21.62% | 20.12% |
+| 3,000 | 17.37% | 20.50% | 22.62% |
+| 4,000 | **19.44%** | 23.00% | 23.00% |
+
+512 and 2,048 are indistinguishable -- identical at 4,000 -- and **128 is below
+both at every measured step.**
+
+taken alone, 19.44% against 23.00% is 3.56 points at a combined sd of 3.38, which
+is 1.05 sd and settles nothing.  what settles it is the consistency: 128 is lower
+in **6 of 6** paired comparisons against the two larger arms across three
+independent evaluations.  a sign test gives p = 0.031, and the mean deficit is
+**3.73 points**.  a single marginal gap repeated six times in the same direction
+is a different quantity from one marginal gap, and this project has been burned
+enough by reading a single comparison that the distinction is worth stating.
+
+so the plateau has a floor between 128 and 512, and **IHM-1 is running underneath
+it.**  the cost is real but small -- roughly 3.7 points of top-1, 16% relative --
+and it is the difference between 38.9x and 46.0x chance, not between working and
+not working.  moving to 512 sites would recover it at 4x the substrate, which on
+a 262,144-parameter kernel is 65,536 parameters against 262,144: still trivial
+inside a physics loop.
+
+that is now measured rather than assumed, which is what the last entry said it
+should be.
+
 ## 2026-09-09 — the controlled resolution sweep says 512 and 2,048 are equal
 
 the previous entry compared 2,048 against 30,000 sites and concluded that a

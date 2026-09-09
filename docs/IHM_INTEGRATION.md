@@ -150,3 +150,29 @@ the brain caused it.
 Checkpoints are now written atomically (temp + rename). If you hit
 `PytorchStreamReader failed reading zip archive` earlier, that was a torn read
 during a save, not a corrupt file — it is fixed.
+
+---
+
+## Update: 128 sites is measurably below the plateau — consider 512
+
+A controlled sweep (one term, one task, identical settings, resolution the only
+variable, 4,000 steps each) on the `optic_nerve` materialization:
+
+| step | 128 sites | 512 sites | 2,048 sites |
+|---|---|---|---|
+| 2,000 | 17.44% | 21.62% | 20.12% |
+| 3,000 | 17.37% | 20.50% | 22.62% |
+| 4,000 | **19.44%** | 23.00% | 23.00% |
+
+512 and 2,048 are indistinguishable. **128 — your current resolution — is below
+both at every step**: 6 of 6 paired comparisons, sign test p = 0.031, mean
+deficit 3.73 points.
+
+Any single comparison is only ~1 sd, so this is not a large effect. It is the
+difference between 38.9× and 46.0× chance, not between working and not working —
+your causal balance result is not in question. But the deficit is consistent, and
+**moving to 512 sites would recover it for a kernel of 65,536 parameters instead
+of 8,192**, which is still nothing inside a physics loop.
+
+If 128 is load-bearing for your step budget, keep it and know the cost. If it was
+a default, 512 is free.
