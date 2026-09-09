@@ -184,6 +184,16 @@ def main() -> None:
     ap.add_argument("--long-topm", type=int, default=None)
     ap.add_argument("--local-gain", type=float, default=None)
     ap.add_argument("--min-dist", type=float, default=None)
+    ap.add_argument("--delays", default=None,
+                    choices=("none", "tract", "shuffled", "distance"),
+                    help="attach conduction delays to the SAVED long-range edges "
+                         "and re-measure.  the graph is never redrawn -- only the "
+                         "timing changes -- so the arms differ in when a signal "
+                         "arrives and in nothing else.  `shuffled` is the "
+                         "delay-matched control and `distance` is the euclidean "
+                         "surrogate ibm/topologies/tract.py argues is wrong.  "
+                         "delays only bite at a dt that resolves them; this "
+                         "script's default dt of 1e-3 over 4 substeps does")
     ap.add_argument("--out", default="out/multimodal_convergence.json")
     a = ap.parse_args()
 
@@ -196,6 +206,25 @@ def main() -> None:
                       ("long_min_dist", a.min_dist)):
         if val is not None:
             setattr(dyn, attr, type(getattr(dyn, attr))(val))
+    delay_note = None
+    if a.delays is not None:
+        import ibm.cortical_tracts as CT
+        n_loc = dyn.k - dyn.n_far
+        reg = P.cortical_regions(dyn.pos).cpu().numpy()
+        dly, delay_note = CT.delays_for_edges(
+            reg, dyn.idx[:, n_loc:].cpu().numpy(), mode=a.delays,
+            positions=dyn.pos.cpu().numpy(), seed=a.seed)
+        if a.delays == "none":
+            dyn.tract_delays = False
+        else:
+            t = torch.from_numpy(dly).to(dev)
+            if hasattr(dyn, "delay_s"):
+                dyn.delay_s.copy_(t)
+            else:
+                dyn.register_buffer("delay_s", t)
+            dyn.tract_delays = True
+            dyn._lag_cache = {}
+        print(f"  delays: {delay_note}", flush=True)
     print(f"{a.ckpt}: step {step}, {dyn.n} sites, k={dyn.k}, "
           f"{dyn.n_far} long-range edges per site", flush=True)
     print(f"  kernel: tanh_slope={dyn.tanh_slope} long_gain={dyn.long_gain} "

@@ -299,3 +299,67 @@ def draw_partners(region_of_site: np.ndarray, n_far: int, seed: int,
                                     "threshold": float(threshold),
                                     "n_subjects": c["n_subjects"],
                                     "velocity_m_s": float(velocity_m_s)}
+
+
+def delays_for_edges(region_of_site: np.ndarray, partner: np.ndarray,
+                     threshold: float = 0.5,
+                     velocity_m_s: float = DEFAULT_VELOCITY_M_S,
+                     mode: str = "tract", positions=None, seed: int = 0):
+    """conduction delays for an ALREADY-DRAWN long-range edge set.
+
+    `partner` is (N, n_far) of destination site indices.  the point of taking a
+    graph rather than drawing one is that a trained checkpoint's graph is part of
+    the trained object and must never be redrawn (CLAUDE.md), so a delay has to
+    be attached to the edges that are there.
+
+    `mode` is the whole comparison:
+
+      "tract"     the declared delay of the parcel pair, length / velocity.  an
+                  edge whose parcel pair the connectome does not declare -- every
+                  edge of a random graph is one -- gets the pair's mean length if
+                  the connectome has one and the population mean otherwise, and
+                  the fraction that fell back is returned so it can be reported
+                  rather than absorbed.
+      "shuffled"  the same multiset of delays, permuted across edges.  the
+                  control that separates "this arm is slower" from "this arm is
+                  differently timed".
+      "distance"  chord length / velocity, which is the EUCLIDEAN metric
+                  `ibm/topologies/tract.py` argues at length gets long-range
+                  connectivity wrong -- the arcuate runs 150 mm between endpoints
+                  60 mm apart.  it is included because that argument is worth
+                  being able to test rather than only quote.
+      "none"      zeros.
+    """
+    reg = np.asarray(region_of_site, dtype=np.int64)
+    part = np.asarray(partner, dtype=np.int64)
+    src = np.repeat(reg[:, None], part.shape[1], 1)
+    dst = reg[part]
+    if mode == "none":
+        return np.zeros(part.shape, dtype=np.float32), {"mode": "none"}
+    if mode == "distance":
+        if positions is None:
+            raise ValueError("mode='distance' needs positions")
+        xyz = np.asarray(positions, dtype=np.float64)
+        chord = np.linalg.norm(xyz[part] - xyz[:, None, :], axis=-1)
+        return ((chord / (1000.0 * velocity_m_s)).astype(np.float32),
+                {"mode": "distance", "velocity_m_s": float(velocity_m_s),
+                 "mean_ms": float(1e3 * chord.mean() / (1000.0 * velocity_m_s))})
+    c = consensus(threshold, velocity_m_s)
+    L, A = c["length_mm"], c["adjacency"]
+    have = L[src, dst] > 0
+    fill = float(L[A].mean())
+    length = np.where(have, L[src, dst], fill)
+    delay = (length / (1000.0 * velocity_m_s)).astype(np.float32)
+    note = {"mode": mode, "threshold": float(threshold),
+            "velocity_m_s": float(velocity_m_s),
+            "frac_pairs_with_a_measured_length": float(have.mean()),
+            "fallback_length_mm": fill,
+            "mean_ms": float(1e3 * delay.mean())}
+    if mode == "shuffled":
+        rng = np.random.default_rng(seed)
+        flat = delay.reshape(-1)
+        delay = flat[rng.permutation(flat.size)].reshape(delay.shape)
+        note["mode"] = "shuffled"
+    elif mode != "tract":
+        raise ValueError(f"unknown delay mode {mode!r}")
+    return delay, note

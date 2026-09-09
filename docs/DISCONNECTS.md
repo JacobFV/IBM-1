@@ -20,36 +20,122 @@ so far is the 22-body skeleton, which is why it looks like capsules.
 Also: the anatomical body's own canonical trajectory moves a maximum of **6.35 mm**
 across 30 s. It is breathing and perfusing, not moving.
 
-## 2. The cortical sheet is a sphere, and the real atlases are not held
+## 2. The cortical sheet was a sphere — CLOSED
 
-`cortical_sites()` places sites on a **spherical shell** area-matched to the
-measured white surface, and `cortical_regions()` says so plainly — "a geometric
-convention on the spherical proxy, NOT an atlas". Six lobe labels are cut by
-coordinate thresholds.
+*Was: `cortical_sites()` placed sites on a **spherical shell** area-matched to
+the measured white surface, and `cortical_regions()` said so plainly — "a
+geometric convention on the spherical proxy, NOT an atlas", six lobe labels cut
+by coordinate thresholds. The consequence was not cosmetic: **the insula is not
+separable on a sphere**, because a sphere has no lateral sulcus, so the
+interoceptive port entered a 4.5% subsample of the `frontal` label instead.
+`desikan2006` and `dkt-atlas` each held one file, 12 KB, a checksums.txt.*
 
-The consequence is not cosmetic: **the insula is not separable on a sphere**,
-because a sphere has no lateral sulcus, so the interoceptive port enters a 4.5%
-subsample of the `frontal` label instead.
+The payloads are fetched (`scripts/fetch_cortical_atlases.py`) and the sheet is
+a surface. `cortical_sites()` returns **fsaverage white-surface vertices**,
+sampled with probability proportional to vertex area so density is uniform per
+mm² of cortex, medial wall excluded. `cortical_regions()` returns one of **68
+hemisphere-qualified Desikan-Killiany labels** read from `?h.aparc.annot`.
 
-Real parcellations are catalogued — `desikan2006`, `dkt-atlas` — and both hold
-**one file, 12 KB, a checksums.txt**. The payloads were never fetched.
+**The test this had to pass.** On 4,000 sites `insula` selects 63 and
+`cingulate` 110, disjoint from frontal, temporal and parietal, and `lh.insula`
+names one hemisphere's worth. None of those was an addressable target before.
+`region_index` **raises** for them on the sphere rather than substituting
+`frontal` — a silent substitution is how this survived.
 
-## 3. The white-matter tracts are declared and unused — and this one bit today
+The interoceptive port is now the insula and the anterior cingulate, the whole
+label rather than a fraction of a larger one: 5.45% of a 6,000-site sheet
+against the 5.3% of white-surface area those three labels occupy.
 
-`ibm/topologies/tract.py` declares tractometric adjacency: which cortical regions
-are joined by which fascicle, and the **conduction delay** of each. Its docstring
-argues at length that this metric is the right one for long-range cortical
-connectivity and that euclidean and geodesic both get it wrong.
+Corroborated on `dkt-atlas`, which is a different subject and a different
+labelling protocol (though the card is right that it is *not* independent
+evidence about a boundary — DKT is a deliberate revision of DK): insula 2.83% of
+area under DK and 2.38% under DKT on the same brain, per-vertex Dice 0.835 and
+0.866. Both hold the label; they disagree at the boundary, which is where the
+revision was written to act.
 
-The trained kernel draws its long-range partners with `torch.randint` —
-**uniformly at random over all sites**. No training or evaluation script imports
-the tract topology. The HCP connectome source backing it is also checksums-only.
+**What the sphere was, now that the real number is held:** it was area-matched
+to 202,437 mm², and the fsaverage white surface is 130,438 mm² in total and
+118,310 mm² excluding the medial wall. The proxy was **1.55× the cortex by area
+and 1.24× in linear scale**, so every distance on it — and the ~85 mm mean
+separation of two random sites that made the long-range edges inert — was
+inflated by about a quarter.
 
-This is the sharpest one, because a whole session went into the long-range edges:
-measuring that they carry ~1/300 per hop, that concentrating them onto 4 partners
-per site buys 209x transport, and that spatial diversity among those partners
-raises multimodal convergence. All of that was spent choosing among **random**
-partners, while a declared topology specifies which partners should exist at all.
+**Still open:** the sphere is kept and selectable (`--geometry sphere`), because
+`dyn.pos` is a saved buffer and every checkpoint on disk restores its own sheet.
+Those checkpoints' region labels still come from the coordinate convention, and
+their published numbers are about that object. The sidecar of
+`ckpt/visual_contrastive_v2.pt` says `"geometry": "fsaverage-sampled sheet"`,
+which was **not true when it was written** — that run was a sphere.
+
+## 3. The white-matter tracts are imported, and they change the answer
+
+*Was: `ibm/topologies/tract.py` declared tractometric adjacency — which cortical
+regions a fascicle joins and the conduction delay of each — and argued at length
+that euclidean and geodesic metrics both get long-range cortical connectivity
+wrong. The trained kernel drew its long-range partners with `torch.randint`,
+uniformly at random over all sites, and no script imported the topology.*
+
+`ibm/cortical_tracts.py` turns the `braingraph-hcp-connectomes` payload — 1064
+HCP subjects, 86 Desikan-Killiany nodes, `fiber_length_mean` per edge — into the
+`matrix` and `lengths_mm` that `tractometric_matrix` declares it needs.
+`CorticalDynamics(long_topology="tract")` then draws each site's long-range
+partners among the sites in the parcels the consensus connectome joins its own
+parcel to, carrying that pair's arc length and conduction delay.
+
+The full expansion `tractometric_matrix` would emit is 1.7×10⁸ edges at 30,000
+sites and 10¹⁰ at 250,000 — its own docstring says the quadratic cost is "the
+honest signal that a materialization far finer than the connectome is asking for
+more than the connectome has" — so what is drawn is a **uniform subsample of
+exactly that edge set**, which is what a fixed per-site budget can hold of it.
+
+**The control is matched by construction, not by fitting:** the same `n_far`
+edges per site and the same flat long-range prior, so edge count and row L1 are
+identical to 0.000e+00 and the arms differ only in where the edges go.
+
+Structural transport (`scripts/compare_long_range_topology.py`), the held
+nonnegative operator applied 4 times to a unit indicator, 30,000 sites:
+
+| pair | random | tract | tract/random | vs *concentrated* random |
+|---|---|---|---|---|
+| occipital→precentral | 3.10e-02 | 7.95e-03 | **0.257×** | 0.257× |
+| occipital→temporal | 9.45e-02 | 1.48e-01 | 1.571× | 1.558× |
+| postcentral→precentral | 5.25e-02 | 6.97e-02 | 1.328× | 1.315× |
+| occipital→insula | 1.49e-02 | 1.29e-02 | 0.866× | 0.825× |
+
+**The occipital→precentral row is the one that matters**, because it is the pair
+`ablate_disjoint_transport.py` scores and the pair the whole disjoint-transport
+enterprise has been about. Under the tract topology the minimum hop distance
+from occipital to precentral is **2, not 1**: the consensus connectome declares
+no direct occipito-precentral fascicle, which is anatomically correct. The
+random graph gave every occipital site a one-hop shot at motor cortex, and a
+quarter of the transport it was scored on came from an edge the brain does not
+have.
+
+Anatomy wins where anatomy has a pathway — the ventral stream and across the
+central sulcus — and its partners sit 53 mm away in 7.6 distinct parcels against
+79 mm in 10.7 for random ones.
+
+**What the connectome does not reconstruct, which is the honest limit.**
+`tract.py` names two cases as what the metric exists to get right: the arcuate,
+which "connects frontal and temporal cortex over a path of roughly 150 mm", and
+the corpus callosum, which "joins homotopic points that are close in the volume
+and unreachable along the surface". At the 0.5 consensus threshold this
+connectome reconstructs **neither**. Only 17 of 459 edges are interhemispheric
+(3.7%); homotopic superior temporal appears in 0 of 1064 subjects, homotopic
+postcentral in 0, homotopic precentral in 3.3%; and left parsopercularis to
+superior temporal — the arcuate's canonical terminal pair — in 7.0%. That is a
+known tractography failure, not a fact about brains, and it means the tract arm
+is a **ventral, intrahemispheric** topology whatever its docstring hopes for.
+The threshold is a knob and the sweep is in `edge_existence_curve()`: 616 edges
+at 0.1, 459 at 0.5, 126 at 1.0.
+
+**Still open:** conduction delays are carried per edge and saved
+(`dyn.delay_s`), but they only bite at a timestep that resolves them — the
+median declared delay is 3.84 ms and the maximum 10.2 ms, so at the visual
+loop's `dt/substeps = 5 ms` they quantise to 0-2 steps. And the connectome is a
+group average of one pipeline's tractography, with the seeding, response
+function and thresholds discarded; the card says so, and `use: prior` is the
+only role it is allowed.
 
 ## 4. Seventy-two nerve trunks — now with two ends each — CLOSED as declared
 
@@ -182,11 +268,14 @@ configuration change or a build is not yet known.
 
 ## What this list is for
 
-Two of these (1, 3) are load-bearing for what the programme is trying to
-demonstrate next, and 3 is the one that would change how the current cortical
-work is done rather than merely extending it. The rest are honest scope: things
-declared ahead of being built, which is fine as long as no result quietly claims
-them.
+Row 1 is what remains load-bearing for what the programme is trying to
+demonstrate next. Rows 2 and 3 are closed, and closing 3 did what it was
+predicted to do — it changed how the current cortical work is done rather than
+merely extending it, and not in the direction that was hoped: the anatomy says
+there is no direct occipito-precentral fascicle, so the disjoint-transport task
+the last several sessions were scored on was being scored on a pathway the brain
+does not have. The rest are honest scope: things declared ahead of being built,
+which is fine as long as no result quietly claims them.
 
 `scripts/measure_innervation_coverage.py` prints 4, 5 and 6 with their
 denominators and is the thing to re-run rather than re-reading the numbers above.
