@@ -4,6 +4,7 @@
     "k": 36,
     "sources": 60,
     "seed": 0,
+    "connectome": true,
     "out": "out/sheet_metric_error.json"
   },
   "gate_max_abs_error": {
@@ -23,5 +24,22 @@
   },
   "mean": 1.2757567465720836,
   "frac_over_2x": 0.033796296296296297,
-  "frac_over_4x": 0.008333333333333333
+  "frac_over_4x": 0.008333333333333333,
+  "connectome": {
+    "threshold": 0.5,
+    "n_edges": 459,
+    "arc_over_min_border": {
+      "p01": 1.2757017087140443,
+      "p05": 1.4074171748779192,
+      "p25": 1.7573933089383031,
+      "p50": 2.41159023312788,
+      "p75": 35.42174902240247,
+      "p95": 68.19520437729365
+    },
+    "arc_over_min_border_mean": 17.339612501771885,
+    "arc_over_centroid_chord_mean": 0.7329839637167296,
+    "arc_under_centroid_chord_fraction": 0.8997821350762527,
+    "spearman_arc_vs_centroid_chord": 0.7613505474337066,
+    "median_min_border_mm": 12.760987827126256
+  }
 }

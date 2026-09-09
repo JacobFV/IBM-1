@@ -1,4 +1,12 @@
-"""on a folded surface, is a euclidean k-NN still a LOCAL topology?
+"""how wrong is euclidean distance about this cortex -- locally, and along a fascicle?
+
+Two measurements, one question, because `ibm/topologies/tract.py` opens by
+arguing that euclidean, geodesic-on-the-sheet and arc-length-along-a-fascicle are
+three different metrics and that using the wrong one produces errors in opposite
+directions.  The spherical proxy could not raise the question at all: on a sphere
+all three agree up to a chord-vs-arc correction.
+
+**PART 1 -- the local graph.  Is a euclidean k-NN still local on a folded sheet?**
 
 A question the spherical proxy could not raise. On a sphere euclidean and
 geodesic agree to within the chord-vs-arc correction, so `knn_edges` — which is
@@ -27,6 +35,24 @@ Mesh-graph distance still slightly OVERestimates the true geodesic, because a
 path must follow edges rather than cut across faces. On fsaverage the mean edge
 is 0.72 mm and the sites here are ~4 mm apart, so that bias is a few per cent and
 in the conservative direction: it inflates the reported error.
+
+**PART 2 -- the long-range graph.  Is a fascicle's arc length recoverable from
+the straight line between its endpoints?**  `--connectome` compares every
+declared edge's `fiber_length_mean` against two euclidean quantities.
+
+Against the **centroid-to-centroid chord** the arc comes out SHORTER for 90% of
+pairs, which is not a shortcut through the skull: it is a bias in the comparison.
+Streamlines terminate at the parts of two parcels that face each other, not at
+their centroids, so the centroid chord systematically overstates the endpoint
+separation.  The number is reported because seeing it and then explaining it is
+the difference between a caveat and an artefact presented as a result.
+
+Against the **minimum border-to-border distance** -- the shortest straight line
+between any point of one parcel and any point of the other -- the comparison is
+unbiased in the useful direction, because that quantity is a genuine LOWER BOUND
+on the length of any path between them.  It is therefore also a gate: a ratio
+below 1 would mean the connectome reports a fascicle shorter than the shortest
+line its own endpoints admit, i.e. a corrupted length column.
 """
 from __future__ import annotations
 
@@ -78,6 +104,44 @@ def gate(v, e, G, rng, n: int = 5) -> float:
     return worst
 
 
+def connectome_metric_disagreement(threshold: float = 0.5) -> dict:
+    """arc length along a fascicle against two euclidean surrogates for it."""
+    from scipy.spatial import cKDTree
+    import ibm.cortical_tracts as CT
+    sheet = CS.load_sheet()
+    xyz, lab, area = sheet["xyz"], sheet["region"], sheet["area"]
+    n = len(CS.REGIONS)
+    pts = [xyz[lab == i] for i in range(n)]
+    cent = np.stack([(xyz[lab == i] * area[lab == i, None]).sum(0)
+                     / area[lab == i].sum() for i in range(n)])
+    c = CT.consensus(threshold)
+    A, L = c["adjacency"], c["length_mm"]
+    i, j = np.nonzero(np.triu(A))
+    trees = {k: cKDTree(pts[k]) for k in set(i.tolist()) | set(j.tolist())}
+    border = np.array([trees[b].query(pts[a], k=1, workers=-1)[0].min()
+                       for a, b in zip(i, j)])
+    arc = L[i, j]
+    chord = np.linalg.norm(cent[i] - cent[j], axis=1)
+    rb = arc / np.maximum(border, 1e-6)
+    # THE GATE: the minimum border-to-border distance lower-bounds any path, so a
+    # ratio below 1 is a corrupted length column, not a fast fibre.
+    assert (rb >= 1.0).all(), (
+        f"{int((rb < 1).sum())} declared edges report an arc SHORTER than the "
+        "shortest straight line their own endpoints admit")
+    return {
+        "threshold": float(threshold), "n_edges": int(len(i)),
+        "arc_over_min_border": {f"p{int(100*q):02d}": float(np.quantile(rb, q))
+                                for q in (0.01, 0.05, 0.25, 0.5, 0.75, 0.95)},
+        "arc_over_min_border_mean": float(rb.mean()),
+        "arc_over_centroid_chord_mean": float((arc / chord).mean()),
+        "arc_under_centroid_chord_fraction": float((arc / chord < 1).mean()),
+        "spearman_arc_vs_centroid_chord": float(
+            __import__("scipy.stats", fromlist=["spearmanr"])
+            .spearmanr(arc, chord).statistic),
+        "median_min_border_mm": float(np.median(border)),
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -86,6 +150,9 @@ def main() -> None:
                     help="the LOCAL budget: k - k*long_range, i.e. 36 of 48")
     ap.add_argument("--sources", type=int, default=60)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--connectome", action="store_true",
+                    help="also run part 2: arc length against its euclidean "
+                         "surrogates, over the declared tract edges")
     ap.add_argument("--out", default="out/sheet_metric_error.json")
     a = ap.parse_args()
     from scipy.sparse.csgraph import dijkstra
@@ -145,6 +212,20 @@ def main() -> None:
         print(f"  geodesic/euclidean {k}  {v:.2f}x")
     print(f"  mean {res['mean']:.2f}x   >2x {100*res['frac_over_2x']:.1f}%   "
           f">4x {100*res['frac_over_4x']:.1f}%")
+    if a.connectome:
+        cm = connectome_metric_disagreement()
+        res["connectome"] = cm
+        print(f"\nPART 2 -- {cm['n_edges']} declared tract edges")
+        print("  GATE arc / min border-to-border >= 1 for every edge  PASS")
+        for k, v in cm["arc_over_min_border"].items():
+            print(f"  arc / min border  {k}  {v:6.2f}x")
+        print(f"  mean {cm['arc_over_min_border_mean']:.2f}x")
+        print(f"  arc / CENTROID chord mean "
+              f"{cm['arc_over_centroid_chord_mean']:.2f}x, below 1 for "
+              f"{100*cm['arc_under_centroid_chord_fraction']:.1f}% -- biased, "
+              "streamlines end at parcel borders not centroids")
+        print(f"  spearman(arc, centroid chord) "
+              f"{cm['spearman_arc_vs_centroid_chord']:.3f}")
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
     json.dump(res, open(a.out, "w"), indent=2)
     print(f"wrote {a.out}")

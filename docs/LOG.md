@@ -250,6 +250,32 @@ doubled. It would have been reported as "the median local edge is 2.3× longer
 along the sheet than through the volume", a different and false conclusion, and
 it was caught in one line by a case whose answer was known.
 
+### and the long-range metric: is an arc length recoverable from a straight line?
+
+`tract.py`'s central claim, tested on the payload rather than quoted from it.
+459 declared edges at the 0.5 consensus, `fiber_length_mean` against two
+euclidean surrogates:
+
+    arc / MINIMUM border-to-border distance   p25 1.76x   p50 2.41x   p75 35.42x
+    (that quantity is a genuine lower bound on any path, so it is also a GATE --
+     100% of edges pass, i.e. no edge reports a fascicle shorter than the
+     shortest line its own endpoints admit)
+
+    arc / centroid-to-centroid chord   mean 0.73x, below 1 for 90% of pairs
+    spearman(arc, centroid chord)      0.761
+
+The second number is reported and then explained rather than left to look like a
+result: streamlines terminate where two parcels FACE each other, not at their
+centroids, so the centroid chord systematically overstates the endpoint
+separation. It is a bias in the comparison, not a fibre taking a shortcut.
+
+Against the unbiased lower bound the claim holds: the median declared fascicle is
+**2.4× the shortest straight line** between its parcels, and the upper quartile is
+35×. The one case `tract.py` names by hand — left parsopercularis to superior
+temporal, the arcuate — is 60.2 mm of arc against a 36.8 mm centroid chord,
+1.64×, in the direction claimed. It also appears in 7.0% of subjects, so the
+connectome barely has it.
+
 ### a sidecar that asserted the wrong carrier
 
 `ckpt/visual_contrastive_v2.json` records `"geometry": "fsaverage-sampled sheet,
