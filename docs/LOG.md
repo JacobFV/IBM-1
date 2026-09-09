@@ -175,6 +175,50 @@ checkpoint's schedule, chosen so four matched arms would fit one GPU beside
 another job. The arms are matched, so differences between them are real; the
 absolute retrieval numbers are not this programme's retrieval result.
 
+### SPHERE vs SURFACE, matched: the surface is better, and it is where the kernel starts to matter
+
+The other two arms, identical to each other but for the sheet, both driving the
+same `[:n//8]` slice so that the geometry is the only difference.
+
+Designated THINGS-EEG2 test set, 200 images, chance 0.50%, the whole set is the
+pool so the number is deterministic:
+
+    arm             full    frozen  no_assoc  bypass
+    sphere_slice   21.50%   25.50%   26.00%    5.00%     (43 of 200)
+    surface_slice  30.00%   26.00%   26.00%    3.50%     (60 of 200)
+
+**+8.5 points, 43 to 60 of the same 200 images.** The two arms are scored on an
+identical set, so the right test is paired and the per-image outcomes were not
+stored; as a scale reference the binomial se on 200 images at p≈0.3 is about
+6.5 images, so +17 images is roughly 2.6 of those. Suggestive, not decisive.
+
+The more interesting half of that table is the ablation. **On the sphere,
+`frozen` (random embeddings) and `no_assoc` (geometric prior zeroed) BEAT `full`**
+— 25.50% and 26.00% against 21.50%. The learned kernel was a net negative there.
+On the surface `full` beats both by 4 points. Same code, same schedule, same
+data, same port: the geometry is what makes the learned kernel start to pay.
+
+On the training-split trajectory the two are indistinguishable — paired over 12
+matched evaluation points, −0.30 points, t = −1.03 — which is the usual thing
+about that split: 4 repetitions per image against the test set's 80.
+
+### the sphere's `postcentral` bin was wrong but it was not flattering anything
+
+The coordinator's question, and it is the right one to have asked: `postcentral`
+is the touch entry port and it was 20.0% of the spherical sheet against a true
+6.0%. Matched arms, one sheet each, drop-one attribution at precentral:
+
+    arm             driven sites   touch -> precentral
+    sphere_slice        5,997          6.892e-07
+    surface_slice       1,779          9.462e-07
+
+Correcting the bin drives **3.4× fewer sites and gets 1.37× MORE** to precentral
+— 4.6× more per driven site. So the leftover bin was diluting the somatosensory
+number rather than inflating it: most of what it swept up was not near the
+central sulcus. Both are still ~1e-6 against a ceiling of 1.0, so neither is a
+somatosensory result; the correction moves the number in the honest direction
+and changes no conclusion.
+
 ### how to reproduce any of this
 
     PYTHONPATH=. .venv/bin/python scripts/fetch_cortical_atlases.py
