@@ -945,8 +945,18 @@ epistemic statuses, each recorded separately:
            ^tractography    ^geometry        ^LEARNED
            parcel scale     exact            where the DOF live
 
-sizing, from the measured 202,437 mm² white surface and the measured
-poisson-disk jamming ratio of 0.61:
+**the first factor is no longer a placeholder.** `M[π(i),π(j)]` is now read from
+a 1064-subject Desikan-Killiany group connectome and the sites are fsaverage
+white-surface vertices with atlas labels, so π is an atlas rather than a
+coordinate cut (`docs/DISCONNECTS.md` 2 and 3).
+
+sizing, from a white surface of **202,437 mm²** and the measured poisson-disk
+jamming ratio of 0.61. that area figure is where the spherical proxy's radius
+came from and it is **larger than fsaverage's**, which measures 130,438 mm² in
+total and 118,310 mm² excluding the medial wall. the table below is therefore
+conservative by ~1.6× in node count for a template surface; a hemisphere pair
+with more cortex than fsaverage would land closer to it. the row that is
+actually run is 30,000 sites, between the first and second rows:
 
 | spacing | column nodes | embedding params (d=128) | assoc edges | state |
 |---|---|---|---|---|
