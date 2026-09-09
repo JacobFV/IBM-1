@@ -1054,6 +1054,17 @@ implementation(
 def nociceptor_afferent(x, theta) -> dict:
     """noxious stimulus into A-delta and C firing, with the threshold that defines it.
 
+    ONE COMPONENT OF MANY.  A developing body needs a large family of signals that
+    make some states worse or better than others, and nociception is only the
+    first of them to be built here.  `docs/DEVELOPMENTAL_COMPONENTS.md` lists
+    about forty across homeostatic drives (hunger, thirst, fatigue, thermal
+    discomfort, air hunger, urgency, nausea, itch, sleep pressure), affect and
+    reward (pleasure, curiosity, surprise, effort cost, fear, affective touch,
+    attachment), self-supervised prediction (efference copy above all), motor
+    development (spontaneous activity, primitive reflexes, synergies, CPGs), body
+    schema, social, and regulatory.  Most are absent.  A body with only this
+    component can learn to avoid and cannot learn to seek.
+
     a nociceptor is not a sensitive mechanoreceptor.  the defining property is a
     HIGH THRESHOLD -- it is silent through the whole innocuous range and begins to
     fire only where tissue is threatened -- and that is what makes its rate usable

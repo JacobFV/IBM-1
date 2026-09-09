@@ -117,6 +117,24 @@ E2/P4/inhibin are prescribed time functions, not an autonomous cycle.
 The standing honesty requirement applies with force here: a scaled male mesh with
 surfaces bolted onto it is not a female body, and must not be labelled one.
 
+## The developmental components
+
+Pain is one component of the developmental learning process, not the list.
+`docs/DEVELOPMENTAL_COMPONENTS.md` enumerates ~40 of them across seven groups —
+homeostatic drives, affect and reward, self-supervised prediction, motor
+development, body schema, social, and regulatory — each with what it is for and
+whether it is **built / partial / declared / absent** here.
+
+A handful are built, rather more are partial, and most are absent. That is the
+expected shape at this stage; the point of the list is that it stays visible.
+
+The four highest-leverage absent items, in unblocking order rather than
+importance: **efference copy** (prediction, sensory attenuation, body ownership
+and agency all sit on it), **a unified prediction-error signal**, **spontaneous
+motor activity** (how a body with 214 innervated muscles finds out what they do),
+and **pleasure** — because a body with only nociception can learn to avoid and
+cannot learn to seek, and half of development is seeking.
+
 ## What this rules out
 
 Work that improves a number on an object that is not the real body, or that
