@@ -45,6 +45,52 @@ already written.
 
 ---
 
+## 2026-09-09 — the cortex could not reach its own motor region, and that was the whole motor story
+
+**the finding:** with the drive entering postcentral and the command read from
+precentral -- two disjoint site populations -- only **0.03-0.07%** of the driven
+signal arrives at the readout.  worse, the ratio scales LINEARLY with association
+gain (0.0004 at w_assoc 0.5, 0.0049 at 6.0) rather than compounding, so the
+signal crosses in one weak hop and never propagates through the sheet.  raising
+the drive tenfold raises the arriving signal tenfold and leaves the ratio
+unchanged: in this regime the network is a linear attenuator, not a medium.
+
+that one measurement explains every motor result on record:
+
+- severing the kernel changed command variation by nothing -- **nothing was
+  getting through to sever**
+- IHM-1's permuted kernel recovered the same push as the trained one -- neither
+  transmits, so neither can differ
+- `body_stance` oscillated around zero skill for 4,000 steps
+
+and it indicts a design choice of mine.  I made `SensorimotorLoop` read only
+precentral so the command would have to cross the kernel, calling that
+load-bearing by construction.  every loop in this file that WORKS --
+`VisualContrastiveLoop`, `AudioContrastiveLoop`, `PairedNeuralLoop` -- reads
+`linspace(0, n-1)`.  a readout starved of its input is not load-bearing, it is
+silent.
+
+reading the whole sheet, with the drive still entering postcentral and the
+dynamics still running before anything is read:
+
+| step | skill vs predict-mean |
+|---|---|
+| 1,500 | −41.65 |
+| 6,500 | −15.54 |
+| 26,500 | **+0.42** |
+| 30,000 | +0.14 (oscillating 0.14–0.42) |
+
+**the cortex learns motor control.**  against a ridge ceiling of +0.9801 -- the
+LQR is u = −Kx, so a linear fit is the best anything can do on this corpus -- it
+reaches roughly a third of the way.  that is not the ceiling and is not claimed
+to be.  what changed is the sign: this is the first time a cortical
+materialization has beaten a trivial baseline on real motor commands.
+
+the ablation that matters is running: does a kernel trained on the body carry
+motor content that its permutation does not?  IHM-1's negative was measured on a
+kernel trained only on vision, audio and EEG, where a permutation had no motor
+content to destroy.  this one has.
+
 ## 2026-09-09 — the body joins the soup, and the earlier fine-tuning result is withdrawn
 
 `BodyStance` is now an objective in `train_curriculum.py` alongside the other

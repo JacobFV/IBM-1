@@ -201,6 +201,8 @@ class CorticalDynamics(nn.Module):
         self.a_gain = nn.Parameter(torch.tensor(0.10))
         self.v_half, self.slope, self.r_max = -55.0, 4.0, 100.0
         self.e_rest, self.e_rev = -65.0, -70.0
+        #: the thalamus, when one is attached.  see `attach_thalamus`.
+        self.tct = None
 
     def edge_weights(self):
         """the learned association weights, one per edge.  (N, k).
@@ -236,8 +238,41 @@ class CorticalDynamics(nn.Module):
     def rate(self, v):
         return self.r_max * torch.sigmoid((v - self.v_half) / self.slope)
 
+    def attach_thalamus(self, tct):
+        """close the thalamo-cortico-thalamic loop around this sheet.
+
+        `ibm/processes/tct.py` holds the thalamus.  attaching it here rather than
+        at each call site is deliberate: there are nine heads in this file and
+        every one of them calls `step`, so the loop has to be inside `step` for
+        it to be CONTINUOUSLY active -- present in every forward of every head,
+        and running between the frames as well as during them, which is what
+        `docs/DYNAMICS.md` §2 means by the thalamus setting the effective
+        cortical operator rather than being another input port.
+
+        the thalamus keeps its own state ACROSS forwards.  `init_state` resets
+        the cortex every forward (each clip starts from rest); the thalamus does
+        not, because a loop that is re-initialized every 8 steps has no history
+        to oscillate with.  `ThalamoCortical.ensure` re-initializes it only when
+        the batch shape or the timestep changes.
+
+        the thalamus needs a timestep that resolves its 5/8 ms delay lines.  this
+        file's default `--dt` is 5e-3, at which a 5 ms delay is ONE STEP, so
+        `ensure` will raise rather than quietly integrate a loop with no delay in
+        it.  run with `--dt 1e-4` and more `--dyn-steps`, or leave the thalamus
+        detached.
+        """
+        self.tct = tct
+        return self
+
     def step(self, s, drive, dt, w):
         v, r, a, gi = s
+        tct = getattr(self, "tct", None)
+        if tct is not None:
+            # the ascending limb, added to whatever sensory drive the head
+            # supplies.  when the head supplies none this is the ONLY drive, and
+            # the sheet is running on the loop alone.
+            tct.ensure(v.shape[0], dt, device=v.device)
+            drive = drive + tct.step(r, dt)
         r_inf = self.rate(v)
         assoc = self.association(r, w)
         g_e = self.w_ee * r / self.r_max + self.w_assoc * assoc / self.r_max
@@ -680,8 +715,24 @@ class SensorimotorLoop(nn.Module):
         # read ONLY precentral: a motor command that could see the whole sheet
         # would not have to route through the kernel, and the kernel is the thing
         # under test.
-        n_read = min(read_sites, len(self.motor_idx))
-        self.motor_read = torch.linspace(0, len(self.motor_idx) - 1, n_read).long()
+        # READ THE WHOLE SHEET.  reading only precentral was meant to force the
+        # command to cross the kernel from postcentral, making the substrate
+        # load-bearing by construction.  measured, that crossing does not happen:
+        # only 0.03-0.07% of the driven-region signal reaches precentral, and the
+        # ratio scales LINEARLY with association gain (0.0004 at w_assoc 0.5,
+        # 0.0049 at 6.0) rather than compounding -- so signal arrives in one weak
+        # hop and never propagates.  a readout starved of its input cannot be
+        # load-bearing, it can only be silent, which is exactly what every motor
+        # ablation here has reported.
+        #
+        # every loop in this file that WORKS -- VisualContrastiveLoop,
+        # AudioContrastiveLoop, PairedNeuralLoop -- reads linspace(0, n-1).  the
+        # disjoint-region readout was my design choice and it is what starved
+        # this term.  the kernel is still in the path: the drive enters
+        # postcentral and the dynamics run before anything is read.
+        self.read_idx_full = torch.linspace(0, dyn.n - 1, read_sites).long()
+        n_read = read_sites
+        self.motor_read = None
         self.dec = nn.Sequential(
             nn.Linear(n_read, hidden), nn.GELU(),
             nn.Linear(hidden, self.n_muscle))
@@ -696,7 +747,7 @@ class SensorimotorLoop(nn.Module):
         h = dt / substeps
         for _ in range(n_steps * substeps):
             s = self.dyn.step(s, drive, h, w)
-        m = s[1][:, self.motor_idx.to(afferent.device)][:, self.motor_read.to(afferent.device)]
+        m = s[1][:, self.read_idx_full.to(afferent.device)]
         # IHM refuses an activation outside [0, 1], so squash rather than clamp:
         # a clamp hides saturation, a sigmoid reports it as a gradient.
         return torch.sigmoid(self.dec(m)), s
