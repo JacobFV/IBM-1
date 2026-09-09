@@ -126,7 +126,12 @@ def main() -> None:
     if not a.no_cord:
         sys.path.insert(0, HERE + "/..")
         from ibm.processes.cord import SegmentalCord
-        cord = SegmentalCord(muscles=ids, dt=a.dt)
+        # PASS THE BINDINGS.  IHM's muscle ids are opaque BodyParts3D strings for
+        # everything outside the OpenSim subset, so without the catalog records
+        # the cord could only map the 72 opensim channels by name and 66 of 249
+        # got arcs.  With them the same body maps 192 of 214 contractile
+        # channels.  The loop ran either way and never said which.
+        cord = SegmentalCord(muscles=ids, dt=a.dt, muscle_bindings=muscles)
         print(f"cord: {cord.describe()}\n")
     log, prev = [], None
     for i in range(a.steps):

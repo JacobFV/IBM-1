@@ -68,13 +68,37 @@ OPENSIM_ALIASES = {
     "tfl": "tensor_fasciae_latae", "tibant": "tibialis_anterior",
     "tibpost": "tibialis_posterior", "vasint": "vastus_intermedius",
     "vaslat": "vastus_lateralis", "vasmed": "vastus_medialis",
+    "addbrev": "adductor_brevis", "iliacus": "iliacus",
+    # the ischiocondylar head is a hamstring on the tibial division, not an
+    # adductor on the obturator, and now has its own entry to say so.
+    "addmagisch": "adductor_magnus_ischiocondylar",
+    "perter": "fibularis_tertius", "popli": "popliteus",
     **{f"{short}{i}": full for short, full in
        (("glmax", "gluteus_maximus"), ("glmed", "gluteus_medius"),
         ("glmin", "gluteus_minimus")) for i in (1, 2, 3)},
 }
-# addbrev, iliacus and the ischial adductor magnus component are intentionally
-# absent: the existing IBM table has no exact entry (and the ischial component
-# must not inherit the obturator entry for the adductor portion).
+
+#: catalog names that are anatomically one muscle under several BodyParts3D
+#: labels.  each is a NAME equivalence, never an inferred innervation: the
+#: interossei are numbered by ray and share one nerve, the two heads of adductor
+#: hallucis share one nerve, and quadratus plantae is catalogued under its older
+#: name.  a name this table does not know stays unmapped and is reported.
+CATALOG_ALIASES = {
+    **{f"{o}_plantar_interosseous_of_foot": "plantar_interossei"
+       for o in ("first", "second", "third")},
+    **{f"{o}_dorsal_interosseous_of_foot": "dorsal_interossei_foot"
+       for o in ("first", "second", "third", "fourth")},
+    "quadratus_plantae": "flexor_accessorius",
+    "levator_palpebrae": "levator_palpebrae_superioris",
+}
+
+#: catalog entries in the muscle channel list that are not contractile at all.
+#: IHM's `muscle_bindings` carries tendon sheaths, tendons and check ligaments
+#: alongside real muscles; they have no motor pool, and counting them as
+#: "unmapped muscles" inflates the gap with things that were never muscles.
+NON_CONTRACTILE = re.compile(
+    r"\b(tendon|sheath|ligament|aponeurosis|fascia|raphe|retinaculum|bursa)\b",
+    re.I)
 
 
 def _catalog_key(name: str) -> str:
@@ -83,7 +107,12 @@ def _catalog_key(name: str) -> str:
     name = " ".join(name.split())
     name = re.sub(r"^(acromial|clavicular|spinal|ascending|descending|transverse) part of ", "", name)
     name = re.sub(r"^(long|short|lateral|medial|humeral|ulnar|oblique|transverse) head of ", "", name)
-    return name.removesuffix(" muscle").replace(" ", "_")
+    # "first plantar interosseous of left foot": the laterality is stripped above
+    # and leaves a doubled space plus a dangling "of foot", which no table entry
+    # can match.  Normalising it is a name equivalence, not an anatomy guess.
+    name = re.sub(r"\s+of\s+(foot|hand)$", r"_of_\g<1>", name)
+    key = name.removesuffix(" muscle").replace(" ", "_")
+    return CATALOG_ALIASES.get(key, key)
 
 
 class SegmentalCord:
@@ -114,35 +143,57 @@ class SegmentalCord:
                 raise ValueError(f"duplicate muscle binding: {mid}")
             bindings[mid] = binding
         self.mapping_keys = []
+        self.channel_names = []
         for mid in self.muscles:
+            name = ""
+            if mid in bindings:
+                name = bindings[mid].get("name", bindings[mid].get("source_name", "")) or ""
+            self.channel_names.append(name)
             key = self._key(mid)
-            if mid.startswith("body-connective-"):
-                key = ""  # ligament/tendon is not an independent alpha motor pool
-            elif key not in INNERVATION and mid in bindings:
-                name = bindings[mid].get("name", bindings[mid].get("source_name", ""))
+            if mid.startswith("body-connective-") or NON_CONTRACTILE.search(name):
+                # a tendon sheath is not a weak motor pool, it is not a motor
+                # pool.  counting it as an unmapped muscle would inflate the gap
+                # with things that were never muscles.
+                key = ""
+            elif key not in INNERVATION and name:
                 key = self._key(name)
                 if key not in INNERVATION:
                     key = _catalog_key(name)
-                if key == "adductor_magnus" and "addmagisch" in mid.lower():
-                    key = ""  # hamstring component requires a distinct tibial entry
             self.mapping_keys.append(key)
         self.n = len(self.muscles)
         # segment membership: a muscle drawing C5-C6 is driven by both, so the
         # map is many-to-many and normalised per muscle rather than assigning a
         # muscle to one level, which the anatomy does not support.
         self.seg = np.zeros((self.n, len(LEVELS)), dtype=np.float32)
-        self.unmapped = []
+        # THREE REASONS A CHANNEL GETS NO ARC, AND THEY ARE NOT THE SAME FACT.
+        # lumping them into one `unmapped` count made a tendon sheath, an
+        # extraocular muscle and a genuinely missing innervation entry read as
+        # the same failure.  only `no_innervation_entry` is a gap to close;
+        # `cranial_no_segment` is innervated by a cranial nerve and correctly has
+        # no spinal segment, and `non_contractile` was never a muscle.
+        self.non_contractile = []
+        self.cranial_no_segment = []
+        self.no_innervation_entry = []
         for i, m in enumerate(self.muscles):
-            rec = INNERVATION.get(self.mapping_keys[i])
+            key = self.mapping_keys[i]
+            rec = INNERVATION.get(key)
+            if not key:
+                self.non_contractile.append(m)
+                continue
             if rec is None:
-                self.unmapped.append(m)
+                self.no_innervation_entry.append(m)
                 continue
             roots = [r for r in rec[1] if r in LEVEL_IX]
             if not roots:
-                self.unmapped.append(m)      # cranial: 'v', 'vii', 'iii' -- no segment
+                self.cranial_no_segment.append(m)   # 'v', 'vii', 'iii': no segment
                 continue
             for r in roots:
                 self.seg[i, LEVEL_IX[r]] = 1.0 / len(roots)
+        # kept as the union for callers that only want "received no arc"
+        self.unmapped = [m for m in self.muscles
+                         if m in set(self.non_contractile)
+                         | set(self.cranial_no_segment)
+                         | set(self.no_innervation_entry)]
         # spindle density scales the Ia drive a muscle produces per unit stretch
         self.spindle = np.array(
             [INNERVATION.get(k, (None, (), 0.0))[2] for k in self.mapping_keys],
@@ -225,8 +276,19 @@ class SegmentalCord:
                 "segment_drive": self.seg.T @ self.alpha}
 
     def describe(self) -> str:
+        """coverage with its denominators spelled out.
+
+        the denominator that matters is contractile channels, not raw channels:
+        a tendon sheath in the channel list is not a muscle that failed to be
+        innervated.  the three residual categories are reported apart because
+        only one of them is a gap anyone can close.
+        """
         mapped = self.n - len(self.unmapped)
+        contractile = self.n - len(self.non_contractile)
         seg_used = int((self.seg.sum(0) > 0).sum())
-        return (f"{self.n} muscles, {mapped} mapped to segments across "
-                f"{seg_used}/{len(LEVELS)} levels; {len(self.unmapped)} unmapped "
-                f"(cranial or absent from INNERVATION)")
+        return (f"{self.n} channels, {contractile} contractile; "
+                f"{mapped} of {contractile} under spinal arcs across "
+                f"{seg_used}/{len(LEVELS)} levels; "
+                f"{len(self.cranial_no_segment)} cranial (innervated, no segment); "
+                f"{len(self.no_innervation_entry)} with no INNERVATION entry; "
+                f"{len(self.non_contractile)} non-contractile")

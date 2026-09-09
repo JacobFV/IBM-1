@@ -75,7 +75,8 @@ def _bare(nerve_id: str) -> tuple[str, str]:
 def load_ihm(path: str = IHM_PERIPHERAL) -> dict | None:
     if not os.path.exists(path):
         return None
-    return json.load(open(path))
+    with open(path) as fh:
+        return json.load(fh)
 
 
 def routes(path: str = IHM_PERIPHERAL) -> Iterator[dict]:
@@ -181,6 +182,79 @@ def visceral_routes(path: str = IHM_PERIPHERAL) -> dict[str, dict]:
     return by_name
 
 
+def measured_trunk_lengths_mm(path: str = IHM_PERIPHERAL) -> dict[str, float]:
+    """one measured route length per trunk, in mm, sides collapsed.
+
+    IHM declares each trunk once per side.  a caller that only wants "how long is
+    the median nerve" should not have to pick a side, and should not silently get
+    whichever record came first, so this takes the mean of the sides and records
+    nothing else -- `routes()` is where sidedness is preserved.
+    """
+    per: dict[str, list[float]] = {}
+    for r in routes(path):
+        per.setdefault(r["name"], []).append(1000.0 * r["path_length_m"])
+    return {k: sum(v) / len(v) for k, v in per.items()}
+
+
+def assert_measured_lengths(path: str = IHM_PERIPHERAL) -> int:
+    """every route with a measured length must USE it.  returns the count.
+
+    `visceral_routes` already asserted this for the 16 visceral routes, which is
+    where the regression was first caught -- 92 of 144 routes were falling
+    through to the typed trunk table for routes IHM had measured, and the vagus
+    lost 158 ms of C-fibre latency to it.  the guard belonged on all of them:
+    the visceral routes were not special, they were merely the ones with no
+    muscle binding to mask the fall-through.
+    """
+    d = load_ihm(path)
+    if d is None:
+        raise ValueError(f"IHM peripheral.json not found at {path}")
+    declared = {n["id"]: n.get("path_length_m") for n in d.get("nerves", [])}
+    n = 0
+    for r in routes(path):
+        if declared.get(r["ihm_id"]) is None:
+            continue
+        if r["length_source"] == "ibm_declared_trunk":
+            raise ValueError(
+                f"{r['ihm_id']}: length came from {r['length_source']!r} while "
+                f"IHM declares nerves[].path_length_m = {declared[r['ihm_id']]}. "
+                f"IHM's route_contract says 'error; never silently substitute a "
+                f"trunk length'.")
+        n += 1
+    return n
+
+
+def length_agreement(path: str = IHM_PERIPHERAL) -> dict:
+    """typed trunk length against the measured route, per trunk.
+
+    the two are different quantities and are expected to differ; the point is to
+    see WHERE and by how much, because a large ratio means the root and cord
+    segment dominate the route and the typed number is not usable as a delay.
+    trunks with no typed entry at all are listed separately -- there are 21 of
+    them, and every delay ever computed for one of those used a bare default.
+    """
+    measured = measured_trunk_lengths_mm(path)
+    rows, untyped = [], []
+    for name in sorted(set(TRUNK_COMPOSITION) | set(measured)):
+        m = measured.get(name)
+        t = TRUNK_LENGTH_MM.get(name)
+        if t is None:
+            untyped.append(dict(trunk=name, measured_mm=m))
+            continue
+        rows.append(dict(trunk=name, typed_mm=t, measured_mm=m,
+                         ratio=(m / t) if (m and t) else None))
+    within = [r for r in rows if r["ratio"] and 0.8 <= r["ratio"] <= 1.25]
+    return dict(
+        trunks_declared=len(TRUNK_COMPOSITION),
+        trunks_measured=len(measured),
+        trunks_typed=len([r for r in rows]),
+        trunks_without_typed_length=len(untyped),
+        agree_within_25_percent=len(within),
+        rows=sorted(rows, key=lambda r: -(r["ratio"] or 0)),
+        untyped=untyped,
+    )
+
+
 def coverage(path: str = IHM_PERIPHERAL) -> dict:
     """what each side declares that the other does not -- the work list."""
     d = load_ihm(path)
@@ -202,6 +276,11 @@ if __name__ == "__main__":
           f"joined {len(c['joined'])}")
     print(f"  IHM-only (no fibre classes here): {', '.join(c['ihm_only']) or '-'}")
     print(f"  IBM-only (no route in the body) : {', '.join(c['ibm_only'])}")
+    print(f"  routes using IHM's measured length: {assert_measured_lengths()}")
+    la = length_agreement()
+    print(f"  typed vs measured: {la['agree_within_25_percent']} of "
+          f"{la['trunks_typed']} typed trunks agree within 25%; "
+          f"{la['trunks_without_typed_length']} trunks have no typed length")
     rs = list(routes())
     print(f"\n{len(rs)} joined routes (nerve x side)")
     print(f"{'nerve':22s} {'side':6s} {'len mm':>7s} {'src':>18s} "

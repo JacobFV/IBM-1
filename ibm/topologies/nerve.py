@@ -139,6 +139,14 @@ TRUNK_COMPOSITION: dict[str, tuple[str, ...]] = {
     # -- plexuses carry everything their branches do ------------------------
     "cervical_plexus": MIXED, "brachial_plexus": MIXED,
     "lumbar_plexus": MIXED, "sacral_plexus": MIXED,
+    # -- the posterior primary rami ----------------------------------------
+    # every trunk above is a VENTRAL ramus.  the omission was not cosmetic: it
+    # left the paravertebral skin strip and the whole deep back with no declared
+    # trunk, so a dermatomal partition of the integument had either to leave the
+    # back uninnervated or to route it through `intercostal`, which would assert
+    # that the back of the trunk is supplied by the nerve that supplies the
+    # front.  one declaration covering the series, not 31 separate trunks.
+    "dorsal_ramus": MIXED,
 }
 
 #: typical trunk lengths, mm, one significant figure and stated as such for the
@@ -189,18 +197,262 @@ TRUNK_LENGTH_MM: dict[str, float] = {
     "superior_gluteal": 100.0, "inferior_gluteal": 100.0,
     "long_thoracic": 250.0, "suprascapular": 120.0, "thoracodorsal": 200.0,
     "dorsal_scapular": 150.0, "sympathetic_chain": 450.0,
+    "dorsal_ramus": 80.0,
+}
+
+#: THE PROXIMAL ENDPOINT OF EVERY TRUNK.  spinal levels for spinal nerves, and
+#: the cranial numeral for cranial nerves -- the same two vocabularies
+#: `ibm.anatomy.muscles.INNERVATION` already uses for root levels, so a trunk's
+#: roots and a muscle's roots are comparable strings by construction.
+#:
+#: this table is what made the 71 trunks a routing convention rather than
+#: anatomy: a trunk had a length and a fibre composition but no ends, so there
+#: was no answer to "where does this cable start and what does it reach".  it is
+#: declared here and then CHECKED against two independent tables that were built
+#: for other reasons -- the union of root levels over the muscles each trunk
+#: supplies, and the dermatome-to-trunk map IHM writes into `dermatomes.json`.
+#: `tests/test_nerve_endpoints.py` runs both checks; a trunk whose declared roots
+#: do not contain the roots of the muscles it supplies is a contradiction inside
+#: this repo, not a matter of opinion.
+CRANIAL = ("i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii")
+SPINAL_LEVELS = tuple(f"c{i}" for i in range(1, 9)) + \
+    tuple(f"t{i}" for i in range(1, 13)) + tuple(f"l{i}" for i in range(1, 6)) + \
+    tuple(f"s{i}" for i in range(1, 6)) + ("co1",)
+
+
+def _span(lo: str, hi: str) -> tuple[str, ...]:
+    """inclusive run of spinal levels, e.g. _span('t5', 't9')."""
+    i, j = SPINAL_LEVELS.index(lo), SPINAL_LEVELS.index(hi)
+    return SPINAL_LEVELS[i:j + 1]
+
+
+TRUNK_ROOTS: dict[str, tuple[str, ...]] = {
+    # -- cranial: a nucleus, not a segment ----------------------------------
+    "olfactory": ("i",), "optic": ("ii",), "oculomotor": ("iii",),
+    "trochlear": ("iv",), "trigeminal": ("v",), "abducens": ("vi",),
+    "facial": ("vii",), "cochlear": ("viii",), "vestibular": ("viii",),
+    "glossopharyngeal": ("ix",), "vagus": ("x",), "hypoglossal": ("xii",),
+    # the accessory nerve is the exception: a cranial nerve with spinal roots
+    "accessory": ("xi",) + _span("c1", "c5"),
+    # -- plexuses ------------------------------------------------------------
+    "cervical_plexus": _span("c1", "c4"),
+    "brachial_plexus": _span("c5", "t1"),
+    "lumbar_plexus": _span("l1", "l4"),
+    "sacral_plexus": _span("l4", "s4"),
+    # -- upper limb ----------------------------------------------------------
+    "median": _span("c5", "t1"),
+    # the ulnar nerve is C8-T1 with a C7 contribution that is present often
+    # enough that flexor carpi ulnaris is conventionally given C7-T1
+    "ulnar": _span("c7", "t1"),
+    "radial": _span("c5", "t1"), "musculocutaneous": _span("c5", "c7"),
+    "axillary": ("c5", "c6"),
+    "anterior_interosseous": ("c8", "t1"), "posterior_interosseous": _span("c6", "c8"),
+    "superficial_radial": ("c6", "c7"),
+    "palmar_digital": _span("c6", "c8"), "dorsal_digital": _span("c6", "c8"),
+    "medial_cutaneous_arm": ("c8", "t1"), "medial_cutaneous_forearm": ("c8", "t1"),
+    "dorsal_scapular": ("c4", "c5"), "long_thoracic": _span("c5", "c7"),
+    "suprascapular": ("c5", "c6"), "thoracodorsal": _span("c6", "c8"),
+    "lateral_pectoral": _span("c5", "c7"), "medial_pectoral": ("c8", "t1"),
+    "upper_subscapular": ("c5", "c6"), "lower_subscapular": ("c5", "c6"),
+    # -- neck and trunk ------------------------------------------------------
+    "phrenic": _span("c3", "c5"), "ansa_cervicalis": _span("c1", "c3"),
+    "lesser_occipital": ("c2",), "great_auricular": ("c2", "c3"),
+    "transverse_cervical": ("c2", "c3"), "supraclavicular": ("c3", "c4"),
+    "intercostal": _span("t1", "t11"), "subcostal": ("t12",),
+    "thoracoabdominal": _span("t7", "t12"),
+    "iliohypogastric": ("l1",), "ilioinguinal": ("l1",),
+    "genitofemoral": ("l1", "l2"),
+    # every spinal nerve has one, so the series is the whole spinal column
+    "dorsal_ramus": _span("c1", "s5"),
+    # -- lower limb ----------------------------------------------------------
+    "femoral": _span("l2", "l4"), "obturator": _span("l2", "l4"),
+    "saphenous": ("l3", "l4"), "lateral_femoral_cutaneous": ("l2", "l3"),
+    "posterior_femoral_cutaneous": _span("s1", "s3"),
+    "sciatic": _span("l4", "s3"), "tibial": _span("l4", "s3"),
+    "common_fibular": _span("l4", "s2"), "deep_fibular": _span("l4", "s1"),
+    "superficial_fibular": _span("l4", "s1"), "sural": ("s1", "s2"),
+    "medial_plantar": ("s1", "s2"), "lateral_plantar": _span("s1", "s3"),
+    "superior_gluteal": _span("l4", "s1"), "inferior_gluteal": _span("l5", "s2"),
+    "pudendal": _span("s2", "s4"),
+    # -- autonomic outflow ---------------------------------------------------
+    "sympathetic_chain": _span("t1", "l2"),
+    "greater_splanchnic": _span("t5", "t9"), "lesser_splanchnic": ("t10", "t11"),
+    "least_splanchnic": ("t12",), "lumbar_splanchnic": ("l1", "l2"),
+    "pelvic_splanchnic": _span("s2", "s4"),
+}
+
+#: THE DISTAL ENDPOINT.  what the trunk actually reaches, in words, so that a
+#: lesion has a describable cost.  a trunk with roots and no target is still a
+#: cable running from a segment into nothing.
+TRUNK_TARGET: dict[str, str] = {
+    "olfactory": "olfactory bulb, from the olfactory epithelium",
+    "optic": "lateral geniculate nucleus, from the retinal ganglion cells",
+    "oculomotor": "medial, superior and inferior recti, inferior oblique, levator "
+                  "palpebrae; ciliary ganglion",
+    "trochlear": "superior oblique", "abducens": "lateral rectus",
+    "trigeminal": "facial skin (V1-V3), muscles of mastication",
+    "facial": "muscles of facial expression, stylohyoid, platysma",
+    "cochlear": "cochlear nuclei, from the spiral ganglion",
+    "vestibular": "vestibular nuclei, from the vestibular ganglion",
+    "glossopharyngeal": "posterior tongue, carotid body and sinus, stylopharyngeus",
+    "vagus": "thoracic and abdominal viscera to the left colic flexure; larynx",
+    "accessory": "sternocleidomastoid and trapezius",
+    "hypoglossal": "intrinsic and extrinsic tongue muscles",
+    "cervical_plexus": "neck skin and infrahyoid muscles; the diaphragm via phrenic",
+    "brachial_plexus": "the whole upper limb",
+    "lumbar_plexus": "anterior and medial thigh, lower abdominal wall",
+    "sacral_plexus": "posterior thigh, the whole leg and foot, pelvic floor",
+    "median": "forearm flexors, thenar eminence, radial two lumbricals; skin of the "
+              "radial three and a half digits",
+    "ulnar": "flexor carpi ulnaris, ulnar half of FDP, the intrinsic hand; skin of "
+             "the ulnar one and a half digits",
+    "radial": "triceps and the whole extensor compartment; dorsoradial hand skin",
+    "musculocutaneous": "biceps, brachialis, coracobrachialis; lateral forearm skin",
+    "axillary": "deltoid and teres minor; skin over the lateral shoulder",
+    "anterior_interosseous": "FPL, radial half of FDP, pronator quadratus; no skin",
+    "posterior_interosseous": "the deep extensor compartment; no skin",
+    "superficial_radial": "dorsoradial hand and thumb skin; no muscle",
+    "palmar_digital": "palmar skin of the digits", "dorsal_digital": "dorsal digital skin",
+    "medial_cutaneous_arm": "medial arm skin", "medial_cutaneous_forearm": "medial forearm skin",
+    "dorsal_scapular": "rhomboids and levator scapulae", "long_thoracic": "serratus anterior",
+    "suprascapular": "supraspinatus and infraspinatus", "thoracodorsal": "latissimus dorsi",
+    "lateral_pectoral": "pectoralis major", "medial_pectoral": "pectoralis minor and major",
+    "upper_subscapular": "subscapularis", "lower_subscapular": "subscapularis and teres major",
+    "phrenic": "the diaphragm", "ansa_cervicalis": "the infrahyoid strap muscles",
+    "lesser_occipital": "posterolateral scalp skin", "great_auricular": "skin over the "
+                        "parotid and auricle",
+    "transverse_cervical": "anterior neck skin", "supraclavicular": "skin over the "
+                           "clavicle and upper pectoral region",
+    "intercostal": "intercostal and abdominal wall muscles; thoracoabdominal skin",
+    "subcostal": "the abdominal wall below the twelfth rib",
+    "thoracoabdominal": "rectus abdominis and the flat abdominal muscles",
+    "iliohypogastric": "suprapubic skin and the lower transversus abdominis",
+    "ilioinguinal": "inguinal and anterior scrotal or labial skin",
+    "genitofemoral": "cremaster; skin of the femoral triangle and genitalia",
+    "dorsal_ramus": "erector spinae and the paravertebral skin strip, at every level",
+    "femoral": "quadriceps, sartorius and iliacus; anterior thigh skin",
+    "obturator": "the adductor compartment; medial thigh skin",
+    "saphenous": "medial leg and medial foot skin; no muscle",
+    "lateral_femoral_cutaneous": "lateral thigh skin; no muscle",
+    "posterior_femoral_cutaneous": "posterior thigh and lower buttock skin",
+    "sciatic": "the hamstrings and everything below the knee",
+    "tibial": "the posterior leg compartment and the plantar foot",
+    "common_fibular": "short head of biceps femoris; the anterior and lateral leg",
+    "deep_fibular": "the anterior leg compartment; first web space skin",
+    "superficial_fibular": "fibularis longus and brevis; dorsal foot skin",
+    "sural": "lateral foot and posterior calf skin; no muscle",
+    "medial_plantar": "abductor hallucis, FDB, first lumbrical; medial sole skin",
+    "lateral_plantar": "the remaining intrinsic foot muscles; lateral sole skin",
+    "superior_gluteal": "gluteus medius and minimus, tensor fasciae latae",
+    "inferior_gluteal": "gluteus maximus",
+    "pudendal": "the pelvic floor and external sphincters; perineal skin",
+    "sympathetic_chain": "the paravertebral ganglia, and through them the body wall "
+                         "vasculature and sweat glands",
+    "greater_splanchnic": "coeliac ganglion, and the foregut",
+    "lesser_splanchnic": "aorticorenal ganglion, and the midgut",
+    "least_splanchnic": "renal plexus",
+    "lumbar_splanchnic": "inferior mesenteric ganglion, and the hindgut",
+    "pelvic_splanchnic": "the pelvic viscera, parasympathetic",
 }
 
 
+#: `ibm.anatomy.muscles.INNERVATION` names nine nerves that are BRANCHES of a
+#: declared trunk rather than trunks: `facial_vii_somatic_motor` is the somatic
+#: motor part of `facial`, and `vagus_x_recurrent_laryngeal` and
+#: `vagus_x_pharyngeal` are two branches of the one vagus.  the two tables were
+#: written at different times with different naming conventions, so nine muscle
+#: entries named a nerve with no trunk, no composition and no conduction delay --
+#: not because the nerve was missing but because the join key was.
+BRANCH_TRUNK: dict[str, str] = {
+    "abducens_vi": "abducens", "accessory_xi": "accessory",
+    "facial_vii_somatic_motor": "facial", "hypoglossal_xii": "hypoglossal",
+    "oculomotor_iii": "oculomotor", "trigeminal_v3_mandibular": "trigeminal",
+    "trochlear_iv": "trochlear", "vagus_x_pharyngeal": "vagus",
+    "vagus_x_recurrent_laryngeal": "vagus",
+}
+
+
+def trunk_of(nerve_name: str) -> str:
+    """resolve a nerve or branch name to the trunk that carries it."""
+    return BRANCH_TRUNK.get(nerve_name, nerve_name)
+
+
+def trunk_endpoints(trunk: str) -> dict:
+    """the two ends of one cable, plus the length that separates them.
+
+    `length_mm` here is the TYPED trunk length and is superseded: for a
+    conduction delay use `ibm.topologies.ihm_bridge.routes`, which reads the
+    route IHM measured over the body mesh.  the field is kept so that the two can
+    be compared, which is the point of `ihm_bridge.length_agreement`.
+    """
+    if trunk not in TRUNK_COMPOSITION:
+        raise KeyError(f"no trunk {trunk!r}")
+    return {
+        "trunk": trunk,
+        "roots": TRUNK_ROOTS.get(trunk, ()),
+        "root_kind": "cranial_nucleus" if any(r in CRANIAL for r in
+                                              TRUNK_ROOTS.get(trunk, ()))
+                     else "spinal_segments",
+        "target": TRUNK_TARGET.get(trunk),
+        "classes": TRUNK_COMPOSITION[trunk],
+        "length_mm": TRUNK_LENGTH_MM.get(trunk),
+        "length_evidence": LENGTH_EVIDENCE,
+        "length_superseded_by": LENGTH_SUPERSEDED_BY,
+    }
+
+
+#: the length used when a trunk has neither a measured route nor a typed entry.
+#: it was an inline literal in three places with three different values -- 300 mm
+#: here, 200 mm in `ibm.embodiment`, 50 mm in `scripts/pretrain_video_loop` --
+#: which meant the same unnamed trunk got three different conduction delays
+#: depending on which module asked.  naming it does not make it right; it makes
+#: it findable, and `trunk_length_mm` reports when it was used.
+TRUNK_LENGTH_DEFAULT_MM = 300.0
+
+
+def trunk_length_mm(trunk: str, *, prefer_measured: bool = True
+                    ) -> tuple[float, str]:
+    """the length to use for a delay, and WHERE IT CAME FROM.
+
+    the order is deliberate.  IHM's measured route over the body mesh first,
+    because a conduction delay is a property of the route from receptor to relay
+    and not of the named trunk -- the two disagree by 4.4x on the plantar nerves.
+    the typed table second.  the bare default last, and it is never silent: the
+    caller gets the string `default_no_declared_length` back and can refuse it.
+
+    21 of the 72 declared trunks have no entry in `TRUNK_LENGTH_MM` at all, so
+    this is not a corner case.
+    """
+    if prefer_measured:
+        try:
+            from ibm.topologies.ihm_bridge import measured_trunk_lengths_mm
+            measured = measured_trunk_lengths_mm()
+        except Exception:                       # IHM absent: fall through
+            measured = {}
+        if trunk in measured:
+            return measured[trunk], "ihm_measured_route"
+    if trunk in TRUNK_LENGTH_MM:
+        return TRUNK_LENGTH_MM[trunk], "ibm_typed_trunk"
+    return TRUNK_LENGTH_DEFAULT_MM, "default_no_declared_length"
+
+
 def fibre_delays_s(trunk: str, length_mm: float | None = None,
-                   classes: tuple[str, ...] | None = None) -> dict[str, float]:
+                   classes: tuple[str, ...] | None = None,
+                   prefer_measured: bool = True) -> dict[str, float]:
     """conduction delay per fibre class along one trunk, seconds.
 
     the whole point of the module in four lines: one trunk, one length, and a
     delay per class that differs by two orders of magnitude across the classes
     that share it.
+
+    the length defaults to the MEASURED route where IHM has one, not to the
+    typed trunk table.  the module docstring above has always said the route is
+    the right quantity for a delay; until now the function did not read it.
     """
-    length = TRUNK_LENGTH_MM.get(trunk, 300.0) if length_mm is None else length_mm
+    if length_mm is None:
+        length, _ = trunk_length_mm(trunk, prefer_measured=prefer_measured)
+    else:
+        length = length_mm
     carried = classes if classes is not None else TRUNK_COMPOSITION.get(trunk, ())
     return {c: (length * 1e-3) / FIBRE_VELOCITY_M_S[c][1] for c in carried}
 

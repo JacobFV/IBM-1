@@ -45,6 +45,9 @@ INNERVATION: dict[str, tuple[str, tuple[str, ...], float]] = {
     "orbicularis_oris": ("facial_vii_somatic_motor", ("vii",), 0.3),
     "zygomaticus_major": ("facial_vii_somatic_motor", ("vii",), 0.3),
     "genioglossus": ("hypoglossal_xii", ("xii",), 0.8),
+    "hyoglossus": ("hypoglossal_xii", ("xii",), 0.8),
+    "platysma": ("facial_vii_somatic_motor", ("vii",), 0.3),
+    "stylohyoid": ("facial_vii_somatic_motor", ("vii",), 0.5),
     "sternocleidomastoid": ("accessory_xi", ("xi", "c2", "c3"), 1.2),
     "trapezius": ("accessory_xi", ("xi", "c3", "c4"), 0.8),
     "posterior_cricoarytenoid": ("vagus_x_recurrent_laryngeal", ("x",), 0.2),
@@ -57,13 +60,17 @@ INNERVATION: dict[str, tuple[str, tuple[str, ...], float]] = {
     "superior_rectus": ("oculomotor_iii", ("iii",), 0.0),
     "inferior_rectus": ("oculomotor_iii", ("iii",), 0.0),
     "inferior_oblique": ("oculomotor_iii", ("iii",), 0.0),
+    "levator_palpebrae_superioris": ("oculomotor_iii", ("iii",), 0.0),
     # -- respiratory --------------------------------------------------------
     "diaphragm": ("phrenic", ("c3", "c4", "c5"), 0.4),
     "external_intercostal": ("intercostal", ("t1", "t11"), 1.0),
     "internal_intercostal": ("intercostal", ("t1", "t11"), 1.0),
     # -- shoulder girdle ----------------------------------------------------
     "rhomboid_major": ("dorsal_scapular", ("c4", "c5"), 0.9),
-    "levator_scapulae": ("dorsal_scapular", ("c3", "c4", "c5"), 0.9),
+    # C3-C4 twigs from the cervical plexus also reach levator scapulae; only the
+    # dorsal scapular supply is represented, and widening the trunk to C3 would
+    # assert that the dorsal scapular nerve itself carries C3.
+    "levator_scapulae": ("dorsal_scapular", ("c4", "c5"), 0.9),
     "serratus_anterior": ("long_thoracic", ("c5", "c6", "c7"), 0.8),
     "supraspinatus": ("suprascapular", ("c5", "c6"), 1.0),
     "infraspinatus": ("suprascapular", ("c5", "c6"), 1.0),
@@ -92,10 +99,18 @@ INNERVATION: dict[str, tuple[str, tuple[str, ...], float]] = {
     "flexor_carpi_ulnaris": ("ulnar", ("c7", "c8", "t1"), 1.2),
     "flexor_digitorum_profundus_ulnar": ("ulnar", ("c8", "t1"), 1.3),
     "extensor_carpi_radialis_longus": ("radial", ("c6", "c7"), 1.2),
+    # ECRB is the exception among the wrist extensors: it is supplied by the deep
+    # branch before it becomes the posterior interosseous, which is why a PIN
+    # palsy spares wrist extension and drops the fingers.
+    "extensor_carpi_radialis_brevis": ("radial", ("c7", "c8"), 1.2),
     "extensor_digitorum": ("posterior_interosseous", ("c7", "c8"), 1.2),
+    "extensor_digiti_minimi": ("posterior_interosseous", ("c7", "c8"), 1.2),
+    "extensor_indicis": ("posterior_interosseous", ("c7", "c8"), 1.2),
     "extensor_carpi_ulnaris": ("posterior_interosseous", ("c7", "c8"), 1.2),
     "supinator": ("posterior_interosseous", ("c6", "c7"), 1.2),
     "abductor_pollicis_longus": ("posterior_interosseous", ("c7", "c8"), 1.2),
+    "extensor_pollicis_longus": ("posterior_interosseous", ("c7", "c8"), 1.2),
+    "extensor_pollicis_brevis": ("posterior_interosseous", ("c7", "c8"), 1.2),
     # -- hand: spindle-rich, which is why manipulation is what it is --------
     "abductor_pollicis_brevis": ("median", ("c8", "t1"), 2.0),
     "opponens_pollicis": ("median", ("c8", "t1"), 2.0),
@@ -107,10 +122,23 @@ INNERVATION: dict[str, tuple[str, tuple[str, ...], float]] = {
     # -- trunk --------------------------------------------------------------
     "rectus_abdominis": ("thoracoabdominal", ("t7", "t12"), 0.8),
     "external_oblique": ("thoracoabdominal", ("t7", "t12"), 0.8),
-    "erector_spinae": ("thoracoabdominal", ("t1", "l5"), 1.4),
-    "quadratus_lumborum": ("subcostal", ("t12", "l1", "l2", "l3"), 1.0),
+    # the erector spinae is supplied by the DORSAL rami at every level, not by
+    # the thoracoabdominal (ventral) nerves.  it said "thoracoabdominal" only
+    # because no dorsal ramus was declared, and the whole deep back rode on a
+    # nerve that supplies the abdominal wall.
+    "erector_spinae": ("dorsal_ramus", ("t1", "l5"), 1.4),
+    # QL also draws L1-L3 through the lumbar plexus rami directly; that second
+    # supply is not a nerve this table can name in one slot, so it is recorded
+    # here rather than smuggled into the subcostal root list.
+    "quadratus_lumborum": ("subcostal", ("t12",), 1.0),
     # -- hip and thigh ------------------------------------------------------
-    "iliopsoas": ("femoral", ("l1", "l2", "l3"), 1.0),
+    # psoas major is supplied by the L1-L3 anterior rami directly, not by the
+    # femoral nerve; the iliac half is femoral and now has its own entry.
+    "iliopsoas": ("lumbar_plexus", ("l1", "l2", "l3"), 1.0),
+    # iliacus separately: the psoas half is supplied by the lumbar plexus rami
+    # directly and the iliac half by the femoral nerve, so a body that models the
+    # two bellies as distinct actuators cannot share one entry.
+    "iliacus": ("femoral", ("l2", "l3"), 1.0),
     "sartorius": ("femoral", ("l2", "l3"), 1.0),
     "rectus_femoris": ("femoral", ("l2", "l3", "l4"), 1.0),
     "vastus_lateralis": ("femoral", ("l2", "l3", "l4"), 0.9),
@@ -118,7 +146,13 @@ INNERVATION: dict[str, tuple[str, tuple[str, ...], float]] = {
     "vastus_intermedius": ("femoral", ("l2", "l3", "l4"), 0.9),
     "adductor_longus": ("obturator", ("l2", "l3", "l4"), 0.9),
     "adductor_magnus": ("obturator", ("l2", "l3", "l4"), 0.9),
+    "adductor_brevis": ("obturator", ("l2", "l3", "l4"), 0.9),
+    "obturator_externus": ("obturator", ("l3", "l4"), 0.9),
     "gracilis": ("obturator", ("l2", "l3"), 1.0),
+    # the ischiocondylar head of adductor magnus is a hamstring: tibial division
+    # of the sciatic, L4.  Giving it the obturator entry would put a hamstring on
+    # the adductor nerve and make an obturator lesion cost hip extension.
+    "adductor_magnus_ischiocondylar": ("tibial", ("l4",), 0.9),
     "gluteus_maximus": ("inferior_gluteal", ("l5", "s1", "s2"), 0.6),
     "gluteus_medius": ("superior_gluteal", ("l4", "l5", "s1"), 0.7),
     "gluteus_minimus": ("superior_gluteal", ("l4", "l5", "s1"), 0.7),
@@ -133,15 +167,24 @@ INNERVATION: dict[str, tuple[str, tuple[str, ...], float]] = {
     "extensor_hallucis_longus": ("deep_fibular", ("l5", "s1"), 1.1),
     "fibularis_longus": ("superficial_fibular", ("l5", "s1"), 1.0),
     "fibularis_brevis": ("superficial_fibular", ("l5", "s1"), 1.0),
+    "fibularis_tertius": ("deep_fibular", ("l5", "s1"), 1.0),
     "gastrocnemius_medial": ("tibial", ("s1", "s2"), 0.9),
     "gastrocnemius_lateral": ("tibial", ("s1", "s2"), 0.9),
     "soleus": ("tibial", ("s1", "s2"), 1.5),
     "tibialis_posterior": ("tibial", ("l4", "l5"), 1.1),
     "flexor_digitorum_longus": ("tibial", ("l5", "s1"), 1.0),
     "flexor_hallucis_longus": ("tibial", ("s1", "s2"), 1.0),
+    "popliteus": ("tibial", ("l4", "l5", "s1"), 1.0),
+    "plantaris": ("tibial", ("s1", "s2"), 0.9),
+    "extensor_digitorum_brevis": ("deep_fibular", ("l5", "s1"), 1.4),
+    "extensor_hallucis_brevis": ("deep_fibular", ("l5", "s1"), 1.4),
     "abductor_hallucis": ("medial_plantar", ("s1", "s2"), 1.6),
     "flexor_digitorum_brevis": ("medial_plantar", ("s1", "s2"), 1.6),
     "abductor_digiti_minimi_foot": ("lateral_plantar", ("s2", "s3"), 1.6),
+    "adductor_hallucis": ("lateral_plantar", ("s2", "s3"), 1.6),
+    "flexor_accessorius": ("lateral_plantar", ("s1", "s2", "s3"), 1.4),
+    "plantar_interossei": ("lateral_plantar", ("s2", "s3"), 1.6),
+    "dorsal_interossei_foot": ("lateral_plantar", ("s2", "s3"), 1.6),
     # -- pelvic floor -------------------------------------------------------
     "levator_ani": ("pudendal", ("s2", "s3", "s4"), 0.8),
     "external_anal_sphincter": ("pudendal", ("s2", "s3", "s4"), 0.5),

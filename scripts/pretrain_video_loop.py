@@ -987,12 +987,18 @@ class CranialNerveLoop(nn.Module):
                  dt: float = 1e-3):
         super().__init__()
         self.dyn, self.nerve, self.lobe, self.n_times = dyn, nerve, lobe, n_times
-        from ibm.topologies.nerve import (TRUNK_COMPOSITION, TRUNK_LENGTH_MM,
-                                          FIBRE_VELOCITY_M_S)
+        from ibm.topologies.nerve import (TRUNK_COMPOSITION, FIBRE_VELOCITY_M_S,
+                                          trunk_length_mm)
         if nerve not in TRUNK_COMPOSITION:
             raise ValueError(f"{nerve} is not a declared trunk")
         self.classes = list(TRUNK_COMPOSITION[nerve])
-        length_m = TRUNK_LENGTH_MM.get(nerve, 50.0) * 1e-3
+        # the MEASURED route over the body mesh, with the source recorded, rather
+        # than the typed trunk length behind a silent 50 mm default.  it moves the
+        # optic nerve from 50 mm to 65.7 mm, so the three retinal populations now
+        # arrive 3.3, 5.5 and 11.0 ms apart instead of 2.5, 4.2 and 8.3 -- the
+        # separation this loop exists to resolve, off by a third.
+        length_mm, self.length_source = trunk_length_mm(nerve)
+        length_m = length_mm * 1e-3
         # arrival step per class, from the declaration -- not a hyperparameter
         self.delays_s = {c: length_m / FIBRE_VELOCITY_M_S[c][1] for c in self.classes}
         self.arrive = {c: max(0, int(round(d / dt))) for c, d in self.delays_s.items()}

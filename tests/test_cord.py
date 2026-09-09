@@ -17,8 +17,20 @@ class CordContractTests(unittest.TestCase):
                     dict(muscle_id=ids[4], name="right adductor magnus")]
         cord = SegmentalCord(ids, muscle_bindings=bindings)
         self.assertEqual(cord.mapping_keys[:3], ["gluteus_maximus", "biceps_brachii", "lateral_rectus"])
-        self.assertEqual(cord.unmapped, ids[2:])
-        np.testing.assert_allclose(cord.seg.sum(axis=1), [1, 1, 0, 0, 0, 0])
+        # the ischiocondylar head of adductor magnus is now closed, and closed
+        # onto the TIBIAL entry: it is a hamstring, so it must not inherit the
+        # obturator roots of the adductor portion.  that is the whole reason it
+        # used to be blanked rather than mapped to "adductor_magnus".
+        self.assertEqual(cord.mapping_keys[4], "adductor_magnus_ischiocondylar")
+        from ibm.anatomy.muscles import INNERVATION
+        self.assertEqual(INNERVATION["adductor_magnus_ischiocondylar"][0], "tibial")
+        # a tendon is not a weak motor pool and an extraocular muscle is not a
+        # missing table entry; the three residual categories stay apart.
+        self.assertEqual(cord.non_contractile, [ids[3]])
+        self.assertEqual(cord.cranial_no_segment, [ids[2]])
+        self.assertEqual(cord.no_innervation_entry, [ids[5]])
+        self.assertEqual(cord.unmapped, [ids[2], ids[3], ids[5]])
+        np.testing.assert_allclose(cord.seg.sum(axis=1), [1, 1, 0, 0, 1, 0])
 
     def test_stretch_latency_and_cranial_silence(self):
         cord = SegmentalCord(["soleus", "genioglossus"], dt=.001)

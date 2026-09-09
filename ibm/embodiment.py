@@ -34,7 +34,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from ibm.anatomy.muscles import INNERVATION
-from ibm.topologies.nerve import TRUNK_COMPOSITION, TRUNK_LENGTH_MM, fibre_delays_s
+from ibm.topologies.nerve import (TRUNK_COMPOSITION, TRUNK_LENGTH_MM,
+                                  FIBRE_VELOCITY_M_S, fibre_delays_s,
+                                  trunk_length_mm, trunk_of)
 
 
 @dataclass(frozen=True)
@@ -59,11 +61,19 @@ def motor_ports() -> list[Port]:
     """two per muscle: alpha to the contractile machinery, gamma to the spindle."""
     out: list[Port] = []
     for muscle, (nerve, roots, spindle_density) in sorted(INNERVATION.items()):
-        d = fibre_delays_s(nerve)
-        # a cranial or cutaneous trunk may not carry motor classes; fall back to the
-        # trunk's own length at alpha velocity rather than inventing a delay.
-        d_alpha = d.get("alpha", (TRUNK_LENGTH_MM.get(nerve, 200.0) * 1e-3) / 100.0)
-        d_gamma = d.get("gamma", (TRUNK_LENGTH_MM.get(nerve, 200.0) * 1e-3) / 25.0)
+        # RESOLVE THE BRANCH TO ITS TRUNK FIRST.  nine of the entries in
+        # INNERVATION name a branch -- `facial_vii_somatic_motor`,
+        # `vagus_x_recurrent_laryngeal` -- which is not a key in either trunk
+        # table, so `fibre_delays_s` returned {} and both fallbacks below hit a
+        # bare 200 mm.  every extraocular, laryngeal, tongue and facial muscle in
+        # this model had the same invented conduction delay.
+        trunk = trunk_of(nerve)
+        d = fibre_delays_s(trunk)
+        # a cutaneous trunk carries no motor class at all; use the trunk's own
+        # measured route at alpha velocity rather than inventing a length.
+        L = trunk_length_mm(trunk)[0] * 1e-3
+        d_alpha = d.get("alpha", L / FIBRE_VELOCITY_M_S["alpha"][1])
+        d_gamma = d.get("gamma", L / FIBRE_VELOCITY_M_S["gamma"][1])
         out.append(Port(f"{muscle}.alpha_drive", "to_body", "neural.efferent.alpha",
                         "Hz", (0.0, 200.0), d_alpha, nerve, roots))
         if spindle_density > 0.0:
@@ -76,8 +86,10 @@ def plant_ports() -> list[Port]:
     """three per muscle: what the simulator must report back for proprioception."""
     out: list[Port] = []
     for muscle, (nerve, roots, spindle_density) in sorted(INNERVATION.items()):
-        d = fibre_delays_s(nerve)
-        d_ia = d.get("ia", (TRUNK_LENGTH_MM.get(nerve, 200.0) * 1e-3) / 100.0)
+        trunk = trunk_of(nerve)
+        d = fibre_delays_s(trunk)
+        d_ia = d.get("ia", trunk_length_mm(trunk)[0] * 1e-3
+                     / FIBRE_VELOCITY_M_S["ia"][1])
         out.append(Port(f"{muscle}.length", "from_body", "effector.length",
                         "L0", (0.0, 2.0), d_ia, nerve, roots))
         out.append(Port(f"{muscle}.velocity", "from_body", "effector.velocity",

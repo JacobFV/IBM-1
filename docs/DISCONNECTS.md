@@ -51,26 +51,83 @@ per site buys 209x transport, and that spatial diversity among those partners
 raises multimodal convergence. All of that was spent choosing among **random**
 partners, while a declared topology specifies which partners should exist at all.
 
-## 4. Seventy-one nerve trunks, zero nerves in the body
+## 4. Seventy-two nerve trunks — now with two ends each — CLOSED as declared
 
-`ibm/topologies/nerve.py` declares 71 trunks with fibre-class composition and
-length-resolved conduction. The simulated body contains **0 entities that are
-nerves**. The trunks are a routing convention over muscle and region names; there
-is no nerve in the mechanical model for them to be.
+*Was: 71 trunks with a fibre composition and a length, and no ends. A trunk had
+no proximal root and no distal target, so it was a routing convention over names
+rather than a cable running from somewhere to somewhere.*
 
-## 5. Skin is three whole-body layers, not patches
+`TRUNK_ROOTS` and `TRUNK_TARGET` now give every one of the 72 trunks a proximal
+end (spinal levels, or a cranial numeral) and a distal end. Writing them down
+surfaced **eleven contradictions** against `INNERVATION`, all of which are fixed
+and all of which are now guarded by `tests/test_innervation_coverage.py`: erector
+spinae was hanging off the thoracoabdominal (ventral) nerves when it is supplied
+by dorsal rami, psoas major was on the femoral nerve when it is supplied by the
+L1–L3 rami directly, and nine root lists disagreed on one side or the other.
 
-The body carries `body-skin-epidermis`, `body-skin-dermis`, `body-skin-hypodermis`
-— **three** entities for the entire integument. There are no discrete skin
-patches, so there is nothing for a cutaneous afferent to innervate at a location,
-and dermatomal organisation cannot be expressed.
+A 72nd trunk was added: **`dorsal_ramus`**. Every one of the original 71 was a
+*ventral* ramus, so the paravertebral skin strip and the whole deep back had no
+declared trunk at all.
 
-## 6. Thirty-two muscles move without spinal arcs
+`INNERVATION` also named nine nerves that were *branches* — `facial_vii_somatic_
+motor`, `vagus_x_recurrent_laryngeal` — which were keys in neither trunk table.
+`trunk_of()` resolves them; before it, every extraocular, laryngeal, tongue and
+facial muscle in the model shared one **invented 200 mm** conduction delay.
 
-Of 98 catalogued muscles, **66** map to a declared nerve and root level. The other
-32 pass descending drive straight through and receive no reflex arcs. They move,
-so they look innervated. A count of "muscles driven" that includes them is not a
-count of muscles under reflex control.
+**Still open:** the body carries no peripheral nerve *mesh* outside the orbit.
+Of 146 entities with role `nerve` in `anatomy.json`, 34 are real BodyParts3D
+orbital branches and 112 are CNS structures mis-roled. There is no median or
+sciatic geometry; the routes are authored schematic centrelines with
+`measured_axon_geometry: false`, which IHM says plainly on every record.
+
+## 5. Skin is three whole-body layers — CLOSED
+
+*Was: three entities — epidermis, dermis, hypodermis — for the entire
+integument, so a cutaneous afferent had nothing to innervate at a location.*
+
+IHM-1's `scripts/build_dermatome_patches.py` cuts the exterior component of the
+real skin mesh into **1,326 patches**, each with a position on the surface, an
+area, a normal, a dermatome, a dorsal root and a named trunk.
+
+| | |
+|---|---|
+| area covered | 1.7805 m² of the 1.7805 m² exterior component — **100.00%**, 0 triangles unassigned |
+| denominator | the exterior component. The raw mesh is 3.5026 m² and includes interior and orifice surfaces |
+| with a spinal root | **1,199 of 1,326** |
+| trigeminal, no spinal root | **127 of 1,326** (0.0688 m²), reported apart and never given one |
+| dermatomes present | 29 of 30 spinal levels. C1 has no cutaneous territory in life |
+
+**Still a prior, and flagged as one.** `measured_dermatome_atlas` is `False`.
+Region, T2–T12 on the trunk wall (from the nearest rib), the dorsal/ventral ramus
+split (from vertebra vs rib) and C6/C7/C8 on the hand (from the named ray) are
+measured off this body's bones; every limb sector and the facial bands are
+authored. Each patch records which rule produced it. Dermatomes overlap by about
+one segment in life and this partition is exclusive.
+
+## 6. Muscles moving without spinal arcs — CLOSED to 192 of 214
+
+*Was: "of 98 catalogued muscles, 66 map to a declared nerve and root level".*
+That denominator was stale. The body's binding list now holds **249 channels**,
+and the honest split is three-way rather than "mapped/unmapped":
+
+| | |
+|---|---|
+| channels in the body's binding list | 249 |
+| not muscles at all — tendon sheaths, tendons, check ligaments | 35, excluded by name |
+| **contractile channels** | **214** |
+| under spinal reflex arcs | **192 of 214** |
+| cranial nerve, innervated, correctly no segment | **22 of 214** (extraocular, tongue, platysma, stylohyoid) |
+| **no declared innervation at all** | **0 of 214** |
+
+Closing it needed 22 new entries in `INNERVATION` (96 → 118 muscles) and one
+real bug fixed: `scripts/embody.py` called `SegmentalCord` **without**
+`muscle_bindings`, so the cord could only match the 72 OpenSim channels by name
+and gave arcs to 66 of 249. The loop ran either way and never said which.
+
+**Still open:** the intercostal and erector-spinae entries write their root
+ranges as endpoints — `("t1", "t11")` — and the cord reads them as two literal
+levels rather than a span, so those muscles recruit 2 segments where the anatomy
+says 11.
 
 ## 7. The gait reference is two different people
 
@@ -130,3 +187,16 @@ demonstrate next, and 3 is the one that would change how the current cortical
 work is done rather than merely extending it. The rest are honest scope: things
 declared ahead of being built, which is fine as long as no result quietly claims
 them.
+
+`scripts/measure_innervation_coverage.py` prints 4, 5 and 6 with their
+denominators and is the thing to re-run rather than re-reading the numbers above.
+
+One more disconnect closed along the way, and it belongs here because it is the
+same shape. **Three different modules carried three different silent defaults for
+a trunk with no declared length** — 300 mm in `nerve.py`, 200 mm in
+`embodiment.py`, 50 mm in `pretrain_video_loop.py` — so the same unnamed trunk
+got three different conduction delays depending on which module asked. **21 of
+the 72 trunks have no typed length at all**, so this was not a corner case.
+`trunk_length_mm()` now reads IHM's measured route first and returns the source
+string with the number; `assert_measured_lengths()` guards all 146 routes, where
+`visceral_routes` had guarded only the 16 visceral ones.
