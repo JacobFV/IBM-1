@@ -58,6 +58,109 @@ already written.
 `docs/DISCONNECTS.md` rows 2 and 3, both closed. Three payloads fetched into
 `raw/` directories that had held one 12 KB checksums.txt each and no bytes.
 
+### THE TRAINED COMPARISON: tract edges put occipital-to-precentral retrieval at chance
+
+Four matched arms of the visual contrastive term, 30,000 sites, 1,200 steps,
+identical but for the sheet and the wiring: same seed, same graph seed, same
+data, same schedule, and evaluation pools drawn from a generator seeded on the
+STEP so two arms see the same pools at the same step.
+
+**(a) per-hop transport** (`measure_hop_transfer.py`, steady state, drive the
+whole occipital region, gates pass: zero amplitude reads 0.0, severed kernel
+reads 0.0 off the seed):
+
+    arm       hop1 fraction   hop2         sites at hop1   PRECENTRAL arrival
+    random      1.053e-03     1.860e-05       20,148         5.957e-04
+    tract       1.252e-03     3.661e-06       11,171         1.698e-06
+
+**Precentral arrival is 351x lower under the tract topology, and the per-hop
+transfer is not the reason** — hop 1 is slightly BETTER in the tract arm
+(1.25e-03 against 1.05e-03). The difference is entirely that precentral is
+further away: random puts it one hop from occipital and tract puts it two,
+because the consensus connectome declares no direct occipito-precentral
+fascicle. Anatomy does not make hops worse. It makes motor cortex correctly
+distant.
+
+**(b) multimodal convergence** (`measure_multimodal_convergence.py`, drop-one
+attribution, precentral readout only):
+
+    arm      sight->precentral  hearing->precentral  touch->precentral
+    random       2.725e-07          4.288e-07           1.435e-06
+    tract        1.425e-12          1.945e-12           1.691e-06
+
+Sight and hearing collapse by **five orders of magnitude** — 191,000x and
+220,000x — while touch, which is postcentral->precentral and which the
+connectome *does* declare, goes **up** 18%. Both arms are still at "NO
+CONVERGENCE" (superadditivity 1.0000; the sheet superposes), so this does not
+rescue the somato-motor claim. It relocates the failure: the random graph's
+tiny visual and auditory transport was not weak conduction, it was edges that
+do not exist.
+
+**(c) real retrieval, read from precentral only** (`ablate_disjoint_transport.py`,
+8 pools of 200, chance 0.5%):
+
+    config  noise      random intact   random permuted   tract intact   tract permuted
+    base    0            23.00x            26.12x           1.00x           1.00x
+    base    1e-3 Hz      10.75x             9.75x           1.75x           1.25x
+    base    1e-2 Hz       6.12x             6.75x           0.62x           0.50x
+    aniso   0            24.12x            24.87x          19.25x          12.00x
+    aniso   1e-3 Hz      21.87x            19.00x           5.50x           5.25x
+
+**With the plain kernel the tract arm sits at exact chance.** Across-image sd of
+the precentral rate is 4.35e-05 Hz against the random arm's 1.21e-02 Hz, a factor
+of 277. Severed reads chance in both and `relabel` reproduces `intact` in both,
+so the bookkeeping is clean.
+
+And the random arm's 23x is **matched by its own permuted control at 26x**, which
+is ledger row 23 reproducing exactly: the dynamics were necessary, what they
+learned was not. Putting the two together —
+
+> the disjoint-transport result this programme has been building on was carried
+> by long-range edges the human connectome does not contain, and not by anything
+> the kernel learned about them.
+
+The anisotropy fix rescues the tract arm to 19.25x at zero noise, so a
+concentrated tract graph does conduct; it is far more noise-fragile than the
+concentrated random one (5.50x against 21.87x at 1e-3 Hz), which is what a
+two-hop path costs.
+
+**(d) conduction delays**, attached to the saved tract graph without redrawing it,
+at dt = 1e-3 over 4 substeps (which resolves a median declared delay of 3.84 ms);
+touch->precentral transport:
+
+    none 1.691e-06   tract 1.629e-06   shuffled 1.585e-06   distance 1.589e-06
+
+Delays cost 3.7%. The delay-MATCHED control — the same multiset of delays moved
+to random edges — costs 6.3%, and the euclidean surrogate `tract.py` argues
+against costs 6.0%. So the real delays are 2.8% better than a delay-matched
+shuffle: the correct sign for the topology's claim, and far too small to build
+anything on.
+
+**(e) the designated 200-image test set** (chance 0.50%, the whole set is the
+pool so the number is deterministic), whole-sheet readout:
+
+    arm                   full     frozen   no_assoc   bypass
+    surface_occ_random   40.00%    42.00%    42.00%     6.50%
+    surface_occ_tract    36.00%    34.00%    34.50%     5.00%
+
+`frozen` (random embeddings) and `no_assoc` (geometric prior zeroed) score AS
+HIGH AS `full` in both arms. On the whole-sheet readout the learned kernel
+contributes nothing at 1,200 steps, in either wiring — ledger rows 12, 20 and 23
+again, on a new sheet. And 8-pool held-out top-1 over the trajectory is
+16.75% (random) against 16.56% (tract), a **paired** difference of −0.32 points
+over 12 matched evaluation points, t = −1.27: indistinguishable.
+
+**The honest summary of (3).** Anatomy does not beat concentrated-random on any
+measurement here, and on the one that matters it loses by a factor of 351 — for
+a reason that is correct rather than a defect. A null on "does the tract
+topology improve transport", and a positive result on "was the transport being
+measured real".
+
+**What these numbers are not.** 1,200 steps is a fifth of the published visual
+checkpoint's schedule, chosen so four matched arms would fit one GPU beside
+another job. The arms are matched, so differences between them are real; the
+absolute retrieval numbers are not this programme's retrieval result.
+
 ### how to reproduce any of this
 
     PYTHONPATH=. .venv/bin/python scripts/fetch_cortical_atlases.py
