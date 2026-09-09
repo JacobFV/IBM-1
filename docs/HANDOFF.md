@@ -54,6 +54,12 @@ not of data and not of a correct objective.
 | encoder gradient, readout at the port | 3.292e-01 | 3.033e-01 |
 | **gradient lost crossing the sheet** | **175×** | **7.5×** |
 
+**Measured at INITIALISATION, and that may be the whole story.** A random head
+backpropagates a random error. The end-to-end run testing this reports encoder
+gradient as it trains, and the base arm goes 5.453e-05 → 2.248e-01 in 250 steps
+while rising to 2.6× chance. If it keeps rising, the 175× is an initialisation
+artifact and transport is not what blocked end-to-end training.
+
 ---
 
 ## Results that stand

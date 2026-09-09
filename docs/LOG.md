@@ -400,7 +400,23 @@ the gradient outrun transport.
 
 STILL UNTESTED, and the distinction matters: this says the gradient is THERE to
 train on, 21x more of it. It does not show that the concentrated kernel actually
-trains end to end. Only a run does that, and no run has been done.
+trains end to end. Only a run does that.
+
+**CAVEAT ADDED THE SAME DAY, AND IT MAY UNDO THE ABOVE.** Every number in this
+section was measured with FRESHLY INITIALISED heads. A random head backpropagates
+a random error, and that is not the gradient a training run actually sees. The
+end-to-end run launched to test the prediction reports its own encoder gradient
+each evaluation, and on the BASE arm — the one predicted to stay starved — it
+goes 5.453e-05 at step 0 to 2.248e-01 at step 250, a factor of ~4,000, while
+top-1 rises 0.50% to 1.31% (2.6x chance).
+
+If the base arm keeps rising, then transport is NOT the binding constraint on
+end-to-end training, the 175x is an artifact of measuring at initialisation, and
+the mechanism offered above for every past motor failure does not hold. The
+falsification conditions were written into the run before it started
+(`scripts/train_disjoint_end_to_end.py`) precisely so this could not be
+reinterpreted once the numbers were visible. Treat the 175x as an
+AT-INITIALISATION ratio until that run lands.
 
 ### 2. The anisotropy fix buys noise tolerance and nothing else
 
