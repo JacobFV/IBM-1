@@ -6,14 +6,18 @@ citation: Szalkai et al., Parameterizable consensus connectomes from the Human C
   Imaging and Behavior 2017.
 urls:
 - https://braingraph.org/
-access: priority
+access: held   # 1064 subject graphs acquired 2026-09-09; see raw/.location.yaml
 licence:
   name: unresolved
   redistribution: unresolved
   commercial: unresolved
-  notes: Unresolved. §49.2 records that the predecessor's attribution generator tracked each source's
-    known bias and licence rather than treating atlas availability as correctness; that practice is preserved
-    by leaving this unresolved and counting it.
+  notes: 'Unresolved, and now that the bytes are held the specific unresolved thing can be named: braingraph.org
+    gates the download behind an "I agree to the data use terms of the Human Connectome Project" checkbox and
+    states no terms of its own for the DERIVED graphs. So the HCP open-access terms are accepted and apply to
+    the scans; what licence the PIT group places on their reconstruction of them is not stated anywhere on the
+    site or in the cited papers. That gates DISTRIBUTION only -- Rule 7 -- and reading, computing with and
+    fitting to this is never gated. The citation requests in Kerepesi et al. 2017 and Szalkai et al. 2019 are
+    recorded above and are honoured.'
 binding: bound
 population:
   n: null
