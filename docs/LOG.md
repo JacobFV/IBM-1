@@ -43,6 +43,43 @@ already written.
 
 ---
 
+## 2026-09-08 (overnight) — the kernel survives downsampling; a round trip does not
+
+IHM-1 is running a **128-site** IBM cortex in their embodied loop, and this
+repo's published kernels are 30,000 sites.  the first thing measured was a round
+trip -- 30k -> 128 -> 30k -- which returned cosine **+0.34** against the original,
+and that looked like the kernel not surviving.
+
+**it was the wrong question.**  a round trip asks whether the original can be
+RECOVERED; what matters for their sim is whether the downsampled kernel carries
+structure.  the kernel acts through <e_i, e_j>, so the test is the site-to-site
+similarity structure against a random kernel put through the same downsample:
+
+| n sites | trained | random | ratio |
+|---|---|---|---|
+| 128 | 0.4269 | 0.0882 | **4.84x** |
+| 512 | 0.4448 | 0.0888 | 5.01x |
+| 2048 | 0.4634 | 0.0886 | 5.23x |
+
+so a 128-site resample retains nearly **5x** the structure of random.  their
+cortex is carrying trained connectivity, and the alarm was mine, from measuring
+recoverability when the question was retention.  going DOWN is fine; going back
+UP is what loses information, which is consistent with the earlier finding that
+k=4 interpolation destroyed a kernel on a 30k -> 150k -> 30k round trip.
+
+a native 2,048-site curriculum is now training on the remote (visual_eeg,
+audio_meg, optic_nerve; 262,144-parameter kernel) so the body sim can have a
+kernel at its own resolution rather than a resampled one -- resampling is
+demonstrably lossy in one direction and there is no reason to spend that when the
+run is cheap.
+
+**one hazard fixed, and it matters more now that another project reads these
+files.**  `torch.save` streams a zip, so a reader opening a checkpoint mid-write
+gets "failed finding central directory" -- a CORRUPT file, not a partial one.
+that happened to me reading `ibm1_curriculum16.pt` while the trainer was saving
+it.  checkpoints are written to a temp path and renamed now, so a reader sees
+either the old file or the new one.
+
 ## 2026-09-08 (late) — 16 objectives, 10,000 steps, and the kernel is not worse
 
 the curriculum run has gone far enough to answer the question it was built to

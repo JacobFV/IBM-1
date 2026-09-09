@@ -621,13 +621,20 @@ def main() -> None:
             print(f"{step:6d}  " + " | ".join(parts) + f"   {time.time()-t0:5.0f}s",
                   flush=True)
             os.makedirs(os.path.dirname(a.ckpt) or ".", exist_ok=True)
+            # ATOMIC: write to a temp file and rename.  torch.save streams a zip,
+            # so a reader that opens the path mid-write gets "failed finding
+            # central directory" -- a corrupt checkpoint, not a partial one.  that
+            # bit me reading this very file, and IHM-1 is pulling checkpoints from
+            # here now, so a torn read reaches another project.
+            _tmp = a.ckpt + ".tmp"
             torch.save({"dyn.embed": dyns[names[0]].embed.data.cpu(),
                         "sites": a.sites, "embed": a.embed,
                         "schema": "ibm1/implicit-v1", "step": step,
                         "sources": [f"curriculum:{m}" for m in names],
                         "weights": [1.0 / len(names)] * len(names), "aligned": True,
                         "heads": {m: objs[m].model.state_dict() for m in names}},
-                       a.ckpt)
+                       _tmp)
+            os.replace(_tmp, a.ckpt)
             os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
             json.dump(log, open(a.out, "w"), indent=2)
 
