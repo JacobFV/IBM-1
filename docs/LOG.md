@@ -129,6 +129,37 @@ about a quarter, including the ~85 mm mean separation of two random sites that
 §4.1 blames for the long-range edges being inert. On the real surface a random
 partner sits 79 mm away.
 
+### and `postcentral` on the sphere was the leftover bin, at 3.3x its true size
+
+Site fractions at 30,000 sites, against the measured white-surface area:
+
+    label         sphere   surface    true area
+    occipital      12.6%     10.6%      10.9%
+    temporal       20.3%     19.5%      19.7%
+    parietal       17.8%     19.4%      19.0%
+    frontal        22.7%     28.8%      28.6%
+    precentral      6.7%      7.1%       7.0%
+    postcentral    20.0%      5.9%       6.0%
+    insula          n/a       3.3%       3.3%
+    cingulate       n/a       5.3%       5.5%
+
+The surface column matches the area column to within 0.3 points everywhere,
+which is the direct check that the area-weighted sampling does what it claims.
+
+The sphere's `postcentral` does not: **20.0% against a true 6.0%**. Reading
+`_sphere_regions` explains it — `lab` is initialised to 5 (postcentral) and the
+other five labels are then written over it, so `postcentral` was never a region.
+It was everything that matched no threshold. And it is the touch entry port in
+`measure_multimodal_convergence` and the afferent target IHM-1 routes body
+sensation to, so every somatosensory transport number measured on the sphere was
+driving a fifth of the cortex and calling it the postcentral gyrus.
+
+`frontal` is understated in the other direction, 22.7% against 28.6%. The
+interoceptive port's `PORT_FRACTION` of 4.5%/22% then works out to 4.65% of the
+sheet against the true insula+ACC 5.3% — so the substitution had roughly the
+right SIZE and entirely the wrong PLACE, which is the more dangerous of the two
+errors because the size is what anyone would have checked.
+
 ### the "occipital port" was never occipital, on either sheet
 
 `VisualContrastiveLoop`'s docstring says "the image drives the occipital port".

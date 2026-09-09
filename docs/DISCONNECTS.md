@@ -53,6 +53,14 @@ area under DK and 2.38% under DKT on the same brain, per-vertex Dice 0.835 and
 0.866. Both hold the label; they disagree at the boundary, which is where the
 revision was written to act.
 
+**`postcentral` on the sphere was not a region.** `_sphere_regions` initialises
+every site to label 5 and writes the other five over it, so `postcentral` was
+whatever matched no threshold: **20.0% of sites against a true 6.0%**. It is the
+touch entry port in `measure_multimodal_convergence` and the target IHM-1 routes
+body afference to, so every somatosensory transport number measured on the
+sphere was driving a fifth of the cortex. On the surface every lobe's site
+fraction matches its measured area to within 0.3 points.
+
 **What the sphere was, now that the real number is held:** it was area-matched
 to 202,437 mm², and the fsaverage white surface is 130,438 mm² in total and
 118,310 mm² excluding the medial wall. The proxy was **1.55× the cortex by area
