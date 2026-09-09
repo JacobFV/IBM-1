@@ -1,0 +1,167 @@
+{
+  "config": {
+    "init": "",
+    "sites": 512,
+    "embed": 128,
+    "k": 48,
+    "long_range": 0.25,
+    "objectives": "body_stance",
+    "phases": "",
+    "steps": 6000,
+    "batch": 64,
+    "lr": 0.0003,
+    "pool": 200,
+    "eval_pools": 8,
+    "warm_start": "ckpt/visual_contrastive_v2.pt,ckpt/audio_contrastive_v1.pt,ckpt/video_fixedread.pt",
+    "consolidate_every": 0,
+    "eval_every": 500,
+    "ckpt": "ckpt/body_stance_solo.pt",
+    "out": "out/body_stance_solo.json"
+  },
+  "steps": [
+    {
+      "step": 0,
+      "phase": {
+        "body_stance": 0.15
+      },
+      "sec": 1.1,
+      "body_stance": {
+        "held_mse": 0.3251650631427765,
+        "skill_vs_mean": -59766.940942001456,
+        "ceiling": 0.9801,
+        "report": "skill vs mean -59766.9409 (ridge ceiling +0.9801)"
+      }
+    },
+    {
+      "step": 500,
+      "phase": {
+        "body_stance": 0.15
+      },
+      "sec": 618.1,
+      "body_stance": {
+        "held_mse": 5.907329068577383e-06,
+        "skill_vs_mean": -0.08581435989226405,
+        "ceiling": 0.9801,
+        "report": "skill vs mean -0.0858 (ridge ceiling +0.9801)"
+      }
+    },
+    {
+      "step": 1000,
+      "phase": {
+        "body_stance": 0.15
+      },
+      "sec": 1230.3,
+      "body_stance": {
+        "held_mse": 5.020869593863608e-06,
+        "skill_vs_mean": 0.07712398600532933,
+        "ceiling": 0.9801,
+        "report": "skill vs mean +0.0771 (ridge ceiling +0.9801)"
+      }
+    },
+    {
+      "step": 1500,
+      "phase": {
+        "body_stance": 0.15
+      },
+      "sec": 1927.8,
+      "body_stance": {
+        "held_mse": 5.889678959647426e-06,
+        "skill_vs_mean": -0.08257012861492563,
+        "ceiling": 0.9801,
+        "report": "skill vs mean -0.0826 (ridge ceiling +0.9801)"
+      }
+    },
+    {
+      "step": 2000,
+      "phase": {
+        "body_stance": 0.15
+      },
+      "sec": 3013.6,
+      "body_stance": {
+        "held_mse": 6.605904218304204e-06,
+        "skill_vs_mean": -0.2142180631956827,
+        "ceiling": 0.9801,
+        "report": "skill vs mean -0.2142 (ridge ceiling +0.9801)"
+      }
+    },
+    {
+      "step": 2500,
+      "phase": {
+        "body_stance": 0.15
+      },
+      "sec": 3809.3,
+      "body_stance": {
+        "held_mse": 6.336825663311174e-06,
+        "skill_vs_mean": -0.1647592713188908,
+        "ceiling": 0.9801,
+        "report": "skill vs mean -0.1648 (ridge ceiling +0.9801)"
+      }
+    },
+    {
+      "step": 3000,
+      "phase": {
+        "body_stance": 0.15
+      },
+      "sec": 4540.0,
+      "body_stance": {
+        "held_mse": 4.93553443448036e-06,
+        "skill_vs_mean": 0.09280927124784255,
+        "ceiling": 0.9801,
+        "report": "skill vs mean +0.0928 (ridge ceiling +0.9801)"
+      }
+    },
+    {
+      "step": 3500,
+      "phase": {
+        "body_stance": 0.15
+      },
+      "sec": 5361.1,
+      "body_stance": {
+        "held_mse": 6.195009973453125e-06,
+        "skill_vs_mean": -0.13869241255441356,
+        "ceiling": 0.9801,
+        "report": "skill vs mean -0.1387 (ridge ceiling +0.9801)"
+      }
+    },
+    {
+      "step": 4000,
+      "phase": {
+        "body_stance": 0.15
+      },
+      "sec": 5840.0,
+      "body_stance": {
+        "held_mse": 6.0442439462349284e-06,
+        "skill_vs_mean": -0.1109804101524805,
+        "ceiling": 0.9801,
+        "report": "skill vs mean -0.1110 (ridge ceiling +0.9801)"
+      }
+    },
+    {
+      "step": 4500,
+      "phase": {
+        "body_stance": 0.15
+      },
+      "sec": 6199.0,
+      "body_stance": {
+        "held_mse": 6.008772288623732e-06,
+        "skill_vs_mean": -0.10446043559946405,
+        "ceiling": 0.9801,
+        "report": "skill vs mean -0.1045 (ridge ceiling +0.9801)"
+      }
+    },
+    {
+      "step": 5000,
+      "phase": {
+        "body_stance": 0.15
+      },
+      "sec": 6844.6,
+      "body_stance": {
+        "held_mse": 5.633068212773651e-06,
+        "skill_vs_mean": -0.03540301965186843,
+        "ceiling": 0.9801,
+        "report": "skill vs mean -0.0354 (ridge ceiling +0.9801)"
+      }
+    }
+  ],
+  "consolidations": []
+}

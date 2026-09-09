@@ -1,0 +1,12 @@
+  body_stance       241,362 params (65,536 kernel)
+     0  body_stance skill vs mean -59766.9409 (ridge ceiling +0.9801)       4s
+   500  body_stance skill vs mean -0.0858 (ridge ceiling +0.9801)     620s
+  1000  body_stance skill vs mean +0.0771 (ridge ceiling +0.9801)    1234s
+  1500  body_stance skill vs mean -0.0826 (ridge ceiling +0.9801)    1931s
+  2000  body_stance skill vs mean -0.2142 (ridge ceiling +0.9801)    3019s
+  2500  body_stance skill vs mean -0.1648 (ridge ceiling +0.9801)    3814s
+  3000  body_stance skill vs mean +0.0928 (ridge ceiling +0.9801)    4544s
+  3500  body_stance skill vs mean -0.1387 (ridge ceiling +0.9801)    5365s
+  4000  body_stance skill vs mean -0.1110 (ridge ceiling +0.9801)    5841s
+  4500  body_stance skill vs mean -0.1045 (ridge ceiling +0.9801)    6203s
+  5000  body_stance skill vs mean -0.0354 (ridge ceiling +0.9801)    6849s

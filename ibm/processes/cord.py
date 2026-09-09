@@ -87,7 +87,13 @@ def _catalog_key(name: str) -> str:
 
 
 class SegmentalCord:
-    """31 segments of alpha/gamma pools, closing the declared arcs."""
+    """31 segments of alpha/gamma pools, closing the declared arcs.
+
+    Opaque IHM IDs require ``muscle_bindings`` catalog records with a muscle_id
+    (or native id) and anatomical name. Mapping uses exact IBM anatomy entries
+    and explicit component aliases only. Unmapped channels pass descending drive
+    through, but receive no spinal arcs; they are not evidence of spinal control.
+    """
 
     def __init__(self, muscles: list[str] | None = None, dt: float = 0.001,
                  muscle_bindings: list[dict] | None = None):
@@ -101,7 +107,9 @@ class SegmentalCord:
             raise ValueError("muscle IDs must be unique")
         bindings = {}
         for binding in muscle_bindings or []:
-            mid = binding["muscle_id"]
+            mid = binding.get("muscle_id", binding.get("id"))
+            if not isinstance(mid, str) or not mid:
+                raise ValueError("muscle binding requires a nonempty muscle_id or id")
             if mid in bindings:
                 raise ValueError(f"duplicate muscle binding: {mid}")
             bindings[mid] = binding
@@ -111,8 +119,11 @@ class SegmentalCord:
             if mid.startswith("body-connective-"):
                 key = ""  # ligament/tendon is not an independent alpha motor pool
             elif key not in INNERVATION and mid in bindings:
-                key = _catalog_key(bindings[mid].get("name", ""))
-                if key == "adductor_magnus" and "addmagIsch" in mid:
+                name = bindings[mid].get("name", bindings[mid].get("source_name", ""))
+                key = self._key(name)
+                if key not in INNERVATION:
+                    key = _catalog_key(name)
+                if key == "adductor_magnus" and "addmagisch" in mid.lower():
                     key = ""  # hamstring component requires a distinct tibial entry
             self.mapping_keys.append(key)
         self.n = len(self.muscles)
@@ -183,8 +194,8 @@ class SegmentalCord:
         if antagonist is not None:
             antagonist = np.asarray(antagonist)
             if (antagonist.shape != (self.n,) or antagonist.dtype.kind not in "iu"
-                    or np.any(antagonist < 0) or np.any(antagonist >= self.n)):
-                raise ValueError("antagonist must be one valid integer muscle index per muscle")
+                    or np.any(antagonist < -1) or np.any(antagonist >= self.n)):
+                raise ValueError("antagonist must be one valid integer muscle index per muscle or -1 (unpaired)")
 
         # gamma sets spindle sensitivity, so Ia is not a pure length signal --
         # alpha-gamma coactivation is why a voluntary contraction does not
@@ -201,7 +212,7 @@ class SegmentalCord:
         e_stretch = g_s * self._delayed("stretch", ia, t_s)
         e_auto = g_a * self._delayed("autogenic", ib, t_a)
         if antagonist is not None:
-            e_recip = g_r * self._delayed("reciprocal", ia[antagonist], t_r) * self.spinal_mask
+            e_recip = g_r * self._delayed("reciprocal", ia[np.maximum(antagonist, 0)] * (antagonist >= 0), t_r) * self.spinal_mask
         else:
             e_recip = np.zeros(self.n, np.float32)
         e_renshaw = g_n * self._delayed("renshaw", self.alpha * self.spinal_mask, t_n)
