@@ -192,6 +192,51 @@ THINGS-EEG2 64ch montage"` for a run that was a spherical shell. Nothing reads
 that field, which is why it survived. `geometry_note(dyn)` now reads the sheet
 off `dyn.pos` through the same discriminator the region lookup uses.
 
+## 2026-09-09 — transport WAS the binding constraint on end-to-end training
+
+The pre-registered test landed on its confirming branch. Image -> occipital -> the
+sheet -> a PRECENTRAL-ONLY readout, contrastive against measured EEG, trained END
+TO END so encoder, kernel and head all receive gradient through the dynamics.
+Identical batch, identical loss, initialisation reseeded per arm; the kernel's
+edge configuration is the only difference. Ports asserted disjoint.
+
+At matched steps (`out/disjoint_end_to_end.json`):
+
+| step | base | aniso4d |
+|---|---|---|
+| 250 | 2.6x | 6.0x |
+| 500 | 2.4x | 10.9x |
+| 750 | 2.6x | 12.2x |
+| 1000 | 4.0x | 13.9x |
+| 1250 | 2.7x | **19.9x** |
+
+Base ran the full 6,000 steps, peaked at 5.2x, ended at 3.2x, and was flat from
+step 250 onward. The concentrated kernel is at 19.9x by step 1,250 and still
+climbing — **7.4x better at matched step**, on a run a fifth as long.
+
+Three falsification conditions were written into the script before it started;
+this is the one that says transport was the binding constraint on end-to-end
+training. Recorded that way rather than reinterpreted after the fact, because two
+claims withdrawn today were ones where the reading was chosen once the number was
+visible.
+
+**AND IT CORRECTS THE MECHANISM I GAVE FOR IT.** I said end-to-end training was
+starved of gradient, from a 175x drop in encoder gradient crossing to a disjoint
+region. That measurement was taken at INITIALISATION and does not survive: base's
+encoder gradient rises to 1e+00-7.6e+00 during training, thousands of times its
+starting 5.45e-05, and base still does not learn. There is plenty of gradient.
+
+So the limiter is not gradient MAGNITUDE, it is that the gradient is
+uninformative — with ~1e-3 of the signal arriving at the readout, the error
+signal reaching the encoder carries almost nothing about which encoder change
+would help. Concentration fixes the forward signal, and the backward pass becomes
+useful as a consequence. The at-initialisation ratio (base 5.45e-05, aniso
+1.12e-03, 20x — matching the 21x measured separately) predicted the right
+ORDERING for the wrong reason.
+
+Caveat held: aniso4d is at 1,250 of 6,000 steps. The matched-step comparison is
+complete and decisive; its final number is not in yet.
+
 ## 2026-09-09 (morning) — the video model has no temporal prediction beyond appearance
 
 The retrieval task, run at the window where appearance is worthless. Chance is
