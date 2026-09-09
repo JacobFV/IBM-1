@@ -72,7 +72,20 @@ rather than assumed.
 
 **Muscles, tendons and ligaments anchor at real points** on those meshes.
 
-**The tissue that holds it together is part of the model.** Elastic integument,
+**The tissue that holds it together is part of the model.** Not only elastic
+integument, ligaments, tendons, lymph and vasculature — also **cartilage,
+menisci and intervertebral discs, joint capsules, bursae and synovium, fascia and
+aponeurosis, retinacula, periosteum, and adipose**, and the integument bound to
+what lies under it rather than floating over it.
+
+Counted in the bound body: 311 ligament entities, 80 bursa/synovium, 51
+cartilage, 46 fascia, 44 tendon, 36 joint capsule, 33 meniscus/disc, 18
+retinaculum, 4 skin, 2 adipose — **625 of 4,000 entities are tissue structures,
+and the plant carries force elements for none of them.** They exist as geometry
+and not as mechanics. Adipose at 2 entities is additionally a data gap.
+
+Progress against this and every other objective is tracked in
+`docs/MILESTONES.md`. Elastic integument,
 ligaments, tendons, lymph vessels, blood vessels. The body is not a skeleton
 with a skin texture.
 
