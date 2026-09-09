@@ -69,7 +69,33 @@ On the **unmodified** trained kernel, no noise:
 |---|---|---|
 | intact | 21.81% +/- 2.28 | **43.62x** |
 | severed (w = 0) | 0.50% | 1.00x |
-| permuted rows | 0.50% | 1.00x |
+| ~~permuted rows~~ | ~~0.50%~~ | ~~1.00x~~ **WITHDRAWN, see below** |
+
+**The permuted row is withdrawn and the rerun is pending.** `torch.randperm` was
+drawn INSIDE `cortical_features`, from a generator shared with the caller, and
+that function is called twice per arm -- once for the training features and once
+for the held-out ones. The generator advanced between the calls, so the head was
+fitted on one permutation and evaluated on a different one. That reproduces both
+symptoms of a real ablation exactly: across-image variance preserved to 0.3% of
+intact (the permuted sheet really does conduct) and retrieval at exact chance
+(the test map is a different map). It measured a train/test mismatch.
+
+What survives is the severed arm, which involves no permutation: across-image sd
+exactly 0.000e+00 and retrieval at chance. So **the dynamics are necessary**
+stands. **What they learned matters** is unsupported until the rerun lands, and
+with it the claim that ledger row 20's generalisation is too broad.
+
+The same lesson twice in one day: the global-RNG graph draw was fixed this
+morning precisely because one shared RNG made two things vary that should have
+varied independently, and this bug was written into the same file the same
+afternoon.
+
+The rerun draws one permutation per arm in the caller, asserts it was passed in,
+prints its first entries at both call sites, and adds a `relabel` positive
+control -- kernel untouched, readout COLUMNS permuted with the same permutation
+in both passes, which is a pure relabelling of the head's input coordinates and
+must therefore score what `intact` scores. If `relabel` is not ~43x the pipeline
+is still broken and every arm is void.
 
 This log has said "there is no configuration measured so far in which the
 cortical dynamics both receive the sensory signal and are necessary to produce
@@ -79,15 +105,7 @@ changing the kernel, the objective, or the data. The sheet was never
 information-blocked. 0.054 Hz of arriving perturbation is ample when there is
 nothing competing with it.
 
-It also does not extend ledger row 20 the way that row implies: here a permuted
-kernel sits at chance while the trained one sits at 43x, on the same graph with
-the same weight statistics.
-
-Two caveats, both unresolved: permuted-at-chance may be "information destroyed"
-or "information present but not linearly learnable by this head at 3,000 steps"
--- every arm got the same head, budget and data, so it is a fair ablation but
-not a proof. And this is a head fitted on frozen features, not end-to-end
-training, so it does not explain why end-to-end training failed. The hypothesis
+One caveat: this is a head fitted on frozen features, not end-to-end training, so it does not explain why end-to-end training failed. The hypothesis
 worth testing, untested: gradients through a 1e-3 attenuation are as small as
 the signal, and the earlier failures were an optimisation problem downstream of
 the transport problem.
@@ -98,15 +116,24 @@ Concentrating the long-range budget raises the across-image sd of the precentral
 rate from 5.406e-02 Hz to 1.915e+00 Hz, a **35.4x** amplitude gain. On the task
 that converts to exactly one thing:
 
-| noise (Hz) | unmodified | concentrated | severed | permuted |
-|---|---|---|---|---|
-| 0 | 43.62x | 42.37x | 1.00x | 1.00x |
-| 1e-2 | 21.12x | 37.87x | 0.50x | 1.12x |
-| 3e-2 | 17.75x | 43.75x | 0.50x | 1.12x |
-| 1e-1 | 11.75x | 26.50x | 0.50x | 0.87x |
-| 3e-1 | 7.87x | 19.00x | 0.50x | 1.12x |
-| 1 | 2.00x | 11.87x | 0.50x | 0.87x |
-| 3 | 0.75x | 6.87x | 0.50x | 0.87x |
+| noise (Hz) | unmodified | concentrated | severed |
+|---|---|---|---|
+| 0 | 43.62x | 42.37x | 1.00x |
+| 1e-2 | 21.12x | 37.87x | 0.50x |
+| 3e-2 | 17.75x | 43.75x | 0.50x |
+| 1e-1 | **11.75x** | **26.50x** | 0.50x |
+| 3e-1 | 7.87x | 19.00x | 0.50x |
+| 1 | 2.00x | 11.87x | 0.50x |
+| 3 | 0.75x | 6.87x | 0.50x |
+
+(the permuted column is withdrawn, see above.)
+
+**Do not lead with the zero-noise row.** Base across-image sd is 5.406e-02 Hz,
+about 10^6 times float32 epsilon, so a linear head has enormous headroom to
+amplify and 43.62x is a statement about the simulation's precision as much as
+about the sheet. The defensible version of "the dynamics both receive the signal
+and are necessary" is the physiological band: **11.75x to 17.75x against a
+severed 0.50x, at 0.03-0.15 Hz of noise.**
 
 At zero noise the fix is worth **nothing** (43.62x against 42.37x). The noise at
 which each arm falls to half its noiseless skill is 9.31e-03 Hz unmodified and

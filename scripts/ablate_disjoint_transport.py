@@ -82,19 +82,41 @@ def load_head(ckpt, device, head="visual_eeg"):
 
 @torch.no_grad()
 def cortical_features(model, dyn, imgs, drive_idx, read_idx, *, mode, batch,
-                      n_steps, substeps, dt, device, gen):
+                      n_steps, substeps, dt, device, perm):
     """precentral rates for every image, under one kernel treatment.
 
     `mode` is intact | severed | permuted.  permuted shuffles the ROWS of the
     edge-weight matrix, which keeps the graph, the fan-in and the weight
     statistics and destroys only the correspondence between a site and the
-    weights it learned.
+    weights it learned.  it is applied BEFORE the sheet is integrated, so it
+    changes the dynamics rather than relabelling the readout: `idx` is left
+    alone, so site i keeps its own neighbours and acquires site perm(i)'s
+    weights over them.  a readout relabelling would be information-preserving
+    and would measure nothing.
+
+    **`perm` is passed in, never drawn here.**  it WAS drawn here, from a
+    generator shared with the caller, and this function is called TWICE per arm
+    -- once for the training features and once for the held-out ones.  the
+    generator advanced between the two calls, so the head was fitted on one
+    permutation and evaluated on a DIFFERENT one.  that reproduces both symptoms
+    of a real ablation exactly -- across-image variance preserved to 0.3% of
+    intact, retrieval at exact chance -- while measuring nothing but a train/test
+    mismatch.
     """
     w = dyn.edge_weights().detach()
     if mode == "severed":
         w = torch.zeros_like(w)
     elif mode == "permuted":
-        w = w[torch.randperm(w.shape[0], generator=gen).to(w.device)]
+        assert perm is not None and perm.shape[0] == w.shape[0]
+        w = w[perm.to(w.device)]
+    elif mode == "relabel":
+        # POSITIVE CONTROL for the bookkeeping, not an ablation.  the kernel is
+        # untouched and only the READOUT COLUMNS are permuted, with the same
+        # permutation for the training and the held-out pass.  that is a pure
+        # relabelling of the head's input coordinates, so a head refitted on it
+        # must score exactly what `intact` scores.  if this arm falls to chance
+        # the pipeline has a train/test mismatch and every other arm is void.
+        pass
     elif mode != "intact":
         raise ValueError(mode)
     h = dt / substeps
@@ -116,7 +138,10 @@ def cortical_features(model, dyn, imgs, drive_idx, read_idx, *, mode, batch,
         s = dyn.init_state(b, device)
         for _ in range(n_steps * substeps):
             s = dyn.step(s, drive, h, w)
-        out.append(s[1][:, read_idx].cpu())
+        r = s[1][:, read_idx]
+        if mode == "relabel":
+            r = r[:, perm.to(r.device)]
+        out.append(r.cpu())
     return torch.cat(out)
 
 
@@ -162,7 +187,20 @@ def fit_and_score(feat_tr, eeg_tr, feat_te, eeg_te, *, pools, pool, steps, lr,
         lbl = torch.arange(len(idx), device=device)
         loss = 0.5 * (F.cross_entropy(logit, lbl) + F.cross_entropy(logit.T, lbl))
         opt.zero_grad(); loss.backward(); opt.step()
+    # TRAIN-SIDE DIAGNOSTICS.  a permuted arm at chance is either "the
+    # information is destroyed" or "the head failed to fit", and only the
+    # training loss can tell those apart: a loss stuck at ln(batch) with nonzero
+    # feature variance is an optimisation failure wearing an ablation's clothes.
     m.eval()
+    with torch.no_grad():
+        idx = torch.arange(min(1024, n), device=device)
+        za, zb = m(ftr[idx], etr[idx])
+        lg = m.logit_scale.exp().clamp(max=100) * za @ zb.T
+        lb = torch.arange(len(idx), device=device)
+        train_loss = float(0.5 * (F.cross_entropy(lg, lb) +
+                                  F.cross_entropy(lg.T, lb)))
+        train_top1 = float((lg.argmax(1) == lb).float().mean())
+        chance_loss = float(math.log(len(idx)))
     accs = []
     with torch.no_grad():
         for p in range(pools):
@@ -173,7 +211,8 @@ def fit_and_score(feat_tr, eeg_tr, feat_te, eeg_te, *, pools, pool, steps, lr,
             sim = za @ zb.T
             lbl = torch.arange(sim.shape[0], device=device)
             accs.append(float((sim.argmax(1) == lbl).float().mean()))
-    return float(np.mean(accs)), float(np.std(accs)), len(accs)
+    return (float(np.mean(accs)), float(np.std(accs)), len(accs),
+            train_loss, train_top1, chance_loss)
 
 
 def main() -> None:
@@ -270,27 +309,53 @@ def main() -> None:
               f"local_gain={dyn.local_gain} long_min_dist={dyn.long_min_dist}"
               f"   row L1 gain {l1:.4f}  |w| mean {float(w.abs().mean()):.3e}")
         for mode in a.modes.split(","):
+            # ONE permutation per arm, drawn HERE and reused for the training
+            # and the held-out pass.  printed so the identity of the tensor at
+            # the two call sites can be checked rather than assumed.
+            perm = None
+            if mode == "permuted":
+                perm = torch.randperm(dyn.n, generator=gen)
+            elif mode == "relabel":
+                perm = torch.randperm(len(read_idx), generator=gen)
             kw = dict(mode=mode, batch=a.batch, n_steps=a.n_steps,
-                      substeps=a.substeps, dt=a.dt, device=dev, gen=gen)
+                      substeps=a.substeps, dt=a.dt, device=dev, perm=perm)
             f_tr = cortical_features(model, dyn, x_tr, drive_idx, read_idx, **kw)
             f_te = cortical_features(model, dyn, x_te, drive_idx, read_idx, **kw)
+            if perm is not None:
+                print(f"  permutation, same tensor for train and held-out: "
+                      f"{perm[:8].tolist()} (id {id(perm)})")
             # the raw scale of the arriving perturbation, so the retrieval
             # numbers below can be read against what is physically there.
             spread = float(f_tr.std(0).mean())
-            print(f"  {mode:9s}  across-image sd of the precentral rate "
-                  f"{spread:.4e} Hz")
+            # EFFECTIVE RANK of the across-image feature covariance, as the
+            # participation ratio (sum lambda)^2 / sum lambda^2.  amplitude and
+            # rank are different things: a permuted kernel can preserve the sd
+            # while collapsing the map to a few directions, and it is rank, not
+            # amplitude, that decides whether a linear head can separate 200
+            # images.
+            with torch.no_grad():
+                c = (f_tr - f_tr.mean(0, keepdim=True)).to(device)
+                c = c[:2048]
+                ev = torch.linalg.svdvals(c.float()) ** 2
+                erank = float(ev.sum() ** 2 / (ev ** 2).sum())
+            print(f"  {mode:9s} across-image sd of the precentral rate "
+                  f"{spread:.4e} Hz   effective rank {erank:.1f} "
+                  f"(of {min(2048, len(f_tr))} images x {f_tr.shape[1]} sites)")
             for nz in noises:
-                acc, sd, npool = fit_and_score(
+                acc, sd, npool, tl, tt, cl = fit_and_score(
                     f_tr, e_tr, f_te, e_te, pools=a.pools, pool=a.pool,
                     steps=a.fit_steps, lr=a.lr, device=dev, seed=a.seed,
                     noise_sd=nz)
                 x_chance = acc * a.pool
                 print(f"    noise {nz:8.1e} Hz -> top-1 {100*acc:6.2f}% "
                       f"+/- {100*sd:4.2f}  ({x_chance:6.2f}x chance, "
-                      f"{npool} pools)")
+                      f"{npool} pools)   [train loss {tl:.4f} vs "
+                      f"{cl:.4f} at chance, train top-1 {100*tt:5.1f}%]")
                 res["arms"].setdefault(name, {}).setdefault(mode, {})[str(nz)] = {
                     "top1": acc, "sd": sd, "x_chance": x_chance,
-                    "n_pools": npool, "feature_sd_hz": spread, "row_l1": l1}
+                    "n_pools": npool, "feature_sd_hz": spread, "row_l1": l1,
+                    "train_loss": tl, "train_top1": tt,
+                    "chance_loss": cl, "effective_rank": erank}
 
     # ---- the sever ratio, which is the number that decides this ------------
     print(f"\n{'config':10s} {'noise':>9s} {'intact':>9s} {'severed':>9s} "
