@@ -77,6 +77,12 @@ def main() -> None:
                          "command tells you nothing -- it looks identical to a dead "
                          "loop, which is how a wire test gets mistaken for a "
                          "controller")
+    ap.add_argument("--no-cord", action="store_true",
+                    help="send cortical commands straight to muscle, bypassing the "
+                         "segmental cord.  the cord closes the stretch reflex at a "
+                         "30 ms loop delay -- an order of magnitude faster than "
+                         "anything routed through cortex -- so this is the ablation "
+                         "for whether local feedback matters")
     ap.add_argument("--out", default="out/embody.json")
     a = ap.parse_args()
 
@@ -113,6 +119,12 @@ def main() -> None:
     print(f"  the two are disjoint, so the command crosses through the kernel\n")
 
     patches = [p["id"] for p in spec["receptor_patches"]]
+    cord = None
+    if not a.no_cord:
+        sys.path.insert(0, HERE + "/..")
+        from ibm.processes.cord import SegmentalCord
+        cord = SegmentalCord(muscles=ids, dt=a.dt)
+        print(f"cord: {cord.describe()}\n")
     log, prev = [], None
     for i in range(a.steps):
         stim = {}
@@ -126,9 +138,31 @@ def main() -> None:
         out = body.step(a.dt, stimuli=stim, mechanical_state={}, brain_state=(
             brain.act({}, device=dev, sever=a.sever) if prev is None else prev))
         aff = out.get("afferent_rates_hz", {}) or out.get("receptor_rates_hz", {})
-        prev = brain.act(aff, device=dev, sever=a.sever)
+        cortical = brain.act(aff, device=dev, sever=a.sever)
+        if cord is not None:
+            # the descending command is a REQUEST; what the muscle receives is
+            # what the cord makes of it once the reflexes have had their say.
+            desc = np.array([cortical["motor_commands"][m] for m in ids], np.float32)
+            stretch = np.zeros(len(ids), np.float32)
+            for j, b in enumerate(muscles):
+                sid = b.get("muscle_id")
+                # IHM keys proprioceptor_rates_hz by the BARE muscle id.  reading
+                # "proprio:" + id returned 0.0 for every muscle every step, so the
+                # stretch reflex never fired and reflex_max sat at exactly 0.0000
+                # while the cord still looked alive on Renshaw inhibition alone.
+                # a wrong key does not raise, it just silently means "no afference".
+                stretch[j] = float(np.clip(
+                    out.get("proprioceptor_rates_hz", {}).get(sid, 0.0)
+                    / 100.0, 0.0, 1.0))
+            res = cord.step(desc, stretch=stretch)
+            prev = {"motor_commands": {m: float(res["alpha"][j])
+                                       for j, m in enumerate(ids)}}
+            reflex = float(np.abs(res["stretch"]).max())
+        else:
+            prev = cortical
+            reflex = 0.0
         cmds = np.array(list(prev["motor_commands"].values()))
-        log.append({"step": i, "n_afferent": len(aff),
+        log.append({"step": i, "n_afferent": len(aff), "reflex_max": reflex,
                     "cmd_mean": float(cmds.mean()), "cmd_sd": float(cmds.std()),
                     "cmd_min": float(cmds.min()), "cmd_max": float(cmds.max()),
                     "nerve_activity": len(out.get("nerve_activity_hz", {}))})
