@@ -66,6 +66,13 @@ independent evaluations.  a sign test gives p = 0.031, and the mean deficit is
 is a different quantity from one marginal gap, and this project has been burned
 enough by reading a single comparison that the distinction is worth stating.
 
+a caveat that only became visible once the 8,192 arm produced evaluations: **at
+step 1,000 all four resolutions are level** -- 128 at 9.50%, 512 at 10.56%, 2,048
+at 9.56%, 8,192 at 9.69%.  the resolutions do not differ early; they separate
+between step 1,000 and 2,000.  so the deficit below is a statement about where
+each run converges, not about how fast it learns, and a sweep stopped at 1,000
+steps would have found nothing at all.
+
 so the plateau has a floor between 128 and 512, and **IHM-1 is running underneath
 it.**  the cost is real but small -- roughly 3.7 points of top-1, 16% relative --
 and it is the difference between 38.9x and 46.0x chance, not between working and
