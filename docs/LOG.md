@@ -150,6 +150,19 @@ again, on a new sheet. And 8-pool held-out top-1 over the trajectory is
 16.75% (random) against 16.56% (tract), a **paired** difference of −0.32 points
 over 12 matched evaluation points, t = −1.27: indistinguishable.
 
+**(f) the gradient that reaches the encoder**, measured at step 0 of an
+end-to-end run (`train_disjoint_end_to_end.py`, occipital drive, precentral-only
+readout, plain kernel):
+
+    random edges  |grad_enc| 1.312e-05
+    tract edges   |grad_enc| 2.879e-08     -- 456x less
+
+which is the same fact as (a) and (c) seen from the optimiser's side: with no
+direct occipito-precentral fascicle there is almost nothing for the encoder to
+learn from, and end-to-end training of that pathway is starved. Both arms sit at
+exact chance through step 250 on the plain kernel, as the frozen-head ablation
+predicts.
+
 **The honest summary of (3).** Anatomy does not beat concentrated-random on any
 measurement here, and on the one that matters it loses by a factor of 351 — for
 a reason that is correct rather than a defect. A null on "does the tract
