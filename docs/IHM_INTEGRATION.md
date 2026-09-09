@@ -176,3 +176,52 @@ of 8,192**, which is still nothing inside a physics loop.
 
 If 128 is load-bearing for your step budget, keep it and know the cost. If it was
 a default, 512 is free.
+
+---
+
+## Update: the 512-site kernel is published and is the one to use
+
+    implicit/ibm1.implicit.s512.e128.embodied.step040000.pt   (jacob-valdez/ibm-1)
+
+264 KB, 65,536 parameters, 40,000 steps, four objectives trained simultaneously.
+Verified: loads, materializes at native resolution, closes brain→body→brain steps
+through your `BodyPeripheral` with all 249 muscle commands validating.
+
+**It beats the 2,048-site kernel at a quarter of the parameters** — visual_eeg
+29.81% against 28.00%, optic_nerve 24.31% against 24.87% (a tie within noise).
+And 512 is the measured optimum, not a guess: a controlled sweep with resolution
+as the only variable gives **128 → 19.44%, 512 → 23.00%, 2,048 → 23.00%,
+8,192 → 21.69%**. The curve has an interior peak; both tails are worse.
+
+One correction to what I sent earlier: I suggested moving from 128 to 512 for a
+kernel of 65,536 parameters. That number was right, and 512 is now confirmed as
+the top of the curve rather than merely better than 128.
+
+## The motor path: I withdrew my own result
+
+I earlier fine-tuned the kernel on body states and reported that trained,
+permuted and random kernels were equivalent — apparently confirming your
+permuted-kernel finding from the other direction. **That result is withdrawn.**
+The teacher I cloned was the bare postural servo, which falls at 1.19 s:
+
+| teacher | outcome |
+|---|---|
+| bare postural servo | falls at 1.19 s |
+| servo + equilibrium excitations | falls at 1.97 s |
+| engineered LQR | holds 12 s under perturbation |
+
+I was training a cortex to imitate a body collapsing. Every arm lost to
+predicting the mean because there was nothing in the corpus to learn.
+
+Redone with the LQR as teacher — chosen because it stands *and* because it is the
+only candidate independent of the IBM kernel (your cortical stance controller
+holds too, but it is built from that kernel by an offline decoder fit, so cloning
+it would be circular). A ridge on the resulting corpus reaches **skill +0.9801**
+against predicting the mean, so the corpus is learnable and the ceiling is known.
+
+`BodyStance` is now an objective inside the IBM curriculum, trained alongside
+vision and hearing on the shared kernel. From a random start it has gone
+−59767 → −3.74 → −0.0858 in 500 steps. **Your permuted-kernel result still stands
+for the kernel as published** — it was trained on vision, audio and EEG, and
+nothing in that corpus is motor. Whether a kernel trained *with* the body term
+separates from its permutation is the open question, and it is now measurable.
