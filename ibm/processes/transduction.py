@@ -1050,6 +1050,82 @@ implementation(
     source="Prochazka 1999; Mileusnic & Loeb 2006 for the intrafusal mechanics this "
            "lumps")
 
+
+def nociceptor_afferent(x, theta) -> dict:
+    """noxious stimulus into A-delta and C firing, with the threshold that defines it.
+
+    a nociceptor is not a sensitive mechanoreceptor.  the defining property is a
+    HIGH THRESHOLD -- it is silent through the whole innocuous range and begins to
+    fire only where tissue is threatened -- and that is what makes its rate usable
+    as a reward signal rather than as another channel of touch.  a receptor that
+    reported every contact would say nothing about damage.
+
+    the two fibre classes are separated because they carry different information
+    and the model already declares both with resolved conduction velocities.
+    A-delta is myelinated and fast: first pain, sharp, well localised, and it
+    arrives in time to withdraw from the thing that caused it.  C is unmyelinated
+    and slow: second pain, burning, poorly localised, and it outlasts the
+    stimulus.  48 of 72 declared trunks carry one or both, so a materialization
+    that lumps them is discarding a distinction the periphery already makes -- and
+    the delay between them is not a detail, it is the reason withdrawal happens
+    before suffering does.
+
+    three modalities converge on the same ending because polymodal nociceptors are
+    the common case: mechanical load beyond the damage threshold, temperature
+    outside the innocuous band in either direction, and chemical irritants
+    including the ones inflamed tissue produces itself.
+
+    SENSITISATION is included and is the part most easily left out.  injured
+    tissue lowers its own threshold, so a stimulus that was innocuous becomes
+    painful and one that was painful becomes worse.  Without it a body cannot
+    learn to protect an injury, which is most of what pain is for.  It is carried
+    as a state the caller advances, not inferred here.
+
+    what this is NOT: an account of pain.  It is the receptor.  Everything that
+    makes pain an experience -- affect, attention, expectation, the descending
+    control that can abolish it -- happens far past this function, and naming the
+    output `nociceptor` rather than `pain` is deliberate.
+    """
+    load = np.asarray(x["effector.force"], dtype=float)
+    temp = np.asarray(x.get("thermal.tissue_temperature_c", 37.0), dtype=float)
+    chem = np.asarray(x.get("transduction.irritant_concentration", 0.0), dtype=float)
+
+    thr_n = float(theta.get("mechanical_threshold_n", 8.0))
+    hot_c = float(theta.get("heat_threshold_c", 43.0))
+    cold_c = float(theta.get("cold_threshold_c", 15.0))
+    k_mech = float(theta.get("mechanical_gain_hz_per_n", 1.6))
+    k_heat = float(theta.get("thermal_gain_hz_per_c", 3.5))
+    k_chem = float(theta.get("chemical_gain_hz", 25.0))
+    sens = float(theta.get("sensitisation", 1.0))
+    r_max = float(theta.get("r_max_hz", 100.0))
+    c_frac = float(theta.get("c_fibre_fraction", 0.7))
+    c_tau = float(theta.get("c_persistence", 0.85))
+
+    # sensitisation lowers the thresholds; it does not add a baseline, because a
+    # nociceptor that fires at rest is a pathology and not the normal case.
+    thr_n /= max(sens, 1e-6)
+    hot_c -= (sens - 1.0) * float(theta.get("sensitisation_shift_c", 4.0))
+
+    # HIGH THRESHOLD: exactly zero drive through the innocuous range.
+    d_mech = k_mech * np.maximum(load - thr_n, 0.0)
+    d_heat = k_heat * np.maximum(temp - hot_c, 0.0)
+    d_cold = k_heat * np.maximum(cold_c - temp, 0.0)
+    d_chem = k_chem * np.maximum(chem, 0.0)
+    drive = d_mech + d_heat + d_cold + d_chem
+
+    # A-delta reports the stimulus; C reports it lower, later and for longer.  the
+    # persistence is applied by the caller across steps -- here C simply carries
+    # the fraction and the compression that make second pain what it is.
+    r_adelta = np.clip(drive, 0.0, r_max)
+    r_c = np.clip(c_frac * r_max * np.tanh(drive / max(r_max, 1e-9)) / max(c_tau, 1e-6),
+                  0.0, r_max)
+    return {
+        "transduction.nociceptor": np.clip(-70.0 + 0.5 * r_adelta, -70.0, 0.0),
+        "neural.afferent.adelta": r_adelta,
+        "neural.afferent.c": r_c,
+    }
+
+
 implementation(
     name="golgi_tendon_log",
     process="transduction",
@@ -1075,3 +1151,67 @@ implementation(
     tying=Tying.PER_PARTITION,
     provenance=Provenance.LITERATURE,
     source="Houk & Henneman; Crago et al. on the logarithmic force relation")
+
+implementation(
+    name="nociceptor_polymodal",
+    process="transduction",
+    doc="""the polymodal nociceptor: high threshold, two fibre classes, sensitising.
+
+    `transduction.nociceptor` was declared on the field and had no component, so
+    every high-threshold channel in the body was bound to
+    `transduction.baroreceptor` and merely TAGGED nociceptive in its row.  A tag
+    is not a transducer: nothing computed a rate from a noxious stimulus, and a
+    reward signal grounded in damage had nothing to read.  This is that gap
+    closed.
+
+    The threshold is the physiology.  Below it the output is exactly zero, which
+    is what separates a nociceptor from a sensitive mechanoreceptor and what makes
+    its rate meaningful as a cost rather than as another touch channel.
+
+    A-delta and C are written separately because the periphery already
+    distinguishes them -- both are declared fibre classes with resolved
+    velocities, and 48 of 72 trunks carry one or both -- and because the delay
+    between fast and slow pain is functional, not incidental.
+
+    Where it is weak: the thresholds are single numbers for the whole body, and
+    real ones vary by tissue over a wide range; the chemical arm reads one lumped
+    irritant concentration rather than the several species inflamed tissue
+    actually produces; and sensitisation is a caller-advanced scalar rather than a
+    model of the inflammatory cascade that drives it.""",
+    form=Form.RATE,
+    fn=nociceptor_afferent,
+    params={
+        "mechanical_threshold_n": lognormal(8.0, 2.0, units="N",
+                                            provenance=Provenance.WEAK,
+                                            note="tissue-damage threshold; varies "
+                                                 "widely by tissue and is not one "
+                                                 "number for the body"),
+        "heat_threshold_c": normal(43.0, 1.5, units="degC",
+                                   provenance=Provenance.LITERATURE,
+                                   note="the classical heat-pain threshold, and "
+                                        "close to the TRPV1 activation point"),
+        "cold_threshold_c": normal(15.0, 3.0, units="degC",
+                                   provenance=Provenance.LITERATURE),
+        "mechanical_gain_hz_per_n": lognormal(1.6, 2.0, units="Hz per N",
+                                              provenance=Provenance.WEAK),
+        "thermal_gain_hz_per_c": lognormal(3.5, 2.0, units="Hz per degC",
+                                           provenance=Provenance.LITERATURE),
+        "chemical_gain_hz": lognormal(25.0, 3.0, units="Hz",
+                                      provenance=Provenance.WEAK),
+        "sensitisation": lognormal(1.0, 1.5, units="1",
+                                   provenance=Provenance.WEAK,
+                                   note="1.0 is naive tissue; above 1 lowers the "
+                                        "thresholds, which is how an injury comes "
+                                        "to be protected"),
+        "sensitisation_shift_c": normal(4.0, 2.0, units="degC",
+                                        provenance=Provenance.WEAK),
+        "c_fibre_fraction": normal(0.7, 0.1, units="1",
+                                   provenance=Provenance.LITERATURE),
+        "c_persistence": normal(0.85, 0.1, units="1", provenance=Provenance.WEAK),
+        "r_max_hz": lognormal(100.0, 1.5, units="Hz",
+                              provenance=Provenance.LITERATURE),
+    },
+    tying=Tying.PER_PARTITION,
+    provenance=Provenance.LITERATURE,
+    source="Sherrington on the high-threshold definition; Bessou & Perl on "
+           "polymodal C endings; LaMotte & Campbell on first and second pain")
