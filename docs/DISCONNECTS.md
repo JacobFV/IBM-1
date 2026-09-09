@@ -127,6 +127,30 @@ Anatomy wins where anatomy has a pathway — the ventral stream and across the
 central sulcus — and its partners sit 53 mm away in 7.6 distinct parcels against
 79 mm in 10.7 for random ones.
 
+**And on a trained kernel it changes the answer, in the direction the structure
+predicts.** Four matched 1,200-step arms of the visual contrastive term:
+
+| | random edges | tract edges |
+|---|---|---|
+| precentral arrival from occipital (steady state) | 5.957e-04 | 1.698e-06 |
+| hop-1 transfer fraction | 1.053e-03 | 1.252e-03 |
+| sight → precentral (drop-one attribution) | 2.725e-07 | 1.425e-12 |
+| hearing → precentral | 4.288e-07 | 1.945e-12 |
+| touch → precentral (a declared pair) | 1.435e-06 | 1.691e-06 |
+| occipital→precentral retrieval, 8 pools, chance 0.5% | **23.00×** | **1.00×** |
+| the same, permuted control | 26.12× | 1.00× |
+
+Per-hop transfer is slightly *better* under the tract topology. What changed is
+that precentral is two hops from occipital instead of one. And the random arm's
+23× is matched by its own permuted control, so:
+
+> the disjoint-transport result this programme has been building on was carried
+> by long-range edges the human connectome does not contain, and not by anything
+> the kernel learned about them.
+
+Both arms remain at "no convergence" (superadditivity 1.0000), so nothing here
+rescues the somato-motor claim. It relocates the failure.
+
 **What the connectome does not reconstruct, which is the honest limit.**
 `tract.py` names two cases as what the metric exists to get right: the arcuate,
 which "connects frontal and temporal cortex over a path of roughly 150 mm", and
