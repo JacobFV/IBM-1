@@ -85,6 +85,8 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 .leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 .leader { fill: none; stroke: var(--on-ink-faint); stroke-width: 1; color: var(--on-ink-faint); transition: stroke 0.25s, color 0.25s, opacity 0.4s; }
 .ring-leader { marker-end: url(#arrow); }
+.hero.narrow .ring-leader { marker-end: none; }
+.ring-join { fill: var(--on-ink); opacity: 0.8; }
 .hero.is-hovering .ring-leader { stroke: rgba(233, 231, 224, 0.1); color: rgba(233, 231, 224, 0.1); }
 .ann-svg .leader { stroke-width: 1.2; }
 .ann-svg .loop { stroke-dasharray: 3 3; stroke-width: 1; opacity: 0.9; }

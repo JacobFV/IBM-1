@@ -669,6 +669,12 @@ window.IBMBrain = (function () {
       ringItems.push({ m, el, line, x: 0, y: 0, side: 'l', t: 0 });
     });
     const hoverAnn = { svg: makeAnnotationSVG(svg, 'hover-ann'), anchor: cx, _nodes: [] };
+    // in the bands each column's leaders meet at one point on the outline: a
+    // dot marks it, and the lines carry no arrowheads of their own
+    const joins = [0, 1, 2, 3].map(() => {
+      const dot = document.createElementNS(SVG, 'circle'); dot.setAttribute('class', 'leader-dot ring-join'); dot.setAttribute('r', '0');
+      svg.appendChild(dot); return { dot, items: [], r: null };
+    });
     function layoutRing() {
       if (hero.classList.contains('narrow')) return layoutBands();
       const n = ringItems.length, rx = Math.min(W * 0.5 - 200, H * 0.95), ry = H * 0.5 - 70, cy = H * 0.5, cxp = W * 0.5;
@@ -704,6 +710,7 @@ window.IBMBrain = (function () {
     function layoutBands() {
       const pad = 10, gy = 1, gap = 14, n = ringItems.length, q = Math.ceil(n / 4);
       const cols = [0, 1, 2, 3].map((k) => ringItems.slice(k * q, (k + 1) * q));
+      cols.forEach((items, k) => { joins[k].items = items; });
       const height = (items) => items.reduce((a, it) => a + it.el.offsetHeight + gy, 0) - gy;
       const width = (items) => Math.max(...items.map((it) => it.el.offsetWidth));
       // as wide a gutter as the widest label leaves room for
@@ -825,21 +832,37 @@ window.IBMBrain = (function () {
         projectTissue();
         if (narrow && bandsStale()) layoutBands();
         const [ox, oy] = project(cx);
-        ringItems.forEach((it) => {
+        if (narrow) {
+          // one join per column, on the outline along the ray from the brain's
+          // centre through the column's labels; every leader in the column
+          // runs to it, bowing toward the centre line so the pairs never cross
+          joins.forEach((j) => {
+            if (!j.items.length) { j.dot.setAttribute('r', '0'); return; }
+            let mx = 0, my = 0;
+            j.items.forEach((it) => { mx += it.x + (it.side === 'l' ? -1 : 1) * it.el.offsetWidth / 2; my += it.y; });
+            mx /= j.items.length; my /= j.items.length;
+            const L = Math.hypot(mx - ox, my - oy) || 1, dx = (mx - ox) / L, dy = (my - oy) / L;
+            const r = reach(ox, oy, dx, dy);
+            j.r = j.r == null ? r : j.r + (r - j.r) * 0.12;
+            const ex = ox + dx * j.r, ey = oy + dy * j.r;
+            j.dot.setAttribute('r', '2.4'); j.dot.setAttribute('cx', ex.toFixed(1)); j.dot.setAttribute('cy', ey.toFixed(1));
+            j.items.forEach((it) => {
+              if (state.hover === it.m.id) { it.line.setAttribute('d', ''); return; }
+              const [x0, y0] = edgePoint(it.el, it.side);
+              it.line.setAttribute('d', curve(x0, y0, ex, ey, -0.12, [W / 2, H / 2], it));
+              it.line.style.opacity = '';
+            });
+          });
+        } else joins.forEach((j) => j.dot.setAttribute('r', '0'));
+        if (!narrow) ringItems.forEach((it) => {
           const hovered = state.hover === it.m.id;
           if (hovered) { it.line.setAttribute('d', ''); return; }
           const [x0, y0] = edgePoint(it.el, it.side);
-          // the leader is aimed through the label's centre, not its edge: in
-          // the narrow bands every edge sits on the gutter, and aiming there
-          // would land forty arrows on one point of the outline
-          const ax = narrow ? it.x + (it.side === 'l' ? -1 : 1) * it.el.offsetWidth / 2 : x0;
-          const L = Math.hypot(ax - ox, y0 - oy) || 1, dx = (ax - ox) / L, dy = (y0 - oy) / L;
+          const L = Math.hypot(x0 - ox, y0 - oy) || 1, dx = (x0 - ox) / L, dy = (y0 - oy) / L;
           const r = reach(ox, oy, dx, dy);
           // glide toward the new outline point rather than jumping to it
           it.r = it.r == null ? r : it.r + (r - it.r) * 0.12;
-          // in the bands the arcs bow toward the centre line, or the two
-          // columns' leaders cross one another on the way in
-          it.line.setAttribute('d', curve(x0, y0, ox + dx * it.r, oy + dy * it.r, narrow ? -0.12 : 0.12, [W / 2, H / 2], it));
+          it.line.setAttribute('d', curve(x0, y0, ox + dx * it.r, oy + dy * it.r, 0.12, [W / 2, H / 2], it));
           it.line.style.opacity = '';
         });
         if (hoverAnn.item) {
@@ -850,6 +873,7 @@ window.IBMBrain = (function () {
         annItems.forEach((a) => a.svg.g.style.display = 'none');
       } else {
         ringItems.forEach((it) => it.line.setAttribute('d', ''));
+        joins.forEach((j) => j.dot.setAttribute('r', '0'));
         hoverAnn.svg.g.style.display = 'none';
         // on a narrow hero the inputs sit above the brain and the outputs below
         // it, each in two columns about a centre gutter like the ring
