@@ -51,6 +51,36 @@ already written.
 
 ---
 
+## 2026-09-09 (morning) — the video model has no temporal prediction beyond appearance
+
+The retrieval task, run at the window where appearance is worthless. Chance is
+1.5625%; the raw-pixel baseline sits at 0.78–1.56%, i.e. on chance, so the
+appearance route is closed by construction.
+
+The model never left chance. Training loss across 3,000 steps:
+
+    4.1589  4.1589  4.1589  4.1589  4.1447  4.0680
+    3.9109  4.0012  4.1590  3.8565  4.1282  4.1544
+
+ln(64) = 4.1589 is the chance loss for a 64-way InfoNCE. The run oscillates
+around it and ends on it. Held-out top-1 finishes at 2.15% ± 1.09 against a pixel
+baseline of 0.78–1.56% — inside the noise. Stopped at step 3,000.
+
+**The contrast is what makes it a result.** At the ±600-frame window, where a
+third of the task is solvable by appearance, the same model went 1.56% → 6.25%
+within 250 steps. At ±45 frames, where every candidate comes from the same 3.6
+seconds and only motion phase separates them, it learns nothing at all.
+
+So the video term was never learning to predict; it was learning to match
+appearance, and the wide-window number measured that. This is consistent with
+every other video result here — regression collapsing to the conditional mean,
+the horizon-8 skill sitting a hair from persistence — and it is the cleanest
+statement of the failure: the model has no representation of what happens next
+that is independent of what things look like now.
+
+Not a claim that the task is unlearnable, only that this architecture at this
+budget does not learn it.
+
 ## 2026-09-09 — video regression collapses to the mean, and the retrieval task has a window
 
 Every video run in this programme has failed the same way, and the failure is
