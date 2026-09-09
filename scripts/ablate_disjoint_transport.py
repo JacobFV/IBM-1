@@ -355,7 +355,7 @@ def main() -> None:
             # amplitude, that decides whether a linear head can separate 200
             # images.
             with torch.no_grad():
-                c = (f_tr - f_tr.mean(0, keepdim=True)).to(device)
+                c = (f_tr - f_tr.mean(0, keepdim=True)).to(dev)
                 c = c[:2048]
                 ev = torch.linalg.svdvals(c.float()) ** 2
                 erank = float(ev.sum() ** 2 / (ev ** 2).sum())
