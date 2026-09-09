@@ -183,8 +183,11 @@ def main() -> None:
     ap.add_argument("--head", default="visual_eeg")
     ap.add_argument("--drive-region", default="occipital")
     ap.add_argument("--read-region", default="precentral")
-    ap.add_argument("--configs", default="base:2.0,1.0,0;aniso:2.0,4.0,1",
-                    help="name:tanh_slope,long_gain,long_topm; ';'-separated")
+    ap.add_argument(
+        "--configs",
+        default="base:2.0,1.0,0;aniso:2.0,8.0,4,1.0,120",
+        help="name:tanh_slope,long_gain,long_topm[,local_gain[,long_min_dist]];"
+             " ';'-separated")
     ap.add_argument("--modes", default="intact,severed,permuted")
     ap.add_argument("--noise", default="0,1e-3,1e-2,3e-2,1e-1,3e-1,1,3")
     ap.add_argument("--n-train", type=int, default=8000)
@@ -255,13 +258,16 @@ def main() -> None:
 
     for spec in a.configs.split(";"):
         name, vals = spec.split(":")
-        slope, gain, topm = vals.split(",")
+        f = vals.split(",")
         dyn.tanh_slope, dyn.long_gain, dyn.long_topm = \
-            float(slope), float(gain), int(topm)
-        dyn.local_gain = float(vals.split(",")[3]) if len(vals.split(",")) > 3 else 1.0
+            float(f[0]), float(f[1]), int(f[2])
+        dyn.local_gain = float(f[3]) if len(f) > 3 else 1.0
+        dyn.long_min_dist = float(f[4]) if len(f) > 4 else 0.0
         w = dyn.edge_weights().detach()
         l1 = float(w.abs().sum(-1).mean())
-        print(f"\n### {name}: tanh_slope={slope} long_gain={gain} long_topm={topm}"
+        print(f"\n### {name}: tanh_slope={dyn.tanh_slope} "
+              f"long_gain={dyn.long_gain} long_topm={dyn.long_topm} "
+              f"local_gain={dyn.local_gain} long_min_dist={dyn.long_min_dist}"
               f"   row L1 gain {l1:.4f}  |w| mean {float(w.abs().mean()):.3e}")
         for mode in a.modes.split(","):
             kw = dict(mode=mode, batch=a.batch, n_steps=a.n_steps,
