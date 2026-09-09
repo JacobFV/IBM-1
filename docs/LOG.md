@@ -668,6 +668,60 @@ The pixel baseline stays in every evaluation regardless. It is what turns "4x
 chance" from a claim into a comparison, and quoting ×chance alone would have let
 a 10% result look like a 6x win while being three times worse than doing nothing.
 
+## 2026-09-09 — the real cortical surface: tracts do not beat random, and convergence gets worse
+
+The sheet is no longer a sphere. Both arms report `sheet: surface` with the
+occipital port at 3,179 sites. Three results, and none of them is the one hoped
+for.
+
+**1. Tract-constrained long-range edges do not beat random partners.** Matched
+geometry, matched port, matched parameter count (10,124,624), 1,200 steps:
+
+| arm | top-1 at 1200 | best |
+|---|---|---|
+| surface + **random** long-range | **16.44% ± 1.13** (32.9x) | 16.44% |
+| surface + **tract** long-range (consensus 0.5) | 15.00% ± 2.22 (30.0x) | 16.19% |
+
+Random is nominally ahead and the two are inside each other's spread. So the
+declared white-matter tractography — which `ibm/topologies/tract.py` argues at
+length is the correct metric for long-range cortical connectivity, and which no
+training script had ever imported — provides **no measurable advantage over
+uniformly random partners** on visual retrieval. Reported as the null rather than
+tuned until it wins; anatomy had to beat concentrated-random and it does not beat
+even plain-random.
+
+**2. On real geometry the dynamics are MUCH more load-bearing than on the
+sphere.** Designated THINGS-EEG2 test set, 200 images, chance 0.5%:
+
+| arm | top-1 | retained |
+|---|---|---|
+| full | 30.00% (60x) | 100% |
+| association frozen | 26.00% | 86.7% |
+| association zeroed | 26.00% | 86.7% |
+| **dynamics bypassed** | **3.50%** (7x) | **11.7%** |
+
+On the sphere, bypassing retained 41%. On the real surface it retains 11.7% — the
+encoder's shortcut around the dynamics is far weaker when the geometry is real.
+That is the strongest version of the load-bearing claim this repo has measured,
+and it arrived from fixing the substrate rather than from training longer.
+
+**3. Convergence is still absent, and the numbers are WORSE than the sphere's.**
+
+    sight    2.099e-07      hearing  3.861e-07      touch    9.462e-07
+    precentral variance, all three driven   4.237e-06
+    the same as a linear sum of the parts   4.237e-06     ratio 1.0000
+
+Against the sphere's 4.77e-06 / 7.54e-06 / 9.56e-06. About ten times lower, and
+that is the expected direction rather than a regression: the sphere's
+`postcentral` was the leftover bin at 20.0% of sites against a true 6.0%, so
+every earlier somatosensory transport number was driving a fifth of the cortex
+and calling it a gyrus. Correcting the region sizes removed the inflation.
+
+The superadditivity ratio is 1.0000 to four decimals. Real geometry did not make
+the sheet integrate; it is still a pure superposition device, and the fix for
+that remains concentration, which is measured separately at 209x transport and
+91% of the frozen-head ceiling.
+
 ## 2026-09-09 — interoception at 30,000 sites: the cortex ordering flips, and stays inside noise
 
 The 8,000-site ablation was run under load 92 with three other agents on the GPU
