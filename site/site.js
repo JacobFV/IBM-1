@@ -288,6 +288,7 @@
 
 /* the reel: click a tile, it fills the screen with its caption and description */
 (function () {
+  function init() {
   var lb = document.getElementById('lightbox');
   if (!lb) return;
   var stage = lb.querySelector('.lb-stage'),
@@ -332,4 +333,11 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && !lb.hidden) close();
   });
+  }
+  // the script tag sat BEFORE the lightbox markup, so getElementById returned
+  // null and every tile silently did nothing.  bind after the document parses
+  // regardless of where this file is included.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else { init(); }
 })();
