@@ -104,7 +104,11 @@ def main() -> None:
             dyn.geo.zero_()
         if name == "bypass":
             drive = torch.zeros(n, dyn.n, device=dev)
-            drive[:, :model.port] = model.to_cortex(model.enc(x))
+            # the port is `model.port_idx`, not `[:model.port]`: with a region
+            # port those are different site sets, and the bypass arm exists to
+            # show what the ENCODER alone can do through the SAME port the
+            # dynamics use.  a bypass through a different port is not a control.
+            drive[:, model.port_idx.to(dev)] = model.to_cortex(model.enc(x))
             z = torch.nn.functional.normalize(
                 model.cortex_head(drive[:, model.read_idx.to(dev)]), dim=-1)
         else:
