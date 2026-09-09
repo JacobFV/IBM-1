@@ -578,6 +578,12 @@ class CorticalDynamics(nn.Module):
         n_loc = self.k - self.n_far
         out = (r[:, self.idx[:, :n_loc]] * w[:, :n_loc]).sum(-1)
         lag, depth = self._lags(dt)
+        # the ring depth is a function of dt, and a trajectory that changed dt
+        # halfway would read the wrong slots silently.  cheap to check, and the
+        # failure it prevents is invisible.
+        assert hist.shape[1] == depth, (
+            f"delay ring is {hist.shape[1]} deep but dt={dt:g} needs {depth}; "
+            "the timestep changed inside a trajectory")
         slot = torch.remainder(ptr - lag, depth)              # (N, n_far)
         flat = (slot * self.n + self.idx[:, n_loc:]).reshape(-1)
         far = hist.reshape(hist.shape[0], depth * self.n)[:, flat] \
@@ -643,7 +649,12 @@ class CorticalDynamics(nn.Module):
         if getattr(self, "tract_delays", False):
             _, depth = self._lags(dt)
             if len(s) >= 6 and s[4] is not None:
-                hist, ptr = s[4].clone(), int(s[5])
+                # CLONE only when a gradient is being built.  the clone is
+                # (depth, B, N) per step and it is kept alive by autograd, which
+                # at dt=1e-3 and 128 steps is hundreds of megabytes for nothing
+                # when the caller is measuring rather than training.
+                hist = s[4].clone() if torch.is_grad_enabled() else s[4]
+                ptr = int(s[5])
             else:
                 hist, ptr = torch.zeros(v.shape[0], depth, self.n,
                                         device=v.device, dtype=v.dtype), 0
