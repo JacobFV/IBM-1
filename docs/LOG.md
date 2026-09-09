@@ -610,6 +610,50 @@ The pixel baseline stays in every evaluation regardless. It is what turns "4x
 chance" from a claim into a comparison, and quoting ×chance alone would have let
 a 10% result look like a 6x win while being three times worse than doing nothing.
 
+## 2026-09-09 — interoception at 30,000 sites: the cortex ordering flips, and stays inside noise
+
+The 8,000-site ablation was run under load 92 with three other agents on the GPU
+and the agent that produced it asked for a full-scale repeat before anything was
+quoted. Here it is, `--sites 30000`, and the cortical ordering **reverses**:
+
+| arm | 8k | 30k |
+|---|---:|---:|
+| cortex trained | +0.5463 | **+0.5956** |
+| cortex severed post hoc | +0.5520 | +0.5774 |
+| cortex permuted post hoc | +0.5703 | +0.5819 |
+| ridge, no dynamics | +0.4956 | +0.4956 |
+| MLP matched samples | +0.5570 | +0.5368 |
+
+At 8k, severing the kernel made it BETTER (+0.5520 against +0.5463) and I
+reported that. At 30k, trained is best (+0.5956 against a severed +0.5774 and a
+permuted +0.5819).
+
+**Both readings are inside the noise band and neither is a result.** The band was
+measured, not assumed, from four splanchnic single-group drops that should be
+equivalent: at 30k they span +0.5946 to +0.6486, so nothing under about ±0.05 is
+distinguishable at one seed. The trained-minus-severed gap is 0.018 at 30k and
+−0.006 at 8k. Both are noise, and the fact that the SIGN flipped with site count
+is the cleanest possible demonstration of that.
+
+What survives unchanged, and is far outside the band:
+
+| withheld | delay | state | cost |
+|---|---|---:|---:|
+| vagus C (5 ch) | 507.8 ms | +0.1198 | **−0.476** |
+| all C fibres | — | +0.1734 | **−0.422** |
+| vagus A-beta (4 ch) | 9.2 ms | +0.3790 | **−0.217** |
+| vagus A-delta | — | +0.6299 | +0.034 |
+| each splanchnic group | 128–232 ms | +0.595…+0.649 | within noise |
+
+The half-second-late unmyelinated arm carries two thirds of the signal, and
+dropping every C fibre in the body costs almost as much as dropping the vagal
+ones alone. The peripheral anatomy is load-bearing; the cortical substrate is
+not, at either resolution.
+
+The `ridge_no_dynamics` arm reproduces to four decimal places across a 3.75x
+change in site count, as it must — it is closed-form and site-independent. That
+is the gate saying the two runs are comparable at all.
+
 ## 2026-09-09 (evening) — the viscera reach cortex, and two priors were wrong
 
 The brain had vision, audition and a somatic strip and was blind to its own gut.
