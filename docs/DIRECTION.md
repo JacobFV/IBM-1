@@ -20,6 +20,33 @@ The materialization this needs is explicitly:
     sensory in  ·  body state in (digestive, blood, breath, reproductive,
     hormonal)  ·  other interoceptive in  ·  motor out  ·  speech out
 
+## How the body comes to move
+
+The end state, and the reason every stage below is a stage:
+
+> **The brain directly controls individual muscles. Those muscles' contractions
+> control the skeleton. The whole thing is a highly complex rigid AND soft body
+> system, actuated by the dynamic elasticity of the muscles, which is determined
+> by the brain's outputs.**
+
+The route, recorded because the middle of it is easy to mistake for the end:
+
+1. **Now.** The crude 22-segment body actuates the real body's muscles and bones
+   and determines rough contact with floor and objects. That motion and its
+   afference are collected as training data for teaching the brain to actuate the
+   real body. Contact is rough on purpose; it only has to generate honest load.
+2. **Possibly.** The brain learns to actuate the crude body too, as a
+   lower-dimensional curriculum stage — justified only by whether it transfers.
+3. **Gradually.** The crude body is thrown away, job by job. Contact first — real
+   potentially-concave bone meshes replacing inertia-inscribed spheres — then
+   actuation.
+4. **The end state above.**
+
+**The crude body has always been a scaffold.** Not a simplification settled for,
+a stage. Making it better *as a scaffold* is worth doing; deepening dependence on
+it is not; and what it did must never be reported as what the body did. The full
+version with the code pointers is `docs/ACTUATION_STAGES.md` in the IHM-1 repo.
+
 ## Corrections that define the work
 
 **No simplifications of the body.** Not a stick figure, not capsules, not a
