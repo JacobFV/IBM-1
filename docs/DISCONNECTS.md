@@ -266,6 +266,32 @@ body clearly does not experience them.**
 The app declares an environment catalogue — `studio`, `floor`, `bed` — with
 tiles, thumbnails and scene objects, and renders the body inside them.
 
+**CORRECTED.** The paragraphs below were written from a gait trajectory's
+reported `contacts` field, which summarises foot load. The PLANT carries **28
+contact elements**, enumerated from a live stream: 12 anatomically placed foot
+contacts (heel, lateral rearfoot, lateral and medial midfoot, lateral and medial
+toe, per side) and **16 `fall_support_*` elements on femur, hand, humerus,
+patella, pelvis, radius, tibia, torso and ulna**. Dropped prone the body carries
+761.5 N against a body weight of 761.4 N — it is supported.
+
+So contact on hands, knees, forearms and torso EXISTS. What is true is narrower
+and still matters:
+
+- the gait harness treats any `fall_support_*` load as a **fall and terminates**,
+  so prone locomotion was unreachable through that path, not through the physics
+- each non-foot element is **one inertia-inscribed sphere at the segment centre
+  of mass** — crude, not anatomical. Extending the 21,381-point skin quadrature
+  to ventral contact is a build, not a configuration change
+- the rendered environment still reaches the physics not at all; `environment`
+  remains a three-valued enum
+
+I claimed "two feet and a fall plane" from a report field and concluded about the
+system underneath it. That is ledger row 27's shape a second time, and it caused
+me to tell the user crawling was unrepresentable when it was merely unreachable
+through the harness we had.
+
+The original text follows for the record.
+
 The body's **entire** contact experience, read from a gait trajectory frame:
 
     foot_load_fraction     {r, l}
