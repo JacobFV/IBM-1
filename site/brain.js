@@ -430,6 +430,7 @@ window.IBMBrain = (function () {
       if (side === 'l') hub[0] = Math.max(hub[0], labelPt[0] + off);
       else if (side === 'r') hub[0] = Math.min(hub[0], labelPt[0] - off);
       else if (side === 'b') hub[1] = Math.min(hub[1], labelPt[1] - off);
+      else if (side === 't') hub[1] = Math.max(hub[1], labelPt[1] + off);
       a.svg.trunk.setAttribute('d', curve(labelPt[0], labelPt[1], hub[0], hub[1], bulge, away, a));
       a.svg.branches.setAttribute('d', targets.map((q) => curve(hub[0], hub[1], q[0], q[1], 0.12, away)).join(' '));
       a.svg.branches.setAttribute('marker-end', 'url(#arrow-small)');
@@ -612,16 +613,17 @@ window.IBMBrain = (function () {
 
     function resize() {
       W = hero.clientWidth;
+      H = hero.clientHeight;
       // the ring needs a wide, landscape hero: forty labels around an ellipse
-      // collide below about 900px, and on any portrait screen
-      const compact = W < 900 || W < hero.clientHeight;
-      hero.classList.toggle('compact', compact);
-      // in the compact layout the canvas is a band above the strip, not the
-      // whole hero: size the buffer to what is drawn, or the brain squashes
-      H = (compact && canvas.clientHeight) || hero.clientHeight;
+      // collide below about 900px, and on any portrait screen.  a narrow hero
+      // keeps the labels but packs them into a band above and below the brain
+      const narrow = W < 900 || W < H;
+      hero.classList.toggle('narrow', narrow);
       renderer.setSize(W, H, false);
       camera.aspect = W / H; camera.updateProjectionMatrix();
-      const fit = Math.max(1, 1.15 / Math.min(1, W / H));
+      // the brain sits back far enough to clear the width, and on a narrow
+      // hero a little further so the label bands have room above and below it
+      const fit = Math.max(1, 1.15 / Math.min(1, W / H)) * (narrow ? 1.2 : 1);
       orbit.tDist = (state.selected ? 470 : 430) * fit;
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
       project = projector(camera, W, H);
@@ -656,7 +658,7 @@ window.IBMBrain = (function () {
     });
     const hoverAnn = { svg: makeAnnotationSVG(svg, 'hover-ann'), anchor: cx, _nodes: [] };
     function layoutRing() {
-      if (hero.classList.contains('compact')) return;
+      if (hero.classList.contains('narrow')) return layoutBands();
       const n = ringItems.length, rx = Math.min(W * 0.5 - 200, H * 0.95), ry = H * 0.5 - 70, cy = H * 0.5, cxp = W * 0.5;
       const K = 2.4, S_ = 720, cum = [0];
       for (let k = 1; k <= S_; k++) { const a0 = (k - 1) / S_ * Math.PI * 2, a1 = k / S_ * Math.PI * 2; cum.push(cum[k - 1] + Math.hypot(rx * (Math.cos(a1) - Math.cos(a0)) * K, ry * (Math.sin(a1) - Math.sin(a0)))); }
@@ -670,10 +672,40 @@ window.IBMBrain = (function () {
         it._bow = 0;  // the label moved; let its leader choose a side again
       });
     }
+    // a narrow hero: the first half of the ring in rows across the top, the
+    // second half in rows across the bottom, each row centred.  every label
+    // is a 'c' item -- its leader leaves from the edge facing the brain
+    function layoutBands() {
+      const pad = 10, gx = 6, gy = 2, maxW = W - 2 * pad, half = Math.ceil(ringItems.length / 2);
+      const pack = (items) => {
+        const rows = [[]]; let w = 0;
+        items.forEach((it) => {
+          const iw = it.el.offsetWidth;
+          if (w && w + gx + iw > maxW) { rows.push([]); w = 0; }
+          rows[rows.length - 1].push(it); w += (w ? gx : 0) + iw;
+        });
+        return rows.map((r) => ({ items: r, w: r.reduce((a, it) => a + it.el.offsetWidth, 0) + gx * (r.length - 1), h: Math.max(...r.map((it) => it.el.offsetHeight)) }));
+      };
+      const put = (row, y) => {
+        let x = (W - row.w) / 2;
+        row.items.forEach((it) => {
+          it.x = x + it.el.offsetWidth / 2; it.y = y + row.h - it.el.offsetHeight / 2; it.side = 'c';
+          it.el.style.left = it.x + 'px'; it.el.style.top = it.y + 'px'; it.el.dataset.side = 'c'; it._bow = 0;
+          x += it.el.offsetWidth + gx;
+        });
+      };
+      let y = pad;
+      pack(ringItems.slice(0, half)).forEach((row) => { put(row, y); y += row.h + gy; });
+      const bottom = pack(ringItems.slice(half));
+      y = H - pad - bottom.reduce((a, r) => a + r.h, 0) - gy * (bottom.length - 1);
+      bottom.forEach((row) => { put(row, y); y += row.h + gy; });
+    }
     function edgePoint(el, side) {
       const r = el.getBoundingClientRect(), h = hero.getBoundingClientRect(), y = r.top - h.top + r.height / 2;
       if (side === 'l') return [r.right - h.left + 4, y];
       if (side === 'r') return [r.left - h.left - 4, y];
+      if (side === 't') return [r.left - h.left + r.width / 2, r.bottom - h.top + 2];
+      if (side === 'b') return [r.left - h.left + r.width / 2, r.top - h.top - 2];
       return [r.left - h.left + r.width / 2, r.top - h.top + (r.top - h.top < h.height / 2 ? r.height + 2 : -2)];
     }
     // where the brain's outline is along a ray from its centre: the farthest
@@ -759,13 +791,12 @@ window.IBMBrain = (function () {
     ring.addEventListener('mouseleave', () => hero.classList.remove('is-hovering'));
 
     function drawLeaders() {
-      const compact = hero.classList.contains('compact');
+      const narrow = hero.classList.contains('narrow');
       const ctx = { project, w: W, h: H, centre: [W / 2, H / 2] };
       if (!state.selected) {
-        if (!compact) projectTissue();
+        projectTissue();
         const [ox, oy] = project(cx);
         ringItems.forEach((it) => {
-          if (compact) { it.line.setAttribute('d', ''); return; }
           const hovered = state.hover === it.m.id;
           if (hovered) { it.line.setAttribute('d', ''); return; }
           const [x0, y0] = edgePoint(it.el, it.side);
@@ -776,7 +807,7 @@ window.IBMBrain = (function () {
           it.line.setAttribute('d', curve(x0, y0, ox + dx * it.r, oy + dy * it.r, 0.12, [W / 2, H / 2], it));
           it.line.style.opacity = '';
         });
-        if (hoverAnn.item && !compact) {
+        if (hoverAnn.item) {
           const [x0, y0] = edgePoint(hoverAnn.item.el, hoverAnn.item.side);
           hoverAnn.svg.g.style.display = '';
           drawAnnotation(hoverAnn, [x0, y0], hoverAnn.item.side, ctx);
@@ -785,10 +816,11 @@ window.IBMBrain = (function () {
       } else {
         ringItems.forEach((it) => it.line.setAttribute('d', ''));
         hoverAnn.svg.g.style.display = 'none';
+        // on a narrow hero the inputs sit above the brain and the outputs below it
         annItems.forEach((a) => {
-          if (compact) { a.svg.g.style.display = 'none'; return; }
+          const side = narrow ? (a.kind === 'in' ? 't' : 'b') : a.side;
           a.svg.g.style.display = '';
-          drawAnnotation(a, edgePoint(a.el, a.side), a.side, ctx);
+          drawAnnotation(a, edgePoint(a.el, side), side, ctx);
         });
       }
     }

@@ -8,18 +8,17 @@
   const R = window.IBM_REGISTRY;
   if (R) {
     const fill = (id, n, html) => { $('n-' + id).textContent = n; $('list-' + id).innerHTML = html; };
-    fill('fields', `${R.fields.length} fields · ${R.fields.reduce((a, f) => a + f.components.length, 0)} components`, R.fields.map((f) => `
-      <div class="reg-item"><div class="reg-head"><code>${f.id}</code><span>${esc(f.doc)}</span></div>
-        <ul class="reg-comps">${f.components.map((c) => `<li><span class="comp-id"><code>${c.id.replace(f.id + '.', '')}</code>${c.units ? `<small>${esc(c.units)}</small>` : ''}</span><span>${esc(c.doc)}</span></li>`).join('')}</ul></div>`).join(''));
-    fill('anatomy', `${R.anatomy.length} systems · ${R.anatomy.reduce((a, s) => a + s.labels.length, 0)} labels`, R.anatomy.map((a) => `
-      <div class="reg-item"><div class="reg-head"><code>${a.id}</code><span>${esc(a.doc)}</span><small>${a.frame} · ${a.labels.length}</small></div>
-        <p class="reg-labels">${a.labels.map((l) => `<span>${esc(l)}</span>`).join('')}</p></div>`).join(''));
-    fill('topologies', `${R.topologies.length} topologies`, R.topologies.map((t) => `
-      <div class="reg-item"><div class="reg-head"><code>${t.id}</code><span>${esc(t.doc)}</span><small>on ${t.on.join(', ')}${t.directed ? ' · directed' : ''}</small></div></div>`).join(''));
+    // each entry is one run of fine print: the id, what it is, then the rest in a sentence
+    const row = (id, doc, rest) => `<p><code>${id}</code> ${esc(doc)}${rest ? ` <span>${rest}</span>` : ''}</p>`;
+    fill('fields', `${R.fields.length} fields · ${R.fields.reduce((a, f) => a + f.components.length, 0)} components`,
+      R.fields.map((f) => row(f.id, f.doc, f.components.map((c) => `<code>${c.id.replace(f.id + '.', '')}</code>${c.units ? ` [${esc(c.units)}]` : ''} ${esc(c.doc.replace(/\.$/, ''))}`).join('; '))).join(''));
+    fill('anatomy', `${R.anatomy.length} systems · ${R.anatomy.reduce((a, s) => a + s.labels.length, 0)} labels`,
+      R.anatomy.map((a) => row(a.id, a.doc, `${a.frame}, ${a.labels.length} labels: ${a.labels.map(esc).join(', ')}`)).join(''));
+    fill('topologies', `${R.topologies.length} topologies`,
+      R.topologies.map((t) => row(t.id, t.doc, `on ${t.on.join(', ')}${t.directed ? '; directed' : ''}`)).join(''));
     const ts = (s) => s >= 1 ? `${s} s` : s >= 1e-3 ? `${+(s * 1e3).toPrecision(3)} ms` : s >= 1e-6 ? `${+(s * 1e6).toPrecision(3)} µs` : `${+(s * 1e9).toPrecision(3)} ns`;
-    fill('processes', `${R.processes.length} processes`, R.processes.map((p) => `
-      <div class="reg-item"><div class="reg-head"><code>${p.id}</code><span>${esc(p.doc)}</span><small>${p.topology || ''}${p.timescale_s ? ' · ' + ts(p.timescale_s) : ''}</small></div>
-        <p class="reg-io"><i>in</i><span>${p.inputs.map((v) => `<code>${v}</code>`).join(' ')}</span><i>out</i><span>${p.outputs.map((v) => `<code>${v}</code>`).join(' ')}</span></p></div>`).join(''));
+    fill('processes', `${R.processes.length} processes`,
+      R.processes.map((p) => row(p.id, p.doc, [p.topology, p.timescale_s && ts(p.timescale_s), p.inputs.length && `in ${p.inputs.map((v) => `<code>${v}</code>`).join(' ')}`, p.outputs.length && `out ${p.outputs.map((v) => `<code>${v}</code>`).join(' ')}`].filter(Boolean).join(' · '))).join(''));
   }
 
   // ---- the curriculum: one stage per row, a coloured dot on a rail, curved deps
