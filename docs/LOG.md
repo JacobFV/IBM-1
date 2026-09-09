@@ -50,6 +50,47 @@ already written.
 
 ---
 
+## 2026-09-09 — video regression collapses to the mean, and the retrieval task has a window
+
+Every video run in this programme has failed the same way, and the failure is
+not a bug. Under MSE against frame t+H the loss-optimal output for an
+unpredictable target is its CONDITIONAL MEAN, and for natural film the mean
+change over 320 ms is ~0. The 37.7 h run reached skill +0.0009 with its residual
+magnitude SHRINKING 0.021 → 0.004 over 8,750 steps and its own diagnostic
+printing `[degenerate: emits ~nothing]`; the via-EEG route finished at −0.9150.
+More training cannot fix either — zero IS the optimum being sought. Both stopped.
+
+The repo had already solved this shape once and written it down, in
+`control_speech_to_meg.py`: "waveform regression peaked at skill +0.011 while
+contrastive retrieval reached 42x chance on the same pairs." So the video term
+becomes retrieval, where a constant output scores chance and the degenerate
+solution is worth nothing.
+
+**But the retrieval task has a free parameter that decides what it measures**,
+and it was measured before spending the GPU. Retrieving frame t+8 from a pool of
+64 by raw pixel cosine, no model at all, against how far apart the candidates
+are drawn (`out/video_pixel_baseline_by_window.json`):
+
+| window | pixel top-1 |
+|---|---|
+| ±1.2 s | 1.37% ± 0.52 |
+| ±2.4 s | 1.76% ± 0.52 |
+| ±4.8 s | 1.56% ± 0.00 |
+| ±12 s | 6.64% ± 2.31 |
+| ±24 s | 16.99% ± 3.17 |
+| ±48 s | 33.98% ± 2.44 |
+| ±160 s | 63.87% ± 6.12 |
+
+Chance is 1.5625%. At the ±600-frame window the run was first launched with, a
+THIRD of the task is solvable by appearance alone. At ±45 frames every candidate
+comes from the same 3.6 seconds, appearance is worth nothing, and the pixel
+baseline sits ON chance — so any above-chance retrieval there IS temporal
+discrimination. Relaunched at window 45.
+
+The pixel baseline stays in every evaluation regardless. It is what turns "4x
+chance" from a claim into a comparison, and quoting ×chance alone would have let
+a 10% result look like a 6x win while being three times worse than doing nothing.
+
 ## 2026-09-09 (evening) — the viscera reach cortex, and two priors were wrong
 
 The brain had vision, audition and a somatic strip and was blind to its own gut.

@@ -1,0 +1,25 @@
+{
+  "task": "retrieve frame t+8 from a pool of 64, RAW PIXEL cosine, no model",
+  "chance_pct": 1.5625,
+  "films": "2 held-out whole",
+  "pools": 8,
+  "by_window_frames": {
+    "15": 1.37,
+    "30": 1.76,
+    "60": 1.56,
+    "150": 6.64,
+    "300": 16.99,
+    "600": 33.98,
+    "2000": 63.87
+  },
+  "sd_pct": {
+    "15": 0.52,
+    "30": 0.52,
+    "60": 0.0,
+    "150": 2.31,
+    "300": 3.17,
+    "600": 2.44,
+    "2000": 6.12
+  },
+  "reading": "the appearance route is a pure function of how far apart candidates are drawn. at +/-60 frames and below it sits ON chance, so any above-chance retrieval there is temporal discrimination rather than appearance matching. training relaunched at window 45."
+}
