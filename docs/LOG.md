@@ -56,6 +56,24 @@ already written.
 `docs/DISCONNECTS.md` rows 2 and 3, both closed. Three payloads fetched into
 `raw/` directories that had held one 12 KB checksums.txt each and no bytes.
 
+### how to reproduce any of this
+
+    PYTHONPATH=. .venv/bin/python scripts/fetch_cortical_atlases.py
+    PYTHONPATH=. .venv/bin/python scripts/compare_long_range_topology.py --long-topm 4
+    PYTHONPATH=. .venv/bin/python scripts/measure_sheet_metric_error.py --connectome
+    PYTHONPATH=. .venv/bin/python -m unittest discover -s tests
+
+and the four matched training arms, identical but for the sheet and the wiring
+(same `--seed`, same `--graph-seed`, and the evaluation pools are drawn from a
+generator seeded on the STEP, so two arms see the same pool at the same step):
+
+    scripts/train_visual_contrastive.py --steps 1200 --eval-every 100 \
+        --eval-pools 8 --seed 0 --graph-seed 0 \
+        --geometry surface --port-region occipital --long-topology random
+    ... --geometry surface --port-region occipital --long-topology tract
+    ... --geometry sphere                                                 # status quo
+    ... --geometry surface                                                # geometry only
+
 ### what was fetched, and where it actually came from
 
 `desikan2006` is `?h.aparc.annot` on fsaverage. Its `.location.yaml` already
