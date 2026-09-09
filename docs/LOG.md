@@ -46,6 +46,47 @@ already written.
 
 ---
 
+## 2026-09-09 — two attempted fixes, both measured, both insufficient
+
+after the correction below, two principled repairs were tried and neither works.
+recording them because the next person will try exactly these.
+
+**1. transient drive.**  a persistent drive lets the readout read the input, so
+present the stimulus for a quarter of the integration and remove it -- the
+command is then read after the stimulus is gone and only what the dynamics
+carried can survive.  measured, severing the kernel under transient drive:
+
+| n_steps | readout sd | severed | ratio |
+|---|---|---|---|
+| 8 | 0.00223118 | 0.00222137 | **1.00** |
+| 16 | 0.00024088 | 0.00023638 | 1.02 |
+| 32 | 0.00039774 | 0.00039585 | 1.00 |
+
+severing costs nothing.  the residual after stimulus offset is not carried by the
+network -- it is each site's own membrane potential decaying in place at
+tau_m = 15 ms.  the memory is per-site leak, not propagation.
+
+**2. a near-critical operating point.**  a network far below criticality
+attenuates per hop; near it a local perturbation spreads.  raising the tonic
+drive lifts the baseline rate into the steep part of the sigmoid:
+
+| tonic | w_assoc | base rate | sever ratio |
+|---|---|---|---|
+| 0 | 0.5 | 8.0 Hz | 1.019 |
+| 0 | 3.0 | 8.0 Hz | 1.126 |
+| 8 | 3.0 | 42.2 Hz | **1.254** |
+| 14 | 3.0 | 75.2 Hz | 1.031 |
+
+there IS a regime where the kernel matters more -- 1.254 at 42 Hz baseline with a
+6x association gain -- and it collapses again at 75 Hz as the sigmoid saturates.
+so the effect is real, unimodal in the operating point, and **25%**, where making
+the cortex necessary for motor control needs an order of magnitude.
+
+what this adds up to: the sheet does not transport information between distant
+sites under any parameterisation measured.  it is a bank of leaky integrators
+with weak local coupling, and every motor result -- mine and IHM-1's -- follows
+from that one property rather than from anything about what the kernel learned.
+
 ## 2026-09-09 — [CORRECTED BELOW] the cortex does not learn motor control; the readout reads the input
 
 **the entry below claims the cortex learns motor control.  it does not, and the

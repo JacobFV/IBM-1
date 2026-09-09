@@ -738,15 +738,32 @@ class SensorimotorLoop(nn.Module):
             nn.Linear(hidden, self.n_muscle))
 
     def forward(self, afferent, n_steps: int = 8, dt: float = 5e-3,
-                substeps: int = 2, sever: bool = False):
+                substeps: int = 2, sever: bool = False, hold: int | None = None):
+        """drive is TRANSIENT, and that is what makes the kernel necessary.
+
+        with a persistent drive the readout can simply read it: measured on the
+        whole-sheet readout, samples landing in the driven region carry 3,134x
+        the variance of the rest, the decoder learns to read the input, and a
+        permuted kernel gives MSE identical to the trained one to eight decimals.
+        making the drive constant hands the decoder the answer.
+
+        so the stimulus is presented for `hold` substeps and then removed, and the
+        command is read after it is gone.  the only route from stimulus to readout
+        is then what the dynamics carried forward -- which is what a cortex is
+        for, and what the persistent-drive version could never test.  a severed
+        kernel now has nothing to propagate and must fail.
+        """
         b = afferent.shape[0]
         drive = torch.zeros(b, self.dyn.n, device=afferent.device)
         drive[:, self.sense_idx.to(afferent.device)] = self.to_cortex(self.enc(afferent))
         s = self.dyn.init_state(b, afferent.device)
         w = torch.zeros_like(self.dyn.edge_weights()) if sever else self.dyn.edge_weights()
         h = dt / substeps
-        for _ in range(n_steps * substeps):
-            s = self.dyn.step(s, drive, h, w)
+        total = n_steps * substeps
+        hold = max(1, total // 4) if hold is None else hold
+        zero = torch.zeros_like(drive)
+        for i in range(total):
+            s = self.dyn.step(s, drive if i < hold else zero, h, w)
         m = s[1][:, self.read_idx_full.to(afferent.device)]
         # IHM refuses an activation outside [0, 1], so squash rather than clamp:
         # a clamp hides saturation, a sigmoid reports it as a gradient.
