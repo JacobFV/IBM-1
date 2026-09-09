@@ -17,7 +17,13 @@ n_sites, embed = sd["dyn.embed"].shape; k = sd["dyn.idx"].shape[1]
 H = cfg["horizon"]; ds = cfg["dyn_steps"]; dt = cfg["dt"]
 dyn = P.CorticalDynamics(n_sites, embed, k, dev, long_range=cfg["long_range"]).to(dev)
 rs = sd["from_cortex.weight"].shape[1] if "from_cortex.weight" in sd else 4096
-model = P.VideoLoop(dyn, read_sites=rs).to(dev); model.load_state_dict(sd); model.eval()
+# a checkpoint without `read_idx` predates its registration as a buffer,
+# and every such checkpoint was trained with the ANTERIOR readout.  the
+# shapes match either way, so guessing wrong is silent and costs a factor
+# of 112 on video_v6.  detect it rather than assume.
+ro = "linspace" if "read_idx" in sd else "anterior"
+print(f"readout convention: {ro}", flush=True)
+model = P.VideoLoop(dyn, read_sites=rs, readout=ro).to(dev); model.load_state_dict(sd, strict=False); model.eval()
 
 fr = np.load(cfg["frames"], mmap_mode="r"); n = len(fr); ntr = int(n*0.8); GAP=250
 rng = np.random.default_rng(0)

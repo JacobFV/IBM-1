@@ -1338,7 +1338,7 @@ class VideoLoop(nn.Module):
     """frame -> cortical drive -> dynamics -> cortical state -> next frame."""
 
     def __init__(self, dyn: CorticalDynamics, img: int = 64, hidden: int = 256,
-                 read_sites: int = 4096):
+                 read_sites: int = 4096, readout: str = "linspace"):
         super().__init__()
         self.dyn, self.img = dyn, img
         self.enc = nn.Sequential(
@@ -1349,13 +1349,46 @@ class VideoLoop(nn.Module):
         # drive reaches a posterior subset -- the occipital port
         self.n_in = dyn.n // 8
         self.to_cortex = nn.Linear(hidden, self.n_in)
+        # READ_IDX IS A BUFFER because WHICH sites are read is part of the
+        # trained object and was silently not being saved.
+        #
+        # it was a plain tensor attribute, so it never entered the state dict.
+        # the readout convention then changed from the anterior eighth
+        # (`s[1][:, -n//8:]`) to `linspace(0, n-1)`, and every checkpoint trained
+        # before that change loads into the new code CLEANLY -- same shape, so
+        # load_state_dict reports nothing -- while `from_cortex` is fed an
+        # entirely different set of sites than it was fitted on.
+        #
+        # measured: video_multifilm.pt reads held-out MSE 0.54581 under the
+        # current convention and 0.10179 under the one it was trained with, which
+        # is its own log's number to five decimals.  video_v6 reads skill -36.50
+        # against persistence under the wrong readout and -0.3255 under the right
+        # one -- a factor of 112, and the difference between "catastrophic" and
+        # "slightly worse than copying the previous frame".
+        #
         # READ_SITES IS AN ARGUMENT because it has not always been 4096.  the
         # v6 checkpoint was trained when the readout was `dyn.n // 8`, so it
         # carries a (256, 3750) from_cortex against this default's (256, 4096)
         # and load_state_dict refuses it.  a renderer that hardcodes the default
         # cannot open its own run's checkpoint -- size it from the artifact.
         self.read_sites = read_sites
-        self.read_idx = torch.linspace(0, dyn.n - 1, self.read_sites).long()
+        # and READ_IDX IS A BUFFER, because WHICH sites are read is part of the
+        # trained object and was silently not being saved.  it was a plain tensor
+        # attribute, so it never entered the state dict; the convention then moved
+        # from the anterior eighth (`s[1][:, -n//8:]`) to `linspace(0, n-1)`, and
+        # every checkpoint from before that change loads into the new code
+        # CLEANLY -- same shape, so load_state_dict reports nothing -- while
+        # from_cortex is fed a completely different set of sites than it was
+        # fitted on.  measured: video_multifilm.pt reads held-out MSE 0.54581
+        # under the current convention and 0.10179 under the one it was trained
+        # with, which is its own log's number to five decimals; video_v6 reads
+        # skill -36.50 against persistence the wrong way and -0.3255 the right
+        # way, a factor of 112 and the difference between "catastrophic" and
+        # "slightly worse than copying the previous frame".
+        self.register_buffer(
+            "read_idx",
+            (torch.arange(dyn.n - read_sites, dyn.n) if readout == "anterior"
+             else torch.linspace(0, dyn.n - 1, read_sites)).long())
         self.from_cortex = nn.Linear(self.read_sites, hidden)
         self.dec = nn.Sequential(
             nn.Linear(hidden, 128 * 8 * 8), nn.GELU(),

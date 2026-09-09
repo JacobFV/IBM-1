@@ -79,8 +79,14 @@ def main() -> None:
     # read_sites is a property of the checkpoint, not of today's default -- the
     # v6 weights are (256, 3750) against a current default of 4096.
     rs = sd["from_cortex.weight"].shape[1] if "from_cortex.weight" in sd else 4096
-    model = P.VideoLoop(dyn, read_sites=rs).to(dev)
-    model.load_state_dict(sd)
+        # a checkpoint without `read_idx` predates its registration as a buffer,
+    # and every such checkpoint was trained with the ANTERIOR readout.  the
+    # shapes match either way, so guessing wrong is silent and costs a factor
+    # of 112 on video_v6.  detect it rather than assume.
+    ro = "linspace" if "read_idx" in sd else "anterior"
+    print(f"readout convention: {ro}", flush=True)
+    model = P.VideoLoop(dyn, read_sites=rs, readout=ro).to(dev)
+    model.load_state_dict(sd, strict=False)
     model.eval()
     print(f"{a.ckpt}: step {d.get('step','?')}, {n_sites:,} sites, "
           f"trained at horizon {trained_H}, target '{target}'", flush=True)

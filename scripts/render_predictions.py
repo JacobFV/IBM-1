@@ -71,12 +71,18 @@ if mod == "av" and coch is None:
 # load_state_dict raises a size mismatch on from_cortex and the run cannot open
 # its own weights.  read it off the tensor instead.
 rs = sd["from_cortex.weight"].shape[1] if "from_cortex.weight" in sd else 4096
+# a checkpoint without `read_idx` predates its registration as a buffer,
+# and every such checkpoint was trained with the ANTERIOR readout.  the
+# shapes match either way, so guessing wrong is silent and costs a factor
+# of 112 on video_v6.  detect it rather than assume.
+ro = "linspace" if "read_idx" in sd else "anterior"
+print(f"readout convention: {ro}", flush=True)
 model = (P.AudioVisualLoop(dyn, n_bands=coch.shape[-1]) if mod == "av"
-         else P.VideoLoop(dyn, read_sites=rs)).to(dev)
+         else P.VideoLoop(dyn, read_sites=rs, readout=ro)).to(dev)
 if rs != 4096:
     print(f"checkpoint readout is {rs} sites, not the current default 4096 "
           f"-- sized from the checkpoint", flush=True)
-model.load_state_dict(sd); model.eval()
+model.load_state_dict(sd, strict=False); model.eval()
 print(f"{a.ckpt}: {mod}, {n_sites:,} sites, horizon {H}", flush=True)
 
 n_out = int(a.seconds * a.fps)
