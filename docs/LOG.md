@@ -51,6 +51,147 @@ already written.
 
 ---
 
+## 2026-09-09 (afternoon) — the cortex is a surface now, and the anatomy says the transport task was scored on a pathway the brain does not have
+
+`docs/DISCONNECTS.md` rows 2 and 3, both closed. Three payloads fetched into
+`raw/` directories that had held one 12 KB checksums.txt each and no bytes.
+
+### what was fetched, and where it actually came from
+
+`desikan2006` is `?h.aparc.annot` on fsaverage. Its `.location.yaml` already
+said `vendored_in: freesurfer` and that is literally true — the bytes live
+inside a FreeSurfer subject directory that reached this machine bundled in an
+MNE dataset. **Three such directories are present, staged independently by
+different tools at different times, and they are byte-identical for every file
+taken.** That agreement is the verification, because the pre-existing
+`checksums.txt` held a header comment and no hashes: there was nothing to verify
+*against*, and cross-copy identity is what was actually available.
+
+`dkt-atlas` is **not on fsaverage** — the fetch script asserts that rather than
+assuming it, by checking that no fsaverage copy on this machine carries a
+`DKTatlas` file. DKT is written per subject by recon-all, which is exactly what
+the card's `subject_surface_ras` frame says, so the payload is the one full
+recon this repo holds (mne-somato subject 01), staged with its own surfaces
+because the card's `requires` says per-vertex labels without the subject's
+surface are meaningless.
+
+`braingraph-hcp-connectomes` is the 86-node set: 1064 HCP subjects at
+Desikan-Killiany resolution, 10× repeated 1M-streamline tractography, and every
+edge carrying `fiber_length_mean` — the field `tractometric_matrix` requires and
+cannot synthesise. The download is gated behind an "I agree to the HCP data use
+terms" checkbox that enables a form in the page's own markup; the agreement is a
+click, not a credential.
+
+### the sheet
+
+`cortical_sites()` returns fsaverage white-surface vertices, sampled with
+probability proportional to vertex area so density is uniform per mm² of cortex,
+medial wall excluded, drawn on the CPU so **the same seed gives the same sheet on
+cpu and on cuda** — which the long-range draw it replaces did not.
+`cortical_regions()` returns one of 68 hemisphere-qualified DK labels.
+
+**The test that could not be written before:** on 4,000 sites `insula` selects
+63 and `cingulate` 110, disjoint from frontal, temporal and parietal.
+`region_index` **raises** for those names on the sphere rather than substituting
+`frontal`, because a silent substitution is how the disconnect survived.
+
+The interoceptive port is now the insula and anterior cingulate, whole rather
+than a 4.5% subsample of a coordinate cut: 5.45% of a 6,000-site sheet against
+the 5.3% of white-surface area those three DK labels occupy.
+
+Corroborated on `dkt-atlas` — a different subject and a different protocol,
+though the card is right that it is *not* independent evidence about a boundary:
+insula is 2.83% of area under DK and 2.38% under DKT on the same brain, Dice
+0.835 (lh) and 0.866 (rh); rostral ACC Dice 0.789 and 0.825.
+
+**What the sphere was.** Area-matched to 202,437 mm² against an fsaverage white
+surface of 130,438 mm², or 118,310 mm² excluding the medial wall. **1.55× the
+cortex by area, 1.24× in linear scale.** Every distance on it was inflated by
+about a quarter, including the ~85 mm mean separation of two random sites that
+§4.1 blames for the long-range edges being inert. On the real surface a random
+partner sits 79 mm away.
+
+### the "occipital port" was never occipital, on either sheet
+
+`VisualContrastiveLoop`'s docstring says "the image drives the occipital port".
+It drove `drive[:, :n // 8]`. Measured, at 30,000 sites:
+
+- on the **sphere**: the slice is a uniform mix of all six labels — frontal 22.1%,
+  temporal 21.0%, postcentral 20.9%, parietal 17.0%, occipital **12.3%**,
+  precentral 6.7%. Occipital's share of the slice is occipital's share of the
+  sphere. The slice is anatomically uniform; it is not a port.
+- on the **surface**: it is **100% left hemisphere** (fsaverage vertex order puts
+  all of lh before rh), spread across all 34 lh parcels in proportion to their
+  size, occipital 9.5% against its 10.6% share of the sheet.
+
+This is ledger rows 15 and 25 in a third costume: a name asserting an anatomy the
+index did not have. `port_region="occipital"` makes it true and is what the new
+arms use; the default stays the slice so every checkpoint on disk still loads
+meaning what it meant.
+
+### tract-constrained long-range edges
+
+`ibm/cortical_tracts.py` turns the connectome into the `matrix` and `lengths_mm`
+`tractometric_matrix` declares it needs, and `CorticalDynamics(long_topology=
+"tract")` draws each site's long-range partners among the sites in the parcels
+the consensus connectome joins its parcel to, carrying that pair's arc length and
+delay. The builder itself is not called: its full expansion is 1.7×10⁸ edges at
+30,000 sites and 10¹⁰ at 250,000, and its own docstring says the quadratic cost
+is the honest signal that the materialization is asking for more than the
+connectome has. What is drawn is a uniform subsample of exactly that edge set.
+
+**The control is matched by construction, not by fitting** — same `n_far` per
+site, same flat long-range prior, so edge count is identical and row L1 agrees to
+0.000e+00.
+
+Structural transport, the held nonnegative operator applied 4 times to a unit
+indicator on the drive region, 30,000 sites:
+
+| pair | random | tract | tract/random | vs *concentrated* random |
+|---|---|---|---|---|
+| occipital→precentral | 3.10e-02 | 7.95e-03 | **0.257×** | 0.257× |
+| occipital→temporal | 9.45e-02 | 1.48e-01 | 1.571× | 1.558× |
+| postcentral→precentral | 5.25e-02 | 6.97e-02 | 1.328× | 1.315× |
+| occipital→insula | 1.49e-02 | 1.29e-02 | 0.866× | 0.825× |
+
+**The occipital→precentral row is the finding.** Under the tract topology the
+minimum hop distance from occipital to precentral is **2, not 1**: the consensus
+connectome declares no direct occipito-precentral fascicle, which is
+anatomically correct. The random graph gave every occipital site a one-hop shot
+at motor cortex, and a quarter of the transport `ablate_disjoint_transport.py`
+has been scoring came down an edge the brain does not have.
+
+Concentration alone buys 0.996–1.035× here, **not** the 209× measured before.
+That is not a contradiction: 209× was on a *trained* kernel, where top-m ranks
+edges by |learned weight| and redistributing the row's mass onto the strongest
+raises a chosen path's gain. With equal priors and no learned factor there is no
+ranking to exploit. Two different quantities, and the structural one isolates
+topology.
+
+### what the connectome does not reconstruct
+
+`tract.py` names two cases as what the tractometric metric exists to get right.
+At the 0.5 consensus threshold this connectome reconstructs **neither**:
+
+- **the corpus callosum.** 17 of 459 edges are interhemispheric (3.7%).
+  Homotopic superior temporal appears in **0 of 1064** subjects, homotopic
+  postcentral in 0, homotopic precentral in 3.3%, homotopic insula in 5.5%.
+- **the arcuate.** Left parsopercularis to superior temporal, its canonical
+  terminal pair, in **7.0%**.
+
+That is a known tractography failure rather than a fact about brains, and it
+means the tract arm is a *ventral, intrahemispheric* topology whatever its
+docstring hopes for. Reporting it as "the declared topology" without this
+paragraph would be ledger row 9 in a new costume. The threshold is a knob and the
+sweep is `edge_existence_curve()`: 616 edges at 0.1, 459 at 0.5, 126 at 1.0.
+
+### a sidecar that asserted the wrong carrier
+
+`ckpt/visual_contrastive_v2.json` records `"geometry": "fsaverage-sampled sheet,
+THINGS-EEG2 64ch montage"` for a run that was a spherical shell. Nothing reads
+that field, which is why it survived. `geometry_note(dyn)` now reads the sheet
+off `dyn.pos` through the same discriminator the region lookup uses.
+
 ## 2026-09-09 (morning) — the video model has no temporal prediction beyond appearance
 
 The retrieval task, run at the window where appearance is worthless. Chance is
