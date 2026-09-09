@@ -33,6 +33,8 @@ most likely to be wrong.
 """
 from __future__ import annotations
 
+import re
+
 import numpy as np
 
 from ibm.anatomy.muscles import INNERVATION
@@ -52,12 +54,67 @@ ARCS = {
 }
 
 
+# OpenSim Rajagopal component names. These are name equivalences, not inferred
+# nerve-root assignments. Unlisted muscles remain explicitly unmapped.
+OPENSIM_ALIASES = {
+    "addlong": "adductor_longus", "addmagdist": "adductor_magnus",
+    "addmagmid": "adductor_magnus", "addmagprox": "adductor_magnus",
+    "edl": "extensor_digitorum_longus", "ehl": "extensor_hallucis_longus",
+    "fdl": "flexor_digitorum_longus", "fhl": "flexor_hallucis_longus",
+    "gaslat": "gastrocnemius_lateral", "gasmed": "gastrocnemius_medial",
+    "grac": "gracilis", "perbrev": "fibularis_brevis", "perlong": "fibularis_longus",
+    "recfem": "rectus_femoris", "sart": "sartorius",
+    "semimem": "semimembranosus", "semiten": "semitendinosus",
+    "tfl": "tensor_fasciae_latae", "tibant": "tibialis_anterior",
+    "tibpost": "tibialis_posterior", "vasint": "vastus_intermedius",
+    "vaslat": "vastus_lateralis", "vasmed": "vastus_medialis",
+    **{f"{short}{i}": full for short, full in
+       (("glmax", "gluteus_maximus"), ("glmed", "gluteus_medius"),
+        ("glmin", "gluteus_minimus")) for i in (1, 2, 3)},
+}
+# addbrev, iliacus and the ischial adductor magnus component are intentionally
+# absent: the existing IBM table has no exact entry (and the ischial component
+# must not inherit the obturator entry for the adductor portion).
+
+
+def _catalog_key(name: str) -> str:
+    """Normalize explicit catalog names; never guess from opaque BP3D IDs."""
+    name = re.sub(r"\b(left|right)\b", "", name.lower())
+    name = " ".join(name.split())
+    name = re.sub(r"^(acromial|clavicular|spinal|ascending|descending|transverse) part of ", "", name)
+    name = re.sub(r"^(long|short|lateral|medial|humeral|ulnar|oblique|transverse) head of ", "", name)
+    return name.removesuffix(" muscle").replace(" ", "_")
+
+
 class SegmentalCord:
     """31 segments of alpha/gamma pools, closing the declared arcs."""
 
-    def __init__(self, muscles: list[str] | None = None, dt: float = 0.001):
-        self.dt = dt
-        self.muscles = list(muscles) if muscles else sorted(INNERVATION)
+    def __init__(self, muscles: list[str] | None = None, dt: float = 0.001,
+                 muscle_bindings: list[dict] | None = None):
+        if not np.isfinite(dt) or dt <= 0:
+            raise ValueError("dt must be finite and positive")
+        self.dt = float(dt)
+        self.muscles = list(muscles) if muscles is not None else sorted(INNERVATION)
+        if any(not isinstance(m, str) or not m or m.startswith("proprio:") for m in self.muscles):
+            raise ValueError("muscles must contain bare, nonempty muscle IDs")
+        if len(set(self.muscles)) != len(self.muscles):
+            raise ValueError("muscle IDs must be unique")
+        bindings = {}
+        for binding in muscle_bindings or []:
+            mid = binding["muscle_id"]
+            if mid in bindings:
+                raise ValueError(f"duplicate muscle binding: {mid}")
+            bindings[mid] = binding
+        self.mapping_keys = []
+        for mid in self.muscles:
+            key = self._key(mid)
+            if mid.startswith("body-connective-"):
+                key = ""  # ligament/tendon is not an independent alpha motor pool
+            elif key not in INNERVATION and mid in bindings:
+                key = _catalog_key(bindings[mid].get("name", ""))
+                if key == "adductor_magnus" and "addmagIsch" in mid:
+                    key = ""  # hamstring component requires a distinct tibial entry
+            self.mapping_keys.append(key)
         self.n = len(self.muscles)
         # segment membership: a muscle drawing C5-C6 is driven by both, so the
         # map is many-to-many and normalised per muscle rather than assigning a
@@ -65,7 +122,7 @@ class SegmentalCord:
         self.seg = np.zeros((self.n, len(LEVELS)), dtype=np.float32)
         self.unmapped = []
         for i, m in enumerate(self.muscles):
-            rec = INNERVATION.get(self._key(m))
+            rec = INNERVATION.get(self.mapping_keys[i])
             if rec is None:
                 self.unmapped.append(m)
                 continue
@@ -77,8 +134,9 @@ class SegmentalCord:
                 self.seg[i, LEVEL_IX[r]] = 1.0 / len(roots)
         # spindle density scales the Ia drive a muscle produces per unit stretch
         self.spindle = np.array(
-            [INNERVATION.get(self._key(m), (None, (), 1.0))[2] for m in self.muscles],
+            [INNERVATION.get(k, (None, (), 0.0))[2] for k in self.mapping_keys],
             dtype=np.float32)
+        self.spinal_mask = (self.seg.sum(axis=1) > 0).astype(np.float32)
         self._delay_buf: dict[str, list] = {}
         self.alpha = np.zeros(self.n, dtype=np.float32)
         self.gamma = np.zeros(self.n, dtype=np.float32)
@@ -90,7 +148,7 @@ class SegmentalCord:
         for suf in ("_r", "_l"):
             if k.endswith(suf):
                 k = k[: -len(suf)]
-        return k
+        return OPENSIM_ALIASES.get(k.lower(), k)
 
     def _delayed(self, name: str, x: np.ndarray, delay_s: float) -> np.ndarray:
         n = max(1, int(round(delay_s / self.dt)))
@@ -109,18 +167,31 @@ class SegmentalCord:
         rather than only the sum -- the same reason `neural.exc.ampa` is a state
         and not an input.
         """
-        d = np.clip(np.asarray(descending, dtype=np.float32), 0.0, 1.0)
-        st = np.zeros(self.n, np.float32) if stretch is None else \
-            np.clip(np.asarray(stretch, np.float32), 0.0, 1.0)
-        fo = np.zeros(self.n, np.float32) if force is None else \
-            np.clip(np.asarray(force, np.float32), 0.0, 1.0)
+        def vector(value, name):
+            if value is None:
+                return np.zeros(self.n, np.float32)
+            array = np.asarray(value, dtype=np.float32)
+            if array.shape != (self.n,) or not np.isfinite(array).all():
+                raise ValueError(f"{name} must have shape ({self.n},) and finite values")
+            return np.clip(array, 0.0, 1.0)
+
+        if descending is None:
+            raise ValueError("descending is required")
+        d = vector(descending, "descending")
+        st = vector(stretch, "stretch")
+        fo = vector(force, "force")
+        if antagonist is not None:
+            antagonist = np.asarray(antagonist)
+            if (antagonist.shape != (self.n,) or antagonist.dtype.kind not in "iu"
+                    or np.any(antagonist < 0) or np.any(antagonist >= self.n)):
+                raise ValueError("antagonist must be one valid integer muscle index per muscle")
 
         # gamma sets spindle sensitivity, so Ia is not a pure length signal --
         # alpha-gamma coactivation is why a voluntary contraction does not
         # silence its own spindles.
         self.gamma = 0.9 * self.gamma + 0.1 * d
-        ia = st * self.spindle * (0.5 + 0.5 * self.gamma)
-        ib = fo
+        ia = st * self.spindle * (0.5 + 0.5 * self.gamma) * self.spinal_mask
+        ib = fo * self.spinal_mask
 
         g_s, t_s, _ = ARCS["stretch"]
         g_r, t_r, _ = ARCS["reciprocal"]
@@ -130,10 +201,10 @@ class SegmentalCord:
         e_stretch = g_s * self._delayed("stretch", ia, t_s)
         e_auto = g_a * self._delayed("autogenic", ib, t_a)
         if antagonist is not None:
-            e_recip = g_r * self._delayed("reciprocal", ia[antagonist], t_r)
+            e_recip = g_r * self._delayed("reciprocal", ia[antagonist], t_r) * self.spinal_mask
         else:
             e_recip = np.zeros(self.n, np.float32)
-        e_renshaw = g_n * self._delayed("renshaw", self.alpha, t_n)
+        e_renshaw = g_n * self._delayed("renshaw", self.alpha * self.spinal_mask, t_n)
 
         drive = d + e_stretch + e_recip + e_auto + e_renshaw
         self.alpha = np.clip(drive, 0.0, 1.0)

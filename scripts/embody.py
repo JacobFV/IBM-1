@@ -55,8 +55,8 @@ def load_body():
         raise SystemExit(f"IHM-1 peripheral.json not found at {PERIPHERAL}")
     spec = json.load(open(PERIPHERAL))
     sys.path.insert(0, IHM)
-    from ihm.assembly.peripheral import BodyPeripheral
-    return spec, BodyPeripheral.from_dict(spec)
+    from ihm.assembly.mechanical_peripheral import MechanicalPeripheral
+    return spec, MechanicalPeripheral.from_directory(os.path.dirname(PERIPHERAL))
 
 
 def main() -> None:
@@ -83,8 +83,11 @@ def main() -> None:
                          "30 ms loop delay -- an order of magnitude faster than "
                          "anything routed through cortex -- so this is the ablation "
                          "for whether local feedback matters")
+    ap.add_argument("--seed", type=int, default=0, help="matched initialization for ablations")
     ap.add_argument("--out", default="out/embody.json")
     a = ap.parse_args()
+    torch.manual_seed(a.seed)
+    np.random.seed(a.seed)
 
     spec, body = load_body()
     muscles = sorted(spec["muscle_bindings"], key=lambda b: b["muscle_id"])
@@ -106,7 +109,7 @@ def main() -> None:
     # size the afferent encoder from what the body actually sends.  the default
     # 32 silently dropped half of IHM's 64 channels -- the loop still ran and
     # still validated, which is exactly how a truncated input goes unnoticed.
-    probe = body.step(a.dt, stimuli={}, mechanical_state={}, brain_state={})
+    probe = body.step(a.dt, stimuli={}, brain_state={})
     n_aff = max(1, len(probe.get("afferent_rates_hz", {})
                        or probe.get("receptor_rates_hz", {})))
     spec2, body = load_body()          # fresh body: the probe advanced its clock
@@ -135,7 +138,7 @@ def main() -> None:
             for j, pid in enumerate(patches):
                 phase = 2 * np.pi * (i / max(a.steps, 1) + j / max(len(patches), 1))
                 stim[pid] = {"pressure_pa": float(2e4 * (1 + np.sin(phase)))}
-        out = body.step(a.dt, stimuli=stim, mechanical_state={}, brain_state=(
+        out = body.step(a.dt, stimuli=stim, brain_state=(
             brain.act({}, device=dev, sever=a.sever) if prev is None else prev))
         aff = out.get("afferent_rates_hz", {}) or out.get("receptor_rates_hz", {})
         cortical = brain.act(aff, device=dev, sever=a.sever)
@@ -144,15 +147,18 @@ def main() -> None:
             # what the cord makes of it once the reflexes have had their say.
             desc = np.array([cortical["motor_commands"][m] for m in ids], np.float32)
             stretch = np.zeros(len(ids), np.float32)
+            if set(out['spindle_rates_hz']) != set(ids):
+                raise ValueError('Spindle output must contain every bare muscle ID')
             for j, b in enumerate(muscles):
                 sid = b.get("muscle_id")
-                # IHM keys proprioceptor_rates_hz by the BARE muscle id.  reading
+                # IHM keys proprioceptor rates by the BARE muscle id. Reading
                 # "proprio:" + id returned 0.0 for every muscle every step, so the
                 # stretch reflex never fired and reflex_max sat at exactly 0.0000
                 # while the cord still looked alive on Renshaw inhibition alone.
-                # a wrong key does not raise, it just silently means "no afference".
+                # Use stretch-only spindle rates: legacy proprioception mixes
+                # length and force. Strict indexing rejects a broken join.
                 stretch[j] = float(np.clip(
-                    out.get("proprioceptor_rates_hz", {}).get(sid, 0.0)
+                    out["spindle_rates_hz"][sid]
                     / 100.0, 0.0, 1.0))
             res = cord.step(desc, stretch=stretch)
             prev = {"motor_commands": {m: float(res["alpha"][j])
@@ -163,6 +169,12 @@ def main() -> None:
             reflex = 0.0
         cmds = np.array(list(prev["motor_commands"].values()))
         log.append({"step": i, "n_afferent": len(aff), "reflex_max": reflex,
+                    "spindle_max_hz": max(out["spindle_rates_hz"].values()),
+                    "proprioceptor_max_hz": max(out["proprioceptor_rates_hz"].values()),
+                    "motor_activation_max": max(out["motor_activations"].values(), default=0.),
+                    "arc_max": ({name: float(np.abs(res[name]).max()) for name in
+                                 ("stretch", "reciprocal", "autogenic", "renshaw")}
+                                if cord is not None else {}),
                     "cmd_mean": float(cmds.mean()), "cmd_sd": float(cmds.std()),
                     "cmd_min": float(cmds.min()), "cmd_max": float(cmds.max()),
                     "nerve_activity": len(out.get("nerve_activity_hz", {}))})
@@ -180,7 +192,9 @@ def main() -> None:
         print("  NOTE: the command did not vary. with no stimuli and untrained "
               "weights that is expected; it is a wire test, not a controller.")
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
-    json.dump({"sever": a.sever, "n_muscles": len(ids), "steps": log},
+    json.dump({"sever": a.sever, "no_cord": a.no_cord, "seed": a.seed,
+               "mechanics": "IHM reduced SI BodyMechanics", "dt_s": a.dt,
+               "n_muscles": len(ids), "steps": log},
               open(a.out, "w"), indent=2)
 
 
