@@ -62,9 +62,19 @@ the source to become geometrically parametrized, transformed entities.
 
 Measured starting point, so the scope is not guessed: `target_mass_kg` and
 `instance_mass_variant` are already knobs; the body is a scaled Rajagopal subject
-registered against BodyParts3D; and **the simulated body has zero sex-specific
-entities** — no breast, uterus, ovary, testis, prostate or external genitalia
-among its 4,000. The reproductive model exists but its own limitation note says
+registered against BodyParts3D; and the body **already carries male genital
+anatomy** — corpus cavernosum and spongiosum, glans, testes, epididymides,
+deferent ducts, seminal vesicles, ejaculatory ducts, prostate and their vessels,
+~30 entities, all bound to `pelvis`. What is genuinely absent is **any
+female-specific entity, and any mammary gland, nipple or areola in either sex**;
+"mammary region" is a patch of chest skin. No catalogued source ships a female
+mesh — BodyParts3D is male-only, Z-Anatomy is male and not an independent
+subject, Rajagopal is male.
+
+(This paragraph first said the body had ZERO sex-specific entities. That was
+wrong, and is ledger row 26: the search ran against entity IDs, which are opaque
+strings carrying no name, so it returned 0 for every term — including `femur`,
+which was never checked.) The reproductive model exists but its own limitation note says
 E2/P4/inhibin are prescribed time functions, not an autonomous cycle.
 
 The standing honesty requirement applies with force here: a scaled male mesh with
