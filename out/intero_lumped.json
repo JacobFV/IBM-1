@@ -1,0 +1,75 @@
+{
+  "arm": "cortex_lumped_delays",
+  "config": {
+    "corpus": "data/derived/intero-corpus",
+    "horizon_s": 60.0,
+    "split": "protocol",
+    "init": "ckpt/ibm1_implicit.pt",
+    "sites": 8000,
+    "embed": 128,
+    "k": 48,
+    "long_range": 0.25,
+    "hidden": 64,
+    "read_sites": 1024,
+    "steps": 300,
+    "batch": 32,
+    "eval_batch": 64,
+    "lr": 0.0003,
+    "checkpoint_every": 0,
+    "control_steps": 4000,
+    "seed": 0
+  },
+  "mse_raw": [
+    31.625774383544922,
+    0.0008442903053946793,
+    1.6171818971633911,
+    0.20874932408332825,
+    0.42986923456192017
+  ],
+  "state_skill_vs_mean": 0.4221384525299072,
+  "trajectory_skill_vs_persistence": -9.25067138671875,
+  "change_guard": {
+    "endurance_h": {
+      "magnitude_ratio": 1.5273170496182484,
+      "cosine": 0.17044728994369507
+    },
+    "discomfort": {
+      "magnitude_ratio": 1.3191229042616714,
+      "cosine": 0.4131465256214142
+    },
+    "sensation_0": {
+      "magnitude_ratio": 5.189838577182027,
+      "cosine": -0.015098140574991703
+    },
+    "sensation_1": {
+      "magnitude_ratio": 0.925680612081985,
+      "cosine": 0.2645208537578583
+    },
+    "sensation_2": {
+      "magnitude_ratio": 2.8772994658719218,
+      "cosine": -0.10693938285112381
+    }
+  },
+  "skill_vs_zero": [
+    0.9788097739219666,
+    0.9659619331359863,
+    0.4700961709022522,
+    0.9478185176849365,
+    0.639604926109314
+  ],
+  "skill_vs_mean": [
+    0.4221384525299072,
+    0.8177363276481628,
+    0.46907228231430054,
+    0.9477394819259644,
+    0.6397519707679749
+  ],
+  "skill_vs_persistence": [
+    -1.8120436668395996,
+    -0.6501051187515259,
+    -27.09116554260254,
+    -0.3671611547470093,
+    -8.89425277709961
+  ],
+  "note": "seed-matched to cortex_trained in out/intero_ablation.json; same corpus, split, steps, batch and initialisation, with every conduction group arriving at step 0"
+}

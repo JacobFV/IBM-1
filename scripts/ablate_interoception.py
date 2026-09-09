@@ -393,7 +393,7 @@ def evaluate(c: InteroCorpus, model, dev, batch: int, **kw) -> np.ndarray:
 
 
 def train_arm(c: InteroCorpus, a, dev, seed: int, kernel: str, drop: tuple,
-              label: str):
+              label: str, lump: bool = False):
     dyn, model = build(c, a, dev, seed)
     # `model` holds `dyn` as a submodule, so model.parameters() already contains
     # every kernel parameter.  concatenating the two lists put each of them in
@@ -411,7 +411,7 @@ def train_arm(c: InteroCorpus, a, dev, seed: int, kernel: str, drop: tuple,
     for step in range(a.steps):
         i = tr[torch.from_numpy(
             rng.integers(0, len(c.train), a.batch)).to(dev)]
-        pred, s = model(X[i], kernel=kernel, drop=drop,
+        pred, s = model(X[i], kernel=kernel, drop=drop, lump=lump,
                         checkpoint_every=a.checkpoint_every)
         loss = F.mse_loss(pred, Y[i]) + 1e-1 * P.viability_penalty(s[0])
         opt.zero_grad(set_to_none=True)
@@ -589,6 +589,19 @@ def main() -> None:
     if dev == "cuda":
         torch.cuda.empty_cache()
 
+    _, m4 = train_arm(c, a, dev, a.seed, "trained", (), "lumped", lump=True)
+    record("cortex_lumped_delays", evaluate(c, m4, dev, a.eval_batch, lump=True),
+           "THE CONTROL FOR THE DELAY ITSELF.  every group arrives at step 0, "
+           "keeping all fifteen channels and destroying only the 9.2-508 ms "
+           "ordering.  a `drop` arm removes what a group CARRIES and therefore "
+           "says nothing about WHEN it arrives; this one holds the content "
+           "fixed and removes the timing, which is the only arm that can say "
+           "whether the fibre-class-resolved delay is load-bearing or "
+           "decoration")
+    del m4
+    if dev == "cuda":
+        torch.cuda.empty_cache()
+
     _, m3 = train_arm(c, a, dev, a.seed, "trained", slow, "no_c_fibres")
     record("cortex_trained_without_c",
            evaluate(c, m3, dev, a.eval_batch, drop=slow),
@@ -628,6 +641,10 @@ def main() -> None:
               "STRUCTURE is not carrying this term -- the readout is.  that is "
               "ledger entry 20 reproduced on a second pathway, and it is a "
               "result about the architecture rather than about interoception.")
+    d_lump = st('cortex_trained') - st('cortex_lumped_delays')
+    print(f"  LUMPING every conduction group onto step 0, keeping all fifteen "
+          f"channels, costs {d_lump:+.4f} on state.  that is the only arm that "
+          f"tests the DELAY rather than the channels.")
     d_c = st('cortex_trained') - st('cortex_trained_without_c')
     print(f"  removing every unmyelinated group and retraining costs {d_c:+.4f} "
           f"on state and "

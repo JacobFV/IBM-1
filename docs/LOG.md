@@ -49,6 +49,214 @@ already written.
 
 ---
 
+## 2026-09-09 (evening) — the viscera reach cortex, and two priors were wrong
+
+The brain had vision, audition and a somatic strip and was blind to its own gut.
+`ibm/embodiment.py` declared two visceral wires — blood pressure and oxygenation,
+both at a flat 60 ms — against 483 somatic ones, and the vagus and the five
+splanchnic trunks sat in `ibm/topologies/nerve.py` with nothing routed through
+them. IHM-1 had been simulating digestion, absorption, substrate stores and
+exertion the whole time and nothing read that state as afference.
+
+### 1. A join bug worth 158 ms, on exactly the latency that matters
+
+`ihm_bridge.routes()` read `path_length_m` from `muscle_bindings` and
+`receptor_patches` and never from `nerves[].path_length_m` — which is the field
+IHM's own `route_contract` names, with `missing_length_policy: error; never
+silently substitute a trunk length`. Every route with no muscle and no skin patch
+fell through to my typed trunk table and reported `ibm_declared_trunk` for a
+length the body had measured. **92 of 144 routes.** Every visceral route is one of
+them, because the vagus innervates no muscle and carries no skin patch.
+
+| trunk | typed here | IHM measured | C-fibre delay |
+|---|---|---|---|
+| vagus | 350 mm | **508 mm** | 350 ms → **508 ms** |
+| greater splanchnic | 300 mm (default) | **168 mm** | 300 ms → **168 ms** |
+| lesser splanchnic | 300 mm (default) | 217 mm | 300 → 217 ms |
+| least splanchnic | 300 mm (default) | 232 mm | 300 → 232 ms |
+| pelvic splanchnic | 300 mm (default) | 128 mm | 300 → 128 ms |
+
+`visceral_routes()` now raises rather than falling back. The pattern is the
+ledger's: a quantity computed correctly against the wrong source, and the source
+that was right had said so in a field named `missing_length_policy: error`.
+
+### 2. Fifteen channels, seven conduction groups, 55x
+
+`ihm/assembly/interoception.py` transduces `NativeSession.snapshot()['values']`
+— the 180 quantities BioGears integrates — into firing rates on the declared
+trunks. Ten vagal, five splanchnic. Operating ranges are declared from physiology
+and **not fitted to the corpus**, so a high-threshold channel is allowed to sit
+silent through a protocol that never drives it, and two do.
+
+The delays are the point:
+
+| group | delay | what arrives |
+|---|---|---|
+| vagus / A-beta | **9.2 ms** | gastric and intestinal volume, lung volume, aortic pressure |
+| vagus / A-delta | 33.9 ms | intestinal absorption |
+| pelvic splanchnic / C | 128.0 ms | bladder |
+| greater splanchnic / C | 168.4 ms | high-threshold gastric distension, lactate |
+| lesser splanchnic / C | 217.2 ms | high-threshold intestinal distension |
+| least splanchnic / C | 232.2 ms | renal filtration |
+| vagus / C | **507.8 ms** | nutrient load, portal glucose, aortic chemoreception |
+
+**The stomach reports twice, on two nerves, half a second apart** — a vagal
+low-threshold volume report at 9 ms and a splanchnic high-threshold nociceptive
+report of the same organ at 168 ms, from the same source keys with different
+thresholds. That pair is the thing the fibre-class axis exists for, and a model
+given one visceral latency asserts they are the same event. The ratio, 55x within
+one nerve, is the largest in the model.
+
+### 3. The afference carries a real signal. The cortex adds nothing to it.
+
+`scripts/ablate_interoception.py`, 8,000 sites, 300 steps at batch 32, seed
+matched across arms. The corpus is 5,047 frames of recorded BioGears physiology
+under five protocols; the split holds out **whole protocols** —
+`meal_exercise` and the six-hour `hydration` run — not a contiguous tail, for a
+reason in §5 below.
+
+Two questions, two baselines, because one aggregate over both would be a lie:
+
+- **state** — `endurance_h`, hours of carbohydrate substrate at the current
+  metabolic rate. Liver glycogen, muscle glycogen and metabolic rate are **not
+  afferent channels**, so this must be inferred from gut and cardiorespiratory
+  traffic. Baseline: the training mean.
+- **trajectory** — `discomfort` and three `sensation` components at a 60 s
+  horizon. These *are* exact functions of the afferent vector — a sanity gate
+  proves it by making a ridge print R² = 1.000000 — so scoring them against the
+  mean would measure a model inverting its own input. Baseline: persistence.
+
+| arm | state | trajectory |
+|---|---|---|
+| ridge, no dynamics | +0.4956 | −0.0094 |
+| MLP to convergence, no dynamics | −0.2225 | −4.7140 |
+| **MLP at matched samples, no dynamics** | **+0.5570** | −1.5009 |
+| **cortex, trained** | **+0.5463** | −2.7761 |
+| cortex, kernel severed post hoc | +0.5520 | −2.7861 |
+| cortex, kernel permuted post hoc | +0.5519 | −2.7960 |
+| cortex, permuted kernel **retrained** | **+0.5703** | −4.9982 |
+
+**Severing the association kernel costs −0.0058 — it is very slightly better
+severed.** A permuted kernel retrained from the same seed reaches +0.5703, above
+the trained one. A dynamics-free MLP on the same fifteen numbers at matched
+sample count reaches +0.5570, also above it. **This is ledger entry 20
+reproduced on a second, independent pathway**, and the honest report is the
+*afference's* skill and not the loop's: visceral afference predicts unobserved
+substrate state at skill ≈ +0.50 to +0.57 against the training mean on two
+held-out protocols, and it does so through a matrix.
+
+Nothing beats persistence on the trajectory question. The ridge ties it
+(−0.0094); every cortical arm is far worse. Predicting where visceral state will
+be in 60 s, from where the afference is now, is not something anything here does.
+
+### 4. The anatomy IS load-bearing — the slow arm, and the delay itself
+
+The ablation that does return a result. Conduction groups withheld post hoc from
+the trained model, on **state**:
+
+| group withheld | channels | delay | state | cost |
+|---|---|---|---|---|
+| — (intact) | — | — | +0.5463 | — |
+| lesser splanchnic / C | 1 | 217.2 ms | +0.5839 | +0.038 |
+| pelvic splanchnic / C | 1 | 128.0 ms | +0.5570 | +0.011 |
+| vagus / A-delta | 1 | 33.9 ms | +0.5518 | +0.006 |
+| least splanchnic / C | 1 | 232.2 ms | +0.5508 | +0.004 |
+| greater splanchnic / C | 2 | 168.4 ms | +0.5473 | +0.001 |
+| **vagus / A-beta** | 4 | 9.2 ms | +0.4246 | **−0.122** |
+| **vagus / C** | 5 | 507.8 ms | +0.1687 | **−0.378** |
+| all myelinated | 5 | 9–34 ms | +0.4396 | −0.107 |
+| all C | 9 | 128–508 ms | +0.2293 | −0.317 |
+
+**The noise band is measured, not assumed.** The four splanchnic single-group
+drops span +0.547 to +0.584 against an intact +0.546, so at one seed nothing
+under about ±0.04 is distinguishable. Severing the kernel (−0.006) and permuting
+it (−0.006) are inside that band. The two vagal groups are not.
+
+**The slow unmyelinated vagal arm carries two thirds of the signal.** Those five
+channels — nutrient load, hepatoportal glucose, aortic chemoreception — arrive
+507.8 ms after the event, and severing them costs −0.378. The fast myelinated
+arm that reports gastric and intestinal volume, lung volume and aortic pressure
+in 9.2 ms costs −0.122, three times less. **The half-second-late chemical report
+is what tells this model how much fuel is left; the nine-millisecond mechanical
+report largely does not.** Post-hoc drops are not additive and their mutual
+ordering should not be over-read (dropping the vagal C group alone costs more
+than dropping all nine C channels), but the separation between the vagal groups
+and everything else is far outside the band.
+
+**And the delay is load-bearing, not only the channels.** A drop arm removes what
+a group *carries* and says nothing about *when* it arrives, so it cannot test the
+thing `ibm/topologies/nerve.py` was written to assert. The arm that can:
+**`cortex_lumped_delays`** keeps all fifteen channels and lands every group on
+step 0, seed- and step-matched to the trained arm.
+
+| arm | state |
+|---|---|
+| cortex, trained (9.2 → 507.8 ms preserved) | +0.5463 |
+| **cortex, every group lumped onto step 0** | **+0.4221** |
+
+**Lumping costs −0.124** — as much as deleting the entire A-beta group, with
+every channel still present. Three times the noise band, five times the
+seed-to-seed spread the retrained permuted arm implies. The fibre-class-resolved
+delay is doing work.
+
+That is the first result in this repo where the *peripheral anatomy* is
+load-bearing while the *cortical substrate* is not, and the two ablations sit
+side by side in the same table.
+
+### 5. Two corrections I made to my own instruments
+
+**A split that made a correct model score −2.07.** `endurance_h` drifts over the
+scale of a whole run, so a contiguous time split leaves the held-out window in a
+1.6 h band at the top of a 27 h range. A model accurate to 1.1 h absolute — 2.8%
+of the quantity — scores skill **−2.07** against the training mean there. Both
+numbers are correct; reporting either alone is the wrong-population error. The
+default split now holds out whole protocols, and the held-out endurance range is
+13.94–40.75 h against the training set's 13.89–40.75.
+
+**A gate that encoded my guesses instead of testing routing.** The live causal
+contrast (`scripts/embody_interoception.py`) started with a specificity *ratio*,
+and two pre-registered expectations failed: a meal moved pulmonary stretch 3.5 Hz
+(the meal delivers 500 mL of water and lung volume follows blood volume), and
+exercise moved renal filtration 8.3 Hz (cardiac output drives GFR). Both are the
+engine's physiology, neither is cross-talk in the channel table. The instrument
+was the deeper error: a ratio threshold is a guess about coupling *magnitude*,
+which is exactly what a run should be free to tell me, and tuning it until it
+passed would be fitting the gate to the data. It is now two claims a contrast can
+actually test — exercise must leave every GI-lumen channel at **exactly** zero
+(seven channels; they were, on the first run), and the largest mover must be in
+the family the intervention drives. A rank claim no threshold can buy.
+
+Measured, as max |Δ| in Hz against a matched rest control from one stabilized
+state: a meal moves gastric distension **+30.87** and renal filtration **+0.014**;
+exercise moves pulmonary stretch **+16.18** and every GI-lumen channel by
+**exactly 0.000**; endurance falls 37.9 → 13.9 h as metabolic rate goes 92 → 241 W.
+
+### 6. What is named and what is not claimed
+
+`endurance`, `discomfort` and `sensation` are **named projections of measured
+physiological state**. Endurance is a ratio of two engine outputs; discomfort is
+a fibre-class-weighted sum of the afferent rates normalised by its own saturated
+ceiling; sensation is a linear projection of the same vector with a basis fitted
+on the training split. None is a claim about anything felt, and the names are a
+liability precisely because they read as if they were. The module, the corpus
+metadata and the docstrings all say so where the names are defined.
+
+Two gaps stay open and are recorded rather than fixed. There is **no
+viscera-supported nociceptor component** — `transduction.nociceptor` sits on the
+transduction field's default support, the body surface — so the splanchnic
+channels bind to `transduction.baroreceptor` and are tagged nociceptive in the
+join table. And the loop is **one-way**: the same trunks declare
+`b_preganglionic` and `c_postganglionic` and nothing drives them, so there is
+visceral afference and no autonomic outflow.
+
+The **insula is not separable** on the six-label spherical proxy
+`cortical_regions` provides; a sphere has no lateral sulcus. The drive enters the
+`frontal` label, subsampled to the insula+ACC share of cortical surface (4.5% of
+cortex, 20% of that label). `ibm.interoception.PORT_SUBSTITUTION` is a constant
+so it prints in every report rather than living in a comment.
+
+---
+
 ## 2026-09-09 (afternoon) -- the sheet was never information-blocked, it was amplitude-blocked
 
 Three results, and the largest one is not about the fix.

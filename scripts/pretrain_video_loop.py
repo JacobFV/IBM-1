@@ -955,7 +955,7 @@ class InteroceptiveLoop(nn.Module):
 
     def forward(self, x, kernel: str = "trained", drop: tuple = (),
                 n_steps: int | None = None, generator=None,
-                checkpoint_every: int = 8):
+                checkpoint_every: int = 8, lump: bool = False):
         """afferent rates (B, n_channels) -> readout (B, n_out).
 
         `kernel`:
@@ -965,6 +965,14 @@ class InteroceptiveLoop(nn.Module):
                     "the cortex computed this" from "the decoder read the drive",
                     which on the motor path was the difference between a result
                     and ledger entry 20
+        `lump`: every group arrives at step 0.  THE CONTROL FOR THE DELAY
+        ITSELF, as distinct from the channels.  dropping a conduction group
+        removes what it carries, so a cost there says the channels matter and
+        says nothing about when they arrive.  this arm keeps all fifteen
+        channels and destroys only the 9.2-508 ms ordering -- which is the
+        lumping `ibm/topologies/nerve.py` was written to refuse, run as an
+        experiment instead of asserted against.
+
         `drop`: (trunk, fibre) groups whose contribution is withheld.  dropping
         every C group is the specific ablation this anatomy makes possible: it
         severs the slow unmyelinated arm of visceral afference and keeps the fast
@@ -1001,7 +1009,8 @@ class InteroceptiveLoop(nn.Module):
             st, ww = state_and_w[:4], state_and_w[4]
             for step in range(lo, hi):
                 drive = torch.zeros(b, self.dyn.n, device=dev)
-                arrived = [g for g in pend if self.arrive[g] <= step]
+                arrived = list(pend) if lump else \
+                    [g for g in pend if self.arrive[g] <= step]
                 if arrived:
                     # TONIC: an arrived group keeps contributing.  the viscera do
                     # not stop reporting, and a transient visceral drive would be
