@@ -8,7 +8,11 @@ is the shorter thing you need to resume.
 
 ## What is running right now
 
-**One job, deliberately left running.** Everything else is stopped.
+**Superseded — see `docs/LOG.md` for the current session.** As of the following
+morning four jobs are live: the interoception 30k repeat below, a contrastive
+video-continuation run (`logs/video_cc_w45.log`), an end-to-end disjoint-transport
+run on `gb10-direct` (`logs/e2e.log`), and gait search J (`IHM-1/logs/gait_J.log`).
+The two MSE video runs were stopped as structurally degenerate.
 
 ```
 .venv/bin/python -u scripts/ablate_interoception.py \
@@ -134,10 +138,14 @@ Ranked by value per hour.
    failure and **the lumbar actuators are in the catalog receiving no command at
    all.** Do not spend more CMA on the current parameterisation; searches G and H
    converged to identical best reports.
-5. **App:** 7 browser tests fail on performance cost the ring introduced (a clean
-   baseline at `63d2a84` passes all 7 and runs in half the time). One repair
-   (`975d721`, caching leader endpoints) landed after that measurement and has
-   never been tested against these specs. Measure it before doing anything else.
+5. **App:** 7 browser tests fail, all on the same symptom — `#scene-status`
+   never emptying, i.e. the 2,229-structure load not finishing. **None is an
+   assertion about behaviour.** An earlier claim that the ring caused this was
+   WITHDRAWN: a paired A/B on the same build, alternating minutes, gives ring-off
+   32.3 s against ring-on 35.0 s with fully overlapping ranges (~8%, not the
+   doubling first reported). The 15.5-vs-30.1 min gap was machine load measured at
+   different times on a shared box. No behavioural regression is indicated; a
+   clean pass/fail needs both suites run back to back when the machine is quiet.
 
 ---
 
