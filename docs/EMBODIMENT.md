@@ -350,16 +350,23 @@ they are the same event.
 it is also why interoception is *late*. a gut feeling is slow and a touch is not,
 and the ratio here — 55x within one nerve — is the largest in the model.
 
-**the cortical target is a substitution and it is named.** interoceptive afference
-reaches insula and anterior cingulate. `cortical_regions` in
-`scripts/pretrain_video_loop.py` is a six-label geometric convention over a
-spherical proxy and a sphere has no lateral sulcus, so the insula is not separable
-there; the drive enters the `frontal` label, subsampled to the insula+ACC share of
-cortical surface (~4.5%). the DK parcellation in `ibm/anatomy/systems.py` does
-declare `insula`, `rostralanteriorcingulate` and `caudalanteriorcingulate`, so a
-materialization through `ibm/materialize/build.py` has the real target and the
-substitution ends there. `ibm.interoception.PORT_SUBSTITUTION` is a constant so it
-prints in every report rather than living in a comment.
+**the cortical target was a substitution; it is now the target.** interoceptive
+afference reaches insula and anterior cingulate. `cortical_regions` in
+`scripts/pretrain_video_loop.py` used to be a six-label geometric convention over
+a spherical proxy, and a sphere has no lateral sulcus, so the insula was not
+separable there: the drive entered the `frontal` label subsampled to the
+insula+ACC share of cortical surface (~4.5%). that ended when the sheet became an
+fsaverage surface with a Desikan-Killiany parcellation (`docs/DISCONNECTS.md` 2).
+`InteroceptiveLoop` now drives `ibm.interoception.PORT_REGIONS` -- `insula`,
+`rostralanteriorcingulate`, `caudalanteriorcingulate` -- **whole**, not as a
+fraction of something larger: 5.45% of a 6,000-site sheet against the 5.3% of
+white-surface area those three labels occupy.
+
+`PORT_SUBSTITUTION` is kept and still prints, because `--geometry sphere` still
+exists and every checkpoint trained before the change restores its own spherical
+sheet; on that sheet the substitution is still what happens. `region_index`
+RAISES for `insula` there rather than silently returning `frontal`, which is the
+part that makes the substitution impossible to leave in by accident.
 
 **one declared gap.** there is no viscera-supported nociceptor component:
 `transduction.nociceptor` sits on the transduction field's default support, the

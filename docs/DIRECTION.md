@@ -60,8 +60,10 @@ those is on the critical path, not a cleanup task.
 ## Why this file exists
 
 The programme repeatedly drifted toward whatever was measurable on the objects
-already wired up — a spherical cortex with random long-range edges, a 22-body
-skeleton, a video term that turned out to be matching appearance — and each time
+already wired up — a spherical cortex with random long-range edges (both now
+replaced: fsaverage surface, Desikan-Killiany labels, and long-range partners
+drawn from a 1064-subject HCP connectome), a 22-body skeleton, a video term that
+turned out to be matching appearance — and each time
 the user had to redirect it back to the real body and the real brain. The drift
 is not random: measurable-on-the-proxy is always cheaper than correct-on-the-real
 -thing, so it wins by default unless something holds the target fixed. This file

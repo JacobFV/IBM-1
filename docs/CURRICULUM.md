@@ -167,8 +167,10 @@ field.
   against the 14 wav durations; the MEG-to-chapter offset is constant within a run
   (18–25 s) and read from the events' `timemeg − timechapter`
 - **readout**: a linear map from cortical rate to sensors, which is what a lead
-  field IS. learned here because the sites are a spherical stand-in; stage 2 is
-  where a measured forward model replaces it
+  field IS. learned here because the sites are a SAMPLE of the fsaverage white
+  surface rather than a subject's own cortex -- they stopped being a spherical
+  stand-in (`docs/DISCONNECTS.md` 2) but a template surface is still not the
+  head the sensors sat on; stage 2 is where a measured forward model replaces it
 - **early result**: MSE on standardized MEG **0.568 → 0.133 by step 100**, i.e.
   ~87% of MEG variance explained, and **effective rank RISES (2.4 → 3.0)** rather
   than collapsing. the paired objective cannot be minimized by collapsing the

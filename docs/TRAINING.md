@@ -80,6 +80,12 @@ edges start with 7× less weight than local ones and the learned factor never
 overcomes it. fixed by giving them a flat, patchy prior instead — **and that fix
 is not confirmed until the ablation is re-run.**
 
+the 127 mm sphere is gone (`docs/DISCONNECTS.md` 2) and the numbers move a
+little with it: it was area-matched to 202,437 mm² where the fsaverage white
+surface is 118,310 mm² excluding the medial wall, so it was 1.24× too large in
+linear scale. on the real surface a uniform-random partner sits **79 mm** away
+and a tract-declared one **53 mm**.
+
 ### 4.2 a positive association kernel is a diffusion operator
 `sigmoid` weights are all positive and fan-in normalized, so eight applications
 per forward are eight rounds of averaging toward the graph mean. rank is
