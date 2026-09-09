@@ -86,6 +86,41 @@ cutting the *descending* limb leaves the rhythm standing — it is a driven rela
 with feedback, not a closed loop — and it lands in theta, not the spindle band
 the declaration claims for it.
 
+## 9. The body cannot feel the world it is rendered in
+
+**Surfaced by the user, who noticed the app clearly has environments while the
+body clearly does not experience them.**
+
+The app declares an environment catalogue — `studio`, `floor`, `bed` — with
+tiles, thumbnails and scene objects, and renders the body inside them.
+
+The body's **entire** contact experience, read from a gait trajectory frame:
+
+    foot_load_fraction     {r, l}
+    foot_contact_force_n   {r, l}
+    foot_centre_m          {r, l}
+    fall_support_force_n   scalar
+
+Two feet and a fall-catch plane. No objects, no surfaces, no contact anywhere
+else on the body. `NativeMechanicalStream` takes `environment` as a three-valued
+enum (`free`/`supine`/`upright`) plus an optional bed material — the rendered
+scene reaches the physics not at all.
+
+Two consequences, and the second is the sharp one:
+
+- Nothing in a rendered environment can be touched, pushed, sat on or bumped
+  into. The world is a backdrop.
+- **Prone locomotion is unrepresentable.** A crawling body has no contact on
+  hands, knees, forearms, shins or torso, so it would pass through the floor
+  everywhere except its soles. Crawling is not untuned here, it is impossible,
+  and `fall_support_force_n` is a surface that ENDS a run rather than one that
+  can bear weight.
+
+There is machinery that is not being used: `surface_contact_manifest` and
+`surface_sensor_indices` are constructor arguments on the stream, and
+`ihm/assembly/surface_binding.py` exists. Whether extending contact is a
+configuration change or a build is not yet known.
+
 ---
 
 ## What this list is for
