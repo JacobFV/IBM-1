@@ -86,6 +86,30 @@ window.IBMBrain = (function () {
   const centroid = (idx) => { const c = [0, 0, 0]; idx.forEach((i) => { c[0] += G.nodes[i].p[0]; c[1] += G.nodes[i].p[1]; c[2] += G.nodes[i].p[2]; }); return c.map((v) => v / (idx.length || 1)); };
 
   // ----------------------------------------------------------- shaders ----
+  // a traced route reads as its own two-colour ramp: red where the signal
+  // entered, purple where it leaves.  the stylesheet's input and output
+  // annotation hues are these same two -- pushed to it here, so there is one
+  // source for them -- and a label, its leader and the end of the route it
+  // points at are then the same colour.
+  const TRACE = { in: '#f5424d', out: '#a159fa' };
+  const glsl3 = (h) => `vec3(${hex(h).map((v) => v.toFixed(3)).join(', ')})`;
+  const TRACE_A = glsl3(TRACE.in), TRACE_B = glsl3(TRACE.out);
+  document.documentElement.style.setProperty('--trace-in', TRACE.in);
+  document.documentElement.style.setProperty('--trace-out', TRACE.out);
+  // `mono` drains the atlas colour out of the substrate, toward a cool grey of
+  // the same luminance, and dims what is not selected.  a materialization is
+  // viewed with it up: the anatomy stays legible as shape and brightness, and
+  // the only chroma left in the figure is the route through it.
+  // the grey is the colour's lightness, not its luminance: a saturated atlas
+  // blue weighs almost nothing luminously and would go black here, taking the
+  // anatomy with it.  lightness keeps every parcel as present as it was.
+  const MONO_FN = `
+    uniform float mono;
+    vec3 flatten(vec3 c){
+      float mx = max(c.r, max(c.g, c.b)), mn = min(c.r, min(c.g, c.b));
+      float y = mix(0.5 * (mx + mn), mx, 0.35);
+      return mix(c, vec3(y * 0.94, y * 0.96, y * 1.06), mono);
+    }`;
   const POINT_VS = `
     attribute float size; attribute float w; attribute vec3 color; attribute float f; attribute float u;
     varying vec3 vC; varying float vW; varying float vD; varying float vF; varying float vU; uniform float pr;
@@ -98,17 +122,20 @@ window.IBMBrain = (function () {
     }`;
   const POINT_FS = `
     varying vec3 vC; varying float vW; varying float vD; varying float vF; varying float vU; uniform float light;
-    vec3 traced(float u){ return mix(vec3(0.96, 0.26, 0.30), vec3(0.63, 0.35, 0.98), clamp(u, 0.0, 1.0)); }
+    ${MONO_FN}
+    vec3 traced(float u){ return mix(${TRACE_A}, ${TRACE_B}, clamp(u, 0.0, 1.0)); }
     void main(){
       vec2 q = gl_PointCoord - 0.5; float d = length(q);
       if (d > 0.5) discard;
       float w = clamp(vW, 0.0, 1.0);
       float a = smoothstep(0.5, 0.3, d);
       float lum = mix(0.28, 1.0, w);
-      vec3 dark = mix(vC * lum, vec3(1.0), 0.14 * w * (1.0 - smoothstep(0.0, 0.25, d)));
-      vec3 pale = mix(vC * mix(0.9, 0.72, w), vec3(0.55), 0.35 * (1.0 - w));
+      vec3 base = flatten(vC);
+      vec3 dark = mix(base * lum, vec3(1.0), 0.14 * w * (1.0 - smoothstep(0.0, 0.25, d)));
+      vec3 pale = mix(base * mix(0.9, 0.72, w), vec3(0.55), 0.35 * (1.0 - w));
       vec3 c = mix(dark, pale, light);
       float alpha = a * mix(mix(0.10, 0.28, light), 1.0, w) * mix(1.0, mix(0.45, 0.8, w), vD);
+      alpha *= mix(1.0, mix(0.58, 1.0, w), mono);   // the unselected context recedes with the colour
       float g = clamp(vF, 0.0, 1.0);
       c = mix(c, traced(vU), clamp(g * 2.2, 0.0, 1.0));   // the route reads as its own colour, not a tint
       alpha = max(alpha, a * clamp(g * 1.7, 0.0, 1.0) * 0.95);
@@ -121,10 +148,13 @@ window.IBMBrain = (function () {
       vD = clamp((-mv.z - 260.0) / 260.0, 0.0, 1.0); gl_Position = projectionMatrix * mv; }`;
   const LINE_FS = `
     varying vec3 vC; varying float vW; varying float vD; varying float vF; varying float vU; uniform float light;
+    ${MONO_FN}
     void main(){ float alpha = mix(mix(0.03, 0.06, light), mix(0.42, 0.55, light), vW) * mix(1.0, 0.4, vD);
-      vec3 c = mix(mix(vC, vec3(1.0), 0.15 * vW), vC * 0.6, light);
+      alpha *= mix(1.0, mix(0.55, 1.0, vW), mono);
+      vec3 base = flatten(vC);
+      vec3 c = mix(mix(base, vec3(1.0), 0.15 * vW), base * 0.6, light);
       float g = clamp(vF, 0.0, 1.0);
-      c = mix(c, mix(vec3(0.96, 0.26, 0.30), vec3(0.63, 0.35, 0.98), clamp(vU, 0.0, 1.0)), clamp(g * 2.2, 0.0, 1.0));
+      c = mix(c, mix(${TRACE_A}, ${TRACE_B}, clamp(vU, 0.0, 1.0)), clamp(g * 2.2, 0.0, 1.0));
       alpha = max(alpha, clamp(g * 1.7, 0.0, 1.0) * mix(0.9, 0.5, vD));
       gl_FragColor = vec4(c, alpha); }`;
   const SHEET_VS = `
@@ -133,13 +163,17 @@ window.IBMBrain = (function () {
       vD = clamp((-mv.z - 260.0) / 260.0, 0.0, 1.0); gl_Position = projectionMatrix * mv; }`;
   const SHEET_FS = `
     varying vec3 vC; varying float vW; varying float vD; uniform float base; uniform float light;
+    ${MONO_FN}
     void main(){ float alpha = base * mix(0.25, 1.0, vW) * mix(1.0, 0.5, vD);
-      vec3 c = mix(mix(vC, vec3(0.5, 0.55, 0.7), 0.25), mix(vC, vec3(0.35, 0.38, 0.45), 0.3), light);
+      alpha *= mix(1.0, mix(0.82, 1.0, vW), mono);
+      vec3 b = flatten(vC);
+      vec3 c = mix(mix(b, vec3(0.5, 0.55, 0.7), 0.25), mix(b, vec3(0.35, 0.38, 0.45), 0.3), light);
       gl_FragColor = vec4(c, alpha); }`;
 
   // ------------------------------------------------------------ scene ----
   function createScene(renderer, opts) {
     const light = { value: opts && opts.light ? 1 : 0 };
+    const mono = { value: 0 };   // one object, shared by every material in the scene
     const scene = new THREE.Scene();
     const pivot = new THREE.Group();
     scene.add(pivot);
@@ -163,7 +197,7 @@ window.IBMBrain = (function () {
     pgeo.setAttribute('w', new THREE.BufferAttribute(wGlow, 1));
     pgeo.setAttribute('f', new THREE.BufferAttribute(fGlow, 1));
     pgeo.setAttribute('u', new THREE.BufferAttribute(uGlow, 1));
-    const points = new THREE.Points(pgeo, new THREE.ShaderMaterial({ uniforms: { pr: { value: renderer.getPixelRatio() }, light }, vertexShader: POINT_VS, fragmentShader: POINT_FS, transparent: true, depthWrite: false }));
+    const points = new THREE.Points(pgeo, new THREE.ShaderMaterial({ uniforms: { pr: { value: renderer.getPixelRatio() }, light, mono }, vertexShader: POINT_VS, fragmentShader: POINT_FS, transparent: true, depthWrite: false }));
     points.renderOrder = 5;
 
     const lgeo = new THREE.BufferGeometry();
@@ -172,7 +206,7 @@ window.IBMBrain = (function () {
     lgeo.setAttribute('w', new THREE.BufferAttribute(ewGlow, 1));
     lgeo.setAttribute('f', new THREE.BufferAttribute(efGlow, 1));
     lgeo.setAttribute('u', new THREE.BufferAttribute(euGlow, 1));
-    const lines = new THREE.LineSegments(lgeo, new THREE.ShaderMaterial({ uniforms: { light }, vertexShader: LINE_VS, fragmentShader: LINE_FS, transparent: true, depthWrite: false }));
+    const lines = new THREE.LineSegments(lgeo, new THREE.ShaderMaterial({ uniforms: { light, mono }, vertexShader: LINE_VS, fragmentShader: LINE_FS, transparent: true, depthWrite: false }));
     lines.renderOrder = 4;
 
     // the cortical sheet: the same triangulation the edges came from, as a translucent surface
@@ -181,7 +215,7 @@ window.IBMBrain = (function () {
     cgeo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     cgeo.setAttribute('w', new THREE.BufferAttribute(wCur, 1));
     cgeo.setIndex(new THREE.BufferAttribute(cortexIndex, 1));
-    const sheet = new THREE.Mesh(cgeo, new THREE.ShaderMaterial({ uniforms: { base: { value: 0.13 }, light }, vertexShader: SHEET_VS, fragmentShader: SHEET_FS, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    const sheet = new THREE.Mesh(cgeo, new THREE.ShaderMaterial({ uniforms: { base: { value: 0.13 }, light, mono }, vertexShader: SHEET_VS, fragmentShader: SHEET_FS, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
     sheet.renderOrder = 2;
 
     // subcortical structures as convex volumes
@@ -189,7 +223,7 @@ window.IBMBrain = (function () {
     hgeo.setAttribute('position', new THREE.BufferAttribute(hpos, 3));
     hgeo.setAttribute('color', new THREE.BufferAttribute(hcol, 3));
     hgeo.setAttribute('w', new THREE.BufferAttribute(hw, 1));
-    const hulls = new THREE.Mesh(hgeo, new THREE.ShaderMaterial({ uniforms: { base: { value: 0.2 }, light }, vertexShader: SHEET_VS, fragmentShader: SHEET_FS, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    const hulls = new THREE.Mesh(hgeo, new THREE.ShaderMaterial({ uniforms: { base: { value: 0.2 }, light, mono }, vertexShader: SHEET_VS, fragmentShader: SHEET_FS, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
     hulls.renderOrder = 3;
 
     // the scalp: the subject's outer-skin BEM surface, as a ghost of the head
@@ -231,7 +265,8 @@ window.IBMBrain = (function () {
       pgeo.attributes.u.needsUpdate = true; lgeo.attributes.u.needsUpdate = true;
     }
     function setScalp(v) { scalp.material.opacity = 0.05 * v; scalpWire.material.opacity = 0.07 * v; }
-    return { scene, pivot, wCur, syncDerived, setScalp, applyGlow };
+    function setMono(v) { mono.value = v; }
+    return { scene, pivot, wCur, syncDerived, setScalp, setMono, applyGlow };
   }
 
   // ------------------------------------------------- weights per mode ----
@@ -390,6 +425,11 @@ window.IBMBrain = (function () {
       const r = Math.max(...targets.map((q) => Math.hypot(q[0] - tc[0], q[1] - tc[1])));
       const dx = labelPt[0] - tc[0], dy = labelPt[1] - tc[1], L = Math.hypot(dx, dy) || 1;
       const hub = [tc[0] + dx / L * (r * 0.6 + 30), tc[1] + dy / L * (r * 0.6 + 30)];
+      // the hub keeps clear of the label it leaves from, or its branches cross the text
+      const off = 26;
+      if (side === 'l') hub[0] = Math.max(hub[0], labelPt[0] + off);
+      else if (side === 'r') hub[0] = Math.min(hub[0], labelPt[0] - off);
+      else if (side === 'b') hub[1] = Math.min(hub[1], labelPt[1] - off);
       a.svg.trunk.setAttribute('d', curve(labelPt[0], labelPt[1], hub[0], hub[1], bulge, away, a));
       a.svg.branches.setAttribute('d', targets.map((q) => curve(hub[0], hub[1], q[0], q[1], 0.12, away)).join(' '));
       a.svg.branches.setAttribute('marker-end', 'url(#arrow-small)');
@@ -562,15 +602,27 @@ window.IBMBrain = (function () {
     const pulses = makePulses(S);
     S.wCur.set(rest); S.syncDerived();
     const state = { selected: null, hover: null };
+    // while a materialization is up the atlas colour drains out of the substrate,
+    // so the traced route is the only chroma left in the figure.  it eases in
+    // over about the same second the lit set takes to bloom.
+    const MONO_ON = 0.86;
+    let mono = 0, monoTo = 0;
     const orbit = { az: -0.65, el: 0.32, dist: 430, tAz: -0.65, tEl: 0.32, tDist: 430, vAz: 0, vEl: 0, dragging: false, lastX: 0, lastY: 0, idle: 0, glide: 0.12 };
     let W = 1, H = 1, project = () => [0, 0, 0];
 
     function resize() {
-      W = hero.clientWidth; H = hero.clientHeight;
+      W = hero.clientWidth;
+      // the ring needs a wide, landscape hero: forty labels around an ellipse
+      // collide below about 900px, and on any portrait screen
+      const compact = W < 900 || W < hero.clientHeight;
+      hero.classList.toggle('compact', compact);
+      // in the compact layout the canvas is a band above the strip, not the
+      // whole hero: size the buffer to what is drawn, or the brain squashes
+      H = (compact && canvas.clientHeight) || hero.clientHeight;
       renderer.setSize(W, H, false);
       camera.aspect = W / H; camera.updateProjectionMatrix();
       const fit = Math.max(1, 1.15 / Math.min(1, W / H));
-      orbit.tDist = (state.selected ? 470 : 430) * fit * (W < 720 ? 1.15 : 1);
+      orbit.tDist = (state.selected ? 470 : 430) * fit;
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
       project = projector(camera, W, H);
       layoutRing();
@@ -604,9 +656,7 @@ window.IBMBrain = (function () {
     });
     const hoverAnn = { svg: makeAnnotationSVG(svg, 'hover-ann'), anchor: cx, _nodes: [] };
     function layoutRing() {
-      const compact = W < 760;
-      hero.classList.toggle('compact', compact);
-      if (compact) return;
+      if (hero.classList.contains('compact')) return;
       const n = ringItems.length, rx = Math.min(W * 0.5 - 200, H * 0.95), ry = H * 0.5 - 70, cy = H * 0.5, cxp = W * 0.5;
       const K = 2.4, S_ = 720, cum = [0];
       for (let k = 1; k <= S_; k++) { const a0 = (k - 1) / S_ * Math.PI * 2, a1 = k / S_ * Math.PI * 2; cum.push(cum[k - 1] + Math.hypot(rx * (Math.cos(a1) - Math.cos(a0)) * K, ry * (Math.sin(a1) - Math.sin(a0)))); }
@@ -678,6 +728,7 @@ window.IBMBrain = (function () {
       state.selected = id; state.hover = null;
       hero.classList.add('has-selection'); hero.classList.remove('is-hovering');
       hoverAnn._nodes = []; hoverAnn.item = null;
+      monoTo = MONO_ON;
       anim.start(weightsFor(id, false), { origin: m.focus_anchor, base: 500, spread: 900, baseDelay: 350 });
       ringItems.forEach((it) => it.el.classList.toggle('is-active', it.m.id === id));
       selTitle.textContent = m.id.replace(/_/g, ' ');
@@ -694,6 +745,7 @@ window.IBMBrain = (function () {
       const m = byId[state.selected];
       state.selected = null;
       pulses.set(null);
+      monoTo = 0;
       hero.classList.remove('has-selection');
       anim.start(weightsFor(null), { origin: m.focus_anchor, base: 450, spread: 650, baseDelay: 120, inward: false });
       ringItems.forEach((it) => it.el.classList.remove('is-active', 'is-hover'));
@@ -759,6 +811,7 @@ window.IBMBrain = (function () {
       window.IBM_ZOOM = 430 / orbit.dist;
       S.pivot.updateMatrixWorld();
       if (anim.tick(now)) S.syncDerived();
+      if (Math.abs(monoTo - mono) > 0.002) { mono += (monoTo - mono) * (reduceMotion ? 1 : 0.05); S.setMono(mono); }
       if (pulses.active || now < 100) pulses.tick(now, S);
       renderer.render(S.scene, camera);
       drawLeaders();
@@ -804,14 +857,17 @@ window.IBMBrain = (function () {
     fig.style.setProperty('--snap-h', H + 'px');
     const pr = snapRenderer.getPixelRatio();
     v.out.width = W * pr; v.out.height = H * pr; v.out.style.width = W + 'px'; v.out.style.height = H + 'px';
-    v.svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     v.camera = cameraFor(W / H);
-    v.orbit.dist = (spec.dist || 430) * Math.max(1, 1.15 / Math.min(1, W / H));
+    v.orbit.dist = (spec.dist || 430) * Math.max(1, 1.15 / Math.min(1, W / H)) * (W < 520 ? 0.92 : 1);
     // labels: placed once per layout from the spec's own view, leaders follow the orbit
     v.svg.querySelectorAll('g').forEach((g) => g.remove()); v.labels.innerHTML = '';
     v.items = spec.annotations ? spec.annotations() : [];
     placeCamera(v.camera, spec.az == null ? -0.65 : spec.az, spec.el == null ? 0.3 : spec.el, v.orbit.dist);
     const project = projector(v.camera, W, H);
+    // a narrow figure has no flank to put labels in: they go in two columns
+    // under the drawing and the leader layer is stretched to cover both
+    const narrow = W < 520;
+    v.narrow = narrow; fig.classList.toggle('narrow', narrow);
     const left = [], right = [];
     v.items.forEach((a) => { const q = project(a.anchor); a._px = q; (a.side ? a.side === 'l' : q[0] < W / 2) ? left.push(a) : right.push(a); });
     const place = (list, side) => {
@@ -821,13 +877,16 @@ window.IBMBrain = (function () {
         const el = document.createElement('div');
         el.className = 'ann ann-snap ann-' + (a.cls || 'note'); el.dataset.side = side;
         el.innerHTML = `<span class="ann-label">${a.label}</span>` + (a.sub ? `<span class="ann-id">${a.sub}</span>` : '');
-        el.style.top = Math.round(gap * (k + 1)) + 'px';
+        if (!narrow) el.style.top = Math.round(gap * (k + 1)) + 'px';
         v.labels.appendChild(el);
         a.svg = makeAnnotationSVG(v.svg, 'ann-' + (a.cls || 'note'));
         a.el = el; a._side = side;
       });
     };
     place(left, 'l'); place(right, 'r');
+    const SH = narrow ? H + v.labels.offsetHeight : H;
+    v.svg.setAttribute('viewBox', `0 0 ${W} ${SH}`);
+    v.svg.style.height = narrow ? SH + 'px' : '';
     return true;
   }
   function renderView(v) {
@@ -838,6 +897,7 @@ window.IBMBrain = (function () {
     snapRenderer.setSize(v.W, v.H, false);
     S.wCur.set(v.weights); S.syncDerived();
     S.setScalp(v.spec.scalp == null ? 1 : v.spec.scalp);
+    S.setMono(v.spec.mono || 0);   // scenes are shared between figures: always say
     placeCamera(v.camera, v.orbit.az, v.orbit.el, v.orbit.dist);
     S.pivot.updateMatrixWorld();
     snapRenderer.render(S.scene, v.camera);
@@ -847,10 +907,25 @@ window.IBMBrain = (function () {
     const project = projector(v.camera, v.W, v.H);
     const ctx = { project, w: v.W, h: v.H, centre: [v.W / 2, v.H / 2] };
     const f = v.fig.getBoundingClientRect();
+    const rows = { l: 0, r: 0 };
     v.items.forEach((a) => {
       const r = a.el.getBoundingClientRect();
-      const pt = a._side === 'l' ? [r.right - f.left + 4, r.top - f.top + r.height / 2] : [r.left - f.left - 4, r.top - f.top + r.height / 2];
-      drawAnnotation(a, pt, a._side, ctx);
+      const line = a.el.firstElementChild ? a.el.firstElementChild.getBoundingClientRect() : r;
+      const y = line.top - f.top + line.height / 2;
+      if (!v.narrow) {
+        drawAnnotation(a, a._side === 'l' ? [line.right - f.left + 4, y] : [line.left - f.left - 4, y], a._side, ctx);
+        return;
+      }
+      // under a narrow figure the leader runs out to the gutter on its label's
+      // side, up the gutter past the other labels, and only then into the
+      // drawing -- so no leader crosses another label's text
+      const k = rows[a._side]++;
+      const sx = a._side === 'l' ? 3 + 4 * k : v.W - 3 - 4 * k;
+      const ax = a._side === 'l' ? r.left - f.left - 4 : r.right - f.left + 4;
+      const port = [sx, v.H - 6];
+      drawAnnotation(a, port, 'b', ctx);
+      const d = a.svg.trunk.getAttribute('d') || '';
+      a.svg.trunk.setAttribute('d', `M${ax.toFixed(1)},${y.toFixed(1)} L${sx},${y.toFixed(1)} L${sx},${port[1]} ` + d.replace(/^M[^ ]* /, ''));
     });
     v.fig.classList.add('rendered');
   }
@@ -906,6 +981,7 @@ window.IBMBrain = (function () {
     const rethemed = () => { views.forEach((v) => { v.dirty = true; }); };
     let t = null;
     window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(redo, 200); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(redo);
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', rethemed);
     new MutationObserver(rethemed).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     requestAnimationFrame(viewsLoop);
