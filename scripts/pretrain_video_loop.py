@@ -1943,6 +1943,29 @@ def main():
                          "horizon forces the dynamics to do work (STATE.md 7d)")
     ap.add_argument("--audio-frames", default="")
     ap.add_argument("--long-range", type=float, default=0.25)
+    # ---- the sheet and its long-range wiring (docs/DISCONNECTS.md 2 and 3) ----
+    ap.add_argument("--geometry", default=GEOMETRY, choices=("surface", "sphere"),
+                    help="surface: fsaverage white-surface vertices with a "
+                         "Desikan-Killiany atlas.  sphere: the area-matched "
+                         "spherical proxy every checkpoint before this was "
+                         "trained on, kept so the change can be MEASURED "
+                         "against what it replaces rather than asserted over it")
+    ap.add_argument("--long-topology", default="random", choices=("random", "tract"),
+                    help="where the long-range partners go.  random is the "
+                         "status quo and the control; tract draws them from a "
+                         "1064-subject HCP group connectome.  matched by "
+                         "construction on edge count and row L1")
+    ap.add_argument("--tract-threshold", type=float, default=0.5,
+                    help="edge-existence consensus: the fraction of subjects an "
+                         "edge must appear in.  the card calls this the "
+                         "source's one honest property; sweep it")
+    ap.add_argument("--tract-delays", action="store_true",
+                    help="carry the declared conduction delays.  they only bite "
+                         "at a dt that resolves them -- the median declared "
+                         "delay is 3.84 ms and the maximum 10.2 ms")
+    ap.add_argument("--delay-shuffle", action="store_true",
+                    help="delay-matched control: same multiset, random edges")
+    ap.add_argument("--graph-seed", type=int, default=0)
     ap.add_argument("--upload-every", type=int, default=1000)
     ap.add_argument("--ckpt", default="", help="where to save weights")
     ap.add_argument("--out", default="out/pretrain_video.json")
@@ -1955,7 +1978,12 @@ def main():
     print(f"frames {frames.shape} from {a.frames}", flush=True)
 
     coch = np.load(a.audio_frames, mmap_mode="r") if a.audio_frames else None
-    dyn = CorticalDynamics(a.sites, a.embed, a.k, dev, long_range=a.long_range).to(dev)
+    dyn = CorticalDynamics(
+        a.sites, a.embed, a.k, dev, long_range=a.long_range,
+        geometry=a.geometry, graph_seed=a.graph_seed,
+        long_topology=a.long_topology, tract_threshold=a.tract_threshold,
+        tract_delays=a.tract_delays, delay_shuffle=a.delay_shuffle).to(dev)
+    print(f"sheet: {geometry_note(dyn)}", flush=True)
     neural = np.load(a.neural, mmap_mode="r") if a.neural else None
     # robust rescaling, applied at load so the stored array stays untouched.
     # the array was standardized by a per-run std that MEG artifacts dominate, so
