@@ -186,7 +186,13 @@ def main() -> None:
                 flag = "  <- best, checkpointed"
                 os.makedirs(os.path.dirname(a.ckpt) or ".", exist_ok=True)
                 torch.save({"model": model.state_dict(), "step": step,
-                            "top1": top1, "top1_sd": top1_sd, "config": vars(a)},
+                            "top1": top1, "top1_sd": top1_sd, "config": vars(a),
+                            # the SHEET, read off the object rather than typed.
+                            # ckpt/visual_contrastive_v2.json records
+                            # "fsaverage-sampled sheet" for a run that was a
+                            # sphere, and a sidecar asserting the wrong carrier
+                            # makes every number in it about the wrong object.
+                            "geometry_note": P.geometry_note(dyn)},
                            a.ckpt)
             print(f"{step:5d}  loss {float(loss):.4f}  top-1 {100*top1:5.2f}% "
                   f"+/-{100*top1_sd:.2f}  ({top1*a.pool:.1f}x chance)  "

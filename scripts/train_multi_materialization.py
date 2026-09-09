@@ -162,7 +162,7 @@ def main():
                                 viability_weight=a.viability_weight, step=step)
             torch.save({"dyn": dyn.state_dict(), "av": av.state_dict(),
                         "paired": pr.state_dict(), "step": step, "name": str(nm)}, a.ckpt)
-            meta = sidecar(nm, geometry="spherical shell, area-matched to 202,437 mm^2",
+            meta = sidecar(nm, geometry=P.geometry_note(dyn),
                            n_params=shared + head_av + head_pr, n_assoc=dyn.embed.numel(),
                            metrics=log["steps"][-1], config=vars(a))
             try:

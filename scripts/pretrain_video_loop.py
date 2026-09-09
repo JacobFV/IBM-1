@@ -674,6 +674,32 @@ class CorticalDynamics(nn.Module):
         return (torch.full_like(z, self.e_rest), z, z.clone(), z.clone())
 
 
+def geometry_note(dyn) -> str:
+    """what sheet this kernel is ACTUALLY on, for a checkpoint sidecar.
+
+    written as a function reading the object rather than as a string literal at
+    each call site, because a literal is what went wrong:
+    `ckpt/visual_contrastive_v2.json` records `"geometry": "fsaverage-sampled
+    sheet"` for a run that was a spherical shell, and a sidecar that asserts the
+    wrong carrier makes every number in it about the wrong object.
+    """
+    if is_spherical_proxy(dyn.pos):
+        return (f"spherical PROXY shell, radius {SPHERE_RADIUS_MM:.1f} mm, "
+                f"area-matched to {SPHERE_AREA_MM2:,.0f} mm^2 -- NOT a cortical "
+                f"surface and NOT an atlas; regions are coordinate cuts")
+    note = ("fsaverage white surface, area-weighted vertex sample, medial wall "
+            "excluded; regions are Desikan-Killiany ?h.aparc.annot")
+    topo = getattr(dyn, "long_topology", "random")
+    note += f"; long-range partners {topo}"
+    if topo == "tract" and hasattr(dyn, "tract_note"):
+        note += (f" (braingraph HCP consensus "
+                 f"{dyn.tract_note.get('threshold')}, "
+                 f"{dyn.tract_note.get('n_subjects')} subjects)")
+    if getattr(dyn, "tract_delays", False):
+        note += "; conduction delays carried per edge"
+    return note
+
+
 def dynamics_from_state_dict(sd, device, prefix: str = "dyn.", **kw):
     """rebuild a `CorticalDynamics` whose graph MATCHES a saved one, then load it.
 
@@ -2108,8 +2134,8 @@ def main():
             # not a checkpoint.
             torch.save({"model": model.state_dict(), "step": step,
                         "name": str(nm), "config": vars(a)}, a.ckpt)
-            meta = sidecar(nm, geometry="spherical shell, area-matched to the measured "
-                                        "202,437 mm^2 white surface",
+            meta = sidecar(nm, geometry=geometry_note(model.dyn if hasattr(model, "dyn")
+                                                      else dyn),
                            n_params=n_tot, n_assoc=n_assoc,
                            metrics=log["steps"][-1], config=vars(a))
             try:
