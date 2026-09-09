@@ -371,6 +371,32 @@ configuration change or a build is not yet known.
 
 ---
 
+## 10. Two hormone field groups have no organ, and the third is running the wrong sex
+
+Measured by `scripts/audit_hormone_axis_anatomy.py` in IHM-1, over the 4,000
+segment-bound entities:
+
+| declared field group | supporting entities |
+|---|---|
+| `reproductive.*` | **11**, all bound to `pelvis`, all male |
+| `uterine.*` (`endometrial_thickness`, `contractile_pressure`) | **0** |
+| `placental.*` (`blood_flow`, `oxygen_transfer`) | **0** |
+
+`ihm/fields/systems.py` declares all three alike, so in the inventory a group
+with an organ and a group without one look the same. And the model that does run
+— the hash-pinned Schlosser & Selgrade gonadotropin equations in
+`ihm/native/reproductive.py` — is a **menstrual cycle** model, executing beside a
+body with testes and a prostate, reachable only as a standalone trajectory
+through `/api/reproductive` and coupled to nothing.
+
+The audit's known-answer check also failed, which is the part that matters
+downstream: the gonad meshes measure **6.7 and 6.8 mL** against a 12–30 mL adult
+clinical reference, and the prostate **11.6 mL** against 15–25. The one coupling
+this body could support — a testosterone axis on a real testis — would attach to
+a testis half the expected size. That is a data gap in a single-donor atlas whose
+organ volumes have never been calibrated, and it is on the record before anything
+is scaled by it rather than after.
+
 ## What this list is for
 
 Row 1 is what remains load-bearing for what the programme is trying to
