@@ -37,6 +37,7 @@ pattern is worth more than any single row.
 | 20 | the cortex learns motor control -- body_stance went -41 to **+0.42** skill once the readout could see the sheet | trained and permuted kernels give **identical MSE to 8 decimals**. the whole-sheet readout samples the driven region, and those samples carry **3,134x** the variance of the rest -- the decoder reads the input, not the cortex. the architecture has no configuration where the dynamics both receive the signal and are necessary | the four-arm ablation, which was already running when I announced the result |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
+| 21 | the sheet does not conduct because `tanh(2*sim)` is saturated -- unsaturating the squashing function would restore magnitude selectivity and let the kernel build a strong specific pathway | the edges ARE pinned (mean \|tanh(2*sim)\| = 0.895, 71.4% of 1.44M edges above 0.9) but the underlying cosine similarities have no dynamic range either, so lowering the slope scales every edge down together and selects nothing. row L1/max moves 45.2 -> 41.0 as the slope goes 2.00 -> 0.25, against 48 for perfectly flat. **saturation was the symptom; the flat \|sim\| distribution is the disease**, and no reparameterisation of tanh reaches it -- only an explicit structural selection (top-m) does, which buys 11.9x at zero change in row gain | measuring the row L1/max flatness across a slope sweep, instead of reasoning from tanh(2) = 0.964 to "therefore no magnitude information" |
 
 **the shape they share:** a quantity computed correctly and then compared against
 the wrong thing — the wrong population, the wrong units, the wrong split, the
@@ -45,6 +46,91 @@ caught by a measurement that could have been run first, and several by one I had
 already written.
 
 ---
+
+## 2026-09-09 (morning) -- the sheet superposes; it does not integrate
+
+The somato-motor materialization needs sight, hearing and touch to converge
+somewhere precentral can read. Measured on the 16-objective kernel at step
+32,500, 30,000 sites, driving each modality at its declared entry port and
+reading **precentral only** (`scripts/measure_multimodal_convergence.py` refuses
+to run if any entry port intersects the readout):
+
+| modality | entry | at own port | at precentral | transport |
+|---|---|---|---|---|
+| sight | occipital | 3.270 | 1.559e-05 | 4.77e-06 |
+| hearing | temporal | 3.274 | 2.468e-05 | 7.54e-06 |
+| touch | postcentral | 3.280 | 3.136e-05 | 9.56e-06 |
+
+~100,000x attenuation. The ordering is the one anatomy predicts -- touch enters
+the strip adjacent to the readout and transports twice as well as vision from
+the far pole -- which is some evidence the measurement is doing what it claims.
+
+**The stronger result is the second one.** Driving all three gives precentral
+variance 7.170e-05 against a linear-sum-of-the-parts null of 7.169e-05: a ratio
+of **1.0002**. The sheet is a pure superposition device at this operating point.
+Whatever arrives does not interact, so there is no cross-modal computation
+anywhere on it. Integration is not weak here, it is absent.
+
+Both gates print their known answers: undriven precentral variance is exactly
+0.000e+00, and reading at a driven port recovers 3.270.
+
+**The cause, from two directions that agree.** Per-hop transfer is a uniform
+~1/300 amplitude loss at every hop, with linear theory landing within 1% of the
+measurement (per-edge one-hop gain 3.520e-03 predicted, 3.484e-03 measured). The
+arriving signal decomposes as (row gain) x (fraction of the row's weight mass on
+the source region) = 0.169 x (2.4/48) = 8.5e-3 against 1.08e-2 measured for a
+coherent region drive. The weight mass is spread flat over 48 edges, so only 5%
+of it lands where the signal comes from.
+
+Topology was never the problem: postcentral -> precentral is **one** hop, and so
+is 75% of the sheet from any 20% region.
+
+Raising the gain is not the fix and is actively counterproductive -- scaling all
+edges or `w_assoc` past ~2x drives the resting rate onto the sigmoid's upper rail
+(8.06 Hz at scale 1, 84.96 at scale 4, pinned at 87.3 beyond), `dr/dv` collapses,
+and arrival FALLS 400x by scale 32. That is the earlier near-critical collapse at
+75 Hz, with the mechanism now visible: not chaos, the fixed point climbing to
+saturation.
+
+Concentration is the fix. Keeping one long-range edge per site with the row L1
+preserved exactly buys **11.9x at zero change in row gain**; with a long-range
+gain of 8 it reaches 1030x in variance (32x in amplitude). Superadditivity does
+NOT move (1.0014), but that criterion was badly posed -- at the drive amplitude
+used, the perturbation reaching precentral is ~0.1 mV against a sigmoid curvature
+scale of 4 mV, so the nonlinearity cannot engage regardless of transport. The
+honest joint target is stated in physiological units: a physiological drive at
+the entry port must produce a millivolt-scale perturbation at the readout.
+
+## 2026-09-09 (morning) -- the association graph was never in the artifact
+
+12 of every site's 48 edges are long-range partners drawn by `torch.randint`
+from the **global** RNG inside `CorticalDynamics.__init__`. The learned factor is
+sigma(<e_i, e_j>) over those specific pairs, so a different draw makes every
+long-range weight meaningless -- a quarter of the connectivity, discarded without
+an error.
+
+Measured, so the scope is not a guess: seed 0 on the **same device** reproduces
+the draw exactly (coincidence 1.00000 against a chance of 0.000033 at 30,000
+sites); seed 0 on cpu against cuda gives unrelated graphs (0.00062 against a
+chance of 0.00050).
+
+Most consumers were fine, by care or by luck: anything using `load_state_dict`
+gets `idx` back as a registered buffer, and `ablate_body_kernel.py` seeds with 0
+on the training device. **I suspected this had contaminated the permuted-kernel
+motor result (ledger row 20) and tested it: it had not.** That finding stands as
+measured.
+
+Two places were wrong. `materialize.py` constructed with no seed at all, on
+"cpu", against a kernel trained with seed 0 on cuda -- wrong twice over. And
+`ckpt/ibm1_implicit.pt`, the published fused kernel, carries **no graph at all**,
+so every materialization from the flagship artifact has been running a quarter of
+its connectivity at random. The artifact now saves `dyn.idx`/`geo`/`pos`, and
+`materialize.py` restores them or says loudly that it could not.
+
+Still open, and recorded because it will bite an ablation: `embody.py`'s `--seed`
+is documented as "matched initialization for ablations" and changing it redraws
+the **topology** as well as the weights, so a seed sweep silently varies two
+things.
 
 ## 2026-09-09 -- the TCT loop runs continuously; it is a relay with feedback, not a closed loop
 
