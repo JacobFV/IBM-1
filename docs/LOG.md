@@ -66,6 +66,12 @@ independent evaluations.  a sign test gives p = 0.031, and the mean deficit is
 is a different quantity from one marginal gap, and this project has been burned
 enough by reading a single comparison that the distinction is worth stating.
 
+at step 1,500 the 8,192 arm sits at 15.12%, level with 512 (15.12%) and 2,048
+(15.75%) and above 128 (13.75%) -- so the large arm is not behind where it has
+been measured, and the "128 is lowest" ordering holds at 1,500 as well as at
+2,000-4,000.  whether 8,192 falls off by step 4,000, as the 30,000 and 150,000
+runs did, is not yet measured.
+
 a caveat that only became visible once the 8,192 arm produced evaluations: **at
 step 1,000 all four resolutions are level** -- 128 at 9.50%, 512 at 10.56%, 2,048
 at 9.56%, 8,192 at 9.69%.  the resolutions do not differ early; they separate
