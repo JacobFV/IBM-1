@@ -1,0 +1,7 @@
+train 28 films (3,391,879 frames, 37.7 h) | held out 2 films (2.51 h)
+negatives are other positions IN THE SAME FILM; chance = 1.56%
+trainable 13,479,020 (3,840,000 association)
+/home/brandonin/Documents/IBM-1/scripts/train_video_contrastive.py:166: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"{step:6d}  loss {float(loss):.4f}  top-1 {100*m:5.2f}% +/-{100*sd_:.2f}  "
+     0  loss 4.1609  top-1  1.56% +/-0.00  persistence 83.79%  chance 1.56%  r_eff  7.72      2s  <- best

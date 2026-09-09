@@ -1,0 +1,138 @@
+train 5 films, 504,520 frames (5.61 h)
+    BigBoyRidesAgain_frames.npy
+    rog561b_netzero_310_frames.npy
+    rog561b_netzero_317_frames.npy
+    rog56_mail_614_frames.npy
+    rog56_mail_922_frames.npy
+HELD-OUT 2 films, 183,905 frames (2.04 h)
+    rog56_mail_927_frames.npy
+    rough_riding_ranger_frames.npy
+
+held-out baselines: zero 0.29632  PERSISTENCE 0.04399  (the one to beat)
+
+params 10,297,838 (3,840,000 association)
+/home/brandonin/Documents/IBM-1/scripts/train_video_multifilm.py:131: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"{step:6d}  train {float(loss):.5f}  held {held:.5f}  "
+     0  train 0.40537  held 0.31628  persist 0.02607  SKILL -11.1308  r_eff 13.92      1s  <- best
+   250  train 0.18221  held 0.15093  persist 0.05445  SKILL -1.7716  r_eff  1.35     47s  <- best
+   500  train 0.15050  held 0.13425  persist 0.03952  SKILL -2.3972  r_eff  1.38     93s
+   750  train 0.14290  held 0.13222  persist 0.04461  SKILL -1.9638  r_eff  1.48    139s
+  1000  train 0.15543  held 0.12242  persist 0.04549  SKILL -1.6909  r_eff  1.85    185s  <- best
+  1250  train 0.17025  held 0.13877  persist 0.07050  SKILL -0.9683  r_eff  2.68    230s  <- best
+  1500  train 0.14956  held 0.11894  persist 0.04830  SKILL -1.4627  r_eff  2.52    276s
+  1750  train 0.19804  held 0.12880  persist 0.05842  SKILL -1.2048  r_eff  2.30    321s
+  2000  train 0.13840  held 0.12314  persist 0.04831  SKILL -1.5493  r_eff  2.48    367s
+  2250  train 0.12184  held 0.12796  persist 0.04638  SKILL -1.7589  r_eff  2.59    412s
+  2500  train 0.13944  held 0.11979  persist 0.05480  SKILL -1.1858  r_eff  2.67    457s
+  2750  train 0.13744  held 0.11589  persist 0.04152  SKILL -1.7914  r_eff  2.45    503s
+  3000  train 0.10738  held 0.11701  persist 0.04464  SKILL -1.6209  r_eff  2.70    548s
+  3250  train 0.17157  held 0.11802  persist 0.05106  SKILL -1.3113  r_eff  2.89    594s
+  3500  train 0.14662  held 0.11331  persist 0.04776  SKILL -1.3727  r_eff  2.40    639s
+  3750  train 0.08278  held 0.11601  persist 0.04404  SKILL -1.6345  r_eff  3.03    684s
+  4000  train 0.12045  held 0.11821  persist 0.04363  SKILL -1.7095  r_eff  2.79    729s
+  4250  train 0.14642  held 0.11332  persist 0.05233  SKILL -1.1657  r_eff  3.01    775s
+  4500  train 0.14368  held 0.11726  persist 0.04930  SKILL -1.3784  r_eff  3.26    820s
+  4750  train 0.15037  held 0.10971  persist 0.04365  SKILL -1.5136  r_eff  3.56    865s
+  5000  train 0.11301  held 0.11416  persist 0.04443  SKILL -1.5697  r_eff  3.83    910s
+  5250  train 0.10928  held 0.10184  persist 0.03615  SKILL -1.8174  r_eff  4.24    956s
+  5500  train 0.14946  held 0.10996  persist 0.04718  SKILL -1.3304  r_eff  4.35   1001s
+  5750  train 0.14177  held 0.10826  persist 0.03994  SKILL -1.7106  r_eff  4.16   1046s
+  6000  train 0.15074  held 0.11387  persist 0.04571  SKILL -1.4910  r_eff  4.10   1091s
+  6250  train 0.13165  held 0.10596  persist 0.04208  SKILL -1.5181  r_eff  3.85   1137s
+  6500  train 0.13038  held 0.11291  persist 0.04486  SKILL -1.5171  r_eff  3.90   1182s
+  6750  train 0.12723  held 0.11567  persist 0.04304  SKILL -1.6875  r_eff  4.30   1227s
+  7000  train 0.10968  held 0.10292  persist 0.04591  SKILL -1.2419  r_eff  4.15   1272s
+  7250  train 0.10077  held 0.10614  persist 0.04719  SKILL -1.2493  r_eff  3.78   1317s
+  7500  train 0.10645  held 0.10791  persist 0.04850  SKILL -1.2250  r_eff  3.90   1362s
+  7750  train 0.11124  held 0.10664  persist 0.04973  SKILL -1.1445  r_eff  4.07   1407s
+  8000  train 0.11434  held 0.10300  persist 0.03860  SKILL -1.6680  r_eff  4.15   1453s
+  8250  train 0.09710  held 0.10658  persist 0.05017  SKILL -1.1243  r_eff  4.07   1498s
+  8500  train 0.09549  held 0.10568  persist 0.04336  SKILL -1.4371  r_eff  4.40   1543s
+  8750  train 0.11945  held 0.11395  persist 0.05300  SKILL -1.1501  r_eff  4.40   1589s
+  9000  train 0.13742  held 0.10408  persist 0.04902  SKILL -1.1231  r_eff  4.68   1634s
+  9250  train 0.13437  held 0.10961  persist 0.05097  SKILL -1.1503  r_eff  4.29   1679s
+  9500  train 0.08810  held 0.11126  persist 0.04572  SKILL -1.4335  r_eff  5.05   1724s
+  9750  train 0.11021  held 0.09927  persist 0.04301  SKILL -1.3079  r_eff  5.40   1769s
+ 10000  train 0.13497  held 0.10727  persist 0.04483  SKILL -1.3928  r_eff  5.37   1815s
+ 10250  train 0.14358  held 0.10599  persist 0.04318  SKILL -1.4548  r_eff  5.15   1860s
+ 10500  train 0.07777  held 0.10167  persist 0.04465  SKILL -1.2769  r_eff  5.18   1905s
+ 10750  train 0.13046  held 0.09999  persist 0.04047  SKILL -1.4709  r_eff  5.52   1950s
+ 11000  train 0.09937  held 0.10172  persist 0.04635  SKILL -1.1949  r_eff  5.16   1995s
+ 11250  train 0.11836  held 0.09941  persist 0.04451  SKILL -1.2336  r_eff  5.24   2041s
+ 11500  train 0.14005  held 0.10136  persist 0.04339  SKILL -1.3362  r_eff  5.56   2086s
+ 11750  train 0.11368  held 0.09983  persist 0.03877  SKILL -1.5751  r_eff  4.89   2131s
+ 12000  train 0.10288  held 0.10113  persist 0.04480  SKILL -1.2574  r_eff  4.78   2176s
+ 12250  train 0.09157  held 0.11144  persist 0.04792  SKILL -1.3254  r_eff  4.61   2222s
+ 12500  train 0.11696  held 0.10282  persist 0.04260  SKILL -1.4136  r_eff  5.18   2267s
+ 12750  train 0.07568  held 0.10505  persist 0.05173  SKILL -1.0308  r_eff  5.31   2313s
+ 13000  train 0.13084  held 0.09469  persist 0.04090  SKILL -1.3152  r_eff  5.44   2359s
+ 13250  train 0.11082  held 0.10052  persist 0.03610  SKILL -1.7847  r_eff  5.02   2404s
+ 13500  train 0.09470  held 0.09734  persist 0.04785  SKILL -1.0342  r_eff  4.82   2449s
+ 13750  train 0.13985  held 0.09579  persist 0.03478  SKILL -1.7541  r_eff  5.42   2494s
+ 14000  train 0.11887  held 0.10841  persist 0.05984  SKILL -0.8117  r_eff  5.95   2540s  <- best
+ 14250  train 0.09927  held 0.09844  persist 0.04468  SKILL -1.2031  r_eff  5.82   2585s
+ 14500  train 0.11749  held 0.10978  persist 0.05587  SKILL -0.9650  r_eff  6.97   2630s
+ 14750  train 0.11232  held 0.09866  persist 0.04390  SKILL -1.2475  r_eff  5.12   2675s
+ 15000  train 0.14414  held 0.10285  persist 0.05635  SKILL -0.8251  r_eff  6.67   2720s
+ 15250  train 0.08254  held 0.10411  persist 0.04223  SKILL -1.4650  r_eff  6.39   2766s
+ 15500  train 0.10945  held 0.10137  persist 0.04104  SKILL -1.4698  r_eff  5.45   2811s
+ 15750  train 0.16402  held 0.09933  persist 0.04858  SKILL -1.0447  r_eff  6.39   2856s
+ 16000  train 0.11115  held 0.10040  persist 0.04174  SKILL -1.4054  r_eff  5.83   2901s
+ 16250  train 0.08753  held 0.09458  persist 0.04929  SKILL -0.9188  r_eff  6.37   2946s
+ 16500  train 0.08030  held 0.10014  persist 0.04666  SKILL -1.1461  r_eff  6.59   2992s
+ 16750  train 0.09200  held 0.10231  persist 0.05065  SKILL -1.0198  r_eff  7.05   3037s
+ 17000  train 0.09308  held 0.09291  persist 0.04662  SKILL -0.9930  r_eff  6.29   3082s
+ 17250  train 0.14109  held 0.09006  persist 0.03795  SKILL -1.3728  r_eff  6.99   3127s
+ 17500  train 0.09526  held 0.09216  persist 0.03375  SKILL -1.7305  r_eff  6.55   3172s
+ 17750  train 0.11598  held 0.09464  persist 0.04489  SKILL -1.1083  r_eff  6.88   3217s
+ 18000  train 0.08605  held 0.09025  persist 0.03450  SKILL -1.6161  r_eff  7.24   3263s
+ 18250  train 0.09493  held 0.09651  persist 0.04665  SKILL -1.0690  r_eff  6.84   3308s
+ 18500  train 0.10025  held 0.09765  persist 0.03427  SKILL -1.8494  r_eff  6.86   3353s
+ 18750  train 0.09791  held 0.10606  persist 0.05542  SKILL -0.9139  r_eff  7.73   3398s
+ 19000  train 0.09233  held 0.09540  persist 0.04277  SKILL -1.2304  r_eff  7.26   3444s
+ 19250  train 0.13837  held 0.10694  persist 0.05015  SKILL -1.1324  r_eff  6.41   3489s
+ 19500  train 0.08761  held 0.10146  persist 0.04802  SKILL -1.1129  r_eff  6.95   3534s
+ 19750  train 0.08721  held 0.09277  persist 0.04075  SKILL -1.2768  r_eff  6.97   3580s
+ 20000  train 0.07517  held 0.10179  persist 0.06128  SKILL -0.6609  r_eff  6.68   3625s  <- best
+ 20250  train 0.08888  held 0.09380  persist 0.04058  SKILL -1.3116  r_eff  7.31   3671s
+ 20500  train 0.09784  held 0.09587  persist 0.04370  SKILL -1.1938  r_eff  7.25   3725s
+ 20750  train 0.11874  held 0.09581  persist 0.04763  SKILL -1.0114  r_eff  7.55   3770s
+ 21000  train 0.09238  held 0.09752  persist 0.04753  SKILL -1.0519  r_eff  7.86   3816s
+ 21250  train 0.10394  held 0.10009  persist 0.05983  SKILL -0.6729  r_eff  7.36   3861s
+ 21500  train 0.08838  held 0.09756  persist 0.04803  SKILL -1.0315  r_eff  7.58   3906s
+ 21750  train 0.10542  held 0.08984  persist 0.04284  SKILL -1.0971  r_eff  6.90   3951s
+ 22000  train 0.13252  held 0.09740  persist 0.04583  SKILL -1.1255  r_eff  7.94   3997s
+ 22250  train 0.08616  held 0.09019  persist 0.03851  SKILL -1.3416  r_eff  7.84   4042s
+ 22500  train 0.06312  held 0.09328  persist 0.04097  SKILL -1.2770  r_eff  8.69   4087s
+ 22750  train 0.10875  held 0.09014  persist 0.04537  SKILL -0.9869  r_eff  7.67   4133s
+ 23000  train 0.08844  held 0.10254  persist 0.06116  SKILL -0.6767  r_eff  7.78   4178s
+ 23250  train 0.08792  held 0.09879  persist 0.04565  SKILL -1.1640  r_eff  6.99   4223s
+ 23500  train 0.07925  held 0.09113  persist 0.04568  SKILL -0.9952  r_eff  8.35   4268s
+ 23750  train 0.08862  held 0.09651  persist 0.03855  SKILL -1.5036  r_eff  7.49   4314s
+ 24000  train 0.10054  held 0.09845  persist 0.04134  SKILL -1.3814  r_eff  7.64   4359s
+ 24250  train 0.10549  held 0.09822  persist 0.05503  SKILL -0.7849  r_eff  7.81   4404s
+ 24500  train 0.10321  held 0.09491  persist 0.05032  SKILL -0.8861  r_eff  8.26   4450s
+ 24750  train 0.07542  held 0.10196  persist 0.05191  SKILL -0.9644  r_eff  8.14   4495s
+ 25000  train 0.08935  held 0.09228  persist 0.04317  SKILL -1.1378  r_eff  7.84   4540s
+ 25250  train 0.06848  held 0.10163  persist 0.05840  SKILL -0.7401  r_eff  7.50   4585s
+ 25500  train 0.09238  held 0.08788  persist 0.04208  SKILL -1.0884  r_eff  7.22   4631s
+ 25750  train 0.07189  held 0.09349  persist 0.04062  SKILL -1.3015  r_eff  8.49   4676s
+ 26000  train 0.07765  held 0.09867  persist 0.04391  SKILL -1.2468  r_eff  7.27   4721s
+ 26250  train 0.10685  held 0.09602  persist 0.04407  SKILL -1.1789  r_eff  7.22   4767s
+ 26500  train 0.08314  held 0.08697  persist 0.03452  SKILL -1.5192  r_eff  8.17   4812s
+ 26750  train 0.09435  held 0.09124  persist 0.04519  SKILL -1.0191  r_eff  7.54   4857s
+ 27000  train 0.15422  held 0.08952  persist 0.04006  SKILL -1.2347  r_eff  8.13   4902s
+ 27250  train 0.08150  held 0.08971  persist 0.04428  SKILL -1.0262  r_eff  7.61   4948s
+ 27500  train 0.08653  held 0.09279  persist 0.04067  SKILL -1.2816  r_eff  8.14   4993s
+ 27750  train 0.08766  held 0.09635  persist 0.04691  SKILL -1.0538  r_eff  8.45   5038s
+ 28000  train 0.06741  held 0.09415  persist 0.04511  SKILL -1.0870  r_eff  8.91   5084s
+ 28250  train 0.09925  held 0.10070  persist 0.05390  SKILL -0.8684  r_eff  8.56   5129s
+ 28500  train 0.08891  held 0.09241  persist 0.04804  SKILL -0.9236  r_eff  8.51   5174s
+ 28750  train 0.17323  held 0.09194  persist 0.04606  SKILL -0.9961  r_eff  7.62   5219s
+ 29000  train 0.07232  held 0.08939  persist 0.04292  SKILL -1.0829  r_eff  7.18   5264s
+ 29250  train 0.08599  held 0.09150  persist 0.03689  SKILL -1.4807  r_eff  7.98   5310s
+ 29500  train 0.05634  held 0.09229  persist 0.04106  SKILL -1.2476  r_eff  7.15   5356s
+ 29750  train 0.08385  held 0.09059  persist 0.04607  SKILL -0.9664  r_eff  7.87   5401s
+ 30000  train 0.07380  held 0.09902  persist 0.04785  SKILL -1.0694  r_eff  8.17   5446s
+best skill against persistence: -0.6609

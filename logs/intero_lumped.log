@@ -1,0 +1,14 @@
+THE DELAY CONTROL: all fifteen channels kept, every group arriving at step 0.
+a `drop` arm removes what a group CARRIES; this removes only WHEN it arrives.
+
+    lumped step    0  train mse 5.83063      3s
+    lumped step   37  train mse 1.76484     64s
+    lumped step   74  train mse 0.84967    127s
+    lumped step  111  train mse 0.67096    189s
+    lumped step  148  train mse 0.32446    252s
+    lumped step  185  train mse 0.20025    314s
+    lumped step  222  train mse 0.07496    376s
+    lumped step  259  train mse 0.17062    440s
+    lumped step  296  train mse 0.20193    502s
+  cortex_lumped_delays       state +0.4221  traj -9.2507  |dz|  2.58  endurance_h=+0.422 discomfort=-0.650 s0=-27.091 s1=-0.367 s2=-8.894
+wrote out/intero_lumped.json

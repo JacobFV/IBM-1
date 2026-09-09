@@ -86,3 +86,28 @@ wrote out/disjoint_transport.json
 # second-order term of (0.1/4)^2 = 6e-4.  so sweep the amplitude.
 amp=1 base  transport 9.561e-06  superadd 1.0002
 amp=1 aniso  transport 9.843e-03  superadd 1.0014
+amp=3 base  transport 8.631e-06  superadd 1.0019
+amp=3 aniso  transport 1.106e-02  superadd 1.0131
+amp=10 base  transport 1.012e-05  superadd 1.0139
+amp=10 aniso  transport 2.720e-02  superadd 1.0249
+amp=30 base  transport 1.700e-05  superadd 1.0377
+amp=30 aniso  transport 5.371e-02  superadd 1.0045
+amp=100 base  transport 2.317e-05  superadd 1.0583
+amp=100 aniso  transport 7.221e-02  superadd 0.9932
+
+=== L1-NEUTRAL REALLOCATION: move mass from local to long-range ===
+# row L1 -- and so the resting rate and the operating point -- held fixed.
+local=1.0 long=1.0  transport 1.138e-04  superadd 1.0001
+local=0.75 long=1.75  transport 3.446e-04  superadd 1.0001
+local=0.5 long=2.50  transport 7.041e-04  superadd 1.0002
+local=0.25 long=3.25  transport 1.194e-03  superadd 1.0002
+local=0.0 long=4.00  transport 1.817e-03  superadd 1.0003
+
+=== TONIC DRIVE degrades transport (the fixed-point-climbs prediction) ===
+tonic=0  resting rate 8.057 Hz  -> v_op -64.74 mV      READ    2012  2.909167e-01  5.184e-03  2.180e+01      READ    2012  4.446336e-01  9.731e-03  6.959e+00 
+tonic=2  resting rate 13.038 Hz  -> v_op -62.59 mV      READ    2012  5.376303e-01  8.635e-03  1.509e+01      READ    2012  8.101820e-01  1.553e-02  4.731e+00 
+tonic=4  resting rate 20.716 Hz  -> v_op -60.37 mV      READ    2012  8.623911e-01  1.406e-02  1.055e+01      READ    2012  1.248007e+00  2.320e-02  3.423e+00 
+tonic=8  resting rate 45.257 Hz  -> v_op -55.76 mV      READ    2012  1.094093e+00  2.668e-02  6.121e+00      READ    2012  1.218117e+00  2.965e-02  2.746e+00 
+tonic=14  resting rate 76.925 Hz  -> v_op -50.18 mV      READ    2012  2.529203e-01  2.074e-02  5.265e+00      READ    2012  1.932347e-01  1.107e-02  5.196e+00 
+
+=== ALL DONE ===

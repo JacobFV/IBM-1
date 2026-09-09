@@ -78,11 +78,36 @@ menisci and intervertebral discs, joint capsules, bursae and synovium, fascia an
 aponeurosis, retinacula, periosteum, and adipose**, and the integument bound to
 what lies under it rather than floating over it.
 
-Counted in the bound body: 311 ligament entities, 80 bursa/synovium, 51
-cartilage, 46 fascia, 44 tendon, 36 joint capsule, 33 meniscus/disc, 18
-retinaculum, 4 skin, 2 adipose — **625 of 4,000 entities are tissue structures,
-and the plant carries force elements for none of them.** They exist as geometry
-and not as mechanics. Adipose at 2 entities is additionally a data gap.
+Counted in the bound body: 300 ligament entities, 80 bursa/synovium, 69
+meniscus/disc, 51 cartilage, 44 tendon, 44 fascia, 36 joint capsule, 18
+retinaculum, 2 adipose, 1 skin — **645 of 4,000 entities are tissue structures.**
+They existed as geometry and not as mechanics.
+
+**117 of them now carry force**: 105 ligaments and 12 joint capsules, as
+`Blankevoort1991Ligament` elements over two-ended attachments derived from each
+structure's own surface, in `docs/TISSUE_MECHANICS.md` in IHM-1. Standing weight
+is unchanged at 761.3757 N because these are internal forces. **The 66 that never
+pass ligament ultimate strain inside a spanned joint's own declared range replace
+the engineering joint stops**: 6.08 deg of worst excursion past the declared
+ranges with no stops at all, against 5.30 deg for the 30 N.m/rad stops and 17.43
+deg bare, and 4.05 deg with both. The other 51 make the plant WORSE — 32.78 deg —
+because a straight line between two attachment centroids is not a ligament's
+path, and a real cruciate is near-isometric only because it wraps. Those 51 are
+the cruciates, the collaterals and the ankle ligaments, and closing them needs a
+wrap surface per joint.
+
+The rest is blocked for three different reasons, and only one is a missing
+solver. **430 of the 645 are inside ONE scaffold rigid body** — 23
+intervertebral discs and 23 nuclei in `torso`, 29 ligaments per hand — so the
+scaffold has no joint where they act. **Cartilage is a DATA gap**: 51 cartilage
+entities and not one of them is a joint surface, all costal, laryngeal, nasal or
+growth plate; and bone-on-bone contact cannot substitute, because a synovial
+joint's two bone surfaces overlap by construction (the hips interpenetrate in
+19/21 and 21/21 sampled configurations of their own declared range). **Fascia and
+retinacula are blocked on the muscle path**: 80 of the 98 muscles run as fitted
+polynomials with no geometry, so not one of the 18 retinacula can constrain
+anything. Adipose is 1.26 mL of geometry in the whole body, and periosteum is 0
+entities — acquisition, not modelling.
 
 Progress against this and every other objective is tracked in
 `docs/MILESTONES.md`. Elastic integument,

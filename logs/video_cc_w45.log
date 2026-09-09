@@ -1,0 +1,19 @@
+train 28 films, 3,391,879 frames (37.69 h)
+held out whole: ['the-viking_1928_frames.npy', 'the_shadow_strikes_frames.npy']
+pool 64 (chance 1.56%), hard negatives within +/-45 frames of the anchor, same film
+trainable 14,705,004 (3,840,000 association)
+/home/brandonin/Documents/IBM-1/scripts/train_video_contrastive_continuation.py:182: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  rec = {"step": step, "loss": float(loss), "top1": m, "sd": sd,
+     0  loss 4.1589  top-1  1.56%+/-0.00 (  1.0x chance) | PIXEL  1.17%+/-0.68 | model-pixel  +0.39pt       5s
+   250  loss 4.1589  top-1  1.56%+/-0.00 (  1.0x chance) | PIXEL  0.78%+/-0.78 | model-pixel  +0.78pt     290s
+   500  loss 4.1589  top-1  1.56%+/-0.00 (  1.0x chance) | PIXEL  1.56%+/-1.35 | model-pixel  +0.00pt     575s
+   750  loss 4.1589  top-1  1.76%+/-0.52 (  1.1x chance) | PIXEL  1.37%+/-0.52 | model-pixel  +0.39pt     853s
+  1000  loss 4.1447  top-1  2.15%+/-0.76 (  1.4x chance) | PIXEL  1.56%+/-0.78 | model-pixel  +0.59pt    1130s
+  1250  loss 4.0680  top-1  2.54%+/-1.74 (  1.6x chance) | PIXEL  1.37%+/-0.94 | model-pixel  +1.17pt    1411s
+  1500  loss 3.9109  top-1  2.34%+/-1.10 (  1.5x chance) | PIXEL  0.98%+/-0.76 | model-pixel  +1.37pt    1689s
+  1750  loss 4.0012  top-1  1.76%+/-0.52 (  1.1x chance) | PIXEL  1.37%+/-1.22 | model-pixel  +0.39pt    1972s
+  2000  loss 4.1590  top-1  1.76%+/-0.94 (  1.1x chance) | PIXEL  0.98%+/-0.76 | model-pixel  +0.78pt    2254s
+  2250  loss 3.8565  top-1  2.15%+/-1.09 (  1.4x chance) | PIXEL  1.56%+/-0.78 | model-pixel  +0.59pt    2538s
+  2500  loss 4.1282  top-1  2.15%+/-1.34 (  1.4x chance) | PIXEL  1.56%+/-0.78 | model-pixel  +0.59pt    2828s
+  2750  loss 4.1544  top-1  2.15%+/-1.09 (  1.4x chance) | PIXEL  0.78%+/-0.78 | model-pixel  +1.37pt    3127s

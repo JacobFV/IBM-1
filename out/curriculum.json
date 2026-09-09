@@ -1,0 +1,196 @@
+{
+  "config": {
+    "init": "ckpt/ibm1_implicit.pt",
+    "sites": 30000,
+    "embed": 128,
+    "k": 48,
+    "long_range": 0.25,
+    "objectives": "visual_eeg,audio_meg,video",
+    "phases": "0.33:video=0.34;visual_eeg=0.33;audio_meg=0.33,0.66:video=0.3;visual_eeg=0.35;audio_meg=0.35,1.0:video=0.2;visual_eeg=0.4;audio_meg=0.4",
+    "steps": 40000,
+    "batch": 64,
+    "lr": 0.0003,
+    "pool": 200,
+    "eval_pools": 8,
+    "consolidate_every": 500,
+    "eval_every": 500,
+    "ckpt": "ckpt/ibm1_curriculum.pt",
+    "out": "out/curriculum.json"
+  },
+  "steps": [
+    {
+      "step": 0,
+      "phase": {
+        "video": 0.34,
+        "visual_eeg": 0.33,
+        "audio_meg": 0.33
+      },
+      "sec": 1.7,
+      "visual_eeg": {
+        "top1": 0.004999999888241291,
+        "sd": 0.0,
+        "x_chance": 0.9999999776482582,
+        "report": "top-1  0.50%+/-0.00 (  1.0x)"
+      },
+      "audio_meg": {
+        "top1": 0.004999999888241291,
+        "sd": 0.0,
+        "ceiling": 0.0712,
+        "collapsed": true,
+        "report": "top-1  0.50%+/-0.00 (  1.0x, ceiling 7.12%)  COLLAPSED"
+      },
+      "video": {
+        "held": 0.4563542306423187,
+        "persistence": 0.05036754533648491,
+        "skill_vs_persistence": -8.060481855798278,
+        "report": "skill vs persistence -8.0605"
+      }
+    },
+    {
+      "step": 500,
+      "phase": {
+        "video": 0.34,
+        "visual_eeg": 0.33,
+        "audio_meg": 0.33
+      },
+      "sec": 402.1,
+      "visual_eeg": {
+        "top1": 0.017499999492429197,
+        "sd": 0.007071067530337703,
+        "x_chance": 3.4999998984858394,
+        "report": "top-1  1.75%+/-0.71 (  3.5x)"
+      },
+      "audio_meg": {
+        "top1": 0.004999999888241291,
+        "sd": 0.0,
+        "ceiling": 0.0712,
+        "collapsed": true,
+        "report": "top-1  0.50%+/-0.00 (  1.0x, ceiling 7.12%)  COLLAPSED"
+      },
+      "video": {
+        "held": 0.11960726231336594,
+        "persistence": 0.05007126182317734,
+        "skill_vs_persistence": -1.3887407258828315,
+        "report": "skill vs persistence -1.3887"
+      }
+    },
+    {
+      "step": 1000,
+      "phase": {
+        "video": 0.34,
+        "visual_eeg": 0.33,
+        "audio_meg": 0.33
+      },
+      "sec": 838.1,
+      "visual_eeg": {
+        "top1": 0.021249999408610165,
+        "sd": 0.008196797918905279,
+        "x_chance": 4.249999881722033,
+        "report": "top-1  2.12%+/-0.82 (  4.2x)"
+      },
+      "audio_meg": {
+        "top1": 0.004999999888241291,
+        "sd": 0.0,
+        "ceiling": 0.0712,
+        "collapsed": true,
+        "report": "top-1  0.50%+/-0.00 (  1.0x, ceiling 7.12%)  COLLAPSED"
+      },
+      "video": {
+        "held": 0.09240158647298813,
+        "persistence": 0.03194057568907738,
+        "skill_vs_persistence": -1.8929217610998297,
+        "report": "skill vs persistence -1.8929"
+      }
+    },
+    {
+      "step": 1500,
+      "phase": {
+        "video": 0.34,
+        "visual_eeg": 0.33,
+        "audio_meg": 0.33
+      },
+      "sec": 1251.3,
+      "visual_eeg": {
+        "top1": 0.04437499912455678,
+        "sd": 0.014456292450506142,
+        "x_chance": 8.874999824911356,
+        "report": "top-1  4.44%+/-1.45 (  8.9x)"
+      },
+      "audio_meg": {
+        "top1": 0.008124999818392098,
+        "sd": 0.004960783597363951,
+        "ceiling": 0.0712,
+        "collapsed": false,
+        "report": "top-1  0.81%+/-0.50 (  1.6x, ceiling 7.12%)"
+      },
+      "video": {
+        "held": 0.08737575262784958,
+        "persistence": 0.04897920414805412,
+        "skill_vs_persistence": -0.7839357365573059,
+        "report": "skill vs persistence -0.7839"
+      }
+    },
+    {
+      "step": 2000,
+      "phase": {
+        "video": 0.34,
+        "visual_eeg": 0.33,
+        "audio_meg": 0.33
+      },
+      "sec": 1664.7,
+      "visual_eeg": {
+        "top1": 0.062499999068677425,
+        "sd": 0.012990381035258696,
+        "x_chance": 12.499999813735485,
+        "report": "top-1  6.25%+/-1.30 ( 12.5x)"
+      },
+      "audio_meg": {
+        "top1": 0.021874999394640326,
+        "sd": 0.007880950058476804,
+        "ceiling": 0.0712,
+        "collapsed": false,
+        "report": "top-1  2.19%+/-0.79 (  4.4x, ceiling 7.12%)"
+      },
+      "video": {
+        "held": 0.1108987033367157,
+        "persistence": 0.06449108570814133,
+        "skill_vs_persistence": -0.7195974004623695,
+        "report": "skill vs persistence -0.7196"
+      }
+    }
+  ],
+  "consolidations": [
+    {
+      "step": 500,
+      "drift_cos": [
+        1.0,
+        0.9913968443870544,
+        0.9907610416412354
+      ]
+    },
+    {
+      "step": 1000,
+      "drift_cos": [
+        1.0,
+        0.995865523815155,
+        0.9952725172042847
+      ]
+    },
+    {
+      "step": 1500,
+      "drift_cos": [
+        1.0,
+        0.9938271641731262,
+        0.994483470916748
+      ]
+    },
+    {
+      "step": 2000,
+      "drift_cos": [
+        1.0000001192092896,
+        0.9895025491714478,
+        0.9948650598526001
+      ]
+    }
+  ]
+}

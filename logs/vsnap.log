@@ -1,0 +1,161 @@
+train 28 films, 3,391,879 frames (37.69 h)
+    BigBoyRidesAgain_frames.npy
+    Detour_66_frames.npy
+    EveningsForSale1932Restored_frames.npy
+    IdentityUnknown_frames.npy
+    NightTide16x9CorrectedAudio_frames.npy
+    OneBodyTooManyJackHaleyBelaLugosiAppleTV2ndGen..mp4_frames.npy
+    ParlorBedroomAndBathImageQualityUpgrade_frames.npy
+    PecksBadBoy_558_frames.npy
+    RomanceOfTheRedwoods_frames.npy
+    RomanticComedyNightAtTheBijoudoubleFeature_frames.npy
+    rog561b_netzero_116_frames.npy
+    rog561b_netzero_310_frames.npy
+    rog561b_netzero_317_frames.npy
+    rog56_mail_219_frames.npy
+    rog56_mail_3008_frames.npy
+    rog56_mail_313_frames.npy
+    rog56_mail_614_frames.npy
+    rog56_mail_922_frames.npy
+    rog56_mail_927_frames.npy
+    romance_on_the_run_frames.npy
+    rough_riding_ranger_frames.npy
+    sabaka_ipod_frames.npy
+    sangdil-sanam-1994-dv-drip.-x-264..-ac-3.-esubs.-5.1-xmr-by.-juleyano_frames.npy
+    song_for_miss_julie_frames.npy
+    suhaag-1994-dv-drip-xvi-d-mp-3-esubs-tmb_frames.npy
+    the-killer-meteors-1976-jackie-chan-jimmy-wang-yu_frames.npy
+    the-lost-zeppelin-1929-fourtl_frames.npy
+    the-river_1929_frames.npy
+HELD-OUT 2 films, 225,795 frames (2.51 h)
+    the-viking_1928_frames.npy
+    the_shadow_strikes_frames.npy
+
+held-out baselines: zero 0.42654  PERSISTENCE 0.03999  (the one to beat)
+
+params 10,386,414 (3,840,000 association) | target=direct
+/home/brandonin/Documents/IBM-1/scripts/train_video_multifilm.py:173: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"{step:6d}  train {float(loss):.5f}  held {held:.5f}  "
+     0  train 0.26723  held 0.42262  persist 0.04106  SKILL -9.2918  res 3.218 cos +0.136  r_eff  1.78      1s  <- best
+   250  train 0.09167  held 0.11233  persist 0.05210  SKILL -1.1560  res 1.406 cos +0.229  r_eff  1.31     43s  <- best
+   500  train 0.10964  held 0.09325  persist 0.04432  SKILL -1.1042  res 1.385 cos +0.246  r_eff  1.75     88s  <- best
+   750  train 0.09500  held 0.08143  persist 0.05182  SKILL -0.5714  res 1.154 cos +0.245  r_eff  2.57    131s  <- best
+  1000  train 0.08264  held 0.08603  persist 0.05305  SKILL -0.6217  res 1.156 cos +0.262  r_eff  3.14    173s
+  1250  train 0.07711  held 0.08506  persist 0.05036  SKILL -0.6889  res 1.230 cos +0.251  r_eff  2.54    215s
+  1500  train 0.10537  held 0.07864  persist 0.04611  SKILL -0.7055  res 1.194 cos +0.240  r_eff  2.59    257s
+  1750  train 0.10565  held 0.07191  persist 0.03887  SKILL -0.8502  res 1.255 cos +0.234  r_eff  4.07    298s
+  2000  train 0.07594  held 0.07567  persist 0.04625  SKILL -0.6361  res 1.167 cos +0.254  r_eff  2.84    341s
+  2250  train 0.07506  held 0.06918  persist 0.03949  SKILL -0.7518  res 1.215 cos +0.252  r_eff  3.22    386s
+  2500  train 0.06729  held 0.06831  persist 0.05019  SKILL -0.3611  res 1.031 cos +0.277  r_eff  3.69    432s  <- best
+  2750  train 0.08999  held 0.07785  persist 0.04181  SKILL -0.8623  res 1.311 cos +0.261  r_eff  3.71    477s
+  3000  train 0.07679  held 0.10166  persist 0.07447  SKILL -0.3651  res 0.919 cos +0.246  r_eff  3.47    522s
+  3250  train 0.06537  held 0.08210  persist 0.05525  SKILL -0.4858  res 1.046 cos +0.250  r_eff  5.17    567s
+  3500  train 0.07866  held 0.08019  persist 0.05376  SKILL -0.4917  res 1.116 cos +0.267  r_eff  4.76    613s
+  3750  train 0.09575  held 0.07648  persist 0.06066  SKILL -0.2609  res 0.939 cos +0.251  r_eff  4.47    657s  <- best
+  4000  train 0.06163  held 0.07319  persist 0.04524  SKILL -0.6179  res 1.096 cos +0.254  r_eff  4.78    702s
+  4250  train 0.06299  held 0.07220  persist 0.04568  SKILL -0.5804  res 1.130 cos +0.234  r_eff  4.41    747s
+  4500  train 0.10881  held 0.07045  persist 0.04276  SKILL -0.6477  res 1.159 cos +0.252  r_eff  4.28    792s
+  4750  train 0.06802  held 0.07842  persist 0.05704  SKILL -0.3749  res 0.999 cos +0.279  r_eff  4.63    836s
+  5000  train 0.08803  held 0.07542  persist 0.04923  SKILL -0.5319  res 1.091 cos +0.249  r_eff  4.94    878s
+  5250  train 0.07191  held 0.06215  persist 0.03860  SKILL -0.6102  res 1.167 cos +0.255  r_eff  4.29    920s
+  5500  train 0.08820  held 0.07211  persist 0.05341  SKILL -0.3500  res 1.016 cos +0.302  r_eff  4.21    962s
+  5750  train 0.12684  held 0.07237  persist 0.04742  SKILL -0.5261  res 1.074 cos +0.245  r_eff  4.22   1004s
+  6000  train 0.05640  held 0.06981  persist 0.04287  SKILL -0.6284  res 1.137 cos +0.247  r_eff  4.95   1046s
+  6250  train 0.05887  held 0.07204  persist 0.05169  SKILL -0.3935  res 1.010 cos +0.266  r_eff  4.61   1088s
+  6500  train 0.07068  held 0.05937  persist 0.03362  SKILL -0.7656  res 1.225 cos +0.245  r_eff  4.39   1130s
+  6750  train 0.07196  held 0.06898  persist 0.05036  SKILL -0.3696  res 1.061 cos +0.278  r_eff  4.78   1171s
+  7000  train 0.07805  held 0.07396  persist 0.04716  SKILL -0.5685  res 1.092 cos +0.242  r_eff  4.48   1213s
+  7250  train 0.07142  held 0.07025  persist 0.04789  SKILL -0.4669  res 1.051 cos +0.244  r_eff  4.20   1255s
+  7500  train 0.05737  held 0.07076  persist 0.04971  SKILL -0.4233  res 1.036 cos +0.269  r_eff  4.54   1297s
+  7750  train 0.05743  held 0.05892  persist 0.04038  SKILL -0.4593  res 1.088 cos +0.267  r_eff  3.95   1339s
+  8000  train 0.07371  held 0.06931  persist 0.05097  SKILL -0.3597  res 1.008 cos +0.267  r_eff  4.64   1381s
+  8250  train 0.05861  held 0.08408  persist 0.07237  SKILL -0.1618  res 0.834 cos +0.295  r_eff  5.00   1423s  <- best
+  8500  train 0.07474  held 0.06869  persist 0.05548  SKILL -0.2381  res 0.956 cos +0.282  r_eff  4.13   1465s
+  8750  train 0.08792  held 0.06618  persist 0.04698  SKILL -0.4087  res 1.039 cos +0.250  r_eff  4.46   1507s
+  9000  train 0.06493  held 0.06720  persist 0.04393  SKILL -0.5299  res 1.050 cos +0.242  r_eff  4.09   1549s
+  9250  train 0.06668  held 0.08186  persist 0.06824  SKILL -0.1996  res 0.900 cos +0.290  r_eff  4.71   1591s
+  9500  train 0.07438  held 0.08320  persist 0.06897  SKILL -0.2063  res 0.899 cos +0.301  r_eff  4.85   1633s
+  9750  train 0.06696  held 0.08828  persist 0.07227  SKILL -0.2215  res 0.850 cos +0.260  r_eff  4.25   1675s
+ 10000  train 0.08062  held 0.07669  persist 0.06000  SKILL -0.2782  res 0.914 cos +0.246  r_eff  3.69   1717s
+ 10250  train 0.06061  held 0.06854  persist 0.04686  SKILL -0.4627  res 1.047 cos +0.254  r_eff  4.27   1759s
+ 10500  train 0.08207  held 0.07050  persist 0.04745  SKILL -0.4857  res 1.085 cos +0.255  r_eff  4.08   1801s
+ 10750  train 0.10464  held 0.07005  persist 0.04962  SKILL -0.4117  res 1.025 cos +0.290  r_eff  4.31   1843s
+ 11000  train 0.08885  held 0.06990  persist 0.05486  SKILL -0.2741  res 0.985 cos +0.287  r_eff  4.22   1885s
+ 11250  train 0.06534  held 0.07148  persist 0.05232  SKILL -0.3661  res 1.009 cos +0.265  r_eff  3.77   1927s
+ 11500  train 0.14734  held 0.07761  persist 0.05615  SKILL -0.3823  res 0.978 cos +0.257  r_eff  4.49   1969s
+ 11750  train 0.07671  held 0.07182  persist 0.04462  SKILL -0.6094  res 1.109 cos +0.261  r_eff  4.59   2011s
+ 12000  train 0.11235  held 0.06107  persist 0.03492  SKILL -0.7488  res 1.194 cos +0.242  r_eff  4.37   2053s
+ 12250  train 0.06873  held 0.06828  persist 0.04626  SKILL -0.4759  res 1.004 cos +0.240  r_eff  4.40   2095s
+ 12500  train 0.07688  held 0.07822  persist 0.05579  SKILL -0.4020  res 0.955 cos +0.256  r_eff  4.51   2138s
+ 12750  train 0.05636  held 0.06460  persist 0.04854  SKILL -0.3307  res 0.954 cos +0.253  r_eff  4.39   2180s
+ 13000  train 0.06157  held 0.08814  persist 0.07661  SKILL -0.1506  res 0.796 cos +0.268  r_eff  4.14   2223s  <- best
+ 13250  train 0.06443  held 0.07770  persist 0.06377  SKILL -0.2184  res 0.914 cos +0.288  r_eff  3.93   2265s
+ 13500  train 0.06470  held 0.06714  persist 0.05104  SKILL -0.3154  res 0.953 cos +0.246  r_eff  4.30   2308s
+ 13750  train 0.05264  held 0.06409  persist 0.04415  SKILL -0.4517  res 1.023 cos +0.237  r_eff  4.28   2350s
+ 14000  train 0.07713  held 0.07130  persist 0.05424  SKILL -0.3146  res 0.959 cos +0.265  r_eff  4.17   2392s
+ 14250  train 0.07448  held 0.05947  persist 0.03831  SKILL -0.5522  res 1.104 cos +0.247  r_eff  4.14   2434s
+ 14500  train 0.06418  held 0.07396  persist 0.05885  SKILL -0.2568  res 0.935 cos +0.294  r_eff  4.76   2476s
+ 14750  train 0.04621  held 0.06972  persist 0.05075  SKILL -0.3739  res 0.963 cos +0.243  r_eff  4.28   2518s
+ 15000  train 0.04442  held 0.07604  persist 0.05960  SKILL -0.2759  res 0.923 cos +0.244  r_eff  4.33   2561s
+ 15250  train 0.08944  held 0.05755  persist 0.03611  SKILL -0.5936  res 1.103 cos +0.246  r_eff  4.25   2603s
+ 15500  train 0.07050  held 0.07072  persist 0.05006  SKILL -0.4128  res 0.983 cos +0.260  r_eff  4.10   2644s
+ 15750  train 0.08037  held 0.06332  persist 0.04352  SKILL -0.4552  res 1.038 cos +0.271  r_eff  4.31   2686s
+ 16000  train 0.04773  held 0.07486  persist 0.06051  SKILL -0.2370  res 0.899 cos +0.282  r_eff  5.01   2728s
+ 16250  train 0.05231  held 0.06178  persist 0.04689  SKILL -0.3176  res 1.012 cos +0.281  r_eff  5.19   2770s
+ 16500  train 0.06598  held 0.07586  persist 0.05561  SKILL -0.3642  res 0.929 cos +0.246  r_eff  4.81   2812s
+ 16750  train 0.05480  held 0.08462  persist 0.06580  SKILL -0.2861  res 0.877 cos +0.242  r_eff  4.68   2854s
+ 17000  train 0.10456  held 0.06288  persist 0.04100  SKILL -0.5336  res 1.061 cos +0.246  r_eff  4.31   2896s
+ 17250  train 0.07206  held 0.09391  persist 0.07773  SKILL -0.2081  res 0.806 cos +0.234  r_eff  5.06   2938s
+ 17500  train 0.06462  held 0.06639  persist 0.04899  SKILL -0.3551  res 0.986 cos +0.265  r_eff  4.04   2980s
+ 17750  train 0.05776  held 0.05930  persist 0.03821  SKILL -0.5522  res 1.114 cos +0.265  r_eff  4.00   3022s
+ 18000  train 0.06019  held 0.06119  persist 0.04063  SKILL -0.5061  res 1.094 cos +0.265  r_eff  4.08   3063s
+ 18250  train 0.05300  held 0.05785  persist 0.04039  SKILL -0.4321  res 1.034 cos +0.261  r_eff  4.15   3105s
+ 18500  train 0.09511  held 0.05954  persist 0.04172  SKILL -0.4271  res 1.050 cos +0.265  r_eff  4.23   3147s
+ 18750  train 0.11354  held 0.06824  persist 0.04130  SKILL -0.6524  res 1.154 cos +0.239  r_eff  4.33   3189s
+ 19000  train 0.06358  held 0.06153  persist 0.04282  SKILL -0.4369  res 1.027 cos +0.280  r_eff  4.17   3231s
+ 19250  train 0.07963  held 0.07176  persist 0.05652  SKILL -0.2696  res 0.895 cos +0.268  r_eff  4.12   3273s
+ 19500  train 0.11235  held 0.06792  persist 0.05546  SKILL -0.2247  res 0.889 cos +0.297  r_eff  4.22   3315s
+ 19750  train 0.07515  held 0.06372  persist 0.04690  SKILL -0.3586  res 0.974 cos +0.259  r_eff  4.41   3357s
+ 20000  train 0.08392  held 0.06867  persist 0.05273  SKILL -0.3023  res 0.922 cos +0.244  r_eff  4.49   3399s
+ 20250  train 0.06454  held 0.06809  persist 0.04483  SKILL -0.5190  res 1.046 cos +0.242  r_eff  4.49   3443s
+ 20500  train 0.06704  held 0.08116  persist 0.06757  SKILL -0.2010  res 0.854 cos +0.297  r_eff  4.43   3486s
+ 20750  train 0.04937  held 0.05990  persist 0.03735  SKILL -0.6038  res 1.098 cos +0.242  r_eff  5.12   3529s
+ 21000  train 0.10305  held 0.06173  persist 0.04724  SKILL -0.3066  res 0.975 cos +0.261  r_eff  4.44   3572s
+ 21250  train 0.06636  held 0.07262  persist 0.05573  SKILL -0.3030  res 0.915 cos +0.274  r_eff  4.92   3623s
+ 21500  train 0.07590  held 0.07497  persist 0.06365  SKILL -0.1780  res 0.865 cos +0.280  r_eff  5.26   3736s
+ 21750  train 0.09325  held 0.06524  persist 0.04911  SKILL -0.3284  res 0.936 cos +0.257  r_eff  4.02   3871s
+ 22000  train 0.07836  held 0.07658  persist 0.06328  SKILL -0.2103  res 0.837 cos +0.259  r_eff  4.93   4007s
+ 22250  train 0.08020  held 0.06561  persist 0.05171  SKILL -0.2687  res 0.934 cos +0.243  r_eff  4.44   4143s
+ 22500  train 0.07718  held 0.05738  persist 0.03975  SKILL -0.4434  res 1.078 cos +0.265  r_eff  4.71   4280s
+ 22750  train 0.06598  held 0.07294  persist 0.05875  SKILL -0.2415  res 0.913 cos +0.292  r_eff  4.81   4416s
+ 23000  train 0.05741  held 0.05777  persist 0.03590  SKILL -0.6093  res 1.122 cos +0.244  r_eff  4.48   4553s
+ 23250  train 0.05079  held 0.06578  persist 0.05385  SKILL -0.2216  res 0.922 cos +0.286  r_eff  4.96   4688s
+ 23500  train 0.06444  held 0.06201  persist 0.04444  SKILL -0.3955  res 1.010 cos +0.256  r_eff  4.65   4824s
+ 23750  train 0.06678  held 0.06339  persist 0.04563  SKILL -0.3893  res 1.001 cos +0.264  r_eff  4.83   4960s
+ 24000  train 0.06386  held 0.05885  persist 0.04066  SKILL -0.4475  res 1.057 cos +0.259  r_eff  4.77   5063s
+ 24250  train 0.07622  held 0.06033  persist 0.04105  SKILL -0.4695  res 1.061 cos +0.263  r_eff  4.86   5154s
+ 24500  train 0.06664  held 0.06985  persist 0.05053  SKILL -0.3822  res 0.966 cos +0.273  r_eff  5.12   5244s
+ 24750  train 0.05877  held 0.05920  persist 0.03864  SKILL -0.5322  res 1.095 cos +0.274  r_eff  5.01   5335s
+ 25000  train 0.08792  held 0.06302  persist 0.04112  SKILL -0.5324  res 1.028 cos +0.241  r_eff  4.75   5426s
+ 25250  train 0.06336  held 0.06154  persist 0.04488  SKILL -0.3712  res 1.015 cos +0.289  r_eff  4.70   5517s
+ 25500  train 0.05070  held 0.05009  persist 0.03067  SKILL -0.6329  res 1.178 cos +0.247  r_eff  4.59   5607s
+ 25750  train 0.07055  held 0.06926  persist 0.05809  SKILL -0.1923  res 0.852 cos +0.270  r_eff  4.36   5697s
+ 26000  train 0.07013  held 0.06194  persist 0.04395  SKILL -0.4094  res 1.019 cos +0.262  r_eff  4.40   5787s
+ 26250  train 0.06672  held 0.06762  persist 0.04966  SKILL -0.3618  res 0.956 cos +0.247  r_eff  4.70   5877s
+ 26500  train 0.07670  held 0.05690  persist 0.03875  SKILL -0.4682  res 1.063 cos +0.255  r_eff  4.52   5969s
+ 26750  train 0.06732  held 0.06593  persist 0.04831  SKILL -0.3647  res 0.976 cos +0.264  r_eff  4.98   6061s
+ 27000  train 0.06843  held 0.06379  persist 0.04619  SKILL -0.3809  res 1.008 cos +0.276  r_eff  4.71   6154s
+ 27250  train 0.05682  held 0.06791  persist 0.05076  SKILL -0.3378  res 0.973 cos +0.259  r_eff  5.22   6244s
+ 27500  train 0.11147  held 0.05390  persist 0.03378  SKILL -0.5957  res 1.133 cos +0.263  r_eff  4.57   6335s
+ 27750  train 0.08009  held 0.07718  persist 0.06703  SKILL -0.1514  res 0.822 cos +0.273  r_eff  5.07   6427s
+ 28000  train 0.04973  held 0.05733  persist 0.04381  SKILL -0.3087  res 0.965 cos +0.261  r_eff  4.72   6518s
+ 28250  train 0.07025  held 0.06438  persist 0.04368  SKILL -0.4739  res 1.019 cos +0.242  r_eff  4.92   6609s
+ 28500  train 0.05158  held 0.06946  persist 0.04999  SKILL -0.3895  res 0.984 cos +0.263  r_eff  5.01   6701s
+ 28750  train 0.05774  held 0.06071  persist 0.04107  SKILL -0.4781  res 1.045 cos +0.273  r_eff  4.91   6793s
+ 29000  train 0.04711  held 0.05591  persist 0.04140  SKILL -0.3503  res 1.030 cos +0.274  r_eff  4.88   6885s
+ 29250  train 0.05450  held 0.05855  persist 0.04199  SKILL -0.3943  res 0.990 cos +0.235  r_eff  5.42   6978s
+ 29500  train 0.04995  held 0.05859  persist 0.04035  SKILL -0.4520  res 1.051 cos +0.258  r_eff  4.52   7070s
+ 29750  train 0.06437  held 0.06749  persist 0.05309  SKILL -0.2712  res 0.918 cos +0.272  r_eff  4.70   7159s
+ 30000  train 0.07386  held 0.07077  persist 0.05142  SKILL -0.3764  res 0.952 cos +0.244  r_eff  5.40   7264s
+best skill against persistence: -0.1506

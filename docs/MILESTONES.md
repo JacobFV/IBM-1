@@ -41,33 +41,58 @@ model differ is `docs/DISCONNECTS.md`.
   now because the supine foundation sets its support plane to the skin's own
   minimum, so the floor follows the skin and the error is invisible by
   construction. Needs per-segment geometric transformation.
-- **Tissue structures as mechanics.** They exist as geometry and not as force
-  elements. Counted in the bound body:
+- **Tissue structures as mechanics — 117 of 645 now carry force, and the reason
+  the rest do not is different for each class.** Counted in the bound body, with
+  what the plant carries after `scripts/build_tissue_force_elements.py`:
 
-  | | entities | force elements in the plant |
-  |---|---:|---:|
-  | ligament | 311 | **0** |
-  | bursa / synovium | 80 | 0 |
-  | cartilage | 51 | 0 |
-  | fascia / aponeurosis | 46 | 0 |
-  | tendon | 44 | via muscle only |
-  | joint capsule | 36 | 0 |
-  | meniscus / intervertebral disc | 33 | 0 |
-  | retinaculum | 18 | 0 |
-  | skin | 4 | rigid quadrature only |
-  | adipose | 2 | 0 |
-  | periosteum | 0 | — |
-  | **total** | **625 of 4,000** | |
+  | | entities | inside ONE scaffold body | force elements |
+  |---|---:|---:|---:|
+  | ligament | 300 | 195 | **105** |
+  | bursa / synovium | 80 | 68 | 0 |
+  | meniscus / intervertebral disc | 69 | 59 | 0 |
+  | cartilage | 51 | 49 | 0 |
+  | tendon (36 are sheaths) | 44 | 8 | via muscle only |
+  | fascia / aponeurosis | 44 | 19 | 0 |
+  | joint capsule | 36 | 24 | **12** |
+  | retinaculum | 18 | 8 | 0 |
+  | adipose | 2 | 0 | 0 |
+  | skin | 1 | 0 | rigid quadrature only |
+  | periosteum | 0 | — | — |
+  | **total** | **645** | **430** | **117** |
 
-  Ligaments are blocked structurally: the binding gives each entity exactly one
-  segment and a ligament spans two — 123 of 328 report a runner-up segment
-  different from their assigned one, which is the binding itself saying they
-  straddle a joint. Cartilage, menisci and discs need contact and compliance
-  between bones, which is the same solver question. Adipose at 2 entities is a
-  data gap, not just a mechanics gap, and the declared skin needs ~22 mm of
-  indentation to hold 761 N against its own 6.6 mm thickness — **the skin alone
-  cannot hold the body up and nothing carries a thickness for the fat and muscle
-  that would.**
+  Ligaments were recorded as blocked structurally, and they were not: the binding
+  gives each entity one segment, but the per-vertex vote it is built from
+  partitions the surface between two, and each side's tip centroid is an
+  attachment. Gated 30/30 on named bone pairs including three negative controls
+  (sacrotuberous, sacrospinous and inguinal must come out ONE segment because
+  both their bones are `pelvis` here, and they do), six published lengths at
+  0.70–1.04x, three published Blankevoort stiffnesses at 0.44–2.03x, and two
+  independent implementations of the path length agreeing to 3.3e-16 m.
+
+  **The 66 that never pass ligament ultimate strain inside a spanned joint's own
+  declared range replace the engineering joint stops**: 6.08° of worst excursion
+  on a 2 s prone drop with no stops at all, against 5.30° for the stated
+  30 N·m/rad stops and 17.43° bare; both together 4.05°. Standing weight stays
+  761.3757 N and the momentum residual stays at its relative floor, because these
+  are internal forces. The other 51 make it WORSE (32.78°) — a straight line
+  between two attachment centroids is not a ligament's path, and the derived ACL
+  reads 77% strain at 90° of knee flexion against a 17.1% ultimate. Those 51 are
+  the cruciates, the collaterals and the ankle ligaments; closing them needs a
+  wrap surface per joint.
+
+  **430 of the 645 are inside one rigid body** — 23 intervertebral discs and 23
+  nuclei in `torso`, 29 ligaments per hand — so the scaffold has no joint where
+  they act. **Cartilage is a DATA gap**: 51 cartilage entities and not one is a
+  joint surface (34 costal, 8 laryngotracheal, 7 nasal, 2 growth plate), and
+  bone-on-bone contact cannot substitute because a synovial joint's bone surfaces
+  overlap by construction — the hips interpenetrate in 19/21 and 21/21 sampled
+  configurations of their own declared range, and 11 of 21 joints interpenetrate
+  somewhere in theirs. **Retinacula are blocked on the muscle path**: 80 of 98
+  muscles run as fitted polynomials with no geometry, so not one of the 18 can
+  constrain anything. **Adipose is 1.26 mL of geometry in the whole body and
+  periosteum is 0 entities** — acquisition, not modelling, and the same gap as
+  the declared skin needing ~22 mm of indentation to hold 761 N against its own
+  6.6 mm thickness.
 - Sex parametrization: no catalogued source ships a female mesh; blocked behind a
   path-refitting tool.
 
@@ -125,6 +150,10 @@ rather than a closed loop.
   lengths/s against a maximum of 10. Ports held: 180 s wall → 18.5 s.
 - **Joint stops exist and are free.** At 30 N·m/rad they are *half* the wall clock
   of no stops at all and hold the plant 6.6× closer to its declared range.
+- **And the body's own ligaments can now do that job instead of a constant.** 66
+  derived tissue elements, stiffness from the declared ligament modulus and
+  attachments from the structures' own surfaces, hold 6.08° of worst excursion
+  with no stops at all against the stated stop's 5.30° and a bare plant's 17.43°.
 - **68 forced-pose motions, 17,622 frames** of what the real muscles experience.
 
 **Open** — nothing the brain produced; this is the crude controller and the

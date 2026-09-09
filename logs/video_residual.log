@@ -1,0 +1,107 @@
+train 23 films, 2,664,882 frames (29.61 h)
+    BigBoyRidesAgain_frames.npy
+    EveningsForSale1932Restored_frames.npy
+    IdentityUnknown_frames.npy
+    OneBodyTooManyJackHaleyBelaLugosiAppleTV2ndGen..mp4_frames.npy
+    ParlorBedroomAndBathImageQualityUpgrade_frames.npy
+    PecksBadBoy_558_frames.npy
+    RomanceOfTheRedwoods_frames.npy
+    RomanticComedyNightAtTheBijoudoubleFeature_frames.npy
+    rog561b_netzero_116_frames.npy
+    rog561b_netzero_310_frames.npy
+    rog561b_netzero_317_frames.npy
+    rog56_mail_219_frames.npy
+    rog56_mail_3008_frames.npy
+    rog56_mail_313_frames.npy
+    rog56_mail_614_frames.npy
+    rog56_mail_922_frames.npy
+    rog56_mail_927_frames.npy
+    romance_on_the_run_frames.npy
+    rough_riding_ranger_frames.npy
+    sabaka_ipod_frames.npy
+    sangdil-sanam-1994-dv-drip.-x-264..-ac-3.-esubs.-5.1-xmr-by.-juleyano_frames.npy
+    song_for_miss_julie_frames.npy
+    the-river_1929_frames.npy
+HELD-OUT 2 films, 225,795 frames (2.51 h)
+    the-viking_1928_frames.npy
+    the_shadow_strikes_frames.npy
+
+held-out baselines: zero 0.42654  PERSISTENCE 0.03999  (the one to beat)
+
+params 10,297,838 (3,840,000 association) | target=residual
+/home/brandonin/Documents/IBM-1/scripts/train_video_multifilm.py:160: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"{step:6d}  train {float(loss):.5f}  held {held:.5f}  "
+     0  train 0.05636  held 0.05428  persist 0.04106  SKILL -0.3217  res 0.569 cos +0.001  r_eff  5.05      1s
+   250  train 0.03000  held 0.05220  persist 0.05210  SKILL -0.0020  res 0.047 cos +0.002  r_eff  4.69     46s  [degenerate: emits ~nothing]
+   500  train 0.01934  held 0.04441  persist 0.04432  SKILL -0.0020  res 0.047 cos +0.003  r_eff  4.44     92s  [degenerate: emits ~nothing]
+   750  train 0.02905  held 0.05180  persist 0.05182  SKILL +0.0004  res 0.031 cos +0.010  r_eff  4.21    137s  [degenerate: emits ~nothing]
+  1000  train 0.03505  held 0.05314  persist 0.05305  SKILL -0.0018  res 0.039 cos -0.003  r_eff  5.28    182s  [degenerate: emits ~nothing]
+  1250  train 0.03379  held 0.05037  persist 0.05036  SKILL -0.0002  res 0.023 cos -0.010  r_eff  5.96    227s  [degenerate: emits ~nothing]
+  1500  train 0.14193  held 0.04612  persist 0.04611  SKILL -0.0002  res 0.011 cos +0.002  r_eff  5.08    273s  [degenerate: emits ~nothing]
+  1750  train 0.07920  held 0.03885  persist 0.03887  SKILL +0.0004  res 0.012 cos +0.032  r_eff  4.32    319s  [degenerate: emits ~nothing]
+  2000  train 0.04500  held 0.04625  persist 0.04625  SKILL -0.0000  res 0.008 cos -0.001  r_eff  4.61    365s  [degenerate: emits ~nothing]
+  2250  train 0.03499  held 0.03948  persist 0.03949  SKILL +0.0003  res 0.024 cos +0.012  r_eff  4.99    411s  [degenerate: emits ~nothing]
+  2500  train 0.01275  held 0.05020  persist 0.05019  SKILL -0.0002  res 0.018 cos -0.004  r_eff  4.20    457s  [degenerate: emits ~nothing]
+  2750  train 0.02688  held 0.04181  persist 0.04181  SKILL -0.0002  res 0.007 cos -0.001  r_eff  5.15    503s  [degenerate: emits ~nothing]
+  3000  train 0.02186  held 0.07449  persist 0.07447  SKILL -0.0003  res 0.009 cos -0.025  r_eff  4.97    549s  [degenerate: emits ~nothing]
+  3250  train 0.03472  held 0.05525  persist 0.05525  SKILL +0.0000  res 0.006 cos +0.005  r_eff  5.18    595s  [degenerate: emits ~nothing]
+  3500  train 0.02314  held 0.05377  persist 0.05376  SKILL -0.0002  res 0.012 cos -0.012  r_eff  5.70    640s  [degenerate: emits ~nothing]
+  3750  train 0.02857  held 0.06068  persist 0.06066  SKILL -0.0005  res 0.010 cos +0.006  r_eff  4.04    686s  [degenerate: emits ~nothing]
+  4000  train 0.02074  held 0.04523  persist 0.04524  SKILL +0.0001  res 0.008 cos -0.024  r_eff  4.19    732s  [degenerate: emits ~nothing]
+  4250  train 0.02976  held 0.04568  persist 0.04568  SKILL -0.0000  res 0.009 cos -0.003  r_eff  4.41    778s  [degenerate: emits ~nothing]
+  4500  train 0.01671  held 0.04276  persist 0.04276  SKILL +0.0000  res 0.006 cos +0.003  r_eff  4.24    824s  [degenerate: emits ~nothing]
+  4750  train 0.04037  held 0.05702  persist 0.05704  SKILL +0.0003  res 0.015 cos +0.030  r_eff  5.50    870s  [degenerate: emits ~nothing]
+  5000  train 0.03359  held 0.04926  persist 0.04923  SKILL -0.0007  res 0.010 cos -0.011  r_eff  4.63    916s  [degenerate: emits ~nothing]
+  5250  train 0.02523  held 0.03860  persist 0.03860  SKILL -0.0000  res 0.009 cos +0.024  r_eff  4.71    961s  [degenerate: emits ~nothing]
+  5500  train 0.04434  held 0.05335  persist 0.05341  SKILL +0.0012  res 0.013 cos +0.053  r_eff  5.30   1007s  [degenerate: emits ~nothing]
+  5750  train 0.07015  held 0.04743  persist 0.04742  SKILL -0.0002  res 0.011 cos -0.022  r_eff  4.07   1053s  [degenerate: emits ~nothing]
+  6000  train 0.02198  held 0.04291  persist 0.04287  SKILL -0.0008  res 0.029 cos -0.009  r_eff  5.04   1098s  [degenerate: emits ~nothing]
+  6250  train 0.04985  held 0.05169  persist 0.05169  SKILL +0.0001  res 0.005 cos +0.004  r_eff  4.99   1144s  [degenerate: emits ~nothing]
+  6500  train 0.08797  held 0.03362  persist 0.03362  SKILL +0.0000  res 0.007 cos +0.004  r_eff  4.20   1190s  [degenerate: emits ~nothing]
+  6750  train 0.03163  held 0.05037  persist 0.05036  SKILL -0.0000  res 0.008 cos +0.010  r_eff  5.20   1236s  [degenerate: emits ~nothing]
+  7000  train 0.03366  held 0.04716  persist 0.04716  SKILL -0.0001  res 0.006 cos -0.002  r_eff  5.32   1284s  [degenerate: emits ~nothing]
+  7250  train 0.03373  held 0.04788  persist 0.04789  SKILL +0.0002  res 0.007 cos +0.007  r_eff  4.65   1330s  [degenerate: emits ~nothing]
+  7500  train 0.02132  held 0.04972  persist 0.04971  SKILL -0.0001  res 0.010 cos -0.029  r_eff  5.17   1375s  [degenerate: emits ~nothing]
+  7750  train 0.03989  held 0.04038  persist 0.04038  SKILL -0.0001  res 0.014 cos -0.003  r_eff  4.53   1422s  [degenerate: emits ~nothing]
+  8000  train 0.04749  held 0.05093  persist 0.05097  SKILL +0.0009  res 0.012 cos +0.013  r_eff  5.20   1467s  [degenerate: emits ~nothing]
+  8250  train 0.04459  held 0.07236  persist 0.07237  SKILL +0.0001  res 0.004 cos +0.020  r_eff  5.41   1513s  [degenerate: emits ~nothing]
+  8500  train 0.01364  held 0.05549  persist 0.05548  SKILL -0.0001  res 0.005 cos +0.002  r_eff  4.64   1559s  [degenerate: emits ~nothing]
+  8750  train 0.03496  held 0.04690  persist 0.04698  SKILL +0.0017  res 0.024 cos +0.020  r_eff  4.52   1604s  [degenerate: emits ~nothing]
+  9000  train 0.03256  held 0.04395  persist 0.04393  SKILL -0.0005  res 0.016 cos +0.005  r_eff  3.86   1650s  [degenerate: emits ~nothing]
+  9250  train 0.05010  held 0.06824  persist 0.06824  SKILL +0.0001  res 0.004 cos +0.011  r_eff  5.36   1695s  [degenerate: emits ~nothing]
+  9500  train 0.04907  held 0.06890  persist 0.06897  SKILL +0.0010  res 0.017 cos +0.025  r_eff  5.86   1741s  [degenerate: emits ~nothing]
+  9750  train 0.04291  held 0.07225  persist 0.07227  SKILL +0.0003  res 0.011 cos -0.005  r_eff  5.13   1786s  [degenerate: emits ~nothing]
+ 10000  train 0.05335  held 0.05998  persist 0.06000  SKILL +0.0004  res 0.006 cos +0.007  r_eff  6.10   1832s  [degenerate: emits ~nothing]
+ 10250  train 0.07191  held 0.04683  persist 0.04686  SKILL +0.0006  res 0.011 cos -0.001  r_eff  5.98   1878s  [degenerate: emits ~nothing]
+ 10500  train 0.02852  held 0.04745  persist 0.04745  SKILL +0.0000  res 0.004 cos +0.013  r_eff  5.61   1924s  [degenerate: emits ~nothing]
+ 10750  train 0.07351  held 0.04963  persist 0.04962  SKILL -0.0002  res 0.005 cos +0.008  r_eff  4.85   1970s  [degenerate: emits ~nothing]
+ 11000  train 0.06390  held 0.05486  persist 0.05486  SKILL -0.0001  res 0.014 cos +0.017  r_eff  5.27   2016s  [degenerate: emits ~nothing]
+ 11250  train 0.05512  held 0.05232  persist 0.05232  SKILL +0.0001  res 0.006 cos +0.025  r_eff  4.74   2062s  [degenerate: emits ~nothing]
+ 11500  train 0.03370  held 0.05612  persist 0.05615  SKILL +0.0005  res 0.005 cos +0.007  r_eff  4.79   2107s  [degenerate: emits ~nothing]
+ 11750  train 0.03926  held 0.04463  persist 0.04462  SKILL -0.0002  res 0.006 cos -0.003  r_eff  5.43   2153s  [degenerate: emits ~nothing]
+ 12000  train 0.05118  held 0.03494  persist 0.03492  SKILL -0.0006  res 0.010 cos -0.014  r_eff  5.01   2198s  [degenerate: emits ~nothing]
+ 12250  train 0.04281  held 0.04624  persist 0.04626  SKILL +0.0005  res 0.009 cos +0.054  r_eff  4.31   2244s  [degenerate: emits ~nothing]
+ 12500  train 0.01854  held 0.05589  persist 0.05579  SKILL -0.0017  res 0.014 cos -0.022  r_eff  5.53   2290s  [degenerate: emits ~nothing]
+ 12750  train 0.03104  held 0.04858  persist 0.04854  SKILL -0.0007  res 0.009 cos +0.016  r_eff  5.06   2336s  [degenerate: emits ~nothing]
+ 13000  train 0.04691  held 0.07668  persist 0.07661  SKILL -0.0010  res 0.011 cos -0.012  r_eff  5.04   2381s  [degenerate: emits ~nothing]
+ 13250  train 0.01776  held 0.06381  persist 0.06377  SKILL -0.0005  res 0.005 cos -0.043  r_eff  5.23   2427s  [degenerate: emits ~nothing]
+ 13500  train 0.02153  held 0.05107  persist 0.05104  SKILL -0.0006  res 0.009 cos -0.003  r_eff  4.52   2472s  [degenerate: emits ~nothing]
+ 13750  train 0.02929  held 0.04419  persist 0.04415  SKILL -0.0008  res 0.009 cos -0.016  r_eff  4.50   2518s  [degenerate: emits ~nothing]
+ 14000  train 0.06392  held 0.05424  persist 0.05424  SKILL +0.0000  res 0.003 cos +0.005  r_eff  4.96   2563s  [degenerate: emits ~nothing]
+ 14250  train 0.07594  held 0.03831  persist 0.03831  SKILL +0.0000  res 0.008 cos +0.003  r_eff  4.26   2609s  [degenerate: emits ~nothing]
+ 14500  train 0.02940  held 0.05885  persist 0.05885  SKILL -0.0000  res 0.003 cos -0.016  r_eff  5.07   2654s  [degenerate: emits ~nothing]
+ 14750  train 0.05361  held 0.05071  persist 0.05075  SKILL +0.0008  res 0.009 cos +0.007  r_eff  4.28   2700s  [degenerate: emits ~nothing]
+ 15000  train 0.04612  held 0.05975  persist 0.05960  SKILL -0.0026  res 0.016 cos -0.027  r_eff  5.60   2746s  [degenerate: emits ~nothing]
+ 15250  train 0.02927  held 0.03611  persist 0.03611  SKILL +0.0001  res 0.012 cos +0.015  r_eff  4.58   2791s  [degenerate: emits ~nothing]
+ 15500  train 0.01603  held 0.05008  persist 0.05006  SKILL -0.0005  res 0.018 cos -0.005  r_eff  5.11   2840s  [degenerate: emits ~nothing]
+ 15750  train 0.03787  held 0.04351  persist 0.04352  SKILL +0.0001  res 0.010 cos +0.041  r_eff  4.32   2885s  [degenerate: emits ~nothing]
+ 16000  train 0.02162  held 0.06050  persist 0.06051  SKILL +0.0002  res 0.004 cos +0.019  r_eff  5.42   2931s  [degenerate: emits ~nothing]
+ 16250  train 0.05522  held 0.04688  persist 0.04689  SKILL +0.0001  res 0.004 cos +0.012  r_eff  4.60   2977s  [degenerate: emits ~nothing]
+ 16500  train 0.04469  held 0.05567  persist 0.05561  SKILL -0.0011  res 0.009 cos -0.050  r_eff  4.99   3022s  [degenerate: emits ~nothing]
+ 16750  train 0.02950  held 0.06581  persist 0.06580  SKILL -0.0002  res 0.006 cos -0.008  r_eff  5.07   3068s  [degenerate: emits ~nothing]
+ 17000  train 0.08586  held 0.04101  persist 0.04100  SKILL -0.0001  res 0.007 cos +0.011  r_eff  5.31   3113s  [degenerate: emits ~nothing]
+ 17250  train 0.02919  held 0.07769  persist 0.07773  SKILL +0.0005  res 0.005 cos +0.031  r_eff  4.69   3159s  [degenerate: emits ~nothing]
+ 17500  train 0.02613  held 0.04897  persist 0.04899  SKILL +0.0003  res 0.005 cos +0.014  r_eff  4.63   3204s  [degenerate: emits ~nothing]
+ 17750  train 0.04862  held 0.03825  persist 0.03821  SKILL -0.0012  res 0.011 cos -0.059  r_eff  5.19   3250s  [degenerate: emits ~nothing]
+ 18000  train 0.03685  held 0.04062  persist 0.04063  SKILL +0.0004  res 0.015 cos -0.011  r_eff  5.10   3295s  [degenerate: emits ~nothing]

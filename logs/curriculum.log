@@ -1,0 +1,13 @@
+initialised from ckpt/ibm1_implicit.pt: 34 fused sources
+  visual_eeg     10,271,372 params (3,840,000 kernel)
+  audio_meg      16,695,788 params (3,840,000 kernel)
+  video          10,386,414 params (3,840,000 kernel)
+     0  visual_eeg top-1  0.50%+/-0.00 (  1.0x) | audio_meg top-1  0.50%+/-0.00 (  1.0x, ceiling 7.12%)  COLLAPSED | video skill vs persistence -8.0605      12s
+   500  consolidated 3 replicas   drift cos ['1.000', '0.991', '0.991']
+   500  visual_eeg top-1  1.75%+/-0.71 (  3.5x) | audio_meg top-1  0.50%+/-0.00 (  1.0x, ceiling 7.12%)  COLLAPSED | video skill vs persistence -1.3887     413s
+  1000  consolidated 3 replicas   drift cos ['1.000', '0.996', '0.995']
+  1000  visual_eeg top-1  2.12%+/-0.82 (  4.2x) | audio_meg top-1  0.50%+/-0.00 (  1.0x, ceiling 7.12%)  COLLAPSED | video skill vs persistence -1.8929     849s
+  1500  consolidated 3 replicas   drift cos ['1.000', '0.994', '0.994']
+  1500  visual_eeg top-1  4.44%+/-1.45 (  8.9x) | audio_meg top-1  0.81%+/-0.50 (  1.6x, ceiling 7.12%) | video skill vs persistence -0.7839    1262s
+  2000  consolidated 3 replicas   drift cos ['1.000', '0.990', '0.995']
+  2000  visual_eeg top-1  6.25%+/-1.30 ( 12.5x) | audio_meg top-1  2.19%+/-0.79 (  4.4x, ceiling 7.12%) | video skill vs persistence -0.7196    1676s

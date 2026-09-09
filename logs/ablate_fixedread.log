@@ -1,0 +1,10 @@
+ckpt/video_fixedread.pt: step 13000, skill -0.1490
+held out: ['the-viking_1928_frames.npy', 'the_shadow_strikes_frames.npy']
+
+  full       MSE 0.06710 +/- 0.00692   persistence 0.04755   skill -0.4111
+  frozen     MSE 0.09688 +/- 0.00847   persistence 0.04755   skill -1.0374
+  no_assoc   MSE 0.09696 +/- 0.00847   persistence 0.04755   skill -1.0392
+  bypass     MSE 0.25913 +/- 0.01182   persistence 0.04755   skill -4.4497
+
+  bypass / full = 3.86x
+  -> the dynamics ARE carrying the task -- bypass is materially worse, so the gap to persistence is capacity or objective, not the substrate

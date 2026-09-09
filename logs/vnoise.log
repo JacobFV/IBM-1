@@ -1,0 +1,56 @@
+train 28 films, 3,391,879 frames (37.69 h)
+    BigBoyRidesAgain_frames.npy
+    Detour_66_frames.npy
+    EveningsForSale1932Restored_frames.npy
+    IdentityUnknown_frames.npy
+    NightTide16x9CorrectedAudio_frames.npy
+    OneBodyTooManyJackHaleyBelaLugosiAppleTV2ndGen..mp4_frames.npy
+    ParlorBedroomAndBathImageQualityUpgrade_frames.npy
+    PecksBadBoy_558_frames.npy
+    RomanceOfTheRedwoods_frames.npy
+    RomanticComedyNightAtTheBijoudoubleFeature_frames.npy
+    rog561b_netzero_116_frames.npy
+    rog561b_netzero_310_frames.npy
+    rog561b_netzero_317_frames.npy
+    rog56_mail_219_frames.npy
+    rog56_mail_3008_frames.npy
+    rog56_mail_313_frames.npy
+    rog56_mail_614_frames.npy
+    rog56_mail_922_frames.npy
+    rog56_mail_927_frames.npy
+    romance_on_the_run_frames.npy
+    rough_riding_ranger_frames.npy
+    sabaka_ipod_frames.npy
+    sangdil-sanam-1994-dv-drip.-x-264..-ac-3.-esubs.-5.1-xmr-by.-juleyano_frames.npy
+    song_for_miss_julie_frames.npy
+    suhaag-1994-dv-drip-xvi-d-mp-3-esubs-tmb_frames.npy
+    the-killer-meteors-1976-jackie-chan-jimmy-wang-yu_frames.npy
+    the-lost-zeppelin-1929-fourtl_frames.npy
+    the-river_1929_frames.npy
+HELD-OUT 2 films, 225,795 frames (2.51 h)
+    the-viking_1928_frames.npy
+    the_shadow_strikes_frames.npy
+
+held-out baselines: zero 0.42632  PERSISTENCE 0.50689  (the one to beat)
+
+params 10,386,414 (3,840,000 association) | target=direct
+/home/brandonin/Documents/IBM-1/scripts/train_video_multifilm.py:195: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"{step:6d}  train {float(loss):.5f}  held {held:.5f}  "
+     0  train 0.26739  held 0.42226  persist 0.46932  SKILL +0.1003  res 0.951 cos +0.528  r_eff 36.32      2s  <- best  BEATS PERSISTENCE
+   500  train 0.18820  held 0.24108  persist 0.47962  SKILL +0.4974  res 0.709 cos +0.705  r_eff  1.04    185s  <- best  BEATS PERSISTENCE
+  1000  train 0.20799  held 0.24289  persist 0.47887  SKILL +0.4928  res 0.709 cos +0.702  r_eff  1.01    370s  BEATS PERSISTENCE
+  1500  train 0.21063  held 0.24825  persist 0.49703  SKILL +0.5005  res 0.711 cos +0.707  r_eff  1.00    454s  <- best  BEATS PERSISTENCE
+  2000  train 0.24282  held 0.25725  persist 0.51216  SKILL +0.4977  res 0.707 cos +0.705  r_eff  1.00    538s  BEATS PERSISTENCE
+  2500  train 0.19174  held 0.23999  persist 0.47580  SKILL +0.4956  res 0.707 cos +0.704  r_eff  1.00    624s  BEATS PERSISTENCE
+  3000  train 0.16514  held 0.26097  persist 0.51003  SKILL +0.4883  res 0.704 cos +0.699  r_eff  1.00    710s  BEATS PERSISTENCE
+  3500  train 0.20933  held 0.24142  persist 0.47889  SKILL +0.4959  res 0.708 cos +0.704  r_eff  1.01    800s  BEATS PERSISTENCE
+  4000  train 0.19941  held 0.24406  persist 0.48958  SKILL +0.5015  res 0.708 cos +0.708  r_eff  1.00    905s  <- best  BEATS PERSISTENCE
+  4500  train 0.25250  held 0.24745  persist 0.49073  SKILL +0.4957  res 0.707 cos +0.704  r_eff  1.01   1031s  BEATS PERSISTENCE
+  5000  train 0.21275  held 0.25063  persist 0.49894  SKILL +0.4977  res 0.712 cos +0.705  r_eff  1.01   1123s  BEATS PERSISTENCE
+  5500  train 0.22077  held 0.23904  persist 0.48254  SKILL +0.5046  res 0.711 cos +0.710  r_eff  1.01   1208s  <- best  BEATS PERSISTENCE
+  6000  train 0.25206  held 0.23757  persist 0.47306  SKILL +0.4978  res 0.706 cos +0.706  r_eff  1.01   1292s  BEATS PERSISTENCE
+  6500  train 0.26540  held 0.25310  persist 0.50431  SKILL +0.4981  res 0.708 cos +0.706  r_eff  1.02   1377s  BEATS PERSISTENCE
+  7000  train 0.18509  held 0.23368  persist 0.46259  SKILL +0.4949  res 0.705 cos +0.703  r_eff  1.01   1461s  BEATS PERSISTENCE
+  7500  train 0.12665  held 0.24043  persist 0.47964  SKILL +0.4987  res 0.707 cos +0.706  r_eff  1.01   1546s  BEATS PERSISTENCE
+best skill against persistence: +0.5046

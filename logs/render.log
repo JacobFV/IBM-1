@@ -1,0 +1,8 @@
+config declares no modality; inferred 'video' from the inputs
+ckpt/video_fixedread.pt: video, 30,000 sites, horizon 8
+  0/250
+  50/250
+  100/250
+  150/250
+  200/250
+wrote out/clips/fixedread_step13000.gif  (328, 130, 3)  250 frames (10.0s)  left=truth right=prediction(t+8)

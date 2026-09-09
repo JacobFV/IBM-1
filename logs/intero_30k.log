@@ -1,0 +1,72 @@
+checkpoint_every resolved to 8 for 30,000 sites (chunked; ~2x compute, ~8x less memory)
+4983 pairs at horizon 60s, protocol split (3555 train / 1428 test) over 7 sequences, holding out exertion_v3/meal_exercise, six_hour_v4/hydration; 15 channels -> 5 targets (endurance_h, discomfort, sensation_0, sensation_1, sensation_2)
+
+sanity gates PASSED
+  every baseline predictor scores exactly 0 against itself (worst 0.0e+00)
+  the exactly-linear target prints 1.000000, and must print 1.000000 -- `discomfort` is an affine function of the fifteen rates, so a ridge has to recover it.  that it does is also WHY discomfort and sensation are scored against persistence and not the mean.
+
+baseline MSE on the held-out split, raw units:
+  endurance_h    zero  1492.470703  mean    54.728985  persistence    11.246545   baseline of record: mean   (NOT an afferent channel; must be inferred)
+  discomfort     zero     0.024804  mean     0.004632  persistence     0.000512   baseline of record: persistence   (derived from the afference)
+  sensation_0    zero     3.051840  mean     3.045955  persistence     0.057569   baseline of record: persistence   (derived from the afference)
+  sensation_1    zero     4.000450  mean     3.994400  persistence     0.152688   baseline of record: persistence   (derived from the afference)
+  sensation_2    zero     1.192772  mean     1.193259  persistence     0.043446   baseline of record: persistence   (derived from the afference)
+
+  endurance: persistence MSE 1.125e+01 against a held-out variance of 54.729, ratio 2.05e-01.
+    endurance moves enough on this split for persistence to be an ordinary baseline; both ratios are reported for it, and the headline stays the mean because that is the inference question.
+
+  arm                        state = endurance skill vs MEAN; traj = mean skill vs PERSISTENCE over the four afference-derived
+                             targets; |dz| = predicted change magnitude / true change magnitude (ledger 14: a model that
+                             emits persistence scores 0 skill and |dz| ~ 0, and the loss cannot tell you which)
+
+  ridge_no_dynamics          state +0.4956  traj -0.0094  |dz|  0.78  endurance_h=+0.496 discomfort=+0.554 s0=-0.202 s1=+0.250 s2=-0.640
+  mlp_no_dynamics            state -0.2225  traj -4.7140  |dz|  2.29  endurance_h=-0.223 discomfort=-3.720 s0=-4.382 s1=-0.839 s2=-9.915
+  mlp_matched_samples        state +0.5368  traj -1.8375  |dz|  1.51  endurance_h=+0.537 discomfort=-2.013 s0=-4.827 s1=+0.265 s2=-0.774
+
+  training the cortical arms (400 steps each, seed 0 matched)
+    trained step    0  train mse 8.13252     10s
+    trained step   50  train mse 0.67686    794s
+    trained step  100  train mse 0.23295   1819s
+    trained step  150  train mse 0.25507   2843s
+    trained step  200  train mse 0.16427   3805s
+    trained step  250  train mse 0.18125   4862s
+    trained step  300  train mse 0.40098   5912s
+    trained step  350  train mse 0.14752   6986s
+
+InteroceptiveLoop: 15 channels in 7 conduction groups -> 1,391 sites (20% of the 6,802 frontal sites, the insula+ACC share of cortex) -> 5 outputs
+  dt 0.01s x 4 substeps, 59 steps (590 ms of afference)
+  greater_splanchnic   c        2 ch    168.4 ms -> step  17
+  least_splanchnic     c        1 ch    232.2 ms -> step  23
+  lesser_splanchnic    c        1 ch    217.2 ms -> step  22
+  pelvic_splanchnic    c        1 ch    128.0 ms -> step  13
+  vagus                abeta    4 ch      9.2 ms -> step   1
+  vagus                c        5 ch    507.8 ms -> step  51
+  vagus                adelta   1 ch     33.9 ms -> step   3
+  port: insula and anterior cingulate are NOT separable on the six-label spherical proxy `cortical_regions` provides (occipital, temporal, parietal, frontal, precentral, postcentral); a sphere has no lateral sulcus.  the drive enters the `frontal` label, the declared region nearest anterior insula and ACC.  the DK parcellation in ibm/anatomy/systems.py DOES declare insula, rostralanteriorcingulate and caudalanteriorcingulate, so a materialization built through ibm/materialize/build.py has the real target and this substitution ends there.
+
+  cortex_trained             state +0.5956  traj -4.5558  |dz|  2.02  endurance_h=+0.596 discomfort=-2.014 s0=-14.371 s1=-0.092 s2=-1.747
+  cortex_severed_posthoc     state +0.5774  traj -5.1031  |dz|  2.11  endurance_h=+0.577 discomfort=-2.555 s0=-16.324 s1=-0.139 s2=-1.395
+  cortex_permuted_posthoc    state +0.5819  traj -5.7174  |dz|  2.13  endurance_h=+0.582 discomfort=-2.275 s0=-19.283 s1=+0.004 s2=-1.316
+  drop_greater_splanchnic_c  state +0.5948  traj -15.2249  |dz|  3.64  endurance_h=+0.595 discomfort=-3.674 s0=-27.275 s1=-2.061 s2=-27.889
+  drop_least_splanchnic_c    state +0.5946  traj -4.7232  |dz|  2.02  endurance_h=+0.595 discomfort=-2.046 s0=-15.055 s1=-0.121 s2=-1.671
+  drop_lesser_splanchnic_c   state +0.6486  traj -5.4508  |dz|  2.22  endurance_h=+0.649 discomfort=-2.743 s0=-17.708 s1=-0.315 s2=-1.037
+  drop_pelvic_splanchnic_c   state +0.5963  traj -7.4424  |dz|  2.59  endurance_h=+0.596 discomfort=-2.786 s0=-19.391 s1=-0.291 s2=-7.301
+  drop_vagus_abeta           state +0.3790  traj -10.7554  |dz|  3.12  endurance_h=+0.379 discomfort=-3.415 s0=-29.791 s1=-8.198 s2=-1.618
+  drop_vagus_c               state +0.1198  traj -8.4259  |dz|  3.02  endurance_h=+0.120 discomfort=-8.455 s0=-9.436 s1=-2.680 s2=-13.133
+  drop_vagus_adelta          state +0.6299  traj -9.2286  |dz|  2.54  endurance_h=+0.630 discomfort=-2.740 s0=-32.856 s1=-0.389 s2=-0.930
+  drop_all_c_fibres          state +0.1734  traj -19.2056  |dz|  4.39  endurance_h=+0.173 discomfort=-11.942 s0=-28.352 s1=-7.111 s2=-29.417
+  drop_all_myelinated        state +0.4117  traj -17.2676  |dz|  3.67  endurance_h=+0.412 discomfort=-4.198 s0=-54.321 s1=-9.331 s2=-1.220
+    permuted step    0  train mse 7.98985      9s
+    permuted step   50  train mse 0.62312    482s
+    permuted step  100  train mse 0.32107    950s
+    permuted step  150  train mse 0.14204   1579s
+    permuted step  200  train mse 0.14743   2747s
+    permuted step  250  train mse 0.25785   4355s
+    permuted step  300  train mse 0.67966   5991s
+    permuted step  350  train mse 0.05384   7623s
+  cortex_permuted_retrained  state +0.4542  traj -3.1529  |dz|  1.81  endurance_h=+0.454 discomfort=-0.149 s0=-1.591 s1=-1.156 s2=-9.716
+    lumped step    0  train mse 8.13156     33s
+    lumped step   50  train mse 0.73683   1674s
+    lumped step  100  train mse 0.27328   3814s
+    lumped step  150  train mse 0.11445   5903s
+    lumped step  200  train mse 0.13636   7613s

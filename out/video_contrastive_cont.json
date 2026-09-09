@@ -1,0 +1,89 @@
+{
+  "config": {
+    "corpus": "data/derived/pd-film",
+    "sites": 30000,
+    "embed": 128,
+    "k": 48,
+    "batch": 64,
+    "steps": 20000,
+    "dyn_steps": 8,
+    "dt": 0.005,
+    "horizon": 8,
+    "dim": 128,
+    "lr": 0.0003,
+    "pool": 64,
+    "window": 600,
+    "eval_pools": 8,
+    "eval_every": 250,
+    "holdout_films": 2,
+    "ckpt": "ckpt/video_contrastive_cont.pt",
+    "out": "out/video_contrastive_cont.json"
+  },
+  "chance": 0.015625,
+  "train_films": [
+    "data/derived/pd-film/BigBoyRidesAgain_frames.npy",
+    "data/derived/pd-film/Detour_66_frames.npy",
+    "data/derived/pd-film/EveningsForSale1932Restored_frames.npy",
+    "data/derived/pd-film/IdentityUnknown_frames.npy",
+    "data/derived/pd-film/NightTide16x9CorrectedAudio_frames.npy",
+    "data/derived/pd-film/OneBodyTooManyJackHaleyBelaLugosiAppleTV2ndGen..mp4_frames.npy",
+    "data/derived/pd-film/ParlorBedroomAndBathImageQualityUpgrade_frames.npy",
+    "data/derived/pd-film/PecksBadBoy_558_frames.npy",
+    "data/derived/pd-film/RomanceOfTheRedwoods_frames.npy",
+    "data/derived/pd-film/RomanticComedyNightAtTheBijoudoubleFeature_frames.npy",
+    "data/derived/pd-film/rog561b_netzero_116_frames.npy",
+    "data/derived/pd-film/rog561b_netzero_310_frames.npy",
+    "data/derived/pd-film/rog561b_netzero_317_frames.npy",
+    "data/derived/pd-film/rog56_mail_219_frames.npy",
+    "data/derived/pd-film/rog56_mail_3008_frames.npy",
+    "data/derived/pd-film/rog56_mail_313_frames.npy",
+    "data/derived/pd-film/rog56_mail_614_frames.npy",
+    "data/derived/pd-film/rog56_mail_922_frames.npy",
+    "data/derived/pd-film/rog56_mail_927_frames.npy",
+    "data/derived/pd-film/romance_on_the_run_frames.npy",
+    "data/derived/pd-film/rough_riding_ranger_frames.npy",
+    "data/derived/pd-film/sabaka_ipod_frames.npy",
+    "data/derived/pd-film/sangdil-sanam-1994-dv-drip.-x-264..-ac-3.-esubs.-5.1-xmr-by.-juleyano_frames.npy",
+    "data/derived/pd-film/song_for_miss_julie_frames.npy",
+    "data/derived/pd-film/suhaag-1994-dv-drip-xvi-d-mp-3-esubs-tmb_frames.npy",
+    "data/derived/pd-film/the-killer-meteors-1976-jackie-chan-jimmy-wang-yu_frames.npy",
+    "data/derived/pd-film/the-lost-zeppelin-1929-fourtl_frames.npy",
+    "data/derived/pd-film/the-river_1929_frames.npy"
+  ],
+  "holdout_films": [
+    "data/derived/pd-film/the-viking_1928_frames.npy",
+    "data/derived/pd-film/the_shadow_strikes_frames.npy"
+  ],
+  "steps": [
+    {
+      "step": 0,
+      "loss": 4.159465312957764,
+      "top1": 0.015625,
+      "sd": 0.0,
+      "pixel_top1": 0.32421875,
+      "pixel_sd": 0.057807221042768524,
+      "x_chance": 1.0,
+      "vs_pixel": -0.30859375
+    },
+    {
+      "step": 250,
+      "loss": 3.0072410106658936,
+      "top1": 0.0625,
+      "sd": 0.03314563036811941,
+      "pixel_top1": 0.306640625,
+      "pixel_sd": 0.04998626520339737,
+      "x_chance": 4.0,
+      "vs_pixel": -0.244140625
+    },
+    {
+      "step": 500,
+      "loss": 3.6181488037109375,
+      "top1": 0.111328125,
+      "sd": 0.022693261794184082,
+      "pixel_top1": 0.34765625,
+      "pixel_sd": 0.051674830294230284,
+      "x_chance": 7.125,
+      "vs_pixel": -0.236328125
+    }
+  ]
+}

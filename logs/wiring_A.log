@@ -1,0 +1,36 @@
+=== A surface_occ_random 10:47:45
+sheet: surface, long-range random | port occipital = 3179 sites
+16,540 pairs | 64 ch x 25 samples | params 10,124,624 (3,840,000 association) | pool 200, chance 0.50%
+/home/brandonin/Documents/IBM-1/scripts/train_visual_contrastive.py:181: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  "v_absmax": float(s[0].abs().max()), "sec": round(time.time() - t0, 1)}
+    0  loss 4.9429  top-1  0.50% +/-0.00  (1.0x chance)  r_eff  2.76      31s  <- best, checkpointed
+  100  loss 4.3643  top-1  2.19% +/-0.66  (4.4x chance)  r_eff  1.72     748s  <- best, checkpointed
+  200  loss 4.0479  top-1  2.62% +/-1.11  (5.2x chance)  r_eff  2.58    1457s  <- best, checkpointed
+  300  loss 3.7266  top-1  4.37% +/-1.73  (8.7x chance)  r_eff  3.30    2164s  <- best, checkpointed
+  400  loss 3.3261  top-1  4.75% +/-1.03  (9.5x chance)  r_eff  3.79    2882s  <- best, checkpointed
+  500  loss 3.1061  top-1  5.44% +/-1.81  (10.9x chance)  r_eff  4.88    3602s  <- best, checkpointed
+  600  loss 2.5856  top-1  7.94% +/-1.51  (15.9x chance)  r_eff  4.59    4325s  <- best, checkpointed
+  700  loss 2.2133  top-1  9.37% +/-1.43  (18.7x chance)  r_eff  5.55    5030s  <- best, checkpointed
+  800  loss 2.2547  top-1  9.62% +/-1.67  (19.2x chance)  r_eff  5.22    5750s  <- best, checkpointed
+  900  loss 2.0648  top-1 12.12% +/-2.26  (24.2x chance)  r_eff  5.42    6472s  <- best, checkpointed
+ 1000  loss 1.6549  top-1 13.75% +/-1.30  (27.5x chance)  r_eff  6.15    7193s  <- best, checkpointed
+ 1100  loss 1.4772  top-1 16.44% +/-2.70  (32.9x chance)  r_eff  6.39    7920s  <- best, checkpointed
+ 1200  loss 1.0220  top-1 16.75% +/-1.32  (33.5x chance)  r_eff  6.56    8634s  <- best, checkpointed
+best held-out top-1: 16.75% (33.5x chance)
+=== A sphere_slice 13:11:48
+sheet: sphere, long-range random | port slice[:n//8] = 3750 sites
+16,540 pairs | 64 ch x 25 samples | params 10,271,371 (3,840,000 association) | pool 200, chance 0.50%
+/home/brandonin/Documents/IBM-1/scripts/train_visual_contrastive.py:181: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  "v_absmax": float(s[0].abs().max()), "sec": round(time.time() - t0, 1)}
+    0  loss 4.9704  top-1  0.50% +/-0.00  (1.0x chance)  r_eff  3.17      24s  <- best, checkpointed
+  100  loss 4.2941  top-1  1.25% +/-0.56  (2.5x chance)  r_eff  1.29     949s  <- best, checkpointed
+  200  loss 3.9765  top-1  2.37% +/-0.60  (4.7x chance)  r_eff  1.84    1892s  <- best, checkpointed
+  300  loss 3.5806  top-1  4.69% +/-1.56  (9.4x chance)  r_eff  2.24    2825s  <- best, checkpointed
+  400  loss 3.3310  top-1  5.00% +/-0.83  (10.0x chance)  r_eff  2.10    3757s  <- best, checkpointed
+  500  loss 3.3598  top-1  5.69% +/-1.82  (11.4x chance)  r_eff  2.53    4685s  <- best, checkpointed
+  600  loss 3.2074  top-1  7.81% +/-1.25  (15.6x chance)  r_eff  2.33    5419s  <- best, checkpointed
+  700  loss 2.5457  top-1  8.37% +/-1.83  (16.7x chance)  r_eff  2.90    6144s  <- best, checkpointed
+  800  loss 2.5092  top-1  9.75% +/-1.52  (19.5x chance)  r_eff  2.53    6852s  <- best, checkpointed
+  900  loss 2.0841  top-1 11.06% +/-1.61  (22.1x chance)  r_eff  2.51    7560s  <- best, checkpointed

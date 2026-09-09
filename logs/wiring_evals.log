@@ -1,0 +1,482 @@
+PHASE1 13:13:17
+  sheet surface, long-range random, port occipital
+ckpt/wiring_surface_occ_random.pt: step 1200
+designated test set: 200 images, 64 ch x 25 samples, 80 repetitions each.  pool = the whole set, chance = 0.50%
+
+  full       top-1 40.00%  top-5 74.50%  median rank   2.0  (80.0x chance)
+  frozen     top-1 42.00%  top-5 78.00%  median rank   2.0  (84.0x chance)
+  no_assoc   top-1 42.00%  top-5 78.00%  median rank   2.0  (84.0x chance)
+  bypass     top-1  6.50%  top-5 23.00%  median rank  21.0  (13.0x chance)
+
+  arm         top-1    retained
+  full        40.00%    100.0%
+  frozen      42.00%    105.0%
+  no_assoc    42.00%    105.0%
+  bypass       6.50%     16.3%
+ckpt/wiring_surface_occ_random.pt head=model step=1200  n=30000 k=48 n_far=12 device=cuda
+/home/brandonin/Documents/IBM-1/scripts/measure_hop_transfer.py:207: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"w_assoc={float(dyn.w_assoc):.4f} w_ee={float(dyn.w_ee):.4f} "
+w_assoc=0.5364 w_ee=0.3147 w_ei=0.1695 a_gain=0.0889
+integrator h=2.50 ms, tau_m=15 ms; short run 16 steps = 2.67 tau_m, long run 400 steps = 66.7 tau_m
+
+edge weights: |w| mean 6.801e-03 max 2.008e-02; geo max 2.083e-02 (= 1/k = 2.083e-02)
+resting rate 7.330 Hz  -> v_op -65.15 mV
+linearised one-hop gain at that operating point:
+  dr/dv                     1.6981 Hz/mV
+  per-edge gain (mean|w|)   1.239e-03
+  row gain sum_j|w_ij|      mean 5.9460e-02 max 1.3098e-01
+  signed row gain |sum_j|   mean 3.7532e-02
+  (row gain is the spectral-radius scale of the linearised sheet; < 1 means strict attenuation)
+
+driving the whole occipital region: 3179 sites (10.6%)
+
+GATE zero-amplitude: max |dr| anywhere = 0.000e+00  PASS
+GATE severed kernel: hop0 |dr| = 31.4854 Hz, max |dr| off-seed = 0.000e+00  PASS
+
+=== short: 16 steps = 40 ms (2.7 tau_m), drive 10.0 mV at occipital (3179 sites) ===
+      hop   sites   mean|dr| Hz    vs hop0    per hop
+        0    3179  4.686280e+01  1.000e+00        nan
+        1   20148  3.377602e-02  7.207e-04  7.207e-04
+        2    6673  2.212075e-04  4.720e-06  6.549e-03
+     READ    2121  1.915815e-02  4.088e-04  8.661e+01
+
+=== steady: 400 steps = 1000 ms (66.7 tau_m), drive 10.0 mV at occipital (3179 sites) ===
+      hop   sites   mean|dr| Hz    vs hop0    per hop
+        0    3179  3.306740e+01  1.000e+00        nan
+        1   20148  3.481700e-02  1.053e-03  1.053e-03
+        2    6673  6.151655e-04  1.860e-05  1.767e-02
+     READ    2121  1.969787e-02  5.957e-04  3.202e+01
+
+wrote out/hop_surface_occ_random.json
+  graph recovered from top level
+ckpt/wiring_surface_occ_random.pt: step 1200, 30000 sites, k=48, 12 long-range edges per site
+  kernel: tanh_slope=2.0 long_gain=1.0 long_topm=0 local_gain=1.0 long_min_dist=0.0
+/home/brandonin/Documents/IBM-1/scripts/measure_multimodal_convergence.py:234: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  |w| mean {float(_w.abs().mean()):.4e}  "
+  |w| mean 6.8005e-03  row L1 mean 3.2643e-01  row L1/max mean 23.42  (48 = perfectly flat, 1 = one edge carries the row)
+  sight    -> occipital     3179 sites
+  hearing  -> temporal      5843 sites
+  touch    -> postcentral   1779 sites
+  readout  <- precentral    2121 sites
+
+  [control] undriven precentral variance 0.000e+00   (must be 0; it is the same state every trial)
+  [control] variance AT the driven occipital port 2.798e+00   (the scale transport is measured against)
+
+  modality     at own port   at precentral    transport
+  sight          2.798e+00       7.622e-07    2.725e-07
+  hearing        2.820e+00       1.209e-06    4.288e-07
+  touch          2.814e+00       4.037e-06    1.435e-06
+
+  precentral variance, all three driven   5.979e-06
+  same, as a linear sum of the parts      5.980e-06
+  ratio (1.0 = the sheet only superposes) 0.9998
+
+  best transport across the three modalities: 1.435e-06
+  -> NO CONVERGENCE -- the motor strip does not see the senses. the somato-motor materialization is blocked on the sheet not conducting, not on data or on the loss.
+  wrote out/convergence_surface_occ_random.json
+  sheet surface, long-range tract, port occipital
+ckpt/wiring_surface_occ_tract.pt: step 1200
+designated test set: 200 images, 64 ch x 25 samples, 80 repetitions each.  pool = the whole set, chance = 0.50%
+
+  full       top-1 36.00%  top-5 72.50%  median rank   2.0  (72.0x chance)
+  frozen     top-1 34.00%  top-5 73.50%  median rank   2.0  (68.0x chance)
+  no_assoc   top-1 34.50%  top-5 74.00%  median rank   2.0  (69.0x chance)
+  bypass     top-1  5.00%  top-5 15.00%  median rank  28.0  (10.0x chance)
+
+  arm         top-1    retained
+  full        36.00%    100.0%
+  frozen      34.00%     94.4%
+  no_assoc    34.50%     95.8%
+  bypass       5.00%     13.9%
+ckpt/wiring_surface_occ_tract.pt head=model step=1200  n=30000 k=48 n_far=12 device=cuda
+/home/brandonin/Documents/IBM-1/scripts/measure_hop_transfer.py:207: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"w_assoc={float(dyn.w_assoc):.4f} w_ee={float(dyn.w_ee):.4f} "
+w_assoc=0.5271 w_ee=0.3043 w_ei=0.1791 a_gain=0.0996
+integrator h=2.50 ms, tau_m=15 ms; short run 16 steps = 2.67 tau_m, long run 400 steps = 66.7 tau_m
+
+edge weights: |w| mean 6.485e-03 max 2.008e-02; geo max 2.083e-02 (= 1/k = 2.083e-02)
+resting rate 7.166 Hz  -> v_op -65.25 mV
+linearised one-hop gain at that operating point:
+  dr/dv                     1.6631 Hz/mV
+  per-edge gain (mean|w|)   1.137e-03
+  row gain sum_j|w_ij|      mean 5.4573e-02 max 1.3353e-01
+  signed row gain |sum_j|   mean 3.4087e-02
+  (row gain is the spectral-radius scale of the linearised sheet; < 1 means strict attenuation)
+
+driving the whole occipital region: 3179 sites (10.6%)
+
+GATE zero-amplitude: max |dr| anywhere = 0.000e+00  PASS
+GATE severed kernel: hop0 |dr| = 29.3868 Hz, max |dr| off-seed = 0.000e+00  PASS
+
+=== short: 16 steps = 40 ms (2.7 tau_m), drive 10.0 mV at occipital (3179 sites) ===
+      hop   sites   mean|dr| Hz    vs hop0    per hop
+        0    3179  4.616565e+01  1.000e+00        nan
+        1   11171  4.110809e-02  8.904e-04  8.904e-04
+        2   13741  4.710836e-05  1.020e-06  1.146e-03
+        3    1393  3.080786e-08  6.673e-10  6.540e-04
+        4     515  0.000000e+00  0.000e+00  0.000e+00
+        5       1  0.000000e+00  0.000e+00        nan
+     READ    2121  2.231850e-05  4.834e-07        nan
+
+=== steady: 400 steps = 1000 ms (66.7 tau_m), drive 10.0 mV at occipital (3179 sites) ===
+      hop   sites   mean|dr| Hz    vs hop0    per hop
+        0    3179  3.081569e+01  1.000e+00        nan
+        1   11171  3.857745e-02  1.252e-03  1.252e-03
+        2   13741  1.128150e-04  3.661e-06  2.924e-03
+        3    1393  5.839800e-07  1.895e-08  5.176e-03
+        4     515  0.000000e+00  0.000e+00  0.000e+00
+        5       1  0.000000e+00  0.000e+00        nan
+     READ    2121  5.232057e-05  1.698e-06        nan
+
+wrote out/hop_surface_occ_tract.json
+  graph recovered from top level
+ckpt/wiring_surface_occ_tract.pt: step 1200, 30000 sites, k=48, 12 long-range edges per site
+  kernel: tanh_slope=2.0 long_gain=1.0 long_topm=0 local_gain=1.0 long_min_dist=0.0
+/home/brandonin/Documents/IBM-1/scripts/measure_multimodal_convergence.py:234: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  |w| mean {float(_w.abs().mean()):.4e}  "
+  |w| mean 6.4850e-03  row L1 mean 3.1128e-01  row L1/max mean 22.94  (48 = perfectly flat, 1 = one edge carries the row)
+  sight    -> occipital     3179 sites
+  hearing  -> temporal      5843 sites
+  touch    -> postcentral   1779 sites
+  readout  <- precentral    2121 sites
+
+  [control] undriven precentral variance 0.000e+00   (must be 0; it is the same state every trial)
+  [control] variance AT the driven occipital port 2.756e+00   (the scale transport is measured against)
+
+  modality     at own port   at precentral    transport
+  sight          2.756e+00       3.926e-12    1.425e-12
+  hearing        2.764e+00       5.376e-12    1.945e-12
+  touch          2.767e+00       4.679e-06    1.691e-06
+
+  precentral variance, all three driven   4.679e-06
+  same, as a linear sum of the parts      4.679e-06
+  ratio (1.0 = the sheet only superposes) 1.0000
+
+  best transport across the three modalities: 1.691e-06
+  -> NO CONVERGENCE -- the motor strip does not see the senses. the somato-motor materialization is blocked on the sheet not conducting, not on data or on the loss.
+  wrote out/convergence_surface_occ_tract.json
+  graph recovered from top level
+  delays: {'mode': 'none'}
+ckpt/wiring_surface_occ_tract.pt: step 1200, 30000 sites, k=48, 12 long-range edges per site
+  kernel: tanh_slope=2.0 long_gain=1.0 long_topm=0 local_gain=1.0 long_min_dist=0.0
+/home/brandonin/Documents/IBM-1/scripts/measure_multimodal_convergence.py:234: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  |w| mean {float(_w.abs().mean()):.4e}  "
+  |w| mean 6.4850e-03  row L1 mean 3.1128e-01  row L1/max mean 22.94  (48 = perfectly flat, 1 = one edge carries the row)
+  sight    -> occipital     3179 sites
+  hearing  -> temporal      5843 sites
+  touch    -> postcentral   1779 sites
+  readout  <- precentral    2121 sites
+
+  [control] undriven precentral variance 0.000e+00   (must be 0; it is the same state every trial)
+  [control] variance AT the driven occipital port 2.756e+00   (the scale transport is measured against)
+
+  modality     at own port   at precentral    transport
+  sight          2.756e+00       3.926e-12    1.425e-12
+  hearing        2.764e+00       5.376e-12    1.945e-12
+  touch          2.767e+00       4.679e-06    1.691e-06
+
+  precentral variance, all three driven   4.679e-06
+  same, as a linear sum of the parts      4.679e-06
+  ratio (1.0 = the sheet only superposes) 1.0000
+
+  best transport across the three modalities: 1.691e-06
+  -> NO CONVERGENCE -- the motor strip does not see the senses. the somato-motor materialization is blocked on the sheet not conducting, not on data or on the loss.
+  wrote out/convergence_delay_none.json
+  graph recovered from top level
+  delays: {'mode': 'tract', 'threshold': 0.5, 'velocity_m_s': 8.0, 'frac_pairs_with_a_measured_length': 0.9378333333333333, 'fallback_length_mm': 33.08550029147994, 'mean_ms': 4.239669322967529}
+ckpt/wiring_surface_occ_tract.pt: step 1200, 30000 sites, k=48, 12 long-range edges per site
+  kernel: tanh_slope=2.0 long_gain=1.0 long_topm=0 local_gain=1.0 long_min_dist=0.0
+/home/brandonin/Documents/IBM-1/scripts/measure_multimodal_convergence.py:234: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  |w| mean {float(_w.abs().mean()):.4e}  "
+  |w| mean 6.4850e-03  row L1 mean 3.1128e-01  row L1/max mean 22.94  (48 = perfectly flat, 1 = one edge carries the row)
+  sight    -> occipital     3179 sites
+  hearing  -> temporal      5843 sites
+  touch    -> postcentral   1779 sites
+  readout  <- precentral    2121 sites
+
+  [control] undriven precentral variance 0.000e+00   (must be 0; it is the same state every trial)
+  [control] variance AT the driven occipital port 2.756e+00   (the scale transport is measured against)
+
+  modality     at own port   at precentral    transport
+  sight          2.756e+00       1.315e-12    4.770e-13
+  hearing        2.764e+00       1.909e-12    6.907e-13
+  touch          2.768e+00       4.509e-06    1.629e-06
+
+  precentral variance, all three driven   4.509e-06
+  same, as a linear sum of the parts      4.509e-06
+  ratio (1.0 = the sheet only superposes) 1.0000
+
+  best transport across the three modalities: 1.629e-06
+  -> NO CONVERGENCE -- the motor strip does not see the senses. the somato-motor materialization is blocked on the sheet not conducting, not on data or on the loss.
+  wrote out/convergence_delay_tract.json
+  graph recovered from top level
+  delays: {'mode': 'shuffled', 'threshold': 0.5, 'velocity_m_s': 8.0, 'frac_pairs_with_a_measured_length': 0.9378333333333333, 'fallback_length_mm': 33.08550029147994, 'mean_ms': 4.239669322967529}
+ckpt/wiring_surface_occ_tract.pt: step 1200, 30000 sites, k=48, 12 long-range edges per site
+  kernel: tanh_slope=2.0 long_gain=1.0 long_topm=0 local_gain=1.0 long_min_dist=0.0
+/home/brandonin/Documents/IBM-1/scripts/measure_multimodal_convergence.py:234: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  |w| mean {float(_w.abs().mean()):.4e}  "
+  |w| mean 6.4850e-03  row L1 mean 3.1128e-01  row L1/max mean 22.94  (48 = perfectly flat, 1 = one edge carries the row)
+  sight    -> occipital     3179 sites
+  hearing  -> temporal      5843 sites
+  touch    -> postcentral   1779 sites
+  readout  <- precentral    2121 sites
+
+  [control] undriven precentral variance 0.000e+00   (must be 0; it is the same state every trial)
+  [control] variance AT the driven occipital port 2.756e+00   (the scale transport is measured against)
+
+  modality     at own port   at precentral    transport
+  sight          2.756e+00       1.595e-12    5.789e-13
+  hearing        2.764e+00       2.165e-12    7.831e-13
+  touch          2.768e+00       4.386e-06    1.585e-06
+
+  precentral variance, all three driven   4.386e-06
+  same, as a linear sum of the parts      4.386e-06
+  ratio (1.0 = the sheet only superposes) 1.0000
+
+  best transport across the three modalities: 1.585e-06
+  -> NO CONVERGENCE -- the motor strip does not see the senses. the somato-motor materialization is blocked on the sheet not conducting, not on data or on the loss.
+  wrote out/convergence_delay_shuffled.json
+  graph recovered from top level
+  delays: {'mode': 'distance', 'velocity_m_s': 8.0, 'mean_ms': 6.660196718368617}
+ckpt/wiring_surface_occ_tract.pt: step 1200, 30000 sites, k=48, 12 long-range edges per site
+  kernel: tanh_slope=2.0 long_gain=1.0 long_topm=0 local_gain=1.0 long_min_dist=0.0
+/home/brandonin/Documents/IBM-1/scripts/measure_multimodal_convergence.py:234: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  |w| mean {float(_w.abs().mean()):.4e}  "
+  |w| mean 6.4850e-03  row L1 mean 3.1128e-01  row L1/max mean 22.94  (48 = perfectly flat, 1 = one edge carries the row)
+  sight    -> occipital     3179 sites
+  hearing  -> temporal      5843 sites
+  touch    -> postcentral   1779 sites
+  readout  <- precentral    2121 sites
+
+  [control] undriven precentral variance 0.000e+00   (must be 0; it is the same state every trial)
+  [control] variance AT the driven occipital port 2.755e+00   (the scale transport is measured against)
+
+  modality     at own port   at precentral    transport
+  sight          2.755e+00       5.800e-13    2.105e-13
+  hearing        2.765e+00       1.061e-12    3.837e-13
+  touch          2.768e+00       4.400e-06    1.589e-06
+
+  precentral variance, all three driven   4.400e-06
+  same, as a linear sum of the parts      4.400e-06
+  ratio (1.0 = the sheet only superposes) 1.0000
+
+  best transport across the three modalities: 1.589e-06
+  -> NO CONVERGENCE -- the motor strip does not see the senses. the somato-motor materialization is blocked on the sheet not conducting, not on data or on the loss.
+  wrote out/convergence_delay_distance.json
+ckpt/wiring_surface_occ_random.pt step=1200: drive occipital (3179) -> read precentral (2121), disjoint
+/home/brandonin/Documents/IBM-1/scripts/ablate_disjoint_transport.py:292: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:213.)
+  x = torch.from_numpy(np.ascontiguousarray(imgs[sl]))
+train 8000, held-out 1600 = 8 pools of 200 (chance 0.50%)
+
+### base: tanh_slope=2.0 long_gain=1.0 long_topm=0 local_gain=1.0 long_min_dist=0.0   row L1 gain 0.3264  |w| mean 6.801e-03
+  intact    across-image sd of the precentral rate 1.2051e-02 Hz   effective rank 6.4 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1  11.50% +/- 2.63  ( 23.00x chance, 8 pools)   [train loss 0.1525 vs 6.9315 at chance, train top-1  94.1%]
+    noise  1.0e-03 Hz -> top-1   5.37% +/- 1.60  ( 10.75x chance, 8 pools)   [train loss 0.0013 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-02 Hz -> top-1   3.06% +/- 0.98  (  6.12x chance, 8 pools)   [train loss 0.0011 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   2.87% +/- 0.89  (  5.75x chance, 8 pools)   [train loss 0.0010 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   2.12% +/- 1.02  (  4.25x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   1.00% +/- 0.56  (  2.00x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+  treatment fingerprint, train == held-out: relabel|69535:[872, 1040, 1940, 1515, 1422, 1548, 1588, 1522]
+  relabel   across-image sd of the precentral rate 1.2051e-02 Hz   effective rank 6.4 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1  11.94% +/- 2.63  ( 23.87x chance, 8 pools)   [train loss 0.1049 vs 6.9315 at chance, train top-1  96.1%]
+    noise  1.0e-03 Hz -> top-1   4.19% +/- 0.75  (  8.37x chance, 8 pools)   [train loss 0.0013 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-02 Hz -> top-1   3.44% +/- 0.95  (  6.87x chance, 8 pools)   [train loss 0.0011 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   3.19% +/- 1.03  (  6.37x chance, 8 pools)   [train loss 0.0010 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   2.31% +/- 1.14  (  4.62x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   1.00% +/- 0.75  (  2.00x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   0.37% +/- 0.54  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   0.50% +/- 0.66  (  1.00x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+  severed   across-image sd of the precentral rate 0.0000e+00 Hz   effective rank 1.0 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)   [train loss 6.9315 vs 6.9315 at chance, train top-1   0.1%]
+    noise  1.0e-03 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-02 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+  treatment fingerprint, train == held-out: permuted|940405:[8865, 16156, 11506, 19149, 9535, 21532, 29646, 7495]
+  permuted  across-image sd of the precentral rate 1.1012e-02 Hz   effective rank 6.4 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1  13.06% +/- 2.31  ( 26.12x chance, 8 pools)   [train loss 0.2956 vs 6.9315 at chance, train top-1  89.2%]
+    noise  1.0e-03 Hz -> top-1   4.87% +/- 1.39  (  9.75x chance, 8 pools)   [train loss 0.0014 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-02 Hz -> top-1   3.37% +/- 1.02  (  6.75x chance, 8 pools)   [train loss 0.0011 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   2.44% +/- 0.77  (  4.87x chance, 8 pools)   [train loss 0.0010 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   1.25% +/- 0.56  (  2.50x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   0.44% +/- 0.39  (  0.87x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   0.31% +/- 0.50  (  0.62x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   0.31% +/- 0.43  (  0.62x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+
+### aniso: tanh_slope=2.0 long_gain=8.0 long_topm=4 local_gain=1.0 long_min_dist=120.0   row L1 gain 0.6096  |w| mean 1.270e-02
+  intact    across-image sd of the precentral rate 1.4689e-01 Hz   effective rank 6.9 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1  12.06% +/- 3.10  ( 24.12x chance, 8 pools)   [train loss 0.2898 vs 6.9315 at chance, train top-1  88.6%]
+    noise  1.0e-03 Hz -> top-1  10.94% +/- 2.14  ( 21.87x chance, 8 pools)   [train loss 0.0250 vs 6.9315 at chance, train top-1  99.8%]
+    noise  1.0e-02 Hz -> top-1   3.87% +/- 1.29  (  7.75x chance, 8 pools)   [train loss 0.0012 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   3.56% +/- 1.04  (  7.12x chance, 8 pools)   [train loss 0.0011 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   3.75% +/- 0.75  (  7.50x chance, 8 pools)   [train loss 0.0010 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   2.75% +/- 1.00  (  5.50x chance, 8 pools)   [train loss 0.0010 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   2.56% +/- 1.04  (  5.12x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   1.69% +/- 0.61  (  3.37x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+  treatment fingerprint, train == held-out: relabel|61918:[2046, 1642, 1015, 730, 598, 1221, 1106, 2059]
+  relabel   across-image sd of the precentral rate 1.4689e-01 Hz   effective rank 6.9 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1  11.06% +/- 1.79  ( 22.12x chance, 8 pools)   [train loss 0.0725 vs 6.9315 at chance, train top-1  96.8%]
+    noise  1.0e-03 Hz -> top-1  10.94% +/- 1.47  ( 21.87x chance, 8 pools)   [train loss 0.3404 vs 6.9315 at chance, train top-1  86.4%]
+    noise  1.0e-02 Hz -> top-1   4.19% +/- 1.20  (  8.37x chance, 8 pools)   [train loss 0.0012 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   3.31% +/- 0.79  (  6.62x chance, 8 pools)   [train loss 0.0011 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   3.37% +/- 1.22  (  6.75x chance, 8 pools)   [train loss 0.0010 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   2.37% +/- 0.70  (  4.75x chance, 8 pools)   [train loss 0.0010 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   2.06% +/- 0.68  (  4.12x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   1.06% +/- 0.77  (  2.12x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+  severed   across-image sd of the precentral rate 0.0000e+00 Hz   effective rank 1.0 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)   [train loss 6.9315 vs 6.9315 at chance, train top-1   0.1%]
+    noise  1.0e-03 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-02 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+  treatment fingerprint, train == held-out: permuted|890132:[17429, 8061, 19293, 4678, 4906, 19156, 17798, 5945]
+  permuted  across-image sd of the precentral rate 1.1576e-01 Hz   effective rank 6.3 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1  12.44% +/- 1.84  ( 24.87x chance, 8 pools)   [train loss 0.1963 vs 6.9315 at chance, train top-1  92.5%]
+    noise  1.0e-03 Hz -> top-1   9.50% +/- 1.56  ( 19.00x chance, 8 pools)   [train loss 0.0075 vs 6.9315 at chance, train top-1  99.8%]
+    noise  1.0e-02 Hz -> top-1   3.81% +/- 0.70  (  7.62x chance, 8 pools)   [train loss 0.0010 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   3.75% +/- 0.94  (  7.50x chance, 8 pools)   [train loss 0.0010 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   2.75% +/- 1.12  (  5.50x chance, 8 pools)   [train loss 0.0010 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   3.12% +/- 0.78  (  6.25x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   2.19% +/- 0.90  (  4.37x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   1.44% +/- 0.73  (  2.87x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+
+config         noise    intact   severed  permuted  sever ratio
+base         0.0e+00    23.00x     1.00x    26.12x        23.00
+base         1.0e-03    10.75x     0.75x     9.75x        14.33
+base         1.0e-02     6.12x     0.75x     6.75x         8.17
+base         3.0e-02     5.75x     0.75x     4.87x         7.67
+base         1.0e-01     4.25x     0.75x     2.50x         5.67
+base         3.0e-01     2.00x     0.75x     0.87x         2.67
+base         1.0e+00     0.75x     0.75x     0.62x         1.00
+base         3.0e+00     0.75x     0.75x     0.62x         1.00
+aniso        0.0e+00    24.12x     1.00x    24.87x        24.13
+aniso        1.0e-03    21.87x     0.75x    19.00x        29.17
+aniso        1.0e-02     7.75x     0.75x     7.62x        10.33
+aniso        3.0e-02     7.12x     0.75x     7.50x         9.50
+aniso        1.0e-01     7.50x     0.75x     5.50x        10.00
+aniso        3.0e-01     5.50x     0.75x     6.25x         7.33
+aniso        1.0e+00     5.12x     0.75x     4.37x         6.83
+aniso        3.0e+00     3.37x     0.75x     2.87x         4.50
+
+wrote out/disjoint_surface_occ_random.json
+ckpt/wiring_surface_occ_tract.pt step=1200: drive occipital (3179) -> read precentral (2121), disjoint
+/home/brandonin/Documents/IBM-1/scripts/ablate_disjoint_transport.py:292: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:213.)
+  x = torch.from_numpy(np.ascontiguousarray(imgs[sl]))
+train 8000, held-out 1600 = 8 pools of 200 (chance 0.50%)
+
+### base: tanh_slope=2.0 long_gain=1.0 long_topm=0 local_gain=1.0 long_min_dist=0.0   row L1 gain 0.3113  |w| mean 6.485e-03
+  intact    across-image sd of the precentral rate 4.3452e-05 Hz   effective rank 3.1 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1   0.50% +/- 0.25  (  1.00x chance, 8 pools)   [train loss 6.9289 vs 6.9315 at chance, train top-1   0.1%]
+    noise  1.0e-03 Hz -> top-1   0.87% +/- 0.74  (  1.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-02 Hz -> top-1   0.31% +/- 0.43  (  0.62x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   0.31% +/- 0.43  (  0.62x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+  treatment fingerprint, train == held-out: relabel|69535:[872, 1040, 1940, 1515, 1422, 1548, 1588, 1522]
+  relabel   across-image sd of the precentral rate 4.3452e-05 Hz   effective rank 3.1 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)   [train loss 6.9312 vs 6.9315 at chance, train top-1   0.2%]
+    noise  1.0e-03 Hz -> top-1   0.75% +/- 0.50  (  1.50x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-02 Hz -> top-1   0.31% +/- 0.43  (  0.62x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+  severed   across-image sd of the precentral rate 0.0000e+00 Hz   effective rank nan (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)   [train loss 6.9319 vs 6.9315 at chance, train top-1   0.1%]
+    noise  1.0e-03 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-02 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+  treatment fingerprint, train == held-out: permuted|940405:[8865, 16156, 11506, 19149, 9535, 21532, 29646, 7495]
+  permuted  across-image sd of the precentral rate 4.5844e-05 Hz   effective rank 3.1 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)   [train loss 6.9314 vs 6.9315 at chance, train top-1   0.1%]
+    noise  1.0e-03 Hz -> top-1   0.62% +/- 0.74  (  1.25x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-02 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   0.31% +/- 0.43  (  0.62x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+
+### aniso: tanh_slope=2.0 long_gain=8.0 long_topm=4 local_gain=1.0 long_min_dist=120.0   row L1 gain 0.6050  |w| mean 1.260e-02
+  intact    across-image sd of the precentral rate 4.1038e-03 Hz   effective rank 5.5 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1   9.62% +/- 1.65  ( 19.25x chance, 8 pools)   [train loss 0.0275 vs 6.9315 at chance, train top-1  99.1%]
+    noise  1.0e-03 Hz -> top-1   2.75% +/- 1.44  (  5.50x chance, 8 pools)   [train loss 0.0010 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-02 Hz -> top-1   2.37% +/- 1.14  (  4.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   1.69% +/- 0.70  (  3.37x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   1.56% +/- 0.92  (  3.12x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   0.62% +/- 0.60  (  1.25x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   0.31% +/- 0.43  (  0.62x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+  treatment fingerprint, train == held-out: relabel|61918:[2046, 1642, 1015, 730, 598, 1221, 1106, 2059]
+  relabel   across-image sd of the precentral rate 4.1038e-03 Hz   effective rank 5.5 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1  10.81% +/- 1.09  ( 21.62x chance, 8 pools)   [train loss 0.0331 vs 6.9315 at chance, train top-1  99.2%]
+    noise  1.0e-03 Hz -> top-1   2.37% +/- 0.70  (  4.75x chance, 8 pools)   [train loss 0.0011 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-02 Hz -> top-1   2.44% +/- 0.63  (  4.87x chance, 8 pools)   [train loss 0.0010 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   1.62% +/- 0.70  (  3.25x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   1.25% +/- 0.66  (  2.50x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   0.50% +/- 0.43  (  1.00x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   0.37% +/- 0.54  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+  severed   across-image sd of the precentral rate 0.0000e+00 Hz   effective rank nan (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)   [train loss 6.9319 vs 6.9315 at chance, train top-1   0.1%]
+    noise  1.0e-03 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-02 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   0.37% +/- 0.48  (  0.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+  treatment fingerprint, train == held-out: permuted|890132:[17429, 8061, 19293, 4678, 4906, 19156, 17798, 5945]
+  permuted  across-image sd of the precentral rate 3.6971e-03 Hz   effective rank 5.3 (of 2048 images x 2121 sites)
+    noise  0.0e+00 Hz -> top-1   6.00% +/- 1.27  ( 12.00x chance, 8 pools)   [train loss 3.9642 vs 6.9315 at chance, train top-1  12.5%]
+    noise  1.0e-03 Hz -> top-1   2.62% +/- 0.70  (  5.25x chance, 8 pools)   [train loss 0.0010 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-02 Hz -> top-1   1.75% +/- 0.61  (  3.50x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-02 Hz -> top-1   1.37% +/- 0.86  (  2.75x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e-01 Hz -> top-1   1.31% +/- 1.03  (  2.62x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e-01 Hz -> top-1   0.81% +/- 1.14  (  1.62x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  1.0e+00 Hz -> top-1   0.44% +/- 0.58  (  0.87x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+    noise  3.0e+00 Hz -> top-1   0.31% +/- 0.43  (  0.62x chance, 8 pools)   [train loss 0.0009 vs 6.9315 at chance, train top-1 100.0%]
+
+config         noise    intact   severed  permuted  sever ratio
+base         0.0e+00     1.00x     1.00x     1.00x         1.00
+base         1.0e-03     1.75x     0.75x     1.25x         2.33
+base         1.0e-02     0.62x     0.75x     0.50x         0.83
+base         3.0e-02     0.62x     0.75x     0.62x         0.83
+base         1.0e-01     0.75x     0.75x     0.75x         1.00
+base         3.0e-01     0.75x     0.75x     0.75x         1.00
+base         1.0e+00     0.75x     0.75x     0.75x         1.00
+base         3.0e+00     0.75x     0.75x     0.75x         1.00
+aniso        0.0e+00    19.25x     1.00x    12.00x        19.25
+aniso        1.0e-03     5.50x     0.75x     5.25x         7.33
+aniso        1.0e-02     4.75x     0.75x     3.50x         6.33
+aniso        3.0e-02     3.37x     0.75x     2.75x         4.50
+aniso        1.0e-01     3.12x     0.75x     2.62x         4.17
+aniso        3.0e-01     1.25x     0.75x     1.62x         1.67
+aniso        1.0e+00     0.62x     0.75x     0.87x         0.83
+aniso        3.0e+00     0.75x     0.75x     0.62x         1.00
+
+wrote out/disjoint_surface_occ_tract.json
+PHASE1 DONE 14:32:06
