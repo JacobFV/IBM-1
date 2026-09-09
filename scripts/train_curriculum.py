@@ -416,13 +416,80 @@ class CochlearNerve(AudioMEG):
                           f"{flag}"}
 
 
+class BodyStance:
+    """muscle state -> cortex -> motor command.  the body, as one more corpus.
+
+    the same shape as every other materialization here: a fixed paired corpus, a
+    head, and a loss against an explicit baseline.  vision is (image, evoked
+    EEG); hearing is (cochleagram, MEG); this is (muscle state, motor command),
+    recorded once from IHM-1's engineered LQR holding a 70 kg body upright for
+    12 s under perturbation.  the physics ran during collection, not here -- a
+    curriculum step stays 1.45 s instead of becoming 300.
+
+    **the teacher is the LQR and that is the design constraint, not a detail.**
+    measured on IHM-1's body: the bare postural servo falls at 1.19 s, the servo
+    with equilibrium excitations falls at 1.97 s, the LQR holds.  the first two
+    produce a corpus of a body falling over, and an earlier attempt that cloned
+    one had every ablation arm lose to predicting the mean -- there is nothing to
+    learn from a controller that is failing.  the LQR is also the only teacher
+    INDEPENDENT of this kernel: IHM's cortical stance controller also holds, but
+    it is built from this kernel by an offline decoder fit, so cloning it would
+    be circular.
+
+    **the ceiling is known and it is high.**  the LQR is u = -Kx, so the map is
+    linear and a ridge regression on the same split reaches skill +0.9801 against
+    predicting the training mean.  that is what this term is being asked to do,
+    and reporting anything below it as success would be reporting a failure.
+    """
+    name = "body_stance"
+    CEILING = 0.9801          # ridge on the same split, measured
+
+    def __init__(self, dyn, dev, a):
+        self.dev, self.a = dev, a
+        d = "data/derived/body-corpus"
+        X = np.load(f"{d}/state.npy"); Y = np.load(f"{d}/command.npy")
+        meta = json.load(open(f"{d}/meta.json"))
+        self.muscles = meta["muscles"]
+        n = len(X); self.ntr = int(n * 0.8)
+        # contiguous split with a guard band: consecutive body states at 100 Hz
+        # are near-duplicates and a random split leaks the test set.
+        self.gap = max(1, n // 50)
+        self.X = torch.from_numpy(X).to(dev); self.Y = torch.from_numpy(Y).to(dev)
+        self.n = n
+        self.mean_mse = float(((self.Y[self.ntr + self.gap:] -
+                                self.Y[:self.ntr].mean(0)) ** 2).mean())
+        self.model = P.SensorimotorLoop(dyn, muscles=self.muscles,
+                                        afferent_channels=X.shape[1]).to(dev)
+
+    def params(self):
+        return [p for n, p in self.model.named_parameters() if not n.startswith("dyn.")]
+
+    def loss(self, rng):
+        i = rng.integers(0, self.ntr, min(self.a.batch, self.ntr))
+        idx = torch.from_numpy(i).to(self.dev)
+        pred, s = self.model(self.X[idx], n_steps=8, substeps=2)
+        return F.mse_loss(pred, self.Y[idx]) + 1e-1 * P.viability_penalty(s[0])
+
+    @torch.no_grad()
+    def evaluate(self, step):
+        te = slice(self.ntr + self.gap, self.n)
+        pred, _ = self.model(self.X[te], n_steps=8, substeps=2)
+        mse = float(F.mse_loss(pred, self.Y[te]))
+        skill = 1 - mse / self.mean_mse
+        return {"held_mse": mse, "skill_vs_mean": skill, "ceiling": self.CEILING,
+                "report": f"skill vs mean {skill:+.4f} (ridge ceiling "
+                          f"{self.CEILING:+.4f})"}
+
+
 OBJECTIVES = {"visual_eeg": VisualEEG, "audio_meg": AudioMEG, "video": VideoNext,
               "audio_visual": AudioVisual,
               # the nerve-routed pair: same data and target as visual_eeg and
               # audio_meg, but entering through a DECLARED pathway into the lobe
               # the region assignment names, rather than an index slice.  run
               # beside them, the difference is what the anatomy is worth.
-              "optic_nerve": OpticNerve, "cochlear_nerve": CochlearNerve}
+              "optic_nerve": OpticNerve, "cochlear_nerve": CochlearNerve,
+              # the body: one more corpus in the soup, sharing the kernel
+              "body_stance": BodyStance}
 # ten per-subject visual terms, built from the array the pairing builder keeps
 # for exactly this purpose.  they share the stimulus, so what the kernel learns
 # across them is common structure and what each head learns is that subject.
@@ -510,10 +577,11 @@ def main() -> None:
             if n.startswith("visual_eeg_s"): return "subjects"
             if n in ("video", "audio_visual"): return "selfsup"
             if n.endswith("_nerve"): return "nerve"
+            if n == "body_stance": return "body"
             return "paired"
-        GROUPS = [(0.33, {"selfsup": .30, "paired": .25, "subjects": .25, "nerve": .20}),
-                  (0.66, {"selfsup": .20, "paired": .25, "subjects": .35, "nerve": .20}),
-                  (1.00, {"selfsup": .15, "paired": .25, "subjects": .40, "nerve": .20})]
+        GROUPS = [(0.33, {"selfsup": .25, "paired": .22, "subjects": .21, "nerve": .17, "body": .15}),
+                  (0.66, {"selfsup": .17, "paired": .22, "subjects": .29, "nerve": .17, "body": .15}),
+                  (1.00, {"selfsup": .13, "paired": .22, "subjects": .33, "nerve": .17, "body": .15})]
         phases = []
         for until, gw in GROUPS:
             members = {}
