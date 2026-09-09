@@ -67,9 +67,22 @@ def main() -> None:
     y = np.clip((ev.astype(np.float32) - med) / iqr, -6, 6)[..., ONSET:ONSET + KEEP:dec]
     T, C = y.shape[-1], ev.shape[1]
 
-    dyn = P.CorticalDynamics(n_sites, embed, k, dev, long_range=cfg["long_range"]).to(dev)
-    model = P.VisualContrastiveLoop(dyn, n_sensors=C, n_times=T).to(dev)
+    # the SHEET and the PORT come from the checkpoint's own config, never from
+    # this script's defaults.  a checkpoint trained on the spherical proxy and
+    # reloaded onto a surface sheet would restore its own `pos` buffer and be
+    # fine, but a checkpoint whose image port is a region rather than the
+    # `[:n//8]` slice has a differently sized `to_cortex`, so getting this wrong
+    # is a shape error at best and a silently different port at worst.
+    dyn = P.dynamics_from_state_dict(
+        sd, dev, long_range=cfg["long_range"],
+        geometry=cfg.get("geometry", "sphere"),
+        long_topology=cfg.get("long_topology", "random")).to(dev)
+    model = P.VisualContrastiveLoop(dyn, n_sensors=C, n_times=T,
+                                    port_region=cfg.get("port_region")).to(dev)
     model.load_state_dict(sd)
+    print(f"  sheet {cfg.get('geometry', 'sphere')}, long-range "
+          f"{cfg.get('long_topology', 'random')}, port "
+          f"{cfg.get('port_region') or 'slice[:n//8]'}", flush=True)
     model.eval()
     print(f"{a.ckpt}: step {d['step']}", flush=True)
     print(f"designated test set: {n} images, {C} ch x {T} samples, 80 repetitions "

@@ -201,8 +201,12 @@ def cortical_regions(pos):
     return torch.from_numpy(np.ascontiguousarray(lab)).to(pos.device)
 
 
-def region_index(pos, name: str):
+def region_index(pos, name):
     """the site indices belonging to a lobe, a gyrus, or a hemisphere's gyrus.
+
+    `name` may also be a sequence of names, in which case the union is returned
+    -- the interoceptive target is three DK labels (insula plus the two anterior
+    cingulate divisions) and no single label collects them.
 
     on the atlas sheet `name` may be a lobe (`"occipital"` ... plus `"insula"`
     and `"cingulate"`, which the sphere could not express), a bare DK gyrus
@@ -216,6 +220,10 @@ def region_index(pos, name: str):
     lateral sulcus", and a substitution that raises when it is no longer needed
     is a substitution that cannot be left in by accident.
     """
+    if not isinstance(name, str):
+        names = tuple(name)
+        got = torch.cat([region_index(pos, x) for x in names])
+        return torch.unique(got)
     if is_spherical_proxy(pos):
         if name not in SPHERE_LOBES:
             raise KeyError(
@@ -825,10 +833,30 @@ class VisualContrastiveLoop(nn.Module):
     """
 
     def __init__(self, dyn: CorticalDynamics, n_sensors: int = 64, n_times: int = 25,
-                 dim: int = 128, hidden: int = 256, read_sites: int = 4096):
+                 dim: int = 128, hidden: int = 256, read_sites: int = 4096,
+                 port_region: str | None = None):
         super().__init__()
         self.dyn, self.n_times = dyn, n_times
-        self.port = dyn.n // 8
+        # THE PORT.  the docstring above says "the image drives the occipital
+        # port" and until `port_region` existed that was not true: the drive went
+        # to `drive[:, :n // 8]`, the first eighth of the site list, which is
+        # exactly the habit `cortical_regions` was written to end -- "the name
+        # asserted an anatomy the index did not have".
+        #
+        # the default stays the slice, because every checkpoint on disk was
+        # trained with it and a head that silently moved its own input port would
+        # make those checkpoints unloadable in meaning if not in shape.  passing
+        # `port_region="occipital"` makes the name true.
+        self.port_region = port_region
+        if port_region is None:
+            self.port = dyn.n // 8
+            self.register_buffer("port_idx",
+                                 torch.arange(self.port, device=dyn.pos.device))
+        else:
+            idx = region_index(dyn.pos, port_region)
+            self.port = len(idx)
+            self.register_buffer("port_idx", idx)
+        self.port_size = self.port
         self.enc = nn.Sequential(
             nn.Conv2d(3, 32, 4, 2, 1), nn.GELU(), nn.Conv2d(32, 64, 4, 2, 1), nn.GELU(),
             nn.Conv2d(64, 128, 4, 2, 1), nn.GELU(), nn.Flatten(),
@@ -858,7 +886,7 @@ class VisualContrastiveLoop(nn.Module):
         """
         b = img.shape[0]
         drive = torch.zeros(b, self.dyn.n, device=img.device)
-        drive[:, :self.port] = self.to_cortex(self.enc(img))
+        drive[:, self.port_idx.to(img.device)] = self.to_cortex(self.enc(img))
         s = self.dyn.init_state(b, img.device)
         w = self.dyn.edge_weights()
         h = dt / substeps
@@ -1147,8 +1175,24 @@ class InteroceptiveLoop(nn.Module):
         super().__init__()
         import ibm.interoception as IO
         self.dyn, self.dt, self.substeps = dyn, dt, substeps
-        self.lobe = IO.PORT_LOBE if lobe is None else lobe
-        self.port_substitution = IO.PORT_SUBSTITUTION
+        # THE PORT, and whether it is still a substitution.
+        #
+        # on the spherical proxy the insula is not separable at all, so the drive
+        # entered a `PORT_FRACTION` subsample of `frontal` and
+        # `IO.PORT_SUBSTITUTION` was carried into every report to say so.  on the
+        # fsaverage sheet the three DK labels the substitution was standing in
+        # for -- insula, rostral and caudal anterior cingulate -- are addressable,
+        # so the port IS the target and the whole label is driven rather than a
+        # fraction of a larger one.
+        on_sphere = is_spherical_proxy(dyn.pos)
+        if lobe is None:
+            self.lobe = IO.PORT_LOBE if on_sphere else IO.PORT_REGIONS
+        else:
+            self.lobe = lobe
+        self.port_substitution = (IO.PORT_SUBSTITUTION if on_sphere
+                                  else IO.PORT_SUBSTITUTION_ENDED)
+        if lobe is None and not on_sphere and port_frac is None:
+            port_frac = 1.0
         self.channels = list(channels)
 
         # -- resolve every channel to a declared port, or raise ---------------

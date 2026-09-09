@@ -115,7 +115,12 @@ def _load_kernel(ckpt: str, device):
             f"measured on the wrong topology.")
     print(f"  graph recovered from {src}", flush=True)
     k = idx.shape[1]
-    dyn = P.CorticalDynamics(n_sites, embed_dim, k, device).to(device)
+    cfg = d.get("config", {}) or {}
+    dyn = P.CorticalDynamics(
+        n_sites, embed_dim, k, device,
+        geometry=cfg.get("geometry", "sphere"),
+        long_topology=cfg.get("long_topology", "random"),
+        tract_delays="dyn.delay_s" in sd).to(device)
     # the graph is part of the trained object: the long-range partners were drawn
     # once at construction and the embeddings were learned against THAT graph.
     # rebuilding with a fresh draw would silently evaluate the learned weights on
@@ -123,9 +128,17 @@ def _load_kernel(ckpt: str, device):
     with torch.no_grad():
         dyn.embed.copy_(embed.to(device))
         dyn.idx.copy_(idx.to(device))
-        for name in ("geo", "pos"):
+        # `delay_s` joins this list for the same reason `idx` is on it: it is a
+        # per-edge property of the SAVED graph, and a redrawn one would time
+        # edges that were never trained with those delays.
+        for name in ("geo", "pos", "delay_s"):
             src = sd.get(f"dyn.{name}", d.get(f"dyn.{name}"))
             if src is not None:
+                if not hasattr(dyn, name):
+                    raise KeyError(
+                        f"checkpoint carries dyn.{name} and the rebuilt kernel "
+                        f"has no such buffer -- it was constructed without the "
+                        f"wiring the checkpoint was trained with")
                 getattr(dyn, name).copy_(src.to(device))
         for name in ("w_ee", "w_ei", "w_assoc", "a_gain", "log_len"):
             src = sd.get(f"dyn.{name}", d.get(f"dyn.{name}"))

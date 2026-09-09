@@ -66,15 +66,14 @@ ONSET, KEEP, DEC = 20, 50, 2
 
 def load_head(ckpt, device, head="visual_eeg"):
     d = torch.load(ckpt, map_location="cpu", weights_only=False)
-    sd = d["heads"][head]
-    n, emb = sd["dyn.embed"].shape
-    k = sd["dyn.idx"].shape[1]
-    dyn = P.CorticalDynamics(n, emb, k, device).to(device)
-    miss = dyn.load_state_dict({kk[4:]: v.to(device) for kk, v in sd.items()
-                                if kk.startswith("dyn.")}, strict=False)
-    assert not miss.missing_keys, miss.missing_keys
+    sd = d["heads"][head] if "heads" in d else d["model"]
+    cfg = d.get("config", {}) or {}
+    dyn = P.dynamics_from_state_dict(
+        sd, device, geometry=cfg.get("geometry", "sphere"),
+        long_topology=cfg.get("long_topology", "random")).to(device)
     model = P.VisualContrastiveLoop(dyn, n_sensors=64,
-                                    n_times=KEEP // DEC).to(device)
+                                    n_times=KEEP // DEC,
+                                    port_region=cfg.get("port_region")).to(device)
     model.load_state_dict(sd)
     model.eval()
     return model, dyn, d.get("step", -1)

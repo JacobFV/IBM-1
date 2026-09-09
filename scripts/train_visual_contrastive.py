@@ -65,12 +65,42 @@ def main() -> None:
                     help="dynamics passes before reading the embedding; this "
                          "head uses one state, so it does not need an epoch")
     ap.add_argument("--eval-every", type=int, default=100)
+    # ---- the sheet and its long-range wiring (docs/DISCONNECTS.md 2 and 3) ----
+    ap.add_argument("--geometry", default="surface", choices=("surface", "sphere"),
+                    help="surface: fsaverage white-surface vertices with a DK "
+                         "atlas.  sphere: the area-matched spherical proxy every "
+                         "checkpoint before this was trained on, kept so the "
+                         "change can be MEASURED against what it replaces")
+    ap.add_argument("--long-topology", default="random", choices=("random", "tract"),
+                    help="where the long-range partners go.  random is the "
+                         "status quo and the control; tract draws them from the "
+                         "braingraph HCP group connectome.  the two are matched "
+                         "by construction on edge count and on row L1")
+    ap.add_argument("--tract-threshold", type=float, default=0.5,
+                    help="edge-existence consensus: the fraction of the 1064 "
+                         "subjects an edge must appear in")
+    ap.add_argument("--tract-delays", action="store_true",
+                    help="carry the declared conduction delays on the long-range "
+                         "edges.  they only bite at a dt that resolves them -- "
+                         "the median declared delay is 3.8 ms")
+    ap.add_argument("--delay-shuffle", action="store_true",
+                    help="delay-matched control: the same multiset of delays, "
+                         "moved to randomly chosen edges")
+    ap.add_argument("--port-region", default=None,
+                    help="the region the image drives.  the default is None, "
+                         "which reproduces the arbitrary `[:n//8]` slice every "
+                         "existing checkpoint used and whose docstring called it "
+                         "'the occipital port' -- exactly the habit "
+                         "cortical_regions was written to end.  pass occipital "
+                         "to make the name true")
+    ap.add_argument("--graph-seed", type=int, default=0)
+    ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--ckpt", default="ckpt/visual_contrastive.pt")
     ap.add_argument("--out", default="out/visual_contrastive.json")
     a = ap.parse_args()
 
     dev = "cuda" if torch.cuda.is_available() else "cpu"
-    torch.manual_seed(0)
+    torch.manual_seed(a.seed)
     imgs = np.load(f"{D}/images_training.npy", mmap_mode="r")
     ev = np.load(f"{D}/evoked_training_groupmean.npy", mmap_mode="r")
     n = min(len(imgs), len(ev))
@@ -86,8 +116,20 @@ def main() -> None:
 
     T = eeg(np.arange(4)).shape[-1]
     C = ev.shape[1]
-    dyn = P.CorticalDynamics(a.sites, a.embed, a.k, dev, long_range=a.long_range).to(dev)
-    model = P.VisualContrastiveLoop(dyn, n_sensors=C, n_times=T).to(dev)
+    dyn = P.CorticalDynamics(
+        a.sites, a.embed, a.k, dev, long_range=a.long_range,
+        geometry=a.geometry, graph_seed=a.graph_seed,
+        long_topology=a.long_topology, tract_threshold=a.tract_threshold,
+        tract_delays=a.tract_delays, delay_shuffle=a.delay_shuffle).to(dev)
+    model = P.VisualContrastiveLoop(dyn, n_sensors=C, n_times=T,
+                                    port_region=a.port_region).to(dev)
+    print(f"sheet: {a.geometry}, long-range {a.long_topology}"
+          + (f" (consensus {a.tract_threshold}, "
+             f"delays {'on' if a.tract_delays else 'off'}"
+             f"{', SHUFFLED' if a.delay_shuffle else ''})"
+             if a.long_topology == "tract" else "")
+          + f" | port {a.port_region or 'slice[:n//8]'} = {model.port_size} sites",
+          flush=True)
     tot = sum(p.numel() for p in model.parameters())
     print(f"{n:,} pairs | {C} ch x {T} samples | params {tot:,} "
           f"({dyn.embed.numel():,} association) | pool {a.pool}, chance {100/a.pool:.2f}%",

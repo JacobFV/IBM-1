@@ -111,6 +111,22 @@ def afferent_classes(trunk: str) -> tuple[str, ...]:
 #: `scripts/pretrain_video_loop.py:cortical_regions` provides.  a named constant
 #: so that it is printed, logged and reported rather than living in a comment.
 PORT_LOBE = "frontal"
+
+#: the REAL target, now that the sheet has an atlas.  posterior and anterior
+#: insula plus anterior cingulate -- these three DK labels are the ones the
+#: paragraph above says a materialization through `ibm/materialize/build.py`
+#: would have and the pretraining loops did not.  `scripts/pretrain_video_loop.py`
+#: now places sites on the fsaverage white surface and labels them from
+#: `?h.aparc.annot`, so the substitution below applies ONLY to a run that
+#: explicitly asks for the spherical proxy, and `region_index` RAISES for
+#: "insula" on a sphere rather than quietly returning `frontal`.
+PORT_REGIONS = ("insula", "rostralanteriorcingulate", "caudalanteriorcingulate")
+PORT_SUBSTITUTION_ENDED = (
+    "the substitution below is HISTORICAL as of the fsaverage sheet.  measured "
+    "on the real surface: insula is 3.3% of white-surface area and the two "
+    "anterior cingulate divisions 2.0%, so the interoceptive target is 5.3% of "
+    "cortex -- close to the 4.5% the frontal-subsample fraction was chosen to "
+    "imitate, and now selected by label rather than by fraction.")
 PORT_SUBSTITUTION = (
     "insula and anterior cingulate are NOT separable on the six-label spherical "
     "proxy `cortical_regions` provides (occipital, temporal, parietal, frontal, "

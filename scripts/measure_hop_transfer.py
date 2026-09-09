@@ -167,12 +167,10 @@ def build(ckpt_path, device, head="visual_eeg"):
     # `torch.randint`, so a rebuilt sheet has a DIFFERENT graph that happens to
     # have the right shape -- the exact failure mode CLAUDE.md records for the
     # THINGS-EEG2 image order.
-    n, emb = sd["dyn.embed"].shape
-    k = sd["dyn.idx"].shape[1]
-    dyn = P.CorticalDynamics(n, emb, k, device).to(device)
-    got = dyn.load_state_dict({kk[4:]: v.to(device) for kk, v in sd.items()
-                               if kk.startswith("dyn.")}, strict=False)
-    assert not got.missing_keys, got.missing_keys
+    cfg = d.get("config", {}) or {}
+    dyn = P.dynamics_from_state_dict(
+        sd, device, geometry=cfg.get("geometry", "sphere"),
+        long_topology=cfg.get("long_topology", "random")).to(device)
     dyn.eval()
     return dyn, d
 
