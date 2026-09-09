@@ -308,6 +308,32 @@ Two consequences, and the second is the sharp one:
 
 - Nothing in a rendered environment can be touched, pushed, sat on or bumped
   into. The world is a backdrop.
+
+**The world assets are far more than I first credited, and the catalogue says
+exactly what is live.** `environment-catalogue-v1` holds **6 scenes** (bedroom,
+hospital room, clinic room, play room, grass field, garden patio), **6 surrounds
+with real geometry and sha256** (room shells, grass and patio ground sheets),
+**13 objects with meshes** (mattress, bed frame, rails, pillow, blanket,
+nightstand, IV stand, chair, table, tree, a 0.12 m block, and balls at 0.065 m
+and 0.11 m), and 9 components including four mattress firmnesses and three
+ambient temperatures.
+
+Several of those DO reach physics: mattress curves HM/MM/SM, ambient bounds
+10–35 °C, a 21,381-point skin contact quadrature, 22 inertial proxy bodies, and a
+scene ball that is a real Sphere with radius 0.065 m and mass 0.4 kg, integrated
+against the ground.
+
+The catalogue's own `not_selectable` list declares the gap without being asked:
+**`body_object_contact: False`**, "No engine solves it"; "The whole surround is
+visual"; "The scene has one collider, Sphere"; "the engine ground is a half space
+at a fixed offset", so rooms cannot be a fourth environment and terrain cannot be
+non-flat.
+
+So the honest gap is narrow and nameable rather than "no world": there is one
+collider type, it is integrated against the ground and **not against the body**,
+while the body already carries 28 contact elements. Sphere-against-body is the
+single connection that would let this body touch the ball that already exists in
+its scene.
 - **Prone locomotion is unrepresentable.** A crawling body has no contact on
   hands, knees, forearms, shins or torso, so it would pass through the floor
   everywhere except its soles. Crawling is not untuned here, it is impossible,
