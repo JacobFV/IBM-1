@@ -1,0 +1,19 @@
+{
+  "as-trained (occipital)": {
+    "top1": 0.08687499724328518,
+    "sd": 0.014776988661626909
+  },
+  "shifted (contiguous elsewhere)": {
+    "top1": 0.004999999888241291,
+    "sd": 0.0
+  },
+  "scattered (uniform random)": {
+    "top1": 0.00437499990221113,
+    "sd": 0.0016535945324546502
+  },
+  "antipodal": {
+    "top1": 0.004999999888241291,
+    "sd": 0.0
+  },
+  "verdict_gap_sd": 5.548373428052143
+}

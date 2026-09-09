@@ -43,6 +43,49 @@ already written.
 
 ---
 
+## 2026-09-08 (night) — the port placement carries the result, and what that does and does not mean
+
+`optic_nerve` trains.  solo on the remote it reaches **18.12% ± 1.95 at step
+2,000 — 36.2x chance**; inside the 16-way curriculum it is at 9.00% (18.0x) on a
+tenth of the budget.  the earlier collapse was starvation, not the architecture.
+
+comparing its curve against `visual_eeg` answers nothing, and that is worth
+saying because it was the obvious thing to do: `visual_eeg` was warm-started at
+26.75% and has been flat since, `optic_nerve` started from scratch and climbed to
+9.00%.  different starting points, so the levels are not comparable.
+
+the question the anatomy actually poses is whether it matters WHERE the drive
+enters, and that admits a direct test: take one trained model and move its port,
+changing nothing else.  8 pools of 200, chance 0.50%:
+
+| port | top-1 | vs chance |
+|---|---|---|
+| as-trained (occipital) | **8.69% ± 1.48** | 17.4x |
+| shifted (contiguous, elsewhere) | 0.50% ± 0.00 | 1.0x |
+| scattered (uniform random) | 0.44% ± 0.17 | 0.9x |
+| antipodal | 0.50% ± 0.00 | 1.0x |
+
+every displaced port collapses to chance.  a scattered port of **identical size**
+-- 3,775 of 30,000 sites — carries nothing.
+
+**what this establishes:** the model's performance depends on the drive entering
+the specific sites it was trained on.  the encoder and readout have not learned
+something port-independent; the geometry is load-bearing.
+
+**what it does not establish, and the distinction matters:** that OCCIPITAL is
+the right place.  this model was trained with an occipital port, so of course it
+fails when the port moves — any trained port would.  the honest reading is
+"placement matters", not "anatomical placement is correct".  testing the second
+claim needs models trained at different ports and compared on equal footing, and
+that has not been run.  the result is real and its scope is narrower than the
+framing invites.
+
+`cochlear_nerve` finally escaped collapse — 1.44% solo, 0.87% in the curriculum,
+against a 7.12% ceiling — after 5,000 steps of sitting at exactly chance.  the
+cause was never hearing: `audio_meg` uses the same corpus, batch and objective
+and sits at 5.81%, because it was warm-started and the cochlear term had nothing
+to start from.
+
 ## 2026-09-08 — fourteen materializations train, and sharing does not pay for itself
 
 fourteen terms against one kernel: the group-mean visual term, speech->MEG, video
