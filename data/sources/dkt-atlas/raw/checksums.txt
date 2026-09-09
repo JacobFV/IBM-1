@@ -1,1 +1,21 @@
 # sha256 manifest for dkt-atlas; written on acquisition
+# one recon-all subject; DKT is written per subject, not on a template, which is what the card's subject_surface_ras frame says
+bf4d3472e4bb41ed689da8ee99448a54f6622a306198893dc21c0f34a6848eae  somato-01/label/aparc.annot.DKTatlas.ctab
+5ef6481106a0200742bd3ef0234e2c5d997df9b43a281964969a0acaf61bf25d  somato-01/label/lh.aparc.DKTatlas.annot
+06597eb8b69cc1528f3fc16ffa437f7524f26848be0982f882a8d2bc13851a1e  somato-01/label/lh.aparc.annot
+ce6baf260f8da0e90be51680bed545cc0a11d60870c42f18040639603e4961b9  somato-01/label/lh.cortex.label
+46a2f28220095b5702760d8fba588988a85a66f358e25c8b87d6b1a77b89ed20  somato-01/label/rh.aparc.DKTatlas.annot
+27ac692db176b6423b507ec03bc20fe91039a20d50a6779d869343e8ea840f5f  somato-01/label/rh.aparc.annot
+f72906b2a90e1aace7f9605c108f76ba73c414a66f9d14ceb5f10f64788ad504  somato-01/label/rh.cortex.label
+773ba9571014b9f2c27120c373846b5e0ad951040a378f50714cb422ae618d3a  somato-01/surf/lh.curv
+63c64cf61a5353e3865e370e52ab03b6008f0ce1d933f9aa96bd9c89d007247c  somato-01/surf/lh.inflated
+bc95070be3beb712da9fc8328f8456a543aca2899ed2fd23e31ae155f70d538d  somato-01/surf/lh.pial
+86cbaff045c6553d01c031d28e713fc6dedc82fd562e456ee23c3fa9264a680f  somato-01/surf/lh.sphere
+dd812348ef22ae738b45a991953632dc330070cecfe02232d2ba3f1e68f1848a  somato-01/surf/lh.sulc
+041d428eb3716ef826b37d6b79a56362fd23e58e2ff666df873d531617f98820  somato-01/surf/lh.white
+5424de0a7124f3cd5f24239163d742ef772040912d8cf45c28d3e36c1987e539  somato-01/surf/rh.curv
+dc7a1d0c0de614f7cb2db81ae9fc1ad2a887e24f74e5fd3ad301ccea9347c3e1  somato-01/surf/rh.inflated
+d4013ddad8c8a046ac836d26ce2de492a1eff9cb4b8968725a28ef4896f19fe1  somato-01/surf/rh.pial
+4df941a0a9b3fc3ab9b890d74178724acf075ccb129ec371dac12e4c1f43ed08  somato-01/surf/rh.sphere
+c4fa2964f5b25e1be73c4bbc734409d9f4017df7b3c605df1c6529c0443caf12  somato-01/surf/rh.sulc
+25310e859f6dd0e5c2c2f0b8e1eb2454a5526196a6956c9d887a598bc403066c  somato-01/surf/rh.white

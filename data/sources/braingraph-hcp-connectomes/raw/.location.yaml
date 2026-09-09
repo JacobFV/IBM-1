@@ -1,5 +1,21 @@
-# where the bytes for `braingraph-hcp-connectomes` actually live.  never the bytes themselves.
-source_url: "https://braingraph.org/"
-local_root: null   # set on acquisition
-acquired_at: null
-bytes: null
+# where the bytes for `braingraph-hcp-connectomes` actually live.  never the
+# bytes themselves.
+source_url: "https://braingraph.org/static/repeated_10_scale_33.7z"
+listing_page: "https://braingraph.org/cms/download-pit-group-connectomes/"
+selection: >
+  the 86-node set: 1064 brains, 1,000,000 streamlines, 10x repeated and averaged.
+  86 nodes is the Desikan-Killiany resolution (68 cortical + 18 subcortical),
+  which is the frame ibm-1 needs because it is the frame desikan2006 gives and
+  the one `ibm/topologies/tract.py:tractometric_matrix` expands from.  the
+  higher-resolution sets (129/234/463/1015) are Lausanne subdivisions and would
+  need a second crosswalk for no gain here.
+edge_features_present:
+  - number_of_fibers        # NOT used as a weight: tract.py refuses streamline count
+  - fiber_length_mean       # mm; this is the field that makes a delay possible
+  - FA_mean
+terms: >
+  braingraph.org gates these files behind an "I agree to the data use terms of
+  the Human Connectome Project" checkbox that enables the download form in the
+  page's own markup; the form action is the static path used above.  the
+  agreement is a click, not a credential.  HCP open-access terms are accepted.
+local_root: data/sources/braingraph-hcp-connectomes/raw/repeated_10_scale_33

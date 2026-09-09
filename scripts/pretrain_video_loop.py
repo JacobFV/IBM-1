@@ -54,73 +54,188 @@ import torch.nn.functional as F
 # the cortical sheet
 # ---------------------------------------------------------------------------
 
-def cortical_sites(n: int, device, seed: int = 0):
-    """positions on a folded sheet, and a k-NN association support over them.
+#: the spherical proxy this file used to run on.  KEPT, not deleted: every
+#: checkpoint on disk was trained on it, `dyn.pos` is a saved buffer so those
+#: checkpoints restore their own sphere whatever the default is, and a change
+#: that cannot be measured against what it replaces is a change that cannot be
+#: defended.  `--geometry sphere` selects it; `IBM_CORTEX_GEOMETRY=sphere`
+#: selects it for a script that has no flag.
+#:
+#: the area it is matched to, 202,437 mm^2, is worth stating now that the real
+#: number is held: the fsaverage white surface is 130,438 mm^2 in total and
+#: 118,310 mm^2 once the medial wall is removed.  so the proxy is 1.55x the
+#: cortex it stands in for by area and 1.24x in linear scale -- which means
+#: every distance on it, and therefore the exp(-d/l) prior and the 85 mm mean
+#: separation of two random sites that made the long-range edges inert, was
+#: inflated by about a quarter.
+SPHERE_AREA_MM2 = 202437.0
+SPHERE_RADIUS_MM = math.sqrt(SPHERE_AREA_MM2 / (4.0 * math.pi))
 
-    a real materialization reads `cortical_surface`; this uses a spherical shell
-    with the measured white-surface area so that distances and therefore the
-    exp(-d/l) prior are in millimetres and not arbitrary units.  the learned
-    factor is what this run is about and it is indifferent to the substitution --
-    but the substitution is recorded rather than hidden.
-    """
+#: which sheet `cortical_sites` builds when the caller does not say.
+GEOMETRY = os.environ.get("IBM_CORTEX_GEOMETRY", "surface")
+
+
+def _sphere_sites(n: int, seed: int):
     g = torch.Generator(device="cpu").manual_seed(seed)
-    # measured white-surface area 202,437 mm^2 -> radius of the equivalent sphere
-    radius = math.sqrt(202437.0 / (4.0 * math.pi))
     z = torch.rand(n, generator=g) * 2 - 1
     theta = torch.rand(n, generator=g) * 2 * math.pi
     r = torch.sqrt(1 - z * z)
-    pos = torch.stack([r * torch.cos(theta), r * torch.sin(theta), z], 1) * radius
-    return pos.to(device)
+    return torch.stack([r * torch.cos(theta), r * torch.sin(theta), z], 1) \
+        * SPHERE_RADIUS_MM
 
 
-LOBES = ("occipital", "temporal", "parietal", "frontal", "precentral", "postcentral")
+def cortical_sites(n: int, device, seed: int = 0, geometry: str | None = None):
+    """positions of `n` cortical sites, in millimetres, reproducibly.
+
+    **This used to be a sphere.**  `docs/DISCONNECTS.md` row 2: sites were placed
+    on a spherical shell area-matched to the measured white surface, "so that
+    distances and therefore the exp(-d/l) prior are in millimetres and not
+    arbitrary units", and the substitution was recorded rather than hidden.  It
+    is now replaced rather than recorded: sites are **fsaverage white-surface
+    vertices**, drawn with probability proportional to vertex area so that site
+    density is uniform per mm^2 of cortex, and the medial wall is excluded.
+
+    What that buys is not distance -- the sphere already had millimetres -- it is
+    that a site now has an ATLAS LABEL, because it is at a place on a real
+    surface.  On a sphere the insula is not separable at all (there is no lateral
+    sulcus for it to be buried in), so the interoceptive port entered a 4.5%
+    subsample of a `frontal` label that was itself a coordinate cut.  See
+    `ibm/cortical_sheet.py`.
+
+    The signature is unchanged and the draw is still a pure function of `seed`.
+    It is now a pure function of the seed on EVERY DEVICE: the sampling runs on
+    numpy and is moved to `device` afterwards, where the sphere ran a CPU torch
+    generator and the long-range partner draw -- which CLAUDE.md records as
+    having cost a factor of 112 elsewhere -- ran a device generator whose seed 0
+    meant a different graph on cpu than on cuda.
+    """
+    geometry = GEOMETRY if geometry is None else geometry
+    if geometry == "sphere":
+        return _sphere_sites(n, seed).to(device)
+    if geometry != "surface":
+        raise ValueError(f"geometry must be 'surface' or 'sphere', not {geometry!r}")
+    import ibm.cortical_sheet as CS
+    xyz, _ = CS.sample_sites(n, seed=seed)
+    return torch.from_numpy(xyz).to(device)
 
 
-def cortical_regions(pos):
-    """assign every site a lobe from its position, so a "port" means something.
+#: the six labels the spherical proxy cut out of coordinates.  they are the first
+#: six of the atlas lobes below, in the same order, so `LOBES.index(name)` means
+#: the same thing on both sheets for every name the sphere could express.
+SPHERE_LOBES = ("occipital", "temporal", "parietal", "frontal",
+                "precentral", "postcentral")
 
-    until now every loop in this file drove `drive[:, :dyn.n // 8]` and called it
-    the occipital port in a comment.  the site order is a seeded RNG over a
-    sphere, so that slice is an arbitrary eighth of a random point cloud -- the
-    name asserted an anatomy the index did not have.  the same habit is what cost
-    the video branch: `s[1][:, -n//8:]` was called the anterior readout and turned
-    out to carry 775x less stimulus signal than the driven region.
 
-    this is a geometric convention on the spherical proxy, NOT an atlas.  the
-    axes are the radiological ones -- x left-right, y posterior-anterior, z
-    inferior-superior -- and the boundaries are declared here rather than implied
-    by an index.  a real materialisation reads `ibm/materialize/build.py` step 4,
-    which turns symbolic regions into per-site weights against actual anatomy;
-    this is the stand-in, and it is labelled as one so it can be replaced without
-    hunting for slices.
+def _lobe_names():
+    try:
+        import ibm.cortical_sheet as CS
+        return CS.LOBES
+    except Exception:                                     # payload not staged
+        return SPHERE_LOBES
+
+
+LOBES = _lobe_names()
+
+
+def is_spherical_proxy(pos) -> bool:
+    """is this the old sphere?
+
+    a positional test rather than a flag, because `pos` is a SAVED BUFFER: every
+    checkpoint on disk restores its own site positions, and the sheet a stored
+    graph was trained on is a property of that graph and not of whatever the
+    current default is.  a flag would have to be threaded through every script
+    that rebuilds a model from a state dict, and the one that was not threaded
+    would silently read a sphere's coordinates through an atlas.
+
+    the test is exact enough to be safe: on the sphere every site is at radius
+    126.9 mm to floating-point, and on a cortical surface the radius has a
+    standard deviation of about 12 mm.
+    """
+    r = pos.norm(dim=1)
+    return bool((r.std() < 1e-2) and ((r.mean() - SPHERE_RADIUS_MM).abs() < 1e-1))
+
+
+def _sphere_regions(pos):
+    """the old six-label geometric convention, unchanged, for old checkpoints.
+
+    NOT an atlas.  the axes are radiological -- x left-right, y posterior-
+    anterior, z inferior-superior -- and the thresholds are set to published lobe
+    fractions.  it is kept verbatim so that a sphere-vs-surface comparison is
+    against what was actually run, not against a cleaned-up version of it.
     """
     x, y, z = pos[:, 0], pos[:, 1], pos[:, 2]
     r = pos.norm(dim=1).clamp_min(1e-6)
     yn, zn, xn = y / r, z / r, x.abs() / r
-    # the central strip is split at the sulcus, because a sensorimotor
-    # materialization needs to tell motor cortex from somatosensory cortex and a
-    # single "central" label cannot: IHM-1 routes afferents to
-    # brain-{l,r}h-postcentral and reads descending commands from
-    # brain-{l,r}h-precentral, so those are two different populations of sites.
-    lab = torch.full((len(pos),), 5, dtype=torch.long, device=pos.device)  # postcentral
-    # thresholds are set to the published lobe fractions, not to round numbers.
-    # for uniform sampling on a sphere the coordinate is uniform in [-1, 1], so a
-    # cut at -0.75 takes 12.5% -- close to the ~10-12% occipital cortex actually
-    # occupies.  a cut at -0.35 takes 32%, which is what the first version of
-    # this did and would have made "occipital" a third of the brain.
+    lab = torch.full((len(pos),), 5, dtype=torch.long, device=pos.device)
     lab[yn < -0.75] = 0                                    # occipital  ~12%
     lab[(zn < -0.10) & (xn > 0.40) & (yn >= -0.75)] = 1    # temporal   ~20%
     lab[(zn > 0.35) & (yn < 0.20) & (yn >= -0.75)] = 2     # parietal
     lab[yn > 0.55] = 3                                     # frontal    ~22%
-    # precentral is anterior to the sulcus, postcentral posterior; the strip runs
-    # superior and is what remains of "central" once frontal is taken.
-    lab[(zn > 0.35) & (yn >= 0.20) & (yn <= 0.55)] = 4      # precentral (motor)
+    lab[(zn > 0.35) & (yn >= 0.20) & (yn <= 0.55)] = 4     # precentral (motor)
     return lab
 
 
-def region_index(pos, lobe: str):
-    """the site indices belonging to one lobe."""
-    return (cortical_regions(pos) == LOBES.index(lobe)).nonzero(as_tuple=True)[0]
+def cortical_regions(pos):
+    """the ATLAS label of every site: an index into `ibm.cortical_sheet.REGIONS`.
+
+    68 hemisphere-qualified Desikan-Killiany gyri, read from
+    `?h.aparc.annot` on fsaverage -- `data/sources/desikan2006`, whose `raw/`
+    held one 12 KB checksums.txt and no bytes until
+    `scripts/fetch_cortical_atlases.py` staged it.
+
+    This function used to return one of six labels cut out of spherical
+    coordinates, and said so in its own docstring: "a geometric convention on the
+    spherical proxy, NOT an atlas".  The concrete thing that changes is that
+    `insula` and the four cingulate divisions are now addressable, because they
+    are labels on a surface that has a lateral sulcus and a corpus callosum
+    rather than thresholds on a ball that has neither.
+
+    **On a sphere it still returns the six-label convention**, and callers must
+    not mix the two: use `region_index`, which knows which sheet it is looking
+    at, rather than comparing this return value against a hard-coded integer.
+    """
+    if is_spherical_proxy(pos):
+        return _sphere_regions(pos)
+    import ibm.cortical_sheet as CS
+    lab = CS.regions_at(pos.detach().cpu().numpy())
+    return torch.from_numpy(np.ascontiguousarray(lab)).to(pos.device)
+
+
+def region_index(pos, name: str):
+    """the site indices belonging to a lobe, a gyrus, or a hemisphere's gyrus.
+
+    on the atlas sheet `name` may be a lobe (`"occipital"` ... plus `"insula"`
+    and `"cingulate"`, which the sphere could not express), a bare DK gyrus
+    (`"rostralanteriorcingulate"`, both hemispheres), or a qualified label
+    (`"lh.insula"`).
+
+    on the spherical proxy only the six coordinate labels exist, and asking for
+    one of the others raises rather than silently returning the enclosing lobe.
+    THAT is the disconnect this change is about: `ibm/interoception.py` records
+    that the interoceptive drive entered `frontal` because "a sphere has no
+    lateral sulcus", and a substitution that raises when it is no longer needed
+    is a substitution that cannot be left in by accident.
+    """
+    if is_spherical_proxy(pos):
+        if name not in SPHERE_LOBES:
+            raise KeyError(
+                f"{name!r} is not separable on the spherical proxy; it has only "
+                f"{SPHERE_LOBES}.  run with --geometry surface (or "
+                "IBM_CORTEX_GEOMETRY=surface) to get the atlas, and see "
+                "docs/DISCONNECTS.md row 2 for why this raises rather than "
+                "substituting.")
+        return (_sphere_regions(pos) == SPHERE_LOBES.index(name)) \
+            .nonzero(as_tuple=True)[0]
+    import ibm.cortical_sheet as CS
+    want = torch.tensor(CS.resolve(name), device=pos.device)
+    lab = cortical_regions(pos)
+    idx = torch.isin(lab, want).nonzero(as_tuple=True)[0]
+    if not len(idx):
+        raise ValueError(
+            f"{name!r} selects 0 of {len(pos)} sites.  a port with no sites is a "
+            "drive that goes nowhere; materialize more sites or name a larger "
+            "region.")
+    return idx
 
 
 def knn_edges(pos, k: int, chunk: int = 4096):
@@ -147,13 +262,68 @@ class CorticalDynamics(nn.Module):
                  length_scale_mm: float = 40.0, long_range: float = 0.25,
                  graph_seed: int = 0, tanh_slope: float = 2.0,
                  long_gain: float = 1.0, long_topm: int = 0,
-                 local_gain: float = 1.0, long_min_dist: float = 0.0):
+                 local_gain: float = 1.0, long_min_dist: float = 0.0,
+                 geometry: str | None = None,
+                 long_topology: str = "random", tract_threshold: float = 0.5,
+                 tract_delays: bool = False,
+                 tract_velocity_m_s: float = 8.0,
+                 delay_shuffle: bool = False):
         super().__init__()
         self.n, self.k = n_sites, k
-        pos = cortical_sites(n_sites, device)
+        pos = cortical_sites(n_sites, device, geometry=geometry)
         n_far = int(k * long_range)
         idx, dist = knn_edges(pos, k - n_far)
-        if n_far:
+        delay_s = None
+        if n_far and long_topology == "tract":
+            # ------------------------------------------------------------------
+            # LONG-RANGE PARTNERS FROM THE DECLARED TRACT TOPOLOGY.
+            #
+            # docs/DISCONNECTS.md row 3: `ibm/topologies/tract.py` declares which
+            # cortical regions a fascicle joins and with what conduction delay,
+            # argues that euclidean and geodesic metrics both get long-range
+            # connectivity wrong, and was imported by nothing.  this is the
+            # import.  a site in DK parcel `a` draws its partners uniformly among
+            # the sites lying in the parcels a group connectome of 1064 HCP
+            # subjects joins `a` to -- a uniform subsample of exactly the edge
+            # set `tractometric_matrix` would emit, which is what a fixed
+            # per-site budget can hold of a topology whose full expansion is
+            # 10^10 edges at this resolution.
+            #
+            # the CONTROL is `long_topology="random"`, and it is matched by
+            # construction rather than by fitting: the same `n_far` edges per
+            # site, and the same flat long-range prior below, so the edge count
+            # and the row L1 are identical and only the DESTINATIONS differ.
+            # ------------------------------------------------------------------
+            import ibm.cortical_tracts as CT
+            if is_spherical_proxy(pos):
+                raise ValueError(
+                    "tract-constrained long-range edges need atlas labels, and "
+                    "the spherical proxy has none.  use geometry='surface'.")
+            reg = cortical_regions(pos).cpu().numpy()
+            far_np, dly, _len, note = CT.draw_partners(
+                reg, n_far, seed=graph_seed, threshold=tract_threshold,
+                velocity_m_s=tract_velocity_m_s)
+            self.tract_note = note
+            far = torch.from_numpy(far_np).to(device)
+            far_d = (pos[far] - pos[:, None, :]).norm(dim=-1)
+            idx = torch.cat([idx, far], 1)
+            dist = torch.cat([dist, far_d], 1)
+            if tract_delays:
+                delay_s = torch.from_numpy(dly).to(device)
+                if delay_shuffle:
+                    # DELAY-MATCHED CONTROL.  the same multiset of delays, moved
+                    # to edges chosen at random, so "the tract arm is slower"
+                    # cannot be confused with "the tract arm is wired
+                    # differently".  a flat permutation of the whole (N, n_far)
+                    # table, drawn from the graph seed.
+                    g = np.random.default_rng(graph_seed + 1)
+                    flat = delay_s.flatten()
+                    delay_s = flat[torch.from_numpy(
+                        g.permutation(flat.numel())).to(device)].view_as(delay_s)
+        elif n_far and long_topology != "random":
+            raise ValueError(
+                f"long_topology must be 'random' or 'tract', not {long_topology!r}")
+        elif n_far:
             # patchy long-range association fibres.  a pure k-NN graph is a local
             # sheet, and on a local sheet occipital and temporal sites are simply
             # not connected -- so no amount of training could associate them.
@@ -187,7 +357,19 @@ class CorticalDynamics(nn.Module):
             dist = torch.cat([dist, far_d], 1)
         self.register_buffer("pos", pos)
         self.n_far = n_far
+        self.long_topology = long_topology
         self.register_buffer("idx", idx)
+        if delay_s is not None:
+            # PART OF THE TRAINED OBJECT, so it is a persistent buffer and it is
+            # saved.  CLAUDE.md's `read_idx` entry is the reason: that was a
+            # plain attribute, was not saved, and cost a factor of 112 on every
+            # video number.  anything that selects or times an edge is part of
+            # the artifact.
+            self.register_buffer("delay_s", delay_s.to(torch.float32))
+            self.tract_delays = True
+        else:
+            self.tract_delays = False
+        self._lag_cache: dict = {}
         # the geometric prior, held: exp(-d/l), normalized by fan-in so that the
         # total drive onto a node is O(1) rather than O(k).
         geo = torch.exp(-dist / length_scale_mm) / k
@@ -365,9 +547,49 @@ class CorticalDynamics(nn.Module):
             avail &= (d >= self.long_min_dist) | ~ok.unsqueeze(1)
         return keep
 
-    def association(self, r, w):
-        """message passing on the cached kernel.  r: (B, N), w: (N, k)."""
-        return (r[:, self.idx] * w).sum(-1)                   # (B, N)
+    def association(self, r, w, hist=None, ptr: int = 0, dt: float | None = None):
+        """message passing on the cached kernel.  r: (B, N), w: (N, k).
+
+        with `hist` supplied, the LONG-RANGE columns read a delayed rate instead
+        of the current one.  `ibm/topologies/tract.py` is emphatic that this is
+        the one thing the tractometric topology carries which the local ones do
+        not: "cortico-cortical conduction delays run from under a millisecond to
+        tens of milliseconds, they are comparable to the periods of the rhythms
+        the model is about".  the local k-NN columns are not delayed, which is
+        the same claim in the other direction -- a u-fibre at 8 m/s over the
+        median 4 mm k-NN edge is 0.5 ms, below any timestep this file runs at.
+
+        `hist` is (B, depth, N), a ring buffer of past rates, and `ptr` is the
+        slot the CURRENT rate was just written to.  the per-edge lag is
+        `round(delay_s / dt)`, so a delay below half a timestep is zero lag and
+        the edge is instantaneous -- stated rather than hidden, because it means
+        the delays only bite at a `dt` that resolves them.
+        """
+        if hist is None or not getattr(self, "tract_delays", False):
+            return (r[:, self.idx] * w).sum(-1)               # (B, N)
+        n_loc = self.k - self.n_far
+        out = (r[:, self.idx[:, :n_loc]] * w[:, :n_loc]).sum(-1)
+        lag, depth = self._lags(dt)
+        slot = torch.remainder(ptr - lag, depth)              # (N, n_far)
+        flat = (slot * self.n + self.idx[:, n_loc:]).reshape(-1)
+        far = hist.reshape(hist.shape[0], depth * self.n)[:, flat] \
+                  .view(r.shape[0], self.n, self.n_far)
+        return out + (far * w[:, n_loc:]).sum(-1)
+
+    def _lags(self, dt: float):
+        """(per-edge lag in steps, ring depth) for a timestep, cached.
+
+        cached per `dt` and not per call: the table is (N, n_far) int64 and
+        rebuilding it inside the step loop was the shape of the waste
+        `edge_weights` already documents.
+        """
+        key = round(float(dt), 12)
+        got = self._lag_cache.get(key)
+        if got is None:
+            lag = torch.round(self.delay_s / float(dt)).long().clamp_min(0)
+            got = (lag, int(lag.max().item()) + 1)
+            self._lag_cache[key] = got
+        return got
 
     def rate(self, v):
         return self.r_max * torch.sigmoid((v - self.v_half) / self.slope)
@@ -399,7 +621,25 @@ class CorticalDynamics(nn.Module):
         return self
 
     def step(self, s, drive, dt, w):
-        v, r, a, gi = s
+        """one Euler step.  `s` is (v, r, a, gi), plus (hist, ptr) with delays.
+
+        the state grew a fifth and sixth element rather than the delay history
+        living on the module, and that is deliberate: a per-batch buffer held as
+        an attribute is shared between two heads that run concurrently and
+        silently wrong under gradient checkpointing.  every existing caller
+        either indexes `s[1]` or passes `s` straight back, so the longer tuple is
+        transparent to all of them.
+        """
+        v, r, a, gi = s[0], s[1], s[2], s[3]
+        hist = ptr = None
+        if getattr(self, "tract_delays", False):
+            _, depth = self._lags(dt)
+            if len(s) >= 6 and s[4] is not None:
+                hist, ptr = s[4].clone(), int(s[5])
+            else:
+                hist, ptr = torch.zeros(v.shape[0], depth, self.n,
+                                        device=v.device, dtype=v.dtype), 0
+            hist[:, ptr] = r
         tct = getattr(self, "tct", None)
         if tct is not None:
             # the ascending limb, added to whatever sensory drive the head
@@ -408,7 +648,7 @@ class CorticalDynamics(nn.Module):
             tct.ensure(v.shape[0], dt, device=v.device)
             drive = drive + tct.step(r, dt)
         r_inf = self.rate(v)
-        assoc = self.association(r, w)
+        assoc = self.association(r, w, hist=hist, ptr=ptr, dt=dt)
         g_e = self.w_ee * r / self.r_max + self.w_assoc * assoc / self.r_max
         dv = (-(v - self.e_rest) + 20.0 * g_e - a + drive) / self.tau_m
         # conductance-based shunting, LINEAR in g_i (STATE.md 4.11)
@@ -416,11 +656,49 @@ class CorticalDynamics(nn.Module):
         dr = (r_inf - r) / 5e-3
         da = (self.a_gain * r_inf - a) / self.tau_a
         dgi = (self.w_ei * r / self.r_max - gi) / 8e-3
-        return (v + dt * dv, r + dt * dr, a + dt * da, gi + dt * dgi)
+        out = (v + dt * dv, r + dt * dr, a + dt * da, gi + dt * dgi)
+        if hist is not None:
+            out = out + (hist, (ptr + 1) % hist.shape[1])
+        return out
 
     def init_state(self, b, device):
         z = torch.zeros(b, self.n, device=device)
         return (torch.full_like(z, self.e_rest), z, z.clone(), z.clone())
+
+
+def dynamics_from_state_dict(sd, device, prefix: str = "dyn.", **kw):
+    """rebuild a `CorticalDynamics` whose graph MATCHES a saved one, then load it.
+
+    every script in this repo does the same three lines by hand -- read
+    `dyn.embed`'s shape for `n` and `embed_dim`, read `dyn.idx`'s for `k`,
+    construct, `load_state_dict(strict=False)` -- and every one of them would
+    break silently the moment a checkpoint carried a buffer they did not expect.
+    `delay_s` is such a buffer.
+
+    the graph is RESTORED, never redrawn: `pos`, `idx`, `geo` and `delay_s` are
+    all persistent buffers, so what the constructor draws is thrown away by the
+    load.  that is the point -- CLAUDE.md: "the graph is part of the trained
+    object; `dyn.idx`/`geo`/`pos` must be saved and restored, never redrawn" --
+    and this function asserts it rather than trusting it.
+    """
+    sub = {k[len(prefix):]: v for k, v in sd.items() if k.startswith(prefix)} \
+        if any(k.startswith(prefix) for k in sd) else dict(sd)
+    n, embed_dim = sub["embed"].shape
+    k = sub["idx"].shape[1]
+    kw.setdefault("tract_delays", "delay_s" in sub)
+    if kw["tract_delays"]:
+        kw.setdefault("long_topology", "tract")
+    dyn = CorticalDynamics(int(n), int(embed_dim), int(k), device, **kw)
+    miss = dyn.load_state_dict({kk: v.to(device) for kk, v in sub.items()},
+                               strict=False)
+    if miss.missing_keys or miss.unexpected_keys:
+        raise KeyError(f"state dict does not match: missing {miss.missing_keys}, "
+                       f"unexpected {miss.unexpected_keys}")
+    for name in ("pos", "idx", "geo"):
+        assert torch.equal(getattr(dyn, name), sub[name].to(device)), \
+            f"{name} did not survive the load -- the graph is not the saved graph"
+    dyn._lag_cache = {}
+    return dyn
 
 
 class AudioLoop(nn.Module):

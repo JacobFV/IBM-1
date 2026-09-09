@@ -1,5 +1,20 @@
-# `dkt-atlas` is vendored inside an installed package, not acquired as bytes.
-local_root: null
+# where the bytes for `dkt-atlas` actually live.  never the bytes themselves.
+# DKT IS NOT ON FSAVERAGE.  the card says the atlas "ships inside each recon-all
+# subject directory" and declares its frame as subject_surface_ras; that is
+# literal, and this script asserts it by checking that no fsaverage copy on this
+# machine carries a DKTatlas file.  so the payload is a subject recon, staged
+# with its own surfaces because per-vertex labels without the subject's surface
+# are meaningless (card: requires cortical-support-bank, severity blocking).
+source: FreeSurfer recon-all output, subject 01 of the MNE somatosensory dataset
 vendored_in: freesurfer
-note: resolved at import time from the package's own data directory; the version of
-  that package is therefore part of this source's provenance.
+staged_from:
+  - /home/brandonin/Documents/IBM-1/data/sources/mne-somato/raw/bids-v0.10/MNE-somato-data/derivatives/freesurfer/subjects/01
+scope: >
+  ONE subject.  this is enough to corroborate a boundary that desikan2006 also
+  draws -- and the card is explicit that the two are NOT independent evidence,
+  DKT being a deliberate revision of DK -- but it is not a template and must not
+  be used as one.
+its_aparc_is_also_staged: >
+  lh/rh.aparc.annot from the SAME subject, so a DK-vs-DKT comparison is within
+  one brain rather than across two frames.
+local_root: data/sources/dkt-atlas/raw/somato-01

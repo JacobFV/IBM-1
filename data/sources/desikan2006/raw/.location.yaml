@@ -1,5 +1,17 @@
-# `desikan2006` is vendored inside an installed package, not acquired as bytes.
-local_root: null
+# where the bytes for `desikan2006` actually live.  never the bytes themselves.
+# the card's licence note already states the lineage: this reached us inside a
+# FreeSurfer subject directory, so the terms are FreeSurfer's.  the payload is
+# the fsaverage `?h.aparc.annot` pair -- the parcellation propagated onto the
+# template, which is the frame every published DK connectome is expressed in.
+source: FreeSurfer distribution, fsaverage/label/?h.aparc.annot
 vendored_in: freesurfer
-note: resolved at import time from the package's own data directory; the version of
-  that package is therefore part of this source's provenance.
+staged_from:
+  - /home/brandonin/Documents/IBM-1/data/sources/mne-sample/raw/processed-v6/MNE-sample-data/subjects/fsaverage
+  - /home/brandonin/mne_data/MNE-fsaverage-data/fsaverage
+  - /home/brandonin/tms-brain-data/freesurfer/fsaverage
+verification: >
+  3 independently staged copies hashed and byte-identical.  the
+  pre-existing checksums.txt held no hashes, so there was nothing to verify
+  against; cross-copy identity is the verification actually available.
+requires: fsaverage  # a cover is meaningless without the carrier (card: requires)
+local_root: data/sources/desikan2006/raw/fsaverage

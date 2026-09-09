@@ -1,5 +1,16 @@
-# `fsaverage` is vendored inside an installed package, not acquired as bytes.
-local_root: null
+# where the bytes for `fsaverage` actually live.  never the bytes themselves.
+# fsaverage is DISTRIBUTED WITH FREESURFER; it is not downloaded from a dataset
+# host.  the copy staged here reached this machine inside a FreeSurfer subject
+# directory bundled by MNE-Python, which is the lineage the licence note on the
+# card already records.
+source: FreeSurfer distribution (surfaces + spherical registration frame)
 vendored_in: freesurfer
-note: resolved at import time from the package's own data directory; the version of
-  that package is therefore part of this source's provenance.
+staged_from:
+  - /home/brandonin/Documents/IBM-1/data/sources/mne-sample/raw/processed-v6/MNE-sample-data/subjects/fsaverage
+  - /home/brandonin/mne_data/MNE-fsaverage-data/fsaverage
+  - /home/brandonin/tms-brain-data/freesurfer/fsaverage
+verification: >
+  3 independently staged copies were hashed and are byte-identical for
+  every file staged; that agreement, not the pre-existing checksums.txt (which
+  held a header comment and no hashes), is what this payload was verified by.
+local_root: data/sources/fsaverage/raw/fsaverage

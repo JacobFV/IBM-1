@@ -1,1 +1,4 @@
 # sha256 manifest for desikan2006; written on acquisition
+# verified by agreement across 3 independently staged FreeSurfer subject directories
+39b1acde9a32b4227631eb51cbcd8dff84e2138c57bf9f96d74026f2c17f1480  fsaverage/label/lh.aparc.annot
+6a326aed325d313e6e0d10f67630efcd8d3b8343c50d3e108e005f626614badb  fsaverage/label/rh.aparc.annot
