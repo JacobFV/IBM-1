@@ -32,6 +32,7 @@ pattern is worth more than any single row.
 | 15 | MSE cannot do video at either parameterisation; video continuation does not work in any form tried | three of the four failures read `s[1][:, -n//8:]`, the eighth of the sheet the drive never reaches -- across-batch state sd there is **0.000004 against 0.003099** in the driven region, 775x less, and a readout probe scores **chance from N=1 onward** where the drive itself scores 99.80%. reading the whole sheet takes the same objective from -1.08 to **-0.149** | asking whether the readout can identify the frame that drove it -- a question with a known answer |
 | 16 | next-frame video training learns cortical wiring that transfers to EEG (91.5% recovery) | pairing each frame with a **RANDOM** frame from the same film -- temporal structure destroyed, everything else identical -- still transfers **83-86%**. only ~5 of the 35.5 points depend on prediction. the mechanism is gradient flow through the dynamics, not next-frame learning | running the shuffled-target control, which the saturation-by-step-2,500 should have prompted immediately |
 | 17 | the shared kernel is carrying the ten per-subject terms -- their mean doubled from 4.97% to 11.09% while each got only 3% of the budget | a SOLO run of one subject for the same 135 own steps, same warm start, same kernel, reaches **17.37%** where the shared run reaches 15.44%. s03 is a wash. sharing is neutral to slightly negative; the doubling is what 135 steps buys either way | running the matched-step solo control instead of reading the trajectory |
+| 18 | warm-starting does not cross resolutions -- the 2k run opened at 0.44% despite "warm-started (20 tensors)", so the restart cost 3,000 steps and bought nothing | it reaches **25.87% by step 1,000** where the cold run was at 4.31% by 2,000 -- **4x at matched steps**. only the port projection fails to transfer, and it is re-learned inside 1,000 steps. I read step 0, the one moment the untransferable tensor dominates, and generalised | letting the run continue and reading the trajectory instead of its first point |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
 
@@ -43,7 +44,41 @@ already written.
 
 ---
 
-## 2026-09-08 (overnight) — warm-starting does not cross resolutions, and I lost 3,000 steps finding out
+## 2026-09-08 (overnight) — warm-starting DOES cross resolutions; I read step 0 and called it
+
+**this entry is a correction of itself.**  what follows the rule is the measured
+trajectory; what precedes it is what I claimed an hour earlier from a single
+evaluation, and it was wrong.
+
+the native 2,048-site run was restarted with warm-start checkpoints shipped to
+the remote.  step 0 opened at **0.44%** -- chance -- and I concluded the warm
+start had done nothing, because `to_cortex` maps the encoder onto a port whose
+size is a fraction of the site count and therefore cannot transfer across
+resolutions.  that mechanism is real.  the conclusion drawn from it was not.
+
+the trajectories, same objective, same corpus, same resolution:
+
+| step | cold (first run) | warm-started |
+|---|---|---|
+| 0 | — | 0.44% |
+| 1,000 | — | **25.87%** |
+| 2,000 | 4.31% | 26.87% |
+| 3,000 | 6.56% | **25.81%** |
+
+**four times the performance at the same step count.**  the warm start transfers
+the encoder and the readout, and the model then has only the port projection left
+to learn -- which it does within 1,000 steps, going 0.44% -> 25.87%.  what I
+measured at step 0 was the one moment where the untransferable tensor dominates,
+and I generalised from it.
+
+so: "warm-starting is within-resolution only" is withdrawn.  the correct
+statement is that the port projection does not transfer and is re-learned
+quickly, while the encoder and readout do transfer and are worth carrying.  the
+restart cost nothing; it gained 19 points at step 3,000.
+
+the original claim, kept for the ledger:
+
+## 2026-09-08 (overnight) — [WITHDRAWN] warm-starting does not cross resolutions
 
 the native 2,048-site run for the body sim was going well -- at step 3,000,
 optic_nerve **13.31%**, higher than the 30,000-site run's 11.37% at four times
