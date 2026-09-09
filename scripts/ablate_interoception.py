@@ -446,17 +446,28 @@ def main() -> None:
     ap.add_argument("--steps", type=int, default=400)
     ap.add_argument("--batch", type=int, default=32)
     ap.add_argument("--eval-batch", type=int, default=64)
-    ap.add_argument("--checkpoint-every", type=int, default=0,
+    ap.add_argument("--checkpoint-every", type=int, default=-1,
                     help="gradient-checkpoint chunk size for the 236-substep "
-                         "integration.  0 keeps the whole graph, which is "
-                         "~2x faster and fits at 8k sites (11.6 GB at batch "
-                         "32); 8 is needed at 30k, where retaining it is 87 GB")
+                         "integration.  -1 (the default) picks it from --sites: "
+                         "0 below 12k sites, 8 above.  DO NOT SET 0 AT 30k -- "
+                         "the association gather is (B, N, k) per substep and "
+                         "this head runs 236 of them, so retaining the whole "
+                         "graph is 11.6 GB at 8k/batch-32 and 87 GB at 30k, "
+                         "which OOMs.  a flag whose safe value depends on "
+                         "another flag is a trap, so it is resolved here rather "
+                         "than left to whoever types the command")
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--control-steps", type=int, default=4000)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="out/intero_ablation.json")
     a = ap.parse_args()
 
+    if a.checkpoint_every < 0:
+        a.checkpoint_every = 0 if a.sites <= 12_000 else 8
+        print(f"checkpoint_every resolved to {a.checkpoint_every} for "
+              f"{a.sites:,} sites "
+              f"({'whole graph retained' if not a.checkpoint_every else 'chunked; ~2x compute, ~8x less memory'})",
+              flush=True)
     dev = "cuda" if torch.cuda.is_available() else "cpu"
     c = InteroCorpus(a.corpus, a.horizon_s, a.split)
     print(c.describe(), flush=True)
