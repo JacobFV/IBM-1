@@ -70,16 +70,22 @@ class InteroCorpus:
     constant that was not.
     """
 
-    def __init__(self, root: str, horizon_s: float):
-        self.root, self.horizon_s = root, horizon_s
+    def __init__(self, root: str, horizon_s: float, split: str = "protocol"):
+        self.root, self.horizon_s, self.split = root, horizon_s, split
         m = json.load(open(os.path.join(root, "meta.json")))
         self.meta = m
         X = np.load(os.path.join(root, "afferent.npy"))
         Y = np.load(os.path.join(root, "scalars.npy"))
         S = np.load(os.path.join(root, "sensation.npy"))
         seq = np.load(os.path.join(root, "sequence.npy"))
-        tr = np.load(os.path.join(root, "is_train.npy"))
-        te = np.load(os.path.join(root, "is_test.npy"))
+        if split == "protocol":
+            tr = np.load(os.path.join(root, "is_train_protocol.npy"))
+            te = np.load(os.path.join(root, "is_test_protocol.npy"))
+        elif split == "time":
+            tr = np.load(os.path.join(root, "is_train.npy"))
+            te = np.load(os.path.join(root, "is_test.npy"))
+        else:
+            raise ValueError(f"unknown split {split!r}")
 
         # the join is checked, not trusted: the channel table lives in the other
         # repository and a renamed channel would wire a port to a rate nobody
@@ -91,8 +97,27 @@ class InteroCorpus:
         T = np.concatenate([Y, S], 1).astype(np.float32)
         self.target_names = list(m["scalars"]) + \
             [f"sensation_{i}" for i in range(S.shape[1])]
+        # WHICH TARGETS ARE FUNCTIONS OF THE INPUT, and it changes which
+        # baseline is the one that bites.
+        #
+        # `discomfort` is a fixed fibre-class-weighted sum of the fifteen
+        # afferent rates and `sensation_k` is a fixed linear projection of them,
+        # so a model that sees the afference at t can compute both at t exactly.
+        # Predicting them at t+h against "predict the mean" therefore scores
+        # ~0.99 for a linear map and means nothing: the ridge is inverting its
+        # own input.  PERSISTENCE is the baseline for those.
+        #
+        # `endurance_h` is not: it is liver and muscle glycogen against
+        # metabolic rate, and none of the three is an afferent channel.  It has
+        # to be inferred, which is the interesting question -- and persistence
+        # is the wrong baseline for it in the other direction, because it moves
+        # by 0.007 h over 60 s, so persistence MSE is 4.5e-05 and every skill
+        # ratio against it is a division by measurement noise.  MEAN is the
+        # baseline for that one.
+        self.derived_from_afference = [False] + [True] * (T.shape[1] - 1)
+        self.baseline_of_record = ["mean"] + ["persistence"] * (T.shape[1] - 1)
 
-        i_in, i_out, split = [], [], []
+        i_in, i_out, which = [], [], []
         for s in m["sequences"]:
             k = int(round(horizon_s / s["dt_s"]))
             if k < 1:
@@ -102,15 +127,15 @@ class InteroCorpus:
             a, b = idx[:-k], idx[k:]
             for u, v in zip(a, b):
                 if tr[u] and tr[v]:
-                    i_in.append(u); i_out.append(v); split.append(0)
+                    i_in.append(u); i_out.append(v); which.append(0)
                 elif te[u] and te[v]:
-                    i_in.append(u); i_out.append(v); split.append(1)
+                    i_in.append(u); i_out.append(v); which.append(1)
         self.i_in = np.asarray(i_in); self.i_out = np.asarray(i_out)
-        split = np.asarray(split)
-        self.train = np.nonzero(split == 0)[0]
-        self.test = np.nonzero(split == 1)[0]
+        which = np.asarray(which)
+        self.train = np.nonzero(which == 0)[0]
+        self.test = np.nonzero(which == 1)[0]
 
-        # standardisation from the TRAIN pairs only.
+        # standardisation from the TRAIN pairs of THIS split only.
         xin = X[self.i_in]
         self.x_mu = xin[self.train].mean(0)
         self.x_sd = np.where(xin[self.train].std(0) > 0,
@@ -130,10 +155,14 @@ class InteroCorpus:
         return self.Y.shape[1]
 
     def describe(self) -> str:
-        return (f"{len(self.i_in)} pairs at horizon {self.horizon_s:.0f}s "
+        held = self.meta.get("held_out_protocols", [])
+        return (f"{len(self.i_in)} pairs at horizon {self.horizon_s:.0f}s, "
+                f"{self.split} split "
                 f"({len(self.train)} train / {len(self.test)} test) over "
-                f"{len(self.meta['sequences'])} sequences; "
-                f"{len(self.channels)} channels -> {self.n_out} targets "
+                f"{len(self.meta['sequences'])} sequences"
+                + (f", holding out {', '.join(held)}"
+                   if self.split == "protocol" else "") +
+                f"; {len(self.channels)} channels -> {self.n_out} targets "
                 f"({', '.join(self.target_names)})")
 
 
@@ -168,11 +197,22 @@ def skill(mse: np.ndarray, base: dict) -> dict:
 
 
 def sanity_gates(c: InteroCorpus, idx: np.ndarray) -> dict:
-    """check the metric against three cases whose answers are known.
+    """check the metric against cases whose answers are known.
 
-    A predictor that IS a baseline must score exactly zero skill against that
-    baseline.  If it does not, the metric is wrong and every number after it is
-    decoration.
+    Two kinds, and both have to pass before any arm is reported.
+
+    *self-skill is exactly zero.*  A predictor that IS a baseline must score 0
+    against that baseline.  If it does not, the metric is wrong and every number
+    after it is decoration.
+
+    *an exactly-linear target must print 1.000.*  `discomfort` is a fixed
+    weighted sum of the fifteen afferent rates, so a ridge from the afference to
+    `discomfort` AT THE SAME INSTANT has an exact solution and must recover it.
+    This is the "chance prints 1.0x" check for a regression pipeline: a known
+    answer computed the same way every other number here is computed.  It also
+    makes the degeneracy visible rather than flattering -- the reason
+    `discomfort` and `sensation` are scored against persistence and not against
+    the mean is precisely that this gate passes.
     """
     truth = c.Y_raw[idx]
     base = baselines(c, idx)
@@ -181,25 +221,99 @@ def sanity_gates(c: InteroCorpus, idx: np.ndarray) -> dict:
                        ("mean", np.broadcast_to(c.y_mu.astype(np.float32),
                                                 truth.shape)),
                        ("persistence", c.P_raw[idx])):
-        s = np.asarray(skill(per_target_mse(pred, truth), base)[f"skill_vs_{name}"])
-        worst = float(np.nanmax(np.abs(s)))
-        got[name] = worst
+        sk = np.asarray(skill(per_target_mse(pred, truth), base)[f"skill_vs_{name}"])
+        worst = float(np.nanmax(np.abs(sk)))
+        got[f"self_skill_{name}"] = worst
         if worst > 1e-9:
             raise SystemExit(
                 f"SANITY GATE FAILED: the {name} predictor scores skill "
                 f"{worst:.3e} against the {name} baseline, and must score 0. "
                 f"the metric is wrong; nothing below it means anything.")
+
+    # the exactly-linear target.  X is standardised, discomfort is affine in the
+    # raw rates, so an affine map exists and a ridge must find it.
+    j = c.target_names.index("discomfort")
+    Xtr = np.c_[c.X[c.train], np.ones(len(c.train), np.float32)]
+    P0 = c.P_raw[:, j]                        # discomfort at the INPUT instant
+    ytr = P0[c.train]
+    W = np.linalg.solve(Xtr.T @ Xtr + 1e-6 * np.eye(Xtr.shape[1], dtype=np.float32),
+                        Xtr.T @ ytr)
+    Xte = np.c_[c.X[idx], np.ones(len(idx), np.float32)]
+    r2 = float(1.0 - ((Xte @ W - P0[idx]) ** 2).mean() /
+               ((P0[idx] - ytr.mean()) ** 2).mean())
+    got["linear_target_r2"] = r2
+    if r2 < 0.999:
+        raise SystemExit(
+            f"SANITY GATE FAILED: a ridge from the afference to `discomfort` at "
+            f"the same instant scores R^2 {r2:.6f} and must score 1.000 -- "
+            f"discomfort is an exact affine function of those fifteen rates. "
+            f"the corpus, the standardisation or the pairing is wrong.")
     return got
 
 
-def report_row(name: str, mse: np.ndarray, base: dict, targets: list[str],
-               agg: float) -> str:
-    s = skill(mse, base)
+def change_guard(c: InteroCorpus, pred: np.ndarray, idx: np.ndarray) -> dict:
+    """how big is the predicted CHANGE, and does it point the right way?
+
+    Ledger entry 14: an objective reported skill +0.0003 over persistence and
+    was announced as beating it, and what the model had actually learned was to
+    emit zero -- which IS persistence.  The loss could not tell the difference
+    and neither could the skill.  What separated them was measuring the
+    predicted residual's size and direction.
+
+    So for every arm: the ratio of the predicted change's magnitude to the true
+    change's, and the cosine between them.  A ratio near 0 means the arm has
+    reproduced persistence whatever its skill says.
+    """
+    true_d = c.Y_raw[idx] - c.P_raw[idx]
+    pred_d = pred - c.P_raw[idx]
+    out = {}
+    for j, t in enumerate(c.target_names):
+        a, b = pred_d[:, j], true_d[:, j]
+        na, nb = float(np.linalg.norm(a)), float(np.linalg.norm(b))
+        out[t] = {"magnitude_ratio": na / nb if nb > 0 else float("nan"),
+                  "cosine": float(a @ b / (na * nb)) if na * nb > 0 else float("nan")}
+    return out
+
+
+def headline(c: InteroCorpus, mse: np.ndarray, base: dict) -> dict:
+    """two numbers, because there are two questions and one aggregate is a lie.
+
+    *state*: can the cortex read UNOBSERVED body state off the afference?
+    `endurance_h` is glycogen against metabolic rate and none of those is a
+    channel, so this is inference and the baseline is the training mean.
+
+    *trajectory*: does the afference say where the visceral state is GOING?
+    `discomfort` and `sensation` are exact functions of the afference at the
+    same instant -- the sanity gate proves it -- so scoring them against the
+    mean measures nothing but the model's ability to invert its own input.  The
+    baseline that bites is persistence, and beating it requires extrapolating
+    the afferent trajectory rather than reading it.
+
+    A single aggregate over all five would mix a division by 4.5e-05 with a
+    division by 1.6, which is how a number stops meaning anything.
+    """
+    sk_mean = 1.0 - mse / base["mean"]
+    sk_pers = 1.0 - mse / base["persistence"]
+    st = [j for j, d in enumerate(c.derived_from_afference) if not d]
+    tj = [j for j, d in enumerate(c.derived_from_afference) if d]
+    return {"state_skill_vs_mean": float(np.mean(sk_mean[st])),
+            "trajectory_skill_vs_persistence": float(np.mean(sk_pers[tj]))}
+
+
+def report_row(name: str, c: InteroCorpus, mse: np.ndarray, base: dict,
+               h: dict, guard: dict) -> str:
+    sk_mean = 1.0 - mse / base["mean"]
+    sk_pers = 1.0 - mse / base["persistence"]
     parts = []
-    for j, t in enumerate(targets):
-        parts.append(f"{t}={s['skill_vs_mean'][j]:+.3f}/"
-                     f"{s['skill_vs_persistence'][j]:+.3f}")
-    return f"  {name:22s} agg {agg:+.4f}   " + "  ".join(parts)
+    for j, t in enumerate(c.target_names):
+        v = sk_pers[j] if c.derived_from_afference[j] else sk_mean[j]
+        parts.append(f"{t.replace('sensation_', 's')}={v:+.3f}")
+    dmag = np.mean([guard[t]["magnitude_ratio"]
+                    for j, t in enumerate(c.target_names)
+                    if c.derived_from_afference[j]])
+    return (f"  {name:26s} state {h['state_skill_vs_mean']:+.4f}  "
+            f"traj {h['trajectory_skill_vs_persistence']:+.4f}  |dz| "
+            f"{dmag:5.2f}  " + " ".join(parts))
 
 
 # ---------------------------------------------------------------------------
@@ -222,7 +336,7 @@ def ridge_control(c: InteroCorpus, lam: float = 1.0) -> np.ndarray:
 
 
 def mlp_control(c: InteroCorpus, dev, steps: int, hidden: int, lr: float,
-                seed: int) -> np.ndarray:
+                seed: int, batch: int = 256) -> np.ndarray:
     """the same encoder capacity, no cortex, no delays.
 
     Matched in width and depth to one conduction group's encoder plus the head,
@@ -239,7 +353,7 @@ def mlp_control(c: InteroCorpus, dev, steps: int, hidden: int, lr: float,
     tr = torch.from_numpy(c.train).to(dev)
     rng = np.random.default_rng(seed)
     for _ in range(steps):
-        i = tr[torch.from_numpy(rng.integers(0, len(c.train), 256)).to(dev)]
+        i = tr[torch.from_numpy(rng.integers(0, len(c.train), batch)).to(dev)]
         loss = F.mse_loss(net(X[i]), Y[i])
         opt.zero_grad(set_to_none=True); loss.backward(); opt.step()
     with torch.no_grad():
@@ -308,6 +422,13 @@ def main() -> None:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--corpus", default="data/derived/intero-corpus")
     ap.add_argument("--horizon-s", type=float, default=60.0)
+    ap.add_argument("--split", default="protocol", choices=("protocol", "time"),
+                    help="protocol holds out whole recorded runs and is the "
+                         "default; time is contiguous within each sequence.  "
+                         "the time split is ill-posed for endurance_h -- its "
+                         "held-out window is a 1.6 h band at the top of a 27 h "
+                         "range, where a model accurate to 2.8%% scores -2.07 "
+                         "against the mean")
     ap.add_argument("--init", default="ckpt/ibm1_implicit.pt")
     ap.add_argument("--sites", type=int, default=30_000)
     ap.add_argument("--embed", type=int, default=128)
@@ -325,51 +446,89 @@ def main() -> None:
     a = ap.parse_args()
 
     dev = "cuda" if torch.cuda.is_available() else "cpu"
-    c = InteroCorpus(a.corpus, a.horizon_s)
+    c = InteroCorpus(a.corpus, a.horizon_s, a.split)
     print(c.describe(), flush=True)
 
     base = baselines(c, c.test)
     gates = sanity_gates(c, c.test)
-    print(f"\nsanity gates PASSED (worst deviation "
-          f"{max(gates.values()):.1e}; each baseline predictor scores exactly "
-          f"0 against itself)")
+    print(f"\nsanity gates PASSED")
+    print(f"  every baseline predictor scores exactly 0 against itself "
+          f"(worst {max(v for k, v in gates.items() if k.startswith('self')):.1e})")
+    print(f"  the exactly-linear target prints "
+          f"{gates['linear_target_r2']:.6f}, and must print 1.000000 -- "
+          f"`discomfort` is an affine function of the fifteen rates, so a ridge "
+          f"has to recover it.  that it does is also WHY discomfort and "
+          f"sensation are scored against persistence and not the mean.")
     print("\nbaseline MSE on the held-out split, raw units:")
     for j, t in enumerate(c.target_names):
-        print(f"  {t:14s} zero {base['zero'][j]:12.5f}  "
-              f"mean {base['mean'][j]:12.5f}  "
-              f"persistence {base['persistence'][j]:12.5f}")
-
-    # the aggregate is the mean over targets of the STANDARDISED error, so a
-    # target whose raw variance is 30 (endurance, in hours) does not swamp one
-    # whose raw variance is 0.004 (discomfort, a fraction).
-    def agg(pred_raw):
-        z = (pred_raw - c.y_mu) / c.y_sd
-        zt = (c.Y_raw[c.test] - c.y_mu) / c.y_sd
-        zm = ((np.broadcast_to(c.y_mu.astype(np.float32), zt.shape) - c.y_mu)
-              / c.y_sd)
-        return float(1.0 - ((z - zt) ** 2).mean() / ((zm - zt) ** 2).mean())
+        print(f"  {t:14s} zero {base['zero'][j]:12.6f}  "
+              f"mean {base['mean'][j]:12.6f}  "
+              f"persistence {base['persistence'][j]:12.6f}   "
+              f"baseline of record: {c.baseline_of_record[j]}"
+              + ("   (derived from the afference)"
+                 if c.derived_from_afference[j] else
+                 "   (NOT an afferent channel; must be inferred)"))
+    # whether persistence is a usable baseline for endurance depends on the
+    # SPLIT, and the number decides it rather than the prose.  on a contiguous
+    # time split the held-out endurance window is nearly flat, persistence MSE
+    # is 4.5e-05 against a variance of 1.58, and a skill ratio against it is a
+    # division by measurement noise.  on the protocol split the held-out runs
+    # contain an exercise bout, endurance moves 6 h inside it, and persistence
+    # becomes an ordinary and rather strong baseline.  Same quantity, same
+    # formula, two different meanings -- which is the entire shape of this
+    # repo's corrections ledger, so it is checked and printed rather than
+    # assumed.
+    ratio = base["persistence"][0] / base["mean"][0]
+    print(f"\n  endurance: persistence MSE {base['persistence'][0]:.3e} against "
+          f"a held-out variance of {base['mean'][0]:.3f}, ratio {ratio:.2e}.")
+    if ratio < 1e-3:
+        print("    persistence is near-exact here, so a skill ratio against it "
+              "is a division by noise; endurance is reported against the MEAN.")
+    else:
+        print("    endurance moves enough on this split for persistence to be "
+              "an ordinary baseline; both ratios are reported for it, and the "
+              "headline stays the mean because that is the inference question.")
 
     results = {"config": vars(a), "corpus": c.describe(),
                "targets": c.target_names,
+               "derived_from_afference": c.derived_from_afference,
+               "baseline_of_record": c.baseline_of_record,
                "sanity_gates": gates,
                "baselines_raw": {k: v.tolist() for k, v in base.items()},
                "arms": {}}
 
     def record(name, pred, note=""):
         mse = per_target_mse(pred, c.Y_raw[c.test])
-        A = agg(pred)
-        results["arms"][name] = {"mse_raw": mse.tolist(), "agg_skill_vs_mean": A,
+        h = headline(c, mse, base)
+        guard = change_guard(c, pred, c.test)
+        results["arms"][name] = {"mse_raw": mse.tolist(), **h,
+                                 "change_guard": guard,
                                  "note": note, **skill(mse, base)}
-        print(report_row(name, mse, base, c.target_names, A), flush=True)
-        return A
+        print(report_row(name, c, mse, base, h, guard), flush=True)
+        return h
 
-    print("\n  arm                    aggregate   per target: "
-          "skill vs mean / vs persistence")
+    print("\n  arm                        state = endurance skill vs MEAN; "
+          "traj = mean skill vs PERSISTENCE over the four afference-derived\n"
+          "                             targets; |dz| = predicted change "
+          "magnitude / true change magnitude (ledger 14: a model that\n"
+          "                             emits persistence scores 0 skill and "
+          "|dz| ~ 0, and the loss cannot tell you which)\n")
     record("ridge_no_dynamics", ridge_control(c),
            "closed-form linear on the same 15 channels; no cortex")
     record("mlp_no_dynamics",
            mlp_control(c, dev, a.control_steps, a.hidden, a.lr, a.seed),
-           "matched-capacity encoder; no cortex, no conduction delays")
+           f"matched-capacity encoder, no cortex and no conduction delays, "
+           f"trained to convergence ({a.control_steps} steps x 256 = "
+           f"{a.control_steps*256:,} samples)")
+    # MATCHED SAMPLES, not matched convergence.  the cortical arm costs 590 ms
+    # of simulated cortex per forward and can only afford a few hundred steps,
+    # so comparing it to a control that saw a hundred times the data would be
+    # comparing budgets and calling it architecture.  this arm sees exactly what
+    # the cortical arms see.
+    record("mlp_matched_samples",
+           mlp_control(c, dev, a.steps, a.hidden, a.lr, a.seed, batch=a.batch),
+           f"the same encoder on the same number of samples the cortical arms "
+           f"get ({a.steps} steps x {a.batch} = {a.steps*a.batch:,})")
 
     # --- the trained cortical arm -----------------------------------------
     print(f"\n  training the cortical arms ({a.steps} steps each, "
@@ -432,27 +591,38 @@ def main() -> None:
 
     # --- what it means -----------------------------------------------------
     A = results["arms"]
-    ct = A["cortex_trained"]["agg_skill_vs_mean"]
-    rd = A["ridge_no_dynamics"]["agg_skill_vs_mean"]
-    ml = A["mlp_no_dynamics"]["agg_skill_vs_mean"]
-    pm = A["cortex_permuted_retrained"]["agg_skill_vs_mean"]
-    sv = A["cortex_severed_posthoc"]["agg_skill_vs_mean"]
+    def st(k): return A[k]["state_skill_vs_mean"]
+    def tj(k): return A[k]["trajectory_skill_vs_persistence"]
     print("\nwhat this says:")
-    print(f"  the cortical loop reaches {ct:+.4f} against predicting the mean; "
-          f"a ridge on the same fifteen numbers reaches {rd:+.4f} and an MLP "
-          f"{ml:+.4f}.")
-    if ct <= max(rd, ml) + 0.01:
+    print(f"  STATE (can the afference report unobserved substrate?)  "
+          f"cortex {st('cortex_trained'):+.4f}   ridge "
+          f"{st('ridge_no_dynamics'):+.4f}   MLP {st('mlp_no_dynamics'):+.4f}")
+    print(f"  TRAJECTORY (does it predict where the state is going?)  "
+          f"cortex {tj('cortex_trained'):+.4f}   ridge "
+          f"{tj('ridge_no_dynamics'):+.4f}   MLP {tj('mlp_no_dynamics'):+.4f}")
+    best_free = max(st('ridge_no_dynamics'), st('mlp_no_dynamics'))
+    if st('cortex_trained') <= best_free + 0.01:
         print("  the loop does NOT beat a dynamics-free map on the same input. "
-              "the afference carries the signal; the cortex is not adding to "
-              "it here.")
-    print(f"  severing the kernel post hoc moves the aggregate to {sv:+.4f} "
-          f"({ct - sv:+.4f}); a permuted kernel retrained reaches {pm:+.4f} "
-          f"({ct - pm:+.4f} behind the trained one).")
-    if abs(ct - pm) < 0.01:
+              "whatever the afference carries, the cortex is not adding to it "
+              "here, and the honest report is the afference's skill and not the "
+              "loop's.")
+    d_sev = st('cortex_trained') - st('cortex_severed_posthoc')
+    d_perm = st('cortex_trained') - st('cortex_permuted_retrained')
+    print(f"  severing the kernel post hoc costs {d_sev:+.4f} on state; a "
+          f"permuted kernel RETRAINED reaches {st('cortex_permuted_retrained'):+.4f} "
+          f"({d_perm:+.4f} behind trained).")
+    if abs(d_perm) < 0.02:
         print("  trained and permuted are indistinguishable, so the kernel's "
               "STRUCTURE is not carrying this term -- the readout is.  that is "
-              "ledger entry 20 on a second pathway, and it is a result about "
-              "the architecture, not about interoception.")
+              "ledger entry 20 reproduced on a second pathway, and it is a "
+              "result about the architecture rather than about interoception.")
+    d_c = st('cortex_trained') - st('cortex_trained_without_c')
+    print(f"  removing every unmyelinated group and retraining costs {d_c:+.4f} "
+          f"on state and "
+          f"{tj('cortex_trained') - tj('cortex_trained_without_c'):+.4f} on "
+          f"trajectory.  those five C-fibre channels are the slow chemical and "
+          f"nociceptive arm, and they are the half of visceral afference that "
+          f"arrives 168-508 ms after the mechanical half.")
 
 
 if __name__ == "__main__":

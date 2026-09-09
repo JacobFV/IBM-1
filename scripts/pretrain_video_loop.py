@@ -846,9 +846,20 @@ class InteroceptiveLoop(nn.Module):
     from a readout result, and it is expected to be unfavourable.
     """
 
+    #: insula plus anterior cingulate as a fraction of the `frontal` label.
+    #: the DK parcellation puts insula at ~2.0% of cortical surface and the
+    #: rostral and caudal anterior cingulate together at ~2.5%, so the
+    #: interoceptive target is ~4.5% of cortex.  `cortical_regions` gives
+    #: `frontal` 22% by construction (the cut at yn > 0.55 on a uniform sphere).
+    #: driving all of it would put visceral afference onto five times the
+    #: cortex the target occupies -- and would give this head 1.6M projection
+    #: parameters against a 3,555-sample corpus, which is a second reason.
+    PORT_FRACTION = 0.045 / 0.22
+
     def __init__(self, dyn: CorticalDynamics, channels: list[str], n_out: int,
-                 lobe: str | None = None, hidden: int = 128,
-                 read_sites: int = 2048, dt: float = 1e-2, substeps: int = 4):
+                 lobe: str | None = None, hidden: int = 64,
+                 read_sites: int = 1024, dt: float = 1e-2, substeps: int = 4,
+                 port_frac: float | None = None):
         super().__init__()
         import ibm.interoception as IO
         self.dyn, self.dt, self.substeps = dyn, dt, substeps
@@ -902,8 +913,17 @@ class InteroceptiveLoop(nn.Module):
         for g, idx in cols.items():
             self.register_buffer(f"cols_{g[0]}_{g[1]}",
                                  torch.tensor(idx, dtype=torch.long))
-        self.port = region_index(dyn.pos, self.lobe)
+        full = region_index(dyn.pos, self.lobe)
+        frac = self.PORT_FRACTION if port_frac is None else port_frac
+        if not 0.0 < frac <= 1.0:
+            raise ValueError(f"port_frac {frac} must be in (0, 1]")
+        want = max(1, int(round(len(full) * frac)))
+        # evenly spaced through the lobe's site list rather than a random draw:
+        # the site order is a seeded RNG over a sphere, so spacing samples the
+        # lobe uniformly and is reproducible without carrying a second seed.
+        self.port = full[torch.linspace(0, len(full) - 1, want).long()]
         self.n_port = len(self.port)
+        self.port_frac, self.n_lobe = frac, len(full)
 
         # ONE ENCODER PER GROUP, input width = how many channels landed in it.
         self.enc = nn.ModuleDict()
@@ -1012,7 +1032,9 @@ class InteroceptiveLoop(nn.Module):
     def describe(self) -> str:
         lines = [f"InteroceptiveLoop: {len(self.channels)} channels in "
                  f"{len(self.group_keys)} conduction groups -> {self.n_port:,} "
-                 f"{self.lobe} sites -> {self.n_out} outputs",
+                 f"sites ({100*self.port_frac:.0f}% of the {self.n_lobe:,} "
+                 f"{self.lobe} sites, the insula+ACC share of cortex) -> "
+                 f"{self.n_out} outputs",
                  f"  dt {self.dt:g}s x {self.substeps} substeps, "
                  f"{self.n_steps()} steps "
                  f"({1000*self.dt*self.n_steps():.0f} ms of afference)"]

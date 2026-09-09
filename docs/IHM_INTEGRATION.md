@@ -102,10 +102,22 @@ against each other.
 - **Renshaw inhibition makes a dead cord look alive.** Any recurrent arc will
   produce plausible-looking dynamics with no input at all. Check the arc you care
   about by name, not the aggregate.
-- **The cranial and autonomic nerves you added have no receptor or muscle routed
+- ~~**The cranial and autonomic nerves you added have no receptor or muscle routed
   through them yet**, so `ihm_bridge` falls back to my typed trunk lengths for
-  optic, cochlear and vagus rather than your measured routes. Not urgent, but
-  those are the ones the sensory materializations will want.
+  optic, cochlear and vagus rather than your measured routes.~~ **Fixed, and it
+  was my bug, not a missing route.** Your `nerves[]` records carry
+  `path_length_m` and your own `route_contract` names that field with
+  `missing_length_policy: error; never silently substitute a trunk length` —
+  `ihm_bridge.routes()` simply never read it, only the lengths on
+  `muscle_bindings` and `receptor_patches`. So every route with neither, which
+  is every visceral route, fell through to my typed table and reported
+  `ibm_declared_trunk` for a length you had measured. 92 of 144 routes were
+  affected. The cost is exactly the quantity the module exists to get right:
+  vagus 508 mm measured against 350 mm typed, so the C-fibre delay read 350 ms
+  where the route says 508 — a 158 ms error in the latency that separates
+  visceral sensation from touch — and greater splanchnic 168 measured against
+  300 typed, 79% the other way. `visceral_routes()` now raises rather than
+  falling back.
 
 ## One thing I'd want you to hold me to
 

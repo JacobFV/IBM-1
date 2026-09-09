@@ -113,10 +113,36 @@ def sensor_ports() -> list[Port]:
     return out
 
 
+def visceral_ports() -> list[Port]:
+    """the interoceptive port group: one wire per visceral afferent channel.
+
+    kept apart from `sensor_ports` because these do not share its shape.  a
+    sensor port carries one latency per receptor SURFACE -- 12 ms for skin,
+    0.4 ms for the vestibular organ -- and the whole content of this group is
+    that a single visceral latency is wrong by 55x: the vagal A-beta channel
+    reporting gastric volume arrives in 9 ms and the vagal C channel reporting
+    the same meal's nutrient content in 508 ms, over the route IHM measured.
+    Collapsing them into one `viscera` entry in the surface table is exactly the
+    lumping `ibm/topologies/nerve.py` exists to refuse, so the delay here comes
+    from the (trunk, fibre class) pair.
+
+    before this there were two visceral wires, `viscera.blood_pressure` and
+    `viscera.oxygenation`, both at a flat 60 ms.
+    """
+    from ibm.interoception import PORTS, group_delays_s
+    d = group_delays_s()
+    out: list[Port] = []
+    for p in PORTS:
+        out.append(Port(f"viscera.{p.channel}", "from_body", p.receptor,
+                        "Hz", (0.0, 100.0), d[(p.trunk, p.fibre)], p.trunk))
+    return out
+
+
 def manifest() -> dict[str, list[Port]]:
     return {"motor_out": motor_ports(),
             "plant_in": plant_ports(),
-            "sensor_in": sensor_ports()}
+            "sensor_in": sensor_ports(),
+            "visceral_in": visceral_ports()}
 
 
 def describe() -> str:

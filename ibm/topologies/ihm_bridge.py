@@ -103,6 +103,27 @@ def routes(path: str = IHM_PERIPHERAL) -> Iterator[dict]:
         if seen:
             L = seen[len(seen) // 2]     # median route, in metres
             src = "ihm_measured_route"
+        elif n.get("path_length_m") is not None:
+            # THE NERVE RECORD ITSELF CARRIES A ROUTE LENGTH, and it is the
+            # field IHM's own `route_contract` names:
+            #
+            #     length_field:          nerves[].path_length_m
+            #     missing_length_policy: error; never silently substitute a
+            #                            trunk length
+            #
+            # this branch did not exist.  every route with no muscle binding and
+            # no receptor patch -- which is every VISCERAL route, since the vagus
+            # and the splanchnics innervate no muscle and carry no skin patch --
+            # fell through to the typed trunk table and reported
+            # `ibm_declared_trunk` for a route IHM had measured.  the cost is
+            # exactly the quantity this module exists to get right: the vagus is
+            # 508 mm end to relay and 350 mm in the typed table, so the C-fibre
+            # delay was 350 ms where the route says 508 -- a 158 ms error in the
+            # latency that separates visceral sensation from touch.  the greater
+            # splanchnic went the other way, 300 mm typed against 168 measured,
+            # 79% long.
+            L = float(n["path_length_m"])
+            src = "ihm_nerve_route"
         else:
             L = TRUNK_LENGTH_MM.get(name, 300.0) * 1e-3
             src = "ibm_declared_trunk"
@@ -117,7 +138,47 @@ def routes(path: str = IHM_PERIPHERAL) -> Iterator[dict]:
             "measured_axon_geometry": n.get("measured_axon_geometry", False),
             "evidence_kind": n.get("evidence_kind"),
             "geometry_kind": n.get("geometry_kind"),
+            "route_kind": n.get("route_kind"),
+            "endpoint_label": n.get("endpoint_label"),
+            "relay_id": n.get("relay_id"),
         }
+
+
+def visceral_routes(path: str = IHM_PERIPHERAL) -> dict[str, dict]:
+    """The visceral routes only, one record per trunk, sides collapsed.
+
+    IHM declares each visceral trunk twice, once per side, with identical route
+    lengths -- the schematic centrelines are mirror images.  A materialization
+    that wants one delay per trunk should not have to decide which side to read,
+    and should not silently take whichever came first, so this collapses them
+    and RAISES if the two sides disagree, which would mean the mirror assumption
+    had stopped holding.
+
+    Every record here has `length_source == "ihm_nerve_route"`.  If one does
+    not, the join has regressed to the typed trunk table for a route the body
+    measured, and the assertion says so rather than letting a 158 ms latency
+    error through as a plausible number.
+    """
+    by_name: dict[str, dict] = {}
+    for r in routes(path):
+        if r.get("route_kind") != "visceral":
+            continue
+        prev = by_name.get(r["name"])
+        if prev is not None:
+            if abs(prev["path_length_m"] - r["path_length_m"]) > 1e-9:
+                raise ValueError(
+                    f"{r['name']}: left and right route lengths differ "
+                    f"({prev['path_length_m']} vs {r['path_length_m']}); the "
+                    f"sides can no longer be collapsed")
+            continue
+        if r["length_source"] != "ihm_nerve_route":
+            raise ValueError(
+                f"{r['name']}: visceral route length came from "
+                f"{r['length_source']!r}, not from IHM's nerves[].path_length_m. "
+                f"IHM's route_contract says 'error; never silently substitute a "
+                f"trunk length'.")
+        by_name[r["name"]] = r
+    return by_name
 
 
 def coverage(path: str = IHM_PERIPHERAL) -> dict:
