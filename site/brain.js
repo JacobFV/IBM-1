@@ -628,12 +628,25 @@ window.IBMBrain = (function () {
       project = projector(camera, W, H);
       layoutRing();
     }
-    // drag to orbit
+    // drag to orbit -- but only from on or just beside the brain itself, so a
+    // touch on the labels or the empty ground scrolls the page as usual
+    const NEAR = 28;
+    const local = (e) => { const r = hero.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    function nearBrain(x, y) {
+      projectTissue();
+      for (let k = 0; k < TISSUE.length; k++) if (Math.hypot(px_[k] - x, py_[k] - y) < NEAR) return true;
+      return false;
+    }
     const onDown = (x, y) => { orbit.dragging = true; orbit.lastX = x; orbit.lastY = y; orbit.vAz = 0; orbit.vEl = 0; hero.classList.add('dragging'); };
     const onMove = (x, y) => { if (!orbit.dragging) return; const dx = x - orbit.lastX, dy = y - orbit.lastY; orbit.lastX = x; orbit.lastY = y; orbit.tAz -= dx * 0.006; orbit.tEl = Math.max(-1.3, Math.min(1.3, orbit.tEl + dy * 0.006)); orbit.vAz = -dx * 0.006; orbit.vEl = dy * 0.006; orbit.idle = 0; };
     const onUp = () => { orbit.dragging = false; hero.classList.remove('dragging'); };
-    canvas.addEventListener('pointerdown', (e) => { canvas.setPointerCapture(e.pointerId); onDown(e.clientX, e.clientY); });
-    canvas.addEventListener('pointermove', (e) => onMove(e.clientX, e.clientY));
+    canvas.addEventListener('touchstart', (e) => { const [x, y] = local(e.touches[0]); if (nearBrain(x, y)) e.preventDefault(); }, { passive: false });
+    canvas.addEventListener('pointerdown', (e) => { const [x, y] = local(e); if (!nearBrain(x, y)) return; canvas.setPointerCapture(e.pointerId); onDown(e.clientX, e.clientY); });
+    canvas.addEventListener('pointermove', (e) => {
+      if (orbit.dragging) return onMove(e.clientX, e.clientY);
+      if (e.pointerType === 'mouse') { const [x, y] = local(e); hero.classList.toggle('near', nearBrain(x, y)); }
+    });
+    canvas.addEventListener('pointerleave', () => hero.classList.remove('near'));
     canvas.addEventListener('pointerup', onUp); canvas.addEventListener('pointercancel', onUp);
     canvas.addEventListener('wheel', (e) => { if (!e.ctrlKey) return; e.preventDefault(); orbit.tDist = Math.max(220, Math.min(900, orbit.tDist * (1 + e.deltaY * 0.0015))); }, { passive: false });
 
@@ -675,10 +688,30 @@ window.IBMBrain = (function () {
     // each pair meeting at a centre gutter.  the left column is right-aligned
     // to the gutter and the right column left-aligned, so every leader leaves
     // from an inner edge into the gutter and no leader crosses a label
+    // the bands hug the brain: the top pair is bottom-aligned a short gap above
+    // its projected outline, the bottom pair starts the same gap below it, and
+    // both are re-laid when the outline moves more than a few pixels
+    const bands = { top: -1, bottom: -1 };
+    // the drawn head's vertical extent on screen: the scalp surface above the
+    // neck, sampled, is what a label would actually sit on top of
+    const SCALP = G.scalp.xyz.filter((p, i) => i % 3 === 0 && toWorld(p)[1] > -100);
+    const wordmark = hero.querySelector('.wordmark');
+    function outlineExtent() {
+      let top = Infinity, bottom = -Infinity;
+      for (const p of SCALP) { const y = project(p)[1]; if (y < top) top = y; if (y > bottom) bottom = y; }
+      return isFinite(top) ? [top, bottom] : [H * 0.3, H * 0.7];
+    }
     function layoutBands() {
-      const pad = 10, gy = 1, gutter = 28, n = ringItems.length, q = Math.ceil(n / 4);
+      const pad = 10, gy = 1, gap = 14, n = ringItems.length, q = Math.ceil(n / 4);
       const cols = [0, 1, 2, 3].map((k) => ringItems.slice(k * q, (k + 1) * q));
       const height = (items) => items.reduce((a, it) => a + it.el.offsetHeight + gy, 0) - gy;
+      const width = (items) => Math.max(...items.map((it) => it.el.offsetWidth));
+      // as wide a gutter as the widest label leaves room for
+      const gutter = Math.max(16, Math.min(56, 2 * (W / 2 - pad - Math.max(...cols.map(width)))));
+      const [top, bottom] = outlineExtent();
+      bands.top = top; bands.bottom = bottom;
+      // the top pair also keeps clear of the wordmark, which sits over the brain's crown
+      const wm = wordmark ? wordmark.getBoundingClientRect().top - hero.getBoundingClientRect().top : top;
       const stack = (items, side, y0) => {
         let y = y0;
         items.forEach((it) => {
@@ -688,8 +721,14 @@ window.IBMBrain = (function () {
           y += h + gy;
         });
       };
-      stack(cols[0], 'l', pad); stack(cols[1], 'r', pad);
-      stack(cols[2], 'l', H - pad - height(cols[2])); stack(cols[3], 'r', H - pad - height(cols[3]));
+      const above = Math.max(pad + Math.max(height(cols[0]), height(cols[1])), Math.min(top, wm) - gap);
+      stack(cols[0], 'l', above - height(cols[0])); stack(cols[1], 'r', above - height(cols[1]));
+      const below = Math.min(H - pad - Math.max(height(cols[2]), height(cols[3])), bottom + gap);
+      stack(cols[2], 'l', below); stack(cols[3], 'r', below);
+    }
+    function bandsStale() {
+      const [top, bottom] = outlineExtent();
+      return Math.abs(top - bands.top) > 8 || Math.abs(bottom - bands.bottom) > 8;
     }
     function edgePoint(el, side) {
       const r = el.getBoundingClientRect(), h = hero.getBoundingClientRect(), y = r.top - h.top + r.height / 2;
@@ -784,6 +823,7 @@ window.IBMBrain = (function () {
       const ctx = { project, w: W, h: H, centre: [W / 2, H / 2] };
       if (!state.selected) {
         projectTissue();
+        if (narrow && bandsStale()) layoutBands();
         const [ox, oy] = project(cx);
         ringItems.forEach((it) => {
           const hovered = state.hover === it.m.id;
@@ -797,7 +837,9 @@ window.IBMBrain = (function () {
           const r = reach(ox, oy, dx, dy);
           // glide toward the new outline point rather than jumping to it
           it.r = it.r == null ? r : it.r + (r - it.r) * 0.12;
-          it.line.setAttribute('d', curve(x0, y0, ox + dx * it.r, oy + dy * it.r, 0.12, [W / 2, H / 2], it));
+          // in the bands the arcs bow toward the centre line, or the two
+          // columns' leaders cross one another on the way in
+          it.line.setAttribute('d', curve(x0, y0, ox + dx * it.r, oy + dy * it.r, narrow ? -0.12 : 0.12, [W / 2, H / 2], it));
           it.line.style.opacity = '';
         });
         if (hoverAnn.item) {
