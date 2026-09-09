@@ -1,0 +1,25 @@
+{
+  "ckpt": "ckpt/ibm1_curriculum16.pt",
+  "step": 32500,
+  "configs": {
+    "base": {
+      "grad_disjoint": 0.001883144024759531,
+      "fwd_sd_disjoint": 0.0018383851274847984,
+      "loss": 3.9758923053741455,
+      "grad_severed": 0.0,
+      "grad_at_port": 0.3292129933834076,
+      "fwd_sd_at_port": 0.4334067404270172
+    },
+    "aniso4d": {
+      "grad_disjoint": 0.04035427048802376,
+      "fwd_sd_disjoint": 0.05590038746595383,
+      "loss": 4.054882049560547,
+      "grad_severed": 0.0,
+      "grad_at_port": 0.3033192753791809,
+      "fwd_sd_at_port": 0.6930785179138184
+    }
+  },
+  "gradient_ratio": 21.429200293470288,
+  "forward_ratio": 30.407332299535298,
+  "verdict": "gradient scales WITH transport, as the hypothesis predicts. the backward pass is attenuated by the same factor as the forward pass, so end-to-end training through the unmodified sheet was starved of gradient and the concentrated kernel should train where it could not. this is a mechanism, not yet a demonstration -- only an actual end-to-end run shows it trains."
+}
