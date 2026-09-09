@@ -124,14 +124,18 @@ def cortical_features(model, dyn, imgs, drive_idx, read_idx, *, mode, batch,
         x = imgs[i:i + batch].to(device)
         b = x.shape[0]
         drive = torch.zeros(b, dyn.n, device=device)
-        # the occipital REGION, not `[:n//8]`.  the trained port is an arbitrary
-        # eighth of a random point cloud and it intersects precentral, which
-        # would let the readout see the drive directly -- the exact contamination
-        # this script exists to avoid.
+        # the occipital REGION, not `[:n//8]`.  a checkpoint trained with
+        # `port_region=None` has an arbitrary port -- on the spherical proxy an
+        # eighth of a random point cloud, which intersects precentral and would
+        # let the readout see the drive directly; on the fsaverage sheet the same
+        # slice is the whole LEFT HEMISPHERE spread thin (measured: 100% lh,
+        # occipital 9.5% of it).  neither is a port, and this is the
+        # contamination the script exists to avoid.
         u = model.to_cortex(model.enc(x))
-        # the trained port has `dyn.n // 8` channels and the occipital region has
-        # its own count; take the overlap rather than assuming they match, and
-        # note in the JSON how many channels were actually used.
+        # a checkpoint trained with `--port-region occipital` has exactly these
+        # channels and nothing is dropped; one trained with the slice has
+        # `dyn.n // 8` of them.  take the overlap rather than assuming they
+        # match, and note in the JSON how many channels were actually used.
         m = min(u.shape[1], len(drive_idx))
         drive[:, drive_idx[:m]] = u[:, :m]
         s = dyn.init_state(b, device)
