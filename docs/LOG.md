@@ -345,7 +345,9 @@ THINGS-EEG2 64ch montage"` for a run that was a spherical shell. Nothing reads
 that field, which is why it survived. `geometry_note(dyn)` now reads the sheet
 off `dyn.pos` through the same discriminator the region lookup uses.
 
-## 2026-09-09 — transport WAS the binding constraint on end-to-end training
+## 2026-09-09 — transport accounts for most of the end-to-end gap, but not all
+##   (this entry's original title said "WAS the binding constraint"; the completed
+##    run's own pre-registered verdict says otherwise, and the correction is below)
 
 The pre-registered test landed on its confirming branch. Image -> occipital -> the
 sheet -> a PRECENTRAL-ONLY readout, contrastive against measured EEG, trained END
@@ -399,8 +401,39 @@ end-to-end look structurally broken. With the long-range budget concentrated,
 end-to-end reaches 38.5x, or **80% of the frozen-head ceiling**. Most of that gap
 was the sheet not conducting, and it closes when the sheet conducts.
 
-Caveat held: the run is at 5,000 of 6,000 steps and the arm is flat over its last
-four evaluations, so the final number is unlikely to move much, but it is not in.
+**COMPLETED, AND THE PRE-REGISTERED VERDICT FIRED AGAINST MY READING.** Final,
+6,000 steps both arms:
+
+    base      best  5.2x   final 3.2x   mean of last 8 evals 3.5x
+    aniso4d   best 43.9x   final 41.6x  mean of last 8 evals 40.2x
+
+The script's own condition was `aniso > 2x AND base < 2x` for "transport was the
+binding constraint". Base reaches 5.2x, so it fired **"BOTH train — the earlier
+end-to-end failures were NOT explained by transport"**.
+
+I reported the confirming branch an hour before the run finished, on the
+matched-step comparison at 1,250 steps. That was premature, and the threshold I
+wrote was badly chosen: 2x chance cannot separate "learns a little" from
+"learns", and base at 5.2x clears it while being 8.4x behind the other arm.
+
+The honest quantitative statement, which neither branch of my own binary
+captures:
+
+- base is **not at chance** — transport is not a total blocker, and any claim
+  that the unmodified sheet cannot train end to end is wrong
+- base is flat from step 250 onward and ends BELOW its best, so what it learns,
+  it learns almost immediately and then stops
+- aniso reaches **43.9x against a frozen-head ceiling of 48.4x — 91% of it**
+- the gap between the arms is **8.4x**, and it is the concentration that produces
+  it
+
+So: transport accounts for most of the end-to-end shortfall and not all of it.
+The residual — base's 5.2x, and the 9% aniso still leaves on the table — is
+something else and is not identified here.
+
+Recording the disagreement rather than re-drawing the threshold, because
+re-drawing a pre-registered line after seeing the numbers is precisely what
+pre-registering it was meant to prevent.
 
 ## 2026-09-09 (morning) — the video model has no temporal prediction beyond appearance
 
