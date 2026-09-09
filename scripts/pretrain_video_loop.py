@@ -144,7 +144,9 @@ class CorticalDynamics(nn.Module):
     """E/I population dynamics with a learned per-site association kernel."""
 
     def __init__(self, n_sites: int, embed_dim: int, k: int, device,
-                 length_scale_mm: float = 40.0, long_range: float = 0.25):
+                 length_scale_mm: float = 40.0, long_range: float = 0.25,
+                 graph_seed: int = 0, tanh_slope: float = 2.0,
+                 long_gain: float = 1.0, long_topm: int = 0):
         super().__init__()
         self.n, self.k = n_sites, k
         pos = cortical_sites(n_sites, device)
@@ -158,7 +160,27 @@ class CorticalDynamics(nn.Module):
             # the minimal declaration of that: a fraction of each node's budget
             # spent on distant partners drawn uniformly, whose weight the learned
             # factor is then free to keep or discard.
-            far = torch.randint(0, n_sites, (n_sites, n_far), device=device)
+            #
+            # drawn from a DEDICATED generator, not the global RNG.  the global
+            # draw made the topology a function of whatever seed the caller set
+            # for weight initialisation, so `scripts/embody.py --seed`, which is
+            # documented as "matched initialization for ablations", silently
+            # redrew the association graph as well: an ablation meaning to vary
+            # the init varied the wiring too and its arms were not comparable.
+            # `cortical_sites` already takes this precaution for the positions,
+            # which is why the local k-NN was reproducible while these were not.
+            #
+            # graph_seed=0 on cuda reproduces the graph every existing
+            # checkpoint was trained against EXACTLY -- verified against
+            # ckpt/ibm1_curriculum16.pt at coincidence 1.00000 against a chance
+            # of 1/30000 -- so this is a no-op for every checkpoint on disk.
+            # the draw is still device-dependent (a cuda generator and a cpu
+            # generator with the same seed give different streams); making it
+            # device-independent would change every stored graph and so needs a
+            # schema bump rather than a silent fix.
+            g = torch.Generator(device=device).manual_seed(graph_seed)
+            far = torch.randint(0, n_sites, (n_sites, n_far), device=device,
+                                generator=g)
             far_d = (pos[far] - pos[:, None, :]).norm(dim=-1)
             idx = torch.cat([idx, far], 1)
             dist = torch.cat([dist, far_d], 1)
@@ -201,6 +223,33 @@ class CorticalDynamics(nn.Module):
         self.a_gain = nn.Parameter(torch.tensor(0.10))
         self.v_half, self.slope, self.r_max = -55.0, 4.0, 100.0
         self.e_rest, self.e_rev = -65.0, -70.0
+
+        # ANISOTROPY.  defaults reproduce the original kernel exactly.
+        #
+        # measured (scripts/measure_hop_transfer.py): the sheet loses ~99% of a
+        # coherent perturbation per hop, and the arriving fraction factors as
+        #     arrival  =  (row gain)  x  (fraction of the row's weight MASS that
+        #                                 lands on the source region).
+        # the second term is pinned at ~5% because `tanh(2*sim)` with `sim` a
+        # cosine in [-1, 1] has an argument in [-2, 2] and tanh(2) = 0.964: every
+        # edge is saturated to the same magnitude, mean |w| = 0.77 of the
+        # ceiling.  the learned factor can therefore express only a SIGN, and
+        # 48 roughly-equal edges cannot form a pathway.  raising the row gain
+        # instead does not work -- swept, it drives the resting rate onto the
+        # sigmoid's upper rail at 87 Hz and transfer FALLS.
+        #
+        # so these knobs concentrate rather than amplify:
+        #   tanh_slope  the saturation slope, previously the hard-coded 2.0.
+        #   long_topm   keep only the m strongest long-range edges per site and
+        #               redistribute the row's long-range L1 mass onto them, so
+        #               the row gain -- which is what governs stability -- is
+        #               UNCHANGED while a chosen path's gain rises by ~n_far/m.
+        #   long_gain   a separate multiplier on the long-range population, kept
+        #               distinct from w_assoc so the local sheet's fixed point
+        #               is not moved when the association fibres are.
+        self.tanh_slope = float(tanh_slope)
+        self.long_gain = float(long_gain)
+        self.long_topm = int(long_topm)
         #: the thalamus, when one is attached.  see `attach_thalamus`.
         self.tct = None
 
@@ -229,7 +278,24 @@ class CorticalDynamics(nn.Module):
         # all-excitatory, and a kernel that cannot subtract can only blur.  tanh
         # lets the learned factor place opposition between sites, which is what
         # keeps a representation from washing out.
-        return self.geo * torch.tanh(2.0 * sim)
+        w = self.geo * torch.tanh(self.tanh_slope * sim)
+        if self.n_far and (self.long_topm or self.long_gain != 1.0):
+            n_loc = self.k - self.n_far
+            lw = w[:, n_loc:]
+            if self.long_topm and self.long_topm < self.n_far:
+                mass = lw.abs().sum(1, keepdim=True)
+                keep = torch.zeros_like(lw, dtype=torch.bool).scatter_(
+                    1, lw.abs().topk(self.long_topm, dim=1).indices, True)
+                lw = lw * keep
+                # renormalise to the mass that was there before the pruning, so
+                # this is a redistribution and NOT a gain change.  without this
+                # top-m would simply delete 10 of 12 edges and the comparison
+                # against the unpruned kernel would confound concentration with
+                # attenuation -- the exact "wrong thing to compare against"
+                # failure docs/LOG.md keeps a ledger of.
+                lw = lw * (mass / lw.abs().sum(1, keepdim=True).clamp_min(1e-30))
+            w = torch.cat([w[:, :n_loc], lw * self.long_gain], 1)
+        return w
 
     def association(self, r, w):
         """message passing on the cached kernel.  r: (B, N), w: (N, k)."""
@@ -663,6 +729,202 @@ class CranialNerveLoop(nn.Module):
 
     def embed_eeg(self, eeg):
         return F.normalize(self.eeg_head(eeg), dim=-1)
+
+
+class InteroceptiveLoop(nn.Module):
+    """visceral afference -> vagus and splanchnics -> cortex -> a bodily readout.
+
+    `CranialNerveLoop` with the body on the input side instead of a stimulus, and
+    with several trunks at once instead of one.  The structure it inherits is the
+    part that matters: the drive enters the sites `cortical_regions` labels, each
+    fibre class gets its own encoder, and a class contributes only once its
+    conduction delay has elapsed.
+
+    **This is the loop where the delay is largest and least optional.**  The
+    optic nerve's three retinal populations span 2.5-8.3 ms.  Here, over IHM's
+    measured 508 mm route from gastric wall to the solitary nucleus, the vagal
+    A-beta channel reporting gastric volume arrives at 9 ms and the vagal C
+    channel reporting the same meal's nutrient content at 508 ms -- 55x, on one
+    nerve -- with the splanchnic report of the same stomach at 168 ms in between.
+    Interoception being late relative to touch is not an artifact to smooth away;
+    it is why a gut feeling is slow, and a model handed one visceral latency has
+    asserted otherwise.  So `dt` here defaults to 1e-2 rather than the 1e-3 the
+    cranial loop uses: at 1e-3 the same seven groups would need 508 integration
+    steps to let the slowest arrive, and at 1e-2 they land on steps 1, 3, 13, 17,
+    22, 23 and 51 -- still all distinct, which is the condition, checked below.
+
+    **The encoder is sized from the body, per group, and never from a default.**
+    `SensorimotorLoop`'s `afferent_channels=32` default once silently dropped half
+    of IHM's 64 channels: the loop ran, validated, and threw away the input.  Here
+    the channel list comes from the corpus, every channel must resolve to a
+    declared port, and each group's encoder input width is the count of channels
+    that actually landed in that group.  A channel that resolves nowhere raises.
+
+    **The port is a substitution and it is named.**  `ibm.interoception`'s
+    `PORT_SUBSTITUTION` says it: insula and anterior cingulate are not separable
+    on the six-label spherical proxy, so the drive enters `frontal`.  That is
+    printed by `describe()` rather than left in a comment, because the one thing
+    this file's history says loudest is that a port named in a comment is not a
+    port.
+
+    **The drive is TONIC, and that has a known consequence.**  Visceral afference
+    is tonic -- the gut does not stop reporting -- so unlike `SensorimotorLoop`
+    this does not present and withdraw the stimulus.  The consequence, measured
+    on the motor path and recorded as ledger entry 20, is that a whole-sheet
+    readout then samples the driven region, and the decoder can read the input
+    rather than the cortex.  That is why `forward` carries `kernel="permuted"` as
+    a first-class arm and why the ablation script runs it: with a tonic drive,
+    trained-vs-permuted is the only measurement that separates a cortical result
+    from a readout result, and it is expected to be unfavourable.
+    """
+
+    def __init__(self, dyn: CorticalDynamics, channels: list[str], n_out: int,
+                 lobe: str | None = None, hidden: int = 128,
+                 read_sites: int = 2048, dt: float = 1e-2, substeps: int = 4):
+        super().__init__()
+        import ibm.interoception as IO
+        self.dyn, self.dt, self.substeps = dyn, dt, substeps
+        self.lobe = IO.PORT_LOBE if lobe is None else lobe
+        self.port_substitution = IO.PORT_SUBSTITUTION
+        self.channels = list(channels)
+
+        # -- resolve every channel to a declared port, or raise ---------------
+        by_key = {p.key: p for p in IO.PORTS}
+        unknown = [c for c in self.channels if c not in by_key]
+        if unknown:
+            raise ValueError(
+                f"{len(unknown)} afferent channel(s) resolve to no declared "
+                f"visceral port: {unknown}.  known ports: {sorted(by_key)}")
+        unsent = [k for k in by_key if k not in self.channels]
+        if unsent:
+            raise ValueError(
+                f"{len(unsent)} declared port(s) receive no channel from the "
+                f"body: {unsent}.  a port with no rate is a wire the encoder "
+                f"would size for and never see.")
+
+        # -- group by (trunk, fibre class); the group is the arrival unit -----
+        self.group_keys: list[tuple[str, str]] = []
+        cols: dict[tuple[str, str], list[int]] = {}
+        for i, c in enumerate(self.channels):
+            p = by_key[c]
+            g = (p.trunk, p.fibre)
+            if g not in cols:
+                cols[g] = []
+                self.group_keys.append(g)
+            cols[g].append(i)
+        if sum(len(v) for v in cols.values()) != len(self.channels):
+            raise AssertionError("grouping lost or duplicated a channel")
+
+        self.delays_s = IO.group_delays_s()
+        self.arrive = {g: max(0, int(round(self.delays_s[g] / dt)))
+                       for g in self.group_keys}
+        # the integration step must RESOLVE the delays, or the fibre classes and
+        # the trunks are decoration.  same check, same reason, as
+        # CranialNerveLoop -- the failure it prevents is a model that asserts
+        # gastric touch and gastric chemistry reach cortex together.
+        span = max(self.delays_s[g] for g in self.group_keys) - \
+            min(self.delays_s[g] for g in self.group_keys)
+        if len(set(self.arrive.values())) < len(self.group_keys) and span > 0:
+            raise ValueError(
+                f"dt={dt:g}s cannot resolve the visceral conduction groups "
+                f"({', '.join(f'{t}/{f}={1000*self.delays_s[(t,f)]:.1f}ms' for t, f in self.group_keys)}"
+                f") -- they collapse to steps {sorted(set(self.arrive.values()))}. "
+                f"use a smaller dt or state that the groups are lumped.")
+
+        for g, idx in cols.items():
+            self.register_buffer(f"cols_{g[0]}_{g[1]}",
+                                 torch.tensor(idx, dtype=torch.long))
+        self.port = region_index(dyn.pos, self.lobe)
+        self.n_port = len(self.port)
+
+        # ONE ENCODER PER GROUP, input width = how many channels landed in it.
+        self.enc = nn.ModuleDict()
+        self.to_cortex = nn.ModuleDict()
+        for g in self.group_keys:
+            name = f"{g[0]}_{g[1]}"
+            n_in = len(cols[g])
+            self.enc[name] = nn.Sequential(
+                nn.Linear(n_in, hidden), nn.GELU(),
+                nn.Linear(hidden, hidden), nn.GELU())
+            self.to_cortex[name] = nn.Linear(hidden, self.n_port)
+        self.group_width = {g: len(cols[g]) for g in self.group_keys}
+
+        self.read_idx = torch.linspace(0, dyn.n - 1, read_sites).long()
+        self.head = nn.Sequential(nn.Linear(read_sites, 256), nn.GELU(),
+                                  nn.Linear(256, n_out))
+        self.n_out = n_out
+
+    def n_steps(self) -> int:
+        return max(self.arrive.values()) + 8
+
+    def forward(self, x, kernel: str = "trained", drop: tuple = (),
+                n_steps: int | None = None, generator=None):
+        """afferent rates (B, n_channels) -> readout (B, n_out).
+
+        `kernel`:
+          trained   the learned association weights
+          severed   zeroed -- the dynamics carry nothing between sites
+          permuted  the same weights, rows shuffled -- the control that separates
+                    "the cortex computed this" from "the decoder read the drive",
+                    which on the motor path was the difference between a result
+                    and ledger entry 20
+        `drop`: (trunk, fibre) groups whose contribution is withheld.  dropping
+        every C group is the specific ablation this anatomy makes possible: it
+        severs the slow unmyelinated arm of visceral afference and keeps the fast
+        myelinated one, which is a vagotomy of the chemical report alone.
+        """
+        if x.shape[1] != len(self.channels):
+            raise ValueError(f"body sent {x.shape[1]} channels, the encoder was "
+                             f"built for {len(self.channels)}")
+        b, dev = x.shape[0], x.device
+        n_steps = self.n_steps() if n_steps is None else n_steps
+        drop = set(tuple(g) for g in drop)
+
+        pend = {}
+        for g in self.group_keys:
+            if g in drop:
+                continue
+            name = f"{g[0]}_{g[1]}"
+            idx = getattr(self, f"cols_{name}").to(dev)
+            pend[g] = self.to_cortex[name](self.enc[name](x[:, idx]))
+
+        w = self.dyn.edge_weights()
+        if kernel == "severed":
+            w = torch.zeros_like(w)
+        elif kernel == "permuted":
+            perm = torch.randperm(w.shape[0], device=w.device, generator=generator)
+            w = w[perm]
+        elif kernel != "trained":
+            raise ValueError(f"unknown kernel arm {kernel!r}")
+
+        s = self.dyn.init_state(b, dev)
+        port = self.port.to(dev)
+        h = self.dt / self.substeps
+        for step in range(n_steps):
+            drive = torch.zeros(b, self.dyn.n, device=dev)
+            arrived = [g for g in pend if self.arrive[g] <= step]
+            if arrived:
+                # TONIC: an arrived group keeps contributing.  the viscera do not
+                # stop reporting, and a transient visceral drive would be a
+                # different organ.
+                drive[:, port] = sum(pend[g] for g in arrived)
+            for _ in range(self.substeps):
+                s = self.dyn.step(s, drive, h, w)
+        return self.head(s[1][:, self.read_idx.to(dev)]), s
+
+    def describe(self) -> str:
+        lines = [f"InteroceptiveLoop: {len(self.channels)} channels in "
+                 f"{len(self.group_keys)} conduction groups -> {self.n_port:,} "
+                 f"{self.lobe} sites -> {self.n_out} outputs",
+                 f"  dt {self.dt:g}s x {self.substeps} substeps, "
+                 f"{self.n_steps()} steps "
+                 f"({1000*self.dt*self.n_steps():.0f} ms of afference)"]
+        for g in self.group_keys:
+            lines.append(f"  {g[0]:20s} {g[1]:7s} {self.group_width[g]:2d} ch  "
+                         f"{1000*self.delays_s[g]:7.1f} ms -> step "
+                         f"{self.arrive[g]:3d}")
+        lines.append("  port: " + self.port_substitution)
+        return "\n".join(lines)
 
 
 class SensorimotorLoop(nn.Module):

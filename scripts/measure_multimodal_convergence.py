@@ -163,14 +163,31 @@ def main() -> None:
     ap.add_argument("--dt", type=float, default=1e-3)
     ap.add_argument("--amp", type=float, default=1.0)
     ap.add_argument("--seed", type=int, default=0)
+    # the anisotropy knobs, so this metric can be run against a modified sheet
+    # without a second copy of it.  defaults reproduce the kernel as trained;
+    # see CorticalDynamics.__init__ for what they mean and why.
+    ap.add_argument("--tanh-slope", type=float, default=None)
+    ap.add_argument("--long-gain", type=float, default=None)
+    ap.add_argument("--long-topm", type=int, default=None)
     ap.add_argument("--out", default="out/multimodal_convergence.json")
     a = ap.parse_args()
 
     dev = "cuda" if torch.cuda.is_available() else "cpu"
     torch.manual_seed(a.seed)
     dyn, step = _load_kernel(a.ckpt, dev)
+    for attr, val in (("tanh_slope", a.tanh_slope), ("long_gain", a.long_gain),
+                      ("long_topm", a.long_topm)):
+        if val is not None:
+            setattr(dyn, attr, type(getattr(dyn, attr))(val))
     print(f"{a.ckpt}: step {step}, {dyn.n} sites, k={dyn.k}, "
           f"{dyn.n_far} long-range edges per site", flush=True)
+    print(f"  kernel: tanh_slope={dyn.tanh_slope} long_gain={dyn.long_gain} "
+          f"long_topm={dyn.long_topm}", flush=True)
+    _w = dyn.edge_weights()
+    print(f"  |w| mean {float(_w.abs().mean()):.4e}  "
+          f"row L1 mean {float(_w.abs().sum(-1).mean()):.4e}  "
+          f"row L1/max mean {float((_w.abs().sum(-1)/_w.abs().max(-1).values).mean()):.2f}"
+          f"  (48 = perfectly flat, 1 = one edge carries the row)", flush=True)
 
     ports = {m: P.region_index(dyn.pos, lobe).to(dev) for m, lobe in ENTRY.items()}
     read = P.region_index(dyn.pos, READOUT).to(dev)
@@ -221,6 +238,8 @@ def main() -> None:
     print(f"\n  {'modality':10s} {'at own port':>13s} {'at precentral':>15s} "
           f"{'transport':>12s}", flush=True)
     res = {"ckpt": a.ckpt, "step": step, "sites": dyn.n,
+           "tanh_slope": dyn.tanh_slope, "long_gain": dyn.long_gain,
+           "long_topm": dyn.long_topm,
            "undriven_var": v_quiet, "modalities": {}}
     for m in ENTRY:
         held = {k: v for k, v in sig.items() if k != m}

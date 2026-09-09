@@ -190,6 +190,14 @@ def main() -> None:
     ap.add_argument("--long-steps", type=int, default=400, help="to steady state")
     ap.add_argument("--tonic", type=float, default=0.0)
     ap.add_argument("--max-hop", type=int, default=6)
+    ap.add_argument("--drive-region", default=None,
+                    help="drive a whole lobe instead of single sites.  this is "
+                         "the SENSORIMOTOR case: a coherent region drive lets a "
+                         "receiving site sum over many fan-in edges at once, so "
+                         "the relevant loss is the ROW gain, not the per-edge "
+                         "gain, and the two differ by a factor of k.")
+    ap.add_argument("--read-region", default=None,
+                    help="also report arrival in this lobe, e.g. precentral")
     ap.add_argument("--out", default="out/hop_transfer.json")
     a = ap.parse_args()
 
@@ -228,7 +236,12 @@ def main() -> None:
           " < 1 means strict attenuation)")
 
     torch.manual_seed(0)
-    seeds_all = torch.randperm(dyn.n)[:a.seeds].to(dev)
+    if a.drive_region:
+        seeds_all = P.region_index(dyn.pos, a.drive_region).to(dev)
+        print(f"\ndriving the whole {a.drive_region} region: "
+              f"{len(seeds_all)} sites ({100*len(seeds_all)/dyn.n:.1f}%)")
+    else:
+        seeds_all = torch.randperm(dyn.n)[:a.seeds].to(dev)
 
     results = {"ckpt": a.ckpt, "head": a.head, "step": ck.get("step"),
                "n_sites": dyn.n, "k": dyn.k, "n_far": dyn.n_far,
@@ -256,26 +269,36 @@ def main() -> None:
     results["gates"]["severed_offhop_max"] = off
 
     # ---- the measurement ---------------------------------------------------
+    read_idx = (P.region_index(dyn.pos, a.read_region).to(dev)
+                if a.read_region else None)
     for tag, nst in (("short", a.n_steps * a.substeps), ("steady", a.long_steps)):
         acc = {}
         counts = {}
-        for s in seeds_all:
-            ss = s.reshape(1)
+        # a region drive is ONE run over all its sites at once, not an average
+        # of single-site runs: the point of it is that the drive is COHERENT, so
+        # a receiving site sums many fan-in edges that all carry the same sign of
+        # perturbation.  averaging single-site runs would throw exactly that away.
+        groups = [seeds_all] if a.drive_region else [s.reshape(1) for s in seeds_all]
+        for ss in groups:
             lab = hop_labels(dyn.idx, ss, a.max_hop)
-            prof, _ = transfer_profile(dyn, ss, lab, a.amp, nst, h, w,
+            prof, d = transfer_profile(dyn, ss, lab, a.amp, nst, h, w,
                                        a.tonic, a.max_hop)
             for kk, v in prof.items():
                 acc.setdefault(kk, []).append(v["mean_abs"])
                 counts[kk] = v["n_sites"]
+            if read_idx is not None:
+                acc.setdefault("READ", []).append(float(d[read_idx].mean()))
+                counts["READ"] = len(read_idx)
+        src = (f"{a.drive_region} ({len(seeds_all)} sites)" if a.drive_region
+               else f"1 site, mean over {a.seeds} seeds")
         print(f"\n=== {tag}: {nst} steps = {nst*h*1e3:.0f} ms "
-              f"({nst*h/dyn.tau_m:.1f} tau_m), drive {a.amp} mV at 1 site, "
-              f"mean over {a.seeds} seeds ===")
+              f"({nst*h/dyn.tau_m:.1f} tau_m), drive {a.amp} mV at {src} ===")
         print(f"{'hop':>9s} {'sites':>7s} {'mean|dr| Hz':>13s} "
               f"{'vs hop0':>10s} {'per hop':>10s}")
         prev = None
         rows = {}
-        for kk in sorted([x for x in acc if x != "unreached"]) + \
-                (["unreached"] if "unreached" in acc else []):
+        tail = [x for x in ("unreached", "READ") if x in acc]
+        for kk in sorted([x for x in acc if x not in tail]) + tail:
             m = sum(acc[kk]) / len(acc[kk])
             h0 = sum(acc[0]) / len(acc[0])
             ratio = m / h0 if h0 else float("nan")
@@ -284,7 +307,7 @@ def main() -> None:
                   f"{per:10.3e}")
             rows[str(kk)] = {"n_sites": counts[kk], "mean_abs": m,
                              "vs_hop0": ratio, "per_hop": per}
-            if kk != "unreached":
+            if kk not in tail:
                 prev = m
         results["runs"][tag] = rows
 
