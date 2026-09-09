@@ -695,8 +695,23 @@ def main() -> None:
             # bit me reading this very file, and IHM-1 is pulling checkpoints from
             # here now, so a torn read reaches another project.
             _tmp = a.ckpt + ".tmp"
+            # SAVE THE GRAPH, not just the embeddings.  the learned factor is
+            # sigma(<e_i, e_j>) over specific (i, j) pairs, and 12 of every
+            # site's 48 edges are long-range partners drawn from the global rng
+            # in CorticalDynamics.__init__.  a reader that reconstructs those
+            # pairs instead of restoring them evaluates the learned weights on a
+            # topology they never saw and silently loses a quarter of the
+            # connectivity -- seed 0 reproduces the draw only on the SAME device
+            # (cpu and cuda draw unrelated graphs from the same seed), and
+            # ckpt/ibm1_implicit.pt carries no graph at all, so every
+            # materialization fused from it has been missing its long-range
+            # learning.  11.5 MB of int64 closes that for good.
             torch.save({"dyn.embed": dyns[names[0]].embed.data.cpu(),
-                        "sites": a.sites, "embed": a.embed,
+                        "dyn.idx": dyns[names[0]].idx.cpu(),
+                        "dyn.geo": dyns[names[0]].geo.cpu(),
+                        "dyn.pos": dyns[names[0]].pos.cpu(),
+                        "sites": a.sites, "embed": a.embed, "k": a.k,
+                        "long_range": a.long_range,
                         "schema": "ibm1/implicit-v1", "step": step,
                         "sources": [f"curriculum:{m}" for m in names],
                         "weights": [1.0 / len(names)] * len(names), "aligned": True,

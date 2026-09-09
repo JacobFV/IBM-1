@@ -86,7 +86,44 @@ def main() -> None:
     cls_name, what = TARGETS[a.target]
     e, meta = load_implicit(a.implicit, a.sites, a.embed)
     dev = "cpu"
+    # THE LONG-RANGE GRAPH IS PART OF THE TRAINED OBJECT, and this script used to
+    # throw it away.
+    #
+    # 12 of every site's 48 edges are long-range partners drawn by
+    # `torch.randint` from the GLOBAL rng inside CorticalDynamics.__init__.  The
+    # learned factor is sigma(<e_i, e_j>) over those specific (i, j) pairs, so a
+    # different draw makes every long-range weight meaningless -- a quarter of
+    # the connectivity, discarded in silence.
+    #
+    # constructing here with no seed at all on "cpu", against a kernel trained
+    # with seed 0 on cuda, got a graph unrelated to the trained one twice over:
+    # the seed differs, and the same seed on cpu and cuda draws different
+    # sequences anyway (measured coincidence 0.00062 against a chance of
+    # 0.00050).  so restore the real graph when the checkpoint carries it, and
+    # only fall back to a redraw when it genuinely cannot be recovered.
+    torch.manual_seed(0)
     dyn = P.CorticalDynamics(a.sites, a.embed, a.k, dev, long_range=a.long_range)
+    graph = None
+    for head in (meta.get("heads") or {}).values():
+        if isinstance(head, dict) and "dyn.idx" in head:
+            graph = head
+            break
+    if graph is not None and graph["dyn.idx"].shape == dyn.idx.shape:
+        with torch.no_grad():
+            for name in ("idx", "geo", "pos"):
+                if f"dyn.{name}" in graph:
+                    getattr(dyn, name).copy_(graph[f"dyn.{name}"].to(dev))
+        print(f"restored the trained association graph from the checkpoint "
+              f"({dyn.n_far} long-range edges per site)", flush=True)
+    elif e.shape[0] != a.sites or graph is None:
+        # a resampled kernel has no graph to restore -- the point set is
+        # different, so the edges must be rebuilt and the long-range weights are
+        # necessarily approximate.  say so rather than implying a clean transfer.
+        print(f"WARNING: no matching association graph in {a.implicit}; the "
+              f"{dyn.n_far} long-range edges per site were REDRAWN. the learned "
+              f"long-range weights do not apply to this topology and the "
+              f"materialization is missing a quarter of its trained "
+              f"connectivity.", flush=True)
     dyn.embed.data.copy_(e)
 
     cls = getattr(P, cls_name)
