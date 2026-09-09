@@ -146,7 +146,8 @@ class CorticalDynamics(nn.Module):
     def __init__(self, n_sites: int, embed_dim: int, k: int, device,
                  length_scale_mm: float = 40.0, long_range: float = 0.25,
                  graph_seed: int = 0, tanh_slope: float = 2.0,
-                 long_gain: float = 1.0, long_topm: int = 0):
+                 long_gain: float = 1.0, long_topm: int = 0,
+                 local_gain: float = 1.0):
         super().__init__()
         self.n, self.k = n_sites, k
         pos = cortical_sites(n_sites, device)
@@ -247,9 +248,21 @@ class CorticalDynamics(nn.Module):
         #   long_gain   a separate multiplier on the long-range population, kept
         #               distinct from w_assoc so the local sheet's fixed point
         #               is not moved when the association fibres are.
+        #   local_gain  the matching multiplier on the local k-NN population.
+        #               with long_gain it turns the fix into a pure
+        #               REALLOCATION: 36 local edges carry 75% of every row's
+        #               weight and contribute nothing to long-range transport,
+        #               so moving that mass onto the association fibres raises
+        #               arrival while leaving the row L1 -- and therefore the
+        #               resting rate and the operating point -- exactly where
+        #               they were.  that matters because the gain sweep showed
+        #               every attempt to raise the row gain instead moves the
+        #               fixed point onto the sigmoid's upper rail and makes
+        #               transport WORSE.
         self.tanh_slope = float(tanh_slope)
         self.long_gain = float(long_gain)
         self.long_topm = int(long_topm)
+        self.local_gain = float(local_gain)
         #: the thalamus, when one is attached.  see `attach_thalamus`.
         self.tct = None
 
@@ -279,7 +292,8 @@ class CorticalDynamics(nn.Module):
         # lets the learned factor place opposition between sites, which is what
         # keeps a representation from washing out.
         w = self.geo * torch.tanh(self.tanh_slope * sim)
-        if self.n_far and (self.long_topm or self.long_gain != 1.0):
+        if self.n_far and (self.long_topm or self.long_gain != 1.0
+                           or self.local_gain != 1.0):
             n_loc = self.k - self.n_far
             lw = w[:, n_loc:]
             if self.long_topm and self.long_topm < self.n_far:
@@ -294,7 +308,8 @@ class CorticalDynamics(nn.Module):
                 # attenuation -- the exact "wrong thing to compare against"
                 # failure docs/LOG.md keeps a ledger of.
                 lw = lw * (mass / lw.abs().sum(1, keepdim=True).clamp_min(1e-30))
-            w = torch.cat([w[:, :n_loc], lw * self.long_gain], 1)
+            w = torch.cat([w[:, :n_loc] * self.local_gain,
+                           lw * self.long_gain], 1)
         return w
 
     def association(self, r, w):
@@ -853,12 +868,21 @@ class InteroceptiveLoop(nn.Module):
         self.head = nn.Sequential(nn.Linear(read_sites, 256), nn.GELU(),
                                   nn.Linear(256, n_out))
         self.n_out = n_out
+        # ONE FIXED permutation, held as a buffer.  drawing a fresh one every
+        # forward would make the permuted arm a different random kernel at every
+        # step, which is a weaker and different control: a model can neither
+        # exploit nor be hurt by structure that is resampled under it.  ledger
+        # entry 20's permuted arm was a fixed shuffle of the trained weights and
+        # matched the trained arm to eight decimals, and matching that setup is
+        # the point of running it again here.
+        self.register_buffer("perm", torch.randperm(dyn.n))
 
     def n_steps(self) -> int:
         return max(self.arrive.values()) + 8
 
     def forward(self, x, kernel: str = "trained", drop: tuple = (),
-                n_steps: int | None = None, generator=None):
+                n_steps: int | None = None, generator=None,
+                checkpoint_every: int = 8):
         """afferent rates (B, n_channels) -> readout (B, n_out).
 
         `kernel`:
@@ -900,16 +924,37 @@ class InteroceptiveLoop(nn.Module):
         s = self.dyn.init_state(b, dev)
         port = self.port.to(dev)
         h = self.dt / self.substeps
-        for step in range(n_steps):
-            drive = torch.zeros(b, self.dyn.n, device=dev)
-            arrived = [g for g in pend if self.arrive[g] <= step]
-            if arrived:
-                # TONIC: an arrived group keeps contributing.  the viscera do not
-                # stop reporting, and a transient visceral drive would be a
-                # different organ.
-                drive[:, port] = sum(pend[g] for g in arrived)
-            for _ in range(self.substeps):
-                s = self.dyn.step(s, drive, h, w)
+
+        def run(lo, hi, *state_and_w):
+            st, ww = state_and_w[:4], state_and_w[4]
+            for step in range(lo, hi):
+                drive = torch.zeros(b, self.dyn.n, device=dev)
+                arrived = [g for g in pend if self.arrive[g] <= step]
+                if arrived:
+                    # TONIC: an arrived group keeps contributing.  the viscera do
+                    # not stop reporting, and a transient visceral drive would be
+                    # a different organ.
+                    drive = drive.index_copy(
+                        1, port, sum(pend[g] for g in arrived))
+                for _ in range(self.substeps):
+                    st = self.dyn.step(st, drive, h, ww)
+            return st
+
+        # GRADIENT CHECKPOINTING, and it is not an optimisation -- without it
+        # this loop does not fit.  the association gather is (B, N, k) per
+        # substep, 368 MB at 30k sites and batch 64, and this head runs 236
+        # substeps against the cranial loop's 64 because the vagal C fibre takes
+        # 508 ms to arrive.  retaining all of them is 87 GB and OOMs.  storing
+        # one state per chunk and recomputing the chunk in backward trades ~2x
+        # compute for ~`checkpoint_every`x memory, which is the only way the
+        # slowest fibre class in the body stays in the graph at all.
+        if checkpoint_every and torch.is_grad_enabled():
+            from torch.utils.checkpoint import checkpoint
+            for lo in range(0, n_steps, checkpoint_every):
+                hi = min(lo + checkpoint_every, n_steps)
+                s = checkpoint(run, lo, hi, *s, w, use_reentrant=False)
+        else:
+            s = run(0, n_steps, *s, w)
         return self.head(s[1][:, self.read_idx.to(dev)]), s
 
     def describe(self) -> str:

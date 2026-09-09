@@ -94,7 +94,7 @@ def cortical_features(model, dyn, imgs, drive_idx, read_idx, *, mode, batch,
     if mode == "severed":
         w = torch.zeros_like(w)
     elif mode == "permuted":
-        w = w[torch.randperm(w.shape[0], device=w.device, generator=gen)]
+        w = w[torch.randperm(w.shape[0], generator=gen).to(w.device)]
     elif mode != "intact":
         raise ValueError(mode)
     h = dt / substeps
@@ -107,7 +107,12 @@ def cortical_features(model, dyn, imgs, drive_idx, read_idx, *, mode, batch,
         # eighth of a random point cloud and it intersects precentral, which
         # would let the readout see the drive directly -- the exact contamination
         # this script exists to avoid.
-        drive[:, drive_idx] = model.to_cortex(model.enc(x))[:, :len(drive_idx)]
+        u = model.to_cortex(model.enc(x))
+        # the trained port has `dyn.n // 8` channels and the occipital region has
+        # its own count; take the overlap rather than assuming they match, and
+        # note in the JSON how many channels were actually used.
+        m = min(u.shape[1], len(drive_idx))
+        drive[:, drive_idx[:m]] = u[:, :m]
         s = dyn.init_state(b, device)
         for _ in range(n_steps * substeps):
             s = dyn.step(s, drive, h, w)
@@ -131,7 +136,7 @@ class Retrieval(nn.Module):
 
 
 def fit_and_score(feat_tr, eeg_tr, feat_te, eeg_te, *, pools, pool, steps, lr,
-                  device, seed, noise_sd, feat_scale):
+                  device, seed, noise_sd):
     """fit the head on train, report mean top-1 over disjoint held-out pools."""
     g = torch.Generator(device="cpu").manual_seed(seed)
     torch.manual_seed(seed)
@@ -181,7 +186,7 @@ def main() -> None:
     ap.add_argument("--configs", default="base:2.0,1.0,0;aniso:2.0,4.0,1",
                     help="name:tanh_slope,long_gain,long_topm; ';'-separated")
     ap.add_argument("--modes", default="intact,severed,permuted")
-    ap.add_argument("--noise", default="0,1e-4,1e-3,1e-2,1e-1")
+    ap.add_argument("--noise", default="0,1e-3,1e-2,3e-2,1e-1,3e-1,1,3")
     ap.add_argument("--n-train", type=int, default=8000)
     ap.add_argument("--pools", type=int, default=8)
     ap.add_argument("--pool", type=int, default=200)
@@ -198,11 +203,22 @@ def main() -> None:
     dev = "cuda" if torch.cuda.is_available() else "cpu"
     model, dyn, step = load_head(a.ckpt, dev, a.head)
     drive_idx = P.region_index(dyn.pos, a.drive_region).to(dev)
-    read_idx = P.region_index(dyn.pos, a.read_region).to(dev)
-    ov = len(np.intersect1d(drive_idx.cpu().numpy(), read_idx.cpu().numpy()))
-    if ov:
-        raise SystemExit(f"drive and read regions overlap in {ov} sites -- a "
-                         f"readout that can see its own drive measures nothing")
+    if a.read_region == "all":
+        # the CONTROL readout, not a transport measurement: `linspace(0, n-1)`
+        # is what every working head in this repo reads, and it samples the
+        # driven region directly.  it is here so the cost of the kernel change
+        # can be measured on the task the sheet already does, with the head
+        # refitted per arm.  the overlap check is skipped on purpose and the
+        # number must NOT be read as transport.
+        read_idx = torch.linspace(0, dyn.n - 1, 2048).long().to(dev)
+        print("  WHOLE-SHEET readout: this arm samples the driven region and "
+              "is a regression check, not a transport measurement")
+    else:
+        read_idx = P.region_index(dyn.pos, a.read_region).to(dev)
+        ov = len(np.intersect1d(drive_idx.cpu().numpy(), read_idx.cpu().numpy()))
+        if ov:
+            raise SystemExit(f"drive and read regions overlap in {ov} sites -- a "
+                             f"readout that can see its own drive measures nothing")
     print(f"{a.ckpt} step={step}: drive {a.drive_region} ({len(drive_idx)}) -> "
           f"read {a.read_region} ({len(read_idx)}), disjoint")
 
@@ -231,7 +247,7 @@ def main() -> None:
     print(f"train {n_tr}, held-out {n_te} = {a.pools} pools of {a.pool} "
           f"(chance {100.0/a.pool:.2f}%)")
 
-    gen = torch.Generator(device=dev).manual_seed(a.seed)
+    gen = torch.Generator().manual_seed(a.seed)
     noises = [float(x) for x in a.noise.split(",")]
     res = {"ckpt": a.ckpt, "step": step, "drive": a.drive_region,
            "read": a.read_region, "n_train": n_tr, "pools": a.pools,
@@ -242,6 +258,7 @@ def main() -> None:
         slope, gain, topm = vals.split(",")
         dyn.tanh_slope, dyn.long_gain, dyn.long_topm = \
             float(slope), float(gain), int(topm)
+        dyn.local_gain = float(vals.split(",")[3]) if len(vals.split(",")) > 3 else 1.0
         w = dyn.edge_weights().detach()
         l1 = float(w.abs().sum(-1).mean())
         print(f"\n### {name}: tanh_slope={slope} long_gain={gain} long_topm={topm}"
@@ -260,7 +277,7 @@ def main() -> None:
                 acc, sd, npool = fit_and_score(
                     f_tr, e_tr, f_te, e_te, pools=a.pools, pool=a.pool,
                     steps=a.fit_steps, lr=a.lr, device=dev, seed=a.seed,
-                    noise_sd=nz, feat_scale=spread)
+                    noise_sd=nz)
                 x_chance = acc * a.pool
                 print(f"    noise {nz:8.1e} Hz -> top-1 {100*acc:6.2f}% "
                       f"+/- {100*sd:4.2f}  ({x_chance:6.2f}x chance, "
@@ -279,7 +296,11 @@ def main() -> None:
             p_ = arms.get("permuted", {}).get(nz)
             if not (g_ and s_):
                 continue
-            ratio = (g_["x_chance"] - 1.0) / max(s_["x_chance"] - 1.0, 1e-9)
+            # the ratio of skill-above-chance multiples.  the severed arm sits
+            # at exactly 1.00x whenever nothing crosses, so a
+            # (x-1)/(x-1) form divides by zero and prints 1e10; this is the
+            # form the rest of the repo uses for a sever ratio.
+            ratio = g_["x_chance"] / max(s_["x_chance"], 1e-9)
             print(f"{name:10s} {float(nz):9.1e} {g_['x_chance']:8.2f}x "
                   f"{s_['x_chance']:8.2f}x "
                   f"{(p_['x_chance'] if p_ else float('nan')):8.2f}x "

@@ -169,6 +169,7 @@ def main() -> None:
     ap.add_argument("--tanh-slope", type=float, default=None)
     ap.add_argument("--long-gain", type=float, default=None)
     ap.add_argument("--long-topm", type=int, default=None)
+    ap.add_argument("--local-gain", type=float, default=None)
     ap.add_argument("--out", default="out/multimodal_convergence.json")
     a = ap.parse_args()
 
@@ -176,13 +177,14 @@ def main() -> None:
     torch.manual_seed(a.seed)
     dyn, step = _load_kernel(a.ckpt, dev)
     for attr, val in (("tanh_slope", a.tanh_slope), ("long_gain", a.long_gain),
-                      ("long_topm", a.long_topm)):
+                      ("long_topm", a.long_topm),
+                      ("local_gain", a.local_gain)):
         if val is not None:
             setattr(dyn, attr, type(getattr(dyn, attr))(val))
     print(f"{a.ckpt}: step {step}, {dyn.n} sites, k={dyn.k}, "
           f"{dyn.n_far} long-range edges per site", flush=True)
     print(f"  kernel: tanh_slope={dyn.tanh_slope} long_gain={dyn.long_gain} "
-          f"long_topm={dyn.long_topm}", flush=True)
+          f"long_topm={dyn.long_topm} local_gain={dyn.local_gain}", flush=True)
     _w = dyn.edge_weights()
     print(f"  |w| mean {float(_w.abs().mean()):.4e}  "
           f"row L1 mean {float(_w.abs().sum(-1).mean()):.4e}  "
@@ -239,7 +241,7 @@ def main() -> None:
           f"{'transport':>12s}", flush=True)
     res = {"ckpt": a.ckpt, "step": step, "sites": dyn.n,
            "tanh_slope": dyn.tanh_slope, "long_gain": dyn.long_gain,
-           "long_topm": dyn.long_topm,
+           "long_topm": dyn.long_topm, "local_gain": dyn.local_gain,
            "undriven_var": v_quiet, "modalities": {}}
     for m in ENTRY:
         held = {k: v for k, v in sig.items() if k != m}

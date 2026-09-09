@@ -1,0 +1,34 @@
+{
+  "ckpt": "ckpt/ibm1_curriculum16.pt",
+  "step": 32500,
+  "sites": 30000,
+  "tanh_slope": 2.0,
+  "long_gain": 8.0,
+  "long_topm": 0,
+  "undriven_var": 0.0,
+  "modalities": {
+    "sight": {
+      "entry": "occipital",
+      "var_at_port": 4.53577995300293,
+      "var_at_precentral": 0.0017317577730864286,
+      "transport": 0.00038179933573274694
+    },
+    "hearing": {
+      "entry": "temporal",
+      "var_at_port": 4.539364337921143,
+      "var_at_precentral": 0.0027088152710348368,
+      "transport": 0.0005967388976482491
+    },
+    "touch": {
+      "entry": "postcentral",
+      "var_at_port": 4.576260089874268,
+      "var_at_precentral": 0.002770301653072238,
+      "transport": 0.0006053636809677817
+    }
+  },
+  "best_transport": 0.0006053636809677817,
+  "var_precentral_full": 0.007219902239739895,
+  "var_precentral_linear_sum": 0.007204992696642876,
+  "superadditivity": 1.002069334935477,
+  "verdict": "NO CONVERGENCE -- the motor strip does not see the senses. the somato-motor materialization is blocked on the sheet not conducting, not on data or on the loss."
+}
