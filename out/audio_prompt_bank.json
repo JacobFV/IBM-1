@@ -1,0 +1,85 @@
+{
+  "ckpt": "ckpt/audio_contrastive_v1.pt",
+  "train_step": 6600,
+  "checkpoint_stored_top1": 0.06749999849125743,
+  "checkpoint_stored_sd": 0.021794494924953653,
+  "checkpoint_stored_note": "the training loop's BEST eval over 41 evaluations; a maximum over draws, not an unbiased estimate",
+  "corpus": "data/derived/libribrain-paired (v3, the 2026-09-07 rebuild; v1 and v2 were misaligned by up to +/-3.4 s and every result measured on them is void)",
+  "split": "contiguous, last 20% with a 10 s (2,500 sample) guard band",
+  "pool": 200,
+  "chance": 0.005,
+  "window_ms": 1000.0,
+  "context_frames": 250,
+  "top1_mean_8_pools": 0.06374999834224582,
+  "top1_sd_8_pools": 0.014523687604386736,
+  "top1_x_chance": 12.749999668449163,
+  "served_bank_seed": 20260909,
+  "served_bank_top1_single_pool": 0.08500000089406967,
+  "served_bank_top5_single_pool": 0.17499999701976776,
+  "served_bank_note": "ONE pool.  a single pool of 200 has sd ~2.8 points (docs/LOG.md row 9); read the 8-pool mean, not this",
+  "per_pool": [
+    {
+      "seed": 20260909,
+      "top1": 0.08500000089406967,
+      "top5": 0.17499999701976776,
+      "median_top1_cos": 0.6174354553222656,
+      "median_margin": 0.009394049644470215
+    },
+    {
+      "seed": 20260910,
+      "top1": 0.05999999865889549,
+      "top5": 0.17999999225139618,
+      "median_top1_cos": 0.612095296382904,
+      "median_margin": 0.007132828235626221
+    },
+    {
+      "seed": 20260911,
+      "top1": 0.04999999701976776,
+      "top5": 0.1850000023841858,
+      "median_top1_cos": 0.6293116211891174,
+      "median_margin": 0.00891268253326416
+    },
+    {
+      "seed": 20260912,
+      "top1": 0.03999999910593033,
+      "top5": 0.2199999988079071,
+      "median_top1_cos": 0.6312944889068604,
+      "median_margin": 0.009704947471618652
+    },
+    {
+      "seed": 20260913,
+      "top1": 0.054999999701976776,
+      "top5": 0.14499999582767487,
+      "median_top1_cos": 0.6327005624771118,
+      "median_margin": 0.011256277561187744
+    },
+    {
+      "seed": 20260914,
+      "top1": 0.07999999821186066,
+      "top5": 0.20999999344348907,
+      "median_top1_cos": 0.6316778659820557,
+      "median_margin": 0.00917750597000122
+    },
+    {
+      "seed": 20260915,
+      "top1": 0.07499999552965164,
+      "top5": 0.2149999886751175,
+      "median_top1_cos": 0.626978874206543,
+      "median_margin": 0.0073729753494262695
+    },
+    {
+      "seed": 20260916,
+      "top1": 0.06499999761581421,
+      "top5": 0.17999999225139618,
+      "median_top1_cos": 0.6304494142532349,
+      "median_margin": 0.010691285133361816
+    }
+  ],
+  "dynamics_free_control": {
+    "top1": 0.0712,
+    "sd": 0.0171,
+    "window": "1 s",
+    "what": "two convnets with no dynamics in the path, same corpus and split, 8 held-out pools of 200"
+  },
+  "verdict": "6.37% +/- 1.45 against a dynamics-free control at 7.12% +/- 1.71: a gap of -0.75 points, 0.33 pooled sd.  the auditory head does NOT beat its dynamics-free control, and this endpoint must not present an audio result as if it were the visual one."
+}
