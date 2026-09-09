@@ -74,7 +74,13 @@ def main() -> None:
     d = torch.load(a.ckpt, map_location="cpu", weights_only=False)
     sd = d
     if "dyn.idx" not in sd:
-        for h in (d.get("heads") or {}).values():
+        # three checkpoint shapes exist in ckpt/: the graph is at the top level,
+        # inside a named head, or -- for anything written by
+        # train_visual_contrastive -- under "model".  a reader that knows two of
+        # them silently refuses the third, which is how transfer_sweep.py once
+        # left the curriculum run out of its own evaluation.
+        cands = [d.get("model")] + list((d.get("heads") or {}).values())
+        for h in cands:
             if isinstance(h, dict) and "dyn.idx" in h:
                 sd = h; break
     if "dyn.idx" not in sd:
