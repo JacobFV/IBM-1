@@ -49,6 +49,27 @@ condition. Forced motion is not locomotion and must never be reported as such.
 bootstrapping is acceptable and wanted; the higher-fidelity curriculum comes
 later. Do not spend the budget perfecting gait search.
 
+## Parametrization (added after the direction above)
+
+The body must be **parametrized**, not a single fixed subject. Ask for a tall
+person or a short person and get one. Sex is a parameter too, and it pulls a
+large dependent cluster with it: breasts, genitalia and hair as anatomy;
+hormones and anatomical proportions as parameter clusters.
+
+Not everything needs a knob. Some things already are knobs and only need
+surfacing into one body-parameter input. Others need bones and muscles taken from
+the source to become geometrically parametrized, transformed entities.
+
+Measured starting point, so the scope is not guessed: `target_mass_kg` and
+`instance_mass_variant` are already knobs; the body is a scaled Rajagopal subject
+registered against BodyParts3D; and **the simulated body has zero sex-specific
+entities** — no breast, uterus, ovary, testis, prostate or external genitalia
+among its 4,000. The reproductive model exists but its own limitation note says
+E2/P4/inhibin are prescribed time functions, not an autonomous cycle.
+
+The standing honesty requirement applies with force here: a scaled male mesh with
+surfaces bolted onto it is not a female body, and must not be labelled one.
+
 ## What this rules out
 
 Work that improves a number on an object that is not the real body, or that
