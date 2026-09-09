@@ -1,0 +1,36 @@
+{
+  "ckpt": "ckpt/ibm1_curriculum16.pt",
+  "step": 32500,
+  "sites": 30000,
+  "tanh_slope": 2.0,
+  "long_gain": 8.0,
+  "long_topm": 1,
+  "local_gain": 1.0,
+  "long_min_dist": 0.0,
+  "undriven_var": 0.0,
+  "modalities": {
+    "sight": {
+      "entry": "occipital",
+      "var_at_port": 2294.79296875,
+      "var_at_precentral": 78.96536254882812,
+      "transport": 0.03441066955675808
+    },
+    "hearing": {
+      "entry": "temporal",
+      "var_at_port": 2295.962646484375,
+      "var_at_precentral": 129.2314453125,
+      "transport": 0.05628638841767824
+    },
+    "touch": {
+      "entry": "postcentral",
+      "var_at_port": 2294.478759765625,
+      "var_at_precentral": 165.67489624023438,
+      "transport": 0.07220589667047414
+    }
+  },
+  "best_transport": 0.07220589667047414,
+  "var_precentral_full": 367.1528015136719,
+  "var_precentral_linear_sum": 369.6590576171875,
+  "superadditivity": 0.9932200873970981,
+  "verdict": "WEAK CONVERGENCE -- a signal arrives but attenuated by more than 10x; a readout could use it only if trained against it directly, and any such result needs a permuted-kernel control."
+}

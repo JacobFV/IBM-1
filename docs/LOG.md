@@ -189,6 +189,53 @@ improving under a larger drive, which raises the LINEAR gain of every hop, so
 within-arm amplitude comparisons are not clean. Only the matched-amplitude
 comparison is.
 
+### 4. Transport is UNIMODAL in the operating point, not monotone
+
+A tonic drive added uniformly, postcentral -> precentral at steady state:
+
+| tonic | resting Hz | arrival |
+|---|---|---|
+| 0 | 8.06 | 9.73e-03 |
+| 2 | 13.04 | 1.55e-02 |
+| 4 | 20.72 | 2.32e-02 |
+| 8 | 45.26 | **2.97e-02** |
+| 14 | 76.93 | 1.11e-02 |
+
+Transport RISES 3x with tonic drive before it falls, peaking where the resting
+rate is near `r_max`/2 = 50 Hz -- which is where `dr/dv` is maximal, and nothing
+more. So "any drive that raises the resting rate degrades transport" is false;
+the correct statement is that transport is unimodal in the operating point.
+
+That retro-explains the near-critical arm exactly: sever ratio 1.254 at 42 Hz,
+collapsing at 75 Hz, is a unimodal curve sampled on both sides of its peak. And
+it explains why raising `w_assoc` fails where tonic drive does not -- gain does
+not move the operating point smoothly, it jumps the fixed point from 8 Hz to
+85 Hz, skipping the useful region entirely.
+
+### 5. The whole transport gain is available at constant row L1
+
+`long_topm=1` throughout, with `local_gain` and `long_gain` chosen so the row L1
+-- and therefore the resting rate and the operating point -- is exactly unchanged
+from the trained kernel:
+
+| local | long | transport |
+|---|---|---|
+| 1.00 | 1.00 | 1.138e-04 |
+| 0.75 | 1.75 | 3.446e-04 |
+| 0.50 | 2.50 | 7.041e-04 |
+| 0.25 | 3.25 | 1.194e-03 |
+| 0.00 | 4.00 | 1.817e-03 |
+
+16x from reallocation alone, 190x over the unmodified kernel's 9.561e-06, with
+the operator's L1 norm identical at every row. **None of the transport gain
+requires raising the gain, moving the operating point, or approaching
+instability.** 36 local edges hold 75% of every row's budget and contribute
+nothing to long-range transport.
+
+The last row deletes the local sheet entirely, which would certainly cost the
+local computations. The usable row is 0.50/2.50: half the local mass retained,
+6x the transport, operating point untouched.
+
 ### What this does NOT say
 
 None of it says the somato-motor materialization works. These are mechanism

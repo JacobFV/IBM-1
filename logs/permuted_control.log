@@ -1,0 +1,21 @@
+ckpt/ibm1_curriculum16.pt step=32500: drive occipital (3775) -> read precentral (2012), disjoint
+/home/brandonin/Documents/IBM-1/scripts/ablate_disjoint_transport.py:289: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:213.)
+  x = torch.from_numpy(np.ascontiguousarray(imgs[sl]))
+train 8000, held-out 1600 = 8 pools of 200 (chance 0.50%)
+
+### base: tanh_slope=2.0 long_gain=1.0 long_topm=0 local_gain=1.0 long_min_dist=0.0   row L1 gain 0.7714  |w| mean 1.607e-02
+  intact    across-image sd of the precentral rate 5.4064e-02 Hz   effective rank 12.9 (of 2048 images x 2012 sites)
+    noise  0.0e+00 Hz -> top-1  24.19% +/- 1.62  ( 48.37x chance, 8 pools)   [train loss 0.0096 vs 6.9315 at chance, train top-1  99.7%]
+  treatment fingerprint, train == held-out: relabel|60498:[1588, 480, 775, 1447, 831, 398, 1671, 1905]
+  relabel   across-image sd of the precentral rate 5.4064e-02 Hz   effective rank 12.9 (of 2048 images x 2012 sites)
+    noise  0.0e+00 Hz -> top-1  24.31% +/- 4.08  ( 48.62x chance, 8 pools)   [train loss 0.0148 vs 6.9315 at chance, train top-1  99.1%]
+  treatment fingerprint, train == held-out: permuted|881148:[14226, 7155, 14351, 1375, 27207, 19817, 13522, 11909]
+  permuted  across-image sd of the precentral rate 5.4367e-02 Hz   effective rank 12.2 (of 2048 images x 2012 sites)
+    noise  0.0e+00 Hz -> top-1  25.37% +/- 2.96  ( 50.75x chance, 8 pools)   [train loss 0.0113 vs 6.9315 at chance, train top-1  99.7%]
+  severed   across-image sd of the precentral rate 0.0000e+00 Hz   effective rank 1.0 (of 2048 images x 2012 sites)
+    noise  0.0e+00 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)   [train loss 6.9315 vs 6.9315 at chance, train top-1   0.1%]
+
+config         noise    intact   severed  permuted  sever ratio
+base         0.0e+00    48.37x     1.00x    50.75x        48.37
+
+wrote out/permuted_control.json
