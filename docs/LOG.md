@@ -161,6 +161,18 @@ anatomically correct. The random graph gave every occipital site a one-hop shot
 at motor cortex, and a quarter of the transport `ablate_disjoint_transport.py`
 has been scoring came down an edge the brain does not have.
 
+**Robust to the consensus threshold**, which is the sweep the card asks for
+because "the network's existence depends on a chosen frequency cutoff":
+
+| threshold | occip→precen | occip→tempo | postcen→precen | occip→insula |
+|---|---|---|---|---|
+| 0.10 (616 edges) | 0.248× | 1.400× | 1.153× | 0.892× |
+| 0.25 (536) | 0.266× | 1.457× | 1.205× | 0.897× |
+| 0.50 (459) | 0.257× | 1.571× | 1.328× | 0.866× |
+| 0.75 (384) | 0.254× | 1.611× | 1.349× | 0.830× |
+
+Nothing here turns on where the cutoff is put.
+
 Concentration alone buys 0.996–1.035× here, **not** the 209× measured before.
 That is not a contradiction: 209× was on a *trained* kernel, where top-m ranks
 edges by |learned weight| and redistributing the row's mass onto the strongest

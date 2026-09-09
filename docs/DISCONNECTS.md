@@ -102,6 +102,10 @@ nonnegative operator applied 4 times to a unit indicator, 30,000 sites:
 | postcentral→precentral | 5.25e-02 | 6.97e-02 | 1.328× | 1.315× |
 | occipital→insula | 1.49e-02 | 1.29e-02 | 0.866× | 0.825× |
 
+The threshold is a knob, and nothing here turns on where it is put:
+occipital→precentral is 0.248× / 0.266× / 0.257× / 0.254× at thresholds 0.10,
+0.25, 0.50 and 0.75, and occipital→temporal 1.400× / 1.457× / 1.571× / 1.611×.
+
 **The occipital→precentral row is the one that matters**, because it is the pair
 `ablate_disjoint_transport.py` scores and the pair the whole disjoint-transport
 enterprise has been about. Under the tract topology the minimum hop distance

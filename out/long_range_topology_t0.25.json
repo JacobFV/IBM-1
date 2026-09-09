@@ -1,0 +1,699 @@
+{
+  "config": {
+    "sites": 30000,
+    "k": 48,
+    "long_range": 0.25,
+    "graph_seed": 0,
+    "tract_threshold": 0.25,
+    "long_topm": 4,
+    "pairs": "occipital>precentral,occipital>temporal,postcentral>precentral,occipital>insula",
+    "hops": 4,
+    "max_hop": 6,
+    "out": "out/long_range_topology_t0.25.json"
+  },
+  "device": "cuda",
+  "arms": {
+    "random": {
+      "n_edges": 1440000,
+      "n_effective_long_edges_per_site": 12,
+      "n_far_per_site": 12,
+      "row_l1_mean": 0.8972182273864746,
+      "row_l1_sd": 0.007223375607281923,
+      "long_range_row_l1_mean": 0.22325921058654785,
+      "partner_distance_mm": {
+        "mean": 78.98482513427734,
+        "median": 80.43537902832031,
+        "p10": 37.315757751464844,
+        "p90": 117.4956283569336
+      },
+      "distinct_parcels_per_site": {
+        "mean": 10.668000221252441,
+        "max_possible": 12
+      },
+      "reach": {
+        "occipital>precentral": {
+          "n_source": 3179,
+          "n_read": 2121,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 1567,
+            "2": 554,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        },
+        "occipital>temporal": {
+          "n_source": 3179,
+          "n_read": 5843,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 4430,
+            "2": 1413,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        },
+        "postcentral>precentral": {
+          "n_source": 1779,
+          "n_read": 2121,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 1320,
+            "2": 801,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        },
+        "occipital>insula": {
+          "n_source": 3179,
+          "n_read": 1003,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 752,
+            "2": 251,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        }
+      },
+      "transport": {
+        "occipital>precentral": {
+          "by_hop": [
+            0.0,
+            0.015549954026937485,
+            0.024420376867055893,
+            0.029065482318401337,
+            0.030963286757469177
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "occipital>temporal": {
+          "by_hop": [
+            0.0,
+            0.05892149731516838,
+            0.0816425234079361,
+            0.09184227138757706,
+            0.09445472061634064
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "postcentral>precentral": {
+          "by_hop": [
+            0.0,
+            0.05563006550073624,
+            0.05963045358657837,
+            0.05733349174261093,
+            0.05248471349477768
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "occipital>insula": {
+          "by_hop": [
+            0.0,
+            0.007502838037908077,
+            0.011800765059888363,
+            0.013993494212627411,
+            0.014845917001366615
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      }
+    },
+    "tract": {
+      "n_edges": 1440000,
+      "n_effective_long_edges_per_site": 12,
+      "n_far_per_site": 12,
+      "row_l1_mean": 0.8972182273864746,
+      "row_l1_sd": 0.007223375607281923,
+      "long_range_row_l1_mean": 0.22325921058654785,
+      "partner_distance_mm": {
+        "mean": 55.51335525512695,
+        "median": 53.63505935668945,
+        "p10": 23.7597713470459,
+        "p90": 89.76258850097656
+      },
+      "distinct_parcels_per_site": {
+        "mean": 7.985499858856201,
+        "max_possible": 12
+      },
+      "reach": {
+        "occipital>precentral": {
+          "n_source": 3179,
+          "n_read": 2121,
+          "min_hop": 2,
+          "median_hop": 2.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 0,
+            "2": 2116,
+            "3": 5,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        },
+        "occipital>temporal": {
+          "n_source": 3179,
+          "n_read": 5843,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 5050,
+            "2": 678,
+            "3": 115,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        },
+        "postcentral>precentral": {
+          "n_source": 1779,
+          "n_read": 2121,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 1610,
+            "2": 511,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        },
+        "occipital>insula": {
+          "n_source": 3179,
+          "n_read": 1003,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 748,
+            "2": 255,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        }
+      },
+      "transport": {
+        "occipital>precentral": {
+          "by_hop": [
+            0.0,
+            0.0,
+            0.002701637800782919,
+            0.005662284791469574,
+            0.008246546611189842
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "occipital>temporal": {
+          "by_hop": [
+            0.0,
+            0.09005066752433777,
+            0.12497840076684952,
+            0.1376616209745407,
+            0.13762876391410828
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "postcentral>precentral": {
+          "by_hop": [
+            0.0,
+            0.06487500667572021,
+            0.07118716835975647,
+            0.06899794191122055,
+            0.06322842836380005
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "occipital>insula": {
+          "by_hop": [
+            0.0,
+            0.007637444883584976,
+            0.011268775910139084,
+            0.012886673212051392,
+            0.013310685753822327
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "tract_note": {
+        "orphan_sites": 1382,
+        "orphan_fraction": 0.046066666666666665,
+        "orphan_parcels": [
+          "lh.entorhinal",
+          "lh.medialorbitofrontal",
+          "lh.parsorbitalis",
+          "lh.frontalpole",
+          "lh.temporalpole",
+          "rh.entorhinal",
+          "rh.medialorbitofrontal",
+          "rh.parsorbitalis",
+          "rh.frontalpole",
+          "rh.temporalpole"
+        ],
+        "threshold": 0.25,
+        "n_subjects": 1064,
+        "velocity_m_s": 8.0
+      }
+    },
+    "random_topm": {
+      "n_edges": 1440000,
+      "n_effective_long_edges_per_site": 4,
+      "n_far_per_site": 12,
+      "row_l1_mean": 0.8972182273864746,
+      "row_l1_sd": 0.007223376538604498,
+      "long_range_row_l1_mean": 0.22325921058654785,
+      "partner_distance_mm": {
+        "mean": 78.93618774414062,
+        "median": 80.36085510253906,
+        "p10": 37.24868392944336,
+        "p90": 117.40669250488281
+      },
+      "distinct_parcels_per_site": {
+        "mean": 3.865499973297119,
+        "max_possible": 4
+      },
+      "reach": {
+        "occipital>precentral": {
+          "n_source": 3179,
+          "n_read": 2121,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 1567,
+            "2": 554,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        },
+        "occipital>temporal": {
+          "n_source": 3179,
+          "n_read": 5843,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 4430,
+            "2": 1413,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        },
+        "postcentral>precentral": {
+          "n_source": 1779,
+          "n_read": 2121,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 1320,
+            "2": 801,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        },
+        "occipital>insula": {
+          "n_source": 3179,
+          "n_read": 1003,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 752,
+            "2": 251,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        }
+      },
+      "transport": {
+        "occipital>precentral": {
+          "by_hop": [
+            0.0,
+            0.01539779081940651,
+            0.024218933656811714,
+            0.02888466790318489,
+            0.03082997538149357
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "occipital>temporal": {
+          "by_hop": [
+            0.0,
+            0.0589858740568161,
+            0.08197733759880066,
+            0.09232394397258759,
+            0.09498929232358932
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "postcentral>precentral": {
+          "by_hop": [
+            0.0,
+            0.055922895669937134,
+            0.060068532824516296,
+            0.05781925469636917,
+            0.052991144359111786
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "occipital>insula": {
+          "by_hop": [
+            0.0,
+            0.008006148971617222,
+            0.01244969293475151,
+            0.014608027413487434,
+            0.015367838554084301
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      }
+    },
+    "tract_topm": {
+      "n_edges": 1440000,
+      "n_effective_long_edges_per_site": 4,
+      "n_far_per_site": 12,
+      "row_l1_mean": 0.8972182273864746,
+      "row_l1_sd": 0.007223376538604498,
+      "long_range_row_l1_mean": 0.22325921058654785,
+      "partner_distance_mm": {
+        "mean": 55.53748321533203,
+        "median": 53.703792572021484,
+        "p10": 23.726301193237305,
+        "p90": 89.7823257446289
+      },
+      "distinct_parcels_per_site": {
+        "mean": 3.4489998817443848,
+        "max_possible": 4
+      },
+      "reach": {
+        "occipital>precentral": {
+          "n_source": 3179,
+          "n_read": 2121,
+          "min_hop": 2,
+          "median_hop": 2.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 0,
+            "2": 2116,
+            "3": 5,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        },
+        "occipital>temporal": {
+          "n_source": 3179,
+          "n_read": 5843,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 5050,
+            "2": 678,
+            "3": 115,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        },
+        "postcentral>precentral": {
+          "n_source": 1779,
+          "n_read": 2121,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 1610,
+            "2": 511,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        },
+        "occipital>insula": {
+          "n_source": 3179,
+          "n_read": 1003,
+          "min_hop": 1,
+          "median_hop": 1.0,
+          "frac_unreached": 0.0,
+          "hop_histogram": {
+            "0": 0,
+            "1": 748,
+            "2": 255,
+            "3": 0,
+            "4": 0,
+            "5": 0,
+            "6": 0,
+            "7": 0
+          }
+        }
+      },
+      "transport": {
+        "occipital>precentral": {
+          "by_hop": [
+            0.0,
+            0.0,
+            0.0026427679695189,
+            0.0055454489775002,
+            0.008095710538327694
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "occipital>temporal": {
+          "by_hop": [
+            0.0,
+            0.0903608426451683,
+            0.12519240379333496,
+            0.13775886595249176,
+            0.13763083517551422
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "postcentral>precentral": {
+          "by_hop": [
+            0.0,
+            0.06436257064342499,
+            0.0708659291267395,
+            0.06888829916715622,
+            0.06328767538070679
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "occipital>insula": {
+          "by_hop": [
+            0.0,
+            0.007532100658863783,
+            0.011157725006341934,
+            0.012765128165483475,
+            0.013188407756388187
+          ],
+          "severed": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "tract_note": {
+        "orphan_sites": 1382,
+        "orphan_fraction": 0.046066666666666665,
+        "orphan_parcels": [
+          "lh.entorhinal",
+          "lh.medialorbitofrontal",
+          "lh.parsorbitalis",
+          "lh.frontalpole",
+          "lh.temporalpole",
+          "rh.entorhinal",
+          "rh.medialorbitofrontal",
+          "rh.parsorbitalis",
+          "rh.frontalpole",
+          "rh.temporalpole"
+        ],
+        "threshold": 0.25,
+        "n_subjects": 1064,
+        "velocity_m_s": 8.0
+      }
+    }
+  },
+  "summary": {
+    "edge_count_matched": true,
+    "row_l1_matched_to": 0.0,
+    "ratios_tract_over_random": {
+      "occipital>precentral": 0.2663330503568247,
+      "occipital>temporal": 1.4570871949654418,
+      "postcentral>precentral": 1.2047017913147489,
+      "occipital>insula": 0.8965889916127804
+    },
+    "ratios_concentration_random": {
+      "occipital>precentral": 0.9956945340777348,
+      "occipital>temporal": 1.0056595552213852,
+      "postcentral>precentral": 1.0096491117243975,
+      "occipital>insula": 1.0351558985995706
+    },
+    "ratios_tract_over_concentrated_random": {
+      "occipital>precentral": 0.2625921830345456,
+      "occipital>temporal": 1.4489089434066185,
+      "postcentral>precentral": 1.1943066364413117,
+      "occipital>insula": 0.858182346852096
+    },
+    "ratios_concentrated_tract_over_random": {
+      "occipital>precentral": 0.2614616013390371,
+      "occipital>temporal": 1.457109123582587,
+      "postcentral>precentral": 1.2058306346095233,
+      "occipital>insula": 0.8883525184179698
+    }
+  }
+}
