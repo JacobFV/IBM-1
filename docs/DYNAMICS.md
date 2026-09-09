@@ -597,6 +597,25 @@ that IS declared:
   `nociceptor`, `thermoreceptor`, `chemoreceptor`, with `blood.pressure` and
   `blood.oxygenation` as inputs
 - **the metabolic resource term** that could ground $\partial V$
+- **and now the wire, not only the declaration.** `ibm/interoception.py` joins 15
+  visceral afferent channels — computed by IHM-1's BioGears engine from gastric
+  contents, chyme, portal glucose, arterial lactate, blood gases and filtration —
+  onto the vagus and the five splanchnic trunks, and `InteroceptiveLoop` carries
+  them into cortex at per-fibre-class delays from 9.2 ms to 507.8 ms. so the
+  affective periphery is no longer only representable; it is connected, it
+  responds causally to a meal and to a bout of exercise, and it is one of the 17
+  curriculum objectives. **the delay is the part worth keeping**: interoception
+  arriving half a second after touch, on the same body, is a fact about what a
+  gut feeling is, and a model with one visceral latency asserts otherwise.
+
+  one gap this closes and one it does not. it closes: there was no route by which
+  metabolic or digestive state reached the sheet at all. it does not close: there
+  is no viscera-supported nociceptor component, so the splanchnic channels — the
+  high-threshold, unmyelinated, nociceptive arm — bind to
+  `transduction.baroreceptor` and are tagged nociceptive in the join table rather
+  than by their own component (`ibm.interoception.ONTOLOGY_GAPS`). and the loop
+  is one-way: the same trunks declare `b_preganglionic` and `c_postganglionic`
+  and nothing drives them, so there is afference and no autonomic outflow.
 
 what is absent is the centre: `amygdalar_nuclei` is referenced **nowhere** outside
 its own definition, and `hypothalamic_nuclei` has no process (§6.1). so ibm-1 can

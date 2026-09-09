@@ -88,7 +88,11 @@ python -m ibm.curriculum                                       # the training DA
 - **A body to inhabit.** 96 named muscles with nerve and root levels, 58 nerve
   trunks with fibre-class-resolved conduction (group Ia at 6 ms against
   unmyelinated C at 550 ms down the same sciatic nerve), four spinal reflex arcs,
-  and a **483-port** interface a body simulator connects to.
+  and a **498-port** interface a body simulator connects to — 483 somatic, and
+  15 **visceral** ports carrying gut, metabolic and cardiorespiratory afference
+  from IHM-1's physiology engine at fibre-class-resolved delays spanning 9.2 ms
+  (vagal A-beta, gastric volume) to 507.8 ms (vagal C, the same meal's nutrient
+  content).
 - **Two claims we could not reproduce.** A shared-parameter fit across four EEG
   corpora was *falsified* under controlled placebos, and the obvious explanation —
   differing electrode montages — was eliminated: a deliberately scrambled montage

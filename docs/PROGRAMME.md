@@ -112,7 +112,11 @@ re-download costs budget that paired data should get instead.
   4.4× the random-pair baseline, signed, from a joint audio-visual materialisation
 - **the periphery is connectable.** 96 muscles, 58 nerve trunks with
   fibre-class-resolved delay (Ia 6 ms vs C 550 ms down the same sciatic), four
-  spinal reflex arcs, a 483-port simulator interface
+  spinal reflex arcs, a 498-port simulator interface — including 15 visceral
+  ports whose afference is computed by IHM-1's physiology engine and which
+  respond causally to a meal and to exercise (a meal moves gastric distension
+  +30.9 Hz and renal filtration +0.014; exercise moves every GI-lumen channel by
+  exactly zero)
 
 ### claims overturned by measurement
 recorded because the pattern matters more than any one of them:

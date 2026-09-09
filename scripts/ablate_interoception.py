@@ -411,7 +411,8 @@ def train_arm(c: InteroCorpus, a, dev, seed: int, kernel: str, drop: tuple,
     for step in range(a.steps):
         i = tr[torch.from_numpy(
             rng.integers(0, len(c.train), a.batch)).to(dev)]
-        pred, s = model(X[i], kernel=kernel, drop=drop)
+        pred, s = model(X[i], kernel=kernel, drop=drop,
+                        checkpoint_every=a.checkpoint_every)
         loss = F.mse_loss(pred, Y[i]) + 1e-1 * P.viability_penalty(s[0])
         opt.zero_grad(set_to_none=True)
         loss.backward()
@@ -436,7 +437,7 @@ def main() -> None:
                          "range, where a model accurate to 2.8%% scores -2.07 "
                          "against the mean")
     ap.add_argument("--init", default="ckpt/ibm1_implicit.pt")
-    ap.add_argument("--sites", type=int, default=30_000)
+    ap.add_argument("--sites", type=int, default=8_000)
     ap.add_argument("--embed", type=int, default=128)
     ap.add_argument("--k", type=int, default=48)
     ap.add_argument("--long-range", type=float, default=0.25)
@@ -445,6 +446,11 @@ def main() -> None:
     ap.add_argument("--steps", type=int, default=400)
     ap.add_argument("--batch", type=int, default=32)
     ap.add_argument("--eval-batch", type=int, default=64)
+    ap.add_argument("--checkpoint-every", type=int, default=0,
+                    help="gradient-checkpoint chunk size for the 236-substep "
+                         "integration.  0 keeps the whole graph, which is "
+                         "~2x faster and fits at 8k sites (11.6 GB at batch "
+                         "32); 8 is needed at 30k, where retaining it is 87 GB")
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--control-steps", type=int, default=4000)
     ap.add_argument("--seed", type=int, default=0)
