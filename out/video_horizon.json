@@ -1,0 +1,54 @@
+{
+  "ckpt": "ckpt/video_multifilm.pt",
+  "step": 20000,
+  "trained_horizon": 8,
+  "target": "residual",
+  "held_out_films": [
+    "rog56_mail_927_frames.npy",
+    "rough_riding_ranger_frames.npy"
+  ],
+  "by_horizon": {
+    "1": {
+      "model_mse": 0.8203884482383728,
+      "persistence_mse": 0.00810207676840946,
+      "skill": -100.25656318601203
+    },
+    "2": {
+      "model_mse": 0.8269608974456787,
+      "persistence_mse": 0.016327841300517322,
+      "skill": -49.647289021573094
+    },
+    "4": {
+      "model_mse": 0.8379202395677566,
+      "persistence_mse": 0.028092808462679385,
+      "skill": -28.8268590938821
+    },
+    "8": {
+      "model_mse": 0.8567318111658097,
+      "persistence_mse": 0.047932352591305974,
+      "skill": -16.87376927793869
+    },
+    "16": {
+      "model_mse": 0.8852415233850479,
+      "persistence_mse": 0.07514022924005985,
+      "skill": -10.781192742397106
+    },
+    "32": {
+      "model_mse": 0.9124943077564239,
+      "persistence_mse": 0.10966596677899361,
+      "skill": -7.32066989018886
+    },
+    "64": {
+      "model_mse": 0.9587062001228333,
+      "persistence_mse": 0.15558412447571754,
+      "skill": -5.161979593698593
+    },
+    "128": {
+      "model_mse": 0.9857873439788818,
+      "persistence_mse": 0.1979911781847477,
+      "skill": -3.978945794539557
+    }
+  },
+  "first_positive_horizon": null,
+  "verdict": "degrades more slowly than persistence but never overtakes it. consistent with having learned SOME scene structure; not sufficient to claim motion prediction."
+}
