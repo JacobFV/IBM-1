@@ -21,11 +21,35 @@ model differ is `docs/DISCONNECTS.md`.
 - **The real anatomy moves.** Up to **2,234 mm** of entity travel, median 1,659
   mm, against 6.35 mm across 30 s for the body's own canonical run — three orders
   of magnitude. Rendered: `artifacts/anatomical_crawl.mp4`.
-- **Height is a gated parameter.** Scales joint frames, meshes, all 80 fitted
-  path polynomials, fibre and tendon slack, contact spheres, mass (s³) and
-  inertia (s⁵). Identity at s=1.0 reproduces the base exactly; five scales
-  0.80–1.13 monotone. Ranges from NHANES (4,883 adults), validated against
+- **Height is a gated parameter, and it now reaches the whole body.** It scaled
+  only the 22-segment scaffold: joint frames, meshes, all 80 fitted path
+  polynomials, fibre and tendon slack, contact spheres, mass (s³) and inertia
+  (s⁵). It now also scales the **4,000 anatomical entities**, the **146 nerve
+  routes** and their **1,743 conduction delays**, the **1,326 skin patches**, the
+  98 actuators' PCSA/force/mass and the 117 ligament force elements — **48 gates
+  at 2.03 m, 52 at the identity**, and identity reproduces the base *exactly*,
+  not to a tolerance. No exponent in `ihm/body_scaling.py` is typed: each is
+  computed from a dimensional formula over primitives that are 1 (a length) or 0
+  (a material property), and the table is checked against answers fixed outside
+  it and against itself. Ranges from NHANES (4,883 adults), validated against
   published CDC means to 0.1 cm.
+- **A taller body has a slower periphery — the first physiological consequence of
+  a body parameter.** Conduction velocity is set by axon diameter and internodal
+  myelin; route length is anatomy. So every conduction delay lengthens in exact
+  proportion to stature: at 2.03 m the **vagal C fibre goes 507.84 → 573.60 ms**,
+  the optic nerve's three retinal populations 3.28/5.47/10.95 → 3.71/6.18/12.36
+  ms, and their spread — one nerve, three velocities — separates 7.66 → 8.65 ms.
+  All named in advance. This is the result that says the parametrization reached
+  the body rather than a scale factor in a config, and it matters because the
+  delay-lumping ablation under C already showed delays are load-bearing.
+- **Geometric similarity is measurably false, and the six places are written
+  down.** Over 4,822 survey-weighted NHANES adults, mass goes as stature^2.034 ±
+  0.083, not ^3 — isometry rejected at z = −11.6; BMI as stature^0.034 where
+  isometry demands 1.0. Reported and *not* applied. Five more in `ALLOMETRY`,
+  each with the size of its error: vascular flow 9.6% over-perfused at 2.03 m
+  (Poiseuille's r⁴ beats the length), brain volume 1.44× with no catalogued
+  source to correct it, characteristic time s^0.5 under equal Froude number,
+  passive joint stops unscaled, and receptor density s^−2 by choice.
 - **Real bone meshes can carry contact, and concavity survives.** `ContactMesh`
   over Simbody `TriangleMesh`; the rib cage encloses **4.3%** of its convex
   hull's volume and is not hulled by the solver. Cost 1.15× spheres; mesh
@@ -111,7 +135,10 @@ model differ is `docs/DISCONNECTS.md`.
 
 **Open** — no peripheral nerve mesh outside the orbit; dermatome assignment is an
 authored prior over measured geometry, not a registered atlas; patch density is
-by area, not receptor density.
+by area, not receptor density — and stature scaling deliberately holds the patch
+COUNT at 1,326 and lets area go as s², so density falls 21.6% at 2.03 m. That
+keeps the brain's afferent channel count invariant under body size, which is the
+reason for the choice; it does not make the underlying density measured.
 
 ## C. The brain is mesoscale and real
 
