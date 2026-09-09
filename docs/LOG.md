@@ -43,6 +43,38 @@ already written.
 
 ---
 
+## 2026-09-08 (overnight) — warm-starting does not cross resolutions, and I lost 3,000 steps finding out
+
+the native 2,048-site run for the body sim was going well -- at step 3,000,
+optic_nerve **13.31%**, higher than the 30,000-site run's 11.37% at four times
+the steps, which is the first sign that the anatomically-routed term may prefer a
+smaller substrate.  its `audio_meg` was collapsed because the remote had no
+warm-start checkpoints, so I shipped them over and restarted the run.
+
+**that was a mistake and it cost the 3,000 steps.**  the restart opens at chance:
+
+    visual_eeg  0.44% at step 0, after "warm-started (20 tensors)"
+
+the warm start reports success and does nothing, because the tensors it cannot
+carry are the ones that matter:
+
+    to_cortex.weight   (3750, 256) at 30k sites -> (256, 256) at 2k
+    to_cortex.bias     (3750,)                  -> (256,)
+
+`to_cortex` maps the encoder's hidden vector onto the cortical PORT, and the port
+is a fraction of the site count, so its shape is resolution-specific.  the 20
+tensors that do transfer are the encoder and the readout; **the entire cortical
+input path is re-randomised**, which is exactly the part a warm start is for.
+
+so warm-starting is within-resolution only, and the log line saying "warm-started
+from X (20 tensors)" is misleading when 2 of 22 are the load-bearing ones.  the
+count should be reported against what the transfer needs rather than against what
+happens to match -- a check that names the tensor rather than counting it.
+
+the 2k run is training from scratch now, which is what it should have been left
+doing.  no result was lost, only time, and the time was mine to waste rather than
+a corpus or a claim.
+
 ## 2026-09-08 (overnight) — the kernel survives downsampling; a round trip does not
 
 IHM-1 is running a **128-site** IBM cortex in their embodied loop, and this
