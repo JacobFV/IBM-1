@@ -77,8 +77,8 @@
       <table class="claims">
         <thead><tr><th>claim</th><th>measured</th><th class="num">outcome</th></tr></thead>
         <tbody>
-          <tr><td>the shared cortex is load-bearing</td><td>bypass +324% loss, frozen +180%, association zeroed +180%; long-range edges severed +0%</td><td class="num"><span class="tag tag-moved">held</span></td></tr>
-          <tr><td>cross-modal association is learned</td><td>occipito-temporal edges at 4.4× the random-pair baseline, signed</td><td class="num"><span class="tag tag-moved">held</span></td></tr>
+          <tr><td>the shared cortex is load-bearing</td><td>bypass +324% loss, frozen +180%, association zeroed +180%. on visual retrieval bypass costs 37 of 63 points; on balance, severing drops the body at 2.90 s. <em>load-bearing is not the same as better than a purpose-built baseline</em> — see §2b</td><td class="num"><span class="tag tag-moved">held</span></td></tr>
+          <tr><td>cross-modal association is learned</td><td>occipito-temporal edges at 4.4× the random-pair baseline — and severing those exact edges costs <b>−0.06%</b>. magnitude is not contribution</td><td class="num"><span class="tag tag-fail">withdrawn</span></td></tr>
           <tr><td>band-limited fusion is exact</td><td>real EEG moved the posterior 2.03 prior sd in band; out of band, exactly 0. delays as phase ramps agree to 4.4e-16</td><td class="num"><span class="tag tag-moved">held</span></td></tr>
           <tr><td>the thalamocortical resonance is alpha</td><td>13.45 Hz, a spindle; held-out +5503 nats/night, p = 7.2e-11</td><td class="num"><span class="tag tag-moved">prior moved</span></td></tr>
           <tr><td>the slow oscillation sits at the band edge</td><td>1.000 ± 0.296 Hz across 8 scored N3 nights; τ<sub>adapt</sub> = 0.12 s reproduces it</td><td class="num"><span class="tag tag-moved">fitted</span></td></tr>
@@ -92,6 +92,47 @@
         </tbody>
       </table>
       </div>
+    </div>
+  </section>
+
+
+  <!-- §2b status -->
+  <section class="sec" id="status">
+    <div class="margin"><span class="mono">§2b</span><span>status</span></div>
+    <div class="body">
+      <p class="lede">Where the programme actually stands, updated 9 September 2026. Every figure below is measured against an explicit baseline and names the set it was measured on; the two THINGS-EEG2 splits give <em>different orderings</em> and are never quoted interchangeably.</p>
+
+      <div class="table-wrap">
+      <table class="claims">
+        <thead><tr><th>what runs</th><th>measured</th><th class="num">against</th></tr></thead>
+        <tbody>
+          <tr><td>one implicit kernel, published</td><td>fused from 34 checkpoints, Procrustes-aligned, weighted by measured transfer. recovers <b>88.7%</b> of a task-specific kernel on the task that kernel was trained for</td><td class="num"><span class="tag tag-moved">0% for random</span></td></tr>
+          <tr><td>16 materializations, one 3.84M kernel</td><td>trained simultaneously, consolidated every 500 steps, none collapsed. visual_eeg <b>30.4%</b> top-1, optic_nerve <b>22.8%</b>, ten per-subject terms mean <b>15.4%</b></td><td class="num"><span class="tag tag-moved">0.5% chance</span></td></tr>
+          <tr><td>image → cortex → EEG retrieval</td><td><b>63.5%</b> top-1 on the designated test set, 200 images, median rank 1</td><td class="num"><span class="tag tag-moved">127× chance</span></td></tr>
+          <tr><td>a declared optic nerve into occipital cortex</td><td>three retinal populations at 2.5 / 4.2 / 8.3 ms, resolved. displacing the port to a random region of equal size collapses retrieval to <b>0.44%</b></td><td class="num"><span class="tag tag-moved">8.69% in place</span></td></tr>
+          <tr><td>the substrate resolution has an interior optimum</td><td>controlled sweep, resolution the only variable: 128 → 19.4%, <b>512 → 23.0%</b>, 2048 → 23.0%, 8192 → 21.7%</td><td class="num"><span class="tag tag-moved">both tails worse</span></td></tr>
+          <tr><td>cortical dynamics hold a body upright</td><td>250 exchanges, five seconds, 5 N pelvis push: <b>0.17 mm</b> COM displacement. severed, the body is on the floor at 2.90 s at 499 mm</td><td class="num"><span class="tag tag-moved">held</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <p class="lede" style="margin-top:2rem">And what does not work, stated with the same weight:</p>
+
+      <div class="table-wrap">
+      <table class="claims">
+        <thead><tr><th>claim</th><th>what the control said</th><th class="num">outcome</th></tr></thead>
+        <tbody>
+          <tr><td>the cortex beats a dynamics-free encoder</td><td>matched selection on the designated test set: control <b>66.5%</b> against the cortex model's 63.5%. indistinguishable, and the direction is gone</td><td class="num"><span class="tag tag-fail">withdrawn</span></td></tr>
+          <tr><td>the kernel's learned content drives movement</td><td>a kernel with its site rows permuted recovers the same push. the <em>dynamics</em> are load-bearing; what they learned from vision and audio is not</td><td class="num"><span class="tag tag-fail">withdrawn</span></td></tr>
+          <tr><td>next-frame video training shapes cortical wiring</td><td>pairing each frame with a <em>random</em> frame still transfers 83–86% of the 91.5%. only ~5 points depend on prediction</td><td class="num"><span class="tag tag-fail">withdrawn</span></td></tr>
+          <tr><td>sharing one kernel helps the terms that share it</td><td>one subject trained solo for the same own-steps reaches <b>17.4%</b> against the shared run's 15.4%</td><td class="num"><span class="tag tag-fail">neutral</span></td></tr>
+          <tr><td>video continuation predicts motion</td><td>25% worse than emitting the previous frame unchanged. the clips looked sharp because at horizon 8 frame t+8 resembles frame t</td><td class="num"><span class="tag tag-fail">withdrawn</span></td></tr>
+          <tr><td>the cortex can route sensation to motor cortex</td><td><b>0.03–0.07%</b> of the driven signal reaches the disjoint motor region, and the ratio scales linearly with association gain rather than compounding</td><td class="num"><span class="tag tag-fail">structural</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <p class="lede" style="margin-top:2rem"><b>Fifty-one claims have been withdrawn.</b> Not one was a modelling error. Every one was a quantity computed correctly and then compared against the wrong thing — the wrong population, the wrong units, the wrong split, the wrong point in time, or no baseline at all. The worst flattered itself by 280× while never beating a zero baseline; the largest was an image–EEG pairing that was 99.94% wrong and produced three hours of confident negative results about a corpus that was fine. <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/LOG.md" data-doc="docs/LOG.md">The ledger keeps every one</a>, with the check that caught it.</p>
     </div>
   </section>
 
