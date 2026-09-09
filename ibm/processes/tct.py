@@ -218,10 +218,26 @@ class ThalamoCortical(nn.Module):
             self.g_t = 0.0
 
         # topographic cortico-thalamic map: contiguous blocks of the site index.
-        # `cortical_sites` lays sites out on a fibonacci spiral, so a contiguous
-        # block is a latitude band -- coarse, but a map and not a shuffle.  the
-        # ascending and descending limbs share it, which is the reciprocity the
-        # process declaration asserts ("back onto the same relay cells").
+        #
+        # WHAT A CONTIGUOUS BLOCK ACTUALLY IS depends on the sheet, and this
+        # comment used to say "`cortical_sites` lays sites out on a fibonacci
+        # spiral, so a contiguous block is a latitude band".  That was never
+        # true: the spherical proxy drew sites from a seeded RNG, so a block was
+        # an arbitrary subset of a random point cloud -- the same "the name
+        # asserted an anatomy the index did not have" that cost the video branch
+        # a factor of 112 (docs/LOG.md ledger 25).
+        #
+        # on the fsaverage sheet a block IS something: sites are sorted by
+        # vertex index, fsaverage vertex order is the icosahedral subdivision
+        # order, and lh precedes rh -- so the first half of the blocks are left
+        # hemisphere and the second half right, while WITHIN a hemisphere a
+        # block is spread over the whole sheet rather than being a patch.  so it
+        # is a hemisphere-respecting shuffle, not a topography.  a real
+        # topographic map wants `cortical_regions` and is not built here.
+        #
+        # the ascending and descending limbs share it, which is the reciprocity
+        # the process declaration asserts ("back onto the same relay cells"),
+        # and that part is unaffected by what the blocks mean.
         grp = (torch.arange(n_sites, device=device) * n_thal) // n_sites
         self.register_buffer("group", grp.clamp_max(n_thal - 1).long())
         cnt = torch.zeros(n_thal, device=device).index_add_(
