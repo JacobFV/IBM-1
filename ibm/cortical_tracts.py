@@ -264,6 +264,7 @@ def draw_partners(region_of_site: np.ndarray, n_far: int, seed: int,
     delay = np.zeros((n, n_far), dtype=np.float32)
     length = np.zeros((n, n_far), dtype=np.float32)
     orphan = 0
+    orphan_parcels: list[str] = []
     for a in range(len(REGIONS)):
         rows = order[start[a]:stop[a]]
         if not len(rows):
@@ -279,6 +280,7 @@ def draw_partners(region_of_site: np.ndarray, n_far: int, seed: int,
             # own parcel's other sites, and it is counted.  silently leaving the
             # row at index 0 would make site 0 a hub with no anatomy behind it.
             orphan += len(rows)
+            orphan_parcels.append(REGIONS[a])
             pool = rows
             pick = pool[rng.integers(0, len(pool), size=(len(rows), n_far))]
             partner[rows] = pick
@@ -295,10 +297,21 @@ def draw_partners(region_of_site: np.ndarray, n_far: int, seed: int,
         partner[rows] = order[start[tpar] + np.minimum(off, sizes[tsel].astype(np.int64) - 1)]
         delay[rows] = D[a, tpar]
         length[rows] = L[a, tpar]
-    return partner, delay, length, {"orphan_sites": int(orphan),
-                                    "threshold": float(threshold),
-                                    "n_subjects": c["n_subjects"],
-                                    "velocity_m_s": float(velocity_m_s)}
+    return partner, delay, length, {
+        "orphan_sites": int(orphan),
+        "orphan_fraction": float(orphan / max(n, 1)),
+        # NAMED, not just counted.  every one of these is a region where
+        # diffusion tractography is known to fail -- orbitofrontal and the
+        # temporal pole sit against the sinuses and lose signal to
+        # susceptibility, entorhinal is thin and adjacent to the same dropout --
+        # so "this parcel has no long-range connection" is a statement about the
+        # MEASUREMENT and not about the brain.  a site here spends its long-range
+        # budget inside its own parcel, which is a real distortion of the arm and
+        # has to be visible rather than absorbed.
+        "orphan_parcels": orphan_parcels,
+        "threshold": float(threshold),
+        "n_subjects": c["n_subjects"],
+        "velocity_m_s": float(velocity_m_s)}
 
 
 def delays_for_edges(region_of_site: np.ndarray, partner: np.ndarray,

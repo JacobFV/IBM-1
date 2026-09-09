@@ -129,6 +129,16 @@ is a **ventral, intrahemispheric** topology whatever its docstring hopes for.
 The threshold is a knob and the sweep is in `edge_existence_curve()`: 616 edges
 at 0.1, 459 at 0.5, 126 at 1.0.
 
+**And eleven parcels have no long-range partner at all.** At the 0.5 threshold
+`lh/rh.entorhinal`, `medialorbitofrontal`, `parsorbitalis`, `frontalpole`,
+`temporalpole` and `lh.lateralorbitofrontal` are isolated in the consensus —
+6.4% of the sheet by area, 6.2% of sites. Every one is orbitofrontal, polar or
+entorhinal, which is to say every one sits against a sinus and loses diffusion
+signal to susceptibility. "This parcel has no long-range connection" is a
+statement about the measurement, not the brain. Those sites currently spend
+their long-range budget inside their own parcel; the fraction and the parcel
+names are in `tract_note` and printed rather than absorbed.
+
 **Still open:** conduction delays are carried per edge and saved
 (`dyn.delay_s`), but they only bite at a timestep that resolves them — the
 median declared delay is 3.84 ms and the maximum 10.2 ms, so at the visual

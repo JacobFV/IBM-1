@@ -185,6 +185,14 @@ docstring hopes for. Reporting it as "the declared topology" without this
 paragraph would be ledger row 9 in a new costume. The threshold is a knob and the
 sweep is `edge_existence_curve()`: 616 edges at 0.1, 459 at 0.5, 126 at 1.0.
 
+And **eleven parcels are isolated outright** at 0.5 — `lh/rh.entorhinal`,
+`medialorbitofrontal`, `parsorbitalis`, `frontalpole`, `temporalpole` and
+`lh.lateralorbitofrontal`, 6.4% of the sheet by area. Every one is
+orbitofrontal, polar or entorhinal; every one sits against a sinus and loses
+diffusion signal to susceptibility. Their sites spend the long-range budget
+inside their own parcel, and the count and the names are printed in
+`tract_note`, because "no long-range connection" here is a fact about the scan.
+
 ### a sidecar that asserted the wrong carrier
 
 `ckpt/visual_contrastive_v2.json` records `"geometry": "fsaverage-sampled sheet,
