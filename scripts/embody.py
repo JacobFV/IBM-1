@@ -117,9 +117,15 @@ def main() -> None:
     print(f"afferent channels from the body: {n_aff}")
     print(f"brain: kernel from {src}")
     print(f"  afference -> {len(brain.sense_idx):,} postcentral sites")
+    # `motor_read` has been None since the readout moved to the whole sheet --
+    # `read_idx_full = linspace(0, n-1, read_sites)` -- so this line raised
+    # TypeError before it could print anything, and every embody run died at the
+    # banner.  It also described the readout as disjoint from the afferent port,
+    # which it no longer is; saying so is the point of the line.
     print(f"  command   <- {len(brain.motor_idx):,} precentral sites "
-          f"({len(brain.motor_read)} read)")
-    print(f"  the two are disjoint, so the command crosses through the kernel\n")
+          f"({len(brain.read_idx_full):,} sites read)")
+    print(f"  the readout spans the whole sheet, so it is NOT disjoint from the "
+          f"afferent port; --sever is what tests whether the kernel carries it\n")
 
     patches = [p["id"] for p in spec["receptor_patches"]]
     cord = None
