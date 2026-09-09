@@ -155,6 +155,29 @@ E2/P4/inhibin are prescribed time functions, not an autonomous cycle.
 The standing honesty requirement applies with force here: a scaled male mesh with
 surfaces bolted onto it is not a female body, and must not be labelled one.
 
+**Where it stands now.** `sex` stopped raising, because it stopped meaning
+nothing. It sets four measured proportions — stature, mass, hip separation over
+stature (+12.6461%, to 1e-13 of the NHANES target), leg length over stature
+(−2.5526%) — and its resolved record carries a `sex_realisation` block naming
+what did NOT move: still 0 female-specific entities, still 0 mammary glands in
+either sex, male genital tract still bound to `pelvis`. `--sex female` builds
+**male anatomy at female-typical proportions** and the registration says so in
+those words.
+
+What unblocked it was the path refitter, and the interesting part is that it was
+never missing. `docs/BODY_PARAMETERS.md` in IHM-1 said it needed OpenSim in the
+environment; `libosimActuators.so` in the install this repository already builds
+exports 97 `PolynomialPathFitter` symbols. It needed a driver. A refit of the
+unchanged model is **16.7× closer** to the model's own `GeometryPath`s than the
+`FunctionBasedPathSet` the engine currently runs (3.01e-4 m against 5.02e-3 m RMS
+on held-out frames), and it covers **98** muscles against the shipped set's 80.
+
+That last number bears on the paragraph above about retinacula: the 18 muscles
+that still had explicit geometry were the `arm26` and `gait2392` trunk muscles,
+and a full refit gives them fitted moment arms while taking their `GeometryPath`
+away. Both directions are recorded in each variant's registration rather than
+chosen silently.
+
 ## The developmental components
 
 Pain is one component of the developmental learning process, not the list.
