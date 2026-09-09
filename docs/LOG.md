@@ -44,6 +44,41 @@ already written.
 
 ---
 
+## 2026-09-09 — the controlled resolution sweep says 512 and 2,048 are equal
+
+the previous entry compared 2,048 against 30,000 sites and concluded that a
+smaller substrate performs better on the nerve pathway.  it matched on own-steps,
+which was the right correction, but the two runs still differed in objective mix
+and schedule.  so the clean version: ONE term, one task, identical settings,
+resolution the only variable, 4,000 steps each.
+
+| step | 512 sites | 2,048 sites |
+|---|---|---|
+| 2,500 | 20.69% | 21.37% |
+| 3,000 | 20.50% | 22.62% |
+| 3,500 | 20.56% | 22.25% |
+| 4,000 | **23.00%** | **23.00%** |
+
+**identical at the end, and 2,048 slightly ahead through the middle.**  a
+four-fold difference in substrate size produces no difference in outcome on this
+task, which is a narrower and more useful statement than "smaller is better".
+
+so the earlier claim needs qualifying rather than withdrawing.  what holds:
+2,048 beats 30,000, and 30,000 beats 150,000.  what does not hold: a monotone
+"smaller is better" -- between 512 and 2,048 the curve is flat.  the honest shape
+is a plateau at the small end with degradation above it, not a gradient, and the
+useful consequence is that anything in the 512-2,048 range costs nothing.
+
+that is good news for the embodiment specifically: IHM-1 runs 128 sites, and the
+flat region extends at least down to 512, so their resolution is close to a range
+where nothing is lost.  whether 128 itself is inside the plateau is not measured
+-- the sweep starts at 512 -- and that is the arm worth adding rather than
+assuming.
+
+the 8,192-site arm is still producing its first evaluations.  I launched it twice
+by accident, so two processes shared a GPU and a log file for seventeen minutes;
+the duplicate is killed and the survivor is running alone.
+
 ## 2026-09-09 — a 2,048-site substrate beats a 30,000-site one on the nerve pathway
 
 `optic_nerve` reaches **23.56% (47.1x chance)** on the 2,048-site run against
