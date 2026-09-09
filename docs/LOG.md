@@ -39,6 +39,7 @@ pattern is worth more than any single row.
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
 | 21 | the sheet does not conduct because `tanh(2*sim)` is saturated -- unsaturating the squashing function would restore magnitude selectivity and let the kernel build a strong specific pathway | the edges ARE pinned (mean \|tanh(2*sim)\| = 0.895, 71.4% of 1.44M edges above 0.9) but the underlying cosine similarities have no dynamic range either, so lowering the slope scales every edge down together and selects nothing. row L1/max moves 45.2 -> 41.0 as the slope goes 2.00 -> 0.25, against 48 for perfectly flat. **saturation was the symptom; the flat \|sim\| distribution is the disease**, and no reparameterisation of tanh reaches it -- only an explicit structural selection (top-m) does, which buys 11.9x at zero change in row gain | measuring the row L1/max flatness across a slope sweep, instead of reasoning from tanh(2) = 0.964 to "therefore no magnitude information" |
 | 22 | the gait controller cannot walk because it regulates absolute fore-aft position -- `error = x - x0 - dx_velocity` masks only the pelvis_tx SPEED, so the position term acts as a spring pulling the body back to its start, spending ~0.47 of the [0,1] actuator range at only 6 mm of travel | `deflation_basis` had already removed it. the pelvis_tx POSITION column of K is **exactly zero** (L2 = 0.0000, rank 258 of 258 columns), as is pelvis_tz; only pelvis_ty (height) is regulated, at L2 52.7, which is correct. the arithmetic was built on a column that does not exist. **I flagged this exact caveat when I sent the hypothesis and then did not check it before reporting the result** | printing the norm of K's pelvis_tx column -- one command, available before the claim was made |
+| 23 | the learned kernel is load-bearing for disjoint-region retrieval -- permuted sat at **exactly chance** while intact read 43x, so what the cortex LEARNED carries the signal from occipital to precentral | a train/test permutation mismatch. `torch.randperm` was drawn INSIDE the feature extractor from a generator shared with the caller, and the extractor runs twice per arm -- once for training features, once for held-out -- so the head was fitted on one permutation and evaluated on another. rerun with the permutation drawn once and passed in, **permuted reads 50.75x against intact's 48.37x**: indistinguishable, with amplitude (5.4367e-02 vs 5.4064e-02), effective rank (12.2 vs 12.9), train loss and train top-1 all preserved. row 20's generalisation is CONFIRMED, not amended -- the dynamics are necessary, what they learned is not | asking why permuted sat at exactly chance while preserving 99.7% of the across-image variance, then adding a `relabel` arm (readout columns permuted, which CANNOT change the answer) that had to score what intact scores -- it read 48.62x, so the bookkeeping was clean and the other arms were interpretable |
 
 **the shape they share:** a quantity computed correctly and then compared against
 the wrong thing — the wrong population, the wrong units, the wrong split, the
@@ -52,7 +53,7 @@ already written.
 
 Three results, and the largest one is not about the fix.
 
-### 1. The cortex is load-bearing for a real task, read from a disjoint region
+### 1. The dynamics are necessary; what they LEARNED is not
 
 `scripts/ablate_disjoint_transport.py`. Real THINGS-EEG2: an image drives the
 **occipital region**, the sheet runs, the state is read from the **precentral
@@ -61,54 +62,65 @@ disjoint, 3,775 drive sites against 2,012 read sites), and a small head is fitte
 on the precentral rates against the measured EEG. The image encoder and
 `to_cortex` are the checkpoint's own and are FROZEN, so every arm sees the same
 stimulus-specific drive and the arms differ only in what the sheet does with it.
-8 disjoint held-out pools of 200, chance 0.5%, never a single pool.
+8 disjoint held-out pools of 200, chance 0.5%, never a single pool. 20,000-step
+fits.
 
 On the **unmodified** trained kernel, no noise:
 
-| arm | top-1 | vs chance |
-|---|---|---|
-| intact | 21.81% +/- 2.28 | **43.62x** |
-| severed (w = 0) | 0.50% | 1.00x |
-| ~~permuted rows~~ | ~~0.50%~~ | ~~1.00x~~ **WITHDRAWN, see below** |
+| arm | top-1 | vs chance | effective rank | train loss | train top-1 |
+|---|---|---|---|---|---|
+| intact | 24.19% +/- 1.62 | 48.37x | 12.9 | 0.0096 | 99.7% |
+| relabel (control) | 24.31% +/- 4.08 | 48.62x | 12.9 | 0.0148 | 99.1% |
+| permuted rows | 25.37% +/- 2.96 | **50.75x** | 12.2 | 0.0113 | 99.7% |
+| severed (w = 0) | 0.50% | 1.00x | **1.0** | -- | -- |
 
-**The permuted row is withdrawn and the rerun is pending.** `torch.randperm` was
-drawn INSIDE `cortical_features`, from a generator shared with the caller, and
-that function is called twice per arm -- once for the training features and once
-for the held-out ones. The generator advanced between the calls, so the head was
-fitted on one permutation and evaluated on a different one. That reproduces both
-symptoms of a real ablation exactly: across-image variance preserved to 0.3% of
-intact (the permuted sheet really does conduct) and retrieval at exact chance
-(the test map is a different map). It measured a train/test mismatch.
+chance loss is 6.9315; severed across-image sd is exactly 0.000e+00 Hz.
 
-What survives is the severed arm, which involves no permutation: across-image sd
-exactly 0.000e+00 and retrieval at chance. So **the dynamics are necessary**
-stands. **What they learned matters** is unsupported until the rerun lands, and
-with it the claim that ledger row 20's generalisation is too broad.
+**`relabel` is the gate**, and it passes: the kernel is untouched and only the
+readout COLUMNS are permuted, with the same permutation in both passes, so it is
+a pure relabelling of the head's input coordinates and must score what `intact`
+scores. It does. The other arms are therefore interpretable.
 
-The same lesson twice in one day: the global-RNG graph draw was fixed this
-morning precisely because one shared RNG made two things vary that should have
-varied independently, and this bug was written into the same file the same
-afternoon.
+Two things follow, and they point opposite ways.
 
-The rerun draws one permutation per arm in the caller, asserts it was passed in,
-prints its first entries at both call sites, and adds a `relabel` positive
-control -- kernel untouched, readout COLUMNS permuted with the same permutation
-in both passes, which is a pure relabelling of the head's input coordinates and
-must therefore score what `intact` scores. If `relabel` is not ~43x the pipeline
-is still broken and every arm is void.
+**The dynamics ARE necessary.** Severing gives a constant readout -- across-image
+sd exactly zero, effective rank 1.0 -- and retrieval at chance. This log has said
+"there is no configuration measured so far in which the cortical dynamics both
+receive the sensory signal and are necessary to produce the output." That
+sentence is false, and what made it false was changing the READOUT to a disjoint
+region and fitting a head on frozen features, not changing the kernel, the
+objective or the data.
 
-This log has said "there is no configuration measured so far in which the
-cortical dynamics both receive the sensory signal and are necessary to produce
-the output." **That sentence is now false**, and what made it false was changing
-the READOUT to a disjoint region and fitting a head on frozen features -- not
-changing the kernel, the objective, or the data. The sheet was never
-information-blocked. 0.054 Hz of arriving perturbation is ample when there is
-nothing competing with it.
+**What they LEARNED is not.** A kernel with its site rows permuted scores 50.75x
+against the trained kernel's 48.37x -- indistinguishable, with amplitude, rank,
+train loss and train accuracy all preserved. Transport is a property of the graph
+and the weight statistics, not of the learned content. **Ledger row 20's
+generalisation is confirmed, not overturned**, and now on a perceptual task with
+a disjoint readout and a passing positive control.
 
-One caveat: this is a head fitted on frozen features, not end-to-end training, so it does not explain why end-to-end training failed. The hypothesis
-worth testing, untested: gradients through a 1e-3 attenuation are as small as
-the signal, and the earlier failures were an optimisation problem downstream of
-the transport problem.
+I first reported the opposite, with permuted at exact chance. That was a
+train/test permutation mismatch -- `torch.randperm` was drawn inside
+`cortical_features`, from a generator shared with the caller, and that function
+is called twice per arm, so the head was fitted on one permutation and evaluated
+on another. It preserved every statistic and destroyed the mapping, which is
+exactly what a real ablation looks like. It was caught by asking why permuted sat
+at EXACTLY chance while preserving 99.7% of the across-image variance. The fix
+draws one permutation per arm in the caller, and `cortical_features` now returns
+a fingerprint of the treatment it applied so the caller RAISES if the two passes
+disagree rather than printing two lines for a human to compare.
+
+**The number worth keeping** is the effective rank: 12.9 of a possible 2012.
+Whatever crosses the sheet is 13-dimensional, in every arm that conducts at all.
+That is a tighter constraint on the somato-motor design than any of the amplitude
+numbers.
+
+One caveat: this is a head fitted on frozen features, not end-to-end training, so
+it does not explain why end-to-end training failed. The hypothesis worth testing,
+UNTESTED: gradients through a 1e-3 attenuation are as small as the signal, and
+the earlier failures were an optimisation problem downstream of the transport
+problem. It predicts something checkable -- encoder gradient norms should scale
+with transport, so the concentrated arm should train end-to-end where the
+unmodified one does not.
 
 ### 2. The anisotropy fix buys noise tolerance and nothing else
 
