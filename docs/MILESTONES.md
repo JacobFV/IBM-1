@@ -93,16 +93,30 @@ model differ is `docs/DISCONNECTS.md`.
   0.70–1.04x, three published Blankevoort stiffnesses at 0.44–2.03x, and two
   independent implementations of the path length agreeing to 3.3e-16 m.
 
-  **The 66 that never pass ligament ultimate strain inside a spanned joint's own
-  declared range replace the engineering joint stops**: 6.08° of worst excursion
-  on a 2 s prone drop with no stops at all, against 5.30° for the stated
-  30 N·m/rad stops and 17.43° bare; both together 4.05°. Standing weight stays
-  761.3757 N and the momentum residual stays at its relative floor, because these
-  are internal forces. The other 51 make it WORSE (32.78°) — a straight line
-  between two attachment centroids is not a ligament's path, and the derived ACL
-  reads 77% strain at 90° of knee flexion against a 17.1% ultimate. Those 51 are
-  the cruciates, the collaterals and the ankle ligaments; closing them needs a
-  wrap surface per joint.
+  Standing weight stays 761.3757 N in every arm and the momentum residual stays
+  at its relative floor, because these are internal forces. What they do to the
+  plant, on **three** prone drops rather than one — worst excursion past the
+  model's declared ranges:
+
+  | | prone | high | rolled | mean |
+  |---|---:|---:|---:|---:|
+  | bare | 17.43° | 30.69° | 30.27° | 26.13° |
+  | joint stops at 30 N·m/rad | 5.30° | 6.62° | 5.96° | 5.96° |
+  | all 105 ligaments | 32.78° | 35.33° | 32.88° | 33.66° |
+  | the 66 admissible | 6.08° | 30.47° | 18.50° | 18.35° |
+  | stops + the 66 | **4.05°** | **6.39°** | **5.35°** | **5.27°** |
+
+  **The full set makes the plant worse, three drops out of three.** A straight
+  line between two attachment centroids is not a ligament's path: the derived ACL
+  reads 77% strain at 90° of knee flexion against a 17.1% ultimate, because a
+  real cruciate is near-isometric only because it wraps. The 51 that fail that
+  check are the cruciates, the collaterals and the ankle ligaments, and closing
+  them needs a wrap surface per joint.
+
+  **The 66 that pass it do not replace the joint stops** — ledger row 28, which
+  is what one drop said and three drops withdrew. What holds: they are never
+  worse than the bare plant where the unfiltered set is always worse, and added
+  to the stops they improve the worst excursion on every drop, 5.96° → 5.27°.
 
   **430 of the 645 are inside one rigid body** — 23 intervertebral discs and 23
   nuclei in `torso`, 29 ligaments per hand — so the scaffold has no joint where
@@ -177,10 +191,11 @@ rather than a closed loop.
   lengths/s against a maximum of 10. Ports held: 180 s wall → 18.5 s.
 - **Joint stops exist and are free.** At 30 N·m/rad they are *half* the wall clock
   of no stops at all and hold the plant 6.6× closer to its declared range.
-- **And the body's own ligaments can now do that job instead of a constant.** 66
-  derived tissue elements, stiffness from the declared ligament modulus and
-  attachments from the structures' own surfaces, hold 6.08° of worst excursion
-  with no stops at all against the stated stop's 5.30° and a bare plant's 17.43°.
+- **And the body's own tissue now takes a little of that load off the constant.**
+  66 derived elements, stiffness from the declared ligament modulus and
+  attachments from the structures' own surfaces, added to the stops: 5.96° → 5.27°
+  mean worst excursion over three drops, same sign 3/3. They do not replace the
+  stops — one drop said they did and three drops withdrew it (ledger row 28).
 - **68 forced-pose motions, 17,622 frames** of what the real muscles experience.
 
 **Open** — nothing the brain produced; this is the crude controller and the
@@ -216,7 +231,7 @@ seek.
 
 ## What the ledger says about all of this
 
-**27 claims withdrawn**, and they share one shape: a quantity computed correctly
+**28 claims withdrawn**, and they share one shape: a quantity computed correctly
 and compared against the wrong thing. Several on this page exist because a gate
 caught something that looked like a result — the 973 mm crawl with the ankles
 folded 145°, the video model that was matching appearance rather than predicting,

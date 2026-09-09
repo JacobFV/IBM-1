@@ -86,15 +86,16 @@ They existed as geometry and not as mechanics.
 **117 of them now carry force**: 105 ligaments and 12 joint capsules, as
 `Blankevoort1991Ligament` elements over two-ended attachments derived from each
 structure's own surface, in `docs/TISSUE_MECHANICS.md` in IHM-1. Standing weight
-is unchanged at 761.3757 N because these are internal forces. **The 66 that never
-pass ligament ultimate strain inside a spanned joint's own declared range replace
-the engineering joint stops**: 6.08 deg of worst excursion past the declared
-ranges with no stops at all, against 5.30 deg for the 30 N.m/rad stops and 17.43
-deg bare, and 4.05 deg with both. The other 51 make the plant WORSE — 32.78 deg —
-because a straight line between two attachment centroids is not a ligament's
-path, and a real cruciate is near-isometric only because it wraps. Those 51 are
-the cruciates, the collaterals and the ankle ligaments, and closing them needs a
-wrap surface per joint.
+is unchanged at 761.3757 N because these are internal forces. Over three prone
+drops, the **full** set makes the plant worse every time — worst excursion past
+the model's declared ranges goes 17.4/30.7/30.3 deg bare to 32.8/35.3/32.9 —
+because a straight line between two attachment centroids is not a ligament's path
+and a real cruciate is near-isometric only because it wraps. The **66** that
+never pass ligament ultimate strain inside a spanned joint's declared range are
+never worse than bare, and added to the joint stops they improve every drop,
+5.96 -> 5.27 deg mean. They do NOT replace those stops; one drop said they did
+and is ledger row 28. Closing the other 51 — the cruciates, the collaterals, the
+ankle ligaments — needs a wrap surface per joint.
 
 The rest is blocked for three different reasons, and only one is a missing
 solver. **430 of the 645 are inside ONE scaffold rigid body** — 23

@@ -70,3 +70,4 @@ InteroceptiveLoop: 15 channels in 7 conduction groups -> 1,391 sites (20% of the
     lumped step  100  train mse 0.27328   3814s
     lumped step  150  train mse 0.11445   5903s
     lumped step  200  train mse 0.13636   7613s
+    lumped step  250  train mse 0.08245   9206s
