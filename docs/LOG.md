@@ -248,6 +248,71 @@ sensorimotor loop can use that, and 1.132 is a modest nonlinearity.
 above was run at `long_topm=1`, the maximum-transport arm; the three-arm rerun at
 the recommended point is queued.
 
+## 2026-09-09 -- the gait can step or it can travel, not both
+
+It does not walk. One genuine step, 1.88 cm of pelvis travel, then it pitches
+forward past 0.55 rad and stops at 1.49 s of a 5.0 s horizon.
+
+The step is real and it is muscle-driven: the right foot lifts at 0.81 s,
+unloads to **0.14% of body weight** (fully airborne), clears 1.8 cm, advances
+17.1 cm, and lands on measured contact at 1.42 s -- 98 muscle excitations in
+[0,1] into the native mechanical stream, no prescribed motion, no external root
+forces.
+
+The strict step criterion exists because a loose one was gamed. An earlier
+search reported "2 consecutive steps" in which the foot never dropped below 39%
+load and rose 1.7 mm. Under the criterion actually used -- airborne below 2% body
+weight, at least 10 mm clearance, at least 30 mm advance, landing on measured
+contact -- those score **zero**, and weaker cycles are reported separately as
+weight shifts rather than folded in.
+
+**The binding constraint is the LQR stage cost, not the gait parameters.** The
+gain is solved about an equilibrium whose forward velocity is exactly zero.
+Adding stage cost on `pelvis_tx/speed` and changing nothing else took travel from
+2.24 mm to **119 mm, a factor of 53**, and it is corroborated across twelve
+parameter sets: six that could never move the pelvis more than 5 mm all travel
+6-12 cm once given `q_tx_speed = 1500`, with none of their own parameters
+changed.
+
+And the trade is sharp enough to be the real finding: **at low forward cost it
+steps and does not travel; at high forward cost it travels at 0.11 m/s and does
+not step.** Every travelling arm falls forward. The controller can do either,
+and nothing found so far does both.
+
+A CORRECTION OF A CORRECTION, recorded because the error was mine and it went
+the wrong way. I proposed the stage-cost hypothesis, labelled it untested, and
+then **retracted it** on the evidence that search I reached 8.4x the travel of
+search H while commanding six times LESS forward velocity -- which looked like
+the setpoint mattering in the opposite direction. That comparison was
+confounded: I is H **plus** the new `q_tx_speed` parameter, not H with a smaller
+`v_forward`. The matched single-variable tests separate them cleanly -- setpoint
+does almost nothing (travel *falls* 5.9 -> 3.9 mm as `v_forward` goes 0 to 0.60)
+and stage cost does almost everything. The hypothesis stands; my retraction of
+it does not. Ledger row 22 is unaffected -- that was the pelvis_tx POSITION
+claim, which was separately and genuinely wrong (column L2 7.0e-10 deflated
+against 4.14 as shipped; 12 cm of travel perturbs the command by 6.5e-11).
+
+Against the repo's prior best, stated so the comparison is not flattering: the
+existing half-step placed the foot 16.1 cm forward and moved 8.0 cm of COM in
+71 s, **ending settled and stable**. This is 12.6 mm/s against its 1.1 mm/s and
+has a genuinely airborne swing rather than a quasi-static one, but it travels
+LESS total distance and it FALLS. On stability the older result is better.
+
+Negatives worth keeping: the decisive lever for getting a foot off the ground at
+all was `swing_relax` -- `u0` is a DOUBLE-SUPPORT equilibrium, so the swing leg's
+own plantarflexors and vasti hold it at stance excitation and it keeps pressing
+on the floor; no search produced a lifted foot until that baseline was scaled
+down. Stance-limb baseline boost moves survival the wrong way. Muscle biases are
+not the cause of divergence -- removing all of them still diverges, so it is
+weakening the regulator that destabilises. And handing the plant back to the pure
+stance regulator immediately after the step does not save it: it falls 230 ms
+later instead, so the first step is already unrecoverable and the blocker is not
+second-step initiation.
+
+Untried and cheapest next: two parameters sit exactly on their bounds in the
+delivered result (`a_stance_hipext` 0.500, `b_kneeext` 0.800), and pitch is now
+the binding failure while the lumbar actuators carry no bias at all.
+
 ## 2026-09-09 (morning) -- the sheet superposes; it does not integrate
 
 The somato-motor materialization needs sight, hearing and touch to converge
