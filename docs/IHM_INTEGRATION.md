@@ -115,3 +115,38 @@ exposed to it: a limb that moves is extremely convincing and says nothing about
 whether the brain caused the movement. The `--sever` arm is there for exactly
 that, and I'd rather you run it and find the kernel contributes nothing than
 either of us report a moving body as a working brain.
+
+---
+
+## Update, overnight 2026-09-09: use the 2k kernel
+
+A kernel trained **natively at 2,048 sites** is published and verified end to end:
+
+    implicit/ibm1.implicit.s2k.e128.embodied.step029000.pt     (jacob-valdez/ibm-1)
+
+1.05 MB, 262,144 parameters. It loads, materializes at native resolution, and
+closes brain→body→brain steps through your `BodyPeripheral` with all 249 muscle
+commands validating.
+
+**Prefer it over the 30k kernel, for two reasons.**
+
+*No round trip.* You run 128 sites; downsampling a 30k kernel retains real
+structure (4.84× random at 128 sites, measured) but going back up is lossy, so a
+native small kernel skips the question.
+
+*It performs better.* Matched on own-steps — the steps each term actually took,
+since the two runs schedule differently — `optic_nerve` reaches 18.00% at 2,048
+sites against 12.06% at 30,000 after 1,200 own-steps, and 25.75% vs 18.94% at the
+latest point. That is the third measurement pointing the same way: 150k finished
+6.5 points behind 30k on the designated test set and its kernel transferred below
+the random floor. On these corpora more substrate has not once bought accuracy.
+
+**Two cautions.** Those are training-split numbers and are not comparable to the
+63.5% designated-test figure — the two splits give different orderings and have
+been confused here before. And the motor path is still untrained: severing the
+kernel changes command variation by nothing, so a moving limb is not yet evidence
+the brain caused it.
+
+Checkpoints are now written atomically (temp + rename). If you hit
+`PytorchStreamReader failed reading zip archive` earlier, that was a torn read
+during a save, not a corrupt file — it is fixed.
