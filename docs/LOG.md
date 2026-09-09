@@ -193,6 +193,33 @@ diffusion signal to susceptibility. Their sites spend the long-range budget
 inside their own parcel, and the count and the names are printed in
 `tract_note`, because "no long-range connection" here is a fact about the scan.
 
+### a folded surface raises a question a sphere could not: is the local graph still local?
+
+`knn_edges` is a `torch.cdist` in the volume. On a sphere that is a local sheet
+by construction. On a folded white surface it need not be: two points on
+opposite banks of a sulcus are millimetres apart in the volume and far apart
+along the sheet, and `tract.py` opens by insisting the metrics disagree.
+
+Measured (`scripts/measure_sheet_metric_error.py`) — true along-sheet distance
+by Dijkstra over the fsaverage mesh, for the 36 local partners of 60 sampled
+sites at 30,000 sites, mean euclidean edge 4.30 mm:
+
+    geodesic / euclidean   p50 1.13x   p75 1.27x   p90 1.51x   p95 1.80x   p99 3.71x
+    mean 1.28x     >2x: 3.4%     >4x: 0.8%     cross-hemisphere: 0 of 2,160
+
+So the euclidean k-NN is still a local topology: 96.6% of local edges are within
+2× of the true along-sheet distance, and no local edge crosses the midline. The
+3.4% that are not are the genuinely cross-sulcal ones, and they are worth
+knowing about rather than being a reason to change the metric.
+
+**The gate is why that number is trustworthy.** Mesh-adjacent vertices have
+geodesic exactly equal to euclidean, so the ratio must print 1.0000. The first
+version printed **2.0000** for every adjacent pair — each undirected mesh edge is
+in two triangles and `csr_matrix` *sums* duplicate entries, so every weight was
+doubled. It would have been reported as "the median local edge is 2.3× longer
+along the sheet than through the volume", a different and false conclusion, and
+it was caught in one line by a case whose answer was known.
+
 ### a sidecar that asserted the wrong carrier
 
 `ckpt/visual_contrastive_v2.json` records `"geometry": "fsaverage-sampled sheet,

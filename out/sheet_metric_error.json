@@ -1,0 +1,27 @@
+{
+  "config": {
+    "sites": 30000,
+    "k": 36,
+    "sources": 60,
+    "seed": 0,
+    "out": "out/sheet_metric_error.json"
+  },
+  "gate_max_abs_error": {
+    "lh": 0.0,
+    "rh": 0.0
+  },
+  "edges_sampled": 2160,
+  "cross_hemisphere_edges": 0,
+  "cross_hemisphere_fraction": 0.0,
+  "mean_euclidean_knn_mm": 4.30005407333374,
+  "geodesic_over_euclidean": {
+    "p50": 1.1339470590161285,
+    "p75": 1.2675131034027376,
+    "p90": 1.5055645515112437,
+    "p95": 1.798647652555116,
+    "p99": 3.7126898118390783
+  },
+  "mean": 1.2757567465720836,
+  "frac_over_2x": 0.033796296296296297,
+  "frac_over_4x": 0.008333333333333333
+}
