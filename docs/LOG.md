@@ -387,8 +387,20 @@ useful as a consequence. The at-initialisation ratio (base 5.45e-05, aniso
 1.12e-03, 20x — matching the 21x measured separately) predicted the right
 ORDERING for the wrong reason.
 
-Caveat held: aniso4d is at 1,250 of 6,000 steps. The matched-step comparison is
-complete and decisive; its final number is not in yet.
+**Updated at step 5,000.** The concentrated arm reaches **38.5x chance** and has
+plateaued there since ~4,250 (38.4 / 39.9 / 37.9 / 38.5). Against base's best of
+5.2x and final of 3.2x, that is a **7.4x improvement in the best case and 12x at
+the end**.
+
+The number that matters more: fitting a head on FROZEN features of the same
+sheet reaches 48.4x. End-to-end training through the unmodified sheet reached
+3.2x — a 15x shortfall against its own frozen-head ceiling, which is what made
+end-to-end look structurally broken. With the long-range budget concentrated,
+end-to-end reaches 38.5x, or **80% of the frozen-head ceiling**. Most of that gap
+was the sheet not conducting, and it closes when the sheet conducts.
+
+Caveat held: the run is at 5,000 of 6,000 steps and the arm is flat over its last
+four evaluations, so the final number is unlikely to move much, but it is not in.
 
 ## 2026-09-09 (morning) — the video model has no temporal prediction beyond appearance
 
