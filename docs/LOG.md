@@ -46,6 +46,112 @@ already written.
 
 ---
 
+## 2026-09-09 -- the TCT loop runs continuously; it is a relay with feedback, not a closed loop
+
+`docs/DYNAMICS.md` §2 makes thalamo-cortico-thalamic recurrence the central
+operator of the architecture, and §6 records that the running cortical model has
+no thalamus in it.  `ibm/processes/tct.py` closes that gap by implementing
+`burst_relay_rate` -- the one implementation `thalamocortical_coupling` declares
+with `form=Form.RATE`, a full parameter block and no code -- and attaching it
+inside `CorticalDynamics.step`, so the loop is present in every forward of every
+head in `pretrain_video_loop.py` rather than at one call site, and keeps its own
+state between forwards.
+
+it had to be the burst form.  the other two implementations are transfer
+functions: driven by nothing they output nothing, so a linear TCT loop bolted
+onto a cortex with no stimulus is silent and "continuously active" would be a
+claim with no mechanism.  the T-type calcium current is the mechanism -- it is
+de-inactivated by hyperpolarization, so a relay cell TRN has just inhibited
+rebounds with a burst, that burst re-excites TRN, and the pair is a relaxation
+oscillator that needs no input.
+
+**the measurement** (`scripts/measure_tct.py`, `out/tct_report.json`): 2048
+sites, 16 thalamic units, 4 seeds, 12 s of autonomous dynamics per seed at
+dt = 1e-4 s, **zero external input after t = 0**.  every row is the same
+integration of the same equations on the same sheet with one gain zeroed.
+
+| condition | cortical peak | ratio | mean-rate swing | thalamic peak |
+|---|---|---|---|---|
+| cortex_only (no thalamus) | -- | -- | **0.0000 Hz** | -- |
+| **full loop** | **6.92 ± 0.00 Hz** | 1.1e12 | **39.49 Hz** | 6.92 Hz |
+| sever thalamo-cortical | -- | -- | **0.0000 Hz** | 7.50 Hz |
+| sever cortico-thalamic | 7.50 ± 0.00 Hz | 9.4e11 | 38.06 Hz | 7.50 Hz |
+| sever TRN inhibition | -- | -- | **0.0000 Hz** | -- |
+| sever T-type calcium | -- | -- | **0.0000 Hz** | -- |
+
+the ablation delta is the whole result: **39.49 Hz of mean-rate swing to
+0.0000**.  the cortex on its own, with no drive, is not a weak oscillator -- it
+is a fixed point, flat to four decimals, so there is no baseline rhythm for the
+thalamus to have merely amplified.
+
+three checks the numbers had to survive first, because this log's ten withdrawn
+claims are all a quantity compared against the wrong thing:
+
+- **the estimator on cases whose answer is known.**  a 12 Hz sine returns 12.000
+  Hz; a 12 Hz sine buried in 3x noise returns 12.000 Hz; a constant returns zero
+  amplitude.  white noise of the same length returns a peak ratio of 9.9, and
+  **that is where the threshold comes from** -- a peak must beat 10x it.  the
+  criterion is a conjunction of ratio AND amplitude, which is what stops an
+  argmax on a flat spectrum from reading as a rhythm: `cortex_only` has ratio
+  `inf` (its median band power is exactly zero) and is correctly scored `no`
+  because its amplitude is zero.
+- **the ablation machinery.**  severing the ascending limb must leave the cortex
+  in bitwise the state a cortex with no thalamus would be in.  measured
+  `max |cortex_only - sever_tc| = 0.000e+00`.  it is asserted, and the script
+  aborts if it fails.
+- **the integrator.**  forward euler can put a frequency where the mechanism
+  does not.  halving the timestep moves the peak by **+0.000 Hz (0.0%)** and the
+  amplitude by 0.2%.
+
+**it is not a closed loop, and the bifurcation says so more clearly than the
+ablation does.**  cutting the cortico-thalamic limb leaves the rhythm standing.
+sweeping the T-current conductance through onset with the descending limb intact
+and cut (`out/tct_bifurcation.json`):
+
+| g_T | 3.75 | 4.00 | 4.25 | 4.50 | 4.75 | 5.00 |
+|---|---|---|---|---|---|---|
+| descending limb intact | -- | 6.50 | 6.83 | 6.83 | 7.00 | 7.00 |
+| descending limb **cut** | 6.67 | 7.17 | 7.33 | 7.50 | 7.50 | 7.67 |
+
+the oscillation onsets **earlier** without cortex (3.75 vs 4.00), so cortical
+feedback is mildly *suppressive* of onset rather than necessary for it.  the
+oscillator is intrathalamic.  what the descending limb does do is shift the
+frequency by **-0.50 to -0.67 Hz at every one of the five matched operating
+points** -- a consistent ~8% slowing, not a wobble.  so the honest statement is:
+signals go around the loop and the round trip changes the answer, but the
+rhythm does not require cortex.  calling this "the cortex oscillating because of
+a loop it is inside" would be exactly the overclaim this log exists to catch.
+
+**the declaration's own two predictions both hold.**  `burst_relay_rate` says
+`t_deinactivation_s` sets the recovery time and `trn_gain` "sets whether the
+oscillator runs at spindle or at delta frequency".  over a 6x4 grid, frequency
+falls monotonically with `t_deinactivation_s` at **every** TRN gain (rank
+r = -1.000, four for four) and rises with TRN gain at every `t_deinactivation_s`.
+nothing in that grid was selected against a target.
+
+**and the frequency is wrong for the target band.**  the reachable range over the
+declared priors is **3.00 - 8.00 Hz** -- delta and theta, touching the bottom of
+alpha once.  the spindle band (10-16 Hz) is not reached anywhere in the grid, and
+below `t_deinactivation_s` = 0.03 s the oscillation stops rather than speeding
+up further.  `sleep_dynamics` claims this process pins spindle frequency; on this
+implementation it cannot, and the reason is structural rather than a tuning miss
+-- TRN cells here have no T current of their own, and the mesoscale
+parameterization the declaration calls speculative is exactly the aggregation
+that would set the burst's timescale.
+
+**it replicates at a quarter of the sheet.**  512 sites, k=12, same thalamus,
+same seeds (`out/tct_report_512.json`): 6.89 Hz against 6.92, swing 39.18 against
+39.49, the identical ablation pattern and the identical verdict.  the rhythm is a
+property of the thalamic circuit and the loop's delays, not of the cortical
+sheet's size -- which is consistent with the descending limb not being what
+sustains it.
+
+so: the loop runs, continuously, with no stimulus; its ascending limb, its
+reticular inhibition and its T current are each individually necessary and each
+ablate the cortical rhythm to zero; its descending limb is not necessary and
+measurably retunes it; and it lands two bands below where the declaration says
+it should.
+
 ## 2026-09-09 — two attempted fixes, both measured, both insufficient
 
 after the correction below, two principled repairs were tried and neither works.
