@@ -22,3 +22,5 @@ ckpt/
 out/*.pt
 out/*.gif
 out/*.npy
+# rendered panels and animations under out/ subdirectories
+out/**/*.gif

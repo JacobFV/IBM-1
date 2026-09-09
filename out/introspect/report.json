@@ -1,0 +1,129 @@
+{
+  "ckpt": "ckpt/visual_contrastive_v2.pt",
+  "train_step": 5800,
+  "set": "THINGS-EEG2 designated test set (200 images, 80 repetitions each)",
+  "retrieval_bank": "the 200 MEASURED group-mean evoked EEG responses of the test images, embedded by eeg_head.  the query is the cortical state; the bank is never the images.",
+  "n": 200,
+  "n_concepts": 200,
+  "chance": 0.005,
+  "trained_readout_substep": 16,
+  "substeps_simulated": 32,
+  "substep_ms": 5.0,
+  "top1": 0.6349999904632568,
+  "top5": 0.8899999856948853,
+  "x_chance": 126.99999809265137,
+  "ablations": {
+    "full": {
+      "top1": 0.6349999904632568,
+      "top5": 0.8899999856948853,
+      "median_top1_sim": 0.7059410810470581,
+      "median_margin": 0.038133323192596436,
+      "delta_top1": 0.0,
+      "retained_frac": 1.0
+    },
+    "shuffle_sites": {
+      "top1": 0.004999999888241291,
+      "top5": 0.029999999329447746,
+      "median_top1_sim": 0.6860169768333435,
+      "median_margin": 0.03225672245025635,
+      "delta_top1": -0.6299999905750155,
+      "retained_frac": 0.00787401569028938
+    },
+    "gauss_state": {
+      "top1": 0.004999999888241291,
+      "top5": 0.02499999850988388,
+      "median_top1_sim": 0.6879058480262756,
+      "median_margin": 0.03381770849227905,
+      "delta_top1": -0.6299999905750155,
+      "retained_frac": 0.00787401569028938
+    },
+    "swap_state": {
+      "top1": 0.009999999776482582,
+      "top5": 0.014999999664723873,
+      "median_top1_sim": 0.7059410810470581,
+      "median_margin": 0.038133323192596436,
+      "delta_top1": -0.6249999906867743,
+      "retained_frac": 0.01574803138057876
+    },
+    "bypass": {
+      "top1": 0.25999999046325684,
+      "top5": 0.5299999713897705,
+      "median_top1_sim": 0.6492425203323364,
+      "median_margin": 0.03343909978866577,
+      "delta_top1": -0.375,
+      "retained_frac": 0.4094488100284488
+    },
+    "frozen_embed": {
+      "top1": 0.2800000011920929,
+      "top5": 0.699999988079071,
+      "median_top1_sim": 0.6925745010375977,
+      "median_margin": 0.0245400071144104,
+      "delta_top1": -0.35499998927116394,
+      "retained_frac": 0.44094489038940327
+    },
+    "no_assoc": {
+      "top1": 0.2800000011920929,
+      "top5": 0.699999988079071,
+      "median_top1_sim": 0.6923125982284546,
+      "median_margin": 0.024431943893432617,
+      "delta_top1": -0.35499998927116394,
+      "retained_frac": 0.44094489038940327
+    }
+  },
+  "settling_top1_by_substep": [
+    0.004999999888241291,
+    0.004999999888241291,
+    0.029999999329447746,
+    0.07000000029802322,
+    0.20999999344348907,
+    0.29999998211860657,
+    0.4350000023841858,
+    0.47999998927116394,
+    0.5450000166893005,
+    0.5799999833106995,
+    0.5899999737739563,
+    0.6049999594688416,
+    0.6200000047683716,
+    0.6200000047683716,
+    0.6299999952316284,
+    0.6349999904632568,
+    0.6349999904632568,
+    0.6449999809265137,
+    0.6499999761581421,
+    0.6499999761581421,
+    0.6499999761581421,
+    0.6499999761581421,
+    0.6499999761581421,
+    0.6499999761581421,
+    0.6499999761581421,
+    0.6499999761581421,
+    0.6499999761581421,
+    0.6499999761581421,
+    0.6499999761581421,
+    0.6499999761581421,
+    0.6499999761581421,
+    0.6449999809265137
+  ],
+  "median_top1_similarity": 0.7063119411468506,
+  "median_margin_over_rank2": 0.03828856348991394,
+  "median_margin_when_correct": 0.05450922250747681,
+  "median_margin_when_wrong": 0.025629103183746338,
+  "queries_rendered": [
+    0,
+    58,
+    1
+  ],
+  "dynamics_free_control_top1_same_set": 0.665,
+  "artifacts": {
+    "gif": "out/introspect/thought_sequence.gif",
+    "still": "out/introspect/readout_still.png",
+    "settling_curve": "out/introspect/settling_curve.png"
+  },
+  "caveats": [
+    "label accuracy == image-retrieval accuracy by construction: the designated test set holds one image per concept, so the concept ranking is a relabelling of the retrieval ranking and is not an independent result.",
+    "the softmax temperature 0.07 is the training INITIALIZATION; the learned value was not saved with the checkpoint, so the printed probabilities are a rescaling of cosine similarity, not calibrated.",
+    "every substep past the trained readout is off-distribution; only the accuracy at substep 16 is a claim.",
+    "the top-1 cosine similarity is NOT a usable confidence: it stays high under the scramble ablations while accuracy is at chance.  the margin over rank 2 is the quantity that separates them.",
+    "bypass is not expected to be chance -- the encoder alone is informative.  the full-minus-bypass gap says the dynamics are load-bearing INSIDE this model; it does not say a cortex beats an encoder without one.  a separately-trained dynamics-free control reaches 66.50% on this same set against 63.50% here (ledger row 12), a 0.89 sd difference -- the two are indistinguishable."
+  ]
+}

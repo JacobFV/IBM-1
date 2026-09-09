@@ -859,6 +859,69 @@ the control, so window length matters more than anything else measured here. the
 cortex term used 1 s. a longer window has not been tried and is the cheapest
 remaining lever.
 
+## 2026-09-09 — the cortical state, read out loud
+
+`scripts/introspect.py`.  the checkpoint already put a cortical state and a
+*measured* evoked response into one 128-d space; this asks the obvious question
+nobody had asked of it — **hold the state up against the bank of measured brain
+responses and see what comes back**.  what comes back is an image and, from
+`image_paths_test.npy`, a concept name.
+
+the query is the cortical state and the bank is the **measured EEG**, never the
+images.  a bank of image embeddings would contain the query and the "decode"
+would be an identity lookup returning the input; that is the failure mode this
+whole tool is one long argument against, and the four controls exist to prove it
+did not happen.  designated test set, 200 images, chance 0.50%:
+
+| arm | top-1 | top-5 | median cos | median margin |
+|---|---|---|---|---|
+| full | **63.50%** (127x) | 89.00% | +0.7059 | +0.0381 |
+| shuffle_sites | 0.50% (1.0x) | 3.00% | +0.6860 | +0.0323 |
+| gauss_state | 0.50% (1.0x) | 2.50% | +0.6879 | +0.0338 |
+| swap_state | 1.00% (2.0x) | 1.50% | +0.7059 | +0.0381 |
+| bypass | 26.00% | 53.00% | +0.6492 | +0.0334 |
+| frozen_embed | 28.00% | 70.00% | +0.6926 | +0.0245 |
+| no_assoc | 28.00% | 70.00% | +0.6923 | +0.0244 |
+
+permuting the 4096 readout sites within a sample — the same values, the wrong
+topography — takes 63.50% to **0.50%**, exactly chance.  gaussian noise of matched
+mean and sd does the same.  decoding image *i*'s label from image *i+1*'s state
+gives 1.00%, which is the direct test that the input image is not leaking: the
+panel still shows image *i*.  the decode is of the state.
+
+**and the confidence is not a confidence.**  the top-1 cosine falls from 0.7059 to
+0.6860 under a scramble that costs 63 points of accuracy, and the margin from
+0.0381 to 0.0323.  a scrambled state produces a decode that *looks* as confident
+as a real one — see the ablation clip at the end of the GIF, which reports cos
++0.70 while answering "sled" to an aircraft carrier.  the margin does separate
+correct from incorrect decodes within the full arm (+0.0545 against +0.0256), but
+it does not separate a live cortex from a destroyed one.  anything built on this
+readout must not treat the similarity as evidence.  `swap_state` makes the reason
+plain: it is the same multiset of states, so its confidence distribution is
+*identical* to full's to four decimals while its accuracy is at chance.
+
+the settling is worth looking at.  decoding at every integrator substep, accuracy
+is at chance for 10 ms, crosses 50% at 45 ms, and plateaus at 65% by 95 ms.  the
+trained readout sits at 80 ms; everything past it is off-distribution and the
+plateau is a picture, not a claim — but the state does reach its answer and stay
+there rather than drifting, which was not guaranteed.
+
+two things this does NOT show, stated before anyone reads them into it:
+
+- **the labels are not a second decode.**  they are the concept names of the
+  retrieved bank entries.  the designated set is one image per concept, so label
+  accuracy *is* retrieval accuracy, to the digit.  the concept pooling is written
+  max-over-entries so the code stays correct on a bank with repeats, but on this
+  bank it is the identity.
+- **the bypass gap is not an argument for having a cortex.**  it says the
+  dynamics are load-bearing inside a model trained with them.  ledger row 12
+  still stands: a separately-trained dynamics-free control reaches 66.50% on this
+  same set, 0.89 sd above, and the two are indistinguishable.
+
+artefacts: `out/introspect/thought_sequence.gif` (128 frames — three queries at
+every substep plus the scrambled-state ablation), `readout_still.png`,
+`settling_curve.png`, `report.json`.
+
 ## 2026-09-08 — the dynamics contribute a constant amount; the bypass is learned
 
 evaluating four checkpoints on the designated test set — two scales and three
