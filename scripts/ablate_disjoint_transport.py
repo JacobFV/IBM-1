@@ -142,7 +142,15 @@ def cortical_features(model, dyn, imgs, drive_idx, read_idx, *, mode, batch,
         if mode == "relabel":
             r = r[:, perm.to(r.device)]
         out.append(r.cpu())
-    return torch.cat(out)
+    # a fingerprint of the treatment actually applied, returned so the caller
+    # can ASSERT that the training pass and the held-out pass agree instead of
+    # printing two lines for a human to compare.  the bug this replaces got past
+    # two readers for an hour; the whole class is "two things that should be
+    # identical are not, and nobody looked", and a print is only as good as its
+    # reader.
+    fp = ("none" if perm is None else
+          f"{int(perm[:64].sum())}:{perm[:8].tolist()}")
+    return torch.cat(out), f"{mode}|{fp}"
 
 
 class Retrieval(nn.Module):
@@ -227,7 +235,12 @@ def main() -> None:
         default="base:2.0,1.0,0;aniso:2.0,8.0,4,1.0,120",
         help="name:tanh_slope,long_gain,long_topm[,local_gain[,long_min_dist]];"
              " ';'-separated")
-    ap.add_argument("--modes", default="intact,severed,permuted")
+    # `relabel` is in the DEFAULT set on purpose.  it is a pure relabelling of
+    # the head's input coordinates and must always score what `intact` scores;
+    # reporting the two as a matched pair in every table makes the bookkeeping
+    # self-checking, and a divergence between them means the pipeline has
+    # drifted and no other arm in the table is interpretable.
+    ap.add_argument("--modes", default="intact,relabel,severed,permuted")
     ap.add_argument("--noise", default="0,1e-3,1e-2,3e-2,1e-1,3e-1,1,3")
     ap.add_argument("--n-train", type=int, default=8000)
     ap.add_argument("--pools", type=int, default=8)
@@ -319,11 +332,19 @@ def main() -> None:
                 perm = torch.randperm(len(read_idx), generator=gen)
             kw = dict(mode=mode, batch=a.batch, n_steps=a.n_steps,
                       substeps=a.substeps, dt=a.dt, device=dev, perm=perm)
-            f_tr = cortical_features(model, dyn, x_tr, drive_idx, read_idx, **kw)
-            f_te = cortical_features(model, dyn, x_te, drive_idx, read_idx, **kw)
+            f_tr, fp_tr = cortical_features(model, dyn, x_tr, drive_idx,
+                                            read_idx, **kw)
+            f_te, fp_te = cortical_features(model, dyn, x_te, drive_idx,
+                                            read_idx, **kw)
+            if fp_tr != fp_te:
+                raise SystemExit(
+                    f"{name}/{mode}: the treatment differed between the training "
+                    f"pass ({fp_tr}) and the held-out pass ({fp_te}). the head "
+                    f"would be fitted on one map and evaluated on another, which "
+                    f"gives exact chance while preserving every other statistic. "
+                    f"refusing to report a number from it.")
             if perm is not None:
-                print(f"  permutation, same tensor for train and held-out: "
-                      f"{perm[:8].tolist()} (id {id(perm)})")
+                print(f"  treatment fingerprint, train == held-out: {fp_tr}")
             # the raw scale of the arriving perturbation, so the retrieval
             # numbers below can be read against what is physically there.
             spread = float(f_tr.std(0).mean())
