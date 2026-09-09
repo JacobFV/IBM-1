@@ -1,0 +1,40 @@
+train 28 films, 3,391,879 frames (37.69 h)
+    BigBoyRidesAgain_frames.npy
+    Detour_66_frames.npy
+    EveningsForSale1932Restored_frames.npy
+    IdentityUnknown_frames.npy
+    NightTide16x9CorrectedAudio_frames.npy
+    OneBodyTooManyJackHaleyBelaLugosiAppleTV2ndGen..mp4_frames.npy
+    ParlorBedroomAndBathImageQualityUpgrade_frames.npy
+    PecksBadBoy_558_frames.npy
+    RomanceOfTheRedwoods_frames.npy
+    RomanticComedyNightAtTheBijoudoubleFeature_frames.npy
+    rog561b_netzero_116_frames.npy
+    rog561b_netzero_310_frames.npy
+    rog561b_netzero_317_frames.npy
+    rog56_mail_219_frames.npy
+    rog56_mail_3008_frames.npy
+    rog56_mail_313_frames.npy
+    rog56_mail_614_frames.npy
+    rog56_mail_922_frames.npy
+    rog56_mail_927_frames.npy
+    romance_on_the_run_frames.npy
+    rough_riding_ranger_frames.npy
+    sabaka_ipod_frames.npy
+    sangdil-sanam-1994-dv-drip.-x-264..-ac-3.-esubs.-5.1-xmr-by.-juleyano_frames.npy
+    song_for_miss_julie_frames.npy
+    suhaag-1994-dv-drip-xvi-d-mp-3-esubs-tmb_frames.npy
+    the-killer-meteors-1976-jackie-chan-jimmy-wang-yu_frames.npy
+    the-lost-zeppelin-1929-fourtl_frames.npy
+    the-river_1929_frames.npy
+HELD-OUT 2 films, 225,795 frames (2.51 h)
+    the-viking_1928_frames.npy
+    the_shadow_strikes_frames.npy
+
+held-out baselines: zero 0.42654  PERSISTENCE 0.03999  (the one to beat)
+
+params 10,386,414 (3,840,000 association) | target=residual
+/home/brandonin/Documents/IBM-1/scripts/train_video_multifilm.py:195: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"{step:6d}  train {float(loss):.5f}  held {held:.5f}  "
+     0  train 0.03499  held 0.05740  persist 0.04106  SKILL -0.3978  res 0.629 cos -0.002  r_eff  1.60      2s
