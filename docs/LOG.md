@@ -43,6 +43,40 @@ already written.
 
 ---
 
+## 2026-09-08 (late) — 16 objectives, 10,000 steps, and the kernel is not worse
+
+the curriculum run has gone far enough to answer the question it was built to
+ask.  step 10,000, all 16 materializations alive, none collapsed:
+
+| term | now |
+|---|---|
+| visual_eeg | 28.25% (56.5x) |
+| optic_nerve | 10.56% (21.1x) |
+| audio_meg | 5.25% (ceiling 7.12%) |
+| cochlear_nerve | 2.00% (4.0x) |
+| ten per-subject, mean | 12.64% |
+| video / audio_visual | -0.69 / -2.28 vs persistence |
+
+transplanted into the trained EEG model on the designated test set, the
+consolidated kernel scores **60.00% (90.1% recovered)** against the fused
+predecessor's 59.50% (88.7%).
+
+**that difference is within noise on a 200-image set and is not an improvement.**
+what it does establish is the thing that was actually at risk: 16 objectives
+pulling on one 3.84M parameter set, consolidated every 500 steps, did not
+DEGRADE it.  a kernel serving sixteen materializations could easily have ended up
+worse than any single-task kernel, and it did not.
+
+published as `implicit/ibm1.implicit.s30k.e128.curriculum16.step010000` with that
+caveat in the sidecar rather than in a footnote.
+
+one bug found by running the evaluation: `transfer_sweep.py` read only
+`{"model": sd}` checkpoints and skipped anything else on a KeyError -- silently,
+because a skip is not an error.  the curriculum checkpoints store `dyn.embed` at
+the top level, so **the run being evaluated was absent from its own evaluation**
+and the sweep printed a clean table without it.  three checkpoint shapes are
+handled now.
+
 ## 2026-09-08 (night) — the port placement carries the result, and what that does and does not mean
 
 `optic_nerve` trains.  solo on the remote it reaches **18.12% ± 1.95 at step

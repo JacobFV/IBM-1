@@ -86,7 +86,15 @@ def main() -> None:
     res = {"ceiling": top, "floor": base, "runs": {}}
     for f in sorted(glob.glob(os.environ.get("SWEEP_GLOB","ckpt/video*.pt"))):
         try:
-            w = torch.load(f, map_location="cpu", weights_only=False)["model"]["dyn.embed"]
+            _d = torch.load(f, map_location="cpu", weights_only=False)
+            # three checkpoint shapes exist now: a trainer's {"model": sd}, the
+            # AV loop's {"av": sd}, and an implicit/curriculum kernel that stores
+            # "dyn.embed" at the top level with no model dict.  the sweep read
+            # only the first and skipped the curriculum checkpoints on a
+            # KeyError -- which is a silent skip, not an error, so the run this
+            # is meant to evaluate was quietly absent from its own evaluation.
+            w = (_d["dyn.embed"] if "dyn.embed" in _d
+                 else (_d.get("model") or _d.get("av"))["dyn.embed"])
         except Exception as e:
             print(f"{os.path.basename(f):26s}  skip ({type(e).__name__})"); continue
         if w.shape[1] != own.shape[1]:
