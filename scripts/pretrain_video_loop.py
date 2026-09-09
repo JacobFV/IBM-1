@@ -147,7 +147,7 @@ class CorticalDynamics(nn.Module):
                  length_scale_mm: float = 40.0, long_range: float = 0.25,
                  graph_seed: int = 0, tanh_slope: float = 2.0,
                  long_gain: float = 1.0, long_topm: int = 0,
-                 local_gain: float = 1.0):
+                 local_gain: float = 1.0, long_min_dist: float = 0.0):
         super().__init__()
         self.n, self.k = n_sites, k
         pos = cortical_sites(n_sites, device)
@@ -263,6 +263,30 @@ class CorticalDynamics(nn.Module):
         self.long_gain = float(long_gain)
         self.long_topm = int(long_topm)
         self.local_gain = float(local_gain)
+        #   long_min_dist  when > 0, long_topm selects GREEDILY FOR SPATIAL
+        #               DIVERSITY instead of by magnitude alone: keep the
+        #               strongest surviving long-range edge, then the strongest
+        #               remaining edge whose partner is at least this far (mm)
+        #               from every partner already kept, and repeat.
+        #
+        #               the point is that plain top-m can keep four edges that
+        #               all land in the same patch, and with the |sim|
+        #               distribution as flat as it is measured to be, which four
+        #               it keeps is close to arbitrary.  spreading the budget is
+        #               also the better anatomy: a column's association fibres
+        #               project to several distinct areas, not several times into
+        #               one.
+        #
+        #               the rule is deliberately TASK-BLIND.  it never mentions
+        #               occipital, temporal, postcentral or precentral -- keying
+        #               the selection on the regions the convergence metric
+        #               drives and reads would tune the connectivity using the
+        #               evaluation's own definition, and the capacity table would
+        #               then be reporting how well the rule had been told the
+        #               answer.  it says only "spread your long-range budget",
+        #               so any gain in multimodal convergence is a consequence
+        #               rather than a restatement.
+        self.long_min_dist = float(long_min_dist)
         #: the thalamus, when one is attached.  see `attach_thalamus`.
         self.tct = None
 
@@ -298,8 +322,11 @@ class CorticalDynamics(nn.Module):
             lw = w[:, n_loc:]
             if self.long_topm and self.long_topm < self.n_far:
                 mass = lw.abs().sum(1, keepdim=True)
-                keep = torch.zeros_like(lw, dtype=torch.bool).scatter_(
-                    1, lw.abs().topk(self.long_topm, dim=1).indices, True)
+                if self.long_min_dist > 0:
+                    keep = self._diverse_keep(lw)
+                else:
+                    keep = torch.zeros_like(lw, dtype=torch.bool).scatter_(
+                        1, lw.abs().topk(self.long_topm, dim=1).indices, True)
                 lw = lw * keep
                 # renormalise to the mass that was there before the pruning, so
                 # this is a redistribution and NOT a gain change.  without this
@@ -311,6 +338,32 @@ class CorticalDynamics(nn.Module):
             w = torch.cat([w[:, :n_loc] * self.local_gain,
                            lw * self.long_gain], 1)
         return w
+
+    def _diverse_keep(self, lw):
+        """greedy spatially-diverse selection of `long_topm` long-range edges.
+
+        returns a (N, n_far) bool mask.  a row may keep FEWER than m edges when
+        the separation constraint cannot be satisfied, which is intended: such a
+        row spends its long-range budget on fewer, better-separated partners
+        rather than on near-duplicates.
+        """
+        n_loc = self.k - self.n_far
+        part = self.idx[:, n_loc:]                                # (N, n_far)
+        p = self.pos[part]                                        # (N, n_far, 3)
+        score = lw.abs()
+        avail = torch.ones_like(score, dtype=torch.bool)
+        keep = torch.zeros_like(score, dtype=torch.bool)
+        rows = torch.arange(score.shape[0], device=score.device)
+        for _ in range(self.long_topm):
+            s = score.masked_fill(~avail, -1.0)
+            best = s.argmax(1)
+            ok = s[rows, best] >= 0
+            keep[rows, best] |= ok
+            avail[rows, best] = False
+            d = (p - p[rows, best].unsqueeze(1)).norm(dim=-1)      # (N, n_far)
+            # rows that could not pick anything this round are left untouched
+            avail &= (d >= self.long_min_dist) | ~ok.unsqueeze(1)
+        return keep
 
     def association(self, r, w):
         """message passing on the cached kernel.  r: (B, N), w: (N, k)."""
@@ -916,8 +969,7 @@ class InteroceptiveLoop(nn.Module):
         if kernel == "severed":
             w = torch.zeros_like(w)
         elif kernel == "permuted":
-            perm = torch.randperm(w.shape[0], device=w.device, generator=generator)
-            w = w[perm]
+            w = w[self.perm.to(w.device)]
         elif kernel != "trained":
             raise ValueError(f"unknown kernel arm {kernel!r}")
 

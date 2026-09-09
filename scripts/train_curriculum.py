@@ -47,6 +47,8 @@ sp = importlib.util.spec_from_file_location("ptrain", os.path.join(HERE, "pretra
 P = importlib.util.module_from_spec(sp); sp.loader.exec_module(P)
 fu = importlib.util.spec_from_file_location("fuse", os.path.join(HERE, "fuse_implicit.py"))
 FU = importlib.util.module_from_spec(fu); fu.loader.exec_module(FU)
+ab = importlib.util.spec_from_file_location("ablintero", os.path.join(HERE, "ablate_interoception.py"))
+AB = importlib.util.module_from_spec(ab); ab.loader.exec_module(AB)
 
 THINGS = "data/derived/things-paired"
 LIBRI = "data/derived/libribrain-paired"
@@ -481,6 +483,118 @@ class BodyStance:
                           f"{self.CEILING:+.4f})"}
 
 
+class Interoception:
+    """visceral afference -> vagus and splanchnics -> cortex -> a bodily readout.
+
+    The third body term and the first that is not somatic.  `body_stance` is
+    (muscle state, motor command); this is (visceral afferent rates, the
+    physiological scalars they are evidence about), recorded once from IHM-1's
+    native BioGears trajectories under five protocols -- rest, hydration, meal,
+    exercise, meal+exercise -- so a curriculum step stays a training step instead
+    of becoming six hours of physiology.
+
+    **What it adds that no other term here has: a delay that matters.**  Fifteen
+    channels enter in seven (trunk, fibre class) conduction groups whose delays
+    span 9.2 ms to 507.8 ms over IHM's measured routes.  The vagal A-beta report
+    of gastric volume and the vagal C report of the same meal's nutrient content
+    are half a second apart on one nerve.  Every other loop in this file has a
+    delay spread under 10 ms.
+
+    **The targets are named projections of measured physiological state and not
+    claims about experience.**  `endurance_h` is hours of carbohydrate substrate
+    at the current metabolic rate; `discomfort` is a fibre-class-weighted sum of
+    the afferent rates, normalised by its own ceiling; `sensation_0..2` is a
+    linear projection of the afferent vector whose basis was fitted on the train
+    split alone.  The names say which physiological question each answers.  They
+    are not evidence that anything is felt, and the corpus meta says so in the
+    same words.
+
+    **The ceiling is measured, not assumed.**  A ridge on the same fifteen
+    channels is fitted at construction and reported alongside every evaluation,
+    for the reason `body_stance` reports its own: a term that scores below what a
+    matrix on its input achieves has not learned the task, whatever the loss did.
+    Two of the three target families are deterministic functions of the input at
+    the SAME instant, so the ridge is strong; the horizon is what makes the
+    question non-trivial, and persistence is reported for every target because at
+    a 60 s horizon on physiology it is the baseline that bites.
+
+    **The batch is capped below the curriculum's.**  This head simulates 590 ms
+    of cortical time to let the slowest fibre class arrive -- 236 integrator
+    substeps against the cranial loop's 64 -- so it costs about six times a
+    cranial step at the same batch.  Capping the batch keeps a curriculum step
+    from being dominated by the one term with the slowest nerve in it.
+    """
+    name = "interoceptive_nerve"
+    CORPUS = "data/derived/intero-corpus"
+    HORIZON_S = 60.0
+    MAX_BATCH = 16
+    EVAL_PAIRS = 256
+
+    def __init__(self, dyn, dev, a):
+        self.dev, self.a = dev, a
+        self.c = AB.InteroCorpus(self.CORPUS, self.HORIZON_S)
+        # the known-answer check, at construction rather than at report time: a
+        # baseline predictor must score exactly zero skill against itself.
+        self.gates = AB.sanity_gates(self.c, self.c.test)
+        self.base = AB.baselines(self.c, self.c.test)
+        self.CEILING = self._agg(AB.ridge_control(self.c))
+        self.model = P.InteroceptiveLoop(dyn, self.c.channels,
+                                         n_out=self.c.n_out).to(dev)
+        self.X = torch.from_numpy(self.c.X).to(dev)
+        self.Y = torch.from_numpy(self.c.Y).to(dev)
+        self.tr = torch.from_numpy(self.c.train).to(dev)
+        # a contiguous, evenly spaced subset of the held-out pairs.  the full
+        # test split costs one 590 ms cortical simulation per pair and the
+        # evaluation would then dominate the run; spacing rather than sampling
+        # keeps the coverage of every sequence.
+        te = self.c.test
+        step = max(1, len(te) // self.EVAL_PAIRS)
+        self.te = torch.from_numpy(te[::step]).to(dev)
+        self.te_idx = te[::step]
+
+    def _agg(self, pred_raw):
+        """skill against the training mean, in standardised target coordinates.
+
+        Standardised because the targets differ in raw variance by four orders
+        of magnitude -- endurance in hours against discomfort as a fraction --
+        and a raw-units aggregate would report endurance and call it the model.
+        """
+        z = (pred_raw - self.c.y_mu) / self.c.y_sd
+        zt = (self.c.Y_raw[self.te_idx] - self.c.y_mu) / self.c.y_sd
+        return float(1.0 - ((z - zt) ** 2).mean() / (zt ** 2).mean())
+
+    def params(self):
+        return [p for n, p in self.model.named_parameters()
+                if not n.startswith("dyn.")]
+
+    def loss(self, rng):
+        b = min(self.a.batch, self.MAX_BATCH)
+        i = self.tr[torch.from_numpy(
+            rng.integers(0, len(self.c.train), b)).to(self.dev)]
+        pred, s = self.model(self.X[i])
+        return F.mse_loss(pred, self.Y[i]) + 1e-1 * P.viability_penalty(s[0])
+
+    @torch.no_grad()
+    def evaluate(self, step):
+        out = []
+        for i in range(0, len(self.te), 64):
+            p, _ = self.model(self.X[self.te[i:i + 64]], checkpoint_every=0)
+            out.append(p.cpu().numpy())
+        pred = np.concatenate(out) * self.c.y_sd + self.c.y_mu
+        truth = self.c.Y_raw[self.te_idx]
+        mse = ((pred - truth) ** 2).mean(0)
+        base = AB.baselines(self.c, self.te_idx)
+        sk = AB.skill(mse, base)
+        agg = self._agg(pred)
+        return {"agg_skill_vs_mean": agg, "ceiling_ridge": self.CEILING,
+                "mse_raw": mse.tolist(), "targets": self.c.target_names,
+                "sanity_gates": self.gates, **sk,
+                "report": f"agg skill vs mean {agg:+.4f} (ridge ceiling "
+                          f"{self.CEILING:+.4f}); vs persistence " +
+                          "/".join(f"{v:+.3f}"
+                                   for v in sk["skill_vs_persistence"])}
+
+
 OBJECTIVES = {"visual_eeg": VisualEEG, "audio_meg": AudioMEG, "video": VideoNext,
               "audio_visual": AudioVisual,
               # the nerve-routed pair: same data and target as visual_eeg and
@@ -489,7 +603,17 @@ OBJECTIVES = {"visual_eeg": VisualEEG, "audio_meg": AudioMEG, "video": VideoNext
               # beside them, the difference is what the anatomy is worth.
               "optic_nerve": OpticNerve, "cochlear_nerve": CochlearNerve,
               # the body: one more corpus in the soup, sharing the kernel
-              "body_stance": BodyStance}
+              "body_stance": BodyStance,
+              # the OTHER half of the body.  `body_stance` is somatic -- muscle
+              # state in, motor command out.  this is visceral: gut, metabolic
+              # and cardiorespiratory afference in over the vagus and the
+              # splanchnics, a bodily readout out.  it goes in the `nerve` group
+              # beside the optic and cochlear terms because it is the same kind
+              # of claim -- drive entering through a DECLARED pathway with a
+              # measured length and a fibre-class-resolved delay, rather than
+              # through an index slice -- and it is the one where the delay is
+              # large enough to be the point.
+              "interoceptive_nerve": Interoception}
 # ten per-subject visual terms, built from the array the pairing builder keeps
 # for exactly this purpose.  they share the stimulus, so what the kernel learns
 # across them is common structure and what each head learns is that subject.

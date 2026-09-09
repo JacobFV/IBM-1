@@ -43,6 +43,9 @@ def main() -> None:
     ap.add_argument("--head", default="visual_eeg")
     ap.add_argument("--read-region", default="precentral")
     ap.add_argument("--topms", default="0,1,2,3,4,6")
+    ap.add_argument("--min-dist", type=float, default=0.0,
+                    help="mm; > 0 switches top-m to the greedy spatially-"
+                         "diverse rule.  task-blind: it never names a region.")
     ap.add_argument("--out", default="out/convergence_capacity.json")
     a = ap.parse_args()
 
@@ -58,13 +61,16 @@ def main() -> None:
         member[m] = v
 
     print(f"{a.ckpt}: {dyn.n} sites, {dyn.n_far} long-range edges per site, "
-          f"readout {a.read_region} ({len(read)} sites)")
+          f"readout {a.read_region} ({len(read)} sites); "
+          f"min_dist={a.min_dist} mm")
     print(f"\n{'topm':>5s} {'live long edges':>16s} "
           f"{'>=1 modality':>13s} {'>=2':>8s} {'all 3':>8s} "
           f"{'mean modalities':>16s}")
-    res = {"ckpt": a.ckpt, "read": a.read_region, "n_read": len(read), "rows": {}}
+    res = {"ckpt": a.ckpt, "read": a.read_region, "n_read": len(read),
+           "min_dist": a.min_dist, "rows": {}}
     for tm in [int(x) for x in a.topms.split(",")]:
         dyn.long_topm = tm
+        dyn.long_min_dist = a.min_dist
         w = dyn.edge_weights().detach()[read, n_loc:]          # (R, n_far)
         live = w != 0
         src = dyn.idx[read, n_loc:]                            # (R, n_far)
