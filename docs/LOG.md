@@ -114,13 +114,43 @@ Whatever crosses the sheet is 13-dimensional, in every arm that conducts at all.
 That is a tighter constraint on the somato-motor design than any of the amplitude
 numbers.
 
-One caveat: this is a head fitted on frozen features, not end-to-end training, so
-it does not explain why end-to-end training failed. The hypothesis worth testing,
-UNTESTED: gradients through a 1e-3 attenuation are as small as the signal, and
-the earlier failures were an optimisation problem downstream of the transport
-problem. It predicts something checkable -- encoder gradient norms should scale
-with transport, so the concentrated arm should train end-to-end where the
-unmodified one does not.
+One caveat: this is a head fitted on frozen features, not end-to-end training.
+The hypothesis was that gradients through a 1e-3 attenuation are as small as the
+signal, so the earlier failures were an optimisation problem downstream of the
+transport problem.
+
+**NOW TESTED, and it holds.** `scripts/measure_encoder_gradients.py`, identical
+batch and loss with the initialisation reseeded immediately before each arm:
+
+  config    |grad| at encoder   forward sd   at-port grad   severed grad
+  base           1.8831e-03     1.8384e-03     3.292e-01      0.000e+00
+  aniso4d        4.0354e-02     5.5900e-02     3.033e-01      0.000e+00
+
+  gradient ratio 21.43x     forward ratio 30.41x
+
+The gradient reaching the encoder scales with transport -- 21x against 30x, the
+same order -- so the backward pass is attenuated by about the same factor as the
+forward pass. Read the base row across rather than down: the encoder sees
+3.292e-01 of gradient when the readout sits AT the driven port and 1.883e-03
+when it sits in a disjoint region. **175x of the gradient is lost crossing the
+sheet.** The concentrated kernel loses 7.5x.
+
+That is a mechanism for the whole history of end-to-end motor failures here.
+Training was not starved of data or wrongly objectived; it was starved of
+gradient, by the same attenuation the forward signal suffers. A refit head
+succeeds because it never sends gradient back across the sheet at all.
+
+Three gates. Severed gives EXACTLY 0.000e+00 encoder gradient in both arms, so
+nothing reaches a disjoint readout except through the sheet. A readout taken AT
+the driven region gives a large gradient in both arms, which separates "the
+sheet does not transmit gradient" from "the loss is flat" -- identical encoder
+norms, completely different meanings; the loss is not flat. And the forward and
+gradient ratios had to match, which would have falsified simple attenuation had
+the gradient outrun transport.
+
+STILL UNTESTED, and the distinction matters: this says the gradient is THERE to
+train on, 21x more of it. It does not show that the concentrated kernel actually
+trains end to end. Only a run does that, and no run has been done.
 
 ### 2. The anisotropy fix buys noise tolerance and nothing else
 
