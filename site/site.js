@@ -285,3 +285,51 @@
     l_surrogate: { model: 'macro_surrogate', az: -0.6, el: 0.3, dist: 470, aspect: 0.8 },
   });
 })();
+
+/* the reel: click a tile, it fills the screen with its caption and description */
+(function () {
+  var lb = document.getElementById('lightbox');
+  if (!lb) return;
+  var stage = lb.querySelector('.lb-stage'),
+      h3 = lb.querySelector('h3'),
+      cap = lb.querySelector('.lb-cap'),
+      desc = lb.querySelector('.lb-desc');
+
+  function open(t) {
+    var kind = t.dataset.kind, src = t.dataset.src;
+    // a <video> keeps playing behind a hidden lightbox otherwise, so it is
+    // rebuilt each time rather than reused
+    stage.innerHTML = '';
+    var el;
+    if (kind === 'video') {
+      el = document.createElement('video');
+      el.src = src; el.autoplay = true; el.loop = true;
+      el.muted = true; el.playsInline = true; el.controls = true;
+    } else {
+      el = document.createElement('img'); el.src = src; el.alt = t.dataset.title;
+    }
+    stage.appendChild(el);
+    h3.textContent = t.dataset.title;
+    cap.textContent = t.dataset.cap;
+    desc.textContent = t.dataset.desc;
+    lb.hidden = false;
+    document.body.style.overflow = 'hidden';
+    lb.querySelector('.lb-close').focus();
+  }
+  function close() {
+    lb.hidden = true; stage.innerHTML = '';
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('.reel .tile').forEach(function (t) {
+    t.addEventListener('click', function () { open(t); });
+    t.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(t); }
+    });
+  });
+  lb.addEventListener('click', function (e) {
+    if (e.target === lb || e.target.classList.contains('lb-close')) close();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !lb.hidden) close();
+  });
+})();

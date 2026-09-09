@@ -39,29 +39,65 @@
 </section>
 
 <div class="reel" aria-label="the body, moving">
-  <figure class="tile t0">
+  <figure class="tile t0" tabindex="0" role="button"
+    data-src="media/anatomical_crawl.mp4" data-kind="video" data-title="the real anatomy crawling" data-cap="16.0 s · 0.920 m · worst joint excursion 11.5°"
+    data-desc="3,995 of 4,000 anatomical entities bound to the driven skeleton at 99.88%, posed from a controller searched on the 22-segment scaffold. Peak muscle fibre velocity 9.69 of 10 — zero time outside the muscle model's domain. Worst excursion past a declared joint range is 11.5°, against 145° for an earlier attempt that was withdrawn for folding the ankles back on themselves.">
     <video src="media/anatomical_crawl.mp4" autoplay loop muted playsinline preload="metadata"></video>
     <figcaption><b>the real anatomy crawling</b><span>16.0 s · 0.920 m · worst joint excursion 11.5°</span></figcaption>
   </figure>
-  <figure class="tile t1">
+  <figure class="tile t1" tabindex="0" role="button"
+    data-src="media/anatomical_gait_muscle.mp4" data-kind="video" data-title="1,047 bone and muscle surfaces" data-cap="a full measured gait cycle"
+    data-desc="Real Rajagopal joint coordinates from a walking subject, imposed on the anatomy. The anatomy travels up to 2,234 mm; the body's own canonical run moves 6.35 mm across 30 s.">
     <video src="media/anatomical_gait_muscle.mp4" autoplay loop muted playsinline preload="metadata"></video>
     <figcaption><b>1,047 bone and muscle surfaces</b><span>a full measured gait cycle</span></figcaption>
   </figure>
-  <figure class="tile t2">
+  <figure class="tile t2" tabindex="0" role="button"
+    data-src="media/tissue_prone_drop_three_arms.mp4" data-kind="video" data-title="117 tissue force elements" data-cap="three arms — the middle is a negative result"
+    data-desc="105 ligaments and 12 joint capsules as Blankevoort elements, attachments derived from the per-vertex vote the segment binding is built from. The middle arm is all 105 and it makes the plant WORSE than bare — the derived ACL reads 77% strain at 90° of knee flexion against a 17.1% ultimate, because a straight line between attachment centroids is not a cruciate's path.">
     <video src="media/tissue_prone_drop_three_arms.mp4" autoplay loop muted playsinline preload="metadata"></video>
-    <figcaption><b>117 tissue force elements</b><span>three arms — the middle one a negative result</span></figcaption>
+    <figcaption><b>117 tissue force elements</b><span>three arms — the middle is a negative result</span></figcaption>
   </figure>
-  <figure class="tile t3">
+  <figure class="tile t3" tabindex="0" role="button"
+    data-src="media/anatomical_cortex_in_loop.mp4" data-kind="video" data-title="cortex in the loop" data-cap="0.17 mm COM drift under a 5 N push"
+    data-desc="The trained 1024-site cortical kernel holding the body upright. The control matters: a kernel with its site rows permuted holds it just as well, so this shows the cortex is the motor owner and says nothing about whether its learned content contributes.">
     <video src="media/anatomical_cortex_in_loop.mp4" autoplay loop muted playsinline preload="metadata"></video>
     <figcaption><b>cortex in the loop</b><span>0.17 mm COM drift under a 5 N push</span></figcaption>
   </figure>
-  <figure class="tile t4">
+  <figure class="tile t4" tabindex="0" role="button"
+    data-src="media/video_prediction.mp4" data-kind="video" data-title="video prediction, and it does not work" data-cap="−0.25 skill against persistence"
+    data-desc="Truth left, prediction right, at t+8. It looks plausible because frame t+8 resembles frame t. Measured against copying the previous frame it is worse, and at a negative window where appearance is useless the model sits at exactly chance loss for 3,000 steps. The video term was matching appearance, not predicting.">
+    <video src="media/video_prediction.mp4" autoplay loop muted playsinline preload="metadata"></video>
+    <figcaption><b>video prediction, and it does not work</b><span>−0.25 skill against persistence</span></figcaption>
+  </figure>
+  <figure class="tile t5" tabindex="0" role="button"
+    data-src="media/cortex_severed.mp4" data-kind="video" data-title="cortex in the loop, beside cortex severed" data-cap="upright at 1.019 m · fallen at 0.590 m"
+    data-desc="Severed, the body is on the floor with 499 mm of COM drift and the recording ends at 2.90 s. Severing removes the dynamics, not the learning.">
+    <video src="media/cortex_severed.mp4" autoplay loop muted playsinline preload="metadata"></video>
+    <figcaption><b>cortex in the loop, beside cortex severed</b><span>upright at 1.019 m · fallen at 0.590 m</span></figcaption>
+  </figure>
+  <figure class="tile t0" tabindex="0" role="button"
+    data-src="media/anatomical_gait_skin.mp4" data-kind="video" data-title="one step, with skin" data-cap="foot airborne at 0.14% body weight"
+    data-desc="Clears 1.8 cm, advances 17.1 cm, lands on measured contact — then pitches forward. One genuine step by the harness's own strict criterion, and then a fall.">
     <video src="media/anatomical_gait_skin.mp4" autoplay loop muted playsinline preload="metadata"></video>
     <figcaption><b>one step, with skin</b><span>foot airborne at 0.14% body weight</span></figcaption>
   </figure>
-  <figure class="tile t5">
+  <figure class="tile t1" tabindex="0" role="button"
+    data-src="media/gait_one_step.mp4" data-kind="video" data-title="the 22-segment scaffold" data-cap="what the anatomy is posed from"
+    data-desc="The crude body the engine actually integrates: 22 rigid bodies, 80 muscles, 33 coordinates. It has always been a scaffold with a planned disposal — its jobs move to the real body, contact first, then actuation.">
     <video src="media/gait_one_step.mp4" autoplay loop muted playsinline preload="metadata"></video>
     <figcaption><b>the 22-segment scaffold</b><span>what the anatomy is posed from</span></figcaption>
+  </figure>
+  <figure class="tile t2" tabindex="0" role="button"
+    data-src="media/app-1-ring.png" data-kind="img" data-title="the materialization ring" data-cap="every unmeasured path reads “not measured”"
+    data-desc="151 edges from the live brain graph. Arrow width IS the measured magnitude, so a dead path looks dead — the 0.05% cortical hop draws 0.6 px against 14 px for a measured one. A unit test enforces that unmeasured edges stay unlabelled.">
+    <img src="media/app-1-ring.png" alt="the materialization ring">
+    <figcaption><b>the materialization ring</b><span>every unmeasured path reads “not measured”</span></figcaption>
+  </figure>
+  <figure class="tile t3" tabindex="0" role="button"
+    data-src="media/final-4-prompt.png" data-kind="img" data-title="asking the brain what it is seeing" data-cap="63.5% top-1, 127× chance"
+    data-desc="Nearest bank entries ranked by the group-mean measured evoked EEG of the image, on the THINGS-EEG2 designated test set. Flagged RETRIEVAL · NOT A GENERATION, with the chance level and the note that bar length is a normalised cosine and not a probability.">
+    <img src="media/final-4-prompt.png" alt="asking the brain what it is seeing">
+    <figcaption><b>asking the brain what it is seeing</b><span>63.5% top-1, 127× chance</span></figcaption>
   </figure>
 </div>
 
@@ -243,5 +279,10 @@
 <script src="data/releases.js"></script>
 <script src="brain.js"></script>
 <script src="site.js"></script>
+<div id="lightbox" class="lb" hidden>
+  <button class="lb-close" aria-label="close">×</button>
+  <div class="lb-stage"></div>
+  <div class="lb-meta"><h3></h3><p class="lb-cap"></p><p class="lb-desc"></p></div>
+</div>
 </body>
 </html>
