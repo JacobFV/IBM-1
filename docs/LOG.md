@@ -34,6 +34,7 @@ pattern is worth more than any single row.
 | 17 | the shared kernel is carrying the ten per-subject terms -- their mean doubled from 4.97% to 11.09% while each got only 3% of the budget | a SOLO run of one subject for the same 135 own steps, same warm start, same kernel, reaches **17.37%** where the shared run reaches 15.44%. s03 is a wash. sharing is neutral to slightly negative; the doubling is what 135 steps buys either way | running the matched-step solo control instead of reading the trajectory |
 | 18 | warm-starting does not cross resolutions -- the 2k run opened at 0.44% despite "warm-started (20 tensors)", so the restart cost 3,000 steps and bought nothing | it reaches **25.87% by step 1,000** where the cold run was at 4.31% by 2,000 -- **4x at matched steps**. only the port projection fails to transfer, and it is re-learned inside 1,000 steps. I read step 0, the one moment the untransferable tensor dominates, and generalised | letting the run continue and reading the trajectory instead of its first point |
 | 19 | the IBM kernel cannot carry a motor task -- trained, permuted and random kernels were equivalent after fine-tuning on the body | the teacher was the bare postural servo, which **falls at 1.19 s**. the corpus was a body falling over, and all three arms lost to predicting the mean because there was nothing to learn. with the engineered LQR, which holds 12 s, a ridge on the same split reaches **+0.9801** -- the corpus is learnable and the earlier experiment measured nothing | checking whether the teacher could actually stand |
+| 20 | the cortex learns motor control -- body_stance went -41 to **+0.42** skill once the readout could see the sheet | trained and permuted kernels give **identical MSE to 8 decimals**. the whole-sheet readout samples the driven region, and those samples carry **3,134x** the variance of the rest -- the decoder reads the input, not the cortex. the architecture has no configuration where the dynamics both receive the signal and are necessary | the four-arm ablation, which was already running when I announced the result |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
 
@@ -44,6 +45,54 @@ caught by a measurement that could have been run first, and several by one I had
 already written.
 
 ---
+
+## 2026-09-09 — [CORRECTED BELOW] the cortex does not learn motor control; the readout reads the input
+
+**the entry below claims the cortex learns motor control.  it does not, and the
+ablation I had already launched said so twenty minutes later.**
+
+reading the whole sheet took `body_stance` from skill −41 to **+0.42** against
+predicting the mean, and I reported that as the first cortical materialization to
+beat a trivial baseline on real motor commands.  the four-arm ablation:
+
+| arm | held MSE | skill vs mean |
+|---|---|---|
+| trained | 0.00102262 | −186.97 |
+| permuted | **0.00102262** | −186.97 |
+| random | 0.02073402 | −3810.08 |
+| frozen_init | 0.01084992 | −1993.30 |
+
+trained and permuted are **identical to eight decimal places**.  that is the same
+signature as every dead-kernel bug in this log, and the cause is the fix itself:
+
+    whole-sheet readout, 2048 samples over 512 sites
+      samples landing in the DRIVEN postcentral region:  428  (20.9%)
+      variance carried by those samples:                 0.10073610
+      variance carried by every other sample:            0.00003214
+
+a **3,134× ratio**.  the readout is reading the drive.  the decoder does not need
+the kernel and demonstrably does not use it.
+
+so the architecture is caught between two failures, and this is the real finding:
+
+- **precentral only** — the kernel is required, and 0.03–0.07% of the signal
+  arrives.  the cortex cannot learn because nothing reaches it.
+- **whole sheet** — the signal is there, and 99.97% of its variance is the raw
+  drive.  the cortex is not needed because the input is legible at the readout.
+
+there is no configuration measured so far in which the cortical dynamics both
+receive the sensory signal and are necessary to produce the motor command.  that
+is a structural property of a sheet whose drive is a constant additive input,
+and it is a stronger and more useful negative than "the kernel does not carry
+motor content".
+
+**IHM-1's permuted-kernel result now extends to a kernel trained on the body**,
+which is what their control left open.  the answer is that training on the body
+does not change it, because the body term never used the kernel either.
+
+I announced the +0.42 as a breakthrough while the ablation that refutes it was
+already running.  the sign flip was real and it was not evidence of what I said
+it was.
 
 ## 2026-09-09 — the cortex could not reach its own motor region, and that was the whole motor story
 
