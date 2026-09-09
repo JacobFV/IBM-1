@@ -1,0 +1,541 @@
+{
+  "config": {
+    "seconds": 120.0,
+    "variant": "whole_body_integrity_depletion",
+    "work": "data/derived/intero-live",
+    "sites": 6000,
+    "embed": 128,
+    "k": 48,
+    "sever": false,
+    "keep_work": false,
+    "out": "out/intero_live.json"
+  },
+  "channels": [
+    "greater_splanchnic/foregut_ischaemia",
+    "greater_splanchnic/foregut_mechano",
+    "least_splanchnic/renal_afferent",
+    "lesser_splanchnic/midgut_distension",
+    "pelvic_splanchnic/bladder_distension",
+    "vagus/aortic_baroreceptor",
+    "vagus/aortic_chemo_hypercapnia",
+    "vagus/aortic_chemo_hypoxia",
+    "vagus/gastric_distension",
+    "vagus/gastric_nutrient",
+    "vagus/gi_absorption",
+    "vagus/hepatoportal_glucose",
+    "vagus/intestinal_distension",
+    "vagus/intestinal_nutrient",
+    "vagus/pulmonary_stretch"
+  ],
+  "delta_hz_vs_rest": {
+    "greater_splanchnic/foregut_ischaemia": {
+      "meal": 0.0,
+      "exercise": 0.0,
+      "meal_exercise": 0.0
+    },
+    "greater_splanchnic/foregut_mechano": {
+      "meal": 4.194457530975342,
+      "exercise": 0.0,
+      "meal_exercise": 4.194457530975342
+    },
+    "least_splanchnic/renal_afferent": {
+      "meal": 0.014156579971313477,
+      "exercise": 8.330708503723145,
+      "meal_exercise": 7.158675670623779
+    },
+    "lesser_splanchnic/midgut_distension": {
+      "meal": 0.0,
+      "exercise": 0.0,
+      "meal_exercise": 0.0
+    },
+    "pelvic_splanchnic/bladder_distension": {
+      "meal": 0.0,
+      "exercise": 0.0,
+      "meal_exercise": 0.0
+    },
+    "vagus/aortic_baroreceptor": {
+      "meal": 0.02238750457763672,
+      "exercise": 4.994577407836914,
+      "meal_exercise": 4.808951377868652
+    },
+    "vagus/aortic_chemo_hypercapnia": {
+      "meal": 0.3168504238128662,
+      "exercise": 2.743683099746704,
+      "meal_exercise": 2.743683099746704
+    },
+    "vagus/aortic_chemo_hypoxia": {
+      "meal": 0.0,
+      "exercise": 4.665970325469971,
+      "meal_exercise": 4.56277322769165
+    },
+    "vagus/gastric_distension": {
+      "meal": 30.873626708984375,
+      "exercise": 0.0,
+      "meal_exercise": 30.873626708984375
+    },
+    "vagus/gastric_nutrient": {
+      "meal": 20.0,
+      "exercise": 0.0,
+      "meal_exercise": 20.0
+    },
+    "vagus/gi_absorption": {
+      "meal": 0.0,
+      "exercise": 0.0,
+      "meal_exercise": 0.0
+    },
+    "vagus/hepatoportal_glucose": {
+      "meal": 0.21231746673583984,
+      "exercise": 0.034639835357666016,
+      "meal_exercise": 0.20309877395629883
+    },
+    "vagus/intestinal_distension": {
+      "meal": 0.0,
+      "exercise": 0.0,
+      "meal_exercise": 0.0
+    },
+    "vagus/intestinal_nutrient": {
+      "meal": 0.4169315993785858,
+      "exercise": 0.0,
+      "meal_exercise": 0.4169315993785858
+    },
+    "vagus/pulmonary_stretch": {
+      "meal": 3.513204574584961,
+      "exercise": 16.179439544677734,
+      "meal_exercise": 16.181842803955078
+    }
+  },
+  "known_answer_gate": "passed",
+  "expectations": [
+    [
+      "meal",
+      [
+        "vagus/gastric_distension",
+        "vagus/gastric_nutrient",
+        "vagus/intestinal_distension",
+        "vagus/intestinal_nutrient",
+        "vagus/gi_absorption",
+        "greater_splanchnic/foregut_mechano",
+        "lesser_splanchnic/midgut_distension"
+      ],
+      []
+    ],
+    [
+      "exercise",
+      [
+        "vagus/pulmonary_stretch",
+        "vagus/aortic_baroreceptor",
+        "vagus/aortic_chemo_hypoxia",
+        "vagus/aortic_chemo_hypercapnia",
+        "least_splanchnic/renal_afferent"
+      ],
+      [
+        "vagus/gastric_distension",
+        "vagus/gastric_nutrient",
+        "vagus/intestinal_distension",
+        "vagus/intestinal_nutrient",
+        "vagus/gi_absorption",
+        "greater_splanchnic/foregut_mechano",
+        "lesser_splanchnic/midgut_distension"
+      ]
+    ],
+    [
+      "meal_exercise",
+      [
+        "vagus/gastric_distension",
+        "vagus/gastric_nutrient",
+        "vagus/intestinal_distension",
+        "vagus/intestinal_nutrient",
+        "vagus/gi_absorption",
+        "greater_splanchnic/foregut_mechano",
+        "lesser_splanchnic/midgut_distension"
+      ],
+      []
+    ]
+  ],
+  "scalars": {
+    "rest": [
+      {
+        "endurance_h": 37.9209289065126,
+        "discomfort": 0.05345311412944544,
+        "fat_reserve_kj": 603045.0300334081,
+        "metabolic_rate_w": 88.31491552289442,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.56358951467587
+      },
+      {
+        "endurance_h": 37.778394226928704,
+        "discomfort": 0.060608548335558614,
+        "fat_reserve_kj": 603044.9568284453,
+        "metabolic_rate_w": 88.64769369570706,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.55076122238796
+      },
+      {
+        "endurance_h": 37.62577000758199,
+        "discomfort": 0.0708065863672082,
+        "fat_reserve_kj": 603044.8836276927,
+        "metabolic_rate_w": 89.00685383729294,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.53691592948462
+      },
+      {
+        "endurance_h": 37.46536111901997,
+        "discomfort": 0.0766772771689819,
+        "fat_reserve_kj": 603044.8104310331,
+        "metabolic_rate_w": 89.38750906866451,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.52224202065315
+      },
+      {
+        "endurance_h": 37.29883667823599,
+        "discomfort": 0.07759167481997307,
+        "fat_reserve_kj": 603044.7372383638,
+        "metabolic_rate_w": 89.78615693478864,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.50687451231158
+      },
+      {
+        "endurance_h": 37.12750650041642,
+        "discomfort": 0.07117428565405337,
+        "fat_reserve_kj": 603044.6591929344,
+        "metabolic_rate_w": 90.2000542081012,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.490919153357765
+      },
+      {
+        "endurance_h": 36.95242493575647,
+        "discomfort": 0.05009806537805632,
+        "fat_reserve_kj": 603044.5762945998,
+        "metabolic_rate_w": 90.6269884718306,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.47446123042204
+      },
+      {
+        "endurance_h": 36.7744509922497,
+        "discomfort": 0.0390320659056963,
+        "fat_reserve_kj": 603044.4982565457,
+        "metabolic_rate_w": 91.06514919028454,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.457570537989
+      },
+      {
+        "endurance_h": 36.59438670331063,
+        "discomfort": 0.041372903827885985,
+        "fat_reserve_kj": 603044.4105086719,
+        "metabolic_rate_w": 91.51279864813179,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.44031406338536
+      },
+      {
+        "endurance_h": 36.412849385236704,
+        "discomfort": 0.046332379040819105,
+        "fat_reserve_kj": 603044.3227641827,
+        "metabolic_rate_w": 91.96859564791832,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.42274350853859
+      },
+      {
+        "endurance_h": 36.23035468555815,
+        "discomfort": 0.05118591140616656,
+        "fat_reserve_kj": 603044.2350229796,
+        "metabolic_rate_w": 92.43140270784896,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.404902722325005
+      }
+    ],
+    "meal": [
+      {
+        "endurance_h": 37.9209289065126,
+        "discomfort": 0.05345311412944544,
+        "fat_reserve_kj": 603045.0300334081,
+        "metabolic_rate_w": 88.31491552289442,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.56358951467587
+      },
+      {
+        "endurance_h": 37.75961313042751,
+        "discomfort": 0.16483154365479055,
+        "fat_reserve_kj": 603044.956828442,
+        "metabolic_rate_w": 88.691785802302,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.550762980627326
+      },
+      {
+        "endurance_h": 37.60612269048657,
+        "discomfort": 0.17497362130972308,
+        "fat_reserve_kj": 603044.8836275389,
+        "metabolic_rate_w": 89.05335546121067,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.53691930974833
+      },
+      {
+        "endurance_h": 37.44479864000751,
+        "discomfort": 0.1809691233404919,
+        "fat_reserve_kj": 603044.8104301682,
+        "metabolic_rate_w": 89.43659541057576,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.52224593327446
+      },
+      {
+        "endurance_h": 37.27731168161848,
+        "discomfort": 0.1821030617915533,
+        "fat_reserve_kj": 603044.7372359427,
+        "metabolic_rate_w": 89.83800201279851,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.50687699743344
+      },
+      {
+        "endurance_h": 37.104973981517965,
+        "discomfort": 0.17585122947571494,
+        "fat_reserve_kj": 603044.65918802,
+        "metabolic_rate_w": 90.25482938181521,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.49091763588899
+      },
+      {
+        "endurance_h": 36.92882033036449,
+        "discomfort": 0.15510950852779268,
+        "fat_reserve_kj": 603044.5811428714,
+        "metabolic_rate_w": 90.68491638888904,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.47445059329135
+      },
+      {
+        "endurance_h": 36.74980676178868,
+        "discomfort": 0.14406222944023278,
+        "fat_reserve_kj": 603044.503100387,
+        "metabolic_rate_w": 91.12621684224733,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.457554213618664
+      },
+      {
+        "endurance_h": 36.568670829092426,
+        "discomfort": 0.14639369218057044,
+        "fat_reserve_kj": 603044.4250604756,
+        "metabolic_rate_w": 91.5771522061718,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.44028893537404
+      },
+      {
+        "endurance_h": 36.38604100695865,
+        "discomfort": 0.15037334249749537,
+        "fat_reserve_kj": 603044.3470230603,
+        "metabolic_rate_w": 92.03635570931849,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.42270708908961
+      },
+      {
+        "endurance_h": 36.20249704093787,
+        "discomfort": 0.1561665482837545,
+        "fat_reserve_kj": 603044.2689880687,
+        "metabolic_rate_w": 92.50252797836234,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.40485842478233
+      }
+    ],
+    "exercise": [
+      {
+        "endurance_h": 37.9209289065126,
+        "discomfort": 0.05345311412944544,
+        "fat_reserve_kj": 603045.0300334081,
+        "metabolic_rate_w": 88.31491552289442,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.56358951467587
+      },
+      {
+        "endurance_h": 14.033778060562854,
+        "discomfort": 0.0736336283316592,
+        "fat_reserve_kj": 603044.932545606,
+        "metabolic_rate_w": 238.63619206504802,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.555593083918666
+      },
+      {
+        "endurance_h": 14.019939163868125,
+        "discomfort": 0.06303599630713551,
+        "fat_reserve_kj": 603044.8350621827,
+        "metabolic_rate_w": 238.8705874363683,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.54679475364492
+      },
+      {
+        "endurance_h": 14.005484784177538,
+        "discomfort": 0.0492463777978788,
+        "fat_reserve_kj": 603044.7375832646,
+        "metabolic_rate_w": 239.11595940560574,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.53733589979902
+      },
+      {
+        "endurance_h": 13.990165338401885,
+        "discomfort": 0.04156444376821709,
+        "fat_reserve_kj": 603044.6401092017,
+        "metabolic_rate_w": 239.37664159429553,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.52728684134553
+      },
+      {
+        "endurance_h": 13.974023783408526,
+        "discomfort": 0.04007672182611686,
+        "fat_reserve_kj": 603044.542640122,
+        "metabolic_rate_w": 239.65199430804347,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.516672247652764
+      },
+      {
+        "endurance_h": 13.955136404095041,
+        "discomfort": 0.05809384478594638,
+        "fat_reserve_kj": 603044.4403193481,
+        "metabolic_rate_w": 239.97516864365116,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.50421417445017
+      },
+      {
+        "endurance_h": 13.935844644392029,
+        "discomfort": 0.07567473340282299,
+        "fat_reserve_kj": 603044.3380032931,
+        "metabolic_rate_w": 240.30620232982858,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.491453130516504
+      },
+      {
+        "endurance_h": 13.916089227062173,
+        "discomfort": 0.06833455992547187,
+        "fat_reserve_kj": 603044.24054884,
+        "metabolic_rate_w": 240.64617467406998,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.47834750954121
+      },
+      {
+        "endurance_h": 13.896073151216822,
+        "discomfort": 0.06647957393032454,
+        "fat_reserve_kj": 603044.13824299,
+        "metabolic_rate_w": 240.99163750553905,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.465030235336485
+      },
+      {
+        "endurance_h": 13.875692601908082,
+        "discomfort": 0.05858415099594195,
+        "fat_reserve_kj": 603044.0359424093,
+        "metabolic_rate_w": 241.34443759808045,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.451430116470306
+      }
+    ],
+    "meal_exercise": [
+      {
+        "endurance_h": 37.9209289065126,
+        "discomfort": 0.05345311412944544,
+        "fat_reserve_kj": 603045.0300334081,
+        "metabolic_rate_w": 88.31491552289442,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.56358951467587
+      },
+      {
+        "endurance_h": 14.031235819325577,
+        "discomfort": 0.17785091124990787,
+        "fat_reserve_kj": 603044.9325456029,
+        "metabolic_rate_w": 238.6794292234518,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.555594814107394
+      },
+      {
+        "endurance_h": 14.0173129085966,
+        "discomfort": 0.16702449312189122,
+        "fat_reserve_kj": 603044.835062009,
+        "metabolic_rate_w": 238.9153417377785,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.54679805229182
+      },
+      {
+        "endurance_h": 14.002767128833188,
+        "discomfort": 0.1530840203177234,
+        "fat_reserve_kj": 603044.737582326,
+        "metabolic_rate_w": 239.16236697189007,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.537340033738076
+      },
+      {
+        "endurance_h": 13.98735013905627,
+        "discomfort": 0.14527538123116226,
+        "fat_reserve_kj": 603044.6401066432,
+        "metabolic_rate_w": 239.42482027265112,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.52729130031372
+      },
+      {
+        "endurance_h": 13.971048574496875,
+        "discomfort": 0.17025154110634705,
+        "fat_reserve_kj": 603044.5426350008,
+        "metabolic_rate_w": 239.70302805493463,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.51663936401593
+      },
+      {
+        "endurance_h": 13.951984236122566,
+        "discomfort": 0.15514076447671155,
+        "fat_reserve_kj": 603044.4451673299,
+        "metabolic_rate_w": 240.02938528131966,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.504143896213975
+      },
+      {
+        "endurance_h": 13.93257617647696,
+        "discomfort": 0.17412929366889301,
+        "fat_reserve_kj": 603044.3477033825,
+        "metabolic_rate_w": 240.36257554078364,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.49138680728669
+      },
+      {
+        "endurance_h": 13.912688921480523,
+        "discomfort": 0.16802601175482829,
+        "fat_reserve_kj": 603044.2551001013,
+        "metabolic_rate_w": 240.70498859486455,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.47827659875958
+      },
+      {
+        "endurance_h": 13.892546120442892,
+        "discomfort": 0.16596380738360395,
+        "fat_reserve_kj": 603044.1625012474,
+        "metabolic_rate_w": 241.05281980653447,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.46495894143641
+      },
+      {
+        "endurance_h": 13.87203013995257,
+        "discomfort": 0.15967197954178716,
+        "fat_reserve_kj": 603044.074763512,
+        "metabolic_rate_w": 241.40815647200225,
+        "fatigue_fraction": 0.0,
+        "core_temperature_c": 36.45135391754468
+      }
+    ]
+  },
+  "cortical_reach": {
+    "rest": {
+      "readout_sd": 0.006311917211860418,
+      "port_state_sd": 0.17091478407382965,
+      "sheet_state_sd": 0.007460885215550661
+    },
+    "meal": {
+      "readout_sd": 0.03261227160692215,
+      "port_state_sd": 0.8524869084358215,
+      "sheet_state_sd": 0.03721409663558006
+    },
+    "exercise": {
+      "readout_sd": 0.644435465335846,
+      "port_state_sd": 12.595297813415527,
+      "sheet_state_sd": 0.5502088665962219
+    },
+    "meal_exercise": {
+      "readout_sd": 0.6541510820388794,
+      "port_state_sd": 12.602470397949219,
+      "sheet_state_sd": 0.5505311489105225
+    }
+  },
+  "sheet_over_port_state_sd": 0.043668571807090883,
+  "note": "the cortical weights are a fresh initialisation unless one was loaded; the measurement here is about the afference and the route, not about a readout"
+}
