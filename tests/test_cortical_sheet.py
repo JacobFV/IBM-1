@@ -206,6 +206,61 @@ class TestTractWiring(unittest.TestCase):
         self.assertEqual(len(u.step(u.init_state(1, "cpu"), drive, 1e-3,
                                     u.edge_weights())), 4)
 
+    def test_the_declared_builder_actually_runs_and_agrees(self):
+        """DISCONNECTS row 3 is that nothing imports `ibm.topologies.tract`.
+
+        The training loop uses `draw_partners`, a uniform subsample of the
+        builder's edge set, because the builder's full expansion is quadratic in
+        parcel population -- 607k edges from 1,500 sites here, 10^10 at the
+        resolution the sheet runs at.  That is a good reason not to call it in a
+        training loop and a bad reason never to call it at all, so it is called
+        here, and the subsample is checked to be a SUBSET of what it emits.  If
+        the two ever disagree, one of them is wired to a different connectome.
+        """
+        from ibm.topologies.tract import tractometric_matrix
+        n = 1200
+        sites, kw = CT.builder_inputs(n_sites=n, seed=0)
+        edges = tractometric_matrix(sites, **kw)
+        self.assertGreater(len(edges.src), 1000)
+        for f in ("tract_length_mm", "conduction_delay_s", "distance_mm"):
+            self.assertIn(f, edges.features)
+        declared = set(zip(edges.src.tolist(), edges.dst.tolist()))
+
+        region = np.asarray(sites["tissue"].partitions["cortical_areas"])
+        n_far = 6
+        part, dly, ln, note = CT.draw_partners(region, n_far, seed=0)
+        src = np.repeat(np.arange(n)[:, None], n_far, 1)
+        same_parcel = region[part] == region[src]
+        bad = [(int(a), int(b)) for a, b in zip(src[~same_parcel],
+                                                part[~same_parcel])
+               if (a, b) not in declared]
+        self.assertEqual(bad[:5], [],
+                         f"{len(bad)} drawn partners are not edges of the "
+                         "declared topology")
+
+        # the ONLY drawn edges that are not builder edges are the same-parcel
+        # ones, and those are exactly the orphan fallback: a parcel the
+        # connectome leaves with no partner spends its budget internally, and the
+        # builder emits no self-parcel edge for it to match.  the two counts must
+        # agree, or something else is producing same-parcel draws.
+        self.assertAlmostEqual(float(same_parcel.mean()),
+                               note["orphan_fraction"], places=6)
+        self.assertGreater(note["orphan_fraction"], 0.0)
+        self.assertTrue(all(r.startswith(("lh.", "rh."))
+                            for r in note["orphan_parcels"]))
+        # and the delay a drawn edge carries must be the delay the builder gives
+        feat = {(int(a), int(b)): float(d) for a, b, d in
+                zip(edges.src, edges.dst, edges.features["conduction_delay_s"])}
+        checked = 0
+        for i in range(0, n, 37):
+            for c, j in enumerate(part[i]):
+                if int(j) == i or (i, int(j)) not in feat:
+                    continue
+                self.assertAlmostEqual(feat[(i, int(j))], float(dly[i, c]),
+                                       places=9)
+                checked += 1
+        self.assertGreater(checked, 20)
+
     def test_consensus_threshold_is_monotone(self):
         # the card singles out the parameterisable threshold as this source's
         # one honest property; a sweep that is not monotone in edge count would

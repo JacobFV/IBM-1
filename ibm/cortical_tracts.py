@@ -376,3 +376,45 @@ def delays_for_edges(region_of_site: np.ndarray, partner: np.ndarray,
     elif mode != "tract":
         raise ValueError(f"unknown delay mode {mode!r}")
     return delay, note
+
+
+def builder_inputs(n_sites: int = 2000, seed: int = 0, threshold: float = 0.5,
+                   velocity_m_s: float = DEFAULT_VELOCITY_M_S):
+    """everything `ibm.topologies.tract.tractometric_matrix` asks for, assembled.
+
+    Returns `(sites, kwargs)` ready for
+
+        from ibm.topologies.tract import tractometric_matrix
+        edges = tractometric_matrix(sites, **kwargs)
+
+    This exists because DISCONNECTS row 3 is, literally, that *no script imports
+    the tract topology*.  The training loop uses `draw_partners`, which is a
+    subsample of the builder's edge set rather than the builder itself, for the
+    reason the builder's own docstring gives -- its full expansion is quadratic
+    in parcel population and 10^10 edges at the resolution the sheet runs at.
+    That is a good reason not to call it in a training loop and a bad reason
+    never to call it at all: a declared builder that has never been executed is
+    a declaration, not code.  `tests/test_cortical_sheet.py` runs it at a size
+    where the expansion is affordable, which is what makes the two paths
+    checkable against each other.
+
+    `matrix` is the ADJACENCY, not a strength: entries are 1.0 for a declared
+    edge and 0.0 otherwise, and `threshold=0.0` in the builder then keeps exactly
+    the declared ones.  `tract.py` refuses streamline count as an edge feature in
+    terms, so there is nothing else it could honestly be.
+    """
+    from ibm.topologies import builders as B
+    from ibm.cortical_sheet import sample_sites
+
+    xyz, region = sample_sites(n_sites, seed=seed)
+    c = consensus(threshold, velocity_m_s)
+    sites = B.Sites.of(B.SiteTable(
+        support="tissue", frame="fsaverage", xyz=xyz.astype(float),
+        partitions={"cortical_areas": region}))
+    kwargs = dict(support="tissue",
+                  matrix=c["adjacency"].astype(float),
+                  lengths_mm=c["length_mm"],
+                  system="cortical_areas",
+                  threshold=0.0,
+                  velocity_m_s=velocity_m_s)
+    return sites, kwargs
