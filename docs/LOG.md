@@ -48,6 +48,120 @@ already written.
 
 ---
 
+## 2026-09-09 (afternoon) -- the sheet was never information-blocked, it was amplitude-blocked
+
+Three results, and the largest one is not about the fix.
+
+### 1. The cortex is load-bearing for a real task, read from a disjoint region
+
+`scripts/ablate_disjoint_transport.py`. Real THINGS-EEG2: an image drives the
+**occipital region**, the sheet runs, the state is read from the **precentral
+region only** (the script refuses to run if the ports intersect -- verified
+disjoint, 3,775 drive sites against 2,012 read sites), and a small head is fitted
+on the precentral rates against the measured EEG. The image encoder and
+`to_cortex` are the checkpoint's own and are FROZEN, so every arm sees the same
+stimulus-specific drive and the arms differ only in what the sheet does with it.
+8 disjoint held-out pools of 200, chance 0.5%, never a single pool.
+
+On the **unmodified** trained kernel, no noise:
+
+| arm | top-1 | vs chance |
+|---|---|---|
+| intact | 21.81% +/- 2.28 | **43.62x** |
+| severed (w = 0) | 0.50% | 1.00x |
+| permuted rows | 0.50% | 1.00x |
+
+This log has said "there is no configuration measured so far in which the
+cortical dynamics both receive the sensory signal and are necessary to produce
+the output." **That sentence is now false**, and what made it false was changing
+the READOUT to a disjoint region and fitting a head on frozen features -- not
+changing the kernel, the objective, or the data. The sheet was never
+information-blocked. 0.054 Hz of arriving perturbation is ample when there is
+nothing competing with it.
+
+It also does not extend ledger row 20 the way that row implies: here a permuted
+kernel sits at chance while the trained one sits at 43x, on the same graph with
+the same weight statistics.
+
+Two caveats, both unresolved: permuted-at-chance may be "information destroyed"
+or "information present but not linearly learnable by this head at 3,000 steps"
+-- every arm got the same head, budget and data, so it is a fair ablation but
+not a proof. And this is a head fitted on frozen features, not end-to-end
+training, so it does not explain why end-to-end training failed. The hypothesis
+worth testing, untested: gradients through a 1e-3 attenuation are as small as
+the signal, and the earlier failures were an optimisation problem downstream of
+the transport problem.
+
+### 2. The anisotropy fix buys noise tolerance and nothing else
+
+Concentrating the long-range budget raises the across-image sd of the precentral
+rate from 5.406e-02 Hz to 1.915e+00 Hz, a **35.4x** amplitude gain. On the task
+that converts to exactly one thing:
+
+| noise (Hz) | unmodified | concentrated | severed | permuted |
+|---|---|---|---|---|
+| 0 | 43.62x | 42.37x | 1.00x | 1.00x |
+| 1e-2 | 21.12x | 37.87x | 0.50x | 1.12x |
+| 3e-2 | 17.75x | 43.75x | 0.50x | 1.12x |
+| 1e-1 | 11.75x | 26.50x | 0.50x | 0.87x |
+| 3e-1 | 7.87x | 19.00x | 0.50x | 1.12x |
+| 1 | 2.00x | 11.87x | 0.50x | 0.87x |
+| 3 | 0.75x | 6.87x | 0.50x | 0.87x |
+
+At zero noise the fix is worth **nothing** (43.62x against 42.37x). The noise at
+which each arm falls to half its noiseless skill is 9.31e-03 Hz unmodified and
+2.18e-01 Hz concentrated: a **23.4x** noise-tolerance gain from a 35.4x
+amplitude gain. That is the whole result, and it was predicted in advance -- in
+a noiseless float32 simulation a linear head can amplify a 1e-5 Hz perturbation
+and retrieve perfectly, so the noiseless column could only ever have been
+uninformative.
+
+An order-of-magnitude for where that matters: Poisson spiking at 8 Hz over a
+40 ms window is ~14 Hz sd per neuron, so a site pooling 10^4-10^5 neurons sits
+near 0.03-0.15 Hz. In that band the fix is worth 2x to 2.5x on retrieval. That
+estimate is an argument, not a measurement.
+
+### 3. Concentration buys integration, at matched amplitude
+
+Superadditivity against the linear-sum null, **both arms at matched drive**,
+because a sweep of one arm alone is the shape of ledger row 20:
+
+| amp | unmodified transport | concentrated transport | unmodified superadd | concentrated superadd |
+|---|---|---|---|---|
+| 1 | 9.561e-06 | 1.998e-03 | 1.0002 | 1.0021 |
+| 10 | 1.012e-05 | 3.452e-03 | 1.0139 | 1.1320 |
+| 30 | 1.700e-05 | 8.080e-03 | 1.0377 | 1.2987 |
+| 100 | -- | 1.291e-02 | -- | 1.3923 |
+
+Rest is -65 mV and threshold -55 mV, so **amp 10 is the physiological point**
+and amp 30 is supraphysiological. The number to quote is 1.132 against 1.014 at
+matched amplitude, with transport 3.452e-03 against 1.012e-05 -- a factor of
+341. The earlier 1.0002 was reporting the drive amplitude, not the sheet: a
+0.1 mV perturbation against a sigmoid curvature scale of 4 mV gives a
+second-order term of (0.1/4)^2 = 6e-4, which is what was measured.
+
+The deflationary reading -- "the sheet always could integrate, it was never
+driven hard enough" -- is refuted by the matched control: driven just as hard,
+the unmodified kernel reaches 1.014, not 1.13.
+
+One confound to state whenever the amplitude sweep is quoted: unmodified
+transport rises 1.8x on its own from amp 1 to 30. That is the sigmoid's slope
+improving under a larger drive, which raises the LINEAR gain of every hop, so
+within-arm amplitude comparisons are not clean. Only the matched-amplitude
+comparison is.
+
+### What this does NOT say
+
+None of it says the somato-motor materialization works. These are mechanism
+measurements on random drives plus one retrieval task with a frozen encoder.
+They say the sheet can carry and combine signals between disjoint regions and
+that the learned kernel is necessary for it. They do not say a closed
+sensorimotor loop can use that, and 1.132 is a modest nonlinearity.
+
+**Operating point: `long_topm=4, long_min_dist=120, long_gain=8`.** The ablation
+above was run at `long_topm=1`, the maximum-transport arm; the three-arm rerun at
+the recommended point is queued.
+
 ## 2026-09-09 (morning) -- the sheet superposes; it does not integrate
 
 The somato-motor materialization needs sight, hearing and touch to converge

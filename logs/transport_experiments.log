@@ -1,0 +1,88 @@
+=== THE ABLATION: real THINGS-EEG2 retrieval read from precentral only ===
+ckpt/ibm1_curriculum16.pt step=32500: drive occipital (3775) -> read precentral (2012), disjoint
+  x = torch.from_numpy(np.ascontiguousarray(imgs[sl]))
+train 8000, held-out 1600 = 8 pools of 200 (chance 0.50%)
+
+### base: tanh_slope=2.0 long_gain=1.0 long_topm=0   row L1 gain 0.7714  |w| mean 1.607e-02
+  intact     across-image sd of the precentral rate 5.4064e-02 Hz
+    noise  0.0e+00 Hz -> top-1  21.81% +/- 2.28  ( 43.62x chance, 8 pools)
+    noise  1.0e-03 Hz -> top-1  21.69% +/- 1.34  ( 43.37x chance, 8 pools)
+    noise  1.0e-02 Hz -> top-1  10.56% +/- 2.04  ( 21.12x chance, 8 pools)
+    noise  3.0e-02 Hz -> top-1   8.87% +/- 1.65  ( 17.75x chance, 8 pools)
+    noise  1.0e-01 Hz -> top-1   5.87% +/- 1.80  ( 11.75x chance, 8 pools)
+    noise  3.0e-01 Hz -> top-1   3.94% +/- 1.10  (  7.87x chance, 8 pools)
+    noise  1.0e+00 Hz -> top-1   1.00% +/- 0.97  (  2.00x chance, 8 pools)
+    noise  3.0e+00 Hz -> top-1   0.37% +/- 0.41  (  0.75x chance, 8 pools)
+  severed    across-image sd of the precentral rate 0.0000e+00 Hz
+    noise  0.0e+00 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)
+    noise  1.0e-03 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+    noise  1.0e-02 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+    noise  3.0e-02 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+    noise  1.0e-01 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+    noise  3.0e-01 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+    noise  1.0e+00 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+    noise  3.0e+00 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+  permuted   across-image sd of the precentral rate 5.4238e-02 Hz
+    noise  0.0e+00 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)
+    noise  1.0e-03 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)
+    noise  1.0e-02 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)
+    noise  3.0e-02 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)
+    noise  1.0e-01 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)
+    noise  3.0e-01 Hz -> top-1   0.44% +/- 0.30  (  0.87x chance, 8 pools)
+    noise  1.0e+00 Hz -> top-1   0.50% +/- 0.35  (  1.00x chance, 8 pools)
+    noise  3.0e+00 Hz -> top-1   0.62% +/- 0.33  (  1.25x chance, 8 pools)
+
+### aniso: tanh_slope=2.0 long_gain=8.0 long_topm=1   row L1 gain 2.0209  |w| mean 4.210e-02
+  intact     across-image sd of the precentral rate 1.9153e+00 Hz
+    noise  0.0e+00 Hz -> top-1  21.19% +/- 2.88  ( 42.37x chance, 8 pools)
+    noise  1.0e-03 Hz -> top-1  21.37% +/- 4.12  ( 42.75x chance, 8 pools)
+    noise  1.0e-02 Hz -> top-1  18.94% +/- 2.99  ( 37.87x chance, 8 pools)
+    noise  3.0e-02 Hz -> top-1  21.87% +/- 1.87  ( 43.75x chance, 8 pools)
+    noise  1.0e-01 Hz -> top-1  13.25% +/- 2.32  ( 26.50x chance, 8 pools)
+    noise  3.0e-01 Hz -> top-1   9.50% +/- 1.54  ( 19.00x chance, 8 pools)
+    noise  1.0e+00 Hz -> top-1   5.94% +/- 1.81  ( 11.87x chance, 8 pools)
+    noise  3.0e+00 Hz -> top-1   3.44% +/- 1.57  (  6.87x chance, 8 pools)
+  severed    across-image sd of the precentral rate 0.0000e+00 Hz
+    noise  0.0e+00 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)
+    noise  1.0e-03 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+    noise  1.0e-02 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+    noise  3.0e-02 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+    noise  1.0e-01 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+    noise  3.0e-01 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+    noise  1.0e+00 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+    noise  3.0e+00 Hz -> top-1   0.25% +/- 0.35  (  0.50x chance, 8 pools)
+  permuted   across-image sd of the precentral rate 1.9621e+00 Hz
+    noise  0.0e+00 Hz -> top-1   0.56% +/- 0.17  (  1.12x chance, 8 pools)
+    noise  1.0e-03 Hz -> top-1   0.50% +/- 0.00  (  1.00x chance, 8 pools)
+    noise  1.0e-02 Hz -> top-1   0.56% +/- 0.30  (  1.12x chance, 8 pools)
+    noise  3.0e-02 Hz -> top-1   0.56% +/- 0.17  (  1.12x chance, 8 pools)
+    noise  1.0e-01 Hz -> top-1   0.44% +/- 0.17  (  0.87x chance, 8 pools)
+    noise  3.0e-01 Hz -> top-1   0.56% +/- 0.17  (  1.12x chance, 8 pools)
+    noise  1.0e+00 Hz -> top-1   0.44% +/- 0.17  (  0.87x chance, 8 pools)
+    noise  3.0e+00 Hz -> top-1   0.44% +/- 0.17  (  0.87x chance, 8 pools)
+
+config         noise    intact   severed  permuted  sever ratio
+base         0.0e+00    43.62x     1.00x     1.00x        43.62
+base         1.0e-03    43.37x     0.50x     1.00x        86.75
+base         1.0e-02    21.12x     0.50x     1.00x        42.25
+base         3.0e-02    17.75x     0.50x     1.00x        35.50
+base         1.0e-01    11.75x     0.50x     1.00x        23.50
+base         3.0e-01     7.87x     0.50x     0.87x        15.75
+base         1.0e+00     2.00x     0.50x     1.00x         4.00
+base         3.0e+00     0.75x     0.50x     1.25x         1.50
+aniso        0.0e+00    42.37x     1.00x     1.12x        42.38
+aniso        1.0e-03    42.75x     0.50x     1.00x        85.50
+aniso        1.0e-02    37.87x     0.50x     1.12x        75.75
+aniso        3.0e-02    43.75x     0.50x     1.12x        87.50
+aniso        1.0e-01    26.50x     0.50x     0.87x        53.00
+aniso        3.0e-01    19.00x     0.50x     1.12x        38.00
+aniso        1.0e+00    11.87x     0.50x     0.87x        23.75
+aniso        3.0e+00     6.87x     0.50x     0.87x        13.75
+
+wrote out/disjoint_transport.json
+=== (stage 2) superadditivity vs DRIVE AMPLITUDE ===
+# superadditivity at amp 1.0 reports the drive size, not the sheet: the
+# sigmoid curvature scale is slope = 4 mV and a 0.1 mV perturbation gives a
+# second-order term of (0.1/4)^2 = 6e-4.  so sweep the amplitude.
+amp=1 base  transport 9.561e-06  superadd 1.0002
+amp=1 aniso  transport 9.843e-03  superadd 1.0014
