@@ -35,6 +35,16 @@ innervated. Coverage is a thing to measure, not assume.
 **Muscles pull on real rigid bodies.** Motor output is force through tendon on
 bone, not an activation vector consumed by an abstraction.
 
+**The skeleton is real meshes, not proxies.** No inertia-inscribed spheres at
+segment centres of mass. A potentially-concave rigid-body skeleton of 3D meshes,
+one per bone, is what the body contacts the world with. Anything that replaces a
+bone with a sphere is a simplification of exactly the kind this programme is not
+allowed to make — and a solver that silently takes the convex hull of a concave
+mesh is the same simplification wearing a better name, so it has to be measured
+rather than assumed.
+
+**Muscles, tendons and ligaments anchor at real points** on those meshes.
+
 **The tissue that holds it together is part of the model.** Elastic integument,
 ligaments, tendons, lymph vessels, blood vessels. The body is not a skeleton
 with a skin texture.
