@@ -16,7 +16,8 @@ dev = "cuda" if torch.cuda.is_available() else "cpu"
 n_sites, embed = sd["dyn.embed"].shape; k = sd["dyn.idx"].shape[1]
 H = cfg["horizon"]; ds = cfg["dyn_steps"]; dt = cfg["dt"]
 dyn = P.CorticalDynamics(n_sites, embed, k, dev, long_range=cfg["long_range"]).to(dev)
-model = P.VideoLoop(dyn).to(dev); model.load_state_dict(sd); model.eval()
+rs = sd["from_cortex.weight"].shape[1] if "from_cortex.weight" in sd else 4096
+model = P.VideoLoop(dyn, read_sites=rs).to(dev); model.load_state_dict(sd); model.eval()
 
 fr = np.load(cfg["frames"], mmap_mode="r"); n = len(fr); ntr = int(n*0.8); GAP=250
 rng = np.random.default_rng(0)

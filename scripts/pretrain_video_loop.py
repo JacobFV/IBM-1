@@ -1328,7 +1328,8 @@ class AudioVisualLoop(nn.Module):
 class VideoLoop(nn.Module):
     """frame -> cortical drive -> dynamics -> cortical state -> next frame."""
 
-    def __init__(self, dyn: CorticalDynamics, img: int = 64, hidden: int = 256):
+    def __init__(self, dyn: CorticalDynamics, img: int = 64, hidden: int = 256,
+                 read_sites: int = 4096):
         super().__init__()
         self.dyn, self.img = dyn, img
         self.enc = nn.Sequential(
@@ -1339,7 +1340,12 @@ class VideoLoop(nn.Module):
         # drive reaches a posterior subset -- the occipital port
         self.n_in = dyn.n // 8
         self.to_cortex = nn.Linear(hidden, self.n_in)
-        self.read_sites = 4096
+        # READ_SITES IS AN ARGUMENT because it has not always been 4096.  the
+        # v6 checkpoint was trained when the readout was `dyn.n // 8`, so it
+        # carries a (256, 3750) from_cortex against this default's (256, 4096)
+        # and load_state_dict refuses it.  a renderer that hardcodes the default
+        # cannot open its own run's checkpoint -- size it from the artifact.
+        self.read_sites = read_sites
         self.read_idx = torch.linspace(0, dyn.n - 1, self.read_sites).long()
         self.from_cortex = nn.Linear(self.read_sites, hidden)
         self.dec = nn.Sequential(

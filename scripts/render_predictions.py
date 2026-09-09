@@ -65,8 +65,17 @@ if mod == "av" and coch is None:
     print("WARNING: modality says 'av' but no --audio-frames given; "
           "rendering as video", flush=True)
     mod = "video"
+# the readout width is a property of the CHECKPOINT, not of today's default.
+# v6 was trained when read_sites was `dyn.n // 8` (3,750 at 30k sites) and the
+# default is now 4,096, so constructing from the default and calling
+# load_state_dict raises a size mismatch on from_cortex and the run cannot open
+# its own weights.  read it off the tensor instead.
+rs = sd["from_cortex.weight"].shape[1] if "from_cortex.weight" in sd else 4096
 model = (P.AudioVisualLoop(dyn, n_bands=coch.shape[-1]) if mod == "av"
-         else P.VideoLoop(dyn)).to(dev)
+         else P.VideoLoop(dyn, read_sites=rs)).to(dev)
+if rs != 4096:
+    print(f"checkpoint readout is {rs} sites, not the current default 4096 "
+          f"-- sized from the checkpoint", flush=True)
 model.load_state_dict(sd); model.eval()
 print(f"{a.ckpt}: {mod}, {n_sites:,} sites, horizon {H}", flush=True)
 
