@@ -73,7 +73,7 @@ def cortical_sites(n: int, device, seed: int = 0):
     return pos.to(device)
 
 
-LOBES = ("occipital", "temporal", "parietal", "frontal", "central")
+LOBES = ("occipital", "temporal", "parietal", "frontal", "precentral", "postcentral")
 
 
 def cortical_regions(pos):
@@ -97,7 +97,12 @@ def cortical_regions(pos):
     x, y, z = pos[:, 0], pos[:, 1], pos[:, 2]
     r = pos.norm(dim=1).clamp_min(1e-6)
     yn, zn, xn = y / r, z / r, x.abs() / r
-    lab = torch.full((len(pos),), 4, dtype=torch.long, device=pos.device)  # central
+    # the central strip is split at the sulcus, because a sensorimotor
+    # materialization needs to tell motor cortex from somatosensory cortex and a
+    # single "central" label cannot: IHM-1 routes afferents to
+    # brain-{l,r}h-postcentral and reads descending commands from
+    # brain-{l,r}h-precentral, so those are two different populations of sites.
+    lab = torch.full((len(pos),), 5, dtype=torch.long, device=pos.device)  # postcentral
     # thresholds are set to the published lobe fractions, not to round numbers.
     # for uniform sampling on a sphere the coordinate is uniform in [-1, 1], so a
     # cut at -0.75 takes 12.5% -- close to the ~10-12% occipital cortex actually
@@ -107,6 +112,9 @@ def cortical_regions(pos):
     lab[(zn < -0.10) & (xn > 0.40) & (yn >= -0.75)] = 1    # temporal   ~20%
     lab[(zn > 0.35) & (yn < 0.20) & (yn >= -0.75)] = 2     # parietal
     lab[yn > 0.55] = 3                                     # frontal    ~22%
+    # precentral is anterior to the sulcus, postcentral posterior; the strip runs
+    # superior and is what remains of "central" once frontal is taken.
+    lab[(zn > 0.35) & (yn >= 0.20) & (yn <= 0.55)] = 4      # precentral (motor)
     return lab
 
 
@@ -620,6 +628,89 @@ class CranialNerveLoop(nn.Module):
 
     def embed_eeg(self, eeg):
         return F.normalize(self.eeg_head(eeg), dim=-1)
+
+
+class SensorimotorLoop(nn.Module):
+    """afferent rates -> cortex -> descending motor commands.  the body interface.
+
+    every other materialization in this file ends at a measurement -- an EEG
+    trace, an embedding, a predicted frame.  this one ends at an ACTION, and it
+    is the one a body simulator can close a loop around.
+
+    the contract is IHM-1's, read from `ihm/assembly/peripheral.py` rather than
+    invented:
+
+        in   afferent rates keyed by brain target, e.g. brain-rh-postcentral
+        out  {'motor_commands': {muscle_id: activation in [0, 1]}}
+
+    IHM validates that dict -- an unknown muscle id or an activation outside
+    [0, 1] raises -- so the output layer is sized from its 215 muscle bindings
+    and squashed, rather than emitting whatever the decoder feels like.
+
+    **the two strips are different populations of sites.**  afference enters the
+    postcentral sites and the command is read from the precentral ones, because
+    IHM routes to `brain-{l,r}h-postcentral` and reads from
+    `brain-{l,r}h-precentral`.  a single "central" label could not express that,
+    which is why `cortical_regions` splits at the sulcus.  the signal has to
+    cross from one strip to the other through the association kernel -- which
+    means the kernel is load-bearing for movement in the same way the ablations
+    have been testing it for perception, and severing it should cost the same way.
+
+    what this does NOT do, stated because it is the obvious thing to assume: it
+    has no motor babbling, no reward, and no learned controller.  the weights are
+    initialised, not trained -- there is no motor corpus here, and the only way
+    to train this is in a closed loop with a body, which is the point of handing
+    it to IHM-1.  a fresh materialization emits small activations around 0.5 and
+    means nothing by them.
+    """
+
+    def __init__(self, dyn: CorticalDynamics, muscles: list[str],
+                 afferent_channels: int = 32, hidden: int = 256,
+                 read_sites: int = 2048):
+        super().__init__()
+        self.dyn = dyn
+        self.muscles = list(muscles)
+        self.n_muscle = len(self.muscles)
+        self.sense_idx = region_index(dyn.pos, "postcentral")
+        self.motor_idx = region_index(dyn.pos, "precentral")
+        self.enc = nn.Sequential(
+            nn.Linear(afferent_channels, hidden), nn.GELU(),
+            nn.Linear(hidden, hidden), nn.GELU())
+        self.to_cortex = nn.Linear(hidden, len(self.sense_idx))
+        # read ONLY precentral: a motor command that could see the whole sheet
+        # would not have to route through the kernel, and the kernel is the thing
+        # under test.
+        n_read = min(read_sites, len(self.motor_idx))
+        self.motor_read = torch.linspace(0, len(self.motor_idx) - 1, n_read).long()
+        self.dec = nn.Sequential(
+            nn.Linear(n_read, hidden), nn.GELU(),
+            nn.Linear(hidden, self.n_muscle))
+
+    def forward(self, afferent, n_steps: int = 8, dt: float = 5e-3,
+                substeps: int = 2, sever: bool = False):
+        b = afferent.shape[0]
+        drive = torch.zeros(b, self.dyn.n, device=afferent.device)
+        drive[:, self.sense_idx.to(afferent.device)] = self.to_cortex(self.enc(afferent))
+        s = self.dyn.init_state(b, afferent.device)
+        w = torch.zeros_like(self.dyn.edge_weights()) if sever else self.dyn.edge_weights()
+        h = dt / substeps
+        for _ in range(n_steps * substeps):
+            s = self.dyn.step(s, drive, h, w)
+        m = s[1][:, self.motor_idx.to(afferent.device)][:, self.motor_read.to(afferent.device)]
+        # IHM refuses an activation outside [0, 1], so squash rather than clamp:
+        # a clamp hides saturation, a sigmoid reports it as a gradient.
+        return torch.sigmoid(self.dec(m)), s
+
+    @torch.no_grad()
+    def act(self, afferent_by_region: dict, device="cpu", **kw) -> dict:
+        """one step in IHM's protocol: its afferent dict in, its brain_state out."""
+        v = torch.zeros(1, self.enc[0].in_features, device=device)
+        for i, (_, val) in enumerate(sorted(afferent_by_region.items())):
+            if i < v.shape[1]:
+                v[0, i] = float(val)
+        cmd, _ = self.forward(v.to(device), **kw)
+        return {"motor_commands":
+                {m: float(cmd[0, i]) for i, m in enumerate(self.muscles)}}
 
 
 class VisualEvokedLoop(nn.Module):

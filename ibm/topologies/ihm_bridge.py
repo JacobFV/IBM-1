@@ -60,7 +60,7 @@ IHM_PERIPHERAL = os.path.expanduser(
 # IHM names a route that this repo splits, or vice versa.  recorded rather than
 # silently dropped: `sciatic_tibial` is IHM's fused route for what this repo
 # declares as `sciatic` continuing into `tibial`.
-ALIAS = {"sciatic_tibial": "sciatic"}
+ALIAS = {"sciatic_tibial": "sciatic", "sciatic_fibular": "common_fibular"}
 
 
 def _bare(nerve_id: str) -> tuple[str, str]:
