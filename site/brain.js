@@ -430,7 +430,6 @@ window.IBMBrain = (function () {
       if (side === 'l') hub[0] = Math.max(hub[0], labelPt[0] + off);
       else if (side === 'r') hub[0] = Math.min(hub[0], labelPt[0] - off);
       else if (side === 'b') hub[1] = Math.min(hub[1], labelPt[1] - off);
-      else if (side === 't') hub[1] = Math.max(hub[1], labelPt[1] + off);
       a.svg.trunk.setAttribute('d', curve(labelPt[0], labelPt[1], hub[0], hub[1], bulge, away, a));
       a.svg.branches.setAttribute('d', targets.map((q) => curve(hub[0], hub[1], q[0], q[1], 0.12, away)).join(' '));
       a.svg.branches.setAttribute('marker-end', 'url(#arrow-small)');
@@ -672,40 +671,30 @@ window.IBMBrain = (function () {
         it._bow = 0;  // the label moved; let its leader choose a side again
       });
     }
-    // a narrow hero: the first half of the ring in rows across the top, the
-    // second half in rows across the bottom, each row centred.  every label
-    // is a 'c' item -- its leader leaves from the edge facing the brain
+    // a narrow hero: the ring in two columns above the brain and two below,
+    // each pair meeting at a centre gutter.  the left column is right-aligned
+    // to the gutter and the right column left-aligned, so every leader leaves
+    // from an inner edge into the gutter and no leader crosses a label
     function layoutBands() {
-      const pad = 10, gx = 6, gy = 2, maxW = W - 2 * pad, half = Math.ceil(ringItems.length / 2);
-      const pack = (items) => {
-        const rows = [[]]; let w = 0;
+      const pad = 10, gy = 1, gutter = 28, n = ringItems.length, q = Math.ceil(n / 4);
+      const cols = [0, 1, 2, 3].map((k) => ringItems.slice(k * q, (k + 1) * q));
+      const height = (items) => items.reduce((a, it) => a + it.el.offsetHeight + gy, 0) - gy;
+      const stack = (items, side, y0) => {
+        let y = y0;
         items.forEach((it) => {
-          const iw = it.el.offsetWidth;
-          if (w && w + gx + iw > maxW) { rows.push([]); w = 0; }
-          rows[rows.length - 1].push(it); w += (w ? gx : 0) + iw;
-        });
-        return rows.map((r) => ({ items: r, w: r.reduce((a, it) => a + it.el.offsetWidth, 0) + gx * (r.length - 1), h: Math.max(...r.map((it) => it.el.offsetHeight)) }));
-      };
-      const put = (row, y) => {
-        let x = (W - row.w) / 2;
-        row.items.forEach((it) => {
-          it.x = x + it.el.offsetWidth / 2; it.y = y + row.h - it.el.offsetHeight / 2; it.side = 'c';
-          it.el.style.left = it.x + 'px'; it.el.style.top = it.y + 'px'; it.el.dataset.side = 'c'; it._bow = 0;
-          x += it.el.offsetWidth + gx;
+          const h = it.el.offsetHeight;
+          it.side = side; it.x = W / 2 + (side === 'l' ? -gutter / 2 : gutter / 2); it.y = y + h / 2;
+          it.el.style.left = it.x + 'px'; it.el.style.top = it.y + 'px'; it.el.dataset.side = side; it._bow = 0;
+          y += h + gy;
         });
       };
-      let y = pad;
-      pack(ringItems.slice(0, half)).forEach((row) => { put(row, y); y += row.h + gy; });
-      const bottom = pack(ringItems.slice(half));
-      y = H - pad - bottom.reduce((a, r) => a + r.h, 0) - gy * (bottom.length - 1);
-      bottom.forEach((row) => { put(row, y); y += row.h + gy; });
+      stack(cols[0], 'l', pad); stack(cols[1], 'r', pad);
+      stack(cols[2], 'l', H - pad - height(cols[2])); stack(cols[3], 'r', H - pad - height(cols[3]));
     }
     function edgePoint(el, side) {
       const r = el.getBoundingClientRect(), h = hero.getBoundingClientRect(), y = r.top - h.top + r.height / 2;
       if (side === 'l') return [r.right - h.left + 4, y];
       if (side === 'r') return [r.left - h.left - 4, y];
-      if (side === 't') return [r.left - h.left + r.width / 2, r.bottom - h.top + 2];
-      if (side === 'b') return [r.left - h.left + r.width / 2, r.top - h.top - 2];
       return [r.left - h.left + r.width / 2, r.top - h.top + (r.top - h.top < h.height / 2 ? r.height + 2 : -2)];
     }
     // where the brain's outline is along a ray from its centre: the farthest
@@ -742,7 +731,7 @@ window.IBMBrain = (function () {
         el.className = 'ann ann-' + kind + (item.kind === 'intervention' ? ' ann-int' : '');
         el.innerHTML = `<span class="ann-label">${item.label}</span><span class="ann-id">${item.id}</span>`;
         colEl.appendChild(el);
-        annItems.push({ el, svg: makeAnnotationSVG(svg, 'ann-' + kind), anchor: item.anchor, _nodes: item._nodes, kind, side: kind === 'in' ? 'l' : 'r' });
+        annItems.push({ el, svg: makeAnnotationSVG(svg, 'ann-' + kind), anchor: item.anchor, _nodes: item._nodes, kind, k: colEl.childElementCount - 1, side: kind === 'in' ? 'l' : 'r' });
       };
       m.inputs.forEach((x) => make(inCol, x, 'in'));
       m.outputs.forEach((x) => make(outCol, x, 'out'));
@@ -800,7 +789,11 @@ window.IBMBrain = (function () {
           const hovered = state.hover === it.m.id;
           if (hovered) { it.line.setAttribute('d', ''); return; }
           const [x0, y0] = edgePoint(it.el, it.side);
-          const L = Math.hypot(x0 - ox, y0 - oy) || 1, dx = (x0 - ox) / L, dy = (y0 - oy) / L;
+          // the leader is aimed through the label's centre, not its edge: in
+          // the narrow bands every edge sits on the gutter, and aiming there
+          // would land forty arrows on one point of the outline
+          const ax = narrow ? it.x + (it.side === 'l' ? -1 : 1) * it.el.offsetWidth / 2 : x0;
+          const L = Math.hypot(ax - ox, y0 - oy) || 1, dx = (ax - ox) / L, dy = (y0 - oy) / L;
           const r = reach(ox, oy, dx, dy);
           // glide toward the new outline point rather than jumping to it
           it.r = it.r == null ? r : it.r + (r - it.r) * 0.12;
@@ -816,9 +809,10 @@ window.IBMBrain = (function () {
       } else {
         ringItems.forEach((it) => it.line.setAttribute('d', ''));
         hoverAnn.svg.g.style.display = 'none';
-        // on a narrow hero the inputs sit above the brain and the outputs below it
+        // on a narrow hero the inputs sit above the brain and the outputs below
+        // it, each in two columns about a centre gutter like the ring
         annItems.forEach((a) => {
-          const side = narrow ? (a.kind === 'in' ? 't' : 'b') : a.side;
+          const side = narrow ? (a.k % 2 ? 'r' : 'l') : a.side;
           a.svg.g.style.display = '';
           drawAnnotation(a, edgePoint(a.el, side), side, ctx);
         });

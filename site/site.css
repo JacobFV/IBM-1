@@ -175,23 +175,25 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 
 /* narrow layout: the same hero, but forty labels cannot ring a portrait
    figure.  brain.js packs them into a band above and a band below the brain
-   instead (every label a 'c' item), and a selection puts the inputs under the
-   title and the outputs along the bottom, leaders and all. */
+   instead, two columns about a centre gutter in each band, and a selection
+   puts the inputs under the title and the outputs along the bottom the same
+   way, leaders and all. */
 .hero.narrow .wordmark { font-size: clamp(64px, 20vw, 120px); }
-.hero.narrow .ring-item { padding: 3px 4px; font-size: 0.64rem; }
-.hero.narrow .ring-group { font-size: 0.52rem; margin-bottom: 2px; text-align: center; }
+.hero.narrow .ring-item { padding: 1px 4px; font-size: 0.64rem; }
+.hero.narrow .ring-group { font-size: 0.52rem; margin: 3px 0 1px; }
 .hero.narrow .hero-down { display: none; }
 .hero.narrow .sel-close { top: 10px; right: 10px; width: 40px; height: 40px; font-size: 22px; }
 .hero.narrow .sel-close-hint { display: none; }
 .hero.narrow .sel-head { top: 12px; left: 14px; right: 60px; max-width: none; }
 .hero.narrow .sel-title { font-size: clamp(26px, 7vw, 40px); margin-bottom: 6px; }
 .hero.narrow .sel-doc { font-size: 0.8rem; line-height: 1.35; max-width: none; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
-.hero.narrow .ann-col { transform: none; top: auto; left: 12px; right: 12px; max-height: none; gap: 6px; align-items: flex-start; }
+.hero.narrow .ann-col { transform: none; top: auto; left: 12px; right: 12px; max-height: none; gap: 4px; align-items: center; }
 .hero.narrow .ann-col-in { top: calc(12px + clamp(26px, 7vw, 40px) + 6px + 3.4rem + 14px); }
 .hero.narrow .ann-col-out { bottom: 12px; }
-.hero.narrow .ann-col > div { flex-direction: row; flex-wrap: wrap; gap: 4px 10px; align-items: flex-start; }
+.hero.narrow .ann-col > div { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 28px; align-items: start; align-self: stretch; }
 .hero.narrow .ann { padding: 2px 4px; max-width: 20ch; }
-.hero.narrow .ann-out { text-align: left; }
+.hero.narrow .ann:nth-child(odd) { justify-self: end; text-align: right; }
+.hero.narrow .ann:nth-child(even) { justify-self: start; text-align: left; }
 .hero.narrow .ann-label { font-size: 0.86rem; }
 
 /* ==================================================================== paper */
