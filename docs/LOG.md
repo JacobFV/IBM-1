@@ -193,6 +193,36 @@ diffusion signal to susceptibility. Their sites spend the long-range budget
 inside their own parcel, and the count and the names are printed in
 `tract_note`, because "no long-range connection" here is a fact about the scan.
 
+### the region the sphere could not address is the connectome's most connected one
+
+Lobe-to-lobe declared connectivity at the 0.5 consensus, as a fraction of
+possible parcel pairs (a 0.50 between two two-parcel lobes means "ipsilateral
+only, both hemispheres", which is the 3.7%-interhemispheric result again):
+
+                 occip  tempo  parie  front  precen postce insula cingul
+    occipital     .38    .32    .44    .00    .00    .00    .31    .12
+    temporal      .32    .24    .36    .00    .00    .00    .33    .12
+    parietal      .44    .36    .38    .22    .50    .50    .50    .34
+    frontal       .00    .00    .22    .14    .30    .28    .33    .27
+    precentral    .00    .00    .50    .30    .00    .50    .50    .38
+    postcentral   .00    .00    .50    .28    .50    .00    .50    .38
+    insula        .31    .33    .50    .33    .50    .50    .00    .50
+    cingulate     .12    .12    .34    .27    .38    .38    .50    .41
+
+Occipital and temporal have **no declared connection at all** to frontal,
+precentral or postcentral. That is the whole occipital→precentral result in one
+cell, and it is correct anatomy: the ventral and dorsal streams reach motor
+cortex through parietal and insula, not directly.
+
+And **the insula is the single most connected parcel in the atlas** — degree 25
+of a possible 67, ranks 1 and 3 of 68, tied with precuneus — with a declared
+connection to every lobe including occipital and temporal. The region the
+spherical proxy could not address at all, and into which the interoceptive drive
+was therefore poured as a 4.5% subsample of `frontal`, is the hub.
+
+The eleven parcels with degree **0** are the orbitofrontal, polar and entorhinal
+ones, for the reason given above: they are where diffusion loses signal.
+
 ### a folded surface raises a question a sphere could not: is the local graph still local?
 
 `knn_edges` is a `torch.cdist` in the volume. On a sphere that is a local sheet

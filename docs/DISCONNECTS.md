@@ -129,6 +129,13 @@ is a **ventral, intrahemispheric** topology whatever its docstring hopes for.
 The threshold is a knob and the sweep is in `edge_existence_curve()`: 616 edges
 at 0.1, 459 at 0.5, 126 at 1.0.
 
+**The region the sphere could not address is the connectome's hub.** The insula
+has degree 25 of a possible 67 — ranks 1 and 3 of 68, tied with precuneus — and a
+declared connection to every lobe, occipital and temporal included. Occipital and
+temporal, by contrast, have **no declared connection at all** to frontal,
+precentral or postcentral: the streams reach motor cortex through parietal and
+insula. That single fact is the occipital→precentral row of the table above.
+
 **And eleven parcels have no long-range partner at all.** At the 0.5 threshold
 `lh/rh.entorhinal`, `medialorbitofrontal`, `parsorbitalis`, `frontalpole`,
 `temporalpole` and `lh.lateralorbitofrontal` are isolated in the consensus —
