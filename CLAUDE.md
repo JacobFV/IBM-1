@@ -54,6 +54,37 @@ Specifically:
 - **Single-pool retrieval has sd ≈ 2.8%.** Average pools before comparing, and
   never checkpoint on a single-pool best — that selects for lucky draws.
 
+## Randomness
+
+**A shared generator makes two things vary that should have varied
+independently.** This bit twice in one day, in the same file, with the same
+signature both times.
+
+- `CorticalDynamics.__init__` drew its long-range partners with `torch.randint`
+  from the **global** RNG. Seed 0 reproduces them on the *same device*, but cpu
+  and cuda draw unrelated graphs from the same seed (measured coincidence
+  0.00062 against a chance of 0.00050). `embody.py --seed` therefore redrew the
+  **topology** while claiming to vary only the initialisation.
+- An ablation drew `torch.randperm` *inside* the feature extractor, from a
+  generator shared with the caller, and the extractor is called twice per arm —
+  once for training features, once for held-out. The head was fitted on one
+  permutation and evaluated on another. The arm read exactly chance while
+  preserving 99.7% of the across-image variance, which looks exactly like a
+  clean ablation result and is not one.
+
+Draw it **once**, outside the loop, pass it in, and have the callee assert it
+received one rather than drawing its own. When two passes must see the same
+draw, `assert torch.equal(...)` between them — printing both for a human to
+compare is only as good as the reader, and this one got past two of us for an
+hour.
+
+**Exactly chance, with the signal still present, means look at the bookkeeping
+before you believe the ablation.** A destroyed-information result and a
+train/test mismatch are indistinguishable from the accuracy alone. The
+separating control is a pure-relabelling arm — permute something that *cannot*
+change the answer, using the same draw in both passes, and confirm it scores
+what the intact arm scores. If that arm moves, every arm in the run is void.
+
 ## Data
 
 **Take an ordering from the dataset that defines it, never from a reconstruction
