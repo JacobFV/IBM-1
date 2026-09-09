@@ -44,6 +44,42 @@ already written.
 
 ---
 
+## 2026-09-09 — a 2,048-site substrate beats a 30,000-site one on the nerve pathway
+
+`optic_nerve` reaches **23.56% (47.1x chance)** on the 2,048-site run against
+**14.69%** on the 30,000-site one.  the raw comparison is confounded -- the small
+run gives that term a third of its steps and the large run a tenth -- so it was
+matched on OWN steps, the ones the term actually took:
+
+| own steps | 30,000 sites | 2,048 sites |
+|---|---|---|
+| 300 | 3.75% | 5.75% |
+| 600 | 8.37% | 10.06% |
+| 900 | 9.87% | 11.37% |
+| 1,200 | 12.06% | **18.00%** |
+
+**the gap narrows under matching but does not close, and it widens with
+training.**  a substrate one-fifteenth the size is not merely competitive on the
+anatomically-routed visual term, it is ahead at every matched point.
+
+that is the third independent measurement pointing the same way.  the 150,000-site
+model finished 6.5 points BEHIND the 30,000-site one on the designated test set
+after 28 hours; its kernel transferred at -32%, below the random floor; and now
+2,048 beats 30,000 on the nerve term.  **on these corpora, more substrate has not
+once bought accuracy.**  what it bought was where the computation sits -- the
+150k model's bypass path was much weaker -- and that is a real property, but it
+is not the same thing as being better.
+
+the practical consequence is good news for the embodiment: the kernel the body
+sim wants is small, and small is what performs.  the 2,048-site run exists
+because IHM-1 runs a 128-site cortex and resampling down is lossy in one
+direction; it turns out to also be the better model.
+
+what this does NOT say: that 2,048 is optimal, or that the ordering holds on
+other tasks.  visual_eeg is roughly equal on both (28.50% against 27.75%), so the
+advantage is specific to the nerve-routed term so far.  a resolution sweep on one
+task with matched own-steps is the clean experiment and has not been run.
+
 ## 2026-09-08 (overnight) — warm-starting DOES cross resolutions; I read step 0 and called it
 
 **this entry is a correction of itself.**  what follows the rule is the measured
