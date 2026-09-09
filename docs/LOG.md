@@ -44,6 +44,36 @@ already written.
 
 ---
 
+## 2026-09-09 — the resolution curve has an interior peak near 512 sites
+
+the fourth arm reached the step where this sweep separates.  one term, one task,
+identical settings, resolution the only variable, 8 pools of 200 at step 2,000:
+
+| sites | top-1 | vs 512 |
+|---|---|---|
+| 128 | 17.44% ± 1.84 | −4.18 pts (1.47 sd) |
+| **512** | **21.62% ± 2.16** | — |
+| 2,048 | 20.12% ± 1.71 | −1.50 pts (0.54 sd) |
+| 8,192 | 19.19% ± 1.75 | −2.43 pts (0.87 sd) |
+
+**the curve peaks in the interior and falls off in both directions.**  no single
+pairwise gap clears 1.5 sd, so none of them is decisive alone -- but the ordering
+128 < 8,192 < 2,048 < 512 puts the two extremes at the bottom, and the large-side
+decline continues into the runs already measured: 8,192 below 2,048, 30,000 below
+2,048, 150,000 below 30,000.
+
+that is a different shape from what was recorded three entries ago.  "a plateau
+at the small end with degradation above it" is superseded: 512 and 2,048 tie at
+step 4,000 but 512 leads at 2,000, and 128 is clearly below both.  the honest
+description is a broad optimum around 512-2,048 with both tails worse, and the
+useful part is that the optimum is small.
+
+what this does not settle: where exactly the peak sits, or whether it moves with
+the task.  every arm here is `optic_nerve` on THINGS-EEG2, and the one other
+resolution comparison available -- visual_eeg at 2,048 against 30,000 -- was
+roughly a tie.  so the interior peak is established for the nerve-routed term and
+assumed for nothing else.
+
 ## 2026-09-09 — 128 sites is below the plateau, and IHM-1 is running 128
 
 the sweep now has the arm that matters for the embodiment.  one term, one task,
