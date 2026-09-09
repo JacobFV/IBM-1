@@ -33,6 +33,7 @@ pattern is worth more than any single row.
 | 16 | next-frame video training learns cortical wiring that transfers to EEG (91.5% recovery) | pairing each frame with a **RANDOM** frame from the same film -- temporal structure destroyed, everything else identical -- still transfers **83-86%**. only ~5 of the 35.5 points depend on prediction. the mechanism is gradient flow through the dynamics, not next-frame learning | running the shuffled-target control, which the saturation-by-step-2,500 should have prompted immediately |
 | 17 | the shared kernel is carrying the ten per-subject terms -- their mean doubled from 4.97% to 11.09% while each got only 3% of the budget | a SOLO run of one subject for the same 135 own steps, same warm start, same kernel, reaches **17.37%** where the shared run reaches 15.44%. s03 is a wash. sharing is neutral to slightly negative; the doubling is what 135 steps buys either way | running the matched-step solo control instead of reading the trajectory |
 | 18 | warm-starting does not cross resolutions -- the 2k run opened at 0.44% despite "warm-started (20 tensors)", so the restart cost 3,000 steps and bought nothing | it reaches **25.87% by step 1,000** where the cold run was at 4.31% by 2,000 -- **4x at matched steps**. only the port projection fails to transfer, and it is re-learned inside 1,000 steps. I read step 0, the one moment the untransferable tensor dominates, and generalised | letting the run continue and reading the trajectory instead of its first point |
+| 19 | the IBM kernel cannot carry a motor task -- trained, permuted and random kernels were equivalent after fine-tuning on the body | the teacher was the bare postural servo, which **falls at 1.19 s**. the corpus was a body falling over, and all three arms lost to predicting the mean because there was nothing to learn. with the engineered LQR, which holds 12 s, a ridge on the same split reaches **+0.9801** -- the corpus is learnable and the earlier experiment measured nothing | checking whether the teacher could actually stand |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
 
@@ -43,6 +44,49 @@ caught by a measurement that could have been run first, and several by one I had
 already written.
 
 ---
+
+## 2026-09-09 — the body joins the soup, and the earlier fine-tuning result is withdrawn
+
+`BodyStance` is now an objective in `train_curriculum.py` alongside the other
+sixteen: a fixed paired corpus, a head, a loss against an explicit baseline.
+vision is (image, evoked EEG), hearing is (cochleagram, MEG), and this is
+(muscle state, motor command).  the physics ran once during collection, so a
+curriculum step stays 1.45 s rather than becoming 300.
+
+**the fine-tuning result from earlier today is withdrawn.**  it reported that
+trained, permuted and random kernels were equivalent on a motor task, and read
+that as evidence about the kernel.  it was not.  measured on IHM-1's body:
+
+| teacher | outcome |
+|---|---|
+| bare postural servo | falls at 1.19 s |
+| postural servo + equilibrium excitations | falls at 1.97 s |
+| **engineered LQR** | **holds 12 s under perturbation** |
+
+that run cloned the first one.  training a cortex to imitate a body falling over
+is why every ablation arm lost to predicting the mean, and no conclusion about
+the kernel survives it.
+
+the LQR is also the only teacher independent of this kernel.  IHM's cortical
+stance controller holds five seconds too, but it is built FROM the kernel by an
+offline decoder fit, so cloning it would be circular -- it would manufacture
+exactly the positive result worth being most suspicious of.
+
+**the ceiling is measured rather than assumed.**  the LQR is u = -Kx, so the map
+is linear, and a ridge on the same contiguous split with a guard band reaches
+**skill +0.9801** against predicting the training mean.  that is what the term is
+being asked to do, and the objective prints the ceiling beside its own skill at
+every eval so that a number below it cannot read as success.
+
+first measured trajectory, 512 sites, kernel from scratch:
+
+    step 0     skill -59766.94
+    step 200   skill     -3.74
+
+learning fast from a random start, and still nowhere near +0.9801.  a longer run
+is going now.  what would make this term meaningful is beating the ridge -- a
+cortex that merely approaches a linear controller on a linear problem has shown
+capacity, not advantage.
 
 ## 2026-09-09 — the resolution curve has an interior peak near 512 sites
 
