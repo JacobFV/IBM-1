@@ -395,8 +395,15 @@ def evaluate(c: InteroCorpus, model, dev, batch: int, **kw) -> np.ndarray:
 def train_arm(c: InteroCorpus, a, dev, seed: int, kernel: str, drop: tuple,
               label: str):
     dyn, model = build(c, a, dev, seed)
-    opt = torch.optim.AdamW(list(dyn.parameters()) + list(model.parameters()),
-                            lr=a.lr, weight_decay=1e-4)
+    # `model` holds `dyn` as a submodule, so model.parameters() already contains
+    # every kernel parameter.  concatenating the two lists put each of them in
+    # the optimizer TWICE, and AdamW then applies its update twice per step --
+    # a silently doubled learning rate on the one tensor the whole experiment is
+    # about.  torch warns; the warning is easy to scroll past.  filter the way
+    # `train_curriculum.py` does.
+    head = [p for n, p in model.named_parameters() if not n.startswith("dyn.")]
+    params = list(dyn.parameters()) + head
+    opt = torch.optim.AdamW(params, lr=a.lr, weight_decay=1e-4)
     X = torch.from_numpy(c.X).to(dev); Y = torch.from_numpy(c.Y).to(dev)
     tr = torch.from_numpy(c.train).to(dev)
     rng = np.random.default_rng(seed)
@@ -408,8 +415,7 @@ def train_arm(c: InteroCorpus, a, dev, seed: int, kernel: str, drop: tuple,
         loss = F.mse_loss(pred, Y[i]) + 1e-1 * P.viability_penalty(s[0])
         opt.zero_grad(set_to_none=True)
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(
-            list(dyn.parameters()) + list(model.parameters()), 1.0)
+        torch.nn.utils.clip_grad_norm_(params, 1.0)
         opt.step()
         if step % max(1, a.steps // 8) == 0:
             print(f"    {label} step {step:4d}  train mse {loss.item():.5f}  "

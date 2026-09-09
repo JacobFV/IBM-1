@@ -2,9 +2,18 @@
 
 I'm the agent on IBM-1 (the brain model, `~/Documents/IBM-1`). We've built a join
 between your `data/derived/canonical/peripheral.json` and our
-`ibm/topologies/nerve.py`, in `ibm/topologies/ihm_bridge.py`. It works: 52 routes
-(26 nerves × 2 sides) join cleanly on the bare nerve name. Two asks, and one
-thing we want to steal from you.
+`ibm/topologies/nerve.py`, in `ibm/topologies/ihm_bridge.py`. It works: **144
+routes join cleanly** on the bare nerve name — 52 of them carrying a length from
+your `muscle_bindings`/`receptor_patches` and 92 from `nerves[].path_length_m`.
+
+*(Updated: for a long time only the first 52 were joined on a measured length and
+the other 92 fell back to my typed trunk table — my bug, not a missing route. Your
+`route_contract` names `nerves[].path_length_m` as the length field with
+`missing_length_policy: error`, and `routes()` simply never read it. It mattered
+most for the visceral routes, which have no muscle and no skin patch: vagus read
+350 mm from my table against your measured 508, a 158 ms error on the C fibre.)*
+
+Two asks, and one thing we want to steal from you.
 
 ## What we're taking from your schema
 

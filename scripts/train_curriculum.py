@@ -533,35 +533,35 @@ class Interoception:
     def __init__(self, dyn, dev, a):
         self.dev, self.a = dev, a
         self.c = AB.InteroCorpus(self.CORPUS, self.HORIZON_S)
-        # the known-answer check, at construction rather than at report time: a
-        # baseline predictor must score exactly zero skill against itself.
+        # the known-answer checks, at construction rather than at report time.
+        # every baseline predictor must score exactly zero skill against itself,
+        # and a ridge from the afference to `discomfort` at the same instant
+        # must print R^2 = 1.000000, because discomfort IS an affine function of
+        # those fifteen rates.  that gate is also the reason discomfort and
+        # sensation are scored against persistence below and not against the
+        # mean: a target a linear map recovers exactly is a target whose
+        # variance-explained says nothing.
         self.gates = AB.sanity_gates(self.c, self.c.test)
-        self.base = AB.baselines(self.c, self.c.test)
-        self.CEILING = self._agg(AB.ridge_control(self.c))
+        # a contiguous, evenly spaced subset of the held-out pairs.  the full
+        # test split costs one 590 ms cortical simulation per pair and would
+        # dominate the run; spacing rather than sampling keeps every held-out
+        # sequence covered.
+        te = self.c.test
+        self.te_idx = te[::max(1, len(te) // self.EVAL_PAIRS)]
+        self.base = AB.baselines(self.c, self.te_idx)
+        # the ceiling, measured on the same subset the model is scored on.
+        rid = AB.ridge_control(self.c)
+        pos = {v: i for i, v in enumerate(te)}
+        rid_sub = rid[[pos[i] for i in self.te_idx]]
+        self.CEILING = AB.headline(
+            self.c, AB.per_target_mse(rid_sub, self.c.Y_raw[self.te_idx]),
+            self.base)
         self.model = P.InteroceptiveLoop(dyn, self.c.channels,
                                          n_out=self.c.n_out).to(dev)
         self.X = torch.from_numpy(self.c.X).to(dev)
         self.Y = torch.from_numpy(self.c.Y).to(dev)
         self.tr = torch.from_numpy(self.c.train).to(dev)
-        # a contiguous, evenly spaced subset of the held-out pairs.  the full
-        # test split costs one 590 ms cortical simulation per pair and the
-        # evaluation would then dominate the run; spacing rather than sampling
-        # keeps the coverage of every sequence.
-        te = self.c.test
-        step = max(1, len(te) // self.EVAL_PAIRS)
-        self.te = torch.from_numpy(te[::step]).to(dev)
-        self.te_idx = te[::step]
-
-    def _agg(self, pred_raw):
-        """skill against the training mean, in standardised target coordinates.
-
-        Standardised because the targets differ in raw variance by four orders
-        of magnitude -- endurance in hours against discomfort as a fraction --
-        and a raw-units aggregate would report endurance and call it the model.
-        """
-        z = (pred_raw - self.c.y_mu) / self.c.y_sd
-        zt = (self.c.Y_raw[self.te_idx] - self.c.y_mu) / self.c.y_sd
-        return float(1.0 - ((z - zt) ** 2).mean() / (zt ** 2).mean())
+        self.te = torch.from_numpy(self.te_idx).to(dev)
 
     def params(self):
         return [p for n, p in self.model.named_parameters()
@@ -581,18 +581,16 @@ class Interoception:
             p, _ = self.model(self.X[self.te[i:i + 64]], checkpoint_every=0)
             out.append(p.cpu().numpy())
         pred = np.concatenate(out) * self.c.y_sd + self.c.y_mu
-        truth = self.c.Y_raw[self.te_idx]
-        mse = ((pred - truth) ** 2).mean(0)
-        base = AB.baselines(self.c, self.te_idx)
-        sk = AB.skill(mse, base)
-        agg = self._agg(pred)
-        return {"agg_skill_vs_mean": agg, "ceiling_ridge": self.CEILING,
-                "mse_raw": mse.tolist(), "targets": self.c.target_names,
-                "sanity_gates": self.gates, **sk,
-                "report": f"agg skill vs mean {agg:+.4f} (ridge ceiling "
-                          f"{self.CEILING:+.4f}); vs persistence " +
-                          "/".join(f"{v:+.3f}"
-                                   for v in sk["skill_vs_persistence"])}
+        mse = AB.per_target_mse(pred, self.c.Y_raw[self.te_idx])
+        h = AB.headline(self.c, mse, self.base)
+        guard = AB.change_guard(self.c, pred, self.te_idx)
+        st, cl = h["state_skill_vs_mean"], self.CEILING["state_skill_vs_mean"]
+        tj = h["trajectory_skill_vs_persistence"]
+        return {**h, "ceiling_ridge": self.CEILING, "mse_raw": mse.tolist(),
+                "targets": self.c.target_names, "change_guard": guard,
+                "sanity_gates": self.gates,
+                **AB.skill(mse, self.base),
+                "report": f"state {st:+.4f} (ridge {cl:+.4f}) traj {tj:+.4f}"}
 
 
 OBJECTIVES = {"visual_eeg": VisualEEG, "audio_meg": AudioMEG, "video": VideoNext,

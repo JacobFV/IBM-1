@@ -312,13 +312,63 @@ falls silent during exactly the shortening movements it is needed for.
 drift out of sync the way a hand-written interface document would.
 `python -m ibm.embodiment` prints it.
 
-**483 ports over 96 named muscles and 9 receptor surfaces:**
+**498 ports over 96 named muscles, 9 receptor surfaces and 5 visceral trunks:**
 
 | group | count | direction | content |
 |---|---|---|---|
 | `motor_out` | 186 | ibm-1 → simulator | per muscle, an **alpha** drive and a **gamma** drive |
 | `plant_in` | 288 | simulator → ibm-1 | per muscle, length (L0), velocity (L0/s), force (N) |
 | `sensor_in` | 9 | simulator → ibm-1 | luminance, sound pressure, skin pressure/displacement/temperature, vestibular acceleration, chemical, blood pressure, oxygenation |
+| `visceral_in` | 15 | simulator → ibm-1 | gastric and intestinal distension and nutrient load, GI absorption, hepatoportal glucose, pulmonary stretch, aortic baro- and chemoreception, foregut mechano and ischaemia, midgut distension, renal, bladder |
+
+### the visceral group is shaped differently, and that is its whole content
+
+a `sensor_in` port carries one latency per receptor **surface** — 12 ms for skin,
+0.4 ms for the vestibular organ, and until this group existed, a flat 60 ms for
+"viscera". that flat number is wrong by a factor of 55.
+
+the visceral ports carry a delay per **(trunk, fibre class)** pair, over the
+route lengths IHM measured:
+
+| group | route | delay | what arrives |
+|---|---|---|---|
+| vagus / A-beta | 508 mm | **9.2 ms** | gastric and intestinal volume, lung volume, aortic pressure |
+| vagus / A-delta | 508 mm | 33.9 ms | intestinal absorption |
+| pelvic splanchnic / C | 128 mm | 128.0 ms | bladder filling |
+| greater splanchnic / C | 168 mm | 168.4 ms | high-threshold gastric distension, lactate |
+| lesser splanchnic / C | 217 mm | 217.2 ms | high-threshold intestinal distension |
+| least splanchnic / C | 232 mm | 232.2 ms | renal |
+| vagus / C | 508 mm | **507.8 ms** | nutrient load, portal glucose, aortic chemoreception |
+
+**the stomach reports twice, on two nerves, half a second apart.** the vagal
+A-beta channel is a low-threshold volume report at 9 ms; the greater splanchnic C
+channel is a high-threshold, nociceptive report of the same organ at 168 ms, and
+it stays silent unless the stomach is genuinely overfull. that pair is what the
+trunk/fibre-class split exists to express, and a single visceral latency asserts
+they are the same event.
+
+it is also why interoception is *late*. a gut feeling is slow and a touch is not,
+and the ratio here — 55x within one nerve — is the largest in the model.
+
+**the cortical target is a substitution and it is named.** interoceptive afference
+reaches insula and anterior cingulate. `cortical_regions` in
+`scripts/pretrain_video_loop.py` is a six-label geometric convention over a
+spherical proxy and a sphere has no lateral sulcus, so the insula is not separable
+there; the drive enters the `frontal` label, subsampled to the insula+ACC share of
+cortical surface (~4.5%). the DK parcellation in `ibm/anatomy/systems.py` does
+declare `insula`, `rostralanteriorcingulate` and `caudalanteriorcingulate`, so a
+materialization through `ibm/materialize/build.py` has the real target and the
+substitution ends there. `ibm.interoception.PORT_SUBSTITUTION` is a constant so it
+prints in every report rather than living in a comment.
+
+**one declared gap.** there is no viscera-supported nociceptor component:
+`transduction.nociceptor` sits on the transduction field's default support, the
+body surface. the splanchnic channels are nociceptive by threshold and by fibre
+class and have nowhere in the ontology to say so, so they bind to
+`transduction.baroreceptor` — whose own docstring covers "the visceral
+mechanoreceptors that report gut and bladder distension" — and are tagged
+nociceptive in the row. recorded as `ibm.interoception.ONTOLOGY_GAPS` rather than
+fixed by adding a component no process reads.
 
 `ibm/anatomy/muscles.py` is what makes this addressable: 96 muscles, each with its
 nerve, its root levels, and a relative spindle density. that table is the
@@ -350,8 +400,12 @@ change.
 
 ## 7. so: is there a wire for everything?
 
-**for muscles and proprioception, yes** — 474 of the 483 ports, derived from the
+**for muscles and proprioception, yes** — 474 of the 498 ports, derived from the
 declarations, with fibre-resolved latencies and working receptor implementations.
+
+**for the viscera, now yes as well** — 15 ports with fibre-class-resolved
+latencies and rates computed by IHM-1 from native BioGears state
+(`ihm/assembly/interoception.py`), rather than by anything here.
 
 **for the rest, partly.** the 9 sensor ports are one per modality, not one per
 receptor field: there is a `skin.pressure` port and not a port per dermatome,
