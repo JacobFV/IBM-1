@@ -766,7 +766,29 @@ Not rank: the target's effective rank is **3.1**, with 99% of its variance in 9
 dimensions, against a sheet that transports 12.9. Measured, and it rules out the
 first hypothesis I had.
 
-**And persistence remains 4.9x ahead.** The honest reading of that gap is still
+**AND THE SHEET IS ACTIVELY HURTING.** The control that settles it: same
+encoder, same head, same budget, same data, the cortical sheet removed entirely
+and the encoder's output handed straight to the readout.
+
+| | held-out MSE at 1,200 | best | skill vs persistence |
+|---|---|---|---|
+| cortical, base | 5.133e-04 | 5.133e-04 | −3.94 |
+| cortical, concentrated | 5.261e-04 | 5.202e-04 | −4.06 |
+| **no cortex at all** | **4.500e-04** | **4.329e-04** | **−3.33** |
+
+Removing the sheet makes the task **12.3% better at matched step and 15.7% better
+at best** — and it runs in 70 seconds against 90 minutes, a 78x saving. So the
+substrate is not innocent here: it destroys something a three-layer MLP on the
+same input keeps.
+
+That is the opposite of the visual pathway, where bypassing the dynamics on real
+surface geometry retains only 11.7%. The same substrate that is load-bearing for
+retrieval is a net cost for regression, and the difference is not amplitude —
+concentration, which fixes amplitude, changes nothing.
+
+**And persistence remains 4.9x ahead of the cortical arms and 3.3x ahead of the
+MLP**, so the objective is hard independently of the substrate. Both facts are
+needed: the sheet hurts, and removing it would still not reach the baseline. The honest reading of that gap is still
 open: the model has `rate_per_s` at its input, so it holds the information
 persistence uses, and it does not convert it. Whether that is the substrate or
 the objective is not settled by these two arms, and the earlier claim that it was

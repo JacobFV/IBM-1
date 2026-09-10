@@ -194,7 +194,41 @@ def main() -> None:
            "persistence": pers_mse, "ridge_no_cortex": ridge_mse},
            "held_out_motions": te, "arms": {}}
 
-    for arm in a.arms.split(","):
+    # THE CONTROL THAT SETTLES WHETHER THE SHEET IS THE PROBLEM.  Same encoder,
+    # same head, same budget, same data -- the cortical sheet removed entirely and
+    # the encoder's output handed straight to the readout.  If this matches the
+    # cortical arms, the 4.9x gap to persistence belongs to the OBJECTIVE and the
+    # substrate is innocent; if it beats them, the sheet destroys something a
+    # plain MLP keeps.  Either answer closes a question two withdrawn claims have
+    # already turned on.
+    if "no_cortex" in a.arms.split(","):
+        torch.manual_seed(a.seed)
+        mlp = nn.Sequential(nn.Linear(Xtr.shape[1], 256), nn.GELU(),
+                            nn.Linear(256, 512), nn.GELU(),
+                            nn.Linear(512, Ytr.shape[1])).to(dev)
+        o2 = torch.optim.AdamW(mlp.parameters(), lr=a.lr, weight_decay=1e-4)
+        Xt_ = torch.from_numpy(Xtr_n).to(dev); Yt_ = torch.from_numpy(Ytr_n).to(dev)
+        Xv_ = torch.from_numpy(Xte_n).to(dev); Yv_ = torch.from_numpy(Yte).to(dev)
+        ym = torch.from_numpy(ymu).to(dev); ys = torch.from_numpy(ysg).to(dev)
+        r2 = np.random.default_rng(a.seed); h2 = []
+        print("\n### no_cortex: encoder -> head, the sheet removed entirely", flush=True)
+        for step in range(a.steps + 1):
+            i = torch.from_numpy(r2.integers(0, len(Xt_), a.batch)).to(dev)
+            ls = F.mse_loss(mlp(Xt_[i]), Yt_[i])
+            o2.zero_grad(set_to_none=True); ls.backward(); o2.step()
+            if step % a.eval_every == 0:
+                with torch.no_grad():
+                    v = float((((mlp(Xv_) * ys + ym) - Yv_) ** 2).mean())
+                sk = 1 - v / pers_mse
+                h2.append({"step": step, "held_mse": v, "skill_vs_persistence": sk})
+                print(f"  {step:5d}  train {float(ls):.3e}  held {v:.3e}  "
+                      f"SKILL vs persistence {sk:+.4f}  vs ridge {1-v/ridge_mse:+.4f}",
+                      flush=True)
+        res["arms"]["no_cortex"] = {"history": h2,
+            "best_skill_vs_persistence": max(x["skill_vs_persistence"] for x in h2)}
+        json.dump(res, open(a.out, "w"), indent=2)
+
+    for arm in [x for x in a.arms.split(",") if x != "no_cortex"]:
         torch.manual_seed(a.seed)
         dyn = P.CorticalDynamics(n_sites, e_dim, k, dev, geometry="surface",
                                  long_topology=a.long_topology,
