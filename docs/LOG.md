@@ -167,6 +167,14 @@ seeds per arm. The standing reading from the no-cortex control is unchanged: on 
 the cortical sheet, read out either way, has not been shown to help, and the normalised readout
 measurably hurts.
 
+One thing this comparison is NOT exposed to, checked because IHM-1 turns out to run two body
+masses (its stance, posture and motor-learning line passes a literal 70 kg against the declared
+77.6122029; `ihm/body_parameters.py`, IHM-1 1c19dd9): the corpus here is
+`IHM-1/data/derived/pose-corpus`, which records itself as "forced pose trajectory; no contact,
+no dynamics" and carries coordinates, muscle path lengths, rates and moment arms per frame.
+Those are kinematic and geometric; no mass enters them, and the corpus stores none. The
+divergence moves contact forces and stance margins on that line, not this task.
+
 ## 2026-09-09 (afternoon) — the cortex is a surface now, and the anatomy says the transport task was scored on a pathway the brain does not have
 
 `docs/DISCONNECTS.md` rows 2 and 3, both closed. Three payloads fetched into
