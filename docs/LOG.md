@@ -727,6 +727,43 @@ The pixel baseline stays in every evaluation regardless. It is what turns "4x
 chance" from a claim into a comparison, and quoting ×chance alone would have let
 a 10% result look like a 6x win while being three times worse than doing nothing.
 
+## 2026-09-09 — tracts do not beat random on the one pair the connectome declares either
+
+The tract topology's failure on occipital -> precentral had a clean explanation:
+the consensus connectome declares no such fascicle, so precentral sits two hops
+away instead of one. `postcentral -> precentral` **is** declared, and the
+frozen-head measurement said tracts win there by 18%. That made it the fair test,
+and the one a somato-motor materialization would actually use.
+
+Run end to end, 3,000 steps, surface geometry, concentrated kernel, drive 1,779
+postcentral sites to a disjoint 2,121-site precentral readout, matched
+checkpoint and schedule, tract on the local box and random on the remote:
+
+| step | tract | random |
+|---|---|---|
+| 500 | 2.19% ±0.79 | 2.62% ±1.17 |
+| 1000 | 5.19% ±1.20 | 5.62% ±1.22 |
+| 1500 | 7.19% ±1.54 | 8.19% ±1.50 |
+| 2000 | 7.75% ±2.11 | 10.19% ±1.09 |
+| 2500 | 8.75% ±1.66 | 9.31% ±1.66 |
+| 3000 | 9.81% ±1.25 | 9.50% ±2.26 |
+
+Paired across all 13 matched evaluation points: **mean difference −0.577 points,
+t = −1.94, tract ahead at 3 of 13.** Indistinguishable, and nominally in random's
+favour.
+
+So the null survives its own best case. Anatomical wiring does not beat uniformly
+random partners even on the region pair the human connectome declares and where a
+frozen-head probe predicted an 18% advantage. Two independent tests now, on
+different pairs, for different reasons.
+
+**What DID change is worth separating from that.** On occipital -> precentral the
+concentrated-tract arm never left chance (1.4x). Here it reaches 22.4x chance at
+step 2,750 and 19.6x at 3,000. Give the tract topology a pair a brain actually
+has and signal crosses; it is the missing fascicle that was fatal, not the
+topology. That is the cortex agent's explanation confirmed from the training side
+rather than from transport alone.
+
 ## 2026-09-09 — the real cortical surface: tracts do not beat random, and convergence gets worse
 
 The sheet is no longer a sphere. Both arms report `sheet: surface` with the
