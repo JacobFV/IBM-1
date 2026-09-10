@@ -748,8 +748,11 @@ baseline — by 23.1% at step 1,200, still falling. Against a linear read of the
 same afference it is +0.997, because ridge fails catastrophically on motions it
 never saw.
 
-**Concentration does nothing.** Paired across 5 matched steps: **+1.10% ± 2.00,
-t = +1.23, ahead at 3 of 5.** Indistinguishable. The same intervention that
+**Concentration does nothing.** Both arms now complete at 1,200 steps. Paired
+across all 7 matched evaluations: **mean +0.41% ± 2.12, t = +0.51, ahead at 3 of
+7**, and base is ahead at the endpoint (5.133e-04 against 5.261e-04).
+Indistinguishable, with the sign of the difference flipping four times across the
+trajectory — which is what noise looks like. The same intervention that
 bought 209x transport and took end-to-end retrieval from 3.2x to 43.9x chance is
 worth nothing here.
 
