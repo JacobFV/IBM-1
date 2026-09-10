@@ -715,13 +715,36 @@ geometry, matched port, matched parameter count (10,124,624), 1,200 steps:
 | surface + **random** long-range | **16.44% ± 1.13** (32.9x) | 16.44% |
 | surface + **tract** long-range (consensus 0.5) | 15.00% ± 2.22 (30.0x) | 16.19% |
 
-Random is nominally ahead and the two are inside each other's spread. So the
-declared white-matter tractography — which `ibm/topologies/tract.py` argues at
-length is the correct metric for long-range cortical connectivity, and which no
-training script had ever imported — provides **no measurable advantage over
-uniformly random partners** on visual retrieval. Reported as the null rather than
-tuned until it wins; anatomy had to beat concentrated-random and it does not beat
-even plain-random.
+Random is nominally ahead and the two are inside each other's spread.
+
+**And the end-to-end comparison is far sharper than that.** 2,000 steps, encoder
+and kernel and head all through the dynamics, occipital drive to a
+precentral-only readout, 8 pools of 200:
+
+| kernel | random edges | tract edges |
+|---|---|---|
+| base | 4.1x | **1.0x** |
+| concentrated | **28.4x** | **1.4x** |
+
+Concentrated-random trains. **Concentrated-tract never leaves chance.** Per-hop
+transport says why: precentral arrival falls 5.957e-04 to 1.698e-06, **351x
+lower** — while hop-1 transfer is slightly BETTER in the tract arm (1.25e-03
+against 1.05e-03). The entire difference is that precentral is **two hops** from
+occipital under tract wiring and one hop under random.
+
+**THE REASON IS NOT A DEFECT IN THE TRACTS.** The consensus connectome declares
+no direct occipito-precentral fascicle, because a human brain does not have one.
+And the random arm's 23–28x was matched by its own permuted control at 26.12x,
+which is ledger row 23 for the third time.
+
+Put together, and this reframes the line the programme has been building on:
+**the disjoint-transport result ran down edges the human connectome does not
+contain, and not down anything the kernel learned.** The null is not "anatomy did
+not help". It is "the thing anatomy was compared against was not real".
+
+`postcentral -> precentral` **is** declared in the connectome, and is the one
+pair where the tract arm wins, by 18%. That is the pair a somato-motor
+materialization actually needs.
 
 **2. On real geometry the dynamics are MUCH more load-bearing than on the
 sphere.** Designated THINGS-EEG2 test set, 200 images, chance 0.5%:
@@ -744,11 +767,15 @@ and it arrived from fixing the substrate rather than from training longer.
     precentral variance, all three driven   4.237e-06
     the same as a linear sum of the parts   4.237e-06     ratio 1.0000
 
-Against the sphere's 4.77e-06 / 7.54e-06 / 9.56e-06. About ten times lower, and
-that is the expected direction rather than a regression: the sphere's
-`postcentral` was the leftover bin at 20.0% of sites against a true 6.0%, so
-every earlier somatosensory transport number was driving a fifth of the cortex
-and calling it a gyrus. Correcting the region sizes removed the inflation.
+Against the sphere's 4.77e-06 / 7.54e-06 / 9.56e-06.
+
+**CORRECTED.** I first wrote that the sphere's oversized `postcentral` had been
+*inflating* the somatosensory number. Measured on matched arms it was doing the
+opposite: the sphere drives 5,997 sites for 6.892e-07 at precentral, the surface
+drives 1,779 for 9.462e-07 — **3.4x fewer sites, 1.37x more transport, 4.6x more
+per driven site.** The leftover bin was DILUTING the signal, because most of what
+it swept up was nowhere near the central sulcus. Both sit at ~1e-6 against a
+ceiling of 1.0, so no conclusion moves either way.
 
 The superadditivity ratio is 1.0000 to four decimals. Real geometry did not make
 the sheet integrate; it is still a pure superposition device, and the fix for
