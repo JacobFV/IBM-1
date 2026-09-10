@@ -114,6 +114,13 @@ the bytes actually came from — never the machine that staged them. A card mark
   which refused to relaunch because it found itself. Match on the EXECUTABLE, not
   the arguments: `ps -eo pid,comm,args | awk '$2 ~ /^python/ && /scripts\/<name>/'`.
   The wrapper's `comm` is `bash`, whatever its arguments say.
+- **`ast.parse` proves syntax, not scope.** `global X` declared after the same function has
+  already used `X` (for example as an argparse default), or an inner `from m import n` that
+  makes `n` local to the whole function, is a SyntaxError or NameError that `ast.parse`
+  does NOT raise: it surfaces only when Python compiles the function's scopes, or when the
+  code runs. It shipped twice in one day behind an "ast.parse: OK" check. Verify an edited
+  script with `python -m py_compile <file>`, and treat a patch that adds `global` inside a
+  function as suspect by default -- a local variable is almost always the right fix.
 - Publish checkpoints for runs that **failed** too. A negative result without a
   checkpoint is an anecdote; the sidecar should say plainly what was falsified.
 - The remote has no git repo, so `git rev-parse` there yields `git-unknown` and the
