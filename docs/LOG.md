@@ -728,6 +728,47 @@ The pixel baseline stays in every evaluation regardless. It is what turns "4x
 chance" from a claim into a comparison, and quoting ×chance alone would have let
 a 10% result look like a 6x win while being three times worse than doing nothing.
 
+## 2026-09-10 — the sensorimotor task, measured properly: it learns, and concentration does not help
+
+With the target normalised (ledger row 29) the run behaves and is worth reading.
+Held out by MOTION with the richest motions withheld; persistence 1.040e-04, zero
+6.671e-04.
+
+| step | base | concentrated |
+|---|---|---|
+| 0 | 7.326e-04 (−6.04) | 7.373e-04 (−6.09) |
+| 200 | 6.266e-04 (−5.02) | 6.211e-04 (−4.97) |
+| 400 | 5.874e-04 (−4.65) | 5.883e-04 (−4.66) |
+| 600 | 5.538e-04 (−4.32) | 5.291e-04 (−4.09) |
+| 800 | 5.334e-04 (−4.13) | 5.284e-04 (−4.08) |
+| 1200 | **5.133e-04 (−3.94)** | — |
+
+**It learns.** Monotone from step 0, and from step 200 it beats the zero
+baseline — by 23.1% at step 1,200, still falling. Against a linear read of the
+same afference it is +0.997, because ridge fails catastrophically on motions it
+never saw.
+
+**Concentration does nothing.** Paired across 5 matched steps: **+1.10% ± 2.00,
+t = +1.23, ahead at 3 of 5.** Indistinguishable. The same intervention that
+bought 209x transport and took end-to-end retrieval from 3.2x to 43.9x chance is
+worth nothing here.
+
+That is the useful part, because it separates two things the programme had
+conflated. Concentration fixes **amplitude**, and amplitude is what a retrieval
+task is short of — it only needs enough signal to rank 200 candidates.
+Regression onto 80 continuous muscle deltas is not short of amplitude; the model
+already beats zero and is converging. It is short of something else.
+
+Not rank: the target's effective rank is **3.1**, with 99% of its variance in 9
+dimensions, against a sheet that transports 12.9. Measured, and it rules out the
+first hypothesis I had.
+
+**And persistence remains 4.9x ahead.** The honest reading of that gap is still
+open: the model has `rate_per_s` at its input, so it holds the information
+persistence uses, and it does not convert it. Whether that is the substrate or
+the objective is not settled by these two arms, and the earlier claim that it was
+the substrate is withdrawn.
+
 ## 2026-09-09 — the first real sensorimotor materialization: beats a linear map, loses to a copy
 
 Every motor run before this drove the cortex with IMAGES and read a motor region.

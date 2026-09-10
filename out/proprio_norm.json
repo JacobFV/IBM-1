@@ -1,0 +1,71 @@
+{
+  "ckpt": "ckpt/wiring_surface_slice.pt",
+  "baselines": {
+    "zero": 0.0006671151495538652,
+    "mean": 0.000667228945530951,
+    "persistence": 0.00010400893370388076,
+    "ridge_no_cortex": 0.19537071883678436
+  },
+  "held_out_motions": [
+    "subject02_running_ik",
+    "rra_run_1_Kinematics_q",
+    "subject02_Kinematics_q",
+    "desiredKinematics_padded",
+    "coordinates",
+    "subject_walk_armless_coordinates",
+    "subject01_walk1_ik",
+    "subject01_walk1_ik",
+    "subject01_walk1_Kinematics",
+    "subject01_walk1_ik",
+    "subject01_walk1_ik"
+  ],
+  "arms": {
+    "trained": {
+      "history": [
+        {
+          "step": 0,
+          "held_mse": 0.0007326412200927735,
+          "skill_vs_persistence": -6.044022027748539,
+          "skill_vs_ridge": 0.9962499947563543
+        },
+        {
+          "step": 200,
+          "held_mse": 0.0006266354953541475,
+          "skill_vs_persistence": -5.024823763103021,
+          "skill_vs_ridge": 0.9967925823322703
+        },
+        {
+          "step": 400,
+          "held_mse": 0.0005874025681439568,
+          "skill_vs_persistence": -4.647616480871967,
+          "skill_vs_ridge": 0.9969933950612391
+        },
+        {
+          "step": 600,
+          "held_mse": 0.0005538234710693359,
+          "skill_vs_persistence": -4.3247682804450465,
+          "skill_vs_ridge": 0.9971652688060588
+        },
+        {
+          "step": 800,
+          "held_mse": 0.000533356834860409,
+          "skill_vs_persistence": -4.127990604911937,
+          "skill_vs_ridge": 0.9972700267571519
+        },
+        {
+          "step": 1000,
+          "held_mse": 0.0005195315865909352,
+          "skill_vs_persistence": -3.995066943673037,
+          "skill_vs_ridge": 0.9973407909348742
+        },
+        {
+          "step": 1200,
+          "held_mse": 0.0005133058884564568,
+          "skill_vs_persistence": -3.9352096034160615,
+          "skill_vs_ridge": 0.9973726570106686
+        }
+      ],
+      "best_skill_vs_persistence": -3.9352096034160615
+    }
+  }
+}
