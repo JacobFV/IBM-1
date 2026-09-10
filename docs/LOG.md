@@ -85,6 +85,13 @@ the seed spread; the no-cortex control's best-skill spread across seeds is alrea
 to be ~0.3 (seed 0 -3.09, seed 1 -3.41), so a difference smaller than the larger of that
 and the arms' own seed spreads is reported as NOT DISTINGUISHABLE, not as a win.
 
+**How the verdict is computed.** `scripts/score_readout_comparison.py` applies exactly
+this rule to the logs and prints the verdict; it refuses to score a run that has not
+reached step 3000. Gate: it reproduces every late-window mean already recorded here to
+the printed precision. Before running it, copy the remote batchnorm seed-1 log:
+`ssh gb10-direct cat ~/ibm-1/logs/proprio_readout_batchnorm_seed1.log >
+logs/proprio_readout_batchnorm_seed1.remote.log`.
+
 **What was visible when this was written** (so a reader can judge what it could have
 been tuned to): raw readout seed 0 through step 1750 (-4.93 at 250, -3.86 at 1500, -3.89
 at 1750; the pre-crash run of the same seed reached -3.94 at 1200, and today's run
