@@ -596,6 +596,32 @@ end-to-end look structurally broken. With the long-range budget concentrated,
 end-to-end reaches 38.5x, or **80% of the frozen-head ceiling**. Most of that gap
 was the sheet not conducting, and it closes when the sheet conducts.
 
+## 2026-09-09 — the 30k interoception run finished: delays and C fibres, retrained
+
+Two arms that the 8k run never reached, both RETRAINED rather than severed post
+hoc, which is the harder and fairer test — the model gets to adapt to the loss:
+
+    cortex_trained (all 15 channels, delays intact)    state +0.5956
+    cortex_lumped_delays (all channels, delays -> 0)   state +0.5857   traj  -7.97
+    cortex_trained_without_c (10 channels, no C)       state +0.4145   traj -26.29
+
+**Lumping every conduction delay costs −0.010 on state after retraining**, which
+is inside the ±0.05 noise band the four equivalent splanchnic drops measure. At
+8k, before retraining, lumping cost −0.124 and I reported it as the session's
+most novel positive result. It does not survive a model allowed to adapt: what
+the delays buy is recoverable by training against their absence. The trajectory
+term is a different story (−7.97) and is outside any plausible band.
+
+**Removing the five unmyelinated channels costs −0.181 on state and −21.7 on
+trajectory**, retrained, which is far outside the band. That is the arm that
+holds. The C fibres are the slow chemical and nociceptive half of visceral
+afference, arriving 168–508 ms after the mechanical half, and no amount of
+retraining on the remaining ten channels recovers what they carry.
+
+So the corrected claim is narrower than the one I reported: **the CONTENT of the
+slow unmyelinated arm is load-bearing; the TIMING of it is not, at least for a
+model free to retrain.** Both were previously reported as one finding.
+
 **COMPLETED, AND THE PRE-REGISTERED VERDICT FIRED AGAINST MY READING.** Final,
 6,000 steps both arms:
 

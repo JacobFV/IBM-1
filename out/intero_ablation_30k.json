@@ -1,0 +1,1065 @@
+{
+  "config": {
+    "corpus": "data/derived/intero-corpus",
+    "horizon_s": 60.0,
+    "split": "protocol",
+    "init": "ckpt/ibm1_implicit.pt",
+    "sites": 30000,
+    "embed": 128,
+    "k": 48,
+    "long_range": 0.25,
+    "hidden": 128,
+    "read_sites": 2048,
+    "steps": 400,
+    "batch": 32,
+    "eval_batch": 64,
+    "checkpoint_every": 8,
+    "lr": 0.0003,
+    "control_steps": 4000,
+    "seed": 0,
+    "out": "out/intero_ablation_30k.json"
+  },
+  "corpus": "4983 pairs at horizon 60s, protocol split (3555 train / 1428 test) over 7 sequences, holding out exertion_v3/meal_exercise, six_hour_v4/hydration; 15 channels -> 5 targets (endurance_h, discomfort, sensation_0, sensation_1, sensation_2)",
+  "targets": [
+    "endurance_h",
+    "discomfort",
+    "sensation_0",
+    "sensation_1",
+    "sensation_2"
+  ],
+  "derived_from_afference": [
+    false,
+    true,
+    true,
+    true,
+    true
+  ],
+  "baseline_of_record": [
+    "mean",
+    "persistence",
+    "persistence",
+    "persistence",
+    "persistence"
+  ],
+  "sanity_gates": {
+    "self_skill_zero": 0.0,
+    "self_skill_mean": 0.0,
+    "self_skill_persistence": 0.0,
+    "linear_target_r2": 1.0
+  },
+  "baselines_raw": {
+    "zero": [
+      1492.470703125,
+      0.02480427734553814,
+      3.051840305328369,
+      4.0004496574401855,
+      1.1927721500396729
+    ],
+    "mean": [
+      54.72898483276367,
+      0.0046322462148964405,
+      3.045954942703247,
+      3.9943997859954834,
+      1.1932591199874878
+    ],
+    "persistence": [
+      11.24654483795166,
+      0.000511658494360745,
+      0.05756905674934387,
+      0.1526881605386734,
+      0.04344635829329491
+    ]
+  },
+  "arms": {
+    "ridge_no_dynamics": {
+      "mse_raw": [
+        27.602792739868164,
+        0.0002281245542690158,
+        0.06918899714946747,
+        0.11456173658370972,
+        0.07123088091611862
+      ],
+      "state_skill_vs_mean": 0.49564582109451294,
+      "trajectory_skill_vs_persistence": -0.009377151727676392,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.313669957307835,
+          "cosine": 0.1032969281077385
+        },
+        "discomfort": {
+          "magnitude_ratio": 0.7612704258589235,
+          "cosine": 0.7445973753929138
+        },
+        "sensation_0": {
+          "magnitude_ratio": 0.8873697452386737,
+          "cosine": 0.3299533426761627
+        },
+        "sensation_1": {
+          "magnitude_ratio": 0.5099570081950908,
+          "cosine": 0.4998040795326233
+        },
+        "sensation_2": {
+          "magnitude_ratio": 0.9744328634967682,
+          "cosine": 0.15907084941864014
+        }
+      },
+      "note": "closed-form linear on the same 15 channels; no cortex",
+      "skill_vs_zero": [
+        0.981505274772644,
+        0.9908030033111572,
+        0.9773287773132324,
+        0.9713627696037292,
+        0.9402812123298645
+      ],
+      "skill_vs_mean": [
+        0.49564582109451294,
+        0.9507529139518738,
+        0.9772849678993225,
+        0.9713194370269775,
+        0.9403055906295776
+      ],
+      "skill_vs_persistence": [
+        -1.4543354511260986,
+        0.5541468858718872,
+        -0.2018435001373291,
+        0.24970126152038574,
+        -0.6395132541656494
+      ]
+    },
+    "mlp_no_dynamics": {
+      "mse_raw": [
+        66.90705108642578,
+        0.002415061928331852,
+        0.309819757938385,
+        0.2807995676994324,
+        0.4742278754711151
+      ],
+      "state_skill_vs_mean": -0.22251582145690918,
+      "trajectory_skill_vs_persistence": -4.714015960693359,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 2.4327861185986586,
+          "cosine": 0.1992243230342865
+        },
+        "discomfort": {
+          "magnitude_ratio": 2.252462113591899,
+          "cosine": 0.3004540205001831
+        },
+        "sensation_0": {
+          "magnitude_ratio": 2.4858415559363145,
+          "cosine": 0.36158907413482666
+        },
+        "sensation_1": {
+          "magnitude_ratio": 1.2857660092579053,
+          "cosine": 0.316602498292923
+        },
+        "sensation_2": {
+          "magnitude_ratio": 3.1188868729685666,
+          "cosine": -0.030104801058769226
+        }
+      },
+      "note": "matched-capacity encoder, no cortex and no conduction delays, trained to convergence (4000 steps x 256 = 1,024,000 samples)",
+      "skill_vs_zero": [
+        0.9551702737808228,
+        0.9026352763175964,
+        0.898481011390686,
+        0.9298080205917358,
+        0.6024153828620911
+      ],
+      "skill_vs_mean": [
+        -0.22251582145690918,
+        0.4786412715911865,
+        0.8982848525047302,
+        0.9297016859054565,
+        0.6025776267051697
+      ],
+      "skill_vs_persistence": [
+        -4.94912052154541,
+        -3.7200660705566406,
+        -4.381706237792969,
+        -0.8390395641326904,
+        -9.915250778198242
+      ]
+    },
+    "mlp_matched_samples": {
+      "mse_raw": [
+        25.35055923461914,
+        0.0015418606344610453,
+        0.33546996116638184,
+        0.11224707216024399,
+        0.0770796462893486
+      ],
+      "state_skill_vs_mean": 0.5367982983589172,
+      "trajectory_skill_vs_persistence": -1.8374978303909302,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.3888180168955353,
+          "cosine": 0.2429211437702179
+        },
+        "discomfort": {
+          "magnitude_ratio": 1.7976255068657467,
+          "cosine": 0.3387822210788727
+        },
+        "sensation_0": {
+          "magnitude_ratio": 2.499613876871845,
+          "cosine": 0.2842063307762146
+        },
+        "sensation_1": {
+          "magnitude_ratio": 0.692012860727891,
+          "cosine": 0.5373764634132385
+        },
+        "sensation_2": {
+          "magnitude_ratio": 1.0657049576505386,
+          "cosine": 0.16965100169181824
+        }
+      },
+      "note": "the same encoder on the same number of samples the cortical arms get (400 steps x 32 = 12,800)",
+      "skill_vs_zero": [
+        0.9830143451690674,
+        0.9378389120101929,
+        0.8900761604309082,
+        0.9719414114952087,
+        0.9353777170181274
+      ],
+      "skill_vs_mean": [
+        0.5367982983589172,
+        0.6671462059020996,
+        0.8898637890815735,
+        0.9718989133834839,
+        0.9354041218757629
+      ],
+      "skill_vs_persistence": [
+        -1.254075288772583,
+        -2.0134565830230713,
+        -4.827261924743652,
+        0.26486068964004517,
+        -0.7741336822509766
+      ]
+    },
+    "cortex_trained": {
+      "mse_raw": [
+        22.131711959838867,
+        0.0015421295538544655,
+        0.8848698139190674,
+        0.16667573153972626,
+        0.11934603005647659
+      ],
+      "state_skill_vs_mean": 0.5956125855445862,
+      "trajectory_skill_vs_persistence": -4.555786609649658,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.2294187630963518,
+          "cosine": 0.22108317911624908
+        },
+        "discomfort": {
+          "magnitude_ratio": 1.7501468011368102,
+          "cosine": 0.2996981739997864
+        },
+        "sensation_0": {
+          "magnitude_ratio": 4.0356440767281665,
+          "cosine": 0.23736411333084106
+        },
+        "sensation_1": {
+          "magnitude_ratio": 0.8780710277370317,
+          "cosine": 0.3868708610534668
+        },
+        "sensation_2": {
+          "magnitude_ratio": 1.4066647657688254,
+          "cosine": 0.0823696032166481
+        }
+      },
+      "note": "the learned association kernel",
+      "skill_vs_zero": [
+        0.9851710796356201,
+        0.9378280639648438,
+        0.7100536823272705,
+        0.9583357572555542,
+        0.8999422788619995
+      ],
+      "skill_vs_mean": [
+        0.5956125855445862,
+        0.6670881509780884,
+        0.7094934582710266,
+        0.9582726359367371,
+        0.8999831676483154
+      ],
+      "skill_vs_persistence": [
+        -0.9678676128387451,
+        -2.013982057571411,
+        -14.370580673217773,
+        -0.09160876274108887,
+        -1.746974229812622
+      ]
+    },
+    "cortex_severed_posthoc": {
+      "mse_raw": [
+        23.131074905395508,
+        0.0018190876580774784,
+        0.9973133206367493,
+        0.17390337586402893,
+        0.10403545200824738
+      ],
+      "state_skill_vs_mean": 0.5773524045944214,
+      "trajectory_skill_vs_persistence": -5.103142261505127,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.276622520806365,
+          "cosine": 0.22443591058254242
+        },
+        "discomfort": {
+          "magnitude_ratio": 1.8938555086320323,
+          "cosine": 0.2723059058189392
+        },
+        "sensation_0": {
+          "magnitude_ratio": 4.272346494757203,
+          "cosine": 0.22577542066574097
+        },
+        "sensation_1": {
+          "magnitude_ratio": 0.9787397044683163,
+          "cosine": 0.4183885455131531
+        },
+        "sensation_2": {
+          "magnitude_ratio": 1.2820593382817216,
+          "cosine": 0.0971502959728241
+        }
+      },
+      "note": "kernel zeroed on the trained weights: what the trained solution actually depends on",
+      "skill_vs_zero": [
+        0.9845014810562134,
+        0.9266623258590698,
+        0.6732091903686523,
+        0.9565290212631226,
+        0.9127784371376038
+      ],
+      "skill_vs_mean": [
+        0.5773524045944214,
+        0.6072989702224731,
+        0.6725777387619019,
+        0.9564632177352905,
+        0.9128140211105347
+      ],
+      "skill_vs_persistence": [
+        -1.0567271709442139,
+        -2.555276870727539,
+        -16.323774337768555,
+        -0.13894474506378174,
+        -1.3945724964141846
+      ]
+    },
+    "cortex_permuted_posthoc": {
+      "mse_raw": [
+        22.883527755737305,
+        0.0016759269637987018,
+        1.1676723957061768,
+        0.15202029049396515,
+        0.1006058007478714
+      ],
+      "state_skill_vs_mean": 0.5818755626678467,
+      "trajectory_skill_vs_persistence": -5.71743106842041,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.2637510564074308,
+          "cosine": 0.22249409556388855
+        },
+        "discomfort": {
+          "magnitude_ratio": 1.8210301510463587,
+          "cosine": 0.28573712706565857
+        },
+        "sensation_0": {
+          "magnitude_ratio": 4.615102242164729,
+          "cosine": 0.21843300759792328
+        },
+        "sensation_1": {
+          "magnitude_ratio": 0.8104258775970368,
+          "cosine": 0.407912015914917
+        },
+        "sensation_2": {
+          "magnitude_ratio": 1.2624512743582805,
+          "cosine": 0.11016453057527542
+        }
+      },
+      "note": "kernel rows shuffled on the trained weights",
+      "skill_vs_zero": [
+        0.9846673607826233,
+        0.9324339628219604,
+        0.6173874139785767,
+        0.9619991779327393,
+        0.9156538248062134
+      ],
+      "skill_vs_mean": [
+        0.5818755626678467,
+        0.6382042169570923,
+        0.6166481971740723,
+        0.961941659450531,
+        0.9156882166862488
+      ],
+      "skill_vs_persistence": [
+        -1.0347163677215576,
+        -2.275479555130005,
+        -19.28298568725586,
+        0.004374086856842041,
+        -1.3156325817108154
+      ]
+    },
+    "drop_greater_splanchnic_c": {
+      "mse_raw": [
+        22.173704147338867,
+        0.002391241490840912,
+        1.6277835369110107,
+        0.4674488604068756,
+        1.255141019821167
+      ],
+      "state_skill_vs_mean": 0.5948452949523926,
+      "trajectory_skill_vs_persistence": -15.224933624267578,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.2091245427151023,
+          "cosine": 0.20278529822826385
+        },
+        "discomfort": {
+          "magnitude_ratio": 2.175098943024842,
+          "cosine": 0.24310362339019775
+        },
+        "sensation_0": {
+          "magnitude_ratio": 5.3455138298554905,
+          "cosine": 0.12152184545993805
+        },
+        "sensation_1": {
+          "magnitude_ratio": 1.8625119934774084,
+          "cosine": 0.37784847617149353
+        },
+        "sensation_2": {
+          "magnitude_ratio": 5.192885799021824,
+          "cosine": -0.08890770375728607
+        }
+      },
+      "note": "the greater_splanchnic c conduction group withheld (168 ms)",
+      "skill_vs_zero": [
+        0.9851429462432861,
+        0.9035955667495728,
+        0.4666222929954529,
+        0.8831509351730347,
+        -0.05228900909423828
+      ],
+      "skill_vs_mean": [
+        0.5948452949523926,
+        0.4837836027145386,
+        0.4655917286872864,
+        0.8829739093780518,
+        -0.05185961723327637
+      ],
+      "skill_vs_persistence": [
+        -0.9716014862060547,
+        -3.6735105514526367,
+        -27.275320053100586,
+        -2.0614609718322754,
+        -27.889440536499023
+      ]
+    },
+    "drop_least_splanchnic_c": {
+      "mse_raw": [
+        22.189302444458008,
+        0.0015587456291541457,
+        0.9242520332336426,
+        0.17118671536445618,
+        0.11602385342121124
+      ],
+      "state_skill_vs_mean": 0.5945603251457214,
+      "trajectory_skill_vs_persistence": -4.723196029663086,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.2327592922615047,
+          "cosine": 0.22174298763275146
+        },
+        "discomfort": {
+          "magnitude_ratio": 1.70617333209956,
+          "cosine": 0.25336599349975586
+        },
+        "sensation_0": {
+          "magnitude_ratio": 4.117498814072931,
+          "cosine": 0.2306162267923355
+        },
+        "sensation_1": {
+          "magnitude_ratio": 0.8987992701352208,
+          "cosine": 0.3820027709007263
+        },
+        "sensation_2": {
+          "magnitude_ratio": 1.3683178446482158,
+          "cosine": 0.07373567670583725
+        }
+      },
+      "note": "the least_splanchnic c conduction group withheld (232 ms)",
+      "skill_vs_zero": [
+        0.9851325154304504,
+        0.9371581673622131,
+        0.6971492767333984,
+        0.9572081565856934,
+        0.9027275443077087
+      ],
+      "skill_vs_mean": [
+        0.5945603251457214,
+        0.6635011434555054,
+        0.6965640783309937,
+        0.9571433067321777,
+        0.9027672410011292
+      ],
+      "skill_vs_persistence": [
+        -0.9729883670806885,
+        -2.046457052230835,
+        -15.054666519165039,
+        -0.12115252017974854,
+        -1.6705081462860107
+      ]
+    },
+    "drop_lesser_splanchnic_c": {
+      "mse_raw": [
+        19.233154296875,
+        0.001915216795168817,
+        1.07700514793396,
+        0.20083552598953247,
+        0.08849000930786133
+      ],
+      "state_skill_vs_mean": 0.6485745906829834,
+      "trajectory_skill_vs_persistence": -5.450826168060303,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.083355497972312,
+          "cosine": 0.2139294147491455
+        },
+        "discomfort": {
+          "magnitude_ratio": 1.942880847404289,
+          "cosine": 0.26549065113067627
+        },
+        "sensation_0": {
+          "magnitude_ratio": 4.552110845000647,
+          "cosine": 0.33101686835289
+        },
+        "sensation_1": {
+          "magnitude_ratio": 1.0212652685944756,
+          "cosine": 0.35625070333480835
+        },
+        "sensation_2": {
+          "magnitude_ratio": 1.3752822742487065,
+          "cosine": 0.31071382761001587
+        }
+      },
+      "note": "the lesser_splanchnic c conduction group withheld (217 ms)",
+      "skill_vs_zero": [
+        0.9871132373809814,
+        0.9227868318557739,
+        0.6470965147018433,
+        0.949796736240387,
+        0.9258114695549011
+      ],
+      "skill_vs_mean": [
+        0.6485745906829834,
+        0.5865468382835388,
+        0.6464146375656128,
+        0.9497207403182983,
+        0.925841748714447
+      ],
+      "skill_vs_persistence": [
+        -0.7101389169692993,
+        -2.743154525756836,
+        -17.70805549621582,
+        -0.3153313398361206,
+        -1.0367646217346191
+      ]
+    },
+    "drop_pelvic_splanchnic_c": {
+      "mse_raw": [
+        22.096418380737305,
+        0.001937176799401641,
+        1.173918604850769,
+        0.19709737598896027,
+        0.3606497645378113
+      ],
+      "state_skill_vs_mean": 0.5962574481964111,
+      "trajectory_skill_vs_persistence": -7.442360877990723,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.2306363031380914,
+          "cosine": 0.22335605323314667
+        },
+        "discomfort": {
+          "magnitude_ratio": 1.964821420016932,
+          "cosine": 0.273422509431839
+        },
+        "sensation_0": {
+          "magnitude_ratio": 4.614617142772997,
+          "cosine": 0.20621363818645477
+        },
+        "sensation_1": {
+          "magnitude_ratio": 1.032807553578616,
+          "cosine": 0.375599205493927
+        },
+        "sensation_2": {
+          "magnitude_ratio": 2.745307173588901,
+          "cosine": 0.04292365536093712
+        }
+      },
+      "note": "the pelvic_splanchnic c conduction group withheld (128 ms)",
+      "skill_vs_zero": [
+        0.985194742679596,
+        0.921901524066925,
+        0.6153407096862793,
+        0.9507312178611755,
+        0.6976373195648193
+      ],
+      "skill_vs_mean": [
+        0.5962574481964111,
+        0.5818061828613281,
+        0.6145975589752197,
+        0.9506565928459167,
+        0.6977607011795044
+      ],
+      "skill_vs_persistence": [
+        -0.9647295475006104,
+        -2.786073684692383,
+        -19.3914852142334,
+        -0.29084908962249756,
+        -7.3010358810424805
+      ]
+    },
+    "drop_vagus_abeta": {
+      "mse_raw": [
+        33.98786544799805,
+        0.0022592060267925262,
+        1.772581696510315,
+        1.4044150114059448,
+        0.11372578144073486
+      ],
+      "state_skill_vs_mean": 0.3789786696434021,
+      "trajectory_skill_vs_persistence": -10.755382537841797,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.683461382536464,
+          "cosine": 0.24116264283657074
+        },
+        "discomfort": {
+          "magnitude_ratio": 2.106807354023955,
+          "cosine": 0.24282829463481903
+        },
+        "sensation_0": {
+          "magnitude_ratio": 5.644521016941665,
+          "cosine": 0.18337298929691315
+        },
+        "sensation_1": {
+          "magnitude_ratio": 3.2174956740812233,
+          "cosine": 0.3347865045070648
+        },
+        "sensation_2": {
+          "magnitude_ratio": 1.4964831573792068,
+          "cosine": 0.20777013897895813
+        }
+      },
+      "note": "the vagus abeta conduction group withheld (9 ms)",
+      "skill_vs_zero": [
+        0.9772270917892456,
+        0.9089186787605286,
+        0.4191761016845703,
+        0.6489356756210327,
+        0.9046542048454285
+      ],
+      "skill_vs_mean": [
+        0.3789786696434021,
+        0.5122871398925781,
+        0.41805386543273926,
+        0.6484040021896362,
+        0.9046931266784668
+      ],
+      "skill_vs_persistence": [
+        -2.0220718383789062,
+        -3.415456771850586,
+        -29.790529251098633,
+        -8.197930335998535,
+        -1.6176135540008545
+      ]
+    },
+    "drop_vagus_c": {
+      "mse_raw": [
+        48.17461013793945,
+        0.00483750319108367,
+        0.6008061170578003,
+        0.5618715882301331,
+        0.6140288710594177
+      ],
+      "state_skill_vs_mean": 0.11976057291030884,
+      "trajectory_skill_vs_persistence": -8.42593002319336,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 2.0322245956814653,
+          "cosine": 0.20825344324111938
+        },
+        "discomfort": {
+          "magnitude_ratio": 3.065384574350618,
+          "cosine": 0.15365804731845856
+        },
+        "sensation_0": {
+          "magnitude_ratio": 3.2036864187947613,
+          "cosine": 0.12912127375602722
+        },
+        "sensation_1": {
+          "magnitude_ratio": 2.127931975734554,
+          "cosine": 0.4342784583568573
+        },
+        "sensation_2": {
+          "magnitude_ratio": 3.695945457550348,
+          "cosine": 0.07129215449094772
+        }
+      },
+      "note": "the vagus c conduction group withheld (508 ms)",
+      "skill_vs_zero": [
+        0.9677215814590454,
+        0.8049730062484741,
+        0.8031331896781921,
+        0.8595479130744934,
+        0.48520857095718384
+      ],
+      "skill_vs_mean": [
+        0.11976057291030884,
+        -0.04431045055389404,
+        0.8027527928352356,
+        0.85933518409729,
+        0.4854186773300171
+      ],
+      "skill_vs_persistence": [
+        -3.2835030555725098,
+        -8.454554557800293,
+        -9.436267852783203,
+        -2.679863452911377,
+        -13.133034706115723
+      ]
+    },
+    "drop_vagus_adelta": {
+      "mse_raw": [
+        20.254966735839844,
+        0.001913689891807735,
+        1.949053406715393,
+        0.21205537021160126,
+        0.08383776247501373
+      ],
+      "state_skill_vs_mean": 0.6299042105674744,
+      "trajectory_skill_vs_persistence": -9.228646278381348,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.1460199191573641,
+          "cosine": 0.22354328632354736
+        },
+        "discomfort": {
+          "magnitude_ratio": 1.942578633355157,
+          "cosine": 0.26599812507629395
+        },
+        "sensation_0": {
+          "magnitude_ratio": 5.987354599030432,
+          "cosine": 0.249900221824646
+        },
+        "sensation_1": {
+          "magnitude_ratio": 1.0387425488018922,
+          "cosine": 0.33221539855003357
+        },
+        "sensation_2": {
+          "magnitude_ratio": 1.1844789875115855,
+          "cosine": 0.1997954249382019
+        }
+      },
+      "note": "the vagus adelta conduction group withheld (34 ms)",
+      "skill_vs_zero": [
+        0.9864285588264465,
+        0.9228484034538269,
+        0.3613514304161072,
+        0.9469920992851257,
+        0.9297118186950684
+      ],
+      "skill_vs_mean": [
+        0.6299042105674744,
+        0.5868765115737915,
+        0.36011743545532227,
+        0.9469118118286133,
+        0.9297405481338501
+      ],
+      "skill_vs_persistence": [
+        -0.8009946346282959,
+        -2.7401702404022217,
+        -32.855918884277344,
+        -0.38881349563598633,
+        -0.9296845197677612
+      ]
+    },
+    "drop_all_c_fibres": {
+      "mse_raw": [
+        45.23936080932617,
+        0.006622118875384331,
+        1.6897895336151123,
+        1.2384324073791504,
+        1.3214865922927856
+      ],
+      "state_skill_vs_mean": 0.17339301109313965,
+      "trajectory_skill_vs_persistence": -19.205554962158203,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.9547357334878055,
+          "cosine": 0.20424345135688782
+        },
+        "discomfort": {
+          "magnitude_ratio": 3.5685783576388785,
+          "cosine": 0.11101078242063522
+        },
+        "sensation_0": {
+          "magnitude_ratio": 5.445717777756742,
+          "cosine": 0.11967340856790543
+        },
+        "sensation_1": {
+          "magnitude_ratio": 3.1254963375007168,
+          "cosine": 0.4251919090747833
+        },
+        "sensation_2": {
+          "magnitude_ratio": 5.416646416656224,
+          "cosine": -0.0070535000413656235
+        }
+      },
+      "note": "every unmyelinated group withheld (5 of 7): the slow chemical and nociceptive arm of visceral afference removed, the fast mechanical arm kept",
+      "skill_vs_zero": [
+        0.9696882963180542,
+        0.7330251336097717,
+        0.4463047385215759,
+        0.6904267072677612,
+        -0.10791206359863281
+      ],
+      "skill_vs_mean": [
+        0.17339301109313965,
+        -0.42956972122192383,
+        0.44523489475250244,
+        0.689957857131958,
+        -0.1074599027633667
+      ],
+      "skill_vs_persistence": [
+        -3.0225119590759277,
+        -11.942458152770996,
+        -28.352392196655273,
+        -7.110860824584961,
+        -29.4165096282959
+      ]
+    },
+    "drop_all_myelinated": {
+      "mse_raw": [
+        32.195518493652344,
+        0.002659770892933011,
+        3.1847617626190186,
+        1.5774363279342651,
+        0.09645417332649231
+      ],
+      "state_skill_vs_mean": 0.4117282032966614,
+      "trajectory_skill_vs_persistence": -17.26755714416504,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.6299002163806575,
+          "cosine": 0.24353449046611786
+        },
+        "discomfort": {
+          "magnitude_ratio": 2.281850233344251,
+          "cosine": 0.22098462283611298
+        },
+        "sensation_0": {
+          "magnitude_ratio": 7.576678625860257,
+          "cosine": 0.20360717177391052
+        },
+        "sensation_1": {
+          "magnitude_ratio": 3.388559475505922,
+          "cosine": 0.317426860332489
+        },
+        "sensation_2": {
+          "magnitude_ratio": 1.433815277528058,
+          "cosine": 0.29144287109375
+        }
+      },
+      "note": "every myelinated group withheld (2 of 7): the converse",
+      "skill_vs_zero": [
+        0.978428065776825,
+        0.8927696943283081,
+        -0.04355454444885254,
+        0.6056852340698242,
+        0.9191344380378723
+      ],
+      "skill_vs_mean": [
+        0.4117282032966614,
+        0.42581403255462646,
+        -0.04557085037231445,
+        0.6050879955291748,
+        0.9191674590110779
+      ],
+      "skill_vs_persistence": [
+        -1.8627030849456787,
+        -4.1983323097229,
+        -54.32072067260742,
+        -9.331097602844238,
+        -1.2200748920440674
+      ]
+    },
+    "cortex_permuted_retrained": {
+      "mse_raw": [
+        29.869510650634766,
+        0.0005879768868908286,
+        0.14914891123771667,
+        0.32917192578315735,
+        0.4655577838420868
+      ],
+      "state_skill_vs_mean": 0.4542286992073059,
+      "trajectory_skill_vs_persistence": -3.15286922454834,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.4619868514826306,
+          "cosine": 0.16468216478824615
+        },
+        "discomfort": {
+          "magnitude_ratio": 1.1201033078352722,
+          "cosine": 0.49346834421157837
+        },
+        "sensation_0": {
+          "magnitude_ratio": 1.6681583578144443,
+          "cosine": 0.35727059841156006
+        },
+        "sensation_1": {
+          "magnitude_ratio": 1.1321260114693037,
+          "cosine": 0.055588725954294205
+        },
+        "sensation_2": {
+          "magnitude_ratio": 3.3371995416051448,
+          "cosine": 0.212934210896492
+        }
+      },
+      "note": "a PERMUTED kernel trained from the same seed for the same steps.  with a tonic drive and a whole-sheet readout this is the arm that separates a cortical result from a readout result, and ledger 20 says to expect it to match",
+      "skill_vs_zero": [
+        0.9799865484237671,
+        0.9762953519821167,
+        0.9511281847953796,
+        0.9177162647247314,
+        0.6096842288970947
+      ],
+      "skill_vs_mean": [
+        0.4542286992073059,
+        0.8730687499046326,
+        0.9510337710380554,
+        0.9175916314125061,
+        0.6098434925079346
+      ],
+      "skill_vs_persistence": [
+        -1.6558833122253418,
+        -0.14915883541107178,
+        -1.590782642364502,
+        -1.1558444499969482,
+        -9.715691566467285
+      ]
+    },
+    "cortex_lumped_delays": {
+      "mse_raw": [
+        22.673830032348633,
+        0.0006636074976995587,
+        1.179016351699829,
+        0.8183186650276184,
+        0.37921229004859924
+      ],
+      "state_skill_vs_mean": 0.5857070684432983,
+      "trajectory_skill_vs_persistence": -7.966176986694336,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.22263837025908,
+          "cosine": 0.19579671323299408
+        },
+        "discomfort": {
+          "magnitude_ratio": 1.1767190027856826,
+          "cosine": 0.4621729552745819
+        },
+        "sensation_0": {
+          "magnitude_ratio": 4.459354624274113,
+          "cosine": 0.04549925774335861
+        },
+        "sensation_1": {
+          "magnitude_ratio": 1.9800032499288271,
+          "cosine": -0.11085803061723709
+        },
+        "sensation_2": {
+          "magnitude_ratio": 3.0051339981632728,
+          "cosine": 0.21672040224075317
+        }
+      },
+      "note": "THE CONTROL FOR THE DELAY ITSELF.  every group arrives at step 0, keeping all fifteen channels and destroying only the 9.2-508 ms ordering.  a `drop` arm removes what a group CARRIES and therefore says nothing about WHEN it arrives; this one holds the content fixed and removes the timing, which is the only arm that can say whether the fibre-class-resolved delay is load-bearing or decoration",
+      "skill_vs_zero": [
+        0.9848078489303589,
+        0.9732462167739868,
+        0.6136703491210938,
+        0.7954432964324951,
+        0.682074785232544
+      ],
+      "skill_vs_mean": [
+        0.5857070684432983,
+        0.856741726398468,
+        0.6129238605499268,
+        0.7951335310935974,
+        0.6822046041488647
+      ],
+      "skill_vs_persistence": [
+        -1.01607084274292,
+        -0.29697346687316895,
+        -19.48003578186035,
+        -4.359411239624023,
+        -7.7282867431640625
+      ]
+    },
+    "cortex_trained_without_c": {
+      "mse_raw": [
+        32.042030334472656,
+        0.00428022351115942,
+        2.9123013019561768,
+        1.124625563621521,
+        1.861914038658142
+      ],
+      "state_skill_vs_mean": 0.41453272104263306,
+      "trajectory_skill_vs_persistence": -26.293582916259766,
+      "change_guard": {
+        "endurance_h": {
+          "magnitude_ratio": 1.5180382434239654,
+          "cosine": 0.14999209344387054
+        },
+        "discomfort": {
+          "magnitude_ratio": 2.8783264900515864,
+          "cosine": 0.15970736742019653
+        },
+        "sensation_0": {
+          "magnitude_ratio": 7.005527314188106,
+          "cosine": -0.03644093498587608
+        },
+        "sensation_1": {
+          "magnitude_ratio": 2.8629953493466815,
+          "cosine": 0.31981074810028076
+        },
+        "sensation_2": {
+          "magnitude_ratio": 6.400101704088323,
+          "cosine": -0.06985685229301453
+        }
+      },
+      "note": "retrained with every unmyelinated group removed -- the fair version of the vagotomy, since a post-hoc drop only says the trained solution used the group, not that the group carries anything a model could not do without",
+      "skill_vs_zero": [
+        0.9785308837890625,
+        0.827440083026886,
+        0.045722901821136475,
+        0.7188751697540283,
+        -0.5609972476959229
+      ],
+      "skill_vs_mean": [
+        0.41453272104263306,
+        0.07599395513534546,
+        0.043879032135009766,
+        0.7184494137763977,
+        -0.5603601932525635
+      ],
+      "skill_vs_persistence": [
+        -1.849055528640747,
+        -7.365391731262207,
+        -49.58796310424805,
+        -6.365506172180176,
+        -41.85546875
+      ]
+    }
+  }
+}
