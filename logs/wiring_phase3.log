@@ -1,0 +1,56 @@
+PHASE3 15:54:28
+  graph recovered from top level
+ckpt/wiring_sphere_slice.pt: step 1200, 30000 sites, k=48, 12 long-range edges per site
+  kernel: tanh_slope=2.0 long_gain=1.0 long_topm=0 local_gain=1.0 long_min_dist=0.0
+/home/brandonin/Documents/IBM-1/scripts/measure_multimodal_convergence.py:234: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  |w| mean {float(_w.abs().mean()):.4e}  "
+  |w| mean 5.8208e-03  row L1 mean 2.7940e-01  row L1/max mean 21.12  (48 = perfectly flat, 1 = one edge carries the row)
+  sight    -> occipital     3775 sites
+  hearing  -> temporal      6080 sites
+  touch    -> postcentral   5997 sites
+  readout  <- precentral    2012 sites
+
+  [control] undriven precentral variance 0.000e+00   (must be 0; it is the same state every trial)
+  [control] variance AT the driven occipital port 2.775e+00   (the scale transport is measured against)
+
+  modality     at own port   at precentral    transport
+  sight          2.775e+00       7.016e-07    2.529e-07
+  hearing        2.785e+00       1.090e-06    3.914e-07
+  touch          2.778e+00       1.914e-06    6.892e-07
+
+  precentral variance, all three driven   3.698e-06
+  same, as a linear sum of the parts      3.700e-06
+  ratio (1.0 = the sheet only superposes) 0.9996
+
+  best transport across the three modalities: 6.892e-07
+  -> NO CONVERGENCE -- the motor strip does not see the senses. the somato-motor materialization is blocked on the sheet not conducting, not on data or on the loss.
+  wrote out/convergence_sphere_slice.json
+  graph recovered from top level
+ckpt/wiring_surface_slice.pt: step 1100, 30000 sites, k=48, 12 long-range edges per site
+  kernel: tanh_slope=2.0 long_gain=1.0 long_topm=0 local_gain=1.0 long_min_dist=0.0
+/home/brandonin/Documents/IBM-1/scripts/measure_multimodal_convergence.py:234: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  |w| mean {float(_w.abs().mean()):.4e}  "
+  |w| mean 5.3656e-03  row L1 mean 2.5755e-01  row L1/max mean 20.37  (48 = perfectly flat, 1 = one edge carries the row)
+  sight    -> occipital     3179 sites
+  hearing  -> temporal      5843 sites
+  touch    -> postcentral   1779 sites
+  readout  <- precentral    2121 sites
+
+  [control] undriven precentral variance 0.000e+00   (must be 0; it is the same state every trial)
+  [control] variance AT the driven occipital port 2.753e+00   (the scale transport is measured against)
+
+  modality     at own port   at precentral    transport
+  sight          2.753e+00       5.779e-07    2.099e-07
+  hearing        2.765e+00       1.068e-06    3.861e-07
+  touch          2.755e+00       2.606e-06    9.462e-07
+
+  precentral variance, all three driven   4.237e-06
+  same, as a linear sum of the parts      4.237e-06
+  ratio (1.0 = the sheet only superposes) 1.0000
+
+  best transport across the three modalities: 9.462e-07
+  -> NO CONVERGENCE -- the motor strip does not see the senses. the somato-motor materialization is blocked on the sheet not conducting, not on data or on the loss.
+  wrote out/convergence_surface_slice.json
+PHASE3 DONE 15:56:29
