@@ -151,6 +151,21 @@ that precentral is two hops from occipital instead of one. And the random arm's
 Both arms remain at "no convergence" (superadditivity 1.0000), so nothing here
 rescues the somato-motor claim. It relocates the failure.
 
+**End to end, against the strong control**, 2,000 steps with encoder, kernel and
+head all trained through the dynamics:
+
+| kernel | random edges | tract edges |
+|---|---|---|
+| base | 4.1× chance | 1.0× |
+| aniso4d (concentrated onto 4 partners, ≥120 mm apart, long_gain 8) | **28.4×** | **1.4×** |
+
+Anatomy does not beat concentrated-random. It does not train at all on this
+task. **That is a clean null and it is reported as one** — and the reason is not
+a defect in the anatomy. Occipital-to-precentral through one cortical sheet, with
+no thalamus, no basal ganglia and no premotor staging, is not a pathway the brain
+has, and the connectome says so. `postcentral → precentral` is declared, and it
+is the one pair where the tract arm wins.
+
 **What the connectome does not reconstruct, which is the honest limit.**
 `tract.py` names two cases as what the metric exists to get right: the arcuate,
 which "connects frontal and temporal cortex over a path of roughly 150 mm", and
