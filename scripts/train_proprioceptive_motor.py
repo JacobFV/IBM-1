@@ -131,6 +131,9 @@ def main() -> None:
     ap.add_argument("--dt", type=float, default=2e-2)
     ap.add_argument("--eval-every", type=int, default=250)
     ap.add_argument("--arms", default="trained,severed,permuted")
+    ap.add_argument("--long-gain", type=float, default=1.0)
+    ap.add_argument("--long-topm", type=int, default=0)
+    ap.add_argument("--long-min-dist", type=float, default=0.0)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="out/proprioceptive_motor.json")
     a = ap.parse_args()
@@ -147,6 +150,17 @@ def main() -> None:
     # leak the thing being predicted.
     mu, sg = Xtr.mean(0), Xtr.std(0).clip(1e-6)
     Xtr_n, Xte_n = (Xtr - mu) / sg, (Xte - mu) / sg
+    # THE TARGET MUST BE NORMALISED TOO, and not normalising it invalidated the
+    # first run of this experiment.  The deltas are ~1e-2 in magnitude while a
+    # freshly initialised head emits O(1), so the model spends its whole budget
+    # learning to shrink by two orders of magnitude and never gets to the shape.
+    # Measured: the trained arm reached a TRAIN loss of 9.1e-03 against a target
+    # whose zero baseline is 6.7e-04 -- 13x worse than emitting nothing, on data
+    # it had seen.  That is not signal lost in transit, it is a model that never
+    # fit the scale, and reading it as a transport result would have been wrong.
+    # Predictions are mapped back before any baseline comparison.
+    ymu, ysg = Ytr.mean(0), Ytr.std(0).clip(1e-9)
+    Ytr_n = (Ytr - ymu) / ysg
 
     # ---- baselines, before anything is trained -------------------------------
     zero = float((Yte ** 2).mean())
@@ -173,7 +187,7 @@ def main() -> None:
                 sd = h; break
     emb = sd["dyn.embed"]; n_sites, e_dim = emb.shape; k = sd["dyn.idx"].shape[1]
 
-    Xt = torch.from_numpy(Xtr_n).to(dev); Yt = torch.from_numpy(Ytr).to(dev)
+    Xt = torch.from_numpy(Xtr_n).to(dev); Yt = torch.from_numpy(Ytr_n).to(dev)
     Xv = torch.from_numpy(Xte_n).to(dev); Yv = torch.from_numpy(Yte).to(dev)
 
     res = {"ckpt": a.ckpt, "baselines": {"zero": zero, "mean": mean_mse,
@@ -183,7 +197,9 @@ def main() -> None:
     for arm in a.arms.split(","):
         torch.manual_seed(a.seed)
         dyn = P.CorticalDynamics(n_sites, e_dim, k, dev, geometry="surface",
-                                 long_topology=a.long_topology).to(dev)
+                                 long_topology=a.long_topology,
+                                 long_gain=a.long_gain, long_topm=a.long_topm,
+                                 long_min_dist=a.long_min_dist).to(dev)
         with torch.no_grad():
             dyn.embed.copy_(emb.to(dev))
             for nm in ("idx", "geo", "pos", "w_ee", "w_ei", "w_assoc", "a_gain", "log_len"):
@@ -228,9 +244,12 @@ def main() -> None:
             torch.nn.utils.clip_grad_norm_(params, 1.0); opt.step()
             if step % a.eval_every == 0:
                 with torch.no_grad():
+                    # map back to real units before comparing to any baseline
+                    ym = torch.from_numpy(ymu).to(dev)
+                    ys = torch.from_numpy(ysg).to(dev)
                     v = 0.0
                     for j in range(0, len(Xv), 4096):
-                        p_ = fwd(Xv[j:j + 4096])
+                        p_ = fwd(Xv[j:j + 4096]) * ys + ym
                         v += float(((p_ - Yv[j:j + 4096]) ** 2).sum())
                     v /= Yv.numel()
                 sk = 1 - v / pers_mse
