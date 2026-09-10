@@ -118,6 +118,14 @@ window). That is consistent with overfitting. (This line first said the training
 "keeps falling"; the numbers show it roughly flat, so the stronger wording was withdrawn.) The remote log is kept at
 `logs/proprio_readout_batchnorm_seed0.remote.log`. The seed-1 repeat is running.
 
+**Sheet, raw readout, seed 0: complete** (one seed of one arm -- data, not the verdict).
+Late-window mean **-3.8419** over the seven evaluations at steps 1500-3000; best so
+far -3.8159, at step 3000 -- its LAST evaluation. It improves slowly and then
+holds flat (held-out MSE 5.052e-04 at 1500, 5.009e-04 at 3000). On the statistic
+fixed in advance, the batchnorm readout's early lead REVERSES: it reached its best far
+sooner (step 500) but its late-window mean is lower than the raw readout's. Both sheet
+arms sit below the no-cortex two-seed mean. Seed-1 repeats of both sheet arms are running.
+
 ## 2026-09-09 (afternoon) — the cortex is a surface now, and the anatomy says the transport task was scored on a pathway the brain does not have
 
 `docs/DISCONNECTS.md` rows 2 and 3, both closed. Three payloads fetched into
