@@ -1,0 +1,30 @@
+ckpt/wiring_surface_occ_tract.pt: 30,000 sites, k=48 | 16,540 pairs, train 0-13,232 | EEG 64ch x 25
+
+### base: long_gain=1.0 topm=0 min_dist=0.0 | drive 3179 -> read 2121 sites, disjoint
+/home/brandonin/ibm-1/scripts/train_disjoint_end_to_end.py:203: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  hist.append({"step": step, "loss": float(loss), "top1": m,
+      0  loss 4.2637  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 2.879e-08     12s
+    250  loss 4.1589  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 1.539e-10    537s
+    500  loss 4.1589  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 1.360e-10   1062s
+    750  loss 4.1589  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 1.417e-10   1588s
+   1000  loss 4.1589  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 1.446e-10   2114s
+   1250  loss 4.1589  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 1.219e-10   2639s
+   1500  loss 4.1589  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 1.257e-10   3165s
+   1750  loss 4.1589  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 1.289e-10   3690s
+   2000  loss 4.1589  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 1.232e-10   4216s
+
+### aniso4d: long_gain=8.0 topm=4 min_dist=120.0 | drive 3179 -> read 2121 sites, disjoint
+      0  loss 4.2633  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 1.279e-05     11s
+    250  loss 4.1589  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 2.024e-07    539s
+    500  loss 4.1587  top-1  0.50%+/-0.25 (  1.0x chance)  |grad_enc| 5.619e-04   1066s
+    750  loss 4.1597  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 2.150e-03   1593s
+   1000  loss 4.1586  top-1  0.69%+/-0.24 (  1.4x chance)  |grad_enc| 3.920e-04   2120s
+   1250  loss 4.1565  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 1.130e-02   2647s
+   1500  loss 4.1329  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 8.884e-02   3175s
+   1750  loss 4.1751  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 5.206e-02   3702s
+   2000  loss 4.0728  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 2.235e-01   4166s
+
+  base best 1.0x chance | aniso4d best 1.4x chance
+  -> NEITHER trains. transport is not the binding constraint for end-to-end training and this line needs rethinking.
+E2E DONE surface_occ_tract 17:07:55

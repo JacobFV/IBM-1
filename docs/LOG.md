@@ -164,11 +164,44 @@ learn from, and end-to-end training of that pathway is starved. Both arms sit at
 exact chance through step 250 on the plain kernel, as the frozen-head ablation
 predicts.
 
+**(g) END TO END, which is the bar that matters** (`train_disjoint_end_to_end.py`,
+2,000 steps, encoder + kernel + head all trained through the dynamics, image ->
+occipital port -> sheet -> PRECENTRAL-ONLY readout, 8 pools of 200, chance 0.5%,
+run on a second GB10 so the two arms had a card to themselves):
+
+    kernel                       random edges   tract edges
+    base (unmodified)               4.1x           1.0x
+    aniso4d (concentrated)         28.4x           1.4x
+
+**Concentrated-random trains to 28.4x chance. Concentrated-tract never leaves
+it.** The encoder gradient tells the same story from the optimiser's side: at
+step 0 on the plain kernel it is 1.312e-05 with random edges and 2.879e-08 with
+tract ones, 456x less, and concentration lifts the tract arm to 1.279e-05 --
+enough gradient to move, and it still does not learn, because the two-hop path
+delivers a signal the head cannot separate.
+
+So the answer to "does anatomy beat concentrated-random" is **no, decisively, on
+the one task where a number exists.** And the reason is not a defect in the
+anatomy: the connectome declares no direct occipito-precentral fascicle, so the
+task itself -- drive V1, read M1, one sheet, no thalamus, no basal ganglia, no
+premotor staging -- is asking the cortex to do something it does not do this way.
+
 **The honest summary of (3).** Anatomy does not beat concentrated-random on any
-measurement here, and on the one that matters it loses by a factor of 351 — for
-a reason that is correct rather than a defect. A null on "does the tract
-topology improve transport", and a positive result on "was the transport being
-measured real".
+measurement here. On per-hop transport it loses by 351x, on frozen-head
+retrieval it goes 24.12x to 19.25x and collapses under noise, and end to end it
+does not train at all where concentrated-random reaches 28.4x. **A clean null on
+"does the tract topology improve transport".**
+
+And a positive result underneath it, which is the part worth keeping: the
+random arm's transport was matched by its own permuted control, and it ran down
+edges the connectome does not contain. So the null is not "anatomy did not
+help"; it is **"the thing anatomy was being compared against was not real".**
+
+What that implies for the programme is a change of target rather than a tuning
+problem. Occipital-to-precentral in one cortical sheet is not a pathway the
+brain has. `postcentral -> precentral` IS declared, and it is the one pair where
+the tract arm wins (1.435e-06 -> 1.691e-06, +18%). A somato-motor demonstration
+built on that pair is asking the anatomy for something it can supply.
 
 **What these numbers are not.** 1,200 steps is a fifth of the published visual
 checkpoint's schedule, chosen so four matched arms would fit one GPU beside
