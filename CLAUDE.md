@@ -106,6 +106,14 @@ the bytes actually came from — never the machine that staged them. A card mark
   appears in it, and returns 1 when nothing matches, aborting a `&&` chain. This
   has silently killed commands mid-sequence several times. Match on
   `venv/bin/python -u scripts/<name>` and tolerate a non-zero exit.
+- **The bracket trick is not enough either.** `grep "[v]env/bin/python ..."` stops
+  grep from matching *itself*, but the harness runs every command inside a
+  wrapper -- `bash -c "... eval '<your whole command>'"` -- and that wrapper's argv
+  contains your pattern as literal text, so the bracketed grep matches the
+  wrapper. It happened twice in a row on a "is a fetch already running?" guard,
+  which refused to relaunch because it found itself. Match on the EXECUTABLE, not
+  the arguments: `ps -eo pid,comm,args | awk '$2 ~ /^python/ && /scripts\/<name>/'`.
+  The wrapper's `comm` is `bash`, whatever its arguments say.
 - Publish checkpoints for runs that **failed** too. A negative result without a
   checkpoint is an anecdote; the sidecar should say plainly what was falsified.
 - The remote has no git repo, so `git rev-parse` there yields `git-unknown` and the
