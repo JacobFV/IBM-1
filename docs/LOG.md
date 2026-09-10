@@ -93,6 +93,22 @@ reproduces it to every printed digit at steps 0 and 1000); batchnorm seed 0 thro
 seed 0 only to step 1200, from a run that stopped there -- it is being rerun to 3000
 now, and must reproduce its old step 0 exactly (held 6.607e-04, skill -5.3523).
 
+**No cortex, both seeds complete** (appended after the rule above was committed). The
+seed-0 rerun reproduces its old step 0 exactly (held 6.607e-04, skill -5.3523), and its
+curve matches the pre-crash one throughout. Computed from the logs:
+
+| no cortex | late-window mean (steps 1500-3000, 7 evals) | best so far |
+|---|---:|---:|
+| seed 0 | -3.6442 | -3.1664 |
+| seed 1 | -3.6832 | -3.4073 |
+| two-seed mean | **-3.6637** | |
+
+The late-window statistic moves 0.04 between seeds, where best-so-far moved 0.32 --
+which is why it was chosen. The verdict threshold is NOT tightened to match: it stays as
+committed, max(0.3, the arms' own seed spreads). Changing it after seeing this would be
+the tuning the rule exists to prevent; the verdict will say plainly that 0.3 is
+conservative against an observed 0.04.
+
 ## 2026-09-09 (afternoon) — the cortex is a surface now, and the anatomy says the transport task was scored on a pathway the brain does not have
 
 `docs/DISCONNECTS.md` rows 2 and 3, both closed. Three payloads fetched into
