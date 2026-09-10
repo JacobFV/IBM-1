@@ -757,12 +757,22 @@ Both halves are real and point opposite ways:
   something real.
 - **140x worse than copying the previous delta.**
 
-**And the objective is close to unwinnable, which is the honest reading.** The
-input carries `rate_per_s`, and rate x dt IS very nearly the previous delta — so
-persistence amounts to passing one input channel straight through. Asking a
-30,000-site sheet with ~1e-3 transport attenuation to beat an identity map on its
-own input cannot be passed by construction. Same shape as the video term, where
-persistence was unbeatable because frame t+8 resembles frame t.
+**SHARPENED, and it is worse for the model than I first wrote.** I called the
+objective "unwinnable by construction". It is not. The input carries
+`rate_per_s`, and rate x dt IS very nearly the previous delta, so **the model has
+persistence's information already** — emitting `rate x dt` would match the
+baseline exactly. It is 140x worse instead. The sheet is handed the answer at its
+input port and loses it before the readout.
+
+A horizon sweep confirms the escape route does not exist: persistence stays far
+ahead of zero at every lag tested, 6.46x at 10 ms rising to 44.52x at 640 ms, and
+its own error plateaus after 80 ms rather than degrading. Forced-pose trajectories
+from measured gait are periodic and smooth, so no horizon makes copying stop
+working.
+
+So the honest reading is the transport finding again, in its starkest form yet:
+this is not a task the substrate cannot win, it is a task the substrate loses
+while holding the answer.
 
 So this does not say the sensorimotor materialization fails. It says the
 objective measures channel fidelity rather than motor prediction, and a useful
