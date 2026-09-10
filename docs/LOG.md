@@ -109,6 +109,12 @@ committed, max(0.3, the arms' own seed spreads). Changing it after seeing this w
 the tuning the rule exists to prevent; the verdict will say plainly that 0.3 is
 conservative against an observed 0.04.
 
+**Sheet, batchnorm readout, seed 0: complete** (one seed of one arm -- data, not the
+verdict). Late-window mean **-4.2806** over the seven evaluations at steps
+1500-3000; best so far -3.3655, at step 500. It peaks early and then degrades
+while its training loss keeps falling, which is overfitting. The remote log is kept at
+`logs/proprio_readout_batchnorm_seed0.remote.log`. The seed-1 repeat is running.
+
 ## 2026-09-09 (afternoon) — the cortex is a surface now, and the anatomy says the transport task was scored on a pathway the brain does not have
 
 `docs/DISCONNECTS.md` rows 2 and 3, both closed. Three payloads fetched into
