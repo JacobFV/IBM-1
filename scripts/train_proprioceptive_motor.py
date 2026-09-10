@@ -131,6 +131,17 @@ def main() -> None:
     ap.add_argument("--dt", type=float, default=2e-2)
     ap.add_argument("--eval-every", type=int, default=250)
     ap.add_argument("--arms", default="trained,severed,permuted")
+    # THE READOUT'S COMMON MODE.  measure_sheet_information.py found the
+    # precentral readout sits ~3,500x its own per-sample spread away from the
+    # origin: mean magnitude 8.24, per-feature spread 0.0024.  A freshly
+    # initialised Linear is scaled for O(1) inputs, so it sees a large constant
+    # and a signal three orders of magnitude below it.  The no_cortex control
+    # has no such offset -- its head reads a normalised encoder output -- so the
+    # two arms are NOT matched on the thing that most affects whether a head can
+    # be trained at all.  This flag standardises the readout per feature before
+    # the head, which is what the closed-form least-squares solve gets for free
+    # (it recovers the input at R^2 0.9998 through exactly this representation).
+    ap.add_argument("--readout-norm", default="none", choices=("none", "batchnorm"))
     ap.add_argument("--long-gain", type=float, default=1.0)
     ap.add_argument("--long-topm", type=int, default=0)
     ap.add_argument("--long-min-dist", type=float, default=0.0)
@@ -252,12 +263,17 @@ def main() -> None:
         torch.manual_seed(a.seed)
         enc = nn.Sequential(nn.Linear(Xtr.shape[1], 256), nn.GELU(),
                             nn.Linear(256, len(port))).to(dev)
-        head = nn.Sequential(nn.Linear(len(read), 512), nn.GELU(),
-                             nn.Linear(512, Ytr.shape[1])).to(dev)
+        head_layers = []
+        if a.readout_norm == "batchnorm":
+            head_layers.append(nn.BatchNorm1d(len(read)))
+        head_layers += [nn.Linear(len(read), 512), nn.GELU(),
+                        nn.Linear(512, Ytr.shape[1])]
+        head = nn.Sequential(*head_layers).to(dev)
         params = list(enc.parameters()) + list(head.parameters()) + [dyn.embed]
         opt = torch.optim.AdamW(params, lr=a.lr, weight_decay=1e-4)
         print(f"\n### {arm}: drive {a.drive_region} ({len(port)}) -> read "
-              f"{a.read_region} ({len(read)}), {a.long_topology} edges", flush=True)
+              f"{a.read_region} ({len(read)}), {a.long_topology} edges, "
+              f"readout-norm {a.readout_norm}", flush=True)
 
         def fwd(x):
             s = dyn.init_state(x.shape[0], dev)
@@ -277,6 +293,7 @@ def main() -> None:
             opt.zero_grad(set_to_none=True); loss.backward()
             torch.nn.utils.clip_grad_norm_(params, 1.0); opt.step()
             if step % a.eval_every == 0:
+                head.eval()
                 with torch.no_grad():
                     # map back to real units before comparing to any baseline
                     ym = torch.from_numpy(ymu).to(dev)
@@ -286,6 +303,7 @@ def main() -> None:
                         p_ = fwd(Xv[j:j + 4096]) * ys + ym
                         v += float(((p_ - Yv[j:j + 4096]) ** 2).sum())
                     v /= Yv.numel()
+                head.train()
                 sk = 1 - v / pers_mse
                 best = max(best, sk)
                 hist.append({"step": step, "held_mse": v, "skill_vs_persistence": sk,

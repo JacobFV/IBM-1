@@ -1,0 +1,27 @@
+{
+  "n": 1500,
+  "k": 10,
+  "channels": 160,
+  "reps": {
+    "identity (the input itself)": {
+      "linear_r2": 1.0,
+      "neighbour_retention": 1.0,
+      "common_mode_ratio": 2.1330572053557262e-05
+    },
+    "random projection": {
+      "linear_r2": 1.0,
+      "neighbour_retention": 0.98,
+      "common_mode_ratio": 5.913311179028824e-05
+    },
+    "the sheet, severed": {
+      "linear_r2": 0.0,
+      "neighbour_retention": 0.006133333333333334,
+      "common_mode_ratio": 173667.421875
+    },
+    "the sheet, intact": {
+      "linear_r2": 0.9998424053192139,
+      "neighbour_retention": 0.8952000000000001,
+      "common_mode_ratio": 3499.581298828125
+    }
+  }
+}
