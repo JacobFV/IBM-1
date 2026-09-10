@@ -56,6 +56,43 @@ already written.
 
 ---
 
+
+## 2026-09-10 -- readout normalisation: the comparison, fixed BEFORE the runs finish
+
+**Why this entry exists before its result.** The cortical sheet's precentral readout
+sits ~3,500x its own per-sample spread away from the origin (measured by
+`scripts/measure_sheet_information.py`), and a freshly initialised Linear head reading it
+trains slowly. `train_proprioceptive_motor.py --readout-norm batchnorm` standardises that
+readout. Whether that closes the gap to the no-cortex control is being measured, and the
+held-out curves are NOISY -- the batchnorm arm went -3.37 at step 500, -4.22 at 1500,
+-3.80 at 2000. "Best so far" on such a curve selects the luckiest evaluation, which is
+the single-pool error in row 9 of the ledger in another form. So the statistic and the
+verdict are declared here, and committed, while no sheet arm has finished.
+
+**The arms.** Same split and baselines throughout (3,515 train / 3,400 held-out
+transitions; persistence 1.040089e-04), same code (identical md5 local and remote), two
+seeds each:
+* sheet, raw readout (`--readout-norm none`)
+* sheet, batchnorm readout (`--readout-norm batchnorm`)
+* no cortex (encoder -> head, the sheet removed)
+
+**The statistic.** For each arm x seed: the MEAN held-out skill vs persistence over the
+evaluations at step >= 1500 on the 250-step grid (1500, 1750, ..., 3000 -- seven
+evaluations). Best-so-far is reported alongside and is NOT used for the verdict.
+
+**The verdict rule.** Compare arms by the mean over their two seeds. The uncertainty is
+the seed spread; the no-cortex control's best-skill spread across seeds is already known
+to be ~0.3 (seed 0 -3.09, seed 1 -3.41), so a difference smaller than the larger of that
+and the arms' own seed spreads is reported as NOT DISTINGUISHABLE, not as a win.
+
+**What was visible when this was written** (so a reader can judge what it could have
+been tuned to): raw readout seed 0 through step 1750 (-4.93 at 250, -3.86 at 1500, -3.89
+at 1750; the pre-crash run of the same seed reached -3.94 at 1200, and today's run
+reproduces it to every printed digit at steps 0 and 1000); batchnorm seed 0 through step
+2000 (above); no cortex seed 1 complete (best -3.41 at 250, -3.84 at 3000); no cortex
+seed 0 only to step 1200, from a run that stopped there -- it is being rerun to 3000
+now, and must reproduce its old step 0 exactly (held 6.607e-04, skill -5.3523).
+
 ## 2026-09-09 (afternoon) — the cortex is a surface now, and the anatomy says the transport task was scored on a pathway the brain does not have
 
 `docs/DISCONNECTS.md` rows 2 and 3, both closed. Three payloads fetched into
