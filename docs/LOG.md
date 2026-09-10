@@ -133,6 +133,40 @@ fixed in advance, the batchnorm readout's early lead REVERSES: it reached its be
 sooner (step 500) but its late-window mean is lower than the raw readout's. Both sheet
 arms sit below the no-cortex two-seed mean. Seed-1 repeats of both sheet arms are running.
 
+**THE VERDICT** (all six runs at step 3000; computed by `scripts/score_readout_comparison.py`,
+whose gate -- reproducing every late mean recorded above -- passes). Seed 1 of the raw
+readout: late mean -3.8306 (best -3.7169). Seed 1 of the batchnorm readout: late mean
+-4.5677 (best -3.4217, at step 750); its remote log is kept at
+`logs/proprio_readout_batchnorm_seed1.remote.log`.
+
+| arm | seed 0 | seed 1 | two-seed mean | seed spread |
+|---|---:|---:|---:|---:|
+| no cortex | -3.6442 | -3.6832 | **-3.6637** | 0.0390 |
+| sheet, raw readout | -3.8419 | -3.8306 | **-3.8363** | 0.0113 |
+| sheet, batchnorm readout | -4.2806 | -4.5677 | **-4.4242** | 0.2871 |
+
+Threshold = max(0.3, the arms' seed spreads) = **0.30**.
+
+* **Sheet with raw readout vs no cortex: -0.17 -- NOT DISTINGUISHABLE.**
+* **Sheet with batchnorm readout vs no cortex: -0.76 -- WORSE.**
+* **Batchnorm vs raw readout: -0.59 -- WORSE.**
+
+What this settles: **standardising the precentral readout does not close the gap to the
+no-cortex control -- it widens it.** The hypothesis that motivated the batchnorm arm (the
+readout is badly scaled, so a normalised head would recover what the sheet carries) is
+falsified on the statistic fixed in advance. Best-so-far would have said the opposite: the
+batchnorm arm's best evaluations (-3.37, -3.42) beat both raw-readout runs (-3.82, -3.72).
+That is the lucky-evaluation selection this entry was written to prevent, and here it would
+have reversed the ordering.
+
+What it does not settle, said plainly: on the rule as committed, the raw-readout sheet is not
+distinguishable from no cortex. With the observed spreads it would look otherwise -- both
+raw-readout seeds (0.011 apart) sit below both no-cortex seeds (0.039 apart) by ~0.17 -- but the
+threshold was fixed at 0.3 before those spreads were seen, and it is not tightened now. Two
+seeds per arm. The standing reading from the no-cortex control is unchanged: on this motor task
+the cortical sheet, read out either way, has not been shown to help, and the normalised readout
+measurably hurts.
+
 ## 2026-09-09 (afternoon) — the cortex is a surface now, and the anatomy says the transport task was scored on a pathway the brain does not have
 
 `docs/DISCONNECTS.md` rows 2 and 3, both closed. Three payloads fetched into
