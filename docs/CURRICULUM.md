@@ -13,8 +13,8 @@ status is measured, not aspirational. **nothing below stage 1 has run.**
 
 | question | answer |
 |---|---|
-| is there a materialized 100M+ parameter model? | **52.5M is TRAINING** — `ASSOCIATION_KERNEL` is now `PER_SITE`, dim 128; 32.0M of those are per-site association embeddings, i.e. the learned cortico-cortical graph |
-| has any curriculum stage run? | **stage 4 is running** — `scripts/pretrain_video_loop.py` on `gb10-direct`, 16,500 frames of naturalistic video, 12k steps |
+| is there a materialized 100M+ parameter model? | no. A 52.5M materialization (`PER_SITE`, dim 128; 32.0M per-site association embeddings) was trained; **nothing is training as of 2026-09-10** -- both machines idle |
+| has any curriculum stage run? | **stage 4 RAN and was scored**: `scripts/pretrain_video_loop.py`, 16,500 frames, 12k steps. On held-out frames it is **25% WORSE than persistence** (skill -0.2535, `docs/LOG.md` ledger row 13), and its transfer to EEG survives destroying temporal order (row 16). Stage 3b's paired-MEG result is withdrawn too (row 7). No stage has passed its gate |
 | has theta been moved by evidence? | partially — per-source spectral fits ran; the joint fit is falsified (§4.3b) |
 | does the substrate support an attractor landscape? | **yes, measured** (STATE.md §4.10) |
 
@@ -171,11 +171,13 @@ field.
   surface rather than a subject's own cortex -- they stopped being a spherical
   stand-in (`docs/DISCONNECTS.md` 2) but a template surface is still not the
   head the sensors sat on; stage 2 is where a measured forward model replaces it
-- **early result**: MSE on standardized MEG **0.568 → 0.133 by step 100**, i.e.
-  ~87% of MEG variance explained, and **effective rank RISES (2.4 → 3.0)** rather
-  than collapsing. the paired objective cannot be minimized by collapsing the
-  representation, which is exactly why it belongs before the self-supervised
-  stages rather than after them
+- ~~**early result**: MSE on standardized MEG 0.568 → 0.133 by step 100, i.e. ~87% of
+  MEG variance explained~~ **WITHDRAWN** (`docs/LOG.md` ledger row 7): the normalisation
+  was loaded and never applied, and the model **never beat the zero baseline in either
+  coordinate system**. The clock-drift fix to the LibriBrain pairing (row 11) came later;
+  no paired-MEG skill against a baseline has been established since. The design argument
+  -- a paired target cannot be met by collapsing the representation -- stands; the result
+  does not
 
 ### stage 5 — multi-materialization schedule · SUPERVISED · **free today**
 `∇log p(θ|D) = ∇log p(θ) + Σ_d ∇log p(D_d|θ)`. a curriculum is a schedule over

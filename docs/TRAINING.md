@@ -54,8 +54,8 @@ took; STATE.md §6 called this the gating step for months and it was one command
 | `video_v1` | next-frame, no viability term | 52.5M | **learned a 430 mV cortex.** loss fell the whole time |
 | `video_v2/v3` | + viability penalty | 52.5M | bounded; rank collapsed |
 | `av_v5` | joint audio-visual, horizon 8, signed kernel | **68.9M** | **completed 20k steps.** recon 1.77 → 0.185, rank recovered 1.42 → 2.97 |
-| `paired_meg_v1` | cochleagram → MEG | 33.4M | 91–97% of MEG variance **at rank 1.0–1.2** |
-| `multi_v1` | AV + paired, one substrate | 32.0M shared + 12.9M heads | running |
+| `paired_meg_v1` | cochleagram → MEG | 33.4M | ~~91–97% of MEG variance~~ **withdrawn** (`docs/LOG.md` ledger row 7): the normalisation was never applied and it **never beat the zero baseline**; rank 1.0–1.2 |
+| `multi_v1` | AV + paired, one substrate | 32.0M shared + 12.9M heads | not running (both machines idle, 2026-09-10); no result recorded here |
 
 ## 4. what the runs actually showed
 
