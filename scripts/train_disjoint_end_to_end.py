@@ -53,6 +53,10 @@ def main() -> None:
     ap.add_argument("--ckpt", default="ckpt/ibm1_curriculum16.pt")
     ap.add_argument("--configs",
                     default="base:2.0,1.0,0,1.0,0.0;aniso4d:2.0,8.0,4,1.0,120.0")
+    ap.add_argument("--geometry", default=None,
+                    help="'surface' for the real cortical sheet; None keeps the sphere")
+    ap.add_argument("--long-topology", default="random", choices=("random", "tract"),
+                    help="where long-range partners come from")
     ap.add_argument("--drive-region", default="occipital")
     ap.add_argument("--read-region", default="precentral")
     ap.add_argument("--steps", type=int, default=6000)
@@ -114,7 +118,8 @@ def main() -> None:
     def build(cfg):
         """identical initialisation for every arm; only the kernel config differs."""
         torch.manual_seed(a.seed)
-        dyn = P.CorticalDynamics(n_sites, e_dim, k, dev).to(dev)
+        dyn = P.CorticalDynamics(n_sites, e_dim, k, dev, geometry=a.geometry,
+                                 long_topology=a.long_topology).to(dev)
         with torch.no_grad():
             dyn.embed.copy_(emb.to(dev))
             for nm in ("idx", "geo", "pos"):

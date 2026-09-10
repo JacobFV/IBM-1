@@ -1,0 +1,53 @@
+{
+  "ckpt": "ckpt/wiring_surface_slice.pt",
+  "baselines": {
+    "zero": 0.0006671151495538652,
+    "mean": 0.000667228945530951,
+    "persistence": 0.00010400893370388076,
+    "ridge_no_cortex": 0.19537071883678436
+  },
+  "held_out_motions": [
+    "subject02_running_ik",
+    "rra_run_1_Kinematics_q",
+    "subject02_Kinematics_q",
+    "desiredKinematics_padded",
+    "coordinates",
+    "subject_walk_armless_coordinates",
+    "subject01_walk1_ik",
+    "subject01_walk1_ik",
+    "subject01_walk1_Kinematics",
+    "subject01_walk1_ik",
+    "subject01_walk1_ik"
+  ],
+  "arms": {
+    "trained": {
+      "history": [
+        {
+          "step": 0,
+          "held_mse": 4.465173713235294,
+          "skill_vs_persistence": -42929.674839412284,
+          "skill_vs_ridge": -21.85487681992698
+        },
+        {
+          "step": 200,
+          "held_mse": 0.010424267039579504,
+          "skill_vs_persistence": -99.22472751483035,
+          "skill_vs_ridge": 0.9466436572397111
+        },
+        {
+          "step": 400,
+          "held_mse": 0.020356951545266545,
+          "skill_vs_persistence": -194.723105894191,
+          "skill_vs_ridge": 0.8958034670370791
+        },
+        {
+          "step": 600,
+          "held_mse": 0.014680160522460937,
+          "skill_vs_persistence": -140.14326529157748,
+          "skill_vs_ridge": 0.9248599758967722
+        }
+      ],
+      "best_skill_vs_persistence": -99.22472751483035
+    }
+  }
+}

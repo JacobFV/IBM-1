@@ -727,6 +727,51 @@ The pixel baseline stays in every evaluation regardless. It is what turns "4x
 chance" from a claim into a comparison, and quoting ×chance alone would have let
 a 10% result look like a 6x win while being three times worse than doing nothing.
 
+## 2026-09-09 — the first real sensorimotor materialization: beats a linear map, loses to a copy
+
+Every motor run before this drove the cortex with IMAGES and read a motor region.
+This one drives it with what a spindle actually reports — each muscle's
+musculotendon path length in units of its own optimal fibre length, and the rate
+of that — from 22 forced-pose motions of MEASURED human movement, and reads a
+muscle command out of precentral over `postcentral -> precentral`, the one pair
+the consensus connectome declares. Held out by MOTION, richest motions withheld,
+so it is an extrapolation test.
+
+Held-out baselines, computed before any training:
+
+| | MSE | skill vs persistence |
+|---|---|---|
+| persistence | 1.040e-04 | — |
+| zero | 6.671e-04 | −5.41 |
+| mean | 6.672e-04 | −5.42 |
+| ridge, no cortex | 1.954e-01 | **−1877** |
+
+The trained cortical arm at step 600: held 1.468e-02, **+0.925 against ridge and
+−140 against persistence.** Stopped there — held-out loss oscillated 1.04e-02 /
+2.04e-02 / 1.47e-02 with no trend, at fifteen minutes per evaluation.
+
+Both halves are real and point opposite ways:
+
+- **13x better than a linear read of the same afference.** Ridge fails
+  catastrophically on motions it never saw; dynamics and non-linearity buy
+  something real.
+- **140x worse than copying the previous delta.**
+
+**And the objective is close to unwinnable, which is the honest reading.** The
+input carries `rate_per_s`, and rate x dt IS very nearly the previous delta — so
+persistence amounts to passing one input channel straight through. Asking a
+30,000-site sheet with ~1e-3 transport attenuation to beat an identity map on its
+own input cannot be passed by construction. Same shape as the video term, where
+persistence was unbeatable because frame t+8 resembles frame t.
+
+So this does not say the sensorimotor materialization fails. It says the
+objective measures channel fidelity rather than motor prediction, and a useful
+version must ask for something a copy cannot supply: a longer horizon, a command
+from a different modality, or a target that is not a smooth function of its own
+input. Logged before the severed and permuted controls, because controls on an
+unwinnable task only say how much worse the cortex makes an already-lost
+comparison.
+
 ## 2026-09-09 — tracts do not beat random on the one pair the connectome declares either
 
 The tract topology's failure on occipital -> precentral had a clean explanation:
