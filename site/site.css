@@ -478,23 +478,26 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 /* ---- the reel: squircle tiles strewn across the hero/paper divide ---- */
 .reel {
   position: relative; z-index: 3;
-  margin: -5.5rem auto -3.5rem; padding: 0 1.5rem;
-  max-width: 1180px;
+  /* the bottom margin used to be negative, which pulled the standfirst up UNDER
+     the tiles.  the reel now sits ON the divide and the paper starts clear of
+     it; only the top still overlaps the hero, which is the intended effect. */
+  margin: -5rem auto 2.5rem; padding: 0 1.5rem;
+  max-width: 1240px;
   display: flex; justify-content: center; align-items: flex-start;
-  flex-wrap: wrap; gap: 0;
+  flex-wrap: wrap; row-gap: 1.6rem; column-gap: 0;
   pointer-events: none;
 }
 .reel .tile {
   pointer-events: auto;
   position: relative; margin: 0;
-  width: 178px; height: 178px; flex: 0 0 auto;
+  width: 150px; height: 150px; flex: 0 0 auto;
   border-radius: 30% / 30%;               /* squircle-ish */
   overflow: hidden;
   background: #0d1013;
   box-shadow: 0 10px 34px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.07);
   transition: transform .28s cubic-bezier(.2,.7,.3,1), box-shadow .28s;
 }
-.reel .tile + .tile { margin-left: -34px; }   /* semi-overlapping */
+.reel .tile + .tile { margin-left: -28px; }   /* semi-overlapping */
 .reel .tile video {
   width: 100%; height: 100%; object-fit: cover; display: block;
   transform: scale(1.06);
@@ -521,9 +524,9 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 .reel figcaption b { display: block; color: #eaf2f6; font-weight: 600; }
 .reel figcaption span { display: block; color: #9fb0ba; font-family: var(--mono, monospace); font-size: .58rem; margin-top: .18rem; }
 @media (max-width: 900px) {
-  .reel { margin: -3rem auto -2rem; gap: 0; }
-  .reel .tile { width: 132px; height: 132px; }
-  .reel .tile + .tile { margin-left: -26px; }
+  .reel { margin: -2.5rem auto 1.75rem; }
+  .reel .tile { width: 112px; height: 112px; }
+  .reel .tile + .tile { margin-left: -22px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .reel .tile { transition: none; }

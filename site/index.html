@@ -41,7 +41,7 @@
 <div class="reel" aria-label="the body, moving">
   <figure class="tile t0" tabindex="0" role="button"
     data-src="media/anatomical_crawl.mp4" data-kind="video" data-title="the real anatomy crawling" data-cap="16.0 s · 0.920 m · worst joint excursion 11.5°"
-    data-desc="3,995 of 4,000 anatomical entities bound to the driven skeleton at 99.88%, posed from a controller searched on the 22-segment scaffold. Peak muscle fibre velocity 9.69 of 10 — zero time outside the muscle model's domain. Worst excursion past a declared joint range is 11.5°, against 145° for an earlier attempt that was withdrawn for folding the ankles back on themselves.">
+    data-desc="3,995 of 4,000 anatomical entities bound to the driven skeleton at 99.88%, posed from a controller searched on the 22-segment scaffold. Peak muscle fibre velocity 9.69 of 10 — zero time outside the muscle model's domain. Worst excursion past a declared joint range is 11.5°, against 145° for an earlier attempt withdrawn for folding the ankles back on themselves.">
     <video src="media/anatomical_crawl.mp4" autoplay loop muted playsinline preload="metadata"></video>
     <figcaption><b>the real anatomy crawling</b><span>16.0 s · 0.920 m · worst joint excursion 11.5°</span></figcaption>
   </figure>
@@ -88,15 +88,51 @@
     <figcaption><b>the 22-segment scaffold</b><span>what the anatomy is posed from</span></figcaption>
   </figure>
   <figure class="tile t2" tabindex="0" role="button"
+    data-src="media/embodied_3d_final_frame.png" data-kind="img" data-title="cortex in the loop, beside cortex severed" data-cap="1.019 m upright · 0.590 m fallen"
+    data-desc="Rendered from the OpenSim model with segment colour set by force-weighted mean muscle excitation. 22 bodies, 20 segments, 98 muscles; no limb length is assumed and the geometry is read from model.osim.">
+    <img src="media/embodied_3d_final_frame.png" alt="cortex in the loop, beside cortex severed" loading="lazy">
+    <figcaption><b>cortex in the loop, beside cortex severed</b><span>1.019 m upright · 0.590 m fallen</span></figcaption>
+  </figure>
+  <figure class="tile t3" tabindex="0" role="button"
+    data-src="media/acquired-anatomy-and-flow.png" data-kind="img" data-title="the acquired atlas" data-cap="2,229 surfaces, ~350 MB, ~28 s to load"
+    data-desc="BodyParts3D 4.0 surfaces as measured, before the display promotion registered another 1,768 structures from other datasets onto them.">
+    <img src="media/acquired-anatomy-and-flow.png" alt="the acquired atlas" loading="lazy">
+    <figcaption><b>the acquired atlas</b><span>2,229 surfaces, ~350 MB, ~28 s to load</span></figcaption>
+  </figure>
+  <figure class="tile t4" tabindex="0" role="button"
+    data-src="media/native-multisystem-physiology.png" data-kind="img" data-title="multisystem physiology" data-cap="the body state the brain reads"
+    data-desc="Digestive, circulatory, respiratory and renal state integrated by the native engine — the substrate the 15 visceral afferent channels are transduced from.">
+    <img src="media/native-multisystem-physiology.png" alt="multisystem physiology" loading="lazy">
+    <figcaption><b>multisystem physiology</b><span>the body state the brain reads</span></figcaption>
+  </figure>
+  <figure class="tile t5" tabindex="0" role="button"
+    data-src="media/cardiopulmonary.png" data-kind="img" data-title="cardiopulmonary" data-cap="the loop that does not stop"
+    data-desc="Heart and lung mechanics running continuously beneath everything else. The vagal afferents that report it are ~80% afferent by declaration, and their unmyelinated C arm carries two thirds of the interoceptive signal.">
+    <img src="media/cardiopulmonary.png" alt="cardiopulmonary" loading="lazy">
+    <figcaption><b>cardiopulmonary</b><span>the loop that does not stop</span></figcaption>
+  </figure>
+  <figure class="tile t0" tabindex="0" role="button"
+    data-src="media/skin-bioelectricity.png" data-kind="img" data-title="skin bioelectricity" data-cap="1,326 patches, 100.00% of the exterior"
+    data-desc="Every patch innervated: 1,199 carry a spinal root, 127 are trigeminal territory with no dermatome because the face is cranial. 29 of 30 spinal levels — C1 is absent because it has no cutaneous territory in life.">
+    <img src="media/skin-bioelectricity.png" alt="skin bioelectricity" loading="lazy">
+    <figcaption><b>skin bioelectricity</b><span>1,326 patches, 100.00% of the exterior</span></figcaption>
+  </figure>
+  <figure class="tile t1" tabindex="0" role="button"
     data-src="media/app-1-ring.png" data-kind="img" data-title="the materialization ring" data-cap="every unmeasured path reads “not measured”"
     data-desc="151 edges from the live brain graph. Arrow width IS the measured magnitude, so a dead path looks dead — the 0.05% cortical hop draws 0.6 px against 14 px for a measured one. A unit test enforces that unmeasured edges stay unlabelled.">
-    <img src="media/app-1-ring.png" alt="the materialization ring">
+    <img src="media/app-1-ring.png" alt="the materialization ring" loading="lazy">
     <figcaption><b>the materialization ring</b><span>every unmeasured path reads “not measured”</span></figcaption>
+  </figure>
+  <figure class="tile t2" tabindex="0" role="button"
+    data-src="media/app-3-contribution.png" data-kind="img" data-title="what a materialization contributes" data-cap="and what it does not"
+    data-desc="Clicking an annotation shows the signals feeding the highlighted system, with the corrected motor statement in full: a permuted kernel recovers the same push, so the cortex is the motor owner and the trained content is not shown to contribute.">
+    <img src="media/app-3-contribution.png" alt="what a materialization contributes" loading="lazy">
+    <figcaption><b>what a materialization contributes</b><span>and what it does not</span></figcaption>
   </figure>
   <figure class="tile t3" tabindex="0" role="button"
     data-src="media/final-4-prompt.png" data-kind="img" data-title="asking the brain what it is seeing" data-cap="63.5% top-1, 127× chance"
     data-desc="Nearest bank entries ranked by the group-mean measured evoked EEG of the image, on the THINGS-EEG2 designated test set. Flagged RETRIEVAL · NOT A GENERATION, with the chance level and the note that bar length is a normalised cosine and not a probability.">
-    <img src="media/final-4-prompt.png" alt="asking the brain what it is seeing">
+    <img src="media/final-4-prompt.png" alt="asking the brain what it is seeing" loading="lazy">
     <figcaption><b>asking the brain what it is seeing</b><span>63.5% top-1, 127× chance</span></figcaption>
   </figure>
 </div>
