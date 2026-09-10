@@ -111,8 +111,11 @@ conservative against an observed 0.04.
 
 **Sheet, batchnorm readout, seed 0: complete** (one seed of one arm -- data, not the
 verdict). Late-window mean **-4.2806** over the seven evaluations at steps
-1500-3000; best so far -3.3655, at step 500. It peaks early and then degrades
-while its training loss keeps falling, which is overfitting. The remote log is kept at
+1500-3000; best so far -3.3655, at step 500. It peaks early and then degrades:
+held-out MSE rises about 25% (4.54e-04 at step 500 -> 5.68e-04 at 3000) while training
+loss does not rise (4.6e-02 -> 4.0e-02, noisy, between 0.024 and 0.056 across the late
+window). That is consistent with overfitting. (This line first said the training loss
+"keeps falling"; the numbers show it roughly flat, so the stronger wording was withdrawn.) The remote log is kept at
 `logs/proprio_readout_batchnorm_seed0.remote.log`. The seed-1 repeat is running.
 
 ## 2026-09-09 (afternoon) — the cortex is a surface now, and the anatomy says the transport task was scored on a pathway the brain does not have
