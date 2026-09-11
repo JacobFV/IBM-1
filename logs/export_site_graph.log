@@ -1,0 +1,44 @@
+wrote /home/brandonin/Documents/IBM-1/site/data/cards.js (289 kB): 601 cards, skipped ['things-images']
+wrote /home/brandonin/Documents/IBM-1/site/data/registry.js (55 kB): 13 fields, 113 components, 20 systems, 17 topologies, 30 processes
+wrote /home/brandonin/Documents/IBM-1/site/data/graph.js (0.68 MB)
+{'cortex': 2052, 'subcortical': 729, 'spinal': 7, 'retina': 20, 'cochlea': 14, 'eeg': 60, 'meg': 102, 'edges': 8379}
+eeg_to_image             decoding           involved=  163 hot= 163 in=['eeg'] out=2
+meg_to_text              decoding           involved=  122 hot= 122 in=['meg'] out=2
+speech_envelope          decoding           involved=   80 hot=  80 in=['eeg', 'meg', 'ecog'] out=2
+invasive_bci             decoding           involved=  201 hot= 201 in=['intracortical_spikes', 'lfp', 'task_cue', 'auditory_stimulus', 'visual_stimulus'] out=4
+spike_decode             decoding           involved=    3 hot=  38 in=['intracortical_spikes'] out=3
+handwriting_bci          decoding           involved=  116 hot= 116 in=['intracortical_spikes', 'task_cue', 'auditory_stimulus', 'visual_stimulus'] out=3
+inner_speech             decoding           involved=  193 hot= 193 in=['eeg', 'ecog', 'intracortical_spikes', 'emg', 'task_cue', 'auditory_stimulus', 'visual_stimulus'] out=2
+eeg_forward              electrophysiology  involved=    2 hot=   1 in=['eeg'] out=2
+meg_forward              electrophysiology  involved=    2 hot=   1 in=['meg'] out=2
+ecog_forward             electrophysiology  involved=    1 hot=  81 in=['ecog'] out=2
+lfp_forward              electrophysiology  involved=    1 hot=  36 in=['lfp'] out=2
+csd_laminar              electrophysiology  involved=    1 hot=  36 in=['lfp', 'intracortical_spikes'] out=2
+eeg_source               electrophysiology  involved=    2 hot=   1 in=['eeg'] out=2
+meg_source               electrophysiology  involved=    2 hot=   1 in=['meg'] out=2
+eeg_predict              electrophysiology  involved=    2 hot=   1 in=['eeg'] out=1
+bold_forward             hemodynamic        involved=    1 hot=   0 in=['bold'] out=6
+fmri_infill              hemodynamic        involved=    1 hot=   0 in=['bold'] out=3
+hrf                      hemodynamic        involved=    2 hot=   1 in=['bold', 'respiration', 'asl_perfusion', 'respiratory_challenge'] out=3
+fnirs_forward            hemodynamic        involved=    2 hot=   1 in=['fnirs'] out=4
+asl_perfusion            hemodynamic        involved=    1 hot=   0 in=['asl_perfusion'] out=3
+quantitative_bold        hemodynamic        involved=    1 hot=   0 in=['structural_mri', 'bold', 'pet', 'respiratory_challenge'] out=5
+glymphatic               slow               involved=    7 hot=   6 in=['bold', 'csf_flow_velocity', 'polysomnography'] out=5
+thermal_safety           slow               involved=    1 hot=   0 in=['temperature', 'tfus', 'tms'] out=2
+plasticity_learning      slow               involved=    1 hot=   2 in=['structural_mri', 'dwi_microstructure', 'bold', 'behaviour', 'task_cue'] out=4
+spreading_depolarization slow               involved=    1 hot= 180 in=['ieeg', 'dc_potential', 'bold'] out=6
+seizure_propagation      state              involved=    2 hot= 181 in=['ieeg', 'behaviour'] out=4
+sleep_dynamics           state              involved=    4 hot=   4 in=['eeg', 'polysomnography', 'eye_tracking', 'emg'] out=5
+anesthesia               state              involved=  167 hot= 167 in=['eeg', 'behaviour', 'drug_concentration', 'anaesthetic'] out=5
+pharmaco                 state              involved=    4 hot=   3 in=['eeg', 'bold', 'pet', 'drug_concentration', 'pharmacological'] out=6
+virtual_lesion           state              involved=    2 hot=   1 in=['bold', 'eeg', 'structural_mri', 'graph_ablation'] out=4
+resting_state_fc         state              involved=    1 hot=   0 in=['bold'] out=2
+tms_response             stimulation        involved=    3 hot=   2 in=['mep', 'eeg', 'bold', 'tms'] out=3
+tes_response             stimulation        involved=    2 hot=   1 in=['eeg', 'bold', 'tdcs'] out=4
+tfus_response            stimulation        involved=    2 hot=   1 in=['eeg', 'bold', 'tissue_displacement', 'tfus'] out=5
+dbs_response             stimulation        involved=   18 hot=  18 in=['lfp', 'mep', 'behaviour', 'dbs'] out=4
+tms_eeg_tep              stimulation        involved=    3 hot=   2 in=['eeg', 'tms', 'auditory_stimulus'] out=3
+motor_mapping            stimulation        involved=  102 hot= 102 in=['mep', 'tms'] out=4
+macro_surrogate          surrogate          involved=    2 hot=   1 in=['bold', 'meg'] out=3
+connectome_gnn           surrogate          involved=    1 hot=   0 in=['bold', 'dwi_microstructure'] out=3
+encoding_model           surrogate          involved=   97 hot=  97 in=['bold'] out=4

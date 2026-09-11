@@ -1,0 +1,37 @@
+ckpt/wiring_surface_slice.pt: 30,000 sites, k=48 | 16,540 pairs, train 0-13,232 | EEG 64ch x 25
+
+### base: long_gain=1.0 topm=0 min_dist=0.0 | drive 1779 -> read 2121 sites, disjoint
+/home/brandonin/Documents/IBM-1/scripts/train_disjoint_end_to_end.py:208: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  hist.append({"step": step, "loss": float(loss), "top1": m,
+      0  loss 4.2415  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 2.020e-05      8s
+    250  loss 4.1589  top-1  0.56%+/-0.17 (  1.1x chance)  |grad_enc| 5.715e-05    302s
+    500  loss 3.7027  top-1  1.50%+/-0.43 (  3.0x chance)  |grad_enc| 6.655e-01    595s
+    750  loss 3.4875  top-1  1.94%+/-0.77 (  3.9x chance)  |grad_enc| 1.423e+00    888s
+   1000  loss 3.2873  top-1  1.50%+/-0.90 (  3.0x chance)  |grad_enc| 1.241e+00   1181s
+   1250  loss 3.2022  top-1  1.87%+/-0.74 (  3.7x chance)  |grad_enc| 9.769e-01   1474s
+   1500  loss 2.8804  top-1  1.94%+/-0.46 (  3.9x chance)  |grad_enc| 1.337e+00   1766s
+   1750  loss 2.9697  top-1  1.69%+/-0.75 (  3.4x chance)  |grad_enc| 3.513e+00   2060s
+   2000  loss 2.9254  top-1  2.50%+/-1.32 (  5.0x chance)  |grad_enc| 2.029e+00   2354s
+   2250  loss 2.8880  top-1  1.94%+/-0.77 (  3.9x chance)  |grad_enc| 8.665e+00   2647s
+   2500  loss 2.5777  top-1  1.37%+/-0.65 (  2.7x chance)  |grad_enc| 1.611e+00   2939s
+   2750  loss 2.7017  top-1  1.25%+/-0.56 (  2.5x chance)  |grad_enc| 5.778e+00   3232s
+   3000  loss 2.5162  top-1  1.87%+/-0.93 (  3.7x chance)  |grad_enc| 3.518e+00   3533s
+
+### aniso4d: long_gain=8.0 topm=4 min_dist=120.0 | drive 1779 -> read 2121 sites, disjoint
+      0  loss 4.2402  top-1  0.50%+/-0.00 (  1.0x chance)  |grad_enc| 1.448e-04      7s
+    250  loss 3.6513  top-1  1.62%+/-0.99 (  3.2x chance)  |grad_enc| 1.644e+00    301s
+    500  loss 3.3689  top-1  2.19%+/-0.79 (  4.4x chance)  |grad_enc| 2.969e+00    595s
+    750  loss 2.8853  top-1  4.25%+/-0.90 (  8.5x chance)  |grad_enc| 3.809e+00    888s
+   1000  loss 2.4980  top-1  5.19%+/-1.20 ( 10.4x chance)  |grad_enc| 4.012e+00   1182s
+   1250  loss 2.2651  top-1  6.62%+/-2.00 ( 13.2x chance)  |grad_enc| 4.032e+00   1475s
+   1500  loss 2.0674  top-1  7.19%+/-1.54 ( 14.4x chance)  |grad_enc| 5.424e+00   1768s
+   1750  loss 1.9570  top-1  7.00%+/-0.79 ( 14.0x chance)  |grad_enc| 9.893e+00   2061s
+   2000  loss 1.8133  top-1  7.75%+/-2.11 ( 15.5x chance)  |grad_enc| 6.180e+00   2355s
+   2250  loss 1.4076  top-1  6.56%+/-1.98 ( 13.1x chance)  |grad_enc| 7.805e+00   2649s
+   2500  loss 1.4899  top-1  8.75%+/-1.66 ( 17.5x chance)  |grad_enc| 6.260e+00   2942s
+   2750  loss 1.1600  top-1 11.19%+/-1.48 ( 22.4x chance)  |grad_enc| 5.691e+00   3235s
+   3000  loss 0.9601  top-1  9.81%+/-1.25 ( 19.6x chance)  |grad_enc| 9.425e+00   3538s
+
+  base best 5.0x chance | aniso4d best 22.4x chance
+  -> BOTH train. the earlier end-to-end failures were NOT explained by transport, and the gradient story does not account for them.

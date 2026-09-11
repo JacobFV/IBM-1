@@ -1,0 +1,11 @@
+muscle sets present: [15, 30, 40, 80] -> keeping the 80-muscle set, 22 of 39 motions; 17 are from other OpenSim models and are dropped
+train 3,515 transitions over 17 motions | held out 3,400 over 11 motions
+in 160 (length + rate for 80 muscles) -> out 80
+
+held-out baselines (MSE, and skill against persistence):
+  zero               6.671151e-04   skill -5.4140
+  mean               6.672289e-04   skill -5.4151
+  persistence        1.040089e-04   skill +0.0000
+  ridge, no cortex   1.953707e-01   skill -1877.4032
+
+### trained: drive postcentral (1779) -> read precentral (2121), tract edges, readout-norm batchnorm

@@ -71,3 +71,24 @@ InteroceptiveLoop: 15 channels in 7 conduction groups -> 1,391 sites (20% of the
     lumped step  150  train mse 0.11445   5903s
     lumped step  200  train mse 0.13636   7613s
     lumped step  250  train mse 0.08245   9206s
+    lumped step  300  train mse 0.40282  10840s
+    lumped step  350  train mse 0.31129  11705s
+  cortex_lumped_delays       state +0.5857  traj -7.9662  |dz|  2.66  endurance_h=+0.586 discomfort=-0.297 s0=-19.480 s1=-4.359 s2=-7.728
+    no_c_fibres step    0  train mse 8.09718     10s
+    no_c_fibres step   50  train mse 0.88489    494s
+    no_c_fibres step  100  train mse 0.75698    979s
+    no_c_fibres step  150  train mse 0.83961   1516s
+    no_c_fibres step  200  train mse 0.56435   2069s
+    no_c_fibres step  250  train mse 0.67284   2634s
+    no_c_fibres step  300  train mse 0.92382   3190s
+    no_c_fibres step  350  train mse 0.48671   3746s
+  cortex_trained_without_c   state +0.4145  traj -26.2936  |dz|  4.79  endurance_h=+0.415 discomfort=-7.365 s0=-49.588 s1=-6.366 s2=-41.855
+
+wrote out/intero_ablation_30k.json
+
+what this says:
+  STATE (can the afference report unobserved substrate?)  cortex +0.5956   ridge +0.4956   MLP -0.2225
+  TRAJECTORY (does it predict where the state is going?)  cortex -4.5558   ridge -0.0094   MLP -4.7140
+  severing the kernel post hoc costs +0.0183 on state; a permuted kernel RETRAINED reaches +0.4542 (+0.1414 behind trained).
+  LUMPING every conduction group onto step 0, keeping all fifteen channels, costs +0.0099 on state.  that is the only arm that tests the DELAY rather than the channels.
+  removing every unmyelinated group and retraining costs +0.1811 on state and +21.7378 on trajectory.  those five C-fibre channels are the slow chemical and nociceptive arm, and they are the half of visceral afference that arrives 168-508 ms after the mechanical half.

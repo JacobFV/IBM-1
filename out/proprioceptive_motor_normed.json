@@ -1,0 +1,35 @@
+{
+  "ckpt": "ckpt/wiring_surface_slice.pt",
+  "baselines": {
+    "zero": 0.0006671151495538652,
+    "mean": 0.000667228945530951,
+    "persistence": 0.00010400893370388076,
+    "ridge_no_cortex": 0.19537071883678436
+  },
+  "held_out_motions": [
+    "subject02_running_ik",
+    "rra_run_1_Kinematics_q",
+    "subject02_Kinematics_q",
+    "desiredKinematics_padded",
+    "coordinates",
+    "subject_walk_armless_coordinates",
+    "subject01_walk1_ik",
+    "subject01_walk1_ik",
+    "subject01_walk1_Kinematics",
+    "subject01_walk1_ik",
+    "subject01_walk1_ik"
+  ],
+  "arms": {
+    "trained": {
+      "history": [
+        {
+          "step": 0,
+          "held_mse": 0.0007310615988338695,
+          "skill_vs_persistence": -6.0288346664070485,
+          "skill_vs_ridge": 0.9962580800071448
+        }
+      ],
+      "best_skill_vs_persistence": -6.0288346664070485
+    }
+  }
+}

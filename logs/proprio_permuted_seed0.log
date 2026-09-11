@@ -1,0 +1,17 @@
+muscle sets present: [15, 30, 40, 80] -> keeping the 80-muscle set, 22 of 39 motions; 17 are from other OpenSim models and are dropped
+train 3,515 transitions over 17 motions | held out 3,400 over 11 motions
+in 160 (length + rate for 80 muscles) -> out 80
+
+held-out baselines (MSE, and skill against persistence):
+  zero               6.671151e-04   skill -5.4140
+  mean               6.672289e-04   skill -5.4151
+  persistence        1.040089e-04   skill +0.0000
+  ridge, no cortex   1.953707e-01   skill -1877.4032
+
+### permuted: drive postcentral (1779) -> read precentral (2121), tract edges, readout-norm none
+/home/brandonin/Documents/IBM-1/scripts/train_proprioceptive_motor.py:311: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  {step:5d}  train {float(loss):.3e}  held {v:.3e}  "
+      0  train 5.158e+00  held 7.303e-04  SKILL vs persistence -6.0217  vs ridge +0.9963      33s
+    250  train 1.259e+00  held 6.198e-04  SKILL vs persistence -4.9594  vs ridge +0.9968    1050s
+    500  train 6.997e-01  held 5.905e-04  SKILL vs persistence -4.6776  vs ridge +0.9970    2049s

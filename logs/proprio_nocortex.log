@@ -1,0 +1,24 @@
+muscle sets present: [15, 30, 40, 80] -> keeping the 80-muscle set, 22 of 39 motions; 17 are from other OpenSim models and are dropped
+train 3,515 transitions over 17 motions | held out 3,400 over 11 motions
+in 160 (length + rate for 80 muscles) -> out 80
+
+held-out baselines (MSE, and skill against persistence):
+  zero               6.671151e-04   skill -5.4140
+  mean               6.672289e-04   skill -5.4151
+  persistence        1.040089e-04   skill +0.0000
+  ridge, no cortex   1.953707e-01   skill -1877.4032
+
+### no_cortex: encoder -> head, the sheet removed entirely
+/home/brandonin/Documents/IBM-1/scripts/train_proprioceptive_motor.py:224: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  {step:5d}  train {float(ls):.3e}  held {v:.3e}  "
+      0  train 8.514e-01  held 6.607e-04  SKILL vs persistence -5.3523  vs ridge +0.9966
+    200  train 9.812e-02  held 4.254e-04  SKILL vs persistence -3.0898  vs ridge +0.9978
+    400  train 7.897e-02  held 4.353e-04  SKILL vs persistence -3.1853  vs ridge +0.9978
+    600  train 1.045e-01  held 4.329e-04  SKILL vs persistence -3.1622  vs ridge +0.9978
+    800  train 1.100e-01  held 4.371e-04  SKILL vs persistence -3.2024  vs ridge +0.9978
+   1000  train 6.682e-02  held 4.444e-04  SKILL vs persistence -3.2728  vs ridge +0.9977
+   1200  train 7.759e-02  held 4.500e-04  SKILL vs persistence -3.3266  vs ridge +0.9977
+
+  arm            best skill vs persistence
+  no_cortex      -3.0898
