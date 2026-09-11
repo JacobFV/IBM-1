@@ -57,6 +57,61 @@ already written.
 ---
 
 
+## 2026-09-11 -- a motion-capture proprioceptive corpus: the gates, fixed BEFORE any byte is fetched
+
+The body has two motions and neither is admissible. Measured on 2026-09-11: all 67 stored
+trajectories are outside the model's own `declared_ranges`, `crawl-best` on **12 of its 22
+coordinates**, and the depth says the excursions are the operating regime rather than an overshoot --
+the left knee is outside its limit for **95.6% of 1,600 frames**, the ankles for 79-94%, median 53%
+across violating coordinates. An admissible gait is therefore not a correction of what we have; it is
+a different gait, and the parameter search has never been asked to find one.
+
+**Recorded human motion is admissible by construction.** That is the argument for this corpus: it
+sidesteps the search rather than solving it. `cmu-mocap` is catalogued, `binding: unbound`, "free for
+all uses (stated by CMU)", 2,600+ trials over 144 subjects at 120 Hz -- and it ships the RAW MARKERS,
+so the body model can be fitted here rather than inherited. AMASS and Motion-X need a licence
+acceptance that is the owner's to give; CMU does not, so CMU is what this entry covers.
+
+**The chain, and what it can and cannot carry.** Markers -> inverse kinematics onto the 22-segment
+model -> muscle path lengths and their time derivatives -> spindle channels. That is real and cheap:
+the path refitter already beats the shipped path set by 16.7x on the model's own muscles.
+**Golgi-tendon force is deferred** -- it needs inverse dynamics plus muscle redundancy resolution, and
+the `moco-3d-contact-gait` card already reads `muscle_timed_out`. **Tactile is excluded** -- it needs
+contact, and nothing consumes the skin contact bundle: `crawl.py` runs on source foot contacts plus
+one inertia-inscribed sphere per non-foot body. Proprioception yes, touch no, and the artefacts say so.
+
+**Four gates, fixed now, before a byte is fetched.**
+
+1. **LEARNABILITY, scored before any cortex arm runs.** A ridge on the same split must beat all three
+   trivial baselines -- zero, mean, persistence -- on held-out data. Row 19 is why: when the teacher
+   was a postural servo that falls at 1.19 s, the corpus was a body toppling, every arm lost to
+   predicting the mean, and the experiment measured nothing while looking like a negative result about
+   the cortex. **If the ridge does not clear the baselines, no cortex claim may be made from this
+   corpus at all.**
+2. **ADMISSIBILITY.** Every trial admitted must respect the model's declared ranges, checked with the
+   same reader `crawl.py` uses -- not a second parser. The rejected fraction is reported, never
+   silently dropped.
+3. **THE PERMUTED ARM FROM DAY ONE.** Every proprioceptive or motor arm carries a permuted-kernel
+   control in the same run. Row 20: "the cortex learns motor control, -41 -> +0.42" was withdrawn
+   because trained and permuted kernels gave identical MSE to eight decimals. Added later, it costs a
+   re-run of everything; a result reported without it is not reported.
+4. **CHECKPOINT REPRODUCTION, for any conglomerate initialisation.** Each checkpoint must reproduce
+   its own recorded number under the current code before it may be loaded. Row 25: `read_idx` was a
+   plain attribute rather than a registered buffer, so old checkpoints loaded CLEANLY into new code --
+   identical shapes, no error -- and were fed different sites than they were fitted on. A factor of
+   **112**.
+
+**Predicted, with a mechanism, because it decides what gate 2 measures:** the mocap trials pass the
+declared-range check at a high rate but **not** at 100%. Real humans respect their own joints, but the
+ranges being checked are this MODEL's, and an IK fit of a different subject's markers onto this
+skeleton can push a coordinate past a limit the human never crossed. **So a non-trivial rejection rate
+means the gate is measuring the FIT, not the data** -- and the rejected trials' identity, clustered by
+subject or scattered, is what separates the two. If rejection is ~0%, that reading is unavailable and
+the gate is clean.
+
+No prediction is offered on learnability. My forecasting record across the last two days is roughly
+three hits in a dozen, and the gates above are worth more than a guess at their outcome.
+
 ## 2026-09-10 -- does the LEARNED kernel do anything on the motor task? fixed BEFORE the runs
 
 **Why now.** The entry below settled that the cortical sheet does not beat the no-cortex control
