@@ -51,6 +51,14 @@ Specifically:
 - **Check a metric against a case whose answer you know.** Chance must print
   1.0×. Effective rank over a batch of 4 cannot exceed 3.
 - **A training loss is not skill** even when a baseline is at hand.
+- **Put a linear ridge under every claim that a task is hard.** Before concluding
+  that an objective or an architecture is at fault, check whether a linear map on
+  the same features and the same split finds anything. On the paired MEG term the
+  cortical model's correlation was +0.0006 and a 1,600-feature ridge reached
+  **+0.0466 at 18.6 sd**, with positive skill against zero — so the data carried
+  the signal and the model did not reach it. That single cheap fit excluded "the
+  target is unpredictable", which was otherwise indistinguishable from "the model
+  is wrong", and it gives every future arm a number it must beat.
 - **A very negative skill is usually AMPLITUDE, not information.** For an
   uncorrelated predictor `mse/zero ~= (rms_pred/rms_target)^2`, so skill -366
   means an output ~19x too large and says nothing about what the model knows.

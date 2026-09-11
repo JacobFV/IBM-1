@@ -59,6 +59,54 @@ already written.
 ---
 
 
+## 2026-09-11 (evening) -- a 1,600-feature LINEAR RIDGE beats zero on this target. The 50M-parameter cortex does not.
+
+The prediction committed in `9321cc9` before the fit is **CONFIRMED**, and it settles which of two
+readings of the paired failure is right. Same split, same fixed tail draw at seed 20260911, same
+artefact rows excluded from training.
+
+**Known answer first**, before any intact number: the same ridge against a **row-shuffled**
+target, which destroys the stimulus-target correspondence and nothing else. Best correlation
+**+0.0077** against a standard error of 0.0025 -- PASS. The pipeline does not leak.
+
+| alpha | intact | shuffled | intact, in sd |
+|---:|---:|---:|---:|
+| 1e2 | +0.0312 | −0.0023 | +12.5 |
+| 1e3 | +0.0391 | −0.0038 | +15.6 |
+| **1e4** | **+0.0466** | **−0.0003** | **+18.6** |
+| 1e5 | +0.0565 | +0.0072 | +22.6 |
+| 1e6 | +0.0601 | +0.0077 | +24.0 |
+
+**The ridge reaches held-out skill vs zero of +0.004** -- positive, barely, but on the right side
+of a baseline the trained head misses by two orders of magnitude.
+
+*Selection, stated rather than hidden:* picking the best of five alphas by held-out correlation is
+selection on the evaluation set. Both arms were selected identically so the comparison is
+like-for-like, and the conclusion does not depend on it: **at every alpha the intact arm is above
++12 sd and the shuffled arm never exceeds +3.1 sd.** At alpha 1e4 the control is −0.0003 --
+essentially exactly zero -- and intact is +18.6 sd.
+
+**WHAT THIS SETTLES.** The competing reading was that nothing could predict this target from this
+stimulus on this split, in which case no objective would have helped and the data was at fault.
+That is now excluded. **The data carries stimulus-locked structure, and a linear map on 1,600
+features finds it.** The trained head's +0.0022 and +0.0006 are therefore not a property of the
+corpus.
+
+**A 1,600-parameter-per-sensor linear map beats a 50,465,730-parameter cortical model on its own
+training objective.** That is the sharpest form the paired failure has taken, and it removes the
+last excuse available to the architecture: the signal is there, in the representation the model is
+already given, reachable by ridge regression, and the model does not reach it.
+
+Five hypotheses now refuted by measurement -- the readout, the heavy tail, calibration, batch
+size, and the data. What is left is the objective and the path through the dynamics, and the ridge
+is the baseline any future paired arm has to beat before it is called a result. **+0.0466
+correlation at alpha 1e4 on the fixed tail draw is that number.**
+
+`out/paired_ridge_ceiling.json`, `scripts/measure_paired_ridge_ceiling.py`.
+
+---
+
+
 ## 2026-09-11 (evening) -- VERDICT on the batch-size question: batch size changed the output gain and nothing else
 
 Both arms complete, artefact excluded, scored on the ONE fixed held-out draw with one zero
