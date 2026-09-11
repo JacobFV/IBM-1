@@ -58,6 +58,64 @@ already written.
 ---
 
 
+## 2026-09-11 (evening) -- the MEG target is not heavy-tailed. It has a 30-second artefact.
+
+The batch-size experiment rested on a measured fact: the paired target's per-batch mean square
+has median 4.55e-05, mean 1.24e-02 and max 1.60e+01 -- five orders of magnitude -- so a small
+batch is dominated by the rare enormous one. Then the held-out tail came back with a per-batch
+spread of **2x**. A property present in the whole array and absent from its last tenth is not a
+property of the signal. It is **localised**, and the histogram cannot see that because it throws
+position away.
+
+`scripts/measure_meg_tail_position.py`, over every one of 3,526,485 rows:
+
+- 7,296 rows exceed 100x the corpus median (0.207% of the corpus).
+- Their positions occupy **33** windows of 1,000 rows. The same count drawn uniformly occupies
+  **3,078 ± 15**. The known answer -- same count, same window, same statistic, position
+  destroyed and nothing else -- passes, and the observed value is 93 standard deviations below
+  a bar set at 3,004.
+- **99.7% of them are one contiguous stretch: rows 1,619,681-1,627,268. 30.3 seconds.** Peak
+  487,146x the median.
+- Inside it, **2.9% of values are pinned at the ±6 clip**, against 0.0076% elsewhere -- a 380x
+  enrichment. It is a saturating artefact, not signal.
+
+**THE FIRST INSTRUMENT FAILED ITS OWN KNOWN ANSWER AND I HAD THE DIRECTION BACKWARDS.** It
+binned by position and compared against bins drawn by shuffling, predicting the shuffled arm
+would show FEWER bins above 10x the median. It showed 66 of 200 against 2. That is not a broken
+corpus -- a shuffled 400-row sample drawn from 3.5M rows is far likelier to catch one of a few
+thousand extreme rows than a 400-row contiguous window is, so shuffling **spreads** rare
+extremes across many bins instead of concentrating them. The count of high bins is simply the
+wrong statistic for clustering. Recorded rather than quietly re-specified, and no conclusion was
+drawn from it.
+
+**THIS INVERTS THE MECHANISM OF THE RUNNING EXPERIMENT.** The pre-registration predicted batch
+64 beats batch 4 "because the median batch stops being drowned". With the extremes concentrated
+in one burst rather than spread, over 3,173,834 training rows:
+
+| batch | P(a step touches the burst) |
+|---|---|
+| 4 | 0.95% |
+| 64 | **14.20%** |
+
+A larger batch touches the artefact **14.9x more often, not less**. The lever was pointing the
+wrong way.
+
+So `--exclude` now removes those rows from the training pool once, rather than by rejection per
+draw, which would quietly change the effective batch size. 7,587 rows, 0.239% of train. The
+held-out tail is unaffected (the burst sits at 1.62M, well inside training); it contains one
+2-row excursion out of 352,649, which is left alone and noted rather than swept.
+
+**RE-RUN AND RE-PREDICTED, fixed before the relaunch.** Both arms relaunched with the burst
+excluded, same fixed held-out evaluation, same 99%/90% discipline, thresholds untouched.
+**Predicted: with the burst gone, batch size now matters MUCH LESS than the original
+pre-registration claimed, because the mechanism it named was this artefact and neither arm sees
+it any more. If batch 64 still beats batch 4 by orders of magnitude, the effect was never about
+the tail at all** -- and the next suspect is the target or the head's ability to represent it,
+which is where the lead-rank sweep already pointed.
+
+---
+
+
 ## 2026-09-11 (afternoon) -- RESULT: my prediction was wrong, and the reason is one bound off by 10 degrees
 
 Against the pre-registration below. Taken by a better route than it anticipated: IHM-1 already

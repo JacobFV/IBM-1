@@ -91,7 +91,16 @@ def main():
           f"not centred)  {'PASS' if ok else 'FAIL'}")
     if not ok:
         sys.exit("known answer FAILED -- the target has an offset; no checkpoint is scored")
+    # HOW HEAVY IS THIS PARTICULAR DRAW? the target's per-batch mean square spans five orders
+    # of magnitude (median 4.55e-05, mean 1.24e-02, max 1.60e+01), so the zero baseline of any
+    # one fixed draw is itself a high-variance quantity -- a draw that samples none of the tail
+    # reports a baseline near the median and flatters nothing, but is not representative.
+    # The ARM-TO-ARM comparison does not depend on it, because both arms are scored on this
+    # same draw; the absolute skill does. Both are printed so neither gets read as the other.
+    bms = np.array([float((target(j) ** 2).mean()) for j in draw])
     print(f"  zero-baseline mse on this fixed set: {zero_mse:.6e}")
+    print(f"  the draw's own per-batch spread:     median {np.median(bms):.3e}  "
+          f"mean {bms.mean():.3e}  max {bms.max():.3e}  ({bms.max()/np.median(bms):.0f}x)")
 
     rows = []
     for spec in a.ckpt:
@@ -128,12 +137,23 @@ def main():
         print(f"  {name:12s} step {rows[-1]['step']:5d}  mse {mse:.6e}  "
               f"skill vs zero {rows[-1]['skill_vs_zero']:+11.2f}  rank {rows[-1]['mean_effective_rank']:5.2f}")
 
+    # the baseline-free statement of the comparison.  whatever the zero baseline happens to be
+    # on this draw, it divides out of a ratio between two arms scored on the same rows.
+    if len(rows) > 1:
+        best = min(r["mse"] for r in rows)
+        print("\n  arm-to-arm, which does NOT depend on the zero baseline:")
+        for r in sorted(rows, key=lambda r: r["mse"]):
+            r["mse_ratio_to_best"] = r["mse"] / best
+            print(f"    {r['name']:12s} mse {r['mse']:.6e}  = {r['mse_ratio_to_best']:8.3f}x the best arm")
+
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(
         {"fixed_set": {"batches": a.batches, "batch": a.batch, "seed": 20260911,
                        "holdout": a.holdout, "rows": [lo, p_rows],
                        "meg_scale": _sc if megsc is not None else None,
-                       "zero_mse": zero_mse, "mean_predictor_skill": sk_mean},
+                       "zero_mse": zero_mse, "mean_predictor_skill": sk_mean,
+                       "per_batch_ms": {"median": float(np.median(bms)), "mean": float(bms.mean()),
+                                        "max": float(bms.max())}},
          "arms": rows}, indent=2) + "\n")
     print(f"\nwrote {a.out}")
 

@@ -88,6 +88,13 @@ def main():
     # on it and asserts the same fraction.
     ap.add_argument("--holdout", type=float, default=0.1,
                     help="tail fraction of the paired corpus reserved for evaluation")
+    # THE ARTEFACT BURST.  measure_meg_tail_position.py: 7,296 rows exceed 100x the corpus
+    # median and 99.7% of them sit in ONE contiguous 30.3 s stretch, where 2.9% of values are
+    # pinned at the +/-6 clip against 0.0076% everywhere else -- a 380x enrichment.  The
+    # "heavy-tailed MEG target" was this burst.  Excluded by default and by explicit rows, so
+    # the exclusion is auditable rather than a magic constant buried in a loader.
+    ap.add_argument("--exclude", default="1619681:1627268",
+                    help="lo:hi paired-row ranges never sampled, comma-separated; '' disables")
     ap.add_argument("--out", default="out/multi.json")
     a = ap.parse_args()
 
@@ -127,13 +134,29 @@ def main():
     assert p_train_lim > pctx, "holdout leaves no training rows"
     print(f"paired split: train [{pctx:,}, {p_train_lim:,}) | "
           f"held out [{p_train_lim:,}, {p_rows:,}) = {a.holdout:.0%}", flush=True)
+
+    # the admissible training index, with the artefact rows removed once rather than rejected
+    # per draw -- rejection sampling would quietly change the effective batch size.
+    excl = [tuple(int(v) for v in r.split(":")) for r in a.exclude.split(",") if r.strip()]
+    p_pool = np.arange(pctx, p_train_lim)
+    if excl:
+        keep = np.ones(len(p_pool), bool)
+        for lo, hi in excl:
+            keep &= ~((p_pool >= lo) & (p_pool < hi))
+        dropped = int((~keep).sum())
+        p_pool = p_pool[keep]
+        print(f"excluded {dropped:,} paired rows ({dropped/(p_train_lim-pctx):.3%} of train) "
+              f"in {len(excl)} range(s): {a.exclude}", flush=True)
+    print(f"paired training pool: {len(p_pool):,} rows", flush=True)
     log = {"config": vars(a), "shared": shared, "paired_train_lim": p_train_lim,
-           "paired_rows": p_rows, "steps": []}
+           "paired_rows": p_rows, "paired_pool": int(len(p_pool)), "excluded": a.exclude,
+           "steps": []}
 
     def save(step, name=None):
         os.makedirs(os.path.dirname(a.ckpt) or ".", exist_ok=True)
         d = {"dyn": dyn.state_dict(), "av": av.state_dict(), "paired": pr.state_dict(),
-             "step": step, "config": vars(a), "paired_train_lim": p_train_lim}
+             "step": step, "config": vars(a), "paired_train_lim": p_train_lim,
+             "excluded": a.exclude}
         if name:
             d["name"] = name
         torch.save(d, a.ckpt)
@@ -158,7 +181,7 @@ def main():
         (a.w_av * (l_av + a.viability_weight * viab_av)).backward()
 
         # -- term 2: the paired stimulus -> measured MEG materialization ----
-        j = np.random.randint(pctx, p_train_lim, size=a.batch)
+        j = p_pool[np.random.randint(0, len(p_pool), size=a.batch)]
         xp = torch.from_numpy(np.stack([pstim[q - pctx:q] for q in j])).float().to(dev)
         yn = np.ascontiguousarray(pneur[j]).astype(np.float32)
         if megsc is not None:

@@ -117,6 +117,17 @@ what the intact arm scores. If that arm moves, every arm in the run is void.
 
 ## Data
 
+**A histogram cannot tell a heavy tail from a localised artefact, because it
+throws position away.** The paired MEG target's per-batch mean square spans five
+orders of magnitude, which was read as "the target is heavy-tailed" and drove a
+batch-size experiment. Measured per row instead: 99.7% of the extreme rows are
+**one contiguous 30.3 s stretch** where 2.9% of values are pinned at the clip
+against 0.0076% elsewhere. Not a tail -- an artefact. The two readings predict
+the same histogram and call for opposite fixes, and the batch-size lever pointed
+the wrong way (a batch of 64 touches the burst 14.9x MORE often than a batch of
+4). When a distribution looks heavy-tailed, ask WHERE the big values are before
+designing around the shape.
+
 **Take an ordering from the dataset that defines it, never from a reconstruction
 that happens to be the right length.** The THINGS-EEG2 image order was rebuilt by
 walking a directory; it matched on **10 of 16,540 pairs** and the count check
