@@ -37,6 +37,7 @@ pattern is worth more than any single row.
 | 20 | the cortex learns motor control -- body_stance went -41 to **+0.42** skill once the readout could see the sheet | trained and permuted kernels give **identical MSE to 8 decimals**. the whole-sheet readout samples the driven region, and those samples carry **3,134x** the variance of the rest -- the decoder reads the input, not the cortex. the architecture has no configuration where the dynamics both receive the signal and are necessary | the four-arm ablation, which was already running when I announced the result |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
+| 24 | batch 4 is drowned by the target's heavy tail, so batch 64 will beat it on the fixed set by orders of magnitude | the measured ratio is **2.542x**, and it is **entirely output gain**: for uncorrelated predictors the MSE ratio is the ratio of squared amplitudes, `19.1^2/12.0^2 = 2.533`, which reproduces 2.542 to **0.3%**. Raising the batch sixteen-fold turned the output gain down from 19.1x to 12.0x and did nothing else. Both arms' correlation with the target is within a standard error of zero (+0.87 and +0.24 sd). **Nothing was drowned because there was nothing there to drown** -- and the "heavy tail" was itself one 30.3 s saturating artefact, 99.7% of the extreme rows in a single contiguous stretch | scoring both arms on ONE fixed held-out draw as the pre-registration demanded, and reporting AMPLITUDE and CORRELATION beside skill instead of skill alone |
 | 22 | the lead-rank sweep shows the readout is not the cause (table of `skill/0` and cortical rank at ranks 64/16/4) | the *direction* survives, but every number in that table is an **in-sample training loss**: the trainer drew `j = np.random.randint(pctx, lim)` over the whole paired array and **had no train/test split at all**. and all three arms wrote **no checkpoint** -- the save was gated on `step % upload_every == 0` with `upload_every` defaulting to 2000 against `--steps 1500`, so it never fired once and there was no terminal save. three completed runs, no weights, nothing re-scorable | trying to build the fixed-evaluation instrument the entry's own pre-registration demanded, and finding neither a held-out set nor a checkpoint to point it at |
 | 21 | the sheet does not conduct because `tanh(2*sim)` is saturated -- unsaturating the squashing function would restore magnitude selectivity and let the kernel build a strong specific pathway | the edges ARE pinned (mean \|tanh(2*sim)\| = 0.895, 71.4% of 1.44M edges above 0.9) but the underlying cosine similarities have no dynamic range either, so lowering the slope scales every edge down together and selects nothing. row L1/max moves 45.2 -> 41.0 as the slope goes 2.00 -> 0.25, against 48 for perfectly flat. **saturation was the symptom; the flat \|sim\| distribution is the disease**, and no reparameterisation of tanh reaches it -- only an explicit structural selection (top-m) does, which buys 11.9x at zero change in row gain | measuring the row L1/max flatness across a slope sweep, instead of reasoning from tanh(2) = 0.964 to "therefore no magnitude information" |
 | 22 | the gait controller cannot walk because it regulates absolute fore-aft position -- `error = x - x0 - dx_velocity` masks only the pelvis_tx SPEED, so the position term acts as a spring pulling the body back to its start, spending ~0.47 of the [0,1] actuator range at only 6 mm of travel | `deflation_basis` had already removed it. the pelvis_tx POSITION column of K is **exactly zero** (L2 = 0.0000, rank 258 of 258 columns), as is pelvis_tz; only pelvis_ty (height) is regulated, at L2 52.7, which is correct. the arithmetic was built on a column that does not exist. **I flagged this exact caveat when I sent the hypothesis and then did not check it before reporting the result** | printing the norm of K's pelvis_tx column -- one command, available before the claim was made |
@@ -54,6 +55,51 @@ the wrong thing — the wrong population, the wrong units, the wrong split, the
 wrong baseline, or no baseline. Not one was a modelling error. Every one was
 caught by a measurement that could have been run first, and several by one I had
 already written.
+
+---
+
+
+## 2026-09-11 (evening) -- VERDICT on the batch-size question: batch size changed the output gain and nothing else
+
+Both arms complete, artefact excluded, scored on the ONE fixed held-out draw with one zero
+baseline, exactly as the pre-registration required. Both known answers pass first.
+
+| arm | mse | skill vs zero | amplitude | correlation | cortical rank |
+|---|---:|---:|---:|---:|---:|
+| clean_b4 | 1.360290e-02 | -366.38 | 19.1x | +0.0022 | 1.05 |
+| clean_b64 | 5.351104e-03 | -143.52 | 12.0x | +0.0006 | 1.06 |
+
+**The original pre-registration is REFUTED.** It said: *"batch 64 beats batch 4 on the fixed set
+by orders of magnitude, because the median batch stops being drowned."* The measured ratio is
+**2.542x**. That is not orders of magnitude.
+
+**The revised prediction, fixed after the artefact was found and before these runs finished, is
+CONFIRMED on both counts**: batch size matters much less than the original claimed, and both
+correlations are within a standard error of zero (`1/sqrt(512 x 306) = 0.0025`; b4 is +0.87 sd,
+b64 is +0.24 sd).
+
+**And the 2.542x is entirely gain.** For uncorrelated predictors the MSE ratio should be the
+ratio of squared amplitudes: `19.1^2 / 12.0^2 = 2.533`. Measured **2.542**. It reproduces to
+**0.3%**. Likewise each arm's absolute skill: an uncorrelated predictor at 19.1x scores -366.5
+against b4's measured -366.38, and at 12.0x scores -143.5 against b64's -143.52.
+
+So the whole effect of raising the batch sixteen-fold was to turn the output gain down from 19.1x
+to 12.0x. **Neither arm carries any information about the target.** Nothing was drowned, because
+there was nothing there to drown.
+
+**What is now excluded, by measurement rather than argument**, as a cause of the paired head's
+failure: the readout (lead-rank sweep at 64/16/4 -- rank collapses to 1.0-1.3 at every setting),
+the target's apparent heavy tail (one 30.3 s saturating artefact, now excluded, and removing it
+changed nothing), calibration (amplitude accounts for the entire skill number), and batch size
+(this entry). Four hypotheses, four refutations, and the head's correlation with its target has
+been indistinguishable from zero throughout.
+
+What remains is the objective, which `PairedNeuralLoop`'s neighbour in the same file has asserted
+from the start and which the THINGS-EEG2 comparison already measured: waveform regression peak
++0.011 then negative, against contrastive retrieval at 43x chance on the same data, same encoder,
+same split. **The next thing to change here is not a hyperparameter.**
+
+`out/eval_clean_both.json`, `ckpt/clean_b4.pt`, `ckpt/clean_b64.pt`.
 
 ---
 
