@@ -99,6 +99,12 @@ the bytes actually came from — never the machine that staged them. A card mark
 
 ## Jobs
 
+- **`PYTHONPATH` is not optional for `scripts/*.py`.** Python puts the SCRIPT's
+  directory on `sys.path`, never the working directory, so `cd ibm-1 && venv/bin/python
+  scripts/train_proprioceptive_motor.py` dies on `ModuleNotFoundError: No module named
+  'ibm'` however right the cwd looks. Launch with `PYTHONPATH=<repo root>`. It cost two
+  failed launches on two machines in one day, and the failure is silent in a nohup log
+  until you read it — the process exits in seconds and the GPU sits idle looking busy-free.
 - **Never commit weights or caches.** History was rewritten once to purge 2.9 GB.
 - **Save the checkpoint before attempting to upload it.** A failed upload once
   destroyed 2,000 steps because `torch.save` sat after the import that threw.
