@@ -58,6 +58,51 @@ already written.
 ---
 
 
+## 2026-09-11 (afternoon) -- is recorded human motion actually admissible? gates fixed BEFORE the mapping is written
+
+The corpus was fetched on a claim that has never been tested: *"recorded human motion is
+admissible by construction."* It was fetched **because** this body has no admissible motion
+of its own — all 67 stored trajectories fall outside the model's own `declared_ranges`, and
+crawl-best's left knee is past its limit for **95.6% of 1,600 frames**, which is an
+operating regime rather than overshoot.
+
+So the claim is load-bearing and it is a guess. Gates fixed now, before the retargeting is
+written and before any number exists.
+
+**THE TRAP THIS HAS TO AVOID.** If CMU motion also violates `declared_ranges`, there are two
+possible causes and they call for opposite actions: either **the declared ranges are too
+narrow** (and real human motion is the evidence that refutes them), or **my retargeting is
+wrong** (and the violations are an artefact of my own mapping). Violation counts alone cannot
+tell these apart. The whole design below is the separator.
+
+**G1 — the instrument, and it must pass before anything downstream is believed.**
+CMU's ASF skeleton files declare their own per-DOF `limits`, fitted to that subject. Parsed
+AMC motion, checked against **the same subject's own ASF limits**, must lie inside them for
+>= 99% of (frame, dof) pairs. This is a known answer in the strict sense: CMU's solver
+produced the AMC against that ASF, so a correct parser MUST agree with it, and a
+convention error — wrong rotation order, degrees for radians, a translated root — breaks
+that agreement. **If G1 fails, the parser is wrong and no G2 number is interpretable.**
+
+**G2 — the question.** Over CMU trials mapped onto IHM-1's coordinates: a trial is admissible
+if >= 99% of its (frame, coordinate) pairs lie within `declared_ranges`. The corpus is
+admissible if >= 90% of trials are.
+
+**G3 — the comparison that gives G2 a meaning.** The stored crawl trajectories score
+**0 of 67** admissible on exactly this rule. CMU has to do dramatically better, or "recorded
+motion is admissible by construction" is refuted by the corpus fetched to satisfy it.
+
+**PREDICTED, and this is the part I expect to be wrong about:** CMU passes G1, and passes G2.
+
+**THE FORK, decided now rather than after seeing the number.** G1 pass + G2 fail is the
+informative outcome, and it does **not** mean the motion is rejected. Real humans produced
+these trajectories. It means `declared_ranges` is too narrow and must be re-derived against
+measurement, and every result that rested on those ranges — including "no admissible crawl
+exists" — is suspended until it is. **G2's threshold is not loosened in that event.** A gate
+that moves after the result is not a gate.
+
+---
+
+
 ## 2026-09-11 (afternoon) -- the CMU MISMATCH resolves against the card, not the archive
 
 `fetch_cmu_mocap.py`'s gate reported **MISMATCH**: 112 subjects and 2,514 trials against
