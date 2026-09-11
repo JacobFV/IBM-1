@@ -73,7 +73,7 @@ window.IBM_LINEAGE = {
     { at: 6, side: 1, kind: "model", label: "multi-objective materializations", w: 12,
       future: true,
       note: "planned · first attempt stopped at step 3,675",
-      detail: "One substrate, many objectives at once. The first run collapsed into the failure PairedNeuralLoop's own docstring names: effective cortical rank fell to 1.01 within 1,000 steps and stayed there, while the MEG loss read 0.0001 against a zero baseline of 0.012486 — 99.2% of MEG variance explained from a cochleagram, which is not credible. Stopped rather than run to 20,000.",
+      detail: "One substrate, many objectives at once. The first run collapsed into the failure PairedNeuralLoop's own docstring names: effective cortical rank fell to 1.01 within 1,000 steps and stayed there. Stopped rather than run to 20,000 — rightly, but the reason given at the time was wrong in the opposite direction. Against the correct per-batch zero baseline the MEG head is WORSE than emitting nothing, and a lead-rank sweep at 64, 16 and 4 then refuted the readout as the cause: the rank collapses at every setting. A later check found the trainer had no train/test split at all, so those figures are in-sample; it now reserves a held-out tail.",
       href: "#programme" }
   ]
 };
