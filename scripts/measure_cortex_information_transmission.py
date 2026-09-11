@@ -20,15 +20,31 @@ It asks what a LINEAR map can get out of the sheet, which is the most generous q
 -- if a linear map on the state cannot find the structure, a learned nonlinear one had no better
 starting material.
 
-THREE ARMS, one split, one evaluation draw:
-  cochleagram    the raw stimulus features. **This is the known answer**: it must reproduce the
-                 +0.0466 already recorded at alpha 1e4, from the same code path and the same
-                 rows. If it does not, this instrument disagrees with the measurement it is
-                 built to extend and nothing else it prints can be read.
+THREE ARMS, one split, one evaluation draw, all at the same `--n-train`:
+  cochleagram    the raw stimulus features -- the reference the cortical arms are judged against.
   trained        the cortical state of `ckpt/clean_b64.pt`, driven by the same stimulus.
   untrained      the cortical state of a FRESHLY INITIALISED substrate, same seed, same topology,
                  same driving path. The control that says whether training changed transmission
                  at all -- and it can fail in both directions, which is why it is here.
+
+THE KNOWN ANSWER IS ASKED SEPARATELY, AND THE FIRST VERSION OF IT FAILED -- correctly, and the
+fault was mine. It required the cochleagram arm to reproduce the recorded **+0.0466**; it read
+**+0.0363**, because the cortical arms need a forward pass of the 150k-site dynamics per row so
+`--n-train` had been cut to 6,000 where +0.0466 was fitted on 40,000. A ridge fitted on a seventh
+of the data is a different estimator. The gate did exactly its job: it stopped cortical numbers
+being read against a baseline fitted on other data.
+
+So the known answer now runs the cochleagram fit at `--known-answer-n-train` (40,000, the recorded
+configuration) and certifies only the code path, while the comparison runs every arm including
+cochleagram at `--n-train`. **Nothing is compared across training-set sizes**, and the bar on the
+known answer is unchanged.
+
+A SECOND THING THE FIRST RUN EXPOSED. Its shuffled control read **-0.0201, eight standard errors
+from zero**, which a destroyed correspondence should not do. The cause is the statistic, not a
+leak: under heavy regularisation the prediction collapses toward a constant, and `corr` then
+divides by a vanishing spread, so it is a ratio of tiny numbers and numerically meaningless. Each
+arm now also reports the prediction's own spread as a fraction of the target's, so a correlation
+computed from a near-constant prediction can be recognised as such instead of read as a signal.
 
 PREDICTED, before any fit. The trained cortical state scores FAR below the cochleagram, near its
 own shuffled control, because a state of effective rank ~1 cannot carry the structure. And
@@ -65,7 +81,20 @@ def main():
     ap.add_argument("--lags", type=int, default=25)
     ap.add_argument("--read-sites", type=int, default=1600,
                     help="cortical sites read, matched to the cochleagram feature count")
+    # THE FIRST RUN OF THIS FAILED ITS OWN KNOWN ANSWER, correctly, and the fault was mine.
+    # The cortical arms need a forward pass of the 150k-site dynamics per row, so `--n-train`
+    # was cut to 6,000 where the recorded +0.0466 was fitted on 40,000. A ridge fitted on a
+    # seventh of the data is a different estimator, and it read +0.0363. The gate stopped the
+    # cortical numbers being read against a baseline fitted on other data -- which is the whole
+    # reason it is asked before them.
+    #
+    # So there are now two cochleagram fits and they do different jobs. The KNOWN ANSWER runs at
+    # `--known-answer-n-train` (40,000, the recorded configuration) and only certifies the code
+    # path. The COMPARISON runs every arm, cochleagram included, at `--n-train`, and the cortical
+    # arms are judged against the cochleagram arm AT THAT SAME SIZE. Nothing is compared across
+    # training-set sizes. The bar on the known answer is unchanged.
     ap.add_argument("--n-train", type=int, default=6000)
+    ap.add_argument("--known-answer-n-train", type=int, default=40_000)
     ap.add_argument("--holdout", type=float, default=0.1)
     ap.add_argument("--exclude", default="1619681:1627268")
     ap.add_argument("--alpha", type=float, default=1e4, help="FIXED, not selected on the eval set")
@@ -93,6 +122,8 @@ def main():
     pool = np.arange(a.ctx, lo)
     for x0, x1 in excl:
         pool = pool[~((pool >= x0) & (pool < x1))]
+    rng7 = np.random.default_rng(7)
+    tr_big = np.sort(rng7.choice(pool, size=min(a.known_answer_n_train, len(pool)), replace=False))
     tr = np.sort(np.random.default_rng(7).choice(pool, size=min(a.n_train, len(pool)), replace=False))
     g = np.random.default_rng(20260911)
     ev = np.sort(np.concatenate([g.integers(lo, n, size=a.batch) for _ in range(a.batches)]))
@@ -141,10 +172,17 @@ def main():
             W = np.linalg.solve(A.T @ A + a.alpha * np.eye(A.shape[1]), A.T @ (Tfit - Tfit.mean(0)))
             Pd = B @ W + Tfit.mean(0)
             res[name] = dict(correlation=corr(Pd, Tev),
-                             skill_vs_zero=1.0 - float(((Pd - Tev) ** 2).mean()) / zero)
+                             skill_vs_zero=1.0 - float(((Pd - Tev) ** 2).mean()) / zero,
+                             # a near-constant prediction makes `corr` a ratio of tiny numbers and
+                             # numerically unstable -- the first run's shuffled arm read -0.0201,
+                             # 8 sd, from exactly that. the prediction's own spread relative to the
+                             # target's says when the correlation is meaningless.
+                             pred_rms_over_target=float(Pd.std() / max(Tev.std(), 1e-30)))
         print(f"  {tag:22s} intact {res['intact']['correlation']:+.4f} "
               f"({res['intact']['correlation']/se:+6.1f} sd, skill {res['intact']['skill_vs_zero']:+.4f})   "
-              f"shuffled {res['shuffled']['correlation']:+.4f}")
+              f"shuffled {res['shuffled']['correlation']:+.4f}"
+              f"   pred spread intact {res['intact']['pred_rms_over_target']:.3f} / "
+              f"shuffled {res['shuffled']['pred_rms_over_target']:.3f} of target")
         return res
 
     print(f"alpha FIXED at {a.alpha:.0e} -- not selected on the evaluation set\n")
@@ -152,14 +190,17 @@ def main():
     Ftr, Fev = coch_feats(tr), coch_feats(ev)
     print("KNOWN ANSWER: the cochleagram arm must reproduce the recorded "
           f"+{RECORDED_COCHLEAGRAM_R:.4f} at this alpha.")
-    rows["cochleagram"] = ridge(Ftr, Fev, "cochleagram")
-    got = rows["cochleagram"]["intact"]["correlation"]
+    ka = ridge(coch_feats(tr_big), Fev, f"cochleagram n={len(tr_big):,}")
+    got = ka["intact"]["correlation"]
     ok = abs(got - RECORDED_COCHLEAGRAM_R) < 0.010
     print(f"  -> {got:+.4f} against {RECORDED_COCHLEAGRAM_R:+.4f}  "
           f"{'PASS' if ok else 'FAIL -- this instrument disagrees with the measurement it extends'}")
     if not ok:
         sys.exit("known answer FAILED; no cortical number below is interpretable")
 
+    print(f"\nTHE COMPARISON, every arm at n_train = {len(tr):,}. Nothing is compared across sizes.")
+    rows["known_answer_cochleagram_40k"] = ka
+    rows["cochleagram"] = ridge(Ftr, Fev, "cochleagram")
     print()
     for tag, trained in (("trained cortex", True), ("untrained cortex", False)):
         dyn, pr = make(trained)
