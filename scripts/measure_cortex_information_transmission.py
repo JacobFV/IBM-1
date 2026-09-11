@@ -101,6 +101,14 @@ def main():
     ap.add_argument("--batch", type=int, default=8)
     ap.add_argument("--batches", type=int, default=64)
     ap.add_argument("--gpu-batch", type=int, default=8)
+    # THE RANK QUESTION. A ridge from the cortical state reaches +0.0400 and the trained head
+    # reaches +0.0006 out of the SAME state -- but the ridge's solution is full rank (306) and the
+    # head's readout is `lead_v(lead_u(.))`, a rank-64 lead field. The two are not the same map,
+    # and that difference has never been separated from training. Truncating the ridge's own
+    # solution to rank r asks what the head's architecture could reach if it were fitted
+    # perfectly. KNOWN ANSWER: truncation at full rank must reproduce the untruncated number
+    # exactly, because it is the same matrix.
+    ap.add_argument("--truncate-ranks", default="306,64,16,4,1")
     ap.add_argument("--out", default="out/cortex_information_transmission.json")
     a = ap.parse_args()
 
@@ -163,14 +171,32 @@ def main():
     zero = float((Tev ** 2).mean())
     se = 1.0 / np.sqrt(Tev.size)
 
-    def ridge(Ftr, Fev, tag):
+    def ridge(Ftr, Fev, tag, Tfit_base=None):
+        """Fit on (Ftr, Tfit_base) and score on (Fev, Tev).
+
+        `Tfit_base` is explicit because the known-answer fit uses a DIFFERENT number of rows from
+        the comparison fits; the first version closed over the comparison target and raised a
+        shape error the moment the two sizes diverged. Loudly, which is the good case.
+        """
+        T0 = Ttr if Tfit_base is None else Tfit_base
+        assert len(T0) == len(Ftr), f"{tag}: {len(Ftr)} feature rows against {len(T0)} target rows"
         mu, sd_ = Ftr.mean(0), Ftr.std(0) + 1e-12
         A, B = (Ftr - mu) / sd_, (Fev - mu) / sd_
         res = {}
-        for name, Tfit in (("intact", Ttr),
-                           ("shuffled", Ttr[np.random.default_rng(11).permutation(len(Ttr))])):
+        for name, Tfit in (("intact", T0),
+                           ("shuffled", T0[np.random.default_rng(11).permutation(len(T0))])):
             W = np.linalg.solve(A.T @ A + a.alpha * np.eye(A.shape[1]), A.T @ (Tfit - Tfit.mean(0)))
             Pd = B @ W + Tfit.mean(0)
+            if name == "intact":
+                res["rank_truncated"] = {}
+                U, S, Vt = np.linalg.svd(W, full_matrices=False)
+                for rk in (int(v) for v in a.truncate_ranks.split(",")):
+                    k = min(rk, len(S))
+                    Wk = (U[:, :k] * S[:k]) @ Vt[:k]
+                    Pk = B @ Wk + Tfit.mean(0)
+                    res["rank_truncated"][rk] = dict(
+                        correlation=corr(Pk, Tev),
+                        skill_vs_zero=1.0 - float(((Pk - Tev) ** 2).mean()) / zero)
             res[name] = dict(correlation=corr(Pd, Tev),
                              skill_vs_zero=1.0 - float(((Pd - Tev) ** 2).mean()) / zero,
                              # a near-constant prediction makes `corr` a ratio of tiny numbers and
@@ -183,6 +209,13 @@ def main():
               f"shuffled {res['shuffled']['correlation']:+.4f}"
               f"   pred spread intact {res['intact']['pred_rms_over_target']:.3f} / "
               f"shuffled {res['shuffled']['pred_rms_over_target']:.3f} of target")
+        rt = res.get("rank_truncated")
+        if rt:
+            full = max(rt)
+            ka_ok = abs(rt[full]["correlation"] - res["intact"]["correlation"]) < 1e-9
+            print(f"  {'':22s} rank-truncated: "
+                  + "  ".join(f"r{k}={v['correlation']:+.4f}" for k, v in sorted(rt.items(), reverse=True))
+                  + f"   [full-rank reproduces untruncated: {'PASS' if ka_ok else 'FAIL'}]")
         return res
 
     print(f"alpha FIXED at {a.alpha:.0e} -- not selected on the evaluation set\n")
@@ -190,7 +223,7 @@ def main():
     Ftr, Fev = coch_feats(tr), coch_feats(ev)
     print("KNOWN ANSWER: the cochleagram arm must reproduce the recorded "
           f"+{RECORDED_COCHLEAGRAM_R:.4f} at this alpha.")
-    ka = ridge(coch_feats(tr_big), Fev, f"cochleagram n={len(tr_big):,}")
+    ka = ridge(coch_feats(tr_big), Fev, f"cochleagram n={len(tr_big):,}", Tfit_base=target(tr_big))
     got = ka["intact"]["correlation"]
     ok = abs(got - RECORDED_COCHLEAGRAM_R) < 0.010
     print(f"  -> {got:+.4f} against {RECORDED_COCHLEAGRAM_R:+.4f}  "
