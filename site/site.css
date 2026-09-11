@@ -582,56 +582,48 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
   .standfirst-band { padding: 3rem 1.25rem 0; }
 }
 
-/* ---- §3b the lineage track: a vertical serpentine, filled to where we are ---- */
-.lin-intro { max-width: 62ch; color: var(--muted); margin: 0 0 2.5rem; }
-.lin-track { position: relative; width: 100%; max-width: 760px; margin: 0 auto; }
-.lin-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.lin-track.is-ready { min-height: 200px; }
-.lin-path { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
-.lin-path-future { stroke: var(--rule); stroke-dasharray: 5 6; }
-.lin-path-done   { stroke: var(--accent); opacity: .85; }
+/* ---- §3b the lineage highway: solid variable-width roads, annotations like the
+        brain viewer's -- a thin leader, a dot where it lands, and a bare label ---- */
+.lin-intro { max-width: 62ch; color: var(--muted); margin: 0 0 2rem; }
+.lin-track { position: relative; width: 100%; max-width: 1000px; margin: 0 auto; }
+.lin-svg { display: block; width: 100%; height: auto; overflow: visible; }
 
-.lin-node {
-  position: absolute; transform: translate(-50%, -50%);
-  display: flex; align-items: center; gap: .6rem;
-  width: 300px; text-decoration: none; color: inherit;
-  padding: .5rem .7rem; border-radius: 10px;
-  background: var(--paper); border: 1px solid var(--rule);
-  transition: border-color .2s, transform .2s, box-shadow .2s;
-}
-.lin-node:nth-child(odd) { flex-direction: row-reverse; text-align: right; }
-.lin-node.is-future { border-style: dashed; opacity: .72; background: transparent; }
-.lin-node:hover, .lin-node:focus-visible {
-  border-color: var(--accent); box-shadow: 0 6px 22px rgba(0,0,0,.14);
-  transform: translate(-50%, -50%) scale(1.02); z-index: 5;
-}
-.lin-mark {
-  flex: 0 0 auto; width: 11px; height: 11px; border-radius: 50%;
-  background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
-}
-.lin-node.is-future .lin-mark { background: transparent; border: 2px solid var(--rule); box-shadow: none; }
-.lin-model .lin-mark { border-radius: 2px; }          /* checkpoints are square */
-.lin-note-kind .lin-mark { transform: rotate(45deg); border-radius: 2px; }
-.lin-body { display: block; min-width: 0; }
-.lin-kind { display: block; font-family: var(--mono); font-size: .56rem; letter-spacing: .14em;
-            text-transform: uppercase; color: var(--muted); }
-.lin-label { display: block; font-size: .96rem; line-height: 1.25; }
-.lin-note { display: block; font-size: .74rem; color: var(--muted); line-height: 1.35; margin-top: .12rem; }
+.lin-road { fill: var(--accent); fill-opacity: .30; stroke: none; }
+.lin-road.lin-exit { fill-opacity: .22; }
+.lin-road.is-future { fill: none; stroke: var(--rule); stroke-width: 1.2; stroke-dasharray: 6 7; }
 
-.lin-tip {
-  position: absolute; left: 50%; top: calc(100% + 10px); transform: translateX(-50%);
-  width: 330px; max-width: 78vw; padding: .7rem .85rem; z-index: 20;
-  background: var(--paper-2); color: var(--text); border: 1px solid var(--rule); border-radius: 8px;
-  font-size: .76rem; line-height: 1.45; text-align: left;
-  opacity: 0; visibility: hidden; transition: opacity .18s, visibility .18s;
-  box-shadow: 0 10px 30px rgba(0,0,0,.2); pointer-events: none;
+.lin-rule { stroke: var(--rule); stroke-width: .6; opacity: .5; }
+.lin-rule.is-future { stroke-dasharray: 4 6; }
+.lin-stage { font-family: var(--mono); font-size: 13px; letter-spacing: .16em;
+             text-transform: uppercase; fill: var(--muted); opacity: .75; }
+.lin-stage.is-future { opacity: .45; }
+
+.lin-ann .leader { stroke: var(--muted); stroke-width: 1.2; fill: none; opacity: .55; }
+.lin-ann .leader-dot { fill: var(--accent); }
+.lin-ann.is-future .leader { stroke-dasharray: 3 4; opacity: .4; }
+.lin-ann.is-future .leader-dot { fill: none; stroke: var(--rule); stroke-width: 1.4; }
+
+.lin-ann-body { display: grid; gap: 2px; padding: 0 8px; color: inherit; text-decoration: none; }
+.lin-ann-body.to-left { text-align: right; }
+.lin-kind { font: 400 10px/1.2 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.lin-label { font-family: var(--display); font-weight: 600; font-size: 17px; line-height: 1.15;
+             letter-spacing: -.005em; }
+.lin-ann-body:hover .lin-label { color: var(--accent); }
+.lin-note { font: 400 11.5px/1.35 var(--mono); color: var(--muted); }
+.lin-ann.is-future .lin-label, .lin-ann.is-future .lin-note { opacity: .6; }
+
+.lin-tip { display: none; }
+.lin-ann-body { position: relative; }
+.lin-ann-body:hover .lin-tip, .lin-ann-body:focus-visible .lin-tip {
+  display: block; position: absolute; top: 100%; width: 300px; z-index: 30;
+  background: var(--paper-2); border: 1px solid var(--rule); border-radius: 6px;
+  padding: .6rem .75rem; font: 400 12px/1.45 var(--serif); text-align: left; color: var(--text);
+  box-shadow: 0 10px 28px rgba(0,0,0,.2);
 }
-.lin-node:hover .lin-tip, .lin-node:focus-visible .lin-tip { opacity: 1; visibility: visible; }
+.lin-ann-body.to-left:hover .lin-tip { right: 8px; }
+.lin-ann-body.to-right:hover .lin-tip { left: 8px; }
 
 @media (max-width: 760px) {
-  .lin-node { width: 220px; font-size: .9rem; }
-  .lin-tip { width: 260px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .lin-node, .lin-tip { transition: none; }
+  .lin-label { font-size: 14px; } .lin-note { font-size: 10px; }
+  .lin-tip { width: 210px; }
 }
