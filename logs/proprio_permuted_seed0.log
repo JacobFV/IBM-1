@@ -24,3 +24,7 @@ Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pyto
    2250  train 3.482e-01  held 5.004e-04  SKILL vs persistence -3.8110  vs ridge +0.9974    9066s
    2500  train 2.171e-01  held 4.985e-04  SKILL vs persistence -3.7924  vs ridge +0.9974   10105s
    2750  train 2.182e-01  held 4.920e-04  SKILL vs persistence -3.7307  vs ridge +0.9975   11158s
+   3000  train 2.340e-01  held 4.922e-04  SKILL vs persistence -3.7321  vs ridge +0.9975   12214s
+
+  arm            best skill vs persistence
+  permuted       -3.7307

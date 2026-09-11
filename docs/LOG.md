@@ -91,6 +91,42 @@ alternative is sharper and would matter more: if permuted is worse than trained 
 then on this pathway the learned association IS load-bearing, and it would be the first place in
 this programme where that has been shown.
 
+**THE VERDICT: the prediction holds, and it holds tightly.** Both seeds to step 3000, scored by
+`scripts/score_readout_comparison.py`, whose gate -- reproducing every late mean already recorded
+above -- passes.
+
+| arm | seed 0 | seed 1 | two-seed mean | seed spread |
+|---|---:|---:|---:|---:|
+| no cortex | -3.6442 | -3.6832 | **-3.6637** | 0.0390 |
+| sheet, raw readout (kernel intact) | -3.8419 | -3.8306 | **-3.8363** | 0.0113 |
+| **sheet, permuted kernel** | **-3.7989** | **-3.8866** | **-3.8428** | 0.0876 |
+
+Threshold = max(0.3, the two arms' spreads) = **0.30**.
+
+* **permuted vs trained: -0.0065 -- NOT DISTINGUISHABLE.**
+* permuted vs no cortex: -0.1790 -- NOT DISTINGUISHABLE, the same verdict the intact sheet gets.
+
+**Shuffling the site rows of `dyn.embed` -- which destroys the learned cortico-cortical
+correspondence and changes nothing else -- moves the held-out skill by 0.0065.** That is a
+thousandth of the quantity being compared, an order below the spread between two seeds of the
+permuted arm itself (0.0876), and two orders below the threshold. This is the **fourth** pathway
+on which a permuted kernel matches a trained one: the three in this log, plus the stance
+controller in `IHM-1/docs/IBM_CURRICULUM16_KERNEL.md`, whose peak COM excursion differs by 1.7 um.
+
+What it settles and what it does not. It settles that on postcentral -> precentral next-command
+prediction, **what the kernel learned is not what the sheet contributes** -- and the readout
+comparison above already showed the sheet contributes nothing distinguishable from no cortex
+either, so the two results are consistent: a structure that does not help cannot be helped by its
+own learning. It does NOT show the dynamics are inert. The severed arm in
+`IBM_CURRICULUM16_KERNEL.md` falls at 2.90 s where the intact one holds, so the E/I dynamics are
+load-bearing there as a filter; what has never survived a permutation control is the claim that
+the LEARNED content of the association kernel carries the signal.
+
+The baselines were identical to the raw arm's to every digit -- persistence 1.040089e-04, zero
+6.671151e-04, mean 6.672289e-04, ridge 1.953707e-01 -- which was the pre-registered known answer
+that the two arms are the same task. The logs are `logs/proprio_permuted_seed0.log` and
+`logs/proprio_permuted_seed1.remote.log`.
+
 ## 2026-09-10 -- readout normalisation: the comparison, fixed BEFORE the runs finish
 
 **Why this entry exists before its result.** The cortical sheet's precentral readout

@@ -39,9 +39,69 @@
           "held_mse": 0.0005905205782722025,
           "skill_vs_persistence": -4.677594772324534,
           "skill_vs_ridge": 0.9969774356065837
+        },
+        {
+          "step": 750,
+          "held_mse": 0.0005523507735308478,
+          "skill_vs_persistence": -4.31060894349154,
+          "skill_vs_ridge": 0.9971728067705361
+        },
+        {
+          "step": 1000,
+          "held_mse": 0.0005262036043054918,
+          "skill_vs_persistence": -4.059215449738412,
+          "skill_vs_ridge": 0.997306640383787
+        },
+        {
+          "step": 1250,
+          "held_mse": 0.000512402478386374,
+          "skill_vs_persistence": -3.926523714253359,
+          "skill_vs_ridge": 0.9973772810918793
+        },
+        {
+          "step": 1500,
+          "held_mse": 0.000506460750804228,
+          "skill_vs_persistence": -3.869396625545167,
+          "skill_vs_ridge": 0.9974076936717046
+        },
+        {
+          "step": 1750,
+          "held_mse": 0.0005055075252757353,
+          "skill_vs_persistence": -3.860231782732659,
+          "skill_vs_ridge": 0.997412572732058
+        },
+        {
+          "step": 2000,
+          "held_mse": 0.0004989042843089385,
+          "skill_vs_persistence": -3.7967445347468596,
+          "skill_vs_ridge": 0.9974463712511303
+        },
+        {
+          "step": 2250,
+          "held_mse": 0.0005003832648782169,
+          "skill_vs_persistence": -3.8109642802688084,
+          "skill_vs_ridge": 0.9974388011271216
+        },
+        {
+          "step": 2500,
+          "held_mse": 0.0004984569549560546,
+          "skill_vs_persistence": -3.792443660418531,
+          "skill_vs_ridge": 0.9974486608949191
+        },
+        {
+          "step": 2750,
+          "held_mse": 0.0004920396243824678,
+          "skill_vs_persistence": -3.730743858824013,
+          "skill_vs_ridge": 0.997481507836425
+        },
+        {
+          "step": 3000,
+          "held_mse": 0.0004921756071202896,
+          "skill_vs_persistence": -3.732051272841052,
+          "skill_vs_ridge": 0.9974808118122784
         }
       ],
-      "best_skill_vs_persistence": -4.677594772324534
+      "best_skill_vs_persistence": -3.730743858824013
     }
   }
 }
