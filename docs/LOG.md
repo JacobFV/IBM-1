@@ -57,6 +57,62 @@ already written.
 ---
 
 
+## 2026-09-11 -- the multi-objective run collapsed into the failure its own docstring names
+
+Launched on gb10-direct: one substrate, two heads, gradients accumulated before a single optimizer
+step -- `train_multi_materialization.py`, the AV continuation term beside the paired
+stimulus->measured-MEG term. Stopped at step 3,675 of 20,000 after 39 minutes.
+
+**The paired term found the degenerate solution inside 1,000 steps.**
+
+| step | meg loss | effective cortical rank |
+|---:|---:|---:|
+| 0 | 7.6893 | 2.17 |
+| 500 | 0.0325 | 1.47 |
+| **1000** | 0.0772 | **1.01** |
+| 2000 | 0.0001 | 1.01 |
+| 2800 | 2.0124 | 1.03 |
+| 3300 | 0.0001 | 1.02 |
+
+`PairedNeuralLoop`'s own docstring says what that is: *"the paired head reached skill +0.94 with an
+effective cortical rank of 1.03: the readout was doing the work and the cortex was a scalar."* The
+low-rank lead field (`lead_rank=64`) exists **because** of that failure, and it did not prevent it.
+The rank sits at 1.01-1.03 for 2,700 consecutive steps.
+
+**Two independent indicators, not one.** The second is the loss itself, and it needed a baseline the
+script never computes. `l_pr = F.mse_loss(pp, yp)` is a raw MSE, and CLAUDE.md's first metrics rule
+is that a raw loss is not a result. Measured on the target it is actually trained against:
+
+* **zero baseline** (predict nothing), mean y^2 over 400 random windows: **0.012486**
+* the run's reported loss: **0.0001**
+
+That is **99.2% of MEG variance explained from a cochleagram**, which is not a credible encoding
+result. Published audio->MEG encoding explains a few percent. A number that good, on a head whose
+documented failure is a scalar cortex plus a capable readout, is the failure rather than a result --
+and it is the same shape as the worst error in the ledger, a loss that read as 91-97% of variance
+explained while being worse than predicting nothing.
+
+**What was NOT wrong, checked before blaming the data.** The paired corpus is the v3 rebuild, which
+is the one that survives -- `libribrain-paired` v1 and v2 are void for a 4,300-5,300 ppm clock drift
+and the note recording that is in the corpus directory. `meg_scale.npy` reads `[0, 1]`, so the
+clip-and-rescale at load is an identity plus a +/-6 clamp and is not shrinking the target. The zero
+baseline above is computed on exactly what the loss sees.
+
+**Stopped rather than run to 20,000.** Not on suspicion: a rank pinned at the documented degenerate
+value for 2,700 steps, and a loss 100x below a zero baseline on a task where that is not achievable,
+are two measurements agreeing. Running the remaining 16,325 steps would have produced a number this
+programme has already learned not to believe, and a checkpoint that would have entered a conglomerate
+initialisation carrying it.
+
+**Open, and NOT guessed at here:** why the low-rank readout does not prevent the collapse. `lead_rank`
+is not a CLI argument, so the obvious first test -- does the rank still collapse at a much smaller
+lead rank? -- needs it exposed. That is a diagnostic to run, not a fix to apply, and no fix is
+attempted before it.
+
+**What the AV term did meanwhile**, recorded because it is the half that did not fail: `r_av` held
+between 1.35 and 2.51 throughout and the cross-modal term rose steadily from 0.139 to 0.204. The
+substrate was receiving usable gradients from one of its two objectives.
+
 ## 2026-09-11 -- a motion-capture proprioceptive corpus: the gates, fixed BEFORE any byte is fetched
 
 The body has two motions and neither is admissible. Measured on 2026-09-11: all 67 stored
