@@ -74,6 +74,20 @@ def main():
     ap.add_argument("--lead-rank", type=int, default=64)
     ap.add_argument("--ckpt", default="ckpt/multi.pt")
     ap.add_argument("--upload-every", type=int, default=2000)
+    # SAVING IS SEPARATE FROM UPLOADING, and this cost three runs.  the save used to
+    # sit inside `if a.upload_every and step % a.upload_every == 0`, and the whole
+    # lead-rank sweep ran `--steps 1500` against the 2000 default -- so the condition
+    # was never true once, there was no terminal save either, and all three arms
+    # finished having written no weights at all.  CLAUDE.md: "a negative result
+    # without a checkpoint is an anecdote".  It was three anecdotes.
+    ap.add_argument("--save-every", type=int, default=250)
+    # THE HELD-OUT TAIL.  before this the paired index was drawn as
+    # `np.random.randint(pctx, lim)` over the WHOLE array, so there was no split
+    # anywhere in this script and every number it has ever printed is in-sample.
+    # the tail is reserved and never drawn from; scripts/eval_paired_head.py scores
+    # on it and asserts the same fraction.
+    ap.add_argument("--holdout", type=float, default=0.1,
+                    help="tail fraction of the paired corpus reserved for evaluation")
     ap.add_argument("--out", default="out/multi.json")
     a = ap.parse_args()
 
@@ -108,7 +122,22 @@ def main():
     opt = torch.optim.AdamW(params, lr=a.lr, weight_decay=1e-4)
 
     H, vctx, pctx = a.horizon, 8, 125
-    log = {"config": vars(a), "shared": shared, "steps": []}
+    p_rows = min(len(pstim), len(pneur)) - 2
+    p_train_lim = int(p_rows * (1.0 - a.holdout))
+    assert p_train_lim > pctx, "holdout leaves no training rows"
+    print(f"paired split: train [{pctx:,}, {p_train_lim:,}) | "
+          f"held out [{p_train_lim:,}, {p_rows:,}) = {a.holdout:.0%}", flush=True)
+    log = {"config": vars(a), "shared": shared, "paired_train_lim": p_train_lim,
+           "paired_rows": p_rows, "steps": []}
+
+    def save(step, name=None):
+        os.makedirs(os.path.dirname(a.ckpt) or ".", exist_ok=True)
+        d = {"dyn": dyn.state_dict(), "av": av.state_dict(), "paired": pr.state_dict(),
+             "step": step, "config": vars(a), "paired_train_lim": p_train_lim}
+        if name:
+            d["name"] = name
+        torch.save(d, a.ckpt)
+
     t0 = time.time()
 
     for step in range(a.steps):
@@ -129,8 +158,7 @@ def main():
         (a.w_av * (l_av + a.viability_weight * viab_av)).backward()
 
         # -- term 2: the paired stimulus -> measured MEG materialization ----
-        lim = min(len(pstim), len(pneur)) - 2
-        j = np.random.randint(pctx, lim, size=a.batch)
+        j = np.random.randint(pctx, p_train_lim, size=a.batch)
         xp = torch.from_numpy(np.stack([pstim[q - pctx:q] for q in j])).float().to(dev)
         yn = np.ascontiguousarray(pneur[j]).astype(np.float32)
         if megsc is not None:
@@ -165,16 +193,15 @@ def main():
             if not math.isfinite(float(l_av) + float(l_pr)):
                 print("DIVERGED", flush=True); break
 
+        last = step == a.steps - 1
+        if a.ckpt and (last or (a.save_every and step and step % a.save_every == 0)):
+            save(step)
         if a.ckpt and a.upload_every and step and step % a.upload_every == 0:
-            # save before anything that can raise; see the note in the sibling script
-            torch.save({"dyn": dyn.state_dict(), "av": av.state_dict(),
-                        "paired": pr.state_dict(), "step": step}, a.ckpt)
             from ibm.release import CheckpointName, sidecar, upload
             nm = CheckpointName(modality="multi", sites=a.sites, embed=a.embed,
                                 degree=a.k, objective="av+meg",
                                 viability_weight=a.viability_weight, step=step)
-            torch.save({"dyn": dyn.state_dict(), "av": av.state_dict(),
-                        "paired": pr.state_dict(), "step": step, "name": str(nm)}, a.ckpt)
+            save(step, str(nm))     # save BEFORE the import-and-upload that can raise
             meta = sidecar(nm, geometry=P.geometry_note(dyn),
                            n_params=shared + head_av + head_pr, n_assoc=dyn.embed.numel(),
                            metrics=log["steps"][-1], config=vars(a))

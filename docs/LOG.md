@@ -37,6 +37,7 @@ pattern is worth more than any single row.
 | 20 | the cortex learns motor control -- body_stance went -41 to **+0.42** skill once the readout could see the sheet | trained and permuted kernels give **identical MSE to 8 decimals**. the whole-sheet readout samples the driven region, and those samples carry **3,134x** the variance of the rest -- the decoder reads the input, not the cortex. the architecture has no configuration where the dynamics both receive the signal and are necessary | the four-arm ablation, which was already running when I announced the result |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
+| 22 | the lead-rank sweep shows the readout is not the cause (table of `skill/0` and cortical rank at ranks 64/16/4) | the *direction* survives, but every number in that table is an **in-sample training loss**: the trainer drew `j = np.random.randint(pctx, lim)` over the whole paired array and **had no train/test split at all**. and all three arms wrote **no checkpoint** -- the save was gated on `step % upload_every == 0` with `upload_every` defaulting to 2000 against `--steps 1500`, so it never fired once and there was no terminal save. three completed runs, no weights, nothing re-scorable | trying to build the fixed-evaluation instrument the entry's own pre-registration demanded, and finding neither a held-out set nor a checkpoint to point it at |
 | 21 | the sheet does not conduct because `tanh(2*sim)` is saturated -- unsaturating the squashing function would restore magnitude selectivity and let the kernel build a strong specific pathway | the edges ARE pinned (mean \|tanh(2*sim)\| = 0.895, 71.4% of 1.44M edges above 0.9) but the underlying cosine similarities have no dynamic range either, so lowering the slope scales every edge down together and selects nothing. row L1/max moves 45.2 -> 41.0 as the slope goes 2.00 -> 0.25, against 48 for perfectly flat. **saturation was the symptom; the flat \|sim\| distribution is the disease**, and no reparameterisation of tanh reaches it -- only an explicit structural selection (top-m) does, which buys 11.9x at zero change in row gain | measuring the row L1/max flatness across a slope sweep, instead of reasoning from tanh(2) = 0.964 to "therefore no magnitude information" |
 | 22 | the gait controller cannot walk because it regulates absolute fore-aft position -- `error = x - x0 - dx_velocity` masks only the pelvis_tx SPEED, so the position term acts as a spring pulling the body back to its start, spending ~0.47 of the [0,1] actuator range at only 6 mm of travel | `deflation_basis` had already removed it. the pelvis_tx POSITION column of K is **exactly zero** (L2 = 0.0000, rank 258 of 258 columns), as is pelvis_tz; only pelvis_ty (height) is regulated, at L2 52.7, which is correct. the arithmetic was built on a column that does not exist. **I flagged this exact caveat when I sent the hypothesis and then did not check it before reporting the result** | printing the norm of K's pelvis_tx column -- one command, available before the claim was made |
 | 23 | the learned kernel is load-bearing for disjoint-region retrieval -- permuted sat at **exactly chance** while intact read 43x, so what the cortex LEARNED carries the signal from occipital to precentral | a train/test permutation mismatch. `torch.randperm` was drawn INSIDE the feature extractor from a generator shared with the caller, and the extractor runs twice per arm -- once for training features, once for held-out -- so the head was fitted on one permutation and evaluated on another. rerun with the permutation drawn once and passed in, **permuted reads 50.75x against intact's 48.37x**: indistinguishable, with amplitude (5.4367e-02 vs 5.4064e-02), effective rank (12.2 vs 12.9), train loss and train top-1 all preserved. row 20's generalisation is CONFIRMED, not amended -- the dynamics are necessary, what they learned is not | asking why permuted sat at exactly chance while preserving 99.7% of the across-image variance, then adding a `relabel` arm (readout columns permuted, which CANNOT change the answer) that had to score what intact scores -- it read 48.62x, so the bookkeeping was clean and the other arms were interpretable |
@@ -53,6 +54,76 @@ the wrong thing — the wrong population, the wrong units, the wrong split, the
 wrong baseline, or no baseline. Not one was a modelling error. Every one was
 caught by a measurement that could have been run first, and several by one I had
 already written.
+
+---
+
+
+## 2026-09-11 (afternoon) -- the sweep I just reported has no weights and no split
+
+I went to build the fixed-evaluation instrument the previous entry's pre-registration
+requires -- "both arms are scored on ONE FIXED evaluation set of held-out batches" --
+and found that neither half of that sentence was available.
+
+**There is no held-out set. There never was.** `train_multi_materialization.py` drew
+its paired index as
+
+```python
+lim = min(len(pstim), len(pneur)) - 2
+j = np.random.randint(pctx, lim, size=a.batch)
+```
+
+over the **whole** array, and its AV term the same way. No split existed anywhere in
+the script. Every `skill/0` it has ever printed -- including the entire lead-rank
+table in the entry below -- is an in-sample training number. CLAUDE.md has carried
+"a training loss is not skill even when a baseline is at hand" since ledger row 10,
+and I read those numbers for a day without asking what they were computed on.
+
+**There are no weights either.** The save sat inside
+
+```python
+if a.ckpt and a.upload_every and step and step % a.upload_every == 0:
+```
+
+`--upload-every` defaults to **2000**. Every sweep arm ran `--steps 1500`. The
+condition was therefore never true once in any of the three runs, and there was no
+terminal save, so rank64, rank16 and rank4 all ran to completion and wrote nothing.
+CLAUDE.md: *"a negative result without a checkpoint is an anecdote."* It was three
+anecdotes, and the instrument they were meant to feed could not be pointed at them.
+
+This is the same shape as the `| tail -1` and `| head -2` failures from this morning:
+**a guard whose condition a short run cannot reach fails silently and looks like
+success.** The log printed 1,499 lines of healthy-looking training either way.
+
+WHAT CHANGED, in `scripts/train_multi_materialization.py`:
+
+- `--holdout` (default 0.1) reserves the tail of the paired corpus. Training draws
+  from `[125, 3,173,834)`; `[3,173,834, 3,526,483)` -- 352,649 rows -- is never
+  touched. The limit is printed at launch and **stored in the checkpoint**.
+- `--save-every` (default 250), separate from uploading, plus an unconditional save
+  on the last step. Saving and publishing are different concerns and one should not
+  gate the other.
+
+And `scripts/eval_paired_head.py` (new) scores the held-out tail with two known
+answers printed **before** any checkpoint is touched: the zero predictor must read
+exactly 0.0 skill by construction, and the mean predictor must read >= 0 -- if the
+mean is worse than zero the target is not centred and every skill is against the
+wrong origin. It applies the same `meg_scale` transform the trainer applies, because
+the trainer's `skill/0` is against the **scaled** target and scoring raw would be
+ledger row 7 a second time. And it **refuses** any checkpoint whose stored
+`paired_train_lim` does not match the split being evaluated -- a checkpoint from
+before today has seen these rows, and scoring it here would report held-out loss for
+one arm and training loss for the other and call the difference a result.
+
+Both arms relaunched under the fixed code, `--steps 1500 --lead-rank 64 --holdout
+0.1`, batch 4 and batch 64, identical split in both logs. The pre-registered
+prediction is unchanged and still stands: **batch 64 beats batch 4 on the held-out
+set by orders of magnitude, because the median batch stops being drowned by the
+tail. If it does not, the heavy tail is not the cause either.**
+
+Separately: `spark-gb10` and `spark-ec4d` are unreachable (no route to host, and a
+connection timeout). `gb10-direct` and `promaxgb10-4dfb` resolve to the **same**
+machine -- `hostname` returns `promaxgb10-4dfb` on both. There is one GB10 in
+service, not three, and both arms are sharing it.
 
 ---
 

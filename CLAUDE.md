@@ -146,6 +146,22 @@ the bytes actually came from — never the machine that staged them. A card mark
   function as suspect by default -- a local variable is almost always the right fix.
 - Publish checkpoints for runs that **failed** too. A negative result without a
   checkpoint is an anecdote; the sidecar should say plainly what was falsified.
+- **A save gated on a period the run is too short to reach never fires, and nothing
+  says so.** `train_multi_materialization.py` saved inside `if a.upload_every and
+  step % a.upload_every == 0` with `upload_every` defaulting to **2000**; the whole
+  lead-rank sweep ran `--steps 1500`. Three arms trained to completion, printed
+  1,499 healthy-looking lines each, and wrote **no weights at all**. There was no
+  terminal save to catch it. Always save unconditionally on the last step, keep
+  saving separate from uploading, and when you set `--steps`, check it against every
+  `% N == 0` in the loop. Same shape as `| tail -1` swallowing an exit status: a
+  guard that cannot fire looks exactly like a guard that passed.
+- **Check that the trainer has a split before reading any number it prints.** This
+  one drew `j = np.random.randint(pctx, lim)` over the entire array for every term
+  and had no train/test split anywhere — so a day of `skill/0` readings, and a
+  published sweep table, were all in-sample. `grep` the sampling line, not the log.
+  A checkpoint should **store the split it was trained under**, and an evaluator
+  should refuse any checkpoint whose stored split does not match the set it is
+  about to be scored on.
 - The remote has no git repo, so `git rev-parse` there yields `git-unknown` and the
   checkpoint becomes unciteable. Pass `IBM_GIT_SHA` from the launcher.
 
