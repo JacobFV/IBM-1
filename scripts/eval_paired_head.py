@@ -122,20 +122,41 @@ def main():
                                 lead_rank=a.lead_rank).to(dev)
         dyn.load_state_dict(sd["dyn"]); pr.load_state_dict(sd["paired"])
         dyn.eval(); pr.eval()
+        # AMPLITUDE AND CORRELATION, because "worse than zero" does not say WHY.
+        # For an uncorrelated predictor mse/zero ~= (rms_pred / rms_target)^2, so a skill of
+        # -366 predicts an output about 19x too large. If that is what the amplitude shows AND
+        # the correlation is meaningfully positive, the failure is CALIBRATION -- the head
+        # carries information and emits it at the wrong scale, which a single output scale
+        # fixes. If the correlation is ~0, the amplitude is beside the point and the head
+        # carries nothing, which is what the lead-rank sweep already suggested. These two
+        # readings call for completely different next steps and the MSE cannot separate them.
         se, n, ranks = 0.0, 0, []
+        sp2 = st2 = spt = 0.0
         with torch.no_grad():
             for j in draw:
                 xp = torch.from_numpy(np.stack([pstim[q - pctx:q] for q in j])).float().to(dev)
                 yp = torch.from_numpy(target(j)).to(dev)
                 pp, sp = pr(xp, a.dyn_steps, a.dt)
                 se += float(((pp - yp) ** 2).sum()); n += yp.numel()
+                sp2 += float((pp ** 2).sum()); st2 += float((yp ** 2).sum())
+                spt += float((pp * yp).sum())
                 ranks.append(P.effective_rank(sp[1][:, ::max(dyn.n // 512, 1)].float()))
         mse = se / n
+        rms_p, rms_t = (sp2 / n) ** 0.5, (st2 / n) ** 0.5
+        corr = spt / max((sp2 * st2) ** 0.5, 1e-30)
         rows.append({"name": name, "path": path, "step": int(sd.get("step", -1)),
                      "mse": mse, "skill_vs_zero": 1.0 - mse / zero_mse,
+                     "rms_pred": rms_p, "rms_target": rms_t,
+                     "amplitude_ratio": rms_p / max(rms_t, 1e-30), "correlation": corr,
                      "mean_effective_rank": float(np.mean(ranks))})
-        print(f"  {name:12s} step {rows[-1]['step']:5d}  mse {mse:.6e}  "
-              f"skill vs zero {rows[-1]['skill_vs_zero']:+11.2f}  rank {rows[-1]['mean_effective_rank']:5.2f}")
+        r = rows[-1]
+        print(f"  {name:12s} step {r['step']:5d}  mse {mse:.6e}  "
+              f"skill vs zero {r['skill_vs_zero']:+11.2f}  rank {r['mean_effective_rank']:5.2f}")
+        print(f"  {'':12s} output rms {rms_p:.4e} against target {rms_t:.4e} "
+              f"-> {r['amplitude_ratio']:7.1f}x too large")
+        print(f"  {'':12s} correlation with the target: {corr:+.4f}   "
+              f"(an uncorrelated predictor at this amplitude would score "
+              f"{1.0 - (1.0 + r['amplitude_ratio']**2):+.1f})")
 
     # the baseline-free statement of the comparison.  whatever the zero baseline happens to be
     # on this draw, it divides out of a ratio between two arms scored on the same rows.

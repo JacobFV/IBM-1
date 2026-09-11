@@ -58,6 +58,54 @@ already written.
 ---
 
 
+## 2026-09-11 (evening) -- the head's entire skill number is AMPLITUDE. Its correlation with the target is zero.
+
+The first held-out score this trainer has ever produced, on `ckpt/clean_b4.pt` (batch 4, artefact
+excluded, 1,500 steps), over the fixed 512-row draw from the reserved tail:
+
+    mse 1.360290e-02   zero baseline 3.702648e-05   skill -366.38   cortical rank 1.05
+
+Worse than emitting nothing by a factor of 366, with the artefact already gone and the readout
+already swept. But "worse than zero" does not say why, and the ratio itself is a diagnosis:
+for an **uncorrelated** predictor `mse/zero ~= (rms_pred / rms_target)^2`, so a skill of -366
+predicts an output about `sqrt(366) = 19x` too large. **Predicted before measuring**, with the
+two branches named: if the amplitude is ~19x AND the correlation is meaningfully positive, the
+failure is CALIBRATION -- the head carries information at the wrong scale and one output scale
+fixes it. If the correlation is ~0, amplitude is beside the point and the head carries nothing.
+
+    output rms 1.1649e-01 against target 6.0849e-03  ->  19.1x too large
+    correlation with the target: +0.0022
+    an uncorrelated predictor at this amplitude would score -366.5;  the head scores -366.38
+
+**The calibration branch is refuted.** Over 512 x 306 = 156,672 values the standard error of a
+correlation is `1/sqrt(n) = 0.0025`, so **+0.0022 is indistinguishable from zero**. And the
+predicted score for *pure noise at this amplitude*, -366.5, reproduces the measured -366.38 to
+four significant figures. **The entire skill number is amplitude. There is no information
+component to find.**
+
+That matters because it changes what the number means. -366 reads as a catastrophe of degree,
+inviting tuning; it is really a catastrophe of kind wearing a large number. **Fixing the scale
+would move skill from -366 to about -1** -- the score of a zero-information predictor -- and buy
+nothing, because -1 is what this head already is once its volume knob is turned down.
+
+**Where this lands the sequence.** The lead-rank sweep refuted the readout as the cause. The
+positional measurement refuted the heavy tail as the cause. This refutes calibration. What is
+left is the objective itself, and `VisualContrastiveLoop`'s own docstring has said so since it
+was written: *regression must reproduce an amplitude at every channel and every sample, and
+those amplitudes are dominated by trial and subject noise that no stimulus can predict; fitting
+MSE against them spends the whole model on the unpredictable part.* The same file records the
+measured version -- waveform regression peak skill +0.011 then negative, against contrastive
+retrieval at 43x chance on the same data, same encoder, same split. Ledger row 7 is the paired
+head's own instance of it.
+
+**PREDICTED for the batch-64 arm, fixed before it finishes:** the same picture -- correlation
+within about 0.0025 of zero and skill explained by amplitude alone. If batch 64 instead shows a
+correlation clearly above noise, batch size was carrying something after all and this entry is
+wrong about the cause.
+
+---
+
+
 ## 2026-09-11 (evening) -- the MEG target is not heavy-tailed. It has a 30-second artefact.
 
 The batch-size experiment rested on a measured fact: the paired target's per-batch mean square

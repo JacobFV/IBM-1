@@ -51,6 +51,15 @@ Specifically:
 - **Check a metric against a case whose answer you know.** Chance must print
   1.0×. Effective rank over a batch of 4 cannot exceed 3.
 - **A training loss is not skill** even when a baseline is at hand.
+- **A very negative skill is usually AMPLITUDE, not information.** For an
+  uncorrelated predictor `mse/zero ~= (rms_pred/rms_target)^2`, so skill -366
+  means an output ~19x too large and says nothing about what the model knows.
+  Measured on the paired head: amplitude 19.1x, correlation **+0.0022** against a
+  standard error of 0.0025 -- indistinguishable from zero, and the predicted score
+  for pure noise at that amplitude (-366.5) reproduced the measured -366.38 to four
+  figures. Fixing the scale would move it to about -1 and buy nothing. Always report
+  **amplitude ratio and correlation** beside skill: a big negative number invites
+  tuning when the real finding is that there is no signal at all.
 - **Single-pool retrieval has sd ≈ 2.8%.** Average pools before comparing, and
   never checkpoint on a single-pool best — that selects for lucky draws.
 
