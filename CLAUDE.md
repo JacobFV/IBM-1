@@ -95,6 +95,19 @@ non-idempotent instrument produces confident wrong conclusions from reasoning
 that is itself sound. Run it on anything stateful, cached, seeded from a
 previous result, or drawing from a generator.
 
+**A gate that compares like with like is blind to a difference between the two
+likes.** Testing whether recorded human motion respects IHM-1's declared joint
+ranges, the instrument gate (G1) checked each motion against *the model it was
+generated from* — a genuine known answer, since OpenSim produced that motion with
+that model. It passed 42 of 48. Then the real comparison failed at 4.8%, almost
+entirely on `knee_angle`, because gait2392 declares the knee `[−120°, +10°]` and
+the target declares `[0°, +140°]`: **mirror images, opposite sign conventions.**
+G1 could not see it — the source model shares the motion's convention, so the flip
+cancels on both sides. The pre-registered fork had two branches, "the reference is
+wrong" and "my mapping is wrong", and the truth was a third that **presents as the
+first**. When two artefacts must be compared, check what they each declare about
+the shared quantity before trusting any gate that only ever looks at one of them.
+
 **Exactly chance, with the signal still present, means look at the bookkeeping
 before you believe the ablation.** A destroyed-information result and a
 train/test mismatch are indistinguishable from the accuracy alone. The

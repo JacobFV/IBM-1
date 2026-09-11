@@ -58,6 +58,71 @@ already written.
 ---
 
 
+## 2026-09-11 (afternoon) -- RESULT: my prediction was wrong, and the reason is one bound off by 10 degrees
+
+Against the pre-registration below. Taken by a better route than it anticipated: IHM-1 already
+holds 68 recorded motions in `data/derived/pose-corpus/` -- walking, running, jumping,
+crouching -- **already in OpenSim coordinate space**, with sha256 provenance to their `.mot`.
+No retargeting step, so no retargeting confound. `IHM-1 scripts/measure_recorded_motion_admissibility.py`.
+
+**G1 PASS 42/48. G2 FAIL: 20 of 42 admissible = 47.6% against the 90% bar.**
+**Predicted CMU passes both. Wrong.**
+
+Two confounds had to go before any figure, and either alone manufactures a total violation:
+
+- **Units.** `runningModel_Kinematics_q` holds **degrees** in the JSON (knee to −114.0) while
+  its siblings hold radians; each file's `in_degrees` flag describes the source `.mot`, not the
+  JSON. Separated by "a radian hinge angle cannot exceed 2π", which does not consult the ranges
+  under test.
+- **Sign.** gait2392 declares `knee_angle_r ∈ [−120°, +10°]`; this body declares `[0°, +140°]`.
+  Mirror images. Uncorrected this reads as a 100% violation, and did -- **the first run scored
+  4.8%** and its verdict line said `declared_ranges` was too narrow. That would have been wrong.
+
+**THE GATE BUILT TO CATCH THAT CLASS COULD NOT SEE IT, and this is the transferable part.**
+G1 checks each motion against the model it was generated from -- but that model shares the
+motion's convention, so the flip cancels on both sides and G1 passes. **A gate that compares
+like with like is blind to a difference between the two likes.** My pre-registration's fork had
+two branches, "the ranges are wrong" and "my mapping is wrong"; the truth was a third it did not
+contain, and the third one *presents as the first*.
+
+The convention is now mapped from the two models' **declarations** -- the sign of the
+larger-magnitude bound -- never from what makes the data fit. The first form of that detector
+fired for nothing, because it demanded the ranges be negations of EQUAL magnitude and mirrored
+models need not agree on how far the joint travels (120° against 140°).
+
+**WHAT SURVIVES.** Every residual violation is below a **lower** bound and not one is above an
+upper bound: `knee_angle_r` 25/42 motions worst −4.92°, `knee_angle_l` 24/42 worst −5.19°,
+`hip_flexion_r` 8/42 worst −0.56°. The flexion side is clean.
+
+The entire failure is that this body declares the knee's lower bound at **exactly 0** -- no
+hyperextension at all -- and normal human walking uses about 5° of it at terminal stance. Three
+sources disagree with that zero:
+
+| source | permitted knee hyperextension |
+|---|---|
+| the model's **own** passive stop (`ExpressionBasedCoordinateForceSet`) | 7.4° (−0.13 rad) |
+| `gait2392`, which produced these motions | 10° |
+| recorded human walking, measured here | uses 5.2° |
+| `engineering_stance_v1` declared `<range>` | **0°** |
+
+IHM-1's `docs/NATIVE_JOINT_LIMITS.md` already opened with the declared ranges disagreeing with
+the model's own passive stops. This is that disagreement with a second witness and a number.
+
+**The fork fires as written.** Real humans produced these trajectories and the reader agrees
+with each motion's own source model, so this indicts `declared_ranges`. **G2's threshold is not
+moved**, and the verdict stands at FAIL until the bound is re-derived against measurement rather
+than adjusted until it passes. A lower-bound sweep is indicative only -- different accounting
+from the gate, reproducing 38% where the gate reports 47.6% -- and puts admissibility near 95%
+by −10°, so nearly all of the failure does rest on this one number.
+
+**What this does NOT overturn.** "No admissible crawl exists" is not rescued by it. Crawl-best
+exceeds its declared ranges by **1.651 rad (95°)** at `ankle_angle_r` and is outside on 12 of 22
+coordinates; recorded walking misses by 5° on one. Those are not the same finding, and the
+crawl result stands.
+
+---
+
+
 ## 2026-09-11 (afternoon) -- is recorded human motion actually admissible? gates fixed BEFORE the mapping is written
 
 The corpus was fetched on a claim that has never been tested: *"recorded human motion is
