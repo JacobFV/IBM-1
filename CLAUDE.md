@@ -179,6 +179,15 @@ the bytes actually came from — never the machine that staged them. A card mark
   function as suspect by default -- a local variable is almost always the right fix.
 - Publish checkpoints for runs that **failed** too. A negative result without a
   checkpoint is an anecdote; the sidecar should say plainly what was falsified.
+- **A summary flag that reports only the last item hides every earlier failure.**
+  The sister repo's load-stepping solver returned `converged=record[-1]['converged']`,
+  so a drive that pushed through several `Newton 300 UNCONVERGED` steps and happened
+  to converge on its final one reported `converged: true`. Nothing downstream could
+  tell, and the gates that judged the result never asked about convergence at all —
+  so a state assembled from non-equilibria could pass all four. Same shape as a sum
+  over repeated events hiding what it summed. When a run is a sequence of steps,
+  record `all_steps_ok`, the count that failed, and the last good index — not the
+  final step's flag.
 - **A save gated on a period the run is too short to reach never fires, and nothing
   says so.** `train_multi_materialization.py` saved inside `if a.upload_every and
   step % a.upload_every == 0` with `upload_every` defaulting to **2000**; the whole
