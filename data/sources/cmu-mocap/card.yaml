@@ -14,12 +14,19 @@ licence:
     and have not been verified here.
 binding: unbound
 population:
-  n: 144
+  n: 112
   hierarchy:
   - participant
   - session
-  notes: One of the oldest and most reused mocap collections; 2,600+ trials across 144 subjects. A constituent
-    of AMASS.
+  notes: 'MEASURED from the acquired archive by scripts/audit_cmu_archive.py, not quoted: 112 .asf
+    subjects and 2,514 .amc trials. This card previously said 144 subjects and 2,600+ trials, written
+    before any byte was fetched, and scripts/fetch_cmu_mocap.py reported the MISMATCH rather than
+    absorbing it. The archive is NOT truncated: every one of 2,740 members passes CRC (the check
+    verified against a deliberately corrupted archive first), and the 31 absent subject IDs are
+    scattered through the range 1-143 rather than forming a contiguous tail, so the file is not a
+    prefix of a larger one. 144 was the highest subject ID plus one, mistaken for a count. What is
+    NOT established: that CMU never published the missing 31 -- that needs CMU''s own index, which
+    has not been fetched. One of the oldest and most reused mocap collections; a constituent of AMASS.'
 frames:
 - capture_room
 - skeleton_frame

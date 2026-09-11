@@ -58,6 +58,36 @@ already written.
 ---
 
 
+## 2026-09-11 (afternoon) -- the CMU MISMATCH resolves against the card, not the archive
+
+`fetch_cmu_mocap.py`'s gate reported **MISMATCH**: 112 subjects and 2,514 trials against
+`card.yaml`'s pre-fetch claim of 144 and 2,600+. The gate was right to report it rather
+than absorb it, and the corpus was blocked on it. Settled today.
+
+A truncated download and a complete archive of a smaller collection are indistinguishable
+from a file listing. They are distinguishable two other ways, and both say the same thing:
+
+- **CRC.** All 2,740 members pass `zipfile.testzip()` against the central directory.
+  The instrument was verified first on an archive with one byte flipped inside a member's
+  compressed payload, which it detected. (The first version of that known answer asserted
+  the *returned member name* and failed on a raised `zlib.error` — the bar is "damage is
+  detected", and both forms are detections. Narrowing the instrument, not the bar.)
+- **Shape.** A truncated file loses a **contiguous tail**. The 31 absent subject IDs are
+  `4, 44, 48, 50-53, 57-59, 65-68, 71-72, 92, 95-101, 109-110, 112, 116, 119, 129-130` —
+  scattered through the range. This file is not a prefix of a larger one.
+
+112 present + 31 absent = 143, and the highest ID present is 143. **The card's 144 was the
+highest subject ID mistaken for a count of subjects**, written before any byte was fetched.
+The card now carries the measured figures with the old ones' provenance recorded.
+
+What this does NOT establish: that CMU never published those 31. That needs CMU's own
+index, which has not been fetched, and the card says so. The corpus is unblocked.
+
+`scripts/audit_cmu_archive.py`.
+
+---
+
+
 ## 2026-09-11 (afternoon) -- the sweep I just reported has no weights and no split
 
 I went to build the fixed-evaluation instrument the previous entry's pre-registration

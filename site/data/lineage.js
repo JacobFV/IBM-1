@@ -39,7 +39,7 @@ window.IBM_LINEAGE = {
     { id: "mocap", label: "CMU mocap", kind: "corpus", w: 8, from: 5, to: 6, side: 1,
       future: true,
       note: "2,514 trials, 112 subjects, 120 Hz, raw markers · fetched",
-      detail: "Chosen because this body has two motions and neither is admissible: all 67 stored trajectories are outside the model's own declared joint ranges, and crawl-best's left knee is past its limit for 95.6% of 1,600 frames. Recorded human motion is admissible by construction. The archive's 112 subjects and 2,514 trials do NOT match the card's pre-fetch claim of 144 and 2,600+, and that mismatch is unresolved.",
+      detail: "Chosen because this body has two motions and neither is admissible: all 67 stored trajectories are outside the model's own declared joint ranges, and crawl-best's left knee is past its limit for 95.6% of 1,600 frames. Recorded human motion is admissible by construction. The fetch gate flagged 112 subjects and 2,514 trials against the card's pre-fetch claim of 144 and 2,600+; the archive turned out to be intact — all 2,740 members pass CRC and the 31 absent subject IDs are scattered through the range rather than forming a truncated tail. 144 was the highest subject ID mistaken for a count. The card now carries the measured figures.",
       href: "http://mocap.cs.cmu.edu/" }
   ],
 
