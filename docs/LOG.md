@@ -59,6 +59,56 @@ already written.
 ---
 
 
+## 2026-09-11 (night) -- the rank-64 lead field is exonerated. The gap is 67x and it is ALL training.
+
+Prediction in `b46c80f`'s successor **CONFIRMED**. Known answer passes on every arm: truncation at
+full rank reproduces the untruncated correlation exactly, as it must, being the same matrix
+reassembled from its SVD.
+
+Rank-truncating each ridge's own solution asks what the head's architecture could reach **if it
+were fitted perfectly** — training taken out of the question entirely.
+
+| arm | r306 | **r64** | r16 | r4 | r1 |
+|---|---:|---:|---:|---:|---:|
+| cochleagram n=40k | +0.0466 | **+0.0464** | +0.0398 | +0.0018 | +0.0062 |
+| cochleagram n=6k | +0.0363 | **+0.0363** | +0.0305 | +0.0230 | +0.0071 |
+| **trained cortex** | +0.0400 | **+0.0400** | +0.0393 | +0.0120 | +0.0064 |
+| untrained cortex | +0.0395 | **+0.0396** | +0.0394 | +0.0308 | +0.0196 |
+
+**Rank 64 costs nothing anywhere.** On the trained cortical state it is identical to full rank to
+four decimals, and degradation only begins at rank 4. `PairedNeuralLoop`'s low-rank lead field --
+imposed deliberately, because a free readout once let the head reach skill +0.94 with a cortical
+rank of 1.03 -- is **not** the bottleneck. The lead-rank sweep's finding that ranks 64, 16 and 4
+collapse alike is now explained rather than merely observed: at this task the constraint was never
+binding.
+
+**THE CHAIN, END TO END, all on one fixed held-out draw:**
+
+| | correlation |
+|---|---:|
+| signal in the corpus (ridge on the stimulus) | +0.0466 |
+| survives the dynamics (ridge on the cortical state) | +0.0400 |
+| reachable at the head's **own** rank-64 constraint | +0.0400 |
+| **achieved by the trained 50,465,730-parameter head** | **+0.0006** |
+
+**A 67x gap, and every architectural explanation for it has now been measured and excluded.** The
+signal is in the data, it survives the sheet, and it is reachable through exactly the readout the
+head is built with. The head does not find it. That is a statement about the objective and the
+optimisation, and nothing else is left to blame.
+
+**The untrained control, now with two draws.** It read +0.0428 last run and +0.0395 this one --
+because `CorticalDynamics.__init__` draws its long-range partners from the **global** RNG, so a
+freshly initialised substrate is a different topology each time. That is the trap this file's
+Randomness section already documents, and here it is useful: it gives the untrained arm an
+empirical spread. **Trained (+0.0400, deterministic, loaded weights) sits inside it.** Training
+still has not been shown to change what the dynamics transmit -- and it costs 3.4x of the state's
+effective rank (3.74 -> 1.07) to do it.
+
+`out/cortex_transmission_rank.json`.
+
+---
+
+
 ## 2026-09-11 (night) -- the dynamics do NOT destroy the signal. Training collapses their rank by 3.4x and changes nothing.
 
 My prediction in `b46c80f` is **REFUTED on its main claim and CONFIRMED on its control**. Known

@@ -824,6 +824,19 @@ class PairedNeuralLoop(nn.Module):
     1.0-1.3 at every setting), the target's apparent heavy tail (99.7% of the extreme
     rows are one 30.3 s saturating artefact, now excluded), and calibration (above).
 
+    AND THE ARCHITECTURE IS NOW EXONERATED TOO (2026-09-11, later the same day).  a ridge
+    fitted from the CORTICAL STATE this head reads reaches +0.0400, and truncating that
+    ridge's own solution to rank 64 -- this head's exact lead-field constraint -- costs
+    NOTHING, +0.0400 to four decimals.  so the chain is:
+
+        signal in the corpus (ridge on the stimulus)          +0.0466
+        survives the dynamics (ridge on the cortical state)   +0.0400
+        reachable at THIS head's own rank-64 constraint       +0.0400
+        achieved by this head, trained                        +0.0006
+
+    a 67x gap with every architectural explanation measured and excluded.  the lead_rank
+    ceiling below is not what is costing you; at this task it was never binding.
+
     what is left is the objective, and VisualContrastiveLoop's docstring below has said
     it since it was written: MSE regression must reproduce an amplitude at every channel
     and every sample, and those amplitudes are dominated by trial and subject noise that
