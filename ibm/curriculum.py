@@ -100,10 +100,14 @@ STAGES: tuple[Stage, ...] = (
           "association embeddings + learned lead field",
           "LibriBrain: 235.6 min of 306ch MEG at 250 Hz + cochleagram",
           "MEG variance explained > 50% AND effective rank > 2",
-          Status.RUNNING,
-          "explains 91-97% of MEG variance at RANK 1.0-1.2 -- the variance gate "
-          "passes and the RANK GATE FAILS, which is the decorative-cortex signature. "
-          "the run is not the deliverable; the ablation is",
+          Status.FAILED,
+          "WITHDRAWN (docs/LOG.md ledger row 7): the 91-97% of MEG variance was "
+          "computed against an array whose normalisation was loaded and never "
+          "applied, and the run never beat the zero baseline in either coordinate "
+          "system. The rank gate failed independently at RANK 1.0-1.2. Nothing has "
+          "run on this stage since; the clock-drift fix to the LibriBrain pairing "
+          "(row 11) came later and no paired-MEG skill against a baseline has been "
+          "established since",
           "local"),
 
     Stage("s4.selfsup", "self-supervised AV continuation", ("s0.gain",),
