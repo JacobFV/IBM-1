@@ -35,7 +35,23 @@ sys.path.insert(0, str(ROOT)); sys.path.insert(0, str(ROOT / "scripts"))
 
 
 def fixed_draw(lo, hi, n_batches, batch, seed=20260911):
-    """The one fixed evaluation draw, from the held-out tail [lo, hi)."""
+    """The one fixed evaluation draw, from the held-out tail [lo, hi).
+
+    THE SEED'S LUCK IS NOT THE INSTRUMENT'S DESIGN, and it is worth knowing which is which.
+    The held-out tail contains exactly one extreme excursion, rows 3,502,225-3,502,226. The
+    draw at seed 20260911 does not include them -- checked exactly, not assumed -- but the
+    nearest index it does draw is **41 rows away**. Had it landed on one, the zero baseline
+    would jump by orders of magnitude and every absolute skill here would move with it.
+
+    That is why the arm-to-arm MSE ratio is printed alongside. Both arms are scored on this
+    same draw, so the ratio between them is unaffected by what the draw happened to contain;
+    the absolute skill is not. Read the ratio when comparing arms and the skill only as an
+    order of magnitude.
+
+    The set is NOT re-drawn or filtered to avoid those rows: it was declared before the runs
+    it judges, and narrowing it now -- however reasonable the rule -- would be choosing an
+    evaluation set after seeing what is in it.
+    """
     g = np.random.default_rng(seed)
     return [g.integers(lo, hi, size=batch) for _ in range(n_batches)]
 
