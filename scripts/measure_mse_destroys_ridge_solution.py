@@ -84,8 +84,12 @@ def main():
     lo = int(n * (1.0 - a.holdout))
 
     def target(j):
+        # the trailing astype is NOT redundant: megsc is float64, so `(y - megsc[0]) / megsc[1]`
+        # promotes a float32 y back to float64 and the array silently changes dtype. that cost a
+        # run -- `p @ t` raised on Float against Double several steps later, far from the cause.
         y = np.ascontiguousarray(Y[np.asarray(j)]).astype(np.float32)
-        return np.clip((y - megsc[0]) / megsc[1], -6, 6) if megsc is not None else y
+        out = np.clip((y - megsc[0]) / megsc[1], -6, 6) if megsc is not None else y
+        return np.ascontiguousarray(out, dtype=np.float32)
 
     excl = [tuple(int(v) for v in r.split(":")) for r in a.exclude.split(",") if r.strip()]
     pool = np.arange(a.ctx, lo)
@@ -132,14 +136,39 @@ def main():
     se = 1.0 / np.sqrt(Tev.numel())
 
     def corr(Pd, T):
+        Pd, T = Pd.float(), T.float()          # never let a dtype mismatch reach the dot product
         p, t = (Pd - Pd.mean(0)).flatten(), (T - T.mean(0)).flatten()
         return float(p @ t / max(p.norm() * t.norm(), torch.tensor(1e-30, device=p.device)))
 
     # ---- the ridge, fitted RAW so that it IS a bias-free linear map ----------------
-    A64 = Str.double(); B64 = Ttr.double()
-    W = torch.linalg.solve(A64.T @ A64 + a.alpha * torch.eye(A64.shape[1], device=dev, dtype=torch.float64),
-                           A64.T @ B64)                       # (read_sites, sensors)
+    # ALPHA IS CHOSEN ON A VALIDATION SPLIT CARVED FROM THE TRAINING ROWS, never on the
+    # evaluation draw. The first version hard-coded alpha=1e4, carried over from a fit on
+    # STANDARDISED features -- and on unstandardised features that is a completely different
+    # amount of regularisation. It read +0.0132 where the standardised fit reads +0.0400, so the
+    # experiment would have started from a readout four times worse than the one it is about to
+    # ask MSE to preserve. A constant is not portable across a change of units.
+    nval = max(200, len(tr) // 10)
+    A64, B64 = Str[:-nval].double(), Ttr[:-nval].double()
+    Av, Bv = Str[-nval:].double(), Ttr[-nval:].double()
+    G = A64.T @ A64; RHS = A64.T @ B64
+    eye = torch.eye(A64.shape[1], device=dev, dtype=torch.float64)
+    best = None
+    for al in (1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3, 1e4):
+        Wa = torch.linalg.solve(G + al * eye, RHS)
+        cv = corr((Av @ Wa).float(), Bv.float())
+        print(f"  alpha {al:8.0e}  validation corr {cv:+.4f}" + ("   <-- best" if best is None or cv > best[0] else ""))
+        if best is None or cv > best[0]:
+            best = (cv, al, Wa)
+    _, alpha, W = best
+    print(f"  chosen alpha {alpha:.0e} on {nval} held-back TRAINING rows\n")
+
     Pr_full = (Sev.double() @ W).float()
+    # W is (read_sites, sensors) and the head computes state @ (lead_v.weight @ lead_u.weight).T,
+    # so W.T = lead_v.weight @ lead_u.weight. With W = U diag(S) Vt:
+    #   lead_v.weight = Vt[:k].T * S[:k]   (sensors, k)
+    #   lead_u.weight = U[:, :k].T         (k, read_sites)
+    # The first version had these two swapped and the shape check caught it immediately, which is
+    # the good case -- a silently transposable pair would not have.
     U, S, Vt = torch.linalg.svd(W, full_matrices=False)
     k = min(a.lead_rank, S.numel())
     Wk = (U[:, :k] * S[:k]) @ Vt[:k]
@@ -149,8 +178,8 @@ def main():
 
     # ---- install it as the head's own lead field -----------------------------------
     with torch.no_grad():
-        pr.lead_u.weight.copy_((Vt[:k] * S[:k, None]).float())   # (k, read_sites)
-        pr.lead_v.weight.copy_(U[:, :k].float())                 # (sensors, k)
+        pr.lead_u.weight.copy_(U[:, :k].T.contiguous().float())              # (k, read_sites)
+        pr.lead_v.weight.copy_((Vt[:k].T * S[:k]).contiguous().float())      # (sensors, k)
 
     def head_predict(j, S_cached=None):
         St = states(j) if S_cached is None else S_cached
@@ -208,7 +237,7 @@ def main():
 
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(dict(
-        alpha=a.alpha, lead_rank=k, n_train=len(tr), n_eval=len(ev), steps=a.steps, lr=a.lr,
+        alpha=float(alpha), lead_rank=k, n_train=len(tr), n_eval=len(ev), steps=a.steps, lr=a.lr,
         standard_error=float(se), install_relative_error=err,
         ridge_full_rank=corr(Pr_full, Tev), ridge_rank_k=corr(Pr_rank, Tev),
         history=hist, mse_destroys_solution=bool(destroyed)), indent=2) + "\n")

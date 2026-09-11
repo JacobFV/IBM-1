@@ -51,6 +51,22 @@ Specifically:
 - **Check a metric against a case whose answer you know.** Chance must print
   1.0×. Effective rank over a batch of 4 cannot exceed 3.
 - **A training loss is not skill** even when a baseline is at hand.
+- **A falling training loss beside a collapsing held-out metric is the objective
+  working, not the optimiser failing.** Installing a verified ridge readout into
+  the paired head and training it with the head's own MSE objective — dynamics
+  frozen, only the readout moving — drove held-out correlation from **+0.0398 to
+  +0.0136 in 600 steps (−10.4 sd) while the training MSE fell by half.** The
+  amplitude column shows why: the good readout emits 0.08x the target's amplitude
+  (optimal shrinkage for a predictor explaining 0.16% of variance), MSE blows it to
+  1.06x, then shrinks it to 0.21x — converging on *emit almost nothing*, which is
+  what least squares wants when the target is dominated by unpredictable variance.
+  The real correlation is worth too little in MSE terms to keep. When a loss
+  improves and the metric degrades, stop tuning and change the loss.
+- **A constant is not portable across a change of units.** `alpha=1e4` carried over
+  from a ridge on standardised features gave +0.0132 on raw ones where the right
+  value gives +0.0398 — a starting point four times worse than the thing the
+  experiment was about to test. Re-select a regularisation constant whenever the
+  feature scaling changes, on a validation split carved from TRAINING rows.
 - **Put a linear ridge under every claim that a task is hard.** Before concluding
   that an objective or an architecture is at fault, check whether a linear map on
   the same features and the same split finds anything. On the paired MEG term the

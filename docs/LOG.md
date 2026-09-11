@@ -59,6 +59,74 @@ already written.
 ---
 
 
+## 2026-09-11 (night) -- MSE DESTROYS the solution. Ridge initialisation cannot save the paired term.
+
+Prediction **CONFIRMED**, and this closes the paired-MEG investigation.
+
+Two readings of the objective remained after the architecture was exonerated: MSE *merely fails to
+find* the good readout (fix: initialise it by ridge), or MSE *actively destroys* it (fix:
+change the objective). Installing the ridge into the head's own `lead_u`/`lead_v` and training
+from there separates them.
+
+**The installation is verified, not assumed.** The head with those weights reproduces the rank-64
+ridge to **9.90e-06** relative: `+0.039779` against `+0.039779`. A transposed or mis-scaled
+install could not do that — and the first attempt *was* mis-factored, caught immediately by a
+shape error, which is the good case.
+
+Alpha was chosen on **400 held-back training rows**, never the evaluation draw. (The first version
+hard-coded `alpha=1e4`, carried over from a fit on *standardised* features; on raw features that
+is a different amount of regularisation entirely and it read +0.0132. **A constant is not portable
+across a change of units**, and starting from a readout four times worse than the one MSE was
+being asked to preserve would have answered a different question.) The chosen fit reads **+0.0399
+full rank, +0.0398 at rank 64** — independently reproducing the +0.0400 measured earlier through a
+completely separate code path.
+
+**Then 600 steps of the ordinary MSE objective, dynamics FROZEN, only the readout moving:**
+
+| step | train mse | held-out corr | skill | amplitude |
+|---:|---:|---:|---:|---:|
+| 0 (installed) | — | **+0.0398** | −0.0009 | 0.08x |
+| 50 | 1.24e-04 | +0.0148 | −1.1132 | 1.06x |
+| 200 | 5.53e-05 | +0.0164 | −0.0940 | 0.32x |
+| 600 | 6.16e-05 | **+0.0136** | −0.0429 | 0.21x |
+
+**−10.4 sd.** A head placed *on* a readout worth +0.0398 is driven off it by its own training
+objective, in the most favourable configuration available — nothing else in the model moving.
+
+**And the training loss FALLS while it happens**, 1.24e-04 to 6.2e-05. The objective improves
+monotonically while the quantity anyone cares about collapses. That is not an optimisation
+failure; it is the objective getting what it asked for.
+
+**The mechanism is visible in the amplitude column.** The ridge solution emits 0.08x the target's
+amplitude, which is correct: optimal shrinkage for a predictor that explains ~0.16% of the
+variance. MSE first blows the output up 13x to 1.06x (skill −1.11), then shrinks it back toward
+zero — 0.32x, 0.21x — converging on *emit almost nothing*, which is what least squares wants when
+the target is dominated by variance no stimulus can predict. **The +0.04 of real correlation is
+worth so little in MSE terms that the objective discards it on the way.**
+
+**So ridge initialisation is not the fix**, and the paired failure is now completely characterised:
+
+| | |
+|---|---|
+| signal in the corpus | +0.0466 |
+| survives the dynamics | +0.0400 |
+| reachable at the head's own rank-64 constraint | +0.0400 |
+| installed into the head and verified | +0.0398 |
+| **after 600 steps of the head's own objective** | **+0.0136** |
+| reached by that objective from a random start | +0.0006 |
+
+Seven hypotheses refuted by measurement: the readout, the heavy tail, calibration, batch size, the
+data, the substrate destroying the signal, and the optimisation merely failing to find the
+solution. **The objective is the remaining cause and it is now demonstrated rather than inferred.**
+`VisualContrastiveLoop`'s docstring has argued exactly this from the start, with the measured
+comparison already on the board: waveform regression peak +0.011 then negative, against
+contrastive retrieval at 43x chance on the same data, encoder and split.
+
+`out/mse_destroys_ridge.json`, `scripts/measure_mse_destroys_ridge_solution.py`.
+
+---
+
+
 ## 2026-09-11 (night) -- the rank-64 lead field is exonerated. The gap is 67x and it is ALL training.
 
 Prediction in `b46c80f`'s successor **CONFIRMED**. Known answer passes on every arm: truncation at
