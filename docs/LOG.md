@@ -57,6 +57,52 @@ already written.
 ---
 
 
+## 2026-09-11 -- the readout is not the cause: rank collapses at every lead rank, and the head never beats zero
+
+`lead_rank` was exposed and swept at 64, 16 and 4, 1,500 steps each, everything else identical --
+the collapse happens by step 1,000, so a short arm is enough. **The prediction fixed before the runs
+was: if readout capacity is the cause, a lower lead rank should force a HIGHER cortical rank. It is
+refused.**
+
+| step | rank 64 skill/0 | r_meg | rank 16 skill/0 | r_meg | rank 4 skill/0 | r_meg |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0 | −199,087 | 2.68 | −256,445 | 1.79 | −192,619 | 2.18 |
+| 500 | −1,037 | 1.66 | −3,908 | 2.26 | −1,269 | 1.57 |
+| 1000 | −853 | 1.10 | −452 | 1.67 | −6,019 | 1.66 |
+| 1250 | −1,403 | **1.01** | −1,330 | 1.51 | −259 | **1.00** |
+| 1499 | −55 | **1.31** | −276 | **1.12** | −2,025 | **1.24** |
+
+**The cortical rank collapses to 1.0-1.3 at every lead rank, including 4.** Cutting the readout's
+spatial degrees of freedom sixteen-fold changes nothing about the collapse. The low-rank lead field
+is in `PairedNeuralLoop` *because* of this failure, and the sweep says it is not the lever: readout
+capacity is not what lets the cortex go scalar.
+
+**And the larger fact, which the rank question was obscuring: the head never learns the target at
+all.** `skill/0` is between −55 and −2,025 at the end of every arm. The best arm's mean squared error
+is **55 times the cost of emitting zero**; the worst is two thousand times. This is not a cortex that
+has gone lazy while a readout carries the task -- **nothing is carrying the task.** The rank collapse
+is a symptom of a head that is not fitting, not a mechanism by which it cheats.
+
+**So the diagnosis moves to the target, and the leading candidate is the one raised in the correction
+above.** The per-batch zero baseline has a median of 4.55e-05, a mean of 1.24e-02 and a maximum of
+16.01 -- five orders of magnitude. With `--batch 4` the gradient is dominated by the rare enormous
+batch, and a model that fits those while ignoring the median batch looks exactly like this.
+
+**The test, and the trap it has to avoid.** The obvious experiment is to raise the batch size. But
+**increasing the batch changes the baseline as well as the model**: with a heavy tail, a larger batch
+converges toward the MEAN rather than the median, so `skill/0` would improve on a bigger batch even
+if the model were identical. That would be the same mismatched-population error twice in one day.
+
+> **Fixed before the run: both arms are scored on ONE FIXED evaluation set of held-out batches with
+> one zero baseline, not on their own training draw.** Batch size then affects training only, and the
+> comparison is paired. An arm that improves on its own training baseline but not on the fixed set
+> has not improved.
+
+* **Predicted:** batch 64 beats batch 4 on the fixed set by orders of magnitude, because the median
+  batch stops being drowned. If it does not, the heavy tail is not the cause either and the target
+  itself -- or the head's ability to represent it -- is next.
+* Running now: batch 64, lead rank 64, otherwise identical to the arm it is compared against.
+
 ## 2026-09-11 -- CORRECTION: the paired term is WORSE than predicting nothing, not better
 
 The entry below stopped the multi-objective run on two grounds. The first -- an effective cortical
