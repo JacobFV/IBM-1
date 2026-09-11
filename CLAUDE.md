@@ -78,6 +78,23 @@ draw, `assert torch.equal(...)` between them — printing both for a human to
 compare is only as good as the reader, and this one got past two of us for an
 hour.
 
+**The general form of row 23, and it is one line: call it twice at the same
+input.** A function that is meant to depend only on its arguments must return
+the same answer when called twice with the same arguments. Row 23's extractor
+did not — it drew a fresh permutation each call — and the symptom was an
+arm reading *exactly chance while preserving 99.7% of the variance*, which took
+hours to unpick. The sister repo hit the identical shape on a geometry query
+this week: called twice at identical positions it moved 141 of 3,123
+associations by up to 6.5 mm, and the resulting artefact was read as a property
+of the mesh, the solver and the physics for a full round of work before anyone
+called the function twice.
+
+This is **not** a known-answer check. A known answer tests the *value*;
+idempotence tests whether the thing is a *function* at all, and a
+non-idempotent instrument produces confident wrong conclusions from reasoning
+that is itself sound. Run it on anything stateful, cached, seeded from a
+previous result, or drawing from a generator.
+
 **Exactly chance, with the signal still present, means look at the bookkeeping
 before you believe the ablation.** A destroyed-information result and a
 train/test mismatch are indistinguishable from the accuracy alone. The
