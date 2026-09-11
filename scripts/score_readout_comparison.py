@@ -22,9 +22,15 @@ RUNS = {  # arm -> {seed: log}; the batchnorm logs live on gb10-direct and are c
     "sheet, raw readout": {0: "logs/proprio_readout_raw.log",   1: "logs/proprio_readout_raw_seed1.log"},
     "sheet, batchnorm":   {0: "logs/proprio_readout_batchnorm_seed0.remote.log",
                            1: "logs/proprio_readout_batchnorm_seed1.remote.log"},
+    # The permuted-kernel control (aec1d73): dyn.embed's site rows shuffled, so the
+    # learned site correspondence is destroyed and nothing else is. Seed 1 ran on
+    # gb10-direct and its log is copied here, as the batchnorm ones are.
+    "sheet, permuted":    {0: "logs/proprio_permuted_seed0.log",
+                           1: "logs/proprio_permuted_seed1.remote.log"},
 }
 RECORDED = {("no cortex", 0): -3.6442, ("no cortex", 1): -3.6832,
-            ("sheet, raw readout", 0): -3.8419, ("sheet, batchnorm", 0): -4.2806}
+            ("sheet, raw readout", 0): -3.8419, ("sheet, raw readout", 1): -3.8306,
+            ("sheet, batchnorm", 0): -4.2806, ("sheet, batchnorm", 1): -4.5677}
 FLOOR, FROM_STEP, WINDOW = 0.3, 1500, 7
 
 def evals(path):
@@ -54,16 +60,35 @@ def main():
         s = [score.get((arm, 0)), score.get((arm, 1))]
         if None in s: print(f"\n{arm}: not both seeds complete -- no verdict yet"); continue
         arms[arm] = ((s[0] + s[1]) / 2, abs(s[0] - s[1]))
-    if len(arms) < len(RUNS): print("\nVERDICT: pending -- every arm needs both seeds"); return
-    thr = max([FLOOR] + [sp for _, sp in arms.values()])
     print(f"\n{'arm':20s} {'two-seed mean':>14s} {'seed spread':>12s}")
     for arm, (m, sp) in sorted(arms.items(), key=lambda kv: -kv[1][0]): print(f"{arm:20s} {m:+14.4f} {sp:12.4f}")
-    print(f"\nthreshold = max({FLOOR}, arms' seed spreads) = {thr:.4f}")
-    ref = arms["no cortex"][0]
-    for arm in ("sheet, raw readout", "sheet, batchnorm"):
-        d = arms[arm][0] - ref
-        print(f"  {arm} vs no cortex: {d:+.4f} -> " + ("NOT DISTINGUISHABLE" if abs(d) < thr else ("BETTER" if d > 0 else "WORSE")))
-    d = arms["sheet, batchnorm"][0] - arms["sheet, raw readout"][0]
-    print(f"  batchnorm vs raw readout: {d:+.4f} -> " + ("NOT DISTINGUISHABLE" if abs(d) < thr else ("BETTER" if d > 0 else "WORSE")))
+
+    def verdict(a, b, threshold):
+        d = arms[a][0] - arms[b][0]
+        return f"  {a} vs {b}: {d:+.4f} -> " + (
+            "NOT DISTINGUISHABLE" if abs(d) < threshold else ("BETTER" if d > 0 else "WORSE"))
+
+    # The readout comparison's threshold is computed from ITS OWN three arms, exactly as
+    # committed before those runs finished. A later arm joining this script must not widen
+    # the threshold of a verdict already recorded -- that would rescore it retroactively.
+    READOUT = ("no cortex", "sheet, raw readout", "sheet, batchnorm")
+    if all(arm in arms for arm in READOUT):
+        thr = max([FLOOR] + [arms[arm][1] for arm in READOUT])
+        print(f"\nreadout comparison, threshold = max({FLOOR}, its three arms' spreads) = {thr:.4f}")
+        for arm in ("sheet, raw readout", "sheet, batchnorm"): print(verdict(arm, "no cortex", thr))
+        print(verdict("sheet, batchnorm", "sheet, raw readout", thr))
+    else:
+        print("\nreadout comparison: pending -- every arm needs both seeds")
+
+    # The permuted control (aec1d73) asks a different question of the same statistic: whether
+    # what the kernel LEARNED carries anything, against the trained raw-readout arm.
+    PERMUTED = ("sheet, permuted", "sheet, raw readout")
+    if all(arm in arms for arm in PERMUTED):
+        thr = max([FLOOR] + [arms[arm][1] for arm in PERMUTED])
+        print(f"\npermuted control, threshold = max({FLOOR}, its two arms' spreads) = {thr:.4f}")
+        print(verdict("sheet, permuted", "sheet, raw readout", thr))
+        print(verdict("sheet, permuted", "no cortex", thr) if "no cortex" in arms else "")
+    else:
+        print("\npermuted control: pending -- both seeds needed")
 
 if __name__ == "__main__": main()

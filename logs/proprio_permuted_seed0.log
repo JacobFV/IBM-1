@@ -15,3 +15,12 @@ Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pyto
       0  train 5.158e+00  held 7.303e-04  SKILL vs persistence -6.0217  vs ridge +0.9963      33s
     250  train 1.259e+00  held 6.198e-04  SKILL vs persistence -4.9594  vs ridge +0.9968    1050s
     500  train 6.997e-01  held 5.905e-04  SKILL vs persistence -4.6776  vs ridge +0.9970    2049s
+    750  train 8.397e-01  held 5.524e-04  SKILL vs persistence -4.3106  vs ridge +0.9972    3062s
+   1000  train 4.336e-01  held 5.262e-04  SKILL vs persistence -4.0592  vs ridge +0.9973    4070s
+   1250  train 3.795e-01  held 5.124e-04  SKILL vs persistence -3.9265  vs ridge +0.9974    5059s
+   1500  train 4.512e-01  held 5.065e-04  SKILL vs persistence -3.8694  vs ridge +0.9974    6071s
+   1750  train 3.389e-01  held 5.055e-04  SKILL vs persistence -3.8602  vs ridge +0.9974    7049s
+   2000  train 2.250e-01  held 4.989e-04  SKILL vs persistence -3.7967  vs ridge +0.9974    8053s
+   2250  train 3.482e-01  held 5.004e-04  SKILL vs persistence -3.8110  vs ridge +0.9974    9066s
+   2500  train 2.171e-01  held 4.985e-04  SKILL vs persistence -3.7924  vs ridge +0.9974   10105s
+   2750  train 2.182e-01  held 4.920e-04  SKILL vs persistence -3.7307  vs ridge +0.9975   11158s

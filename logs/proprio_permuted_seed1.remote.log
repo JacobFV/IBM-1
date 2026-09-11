@@ -1,0 +1,30 @@
+muscle sets present: [15, 30, 40, 80] -> keeping the 80-muscle set, 22 of 39 motions; 17 are from other OpenSim models and are dropped
+train 3,515 transitions over 17 motions | held out 3,400 over 11 motions
+in 160 (length + rate for 80 muscles) -> out 80
+
+held-out baselines (MSE, and skill against persistence):
+  zero               6.671151e-04   skill -5.4140
+  mean               6.672289e-04   skill -5.4151
+  persistence        1.040089e-04   skill +0.0000
+  ridge, no cortex   1.953707e-01   skill -1877.4032
+
+### permuted: drive postcentral (1779) -> read precentral (2121), tract edges, readout-norm none
+/home/brandonin/ibm-1/scripts/train_proprioceptive_motor.py:311: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  {step:5d}  train {float(loss):.3e}  held {v:.3e}  "
+      0  train 4.120e+00  held 7.666e-04  SKILL vs persistence -6.3702  vs ridge +0.9961      16s
+    250  train 9.966e-01  held 6.230e-04  SKILL vs persistence -4.9898  vs ridge +0.9968     953s
+    500  train 6.625e-01  held 5.913e-04  SKILL vs persistence -4.6848  vs ridge +0.9970    1891s
+    750  train 4.854e-01  held 5.525e-04  SKILL vs persistence -4.3123  vs ridge +0.9972    2829s
+   1000  train 4.227e-01  held 5.366e-04  SKILL vs persistence -4.1590  vs ridge +0.9973    3767s
+   1250  train 4.546e-01  held 5.263e-04  SKILL vs persistence -4.0606  vs ridge +0.9973    4706s
+   1500  train 3.399e-01  held 5.195e-04  SKILL vs persistence -3.9946  vs ridge +0.9973    5644s
+   1750  train 3.362e-01  held 5.141e-04  SKILL vs persistence -3.9427  vs ridge +0.9974    6582s
+   2000  train 2.597e-01  held 5.090e-04  SKILL vs persistence -3.8940  vs ridge +0.9974    7520s
+   2250  train 3.180e-01  held 5.081e-04  SKILL vs persistence -3.8853  vs ridge +0.9974    8458s
+   2500  train 3.324e-01  held 5.062e-04  SKILL vs persistence -3.8672  vs ridge +0.9974    9396s
+   2750  train 2.702e-01  held 5.004e-04  SKILL vs persistence -3.8112  vs ridge +0.9974   10334s
+   3000  train 2.899e-01  held 5.004e-04  SKILL vs persistence -3.8110  vs ridge +0.9974   11272s
+
+  arm            best skill vs persistence
+  permuted       -3.8110
