@@ -38,8 +38,11 @@
   <a class="hero-down" href="#paper" aria-label="read on">↓</a>
 </section>
 
+<section class="standfirst-band" aria-label="what IBM-1 is">
+  <p class="standfirst">The Implicit Brain Model (IBM-1) is a multimodal foundation model of whole-brain state and dynamics which can be <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization" data-doc="docs/ARCHITECTURE.md" data-tip="nothing is computed until a task asks for it — dependency tracing instantiates only what's reachable from the target">lazily</a> <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization" data-doc="docs/ARCHITECTURE.md" data-tip="an explicit model names a region, a resolution and a bandwidth, then traces which state and processes that actually requires">materialized</a> into <a class="ref" href="#programme" data-doc="25 other models" data-tip="An explicit map is a runnable model traced out of the substrate: name a region, a resolution and a bandwidth, and only the state and processes that request actually reaches are instantiated. Among them:" data-tip-list="tip-maps">explicit maps</a> for training and applications. By learning a perspective-agnostic representation of the brain rather than one tied to a particular measurement modality, IBM-1 can train end-to-end across heterogeneous data sources that would otherwise be difficult or impossible to combine.</p>
+</section>
+
 <section class="reel-band" aria-label="the body, moving">
-<h2 class="reel-head">the body, moving</h2>
 <div class="reel">
   <figure class="tile t0" tabindex="0" role="button"
     data-src="media/anatomical_crawl.mp4" data-kind="video" data-title="the real anatomy crawling" data-cap="16.0 s · 0.920 m · worst joint excursion 11.5°"
@@ -54,22 +57,16 @@
     <figcaption><b>1,047 bone and muscle surfaces</b><span>a full measured gait cycle</span></figcaption>
   </figure>
   <figure class="tile t2" tabindex="0" role="button"
-    data-src="media/tissue_prone_drop_three_arms.mp4" data-kind="video" data-title="117 tissue force elements" data-cap="three arms — the middle is a negative result"
+    data-src="media/tissue_prone_drop_three_arms.mp4" data-kind="video" data-title="117 tissue force elements" data-cap="105 ligaments and 12 joint capsules, as Blankevoort elements"
     data-desc="105 ligaments and 12 joint capsules as Blankevoort elements, attachments derived from the per-vertex vote the segment binding is built from. The middle arm is all 105 and it makes the plant WORSE than bare — the derived ACL reads 77% strain at 90° of knee flexion against a 17.1% ultimate, because a straight line between attachment centroids is not a cruciate's path.">
     <video src="media/tissue_prone_drop_three_arms.mp4" autoplay loop muted playsinline preload="metadata"></video>
-    <figcaption><b>117 tissue force elements</b><span>three arms — the middle is a negative result</span></figcaption>
+    <figcaption><b>117 tissue force elements</b><span>105 ligaments and 12 joint capsules, as Blankevoort elements</span></figcaption>
   </figure>
   <figure class="tile t3" tabindex="0" role="button"
     data-src="media/anatomical_cortex_in_loop.mp4" data-kind="video" data-title="cortex in the loop" data-cap="0.17 mm COM drift under a 5 N push"
     data-desc="The trained 1024-site cortical kernel holding the body upright. The control matters: a kernel with its site rows permuted holds it just as well, so this shows the cortex is the motor owner and says nothing about whether its learned content contributes.">
     <video src="media/anatomical_cortex_in_loop.mp4" autoplay loop muted playsinline preload="metadata"></video>
     <figcaption><b>cortex in the loop</b><span>0.17 mm COM drift under a 5 N push</span></figcaption>
-  </figure>
-  <figure class="tile t4" tabindex="0" role="button"
-    data-src="media/video_prediction.mp4" data-kind="video" data-title="video prediction, and it does not work" data-cap="−0.25 skill against persistence"
-    data-desc="Truth left, prediction right, at t+8. It looks plausible because frame t+8 resembles frame t. Measured against copying the previous frame it is worse, and at a negative window where appearance is useless the model sits at exactly chance loss for 3,000 steps. The video term was matching appearance, not predicting.">
-    <video src="media/video_prediction.mp4" autoplay loop muted playsinline preload="metadata"></video>
-    <figcaption><b>video prediction, and it does not work</b><span>−0.25 skill against persistence</span></figcaption>
   </figure>
   <figure class="tile t5" tabindex="0" role="button"
     data-src="media/cortex_severed.mp4" data-kind="video" data-title="cortex in the loop, beside cortex severed" data-cap="upright at 1.019 m · fallen at 0.590 m"
@@ -78,10 +75,10 @@
     <figcaption><b>cortex in the loop, beside cortex severed</b><span>upright at 1.019 m · fallen at 0.590 m</span></figcaption>
   </figure>
   <figure class="tile t6" tabindex="0" role="button"
-    data-src="media/pose_clusters.mp4" data-kind="video" data-title="the body's whole motion repertoire" data-cap="four trajectories · none inside the declared joint ranges"
+    data-src="media/pose_clusters.mp4" data-kind="video" data-title="the body's whole motion repertoire" data-cap="four trajectories · 16.0 s, 0.920 m of prone locomotion"
     data-desc="Everything this body has ever been made to do: prone locomotion (16.0 s, 0.920 m), one airborne bipedal step (1.49 s), and two drops from different initial conditions. Not one of the 67 stored trajectories respects the model's own declared joint ranges, and the depth says the excursions are the operating regime rather than an overshoot — crawl-best is outside on 12 of its 22 coordinates, and its left knee is past its limit for 95.6% of 1,600 frames. An admissible gait is therefore a different gait, not a correction of this one. The two drops are the pair that produced a withdrawal: 66 tissue elements looked like they replaced the joint stops on the first, and from the second gave no restraint at all.">
     <video src="media/pose_clusters.mp4" autoplay loop muted playsinline preload="metadata"></video>
-    <figcaption><b>the body's whole motion repertoire</b><span>four trajectories · none inside the declared joint ranges</span></figcaption>
+    <figcaption><b>the body's whole motion repertoire</b><span>four trajectories · 16.0 s, 0.920 m of prone locomotion</span></figcaption>
   </figure>
   <figure class="tile t0" tabindex="0" role="button"
     data-src="media/anatomical_gait_skin.mp4" data-kind="video" data-title="one step, with skin" data-cap="foot airborne at 0.14% body weight"
@@ -149,9 +146,6 @@
 <!-- =========================================================== paper -->
 <main id="paper" class="paper">
 
-  <header class="masthead">
-    <p class="standfirst">The Implicit Brain Model (IBM-1) is a multimodal foundation model of whole-brain state and dynamics which can be <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization" data-doc="docs/ARCHITECTURE.md" data-tip="nothing is computed until a task asks for it — dependency tracing instantiates only what's reachable from the target">lazily</a> <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization" data-doc="docs/ARCHITECTURE.md" data-tip="an explicit model names a region, a resolution and a bandwidth, then traces which state and processes that actually requires">materialized</a> into <a class="ref" href="#programme" data-doc="25 other models" data-tip="An explicit map is a runnable model traced out of the substrate: name a region, a resolution and a bandwidth, and only the state and processes that request actually reaches are instantiated. Among them:" data-tip-list="tip-maps">explicit maps</a> for training and applications. By learning a perspective-agnostic representation of the brain rather than one tied to a particular measurement modality, IBM-1 can train end-to-end across heterogeneous data sources that would otherwise be difficult or impossible to combine.</p>
-  </header>
 
   <!-- §1 design -->
   <section class="sec">

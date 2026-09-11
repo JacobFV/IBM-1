@@ -570,3 +570,14 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 .reel .tile { cursor: zoom-in; }
 .reel .tile:focus-visible { outline: 2px solid #7fd7c4; outline-offset: 3px; }
 @media (max-width: 700px) { .lb { padding: 2rem 1.1rem; } .lb-stage { max-height: 46vh; } }
+
+/* the standfirst now sits between the hero and the reel rather than in the
+   paper's masthead, so it needs its own band and its own rhythm. */
+.standfirst-band {
+  position: relative; z-index: 3;
+  max-width: 72ch; margin: 0 auto; padding: 5rem 1.5rem 0;
+}
+.standfirst-band .standfirst { margin: 0; }
+@media (max-width: 900px) {
+  .standfirst-band { padding: 3rem 1.25rem 0; }
+}
