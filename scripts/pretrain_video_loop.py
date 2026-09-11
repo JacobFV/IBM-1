@@ -804,6 +804,33 @@ class PairedNeuralLoop(nn.Module):
     the sites here are a spherical stand-in rather than a subject's cortex -- so
     this stage learns the instrument along with the dynamics, and CURRICULUM.md
     stage 2 is where a measured forward model replaces it.
+
+    READ THIS BEFORE TUNING ANYTHING HERE (2026-09-11, docs/LOG.md).  measured on the
+    first held-out score this head has ever had -- 1,500 steps, artefact rows excluded,
+    a fixed draw from a reserved tail:
+
+        mse 1.360290e-02   zero baseline 3.702648e-05   skill -366.38   cortical rank 1.05
+        output rms 1.1649e-01 against a target rms 6.0849e-03  ->  19.1x too large
+        correlation with the target  +0.0022,  against a standard error of 0.0025
+
+    **the whole skill number is amplitude.**  pure noise emitted at 19.1x the target's
+    scale scores -366.5; this head scores -366.38.  the correlation is indistinguishable
+    from zero over 156,672 values, so there is no information component to recover:
+    fixing the scale moves skill from -366 to about -1 and buys nothing.
+
+    -366 invites tuning because it looks like a catastrophe of degree.  it is a
+    catastrophe of kind wearing a large number, and three causes are already excluded by
+    measurement: the readout (a lead-rank sweep at 64/16/4 collapses cortical rank to
+    1.0-1.3 at every setting), the target's apparent heavy tail (99.7% of the extreme
+    rows are one 30.3 s saturating artefact, now excluded), and calibration (above).
+
+    what is left is the objective, and VisualContrastiveLoop's docstring below has said
+    it since it was written: MSE regression must reproduce an amplitude at every channel
+    and every sample, and those amplitudes are dominated by trial and subject noise that
+    no stimulus can predict.  the measured comparison on THINGS-EEG2, same encoder and
+    split, is waveform regression peak +0.011 then negative against contrastive retrieval
+    at 43x chance.  if you are about to adjust a hyperparameter here, the evidence says
+    change the objective instead.
     """
 
     def __init__(self, dyn: CorticalDynamics, n_bands: int = 64, n_sensors: int = 306,
