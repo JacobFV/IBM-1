@@ -179,6 +179,17 @@ the bytes actually came from — never the machine that staged them. A card mark
   function as suspect by default -- a local variable is almost always the right fix.
 - Publish checkpoints for runs that **failed** too. A negative result without a
   checkpoint is an anecdote; the sidecar should say plainly what was falsified.
+- **A control that can PASS for a reason unrelated to what it tests is worse than
+  one that cannot fail.** The sister repo's cross-solver gate was
+  `fe is not None and rms(u - fe)/max|u| <= 0.05`. The second solver's output file
+  existed, so `fe is not None` held — but it was 13,216 nodes of exact zero, the
+  time-0 state of a run that never took a step. The gate silently became
+  `rms(u)/max|u|`, a statement about how concentrated the FIRST solver's own
+  displacement is, and a concentrated field PASSES it — certifying an agreement
+  never computed. A missing control leaves a hole you can see; this one issues a
+  false certificate. Check that a comparison's other side actually ran, not just
+  that its file is on disk. (I also asserted that file was absent, inferring it
+  from the run's failure without listing the directory. Look.)
 - **A summary flag that reports only the last item hides every earlier failure.**
   The sister repo's load-stepping solver returned `converged=record[-1]['converged']`,
   so a drive that pushed through several `Newton 300 UNCONVERGED` steps and happened
