@@ -59,6 +59,58 @@ already written.
 ---
 
 
+## 2026-09-11 (night) -- the dynamics do NOT destroy the signal. Training collapses their rank by 3.4x and changes nothing.
+
+My prediction in `b46c80f` is **REFUTED on its main claim and CONFIRMED on its control**. Known
+answer passed first, exactly: the cochleagram fit at its recorded configuration read **+0.0466
+against the recorded +0.0466**.
+
+Every arm at the same 6,000 training rows, alpha fixed at 1e4, same fixed tail draw:
+
+| arm | correlation | sd | shuffled | effective cortical rank |
+|---|---:|---:|---:|---:|
+| cochleagram | +0.0363 | +14.4 | −0.0201 | — |
+| trained cortex | +0.0400 | +15.8 | +0.0050 | **1.07** |
+| untrained cortex | +0.0428 | +16.9 | −0.0119 | **3.66** |
+
+**Predicted: the trained cortical state scores far below the cochleagram, near its shuffled
+control, because a rank-1 state cannot carry the structure. WRONG.** It scores slightly *above*
+the stimulus it was driven by. The dynamics pass the information through.
+
+**Predicted: trained indistinguishable from untrained. CORRECT** — −1.1 sd.
+
+**And the new thing, which neither branch anticipated: training collapsed the effective cortical
+rank from 3.66 to 1.07, a factor of 3.4, without changing what a linear map can read out of the
+sheet.** The untrained substrate is nominally the better channel of the two. Whatever training did
+to these dynamics, it did not improve their transmission, and it cost most of their
+dimensionality.
+
+**HOW MUCH THIS DOES AND DOES NOT SAY.** A random nonlinear projection of an input preserves much
+of its linear structure — that is Johnson-Lindenstrauss, not a discovery about cortex — so
+"+0.0400 from the cortical state" is a statement that the sheet *does not destroy* the stimulus,
+which is a low bar, and the untrained arm scoring as well is exactly what that reading predicts.
+It is **not** evidence that the dynamics compute anything. What it does settle is the question it
+was built for: the failure is not that the substrate throws the signal away.
+
+**So the paired failure is now located.** The signal is in the corpus (ridge +0.0466). It survives
+the dynamics (+0.0400, from an untrained sheet just as well). And the trained head reads +0.0006
+out of a state a *linear* map reads +0.0400 out of. **The head is the failure, and it is failing
+on material that is demonstrably there.**
+
+This extends ledger rows 20 and 23 rather than overturning them. Those established that the
+dynamics are load-bearing as a filter while what they *learned* carries nothing. This adds that
+what they learned does not even change the information they pass — it only removes 3.4x of the
+state's dimensionality on the way.
+
+Six hypotheses refuted by measurement now: the readout, the heavy tail, calibration, batch size,
+the data, and the substrate destroying the signal. What remains is the objective and the learned
+map out of the sheet, and the ridge's **+0.0466** is the number any future paired arm must beat.
+
+`out/cortex_information_transmission.json`, `scripts/measure_cortex_information_transmission.py`.
+
+---
+
+
 ## 2026-09-11 (evening) -- a 1,600-feature LINEAR RIDGE beats zero on this target. The 50M-parameter cortex does not.
 
 The prediction committed in `9321cc9` before the fit is **CONFIRMED**, and it settles which of two
