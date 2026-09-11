@@ -57,6 +57,54 @@ already written.
 ---
 
 
+## 2026-09-11 -- CORRECTION: the paired term is WORSE than predicting nothing, not better
+
+The entry below stopped the multi-objective run on two grounds. The first -- an effective cortical
+rank pinned at 1.01 against a docstring that names 1.03 as the degenerate solution -- stands. **The
+second was wrong, and wrong in the opposite direction.**
+
+I wrote that a reported loss of 0.0001 against a zero baseline of 0.012486 was *"99.2% of MEG
+variance explained from a cochleagram, which is not a credible encoding result"*. The 0.012486 is a
+**global** mean square over 400 random windows. The loss is a **per-batch** mean square over four
+random timepoints. Those are different populations, which is this programme's own signature error:
+a quantity computed correctly and compared against the wrong thing.
+
+**The MEG target is violently heavy-tailed, so the two differ by a factor of 272.** Measuring exactly
+what the loss sees -- 4,000 draws of the trainer's own batch shape:
+
+| per-batch zero baseline | value |
+|---|---:|
+| median | **4.552e-05** |
+| p10 / p90 | 3.070e-05 / 7.148e-05 |
+| **mean** | **1.238e-02** |
+| max | **1.601e+01** |
+
+The mean is 272x the median and the maximum is 350,000x it. My global figure *was* the mean, and the
+mean is a number almost no batch ever sees.
+
+**Against the baseline the loss actually faces, the paired head is worse than emitting zero.** A
+reported 0.0001 against a typical zero baseline of 4.55e-05 is **mse/zero = 2.2, a skill of −1.2**.
+Not 99.2% of the variance explained: **120% worse than predicting nothing.**
+
+That is ledger row 29 again -- *"a model that cannot beat zero on its training set has not lost a
+signal in transit; it never fit the scale"* -- and row 14, where a residual 3.9% of the true
+magnitude meant the model had learned to emit zero. **The stop was right and my reason for it was
+not.**
+
+**The instrument that caught me is the one I added an hour later.** `l_pr` was a raw MSE, so the
+trainer now carries the zero baseline of its own batch and prints `skill/0`. At step 0 it reads
+−256,445, which is what an untrained head against a tiny-variance batch should look like, and it is
+what made the scale mismatch obvious. CLAUDE.md's first metrics rule is that a raw loss is not a
+result; the corollary this adds is that **the baseline has to be computed on the same draw the loss
+is, or it is a different population wearing the right name.**
+
+**A hypothesis this raises, stated and not acted on:** with `--batch 4`, a target whose per-batch
+variance spans five orders of magnitude means the gradient is dominated by the rare huge batch. A
+model fitting those and ignoring the median batch would look exactly like this -- worse than zero
+typically, with occasional spikes like the 2.0124 at step 2,800. **Whether that is the cause of the
+rank collapse or a separate problem is untested**, and the lead-rank sweep now running was designed
+before this was known.
+
 ## 2026-09-11 -- the multi-objective run collapsed into the failure its own docstring names
 
 Launched on gb10-direct: one substrate, two heads, gradients accumulated before a single optimizer

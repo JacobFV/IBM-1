@@ -65,6 +65,13 @@ def main():
     ap.add_argument("--paired-neural", required=True)
     ap.add_argument("--w-av", type=float, default=1.0)
     ap.add_argument("--w-paired", type=float, default=1.0)
+    # the readout's capacity, exposed so the rank collapse can be tested rather than
+    # guessed at.  PairedNeuralLoop's docstring records that a free readout let the
+    # paired head reach skill +0.94 with an effective cortical rank of 1.03 -- the
+    # readout doing the work and the cortex a scalar -- and the low-rank lead field
+    # is the fix for it.  the 2026-09-11 run collapsed to rank 1.01 anyway at the
+    # default 64, so this sweeps it.
+    ap.add_argument("--lead-rank", type=int, default=64)
     ap.add_argument("--ckpt", default="ckpt/multi.pt")
     ap.add_argument("--upload-every", type=int, default=2000)
     ap.add_argument("--out", default="out/multi.json")
@@ -87,7 +94,7 @@ def main():
     dyn = P.CorticalDynamics(a.sites, a.embed, a.k, dev, long_range=a.long_range).to(dev)
     av = P.AudioVisualLoop(dyn, n_bands=vcoch.shape[-1]).to(dev)
     pr = P.PairedNeuralLoop(dyn, n_bands=pstim.shape[-1],
-                            n_sensors=pneur.shape[-1]).to(dev)
+                            n_sensors=pneur.shape[-1], lead_rank=a.lead_rank).to(dev)
 
     shared = sum(p.numel() for p in dyn.parameters())
     head_av = sum(p.numel() for p in av.parameters()) - shared
@@ -129,6 +136,7 @@ def main():
         if megsc is not None:
             yn = np.clip((yn - megsc[0]) / megsc[1], -6, 6)
         yp = torch.from_numpy(yn).to(dev)
+        zero_mse = float((yp ** 2).mean())     # predicting nothing, on THIS batch
         pp, sp = pr(xp, a.dyn_steps, a.dt)
         l_pr = F.mse_loss(pp, yp)
         viab_pr = P.viability_penalty(sp[0])
@@ -142,11 +150,16 @@ def main():
                 r_av = P.effective_rank(sv[1][:, ::max(dyn.n // 512, 1)].float())
                 r_pr = P.effective_rank(sp[1][:, ::max(dyn.n // 512, 1)].float())
                 xm = av.cross_modal_weight()
+            # skill against the zero baseline: 1 - mse/mse_zero.  a raw loss cannot
+            # say whether 0.0001 is excellent or whether the target is simply small.
+            skill_pr = 1.0 - float(l_pr) / max(zero_mse, 1e-12)
             rec = {"step": step, "av": float(l_av), "paired": float(l_pr),
+                   "paired_zero_mse": zero_mse, "paired_skill_vs_zero": skill_pr,
                    "r_eff_av": r_av, "r_eff_paired": r_pr, "cross_modal": xm,
                    "grad_norm": float(gn), "sec": round(time.time() - t0, 1)}
             log["steps"].append(rec)
             print(f"{step:5d}  av {float(l_av):.4f}  meg {float(l_pr):.4f}  "
+                  f"skill/0 {skill_pr:+.4f}  "
                   f"r_av {r_av:5.2f}  r_meg {r_pr:5.2f}  xmod {xm:.4f}  "
                   f"{time.time()-t0:6.0f}s", flush=True)
             if not math.isfinite(float(l_av) + float(l_pr)):
