@@ -148,3 +148,24 @@ the bytes actually came from — never the machine that staged them. A card mark
   checkpoint is an anecdote; the sidecar should say plainly what was falsified.
 - The remote has no git repo, so `git rev-parse` there yields `git-unknown` and the
   checkpoint becomes unciteable. Pass `IBM_GIT_SHA` from the launcher.
+
+## Write it down where it will be found
+
+**Every agent on this programme records what it did, in the repo, as it goes.** Not at the end, not
+only when it works.
+
+- **A finding goes in the doc that owns the subject** — `docs/LOG.md` for the brain's sequence,
+  `docs/BODY_PARAMETERS.md`, `docs/SEGMENT_CONTACT_SURFACES.md`, `docs/TISSUE_MECHANICS.md` for the
+  body's — with the evidence, and the commit carries the same reasoning rather than a one-line
+  summary. Someone reading the log in a month gets the argument, not the headline.
+- **Negatives and withdrawals are the point.** The corrections ledger above is the most reused thing
+  in this repository. A claim that turned out wrong, with the check that caught it, is worth more
+  than a claim that held. Record it at the moment it turns, not after the next result buries it.
+- **A gate that fails is recorded as FAILED.** Never rescored, never quietly re-run with a different
+  bar. Instruments may change after a failure; thresholds may not.
+- **CLAUDE.md is for traps, not results.** If something cost real time and would cost it again, it
+  belongs here in a few lines: what happened, what the shape of it is, what to do instead. If it is
+  a finding about the body or the brain, it belongs in a doc and not here. Keep this file current —
+  prune a trap that no longer exists, and add one the moment it bites.
+- **A caution that lives only in a conversation is one revision from being lost.** Put it in the
+  script's header, the artefact, or the doc.
