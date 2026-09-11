@@ -42,8 +42,10 @@
   <p class="standfirst">The Implicit Brain Model (IBM-1) is a multimodal foundation model of whole-brain state and dynamics which can be <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization" data-doc="docs/ARCHITECTURE.md" data-tip="nothing is computed until a task asks for it — dependency tracing instantiates only what's reachable from the target">lazily</a> <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/ARCHITECTURE.md#7-explicit-model-materialization" data-doc="docs/ARCHITECTURE.md" data-tip="an explicit model names a region, a resolution and a bandwidth, then traces which state and processes that actually requires">materialized</a> into <a class="ref" href="#programme" data-doc="25 other models" data-tip="An explicit map is a runnable model traced out of the substrate: name a region, a resolution and a bandwidth, and only the state and processes that request actually reaches are instantiated. Among them:" data-tip-list="tip-maps">explicit maps</a> for training and applications. By learning a perspective-agnostic representation of the brain rather than one tied to a particular measurement modality, IBM-1 can train end-to-end across heterogeneous data sources that would otherwise be difficult or impossible to combine.</p>
 </section>
 
-<section class="reel-band" aria-label="the body, moving">
-<div class="reel">
+<section class="reel-band" aria-label="the body, the physiology, the software and the brain">
+<div class="reels">
+<div class="reel" aria-label="the body, moving">
+<div class="pile">
   <figure class="tile t0" tabindex="0" role="button"
     data-src="media/anatomical_crawl.mp4" data-kind="video" data-title="the real anatomy crawling" data-cap="16.0 s · 0.920 m · worst joint excursion 11.5°"
     data-desc="3,995 of 4,000 anatomical entities bound to the driven skeleton at 99.88%, posed from a controller searched on the 22-segment scaffold. Peak muscle fibre velocity 9.69 of 10 — zero time outside the muscle model's domain. Worst excursion past a declared joint range is 11.5°, against 145° for an earlier attempt withdrawn for folding the ankles back on themselves.">
@@ -68,78 +70,144 @@
     <video src="media/anatomical_cortex_in_loop.mp4" autoplay loop muted playsinline preload="metadata"></video>
     <figcaption><b>cortex in the loop</b><span>0.17 mm COM drift under a 5 N push</span></figcaption>
   </figure>
-  <figure class="tile t5" tabindex="0" role="button"
+  <figure class="tile t4" tabindex="0" role="button"
     data-src="media/cortex_severed.mp4" data-kind="video" data-title="cortex in the loop, beside cortex severed" data-cap="upright at 1.019 m · fallen at 0.590 m"
     data-desc="Severed, the body is on the floor with 499 mm of COM drift and the recording ends at 2.90 s. Severing removes the dynamics, not the learning.">
     <video src="media/cortex_severed.mp4" autoplay loop muted playsinline preload="metadata"></video>
     <figcaption><b>cortex in the loop, beside cortex severed</b><span>upright at 1.019 m · fallen at 0.590 m</span></figcaption>
   </figure>
-  <figure class="tile t6" tabindex="0" role="button"
+  <figure class="tile t5" tabindex="0" role="button"
     data-src="media/pose_clusters.mp4" data-kind="video" data-title="the body's whole motion repertoire" data-cap="four trajectories · 16.0 s, 0.920 m of prone locomotion"
     data-desc="Everything this body has ever been made to do: prone locomotion (16.0 s, 0.920 m), one airborne bipedal step (1.49 s), and two drops from different initial conditions. Not one of the 67 stored trajectories respects the model's own declared joint ranges, and the depth says the excursions are the operating regime rather than an overshoot — crawl-best is outside on 12 of its 22 coordinates, and its left knee is past its limit for 95.6% of 1,600 frames. An admissible gait is therefore a different gait, not a correction of this one. The two drops are the pair that produced a withdrawal: 66 tissue elements looked like they replaced the joint stops on the first, and from the second gave no restraint at all.">
     <video src="media/pose_clusters.mp4" autoplay loop muted playsinline preload="metadata"></video>
     <figcaption><b>the body's whole motion repertoire</b><span>four trajectories · 16.0 s, 0.920 m of prone locomotion</span></figcaption>
   </figure>
-  <figure class="tile t0" tabindex="0" role="button"
+  <figure class="tile t6" tabindex="0" role="button"
     data-src="media/anatomical_gait_skin.mp4" data-kind="video" data-title="one step, with skin" data-cap="foot airborne at 0.14% body weight"
     data-desc="Clears 1.8 cm, advances 17.1 cm, lands on measured contact — then pitches forward. One genuine step by the harness's own strict criterion, and then a fall.">
     <video src="media/anatomical_gait_skin.mp4" autoplay loop muted playsinline preload="metadata"></video>
     <figcaption><b>one step, with skin</b><span>foot airborne at 0.14% body weight</span></figcaption>
   </figure>
-  <figure class="tile t1" tabindex="0" role="button"
+  <figure class="tile t0" tabindex="0" role="button"
     data-src="media/gait_one_step.mp4" data-kind="video" data-title="the 22-segment scaffold" data-cap="what the anatomy is posed from"
     data-desc="The crude body the engine actually integrates: 22 rigid bodies, 80 muscles, 33 coordinates. It has always been a scaffold with a planned disposal — its jobs move to the real body, contact first, then actuation.">
     <video src="media/gait_one_step.mp4" autoplay loop muted playsinline preload="metadata"></video>
     <figcaption><b>the 22-segment scaffold</b><span>what the anatomy is posed from</span></figcaption>
   </figure>
-  <figure class="tile t2" tabindex="0" role="button"
+  <figure class="tile t1" tabindex="0" role="button"
     data-src="media/embodied_3d_final_frame.png" data-kind="img" data-title="cortex in the loop, beside cortex severed" data-cap="1.019 m upright · 0.590 m fallen"
     data-desc="Rendered from the OpenSim model with segment colour set by force-weighted mean muscle excitation. 22 bodies, 20 segments, 98 muscles; no limb length is assumed and the geometry is read from model.osim.">
     <img src="media/embodied_3d_final_frame.png" alt="cortex in the loop, beside cortex severed" loading="lazy">
     <figcaption><b>cortex in the loop, beside cortex severed</b><span>1.019 m upright · 0.590 m fallen</span></figcaption>
   </figure>
-  <figure class="tile t3" tabindex="0" role="button"
+</div>
+<p class="reel-label">the body, in 3d</p>
+</div>
+<div class="reel" aria-label="physiology diagrams">
+<div class="pile">
+  <figure class="tile tile-diagram t0" tabindex="0" role="button"
     data-src="media/acquired-anatomy-and-flow.png" data-kind="img" data-title="the acquired atlas" data-cap="2,229 surfaces, ~350 MB, ~28 s to load"
     data-desc="BodyParts3D 4.0 surfaces as measured, before the display promotion registered another 1,768 structures from other datasets onto them.">
     <img src="media/acquired-anatomy-and-flow.png" alt="the acquired atlas" loading="lazy">
     <figcaption><b>the acquired atlas</b><span>2,229 surfaces, ~350 MB, ~28 s to load</span></figcaption>
   </figure>
-  <figure class="tile t4" tabindex="0" role="button"
+  <figure class="tile tile-diagram t1" tabindex="0" role="button"
     data-src="media/native-multisystem-physiology.png" data-kind="img" data-title="multisystem physiology" data-cap="the body state the brain reads"
     data-desc="Digestive, circulatory, respiratory and renal state integrated by the native engine — the substrate the 15 visceral afferent channels are transduced from.">
     <img src="media/native-multisystem-physiology.png" alt="multisystem physiology" loading="lazy">
     <figcaption><b>multisystem physiology</b><span>the body state the brain reads</span></figcaption>
   </figure>
-  <figure class="tile t5" tabindex="0" role="button"
+  <figure class="tile tile-diagram t2" tabindex="0" role="button"
     data-src="media/cardiopulmonary.png" data-kind="img" data-title="cardiopulmonary" data-cap="the loop that does not stop"
     data-desc="Heart and lung mechanics running continuously beneath everything else. The vagal afferents that report it are ~80% afferent by declaration, and their unmyelinated C arm carries two thirds of the interoceptive signal.">
     <img src="media/cardiopulmonary.png" alt="cardiopulmonary" loading="lazy">
     <figcaption><b>cardiopulmonary</b><span>the loop that does not stop</span></figcaption>
   </figure>
-  <figure class="tile t0" tabindex="0" role="button"
+  <figure class="tile tile-diagram t3" tabindex="0" role="button"
     data-src="media/skin-bioelectricity.png" data-kind="img" data-title="skin bioelectricity" data-cap="1,326 patches, 100.00% of the exterior"
     data-desc="Every patch innervated: 1,199 carry a spinal root, 127 are trigeminal territory with no dermatome because the face is cranial. 29 of 30 spinal levels — C1 is absent because it has no cutaneous territory in life.">
     <img src="media/skin-bioelectricity.png" alt="skin bioelectricity" loading="lazy">
     <figcaption><b>skin bioelectricity</b><span>1,326 patches, 100.00% of the exterior</span></figcaption>
   </figure>
-  <figure class="tile t1" tabindex="0" role="button"
+</div>
+<p class="reel-label">physiology, as diagrams</p>
+</div>
+<div class="reel" aria-label="the software">
+<div class="pile">
+  <figure class="tile t0" tabindex="0" role="button"
     data-src="media/app-1-ring.png" data-kind="img" data-title="the materialization ring" data-cap="every unmeasured path reads “not measured”"
     data-desc="151 edges from the live brain graph. Arrow width IS the measured magnitude, so a dead path looks dead — the 0.05% cortical hop draws 0.6 px against 14 px for a measured one. A unit test enforces that unmeasured edges stay unlabelled.">
     <img src="media/app-1-ring.png" alt="the materialization ring" loading="lazy">
     <figcaption><b>the materialization ring</b><span>every unmeasured path reads “not measured”</span></figcaption>
   </figure>
-  <figure class="tile t2" tabindex="0" role="button"
+  <figure class="tile t1" tabindex="0" role="button"
     data-src="media/app-3-contribution.png" data-kind="img" data-title="what a materialization contributes" data-cap="and what it does not"
     data-desc="Clicking an annotation shows the signals feeding the highlighted system, with the corrected motor statement in full: a permuted kernel recovers the same push, so the cortex is the motor owner and the trained content is not shown to contribute.">
     <img src="media/app-3-contribution.png" alt="what a materialization contributes" loading="lazy">
     <figcaption><b>what a materialization contributes</b><span>and what it does not</span></figcaption>
   </figure>
-  <figure class="tile t3" tabindex="0" role="button"
+  <figure class="tile t2" tabindex="0" role="button"
     data-src="media/final-4-prompt.png" data-kind="img" data-title="asking the brain what it is seeing" data-cap="63.5% top-1, 127× chance"
     data-desc="Nearest bank entries ranked by the group-mean measured evoked EEG of the image, on the THINGS-EEG2 designated test set. Flagged RETRIEVAL · NOT A GENERATION, with the chance level and the note that bar length is a normalised cosine and not a probability.">
     <img src="media/final-4-prompt.png" alt="asking the brain what it is seeing" loading="lazy">
     <figcaption><b>asking the brain what it is seeing</b><span>63.5% top-1, 127× chance</span></figcaption>
   </figure>
+</div>
+<p class="reel-label">the software</p>
+</div>
+<div class="reel" aria-label="networks of the brain">
+<div class="pile">
+  <figure class="tile tile-net t0" tabindex="0" role="button"
+    data-src="media/net-eeg_to_image.jpg" data-kind="img" data-title="the ventral visual stream" data-cap="V1 → lingual, cuneus → lateral occipital → fusiform, inferior temporal"
+    data-desc="Lit by eeg_to_image: pericalcarine cortex (primary visual cortex, V1), cuneus and lingual gyrus (early visual areas V2–V3), lateral occipital cortex, and fusiform and inferior temporal cortex. In neurocognitive terms this is the occipito-temporal “what” pathway — object, face and scene recognition, built up from edges in V1 to whole categories in inferior temporal cortex. It is the stream whose evoked response the EEG-to-image retrieval reads through the 60 scalp electrodes, lit here as the observation.">
+    <img src="media/net-eeg_to_image.jpg" alt="the ventral visual stream, highlighted in the IBM-1 brain" loading="lazy">
+    <figcaption><b>the ventral visual stream</b><span>V1 → lingual, cuneus → lateral occipital → fusiform, inferior temporal</span></figcaption>
+  </figure>
+  <figure class="tile tile-net t1" tabindex="0" role="button"
+    data-src="media/net-speech_envelope.jpg" data-kind="img" data-title="auditory cortex" data-cap="Heschl’s gyrus, superior temporal gyrus and sulcus, both cochleae"
+    data-desc="Lit by speech_envelope: transverse temporal gyrus (Heschl’s gyrus, primary auditory cortex A1), the superior temporal gyrus around it (the auditory belt and parabelt) and the banks of the superior temporal sulcus, fed from both cochleae. In neurocognitive terms this is the auditory hierarchy that follows the slow amplitude envelope of speech — the syllable rhythm at roughly 2–8 Hz — which the materialization predicts at the MEG and EEG sensors.">
+    <img src="media/net-speech_envelope.jpg" alt="auditory cortex, highlighted in the IBM-1 brain" loading="lazy">
+    <figcaption><b>auditory cortex</b><span>Heschl’s gyrus, superior temporal gyrus and sulcus, both cochleae</span></figcaption>
+  </figure>
+  <figure class="tile tile-net t2" tabindex="0" role="button"
+    data-src="media/net-meg_to_text.jpg" data-kind="img" data-title="the perisylvian language network" data-cap="Broca’s area and Wernicke’s region, both hemispheres"
+    data-desc="Lit by meg_to_text: pars opercularis and pars triangularis of the inferior frontal gyrus (Broca’s area, BA 44/45) together with the superior temporal gyrus and the superior temporal sulcus (Wernicke’s region). In neurocognitive terms this is the language network around the Sylvian fissure — phonological, lexical and syntactic processing for understanding and producing speech, left-lateralised in most people. The materialization reads it through 102 MEG sensors.">
+    <img src="media/net-meg_to_text.jpg" alt="the perisylvian language network, highlighted in the IBM-1 brain" loading="lazy">
+    <figcaption><b>the perisylvian language network</b><span>Broca’s area and Wernicke’s region, both hemispheres</span></figcaption>
+  </figure>
+  <figure class="tile tile-net t3" tabindex="0" role="button"
+    data-src="media/net-invasive_bci.jpg" data-kind="img" data-title="the parieto-frontal reach network" data-cap="precentral motor cortex with the superior and inferior parietal lobules"
+    data-desc="Lit by invasive_bci: precentral gyrus (primary motor and dorsal premotor cortex), the superior and inferior parietal lobules and the precuneus. In neurocognitive terms this is the dorsal “how” stream — turning where something is into how to reach for it: visuomotor transformation, movement intention and planning. It is where intracortical arrays for movement BCIs are implanted; the retinae are lit as the visual input.">
+    <img src="media/net-invasive_bci.jpg" alt="the parieto-frontal reach network, highlighted in the IBM-1 brain" loading="lazy">
+    <figcaption><b>the parieto-frontal reach network</b><span>precentral motor cortex with the superior and inferior parietal lobules</span></figcaption>
+  </figure>
+  <figure class="tile tile-net t4" tabindex="0" role="button"
+    data-src="media/net-plasticity_learning.jpg" data-kind="img" data-title="the hippocampal memory system" data-cap="left and right hippocampus"
+    data-desc="Lit by plasticity_learning: both hippocampi. In neurocognitive terms this is the medial temporal memory system — episodic memory, spatial navigation, and the consolidation of experience into long-term memory — and the classic site of the synaptic plasticity (long-term potentiation) the materialization models.">
+    <img src="media/net-plasticity_learning.jpg" alt="the hippocampal memory system, highlighted in the IBM-1 brain" loading="lazy">
+    <figcaption><b>the hippocampal memory system</b><span>left and right hippocampus</span></figcaption>
+  </figure>
+  <figure class="tile tile-net t5" tabindex="0" role="button"
+    data-src="media/net-pharmaco.jpg" data-kind="img" data-title="the basal ganglia and neuromodulatory brainstem" data-cap="caudate, putamen, pallidum, nucleus accumbens, brainstem"
+    data-desc="Lit by pharmaco: the striatum (caudate and putamen), the globus pallidus and the nucleus accumbens, with the brainstem that holds the dopaminergic, serotonergic and noradrenergic nuclei. In neurocognitive terms this is the circuit for action selection, habit, reward and motivation, and the principal target of psychoactive drugs — which is why the pharmacology materialization concentrates here.">
+    <img src="media/net-pharmaco.jpg" alt="the basal ganglia and neuromodulatory brainstem, highlighted in the IBM-1 brain" loading="lazy">
+    <figcaption><b>the basal ganglia and neuromodulatory brainstem</b><span>caudate, putamen, pallidum, nucleus accumbens, brainstem</span></figcaption>
+  </figure>
+  <figure class="tile tile-net t6" tabindex="0" role="button"
+    data-src="media/net-sleep_dynamics.jpg" data-kind="img" data-title="the thalamocortical arousal system" data-cap="both thalami and the brainstem, read at the scalp"
+    data-desc="Lit by sleep_dynamics: the thalamus and the brainstem. The ascending arousal system in the brainstem sets the state; the thalamus gates what reaches cortex and, through its reticular shell, paces the sleep spindles and slow-oscillation up-states that scalp EEG records. In neurocognitive terms this is wakefulness, sleep staging and the gating of sensory input — the same loop whose resonance the substrate places at 13.45 Hz, a spindle.">
+    <img src="media/net-sleep_dynamics.jpg" alt="the thalamocortical arousal system, highlighted in the IBM-1 brain" loading="lazy">
+    <figcaption><b>the thalamocortical arousal system</b><span>both thalami and the brainstem, read at the scalp</span></figcaption>
+  </figure>
+  <figure class="tile tile-net t0" tabindex="0" role="button"
+    data-src="media/net-anesthesia.jpg" data-kind="img" data-title="the fronto-thalamic network" data-cap="superior and middle frontal gyri with both thalami"
+    data-desc="Lit by anesthesia: the superior frontal gyrus and the rostral and caudal middle frontal gyri — dorsolateral prefrontal cortex — with the thalamus. In neurocognitive terms this is executive control and working memory in the frontal lobe, joined to the thalamocortical loop whose disruption is a leading account of how anaesthetics remove consciousness, seen at the scalp as frontal alpha and slow waves.">
+    <img src="media/net-anesthesia.jpg" alt="the fronto-thalamic network, highlighted in the IBM-1 brain" loading="lazy">
+    <figcaption><b>the fronto-thalamic network</b><span>superior and middle frontal gyri with both thalami</span></figcaption>
+  </figure>
+</div>
+<p class="reel-label">networks of the brain, as IBM-1 lights them</p>
+</div>
 </div>
 </section>
 
@@ -171,38 +239,24 @@
   </section>
 
 
-  <!-- §2 claims -->
-  <section class="sec">
+  <!-- §2 research -->
+  <section class="sec" id="status">
     <div class="margin"><span class="mono">§2</span><span>research</span></div>
     <div class="body">
       <div class="table-wrap">
       <table class="claims">
         <thead><tr><th>claim</th><th>measured</th><th class="num">outcome</th></tr></thead>
         <tbody>
-          <tr><td>the shared cortex is load-bearing</td><td>bypass +324% loss, frozen +180%, association zeroed +180%. on visual retrieval bypass costs 37 of 63 points; on balance, severing drops the body at 2.90 s. <em>load-bearing is not the same as better than a purpose-built baseline</em> — see §2b</td><td class="num"><span class="tag tag-moved">held</span></td></tr>
-          <tr><td>cross-modal association is learned</td><td>occipito-temporal edges at 4.4× the random-pair baseline — and severing those exact edges costs <b>−0.06%</b>. magnitude is not contribution</td><td class="num"><span class="tag tag-fail">withdrawn</span></td></tr>
+          <tr><td>the shared cortex is load-bearing</td><td>bypass +324% loss, frozen +180%, association zeroed +180%. on visual retrieval bypass costs 37 of 63 points; on balance, severing drops the body at 2.90 s. <em>load-bearing is not the same as better than a purpose-built baseline</em></td><td class="num"><span class="tag tag-moved">held</span></td></tr>
           <tr><td>band-limited fusion is exact</td><td>real EEG moved the posterior 2.03 prior sd in band; out of band, exactly 0. delays as phase ramps agree to 4.4e-16</td><td class="num"><span class="tag tag-moved">held</span></td></tr>
           <tr><td>the thalamocortical resonance is alpha</td><td>13.45 Hz, a spindle; held-out +5503 nats/night, p = 7.2e-11</td><td class="num"><span class="tag tag-moved">prior moved</span></td></tr>
           <tr><td>the slow oscillation sits at the band edge</td><td>1.000 ± 0.296 Hz across 8 scored N3 nights; τ<sub>adapt</sub> = 0.12 s reproduces it</td><td class="num"><span class="tag tag-moved">fitted</span></td></tr>
-          <tr><td>the paired MEG encoder beats baseline</td><td>after the target units were fixed: skill −0.07 to +0.14. the +0.90 to +0.99 reported before measured the target scale</td><td class="num"><span class="tag tag-half">at chance</span></td></tr>
-          <tr><td>a positive association kernel is enough</td><td>eight applications are eight rounds of averaging: rank 1.57 → 1.01, loss diverging. signed fixed it</td><td class="num"><span class="tag tag-fail">failed</span></td></tr>
-          <tr><td>the neurovascular chain predicts BOLD</td><td>r = −0.11, permutation p = 0.38</td><td class="num"><span class="tag tag-fail">failed</span></td></tr>
-          <tr><td>Grubb's law holds</td><td>slope 0.066 against a declared 0.38</td><td class="num"><span class="tag tag-fail">failed</span></td></tr>
-          <tr><td>MEG resolves finer sources than EEG</td><td>49.8% vs 63.0% per channel, p = 0.0033</td><td class="num"><span class="tag tag-fail">failed</span></td></tr>
-          <tr><td>the capillary bed carries most of the resistance</td><td>6–27% of dissipation; 85% of the length</td><td class="num"><span class="tag tag-fail">wrong</span></td></tr>
-          <tr><td>tractography is reliable edge by edge</td><td>recovery 0.456, FDR 0.725; thresholding does not help</td><td class="num"><span class="tag tag-fail">no</span></td></tr>
+          <tr><td>the paired MEG encoder beats baseline</td><td>after the target units were fixed: skill −0.07 to +0.14. the +0.90 to +0.99 reported before measured the target scale. <em>settled 11 September 2026 on the first held-out set this trainer ever had</em>: the head's correlation with the target is <strong>+0.0022</strong>, against a standard error of 0.0025 over 156,672 values — indistinguishable from zero. its skill of −366 is <em>entirely amplitude</em> (output 19.1× too large); pure noise at that scale scores −366.5</td><td class="num"><span class="tag tag-half">no signal</span></td></tr>
         </tbody>
       </table>
       </div>
-    </div>
-  </section>
 
-
-  <!-- §2b status -->
-  <section class="sec" id="status">
-    <div class="margin"><span class="mono">§2b</span><span>status</span></div>
-    <div class="body">
-      <p class="lede">Where the programme actually stands, updated 9 September 2026. Every figure below is measured against an explicit baseline and names the set it was measured on; the two THINGS-EEG2 splits give <em>different orderings</em> and are never quoted interchangeably.</p>
+      <p class="lede" style="margin-top:2rem">Where the programme actually stands, updated 9 September 2026. Every figure below is measured against an explicit baseline and names the set it was measured on; the two THINGS-EEG2 splits give <em>different orderings</em> and are never quoted interchangeably.</p>
 
       <div class="table-wrap">
       <table class="claims">
@@ -218,26 +272,6 @@
         </tbody>
       </table>
       </div>
-
-      <p class="lede" style="margin-top:2rem">And what does not work, stated with the same weight:</p>
-
-      <div class="table-wrap">
-      <table class="claims">
-        <thead><tr><th>claim</th><th>what the control said</th><th class="num">outcome</th></tr></thead>
-        <tbody>
-          <tr><td>the cortex beats a dynamics-free encoder</td><td>matched selection on the designated test set: control <b>66.5%</b> against the cortex model's 63.5%. indistinguishable, and the direction is gone</td><td class="num"><span class="tag tag-fail">withdrawn</span></td></tr>
-          <tr><td>the kernel's learned content carries perception between regions</td><td>a kernel with its site rows <em>permuted</em> reads <b>50.8&times;</b> against the trained kernel's 48.4&times; &mdash; indistinguishable, with amplitude, effective rank, train loss and train top-1 all preserved. transport is a property of the graph and the weight statistics, not of what was learned</td><td class="num"><span class="tag tag-fail">withdrawn</span></td></tr>
-          <tr><td>the kernel's learned content drives movement</td><td>a kernel with its site rows permuted recovers the same push. the <em>dynamics</em> are load-bearing; what they learned from vision and audio is not</td><td class="num"><span class="tag tag-fail">withdrawn</span></td></tr>
-          <tr><td>next-frame video training shapes cortical wiring</td><td>pairing each frame with a <em>random</em> frame still transfers 83–86% of the 91.5%. only ~5 points depend on prediction</td><td class="num"><span class="tag tag-fail">withdrawn</span></td></tr>
-          <tr><td>sharing one kernel helps the terms that share it</td><td>one subject trained solo for the same own-steps reaches <b>17.4%</b> against the shared run's 15.4%</td><td class="num"><span class="tag tag-fail">neutral</span></td></tr>
-          <tr><td>video continuation predicts motion</td><td>25% worse than emitting the previous frame unchanged. the clips looked sharp because at horizon 8 frame t+8 resembles frame t</td><td class="num"><span class="tag tag-fail">withdrawn</span></td></tr>
-          <tr><td>the body walks</td><td>three independent CMA searches each produce <em>one</em> genuine step — swing foot unloaded below 2% of body weight, 3.5–6.4 cm clearance, 4.6–10.3 cm advance, landing on measured contact — and then fall. the pelvis travels <b>0.2–5.8 mm</b> while the foot advances 46–103 mm: the body steps in place, so the landing leg brakes a centre of mass that never moved, and the COM collapses 18–20 cm</td><td class="num"><span class="tag tag-fail">one step</span></td></tr>
-          <tr><td>the cortex can route sensation to motor cortex</td><td><b>0.03–0.07%</b> of the driven signal reaches the disjoint motor region, and the ratio scales linearly with association gain rather than compounding</td><td class="num"><span class="tag tag-fail">structural</span></td></tr>
-        </tbody>
-      </table>
-      </div>
-
-      <p class="lede" style="margin-top:2rem"><b>Fifty-one claims have been withdrawn.</b> Not one was a modelling error. Every one was a quantity computed correctly and then compared against the wrong thing — the wrong population, the wrong units, the wrong split, the wrong point in time, or no baseline at all. The worst flattered itself by 280× while never beating a zero baseline; the largest was an image–EEG pairing that was 99.94% wrong and produced three hours of confident negative results about a corpus that was fine. <a class="ref" href="https://github.com/JacobFV/IBM-1/blob/main/docs/LOG.md" data-doc="docs/LOG.md">The ledger keeps every one</a>, with the check that caught it.</p>
     </div>
   </section>
 
@@ -333,8 +367,10 @@
 <script src="brain.js"></script>
 <div id="lightbox" class="lb" hidden>
   <button class="lb-close" aria-label="close">×</button>
+  <button class="lb-nav lb-prev" aria-label="previous">‹</button>
+  <button class="lb-nav lb-next" aria-label="next">›</button>
   <div class="lb-stage"></div>
-  <div class="lb-meta"><h3></h3><p class="lb-cap"></p><p class="lb-desc"></p></div>
+  <div class="lb-meta"><p class="lb-count"></p><h3></h3><p class="lb-cap"></p><p class="lb-desc"></p></div>
 </div>
 <script src="site.js"></script>
 <script src="lineage.js"></script>
