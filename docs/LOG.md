@@ -57,6 +57,40 @@ already written.
 ---
 
 
+## 2026-09-10 -- does the LEARNED kernel do anything on the motor task? fixed BEFORE the runs
+
+**Why now.** The entry below settled that the cortical sheet does not beat the no-cortex control
+on next-command prediction, and that normalising the readout makes it worse. It did not ask the
+next question: whether what the kernel LEARNED matters at all. Three pathways in this log have
+already found a site-permuted kernel matching a trained one, and
+`IHM-1/docs/IBM_CURRICULUM16_KERNEL.md` found the same for the stance controller (peak COM within
+1.7 um, 0.1%). `train_proprioceptive_motor.py` already defines the arm; it has never been run on
+this pathway. Both GB10s are idle.
+
+**The arms.** Identical to the raw-readout arm already scored (`--readout-norm none`, checkpoint
+`ckpt/wiring_surface_slice.pt`, same corpus, same split, 3,000 steps), two seeds:
+* `permuted` -- `dyn.embed`'s site rows shuffled, destroying the learned site correspondence the
+  association kernel is computed from, and changing nothing else: the sheet keeps its geometry,
+  its E/E and E/I weights, its gains and its dynamics.
+* compared against **`trained`, raw readout**, whose two-seed mean is recorded below as
+  **-3.8363** (seeds -3.8419 and -3.8306, spread 0.0113).
+
+**The statistic and the verdict rule are the ones already committed below**: the mean held-out
+skill against persistence over the seven evaluations at step >= 1500, compared on two-seed means,
+with a difference smaller than max(0.3, the arms' own seed spreads) reported as NOT
+DISTINGUISHABLE. Nothing is re-chosen here.
+
+**Known answer, checked before the comparison is read:** the permuted arm's baselines must be
+IDENTICAL to the raw arm's -- persistence 1.040089e-04, and the same zero, mean and ridge -- because
+none of them touches the sheet. If a baseline moves, it is not the same task and nothing else in
+the run is read.
+
+**Predicted here, before either run finishes:** permuted is NOT DISTINGUISHABLE from trained,
+making this the fourth pathway on which the learned kernel content carries nothing. The
+alternative is sharper and would matter more: if permuted is worse than trained by more than 0.3,
+then on this pathway the learned association IS load-bearing, and it would be the first place in
+this programme where that has been shown.
+
 ## 2026-09-10 -- readout normalisation: the comparison, fixed BEFORE the runs finish
 
 **Why this entry exists before its result.** The cortical sheet's precentral readout
