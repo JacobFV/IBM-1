@@ -60,6 +60,48 @@ already written.
 ---
 
 
+## 2026-09-12 -- VOID: the AV retrieval task I built has no signal. The ridge check caught it before the result did.
+
+The experiment below is **void and its arms are not reported as evidence about the cortex.** The
+task has nothing in it.
+
+After the AV bypass arm came back at **1.09x, 1.09x, 1.27x** chance, I ran the same ridge that
+established the MEG task's ceiling, before interpreting anything. Both known answers pass -- a
+frame retrieved against itself reads 100.0%, a shuffled pairing reads 3.39% against a 3.12%
+chance -- and then:
+
+| audio -> concurrent frame, held out | |
+|---|---:|
+| linear ridge, top-1 | **3.42% = 1.10x chance** |
+| per-pixel held-out correlation | **−0.0133** |
+
+**A linear map finds nothing, and neither does the bypass arm.** Comparing intact against bypass
+on this task would be ledger row 19 exactly: *"the corpus was a body falling over, and all three
+arms lost to predicting the mean because there was nothing to learn."* The intact runs were killed
+rather than left to finish.
+
+**And the trap it avoided is precise.** My pre-registration predicted *"bypass ties intact on AV
+retrieval too"*. Two arms tied at chance would have looked exactly like that prediction coming
+true — a confirmation drawn from a task containing nothing. The rule added to CLAUDE.md this
+morning, *put a linear ridge under every claim that a task is hard*, is what stopped it, one day
+after it was written.
+
+**The design error, stated plainly.** The +324% was measured on **next-frame prediction**, where
+the video's own past predicts its future. I built **audio → concurrent frame retrieval**, which is
+a different task and a much harder one: a film's soundtrack at time *t* — dialogue, score, foley —
+does not determine the frame at time *t* in any linearly decodable way. Calling my task "the same
+corpus" was true and irrelevant; it was not the same *task*, and the analogy was mine, not the
+evidence's.
+
+**So the question the entry below asked is still open.** Whether the cortex earns its place under
+a working objective on audio-visual structure is unanswered, and answering it needs a retrieval
+task with signal in it -- **video context → future frame** is the obvious candidate, since
+persistence alone guarantees a ceiling well above chance. That is a new experiment with its own
+pre-registration, not a rerun of this one.
+
+---
+
+
 ## 2026-09-12 -- pre-registration: does the cortex earn its place on the corpus where +324% was measured?
 
 PROGRAMME.md rests the programme's central claim -- *the substrate is load-bearing rather than
