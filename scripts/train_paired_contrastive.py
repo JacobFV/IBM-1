@@ -148,6 +148,14 @@ def main():
     # identical and only the INFORMATION changes. If retrieval survives, the arm is an envelope
     # tracker; if it collapses, it is using spectral detail the envelope does not carry.
     ap.add_argument("--stim", choices=("full", "envelope"), default="full")
+    # TEMPORAL STRUCTURE, OR JUST OVERALL POWER? The arm is an envelope tracker (--stim envelope
+    # ties the full 64 bands). But an envelope over a 0.5 s window carries two different things:
+    # its TIME COURSE, and its total amplitude. `--time-shuffle` permutes the stimulus context
+    # along time, per sample, which destroys the time course and leaves the amplitude distribution
+    # -- and therefore the mean power -- exactly intact. Anything lost is temporal, because
+    # nothing else changed. The MEG window is untouched, so the pairing is still real and the
+    # shuffled-pairing control still means what it meant.
+    ap.add_argument("--time-shuffle", action="store_true")
     ap.add_argument("--save-every", type=int, default=500)
     ap.add_argument("--ckpt", default="ckpt/paired_contrastive.pt")
     ap.add_argument("--out", default="out/paired_contrastive.json")
@@ -163,6 +171,8 @@ def main():
     n = min(len(X), len(Y)) - 2
     lo = int(n * (1.0 - a.holdout))
 
+    rng_ts = np.random.default_rng(12345)
+
     def meg_window(starts):
         out = np.stack([np.asarray(Y[s:s + a.window]) for s in starts]).astype(np.float32)
         if megsc is not None:
@@ -171,6 +181,10 @@ def main():
 
     def coch_ctx(starts):
         c = np.stack([np.asarray(X[s - a.ctx:s]) for s in starts]).astype(np.float32)
+        if a.time_shuffle:
+            # an independent permutation per sample, so no consistent surrogate time axis survives
+            for b in range(len(c)):
+                c[b] = c[b][rng_ts.permutation(c.shape[1])]
         if a.stim == "envelope":
             # broadband envelope, tiled to the original width: same tensor shape, same parameter
             # count, same encoder -- strictly less information and nothing else different.
