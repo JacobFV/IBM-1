@@ -63,6 +63,21 @@ class MEGEncoder(nn.Module):
         return self.net(y.transpose(1, 2))
 
 
+class FrameEncoder(nn.Module):
+    """A video frame -> embedding. The AV counterpart of `MEGEncoder`, and held to the same
+    standard: it is the side that must NOT become the model, so it is deliberately small."""
+
+    def __init__(self, dim, hidden=256):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Conv2d(3, 32, 4, 2, 1), nn.GELU(), nn.Conv2d(32, 64, 4, 2, 1), nn.GELU(),
+            nn.Conv2d(64, 64, 4, 2, 1), nn.GELU(), nn.Flatten(),
+            nn.Linear(64 * 8 * 8, hidden), nn.GELU(), nn.Linear(hidden, dim))
+
+    def forward(self, x):            # (b, 64, 64, 3) uint8-derived float
+        return self.net(x.permute(0, 3, 1, 2))
+
+
 class CorticalStimulusEncoder(nn.Module):
     """cochleagram context -> auditory port -> dynamics -> embedding.
 
@@ -156,6 +171,15 @@ def main():
     # nothing else changed. The MEG window is untouched, so the pairing is still real and the
     # shuffled-pairing control still means what it meant.
     ap.add_argument("--time-shuffle", action="store_true")
+    # THE PROGRAMME'S CENTRAL CLAIM, ASKED UNDER AN OBJECTIVE THAT WORKS. PROGRAMME.md rests
+    # "the substrate is load-bearing" on a +324% AV ablation measured under MSE next-frame
+    # PREDICTION -- and MSE was shown on 2026-09-12 to destroy a verified readout while its own
+    # loss halved. `--task av` runs the identical contrastive retrieval on the audio-visual
+    # corpus the +324% came from: cochleagram context -> cortex -> embedding, against the
+    # CONCURRENT video frame. Same architecture, same controls, same bypass arm. If bypass ties
+    # intact here too, the dynamics are never load-bearing under retrieval and the +324% is
+    # specific to MSE prediction.
+    ap.add_argument("--task", choices=("meg", "av"), default="meg")
     ap.add_argument("--save-every", type=int, default=500)
     ap.add_argument("--ckpt", default="ckpt/paired_contrastive.pt")
     ap.add_argument("--out", default="out/paired_contrastive.json")
@@ -174,6 +198,11 @@ def main():
     rng_ts = np.random.default_rng(12345)
 
     def meg_window(starts):
+        if a.task == "av":
+            # the CONCURRENT frame, not a window: the AV counterpart of a 0.5 s MEG window is a
+            # single frame, and scaling to [-1, 1] matches what AudioVisualLoop feeds its encoder
+            f = np.stack([np.asarray(Y[s]) for s in starts]).astype(np.float32)
+            return np.ascontiguousarray(f / 127.5 - 1.0, dtype=np.float32)
         out = np.stack([np.asarray(Y[s:s + a.window]) for s in starts]).astype(np.float32)
         if megsc is not None:
             out = np.clip((out - megsc[0]) / megsc[1], -6, 6)
@@ -196,7 +225,11 @@ def main():
     for x0, x1 in excl:
         pool_idx = pool_idx[~((pool_idx >= x0 - a.window) & (pool_idx < x1))]
     ev0 = lo + a.ctx
-    ev = np.arange(ev0, min(ev0 + a.n_eval, n - a.window), a.window)   # non-overlapping windows
+    # non-overlapping windows for MEG; for AV the target is one frame, so windows would overlap
+    # in the stimulus context -- space them by the context length instead, which keeps every
+    # evaluation item's INPUT disjoint from every other's.
+    step = a.window if a.task == "meg" else a.ctx
+    ev = np.arange(ev0, min(ev0 + a.n_eval, n - a.window), step)
     print(f"arm={a.arm}  train pool {len(pool_idx):,} rows | {len(ev):,} held-out windows of "
           f"{a.window} ({a.window/250:.2f} s) from {ev0:,}", flush=True)
     print(f"THE BAR: the linear ridge reaches {RIDGE_BAR_X_CHANCE}x chance here. "
@@ -205,7 +238,8 @@ def main():
     dyn = P.CorticalDynamics(a.sites, a.embed, a.k, dev, long_range=a.long_range).to(dev)
     enc_s = CorticalStimulusEncoder(dyn, X.shape[-1], a.ctx, a.dim,
                                     bypass=(a.arm == "bypass")).to(dev)
-    enc_m = MEGEncoder(Y.shape[-1], a.window, a.dim).to(dev)
+    enc_m = (FrameEncoder(a.dim) if a.task == "av"
+             else MEGEncoder(Y.shape[-1], a.window, a.dim)).to(dev)
     params = [p for p in enc_s.parameters()] + list(enc_m.parameters())
     if a.arm == "bypass":
         params = [p for nm, p in enc_s.named_parameters() if not nm.startswith("dyn.")] + list(enc_m.parameters())

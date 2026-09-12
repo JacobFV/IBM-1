@@ -60,6 +60,46 @@ already written.
 ---
 
 
+## 2026-09-12 -- pre-registration: does the cortex earn its place on the corpus where +324% was measured?
+
+PROGRAMME.md rests the programme's central claim -- *the substrate is load-bearing rather than
+decorative* -- on one number: **bypassing the shared cortical dynamics costs +324% loss** on
+audio-visual prediction. That number was measured under **MSE next-frame prediction**, and MSE was
+shown today to drive a verified +0.0398 readout down to +0.0136 **while its own training loss
+halved**. An objective that can do that is not a safe instrument for deciding whether a component
+is load-bearing.
+
+So the same bypass control, on the same corpus, under the objective that works:
+**`--task av`** runs cochleagram context → cortex → embedding against the **concurrent video
+frame**, contrastively. Same architecture, same InfoNCE, same shuffled-pairing control, same
+bypass arm that replaces the cortical state with the drive that would have entered it.
+
+**Both initialisation known answers pass on the new task**: InfoNCE at init reads 3.4733 against
+`ln(32) = 3.4657`, and an untrained model retrieves at 2.75% against a 3.12% chance.
+
+**A limitation stated before any result.** The AV corpus is 97,320 rows against LibriBrain's
+3.5M, so its held-out tail yields **76 non-overlapping windows**, not 2,820. The exact-top-1
+measure still works and the paired arm-to-arm comparison is still valid, but it is **37x less
+data** and the numbers carry correspondingly wide intervals. A null result here is weak evidence;
+a clear separation would be strong.
+
+**PREDICTED: bypass ties intact on AV retrieval too.** Across six seeds on MEG the two arms were
+indistinguishable under two pre-registered rules, four permuted-kernel controls put what the
+dynamics *learned* at a largest difference of −0.0065, and an untrained sheet transmits stimulus
+information as well as a trained one. Nothing measured so far suggests the dynamics contribute
+under any objective.
+
+**If instead intact clearly beats bypass on AV**, the +324% is vindicated as a property of the
+corpus rather than of the objective, the dynamics are load-bearing somewhere, and the right
+reading becomes *the cortex helps on audio-visual structure and not on speech-to-MEG* — which
+would be the most interesting outcome available and would need its own replication before being
+believed.
+
+Three seeds per arm, judged on multi-seed means with the larger seed spread as the uncertainty.
+
+---
+
+
 ## 2026-09-12 -- it is TEMPORAL, not power matching. My prediction is refuted and the claim gets bigger, not smaller.
 
 Predicted: *"time-shuffling retains MOST of the effect"* -- that speech power varies enough across
