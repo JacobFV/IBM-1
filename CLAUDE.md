@@ -86,6 +86,14 @@ Specifically:
   tuning when the real finding is that there is no signal at all.
 - **Single-pool retrieval has sd ≈ 2.8%.** Average pools before comparing, and
   never checkpoint on a single-pool best — that selects for lucky draws.
+- **When a new pre-registration collides with a prior committed rule, the prior
+  rule binds — and say so before the data arrives.** A test named "drive the breast
+  with the largest placement transform"; a rule written weeks earlier said a breast
+  needing more than 25 mm is a registration failure and is *not* driven at all. The
+  first measurement came back at 33.59 mm. The resolution was written with five of
+  six measurements still unknown, so that narrowing the test could not be shaped by
+  which subjects turned out admissible. Resolving a rule collision after seeing the
+  data is indistinguishable from choosing the subjects that suit the prediction.
 - **An intermediate value of a gated quantity is not the gate.** A solver's minimum
   Jacobian fell 0.777 → 0.074 and then RECOVERED to 0.212, back above its 0.2 bar,
   because the worst element compression was transient — it happened while the tissue
