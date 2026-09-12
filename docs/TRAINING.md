@@ -62,13 +62,25 @@ took; STATE.md §6 called this the gating step for months and it was one command
 ### 4.1 the cortex is load-bearing — measured, not argued
 `scripts/ablate_cortex.py` on `av_v5`, 24 held-out batches:
 
-| arm | loss | vs full | what it removes |
-|---|---|---|---|
-| full | 0.180 | — | |
-| frozen | 0.503 | **+180%** | everything learned about connectivity |
-| no_assoc | 0.503 | **+180%** | lateral communication entirely |
-| **bypass** | 0.761 | **+324%** | the dynamics themselves |
-| local_only | 0.180 | **+0.1%** | long-range edges |
+| arm | loss | vs full | **skill vs persistence** | what it removes |
+|---|---|---|---|---|
+| full | 0.180 | — | **−1.08** | |
+| frozen | 0.503 | **+180%** | −4.42 | everything learned about connectivity |
+| no_assoc | 0.503 | **+180%** | −4.40 | lateral communication entirely |
+| **bypass** | 0.761 | **+324%** | **−8.17** | the dynamics themselves |
+| local_only | 0.180 | **+0.1%** | — | long-range edges |
+
+**The skill column was missing from this table and present in the artefact all along.**
+`out/ablation_video_multifilm.json` carries `persistence: 0.0476` and a
+`skill_vs_persistence` for every arm, and **every arm is worse than persistence** — the best of
+them, the full model, by a factor of **2.08**. (The skill figures are from that artefact's own
+run; the loss column is from the earlier one quoted above, and the two runs are not mixed within
+a row — both give bypass at +324% to +341%.)
+
+So "+324%" is a difference between models that **all lose to copying the previous frame**.
+"The dynamics are load-bearing" is true only in this restricted sense: removing them makes a
+model that already loses to a trivial baseline lose by considerably more. It is not evidence that
+the dynamics compute anything useful, and this table said so nowhere until 2026-09-12.
 
 bypassing the cortex triples the loss, so it is not a delay line. **but severing
 every long-range edge costs nothing**, while the occipito-temporal weights sit at
