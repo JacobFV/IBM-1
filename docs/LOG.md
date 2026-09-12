@@ -60,6 +60,41 @@ already written.
 ---
 
 
+## 2026-09-12 -- the arm is an ENVELOPE TRACKER. Spectral detail contributes nothing measurable.
+
+Prediction confirmed. Asked on the bypass arm, which is 35 s a run against 6,087 s and
+indistinguishable from intact across six seeds -- so the question costs 174x less with no loss of
+validity. `--stim envelope` sums the 64-band cochleagram over frequency and tiles the broadband
+envelope back to the original width: identical tensor shape, identical parameter count, identical
+encoder, **strictly less information and nothing else different.**
+
+Scored exactly on all 2,820 held-out windows:
+
+| stimulus given to the encoder | seeds 0,1,2 | mean | range |
+|---|---|---:|---:|
+| broadband **envelope only** | 4.43, 4.18, 4.33 | **4.313x** | 0.25 |
+| full **64-band** cochleagram | 4.53, 4.36, 4.30 | **4.397x** | 0.23 |
+
+By the pre-registered rule -- multi-seed means, uncertainty the larger seed spread --
+`|−0.084| < 0.25` → **NOT DISTINGUISHABLE.** Throwing away all spectral structure costs nothing.
+
+**So the model is doing envelope tracking**, which is the most robust effect in auditory MEG and
+exactly what the linear ridge was doing. The 64 bands are decoration.
+
+**And this sharpens what the contrastive win actually is.** The ridge had the **full** cochleagram
+and reached 2.89x. The envelope arm has **one channel of it** and reaches 4.31x. The contrastive
+arm therefore beats the ridge *with strictly less information*, so its advantage cannot be extra
+signal — **it is the objective and the nonlinearity, on the same envelope.** That is a cleaner and
+more defensible claim than the one it replaces, and a smaller one.
+
+**The running total of what this task does not need:** the cortical dynamics (bypass ties intact
+across six seeds, at 174x the cost), and now the spectral detail (envelope ties 64 bands across
+three). What is left doing the work is a broadband envelope, a small MLP, and InfoNCE -- beating
+a linear map on the same envelope by about 1.5x chance.
+
+---
+
+
 ## 2026-09-12 -- the paired effect did NOT replicate. My prediction is refuted and the question is settled.
 
 Seeds 3, 4 and 5 of both arms, judged by the statistic pre-registered before they were launched --
