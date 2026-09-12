@@ -86,6 +86,13 @@ Specifically:
   tuning when the real finding is that there is no signal at all.
 - **Single-pool retrieval has sd ≈ 2.8%.** Average pools before comparing, and
   never checkpoint on a single-pool best — that selects for lucky draws.
+- **An intermediate value of a gated quantity is not the gate.** A solver's minimum
+  Jacobian fell 0.777 → 0.074 and then RECOVERED to 0.212, back above its 0.2 bar,
+  because the worst element compression was transient — it happened while the tissue
+  was being pushed into a configuration it had not yet found. I had quoted each
+  mid-run dip (0.215, 0.184, 0.129, 0.090) as evidence the gate was failing. Gates
+  judge the solved state; a trajectory that passes through the failing region and
+  comes back has not failed. Read the gate where the gate is defined.
 - **A ratio whose denominator the treatment also changes is not a measure of the
   treatment.** A solver's "last converged FRACTION" went 0.1094 → 0.3594 after a
   placement fix, a 3.29× improvement — but the fraction is of an aim field the same
