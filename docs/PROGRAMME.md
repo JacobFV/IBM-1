@@ -19,9 +19,12 @@ processes — and materialises task-specific models from it lazily. An EEG forwa
 model, a hemodynamic model and an audio-visual predictor are different
 *projections* of one parameter set, not separate codebases. The bet is that most
 of the model is shared across materialisations, so every corpus constrains every
-task. **That bet is now testable and, so far, standing**: bypassing the shared
-cortical dynamics costs +324% loss, so the substrate is load-bearing rather than
-decorative.
+task. **That bet is testable, and as of 2026-09-12 it is standing on one corpus
+and failing on another.** On audio-visual prediction, bypassing the shared
+cortical dynamics costs **+324%** loss — the substrate is load-bearing there. On
+stimulus-to-MEG retrieval, bypassing them costs **nothing measurable across six
+seeds**, at 174x less compute. Whether the substrate is load-bearing is now known
+to be a question about the task, not about the substrate.
 
 ---
 
@@ -103,8 +106,17 @@ re-download costs budget that paired data should get instead.
 ## 4. what has been measured
 
 ### results that held
-- **the cortex is load-bearing.** bypass +324%, frozen weights +180%, association
-  zeroed +180%. the model is not routing around its own dynamics
+- **the cortex is load-bearing ON AUDIO-VISUAL PREDICTION.** bypass +324%, frozen
+  weights +180%, association zeroed +180%. the model is not routing around its own
+  dynamics there. **Scope added 2026-09-12 and it is narrow**: on stimulus-to-MEG
+  retrieval the same bypass control costs nothing — intact 4.09–4.38x chance
+  against bypass 4.27–4.53x over six seeds, not distinguishable under two
+  pre-registered rules, and the bypass arm runs 174x faster. Four permuted-kernel
+  controls had already put what the dynamics *learned* at a largest difference of
+  −0.0065; this is the first task on which the dynamics themselves are surplus.
+  The +324% is not withdrawn — it stands on its own corpus and objective — but
+  "the cortex is load-bearing" without a task attached no longer describes what
+  has been measured
 - **the slow oscillation, fitted to sleep.** SO peak across 8 scored N3
   recordings is 1.000 ± 0.296 Hz; `tau_adaptation_s = 0.12 s` reproduces exactly
   1.000 Hz with a 43.5 mV swing, and satisfies the windowing constraint
