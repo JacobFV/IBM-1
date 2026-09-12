@@ -60,6 +60,47 @@ already written.
 ---
 
 
+## 2026-09-12 -- it is TEMPORAL, not power matching. My prediction is refuted and the claim gets bigger, not smaller.
+
+Predicted: *"time-shuffling retains MOST of the effect"* -- that speech power varies enough across
+0.5 s windows for total amplitude alone to discriminate among 32 candidates. **Refuted.** It
+retains about half, and the half it loses is the half that mattered.
+
+`--time-shuffle` permutes the stimulus context along time, independently per sample. The
+permutation preserves each sample's sorted values exactly and its mean to **8.94e-08** against a
+float32 eps of 1.19e-07 (identical in float64) -- so mean power is intact and only the time course
+is gone. The MEG window is untouched.
+
+Exact scoring on all 2,820 held-out windows, three seeds:
+
+| stimulus | seeds 0,1,2 | mean | range |
+|---|---|---:|---:|
+| envelope, **time intact** | 4.43, 4.18, 4.33 | **4.313x** | 0.250 |
+| envelope, **time shuffled** | 2.34, 2.20, 2.43 | **2.323x** | 0.230 |
+
+Difference **+1.990x** against a 0.250 seed spread: **DISTINGUISHABLE**, by a factor of eight.
+
+**The numbers that matter:**
+
+* total power alone reaches **2.32x** chance -- **below the linear ridge's 2.89x**
+* with the time course it reaches **4.31x** -- above it
+* temporal structure is worth **1.99x of chance, 60% of the arm's entire margin over chance**
+
+**This corrects the framing I committed an hour ago.** I wrote that the arm is "an envelope
+tracker" and that its win over the ridge "is the objective and the nonlinearity, on the same
+envelope". The second half is too weak. **The arm's advantage over the ridge lives specifically in
+the envelope's TIME COURSE**, and a model given the same envelope with its temporal order
+destroyed falls below the ridge. It is not matching window power with a better loss; it is using
+temporal alignment, which is what envelope tracking means in the auditory-MEG literature and which
+a window-power statistic cannot do.
+
+So the running tally of what this task does not need -- the cortical dynamics, the 64 spectral
+bands -- now has a matching statement of what it **does**: the broadband envelope's time course,
+worth 60% of everything the arm achieves.
+
+---
+
+
 ## 2026-09-12 -- the arm is an ENVELOPE TRACKER. Spectral detail contributes nothing measurable.
 
 Prediction confirmed. Asked on the bypass arm, which is 35 s a run against 6,087 s and
