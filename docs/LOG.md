@@ -60,6 +60,42 @@ already written.
 ---
 
 
+## 2026-09-12 -- the bypass claim rests on ONE SEED. Pre-registering the check, having already seen seed 0.
+
+Ledger row 25 says intact − bypass is **−0.16x with a 95% CI of [−0.31, −0.01]**, and calls it
+significant. **That CI resampled evaluation windows and nothing else.** It contains no
+training-seed variance at all, and the whole claim rests on one run of each arm.
+
+That is the shape this repo's ledger is fullest of: a quantity computed correctly and compared
+against the wrong population. Seed-to-seed spread is a different and usually larger source than
+window sampling, and **this repo's own readout comparison judges arms on two-seed means for
+exactly this reason** -- its no-cortex control moved 0.32 between seeds on best-so-far and 0.04 on
+the late-window statistic, and the whole entry exists because the difference mattered.
+
+**THE RULE, fixed now and taken from the readout comparison rather than invented:** compare the
+arms on their **multi-seed means**, with the uncertainty being the larger of the two arms' own
+seed spreads. A difference smaller than that spread is **NOT DISTINGUISHABLE**, not a win and not
+a loss. Three seeds per arm (0, 1, 2); seed 0 is already run and is included, not re-rolled.
+
+`--seed` now drives both `torch.manual_seed` and the sampler. Note that
+`CorticalDynamics.__init__` draws its long-range partners from the **global** RNG, so a seed
+change redraws the **topology** as well as the initialisation -- the documented trap in
+CLAUDE.md's Randomness section. Here that is the right behaviour: a seed sweep should vary the
+graph, because the graph is part of what a "run" is. It would be wrong for an ablation holding the
+graph fixed, and that distinction is why the trap is worth knowing rather than merely avoiding.
+
+**PREDICTED, before the new seeds:** the −0.16x does not survive. It is 5% of the intact arm's
+own margin over the ridge and the interval only just cleared zero; a spread of a few tenths of a
+multiple of chance between seeds would swallow it. **What I expect to survive is the larger
+claim** -- that bypass is not WORSE than intact, i.e. the cortex is unnecessary here -- because
+that one is about two arms landing in the same place, which seed noise cannot manufacture.
+
+If instead bypass beats intact by more than the seed spread across three seeds each, the stronger
+reading stands and the sheet is measurably costly, not merely useless.
+
+---
+
+
 ## 2026-09-11 (night) -- THE BYPASS ARM: removing the cortex makes retrieval slightly BETTER, and 174x faster
 
 The entry below closed with the caveat that it established a result about the objective and not

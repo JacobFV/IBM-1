@@ -131,6 +131,15 @@ def main():
     ap.add_argument("--holdout", type=float, default=0.1)
     ap.add_argument("--exclude", default="1619681:1627268")
     ap.add_argument("--arm", choices=("intact", "shuffled", "bypass"), default="intact")
+    # SEEDS, because the paired bootstrap over windows contains NO training-seed variance.
+    # The intact-minus-bypass difference was called significant off one run of each, on a CI
+    # that only ever resampled evaluation windows. Seed-to-seed spread is a different and usually
+    # larger source, and this repo's own readout comparison judges arms on two-seed means for
+    # exactly that reason. NOTE `CorticalDynamics.__init__` draws its long-range partners from the
+    # GLOBAL rng, so torch.manual_seed here redraws the TOPOLOGY too -- that is a documented trap
+    # (CLAUDE.md, Randomness) and it is the right behaviour for a seed sweep, where the graph is
+    # part of what should vary. It would be wrong for an ablation holding the graph fixed.
+    ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--save-every", type=int, default=500)
     ap.add_argument("--ckpt", default="ckpt/paired_contrastive.pt")
     ap.add_argument("--out", default="out/paired_contrastive.json")
@@ -138,7 +147,7 @@ def main():
 
     import pretrain_video_loop as P
     dev = "cuda" if torch.cuda.is_available() else "cpu"
-    torch.manual_seed(0)
+    torch.manual_seed(a.seed)
     X = np.load(a.paired_stim, mmap_mode="r")
     Y = np.load(a.paired_neural, mmap_mode="r")
     sc = a.paired_neural.replace("meg_250hz", "meg_scale")
@@ -177,7 +186,7 @@ def main():
     print(f"stimulus encoder {sum(p.numel() for p in enc_s.parameters()):,} | "
           f"meg encoder {sum(p.numel() for p in enc_m.parameters()):,}", flush=True)
 
-    rng = np.random.default_rng(0)
+    rng = np.random.default_rng(a.seed)
     erng = np.random.default_rng(20260911)
 
     @torch.no_grad()
