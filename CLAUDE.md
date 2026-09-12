@@ -93,6 +93,13 @@ Specifically:
 - **A margin over a measured baseline must clear sampling error on BOTH sides.**
   The baseline was measured too, with its own error. If both are `sd`, the
   comparison needs about `sqrt(2)·sd`, not `sd` — never a bare "beats the baseline".
+- **Nearest-point distance is not additive under translation.** Move an object and
+  its nearest neighbour on the other surface CHANGES, so a 12 mm displacement shifted
+  a measured mean by 1.61 mm. Any "rigid part plus residual part" decomposition built
+  on nearest-point distance is wrong for that reason alone. Fit the transform against
+  an objective that is well-posed under it — minimising the VARIANCE of signed
+  distance works and recovers a known 10 mm offset exactly; minimising PENETRATION
+  does not, because carrying the object away scores perfectly.
 - **Resampling the same items many times does not make them independent trials.**
   Retrieval scored over 200 draws of a 32-window pool gives 6,400 trials but only
   **200 distinct windows**, and the error scales with the windows. Treating the
