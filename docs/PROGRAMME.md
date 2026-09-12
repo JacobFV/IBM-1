@@ -19,9 +19,12 @@ processes — and materialises task-specific models from it lazily. An EEG forwa
 model, a hemodynamic model and an audio-visual predictor are different
 *projections* of one parameter set, not separate codebases. The bet is that most
 of the model is shared across materialisations, so every corpus constrains every
-task. **That bet is testable, and as of 2026-09-12 it is standing on one corpus
-and failing on another.** On audio-visual prediction, bypassing the shared
-cortical dynamics costs **+324%** loss — the substrate is load-bearing there. On
+task. **That bet is testable, and as of 2026-09-12 it is not standing anywhere it
+has been tested.** On audio-visual prediction, bypassing the shared cortical
+dynamics costs **+324%** loss — but that ablation's own artefact records **every
+arm as worse than persistence** (full −1.08, bypass −8.17), so it is a difference
+between models that all lose to copying the previous frame, and the dynamics only
+make a losing model lose less. On
 stimulus-to-MEG retrieval, bypassing them costs **nothing measurable across six
 seeds**, at 174x less compute. Whether the substrate is load-bearing is now known
 to be a question about the task, not about the substrate.
