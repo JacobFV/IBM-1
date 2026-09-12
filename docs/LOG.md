@@ -37,7 +37,7 @@ pattern is worth more than any single row.
 | 20 | the cortex learns motor control -- body_stance went -41 to **+0.42** skill once the readout could see the sheet | trained and permuted kernels give **identical MSE to 8 decimals**. the whole-sheet readout samples the driven region, and those samples carry **3,134x** the variance of the rest -- the decoder reads the input, not the cortex. the architecture has no configuration where the dynamics both receive the signal and are necessary | the four-arm ablation, which was already running when I announced the result |
 | 10 | the joint MEG term is reaching skill +0.45 | that is a **training** loss. held-out is -0.003, and the ceiling is +0.036 | the regression control |
 | 11 | ~~the LibriBrain arrays carry no envelope tracking~~ **and, one entry later, that speech→MEG is hard at all** | the builder assumed `timemeg - timechapter` was CONSTANT; the clocks differ by **4,300-5,300 ppm**, which is ±3.4 s of drift across a chapter and smears a 1-8 Hz effect across 3-27 cycles. resampling onto the fitted line takes the corpus from p=0.171/0.463/0.902 to **p=0.024 in all three windows**, peak at 140 ms. the effect was averaged away by the builder, and four negative results are suspended with it | fitting a LINE where a constant was assumed, after the gate's own sensitivity floor was measured |
-| 25 | the contrastive paired arm's win over the ridge shows the cortical dynamics carrying stimulus-to-MEG structure | the arm is real -- **4.38x chance against the ridge's 2.89x**, paired CI [+1.15, +1.82], with a shuffled-pairing control at **1.02x** -- but the BYPASS arm, dynamics removed and nothing else changed, reaches **4.53x** and runs **174x faster** (35 s against 6,087 s). The sheet is not carrying it. **AMENDED at three seeds:** the "−0.16x, CI [−0.31, −0.01], significantly better" reading was from ONE run of each on a CI that resampled evaluation windows only; on the pre-registered multi-seed rule the arms are **NOT DISTINGUISHABLE** (means 4.220 against 4.397, difference −0.177x inside a 0.290x seed spread). The standing claim is *the cortex is unnecessary here*, not *the cortex is harmful* | running the bypass arm, then running three seeds of each when the single-seed CI was noticed to contain no seed variance at all |
+| 25 | the contrastive paired arm's win over the ridge shows the cortical dynamics carrying stimulus-to-MEG structure | the arm is real -- **4.38x chance against the ridge's 2.89x**, paired CI [+1.15, +1.82], with a shuffled-pairing control at **1.02x** -- but the BYPASS arm, dynamics removed and nothing else changed, reaches **4.53x** and runs **174x faster** (35 s against 6,087 s). The sheet is not carrying it. **AMENDED at three seeds:** the "−0.16x, CI [−0.31, −0.01], significantly better" reading was from ONE run of each on a CI that resampled evaluation windows only; on the pre-registered multi-seed rule the arms are **NOT DISTINGUISHABLE** (means 4.220 against 4.397, difference −0.177x inside a 0.290x seed spread), and a paired test pre-registered on FRESH seeds 3-5 gives 95% CI **[−0.365, +0.112], including zero** -- the tight −0.15/−0.17/−0.21 clustering on seeds 0-2 did not replicate (−0.23/−0.04/−0.11). The standing claim is *the cortex is unnecessary here and costs nothing measurable*, not *the cortex is harmful* | running the bypass arm, then running three seeds of each when the single-seed CI was noticed to contain no seed variance at all |
 | 24 | batch 4 is drowned by the target's heavy tail, so batch 64 will beat it on the fixed set by orders of magnitude | the measured ratio is **2.542x**, and it is **entirely output gain**: for uncorrelated predictors the MSE ratio is the ratio of squared amplitudes, `19.1^2/12.0^2 = 2.533`, which reproduces 2.542 to **0.3%**. Raising the batch sixteen-fold turned the output gain down from 19.1x to 12.0x and did nothing else. Both arms' correlation with the target is within a standard error of zero (+0.87 and +0.24 sd). **Nothing was drowned because there was nothing there to drown** -- and the "heavy tail" was itself one 30.3 s saturating artefact, 99.7% of the extreme rows in a single contiguous stretch | scoring both arms on ONE fixed held-out draw as the pre-registration demanded, and reporting AMPLITUDE and CORRELATION beside skill instead of skill alone |
 | 22 | the lead-rank sweep shows the readout is not the cause (table of `skill/0` and cortical rank at ranks 64/16/4) | the *direction* survives, but every number in that table is an **in-sample training loss**: the trainer drew `j = np.random.randint(pctx, lim)` over the whole paired array and **had no train/test split at all**. and all three arms wrote **no checkpoint** -- the save was gated on `step % upload_every == 0` with `upload_every` defaulting to 2000 against `--steps 1500`, so it never fired once and there was no terminal save. three completed runs, no weights, nothing re-scorable | trying to build the fixed-evaluation instrument the entry's own pre-registration demanded, and finding neither a held-out set nor a checkpoint to point it at |
 | 21 | the sheet does not conduct because `tanh(2*sim)` is saturated -- unsaturating the squashing function would restore magnitude selectivity and let the kernel build a strong specific pathway | the edges ARE pinned (mean \|tanh(2*sim)\| = 0.895, 71.4% of 1.44M edges above 0.9) but the underlying cosine similarities have no dynamic range either, so lowering the slope scales every edge down together and selects nothing. row L1/max moves 45.2 -> 41.0 as the slope goes 2.00 -> 0.25, against 48 for perfectly flat. **saturation was the symptom; the flat \|sim\| distribution is the disease**, and no reparameterisation of tanh reaches it -- only an explicit structural selection (top-m) does, which buys 11.9x at zero change in row gain | measuring the row L1/max flatness across a slope sweep, instead of reasoning from tanh(2) = 0.964 to "therefore no magnitude information" |
@@ -56,6 +56,48 @@ the wrong thing — the wrong population, the wrong units, the wrong split, the
 wrong baseline, or no baseline. Not one was a modelling error. Every one was
 caught by a measurement that could have been run first, and several by one I had
 already written.
+
+---
+
+
+## 2026-09-12 -- the paired effect did NOT replicate. My prediction is refuted and the question is settled.
+
+Seeds 3, 4 and 5 of both arms, judged by the statistic pre-registered before they were launched --
+the mean of the per-seed paired differences with its own standard error across seeds, on those
+three seeds alone. Seeds 0-2 were deliberately not pooled in, because they are what suggested the
+test.
+
+| seeds | paired differences (intact − bypass) | mean | sd | t(2) |
+|---|---|---:|---:|---:|
+| 0, 1, 2 — *what suggested the test* | −0.15, −0.17, −0.21 | −0.177 | 0.031 | **−10.0** |
+| **3, 4, 5 — *what judges it*** | **−0.23, −0.04, −0.11** | **−0.127** | 0.096 | **−2.28** |
+
+**95% CI [−0.365, +0.112] — INCLUDES ZERO.** 
+
+**PREDICTED: "the paired difference stays small, negative, and its interval excludes zero."
+REFUTED.** I said the cortex would turn out to cost about 0.18x of chance, reliably. It does not.
+
+**And the reason is exactly why fresh seeds were demanded.** The differences on seeds 0-2 were
+−0.15, −0.17, −0.21 — a spread of 0.06 and a paired `t` of −10. On seeds 3-5 they are −0.23,
+−0.04, −0.11 — a spread of 0.19, three times wider. **The tight clustering that made the effect
+look certain was itself luck.** Had I pooled all six, or promoted the post-hoc paired analysis
+when I first noticed it, this would have been published as a real effect.
+
+**THE SETTLED CLAIM.** For stimulus-to-MEG retrieval on LibriBrain, the cortical dynamics are
+**unnecessary and cost nothing measurable**. Not "unnecessary and slightly harmful" — the cost is
+indistinguishable from zero across six seeds under two pre-registered rules, the unpaired one on
+seeds 0-2 and the paired one on seeds 3-5.
+
+*Descriptively, and not the pre-registered statistic:* bypass is at least as good as intact in
+**6 of 6** seeds. A sign test on that is p = 0.016. It is recorded because it is true and because
+hiding it would be its own dishonesty, but it does not overturn the interval above, it is a
+second post-hoc test of the same six numbers, and it does not change what the arms are worth: the
+magnitude is indistinguishable from zero and a difference too small to measure is too small to
+matter.
+
+**What stands, across all six seeds and unaffected by any of this:** the contrastive objective
+beats the linear ridge (intact 4.09-4.38x, bypass 4.27-4.53x, ridge 2.89x, shuffled control
+1.02x), and the sheet earns none of it while costing **174x** the compute.
 
 ---
 
