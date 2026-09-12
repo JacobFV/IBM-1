@@ -63,6 +63,9 @@ def main():
     ap.add_argument("--paired-neural", required=True)
     ap.add_argument("--intact", default="ckpt/contrastive_intact.pt")
     ap.add_argument("--shuffled", default="ckpt/contrastive_shuffled.pt")
+    # THE ARM THAT DECIDES WHETHER THE SHEET IS DOING THE WORK. Same architecture, same
+    # objective, the cortical state replaced by the drive that would have entered it.
+    ap.add_argument("--bypass", default="ckpt/contrastive_bypass.pt")
     ap.add_argument("--pool", type=int, default=32)
     ap.add_argument("--boot", type=int, default=2000)
     ap.add_argument("--ridge-train", type=int, default=40_000)
@@ -179,6 +182,10 @@ def main():
     p_intact = score_ckpt(a.intact, "intact")
     print("scoring the shuffled control ...", flush=True)
     p_shuf = score_ckpt(a.shuffled, "shuffled")
+    p_byp = None
+    if a.bypass and Path(ROOT / a.bypass).exists() or Path(a.bypass).exists():
+        print("scoring the BYPASS arm (dynamics removed) ...", flush=True)
+        p_byp = score_ckpt(a.bypass, "bypass")
 
     def report(p, tag):
         print(f"  {tag:22s} top-1 {p.mean():7.2%} = {p.mean()/chance:5.2f}x chance")
@@ -188,6 +195,7 @@ def main():
     m_ridge = report(p_ridge, "ridge (the bar)")
     m_intact = report(p_intact, "contrastive intact")
     m_shuf = report(p_shuf, "contrastive shuffled")
+    m_byp = report(p_byp, "contrastive BYPASS") if p_byp is not None else None
 
     rng = np.random.default_rng(20260911)
     def boot(pa, pb):
@@ -196,9 +204,13 @@ def main():
         return d.mean(), np.percentile(d, 2.5), np.percentile(d, 97.5)
 
     print(f"\nPAIRED BOOTSTRAP over windows ({a.boot:,} resamples), in units of chance:")
-    for tag, pa, pb in (("intact - ridge", p_intact, p_ridge),
-                        ("intact - shuffled", p_intact, p_shuf),
-                        ("shuffled - ridge", p_shuf, p_ridge)):
+    pairs = [("intact - ridge", p_intact, p_ridge),
+             ("intact - shuffled", p_intact, p_shuf),
+             ("shuffled - ridge", p_shuf, p_ridge)]
+    if p_byp is not None:
+        pairs += [("bypass - ridge", p_byp, p_ridge),
+                  ("intact - BYPASS", p_intact, p_byp)]
+    for tag, pa, pb in pairs:
         m, lo_, hi_ = boot(pa, pb)
         sig = "excludes 0" if (lo_ > 0 or hi_ < 0) else "includes 0 -- NOT significant"
         print(f"  {tag:20s} {m/chance:+6.2f}x   95% CI [{lo_/chance:+.2f}, {hi_/chance:+.2f}]   {sig}")
@@ -208,7 +220,9 @@ def main():
         n_windows=N, pool=Pn, chance=chance, exact=True, bootstrap=a.boot,
         top1=dict(ridge=m_ridge, intact=m_intact, shuffled=m_shuf),
         x_chance=dict(ridge=m_ridge / chance, intact=m_intact / chance,
-                      shuffled=m_shuf / chance)), indent=2) + "\n")
+                      shuffled=m_shuf / chance,
+                      **({"bypass": m_byp / chance} if m_byp is not None else {}))),
+        indent=2) + "\n")
     print(f"\nwrote {a.out}")
 
 
