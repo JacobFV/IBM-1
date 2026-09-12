@@ -237,6 +237,14 @@ the bytes actually came from — never the machine that staged them. A card mark
   over repeated events hiding what it summed. When a run is a sequence of steps,
   record `all_steps_ok`, the count that failed, and the last good index — not the
   final step's flag.
+- **Write the cheap summary BEFORE anything that can raise, and never hand numpy
+  straight to `json`.** The sister repo's seven-hour solve saved its displacement,
+  then raised `Object of type ndarray is not JSON serializable` writing the
+  metadata on the very last line — losing every per-step record of how it got
+  there. The displacement survived only because `np.save` ran first. Give
+  `json.dumps` a `default=` that coerces arrays and numpy scalars, so a stray array
+  degrades to its shape instead of destroying the record. Same family as the save
+  that sat after the import that threw.
 - **A save gated on a period the run is too short to reach never fires, and nothing
   says so.** `train_multi_materialization.py` saved inside `if a.upload_every and
   step % a.upload_every == 0` with `upload_every` defaulting to **2000**; the whole
