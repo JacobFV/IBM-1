@@ -93,6 +93,14 @@ Specifically:
 - **A margin over a measured baseline must clear sampling error on BOTH sides.**
   The baseline was measured too, with its own error. If both are `sd`, the
   comparison needs about `sqrt(2)·sd`, not `sd` — never a bare "beats the baseline".
+- **A stage that rewrites its predecessor's output file can silently undo it.**
+  The sister repo's `place` stage rewrote `prepared.npz` in the placed pose; re-running
+  `prepare` wrote the registered pose back over it, with no warning. All eight breasts
+  were found in that state, and a **seven-hour solve ran from the wrong pose** — doing
+  2.5–4× more work than needed (41.82 mm of penetration to push out instead of
+  9.5–16.5 mm) before failing its gate. The tell was a timestamp: the downstream
+  artefact was OLDER than the upstream one. When stage B rewrites stage A's file, have
+  B stamp something A does not write, and have A warn when it is about to overwrite it.
 - **Measure on the subset the question is about, not on everything available.**
   A breast-seating spread was computed over all 13,216 mesh vertices when only the
   4,097 BASE nodes ever touch the chest wall — the other 69% inflated it by ~18%
