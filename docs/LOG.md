@@ -59,6 +59,41 @@ already written.
 ---
 
 
+## 2026-09-11 (night) -- HOW the contrastive arm will be read, fixed while it is still running
+
+The arm is at step 1,500 of 3,000 and I have seen it cross the bar. That is exactly the moment to
+fix the reading rule, because from here any choice of statistic is suspect.
+
+**The headline is the FINAL evaluation, at step 3,000. Not the maximum over evaluations.** There
+are thirteen evaluations in a run and taking the best of them is selection on the held-out set --
+ledger row 9, where a run checkpointed on a best single pool and selected for lucky draws. The
+maximum will be reported too, labelled as a maximum over thirteen, and it is not the result.
+
+**The margin must clear sampling error on BOTH sides.** Pool 32, 200 draws is n = 6,400 trials, so
+at a top-1 near 11% the standard error is 0.0040 = **0.127x chance**. The ridge bar of 3.19x
+carries an error of the same size, being measured the same way, so the honest comparison needs
+`sqrt(2)` times the single standard error: **a combined SE of about 0.18x chance.**
+
+For reference, where it stood when this rule was written (step 1,500, 3.62x): margin over the bar
+0.43x, which is **2.4 combined SE**. Real, and not large. A final number that lands in the same
+place should be reported as *beats the linear baseline by roughly two standard errors*, not as
+*beats the linear baseline*, and certainly not as a multiple of chance with the bar left out.
+
+**The shuffled control is holding**, which is what makes any of this readable: its training loss
+has not moved from `ln(32) = 3.4657` at any step, and its retrieval sits between 0.79x and 1.33x
+chance across evaluations -- scattered around 1.0x as a control with nothing to learn must be. The
+intact arm's loss fell from 3.4657 to 3.2937 within 100 steps. **The difference between those two
+arms is the entire evidential content of this experiment**; the intact arm's absolute number means
+nothing without it.
+
+**And the prior expectation stands as written before the run:** this corpus offers 3.19x from a
+linear map against THINGS-EEG2's 43x, so a weak effect is what success looks like here. A final
+figure in the 3-4x range is the predicted outcome, not a disappointment, and a figure near 43x
+would still be a reason to look for a leak.
+
+---
+
+
 ## 2026-09-11 (night) -- the signal DOES aggregate: 3.19x chance at 0.5 s. A contrastive objective has material, and 13x less of it than the case it is modelled on.
 
 Prediction **CONFIRMED**, and this is the one that says what to build rather than what to stop.

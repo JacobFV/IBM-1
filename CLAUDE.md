@@ -86,6 +86,15 @@ Specifically:
   tuning when the real finding is that there is no signal at all.
 - **Single-pool retrieval has sd ≈ 2.8%.** Average pools before comparing, and
   never checkpoint on a single-pool best — that selects for lucky draws.
+- **The maximum over a run's evaluations is not the run's result.** Thirteen
+  evaluations at 250-step intervals gives thirteen chances to catch a lucky draw;
+  quote the FINAL one and report the maximum separately, labelled as a maximum.
+  Same shape as row 9 one level up.
+- **A margin over a measured baseline must clear sampling error on BOTH sides.**
+  The baseline was measured too, with its own error. If both are `sd`, the
+  comparison needs about `sqrt(2)·sd`, not `sd`. A retrieval arm at 3.62× against
+  a ridge bar of 3.19× is 3.4 single SE and only **2.4 combined SE** — "beats the
+  baseline by roughly two standard errors", never a bare "beats the baseline".
 
 ## Randomness
 
