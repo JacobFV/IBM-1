@@ -59,6 +59,51 @@ already written.
 ---
 
 
+## 2026-09-11 (night) -- the signal DOES aggregate: 3.19x chance at 0.5 s. A contrastive objective has material, and 13x less of it than the case it is modelled on.
+
+Prediction **CONFIRMED**, and this is the one that says what to build rather than what to stop.
+
+Seven refutations put the blame on the objective, and the proposed replacement is contrastive --
+on the strength of `VisualContrastiveLoop`'s THINGS-EEG2 comparison, where regression peaked at
++0.011 then went negative while retrieval reached 43x chance. **That is an analogy, and it had
+never been tested on this corpus.** A per-sample correlation of +0.0466 is tiny; retrieval needs
+only that a stimulus window resemble its own MEG window more than others, which a weak per-sample
+correlation can supply once pooled -- **if** the errors are independent. MEG noise is heavily
+autocorrelated, and correlated errors do not aggregate at all.
+
+Both known answers pass first: the ceiling (a window retrieved against itself) is **100.0%**, and
+the shuffled-pairing arm lands at **2.8% against a 1/32 = 3.1% chance**. Pools averaged over 200
+draws, because single-pool retrieval has sd ~2.8% (ledger row 9).
+
+| window | top-1 | x chance |
+|---:|---:|---:|
+| 1 (4 ms) | 4.6% | 1.49x |
+| 5 (20 ms) | 5.1% | 1.65x |
+| 25 (0.1 s) | 5.5% | 1.77x |
+| **125 (0.5 s)** | **10.0%** | **3.19x** |
+
+**It aggregates.** Monotonically, and the effect at half a second is unambiguous against a
+shuffled control sitting on chance. A correlation too small to regress is large enough to
+discriminate once pooled. **The objective change is now justified by measurement on this corpus
+rather than by analogy with a different one.**
+
+**Two things said plainly so nobody is surprised later.**
+
+*It aggregates far more slowly than independent errors would give.* W=1 to W=125 is 125x the
+data, `sqrt(125) = 11.2x` in SNR terms; measured top-1 over chance goes 1.49x to 3.19x, a factor
+of **2.14**. That is the signature of the autocorrelated noise this test was written to check for.
+Pooling half a second buys much less than 125 independent samples would.
+
+*And the headroom is 13x smaller than the case being copied.* THINGS-EEG2 retrieval reaches **43x
+chance**; this reaches **3.19x**. A contrastive MEG arm should be expected to produce a weak
+effect, not a strong one, and a result quoting anything near 43x on this corpus should be
+disbelieved before it is celebrated.
+
+`out/paired_retrieval_aggregation.json`.
+
+---
+
+
 ## 2026-09-11 (night) -- MSE DESTROYS the solution. Ridge initialisation cannot save the paired term.
 
 Prediction **CONFIRMED**, and this closes the paired-MEG investigation.
