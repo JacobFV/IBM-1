@@ -117,6 +117,26 @@ re-download costs budget that paired data should get instead.
   The +324% is not withdrawn — it stands on its own corpus and objective — but
   "the cortex is load-bearing" without a task attached no longer describes what
   has been measured
+- **the paired MEG term, characterised end to end (2026-09-12).** Eleven measurements
+  in one day, each with a prediction fixed before it and a known answer in front of
+  it, take this term from "it does not work" to "here is exactly what works and what
+  does not". In order: the signal IS in the corpus (a linear ridge on the cochleagram
+  reaches +0.0466 held-out correlation, 18.6 sd, against a shuffled control at −0.0003);
+  it SURVIVES the dynamics (+0.0400 from the cortical state, and an *untrained* sheet
+  transmits as well); it is REACHABLE at the head's own rank-64 lead-field constraint
+  (+0.0400, identical to full rank); it can be INSTALLED there and verified to 9.9e-06
+  — and then **600 steps of the head's own MSE objective drive it to +0.0136 while the
+  training loss halves.** The objective was discarding the signal, because +0.04 of
+  correlation is worth almost nothing in least squares against a target dominated by
+  unpredictable variance. Replacing it with contrastive retrieval reaches **4.38x
+  chance** against the ridge's 2.89x (paired CI [+1.15, +1.82], shuffled control 1.02x).
+  **What does the work is the broadband envelope's TIME COURSE** — the 64 spectral
+  bands are surplus (envelope-only ties them), and destroying the envelope's temporal
+  order while preserving its power drops the arm to 2.32x, *below* the ridge. **What
+  does not do the work is the cortex** (see above). Seven hypotheses were refuted by
+  measurement along the way — the readout, a "heavy tail" that turned out to be one
+  30.3 s saturating artefact, calibration, batch size, the data, the substrate
+  destroying the signal, and the optimisation merely failing to find the solution
 - **the slow oscillation, fitted to sleep.** SO peak across 8 scored N3
   recordings is 1.000 ± 0.296 Hz; `tau_adaptation_s = 0.12 s` reproduces exactly
   1.000 Hz with a 43.5 mV swing, and satisfies the windowing constraint
