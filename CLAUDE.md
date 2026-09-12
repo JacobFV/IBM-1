@@ -86,6 +86,14 @@ Specifically:
   tuning when the real finding is that there is no signal at all.
 - **Single-pool retrieval has sd ≈ 2.8%.** Average pools before comparing, and
   never checkpoint on a single-pool best — that selects for lucky draws.
+- **A tight cluster across a handful of seeds is itself a coin flip.** Three seeds
+  gave paired differences of −0.15, −0.17, −0.21 — spread 0.06, paired `t = −10`,
+  as convincing as a small sample gets. Three FRESH seeds gave −0.23, −0.04, −0.11
+  — spread 0.19, three times wider, 95% CI **[−0.365, +0.112]**, including zero.
+  The effect was not there. Pooling all six, or promoting the post-hoc paired test
+  at the moment it was noticed, would have published it. **When a post-hoc analysis
+  looks significant, pre-register it and judge it on NEW seeds, with the seeds that
+  suggested it excluded.**
 - **The maximum over a run's evaluations is not the run's result.** Thirteen
   evaluations at 250-step intervals gives thirteen chances to catch a lucky draw;
   quote the FINAL one and report the maximum separately, labelled as a maximum.
