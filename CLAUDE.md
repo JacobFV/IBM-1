@@ -86,6 +86,12 @@ Specifically:
   tuning when the real finding is that there is no signal at all.
 - **Single-pool retrieval has sd ≈ 2.8%.** Average pools before comparing, and
   never checkpoint on a single-pool best — that selects for lucky draws.
+- **A ratio whose denominator the treatment also changes is not a measure of the
+  treatment.** A solver's "last converged FRACTION" went 0.1094 → 0.3594 after a
+  placement fix, a 3.29× improvement — but the fraction is of an aim field the same
+  fix made 58% smaller. In millimetres the gain was 0.675 → 0.942, **1.40×**. Both
+  numbers are true; only the second measures the intervention. Convert normalised
+  progress metrics back to absolute units before quoting an improvement.
 - **A tight cluster across a handful of seeds is itself a coin flip.** Three seeds
   gave paired differences of −0.15, −0.17, −0.21 — spread 0.06, paired `t = −10`,
   as convincing as a small sample gets. Three FRESH seeds gave −0.23, −0.04, −0.11
