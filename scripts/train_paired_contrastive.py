@@ -140,6 +140,14 @@ def main():
     # (CLAUDE.md, Randomness) and it is the right behaviour for a seed sweep, where the graph is
     # part of what should vary. It would be wrong for an ablation holding the graph fixed.
     ap.add_argument("--seed", type=int, default=0)
+    # WHAT IS THE ARM ACTUALLY USING? The ridge that sets the bar reached +0.0466 correlation from
+    # a 64-band cochleagram, and speech-ENVELOPE tracking is the most robust effect in auditory
+    # MEG -- so the obvious hypothesis is that the contrastive arm is doing the same thing with
+    # more parameters. `--stim envelope` sums the cochleagram over frequency and feeds the
+    # broadband envelope alone, tiled back to the same width so the encoder is architecturally
+    # identical and only the INFORMATION changes. If retrieval survives, the arm is an envelope
+    # tracker; if it collapses, it is using spectral detail the envelope does not carry.
+    ap.add_argument("--stim", choices=("full", "envelope"), default="full")
     ap.add_argument("--save-every", type=int, default=500)
     ap.add_argument("--ckpt", default="ckpt/paired_contrastive.pt")
     ap.add_argument("--out", default="out/paired_contrastive.json")
@@ -162,7 +170,12 @@ def main():
         return np.ascontiguousarray(out, dtype=np.float32)
 
     def coch_ctx(starts):
-        return np.stack([np.asarray(X[s - a.ctx:s]) for s in starts]).astype(np.float32)
+        c = np.stack([np.asarray(X[s - a.ctx:s]) for s in starts]).astype(np.float32)
+        if a.stim == "envelope":
+            # broadband envelope, tiled to the original width: same tensor shape, same parameter
+            # count, same encoder -- strictly less information and nothing else different.
+            c = np.repeat(c.mean(-1, keepdims=True), c.shape[-1], axis=-1)
+        return c
 
     excl = [tuple(int(v) for v in r.split(":")) for r in a.exclude.split(",") if r.strip()]
     pool_idx = np.arange(a.ctx, lo - a.window)
