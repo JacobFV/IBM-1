@@ -446,6 +446,14 @@ run. Until it has, this is a result about the objective, not about the sheet.
 `out/paired_retrieval_exact.json`, `ckpt/contrastive_intact.pt`, `ckpt/contrastive_shuffled.pt`,
 `scripts/score_paired_retrieval_exact.py`.
 
+**Idempotence, checked 2026-09-12 because this file's own rule says to.** *"A function meant to
+depend only on its arguments must return the same answer when called twice."* Re-scoring the same
+checkpoints reproduces **every arm to the printed precision** — ridge 2.89x, intact 4.38x,
+shuffled 1.02x, bypass 4.53x. That is a statement about the EVALUATION path only: it rules out a
+stateful cache or a fresh random draw hiding inside scoring, which is the class of bug that made
+row 23 read as a clean ablation for hours. Training remains seed-dependent, which is why the arms
+were compared across six seeds and not on one.
+
 ---
 
 
