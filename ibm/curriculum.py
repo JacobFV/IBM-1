@@ -104,10 +104,23 @@ STAGES: tuple[Stage, ...] = (
           "WITHDRAWN (docs/LOG.md ledger row 7): the 91-97% of MEG variance was "
           "computed against an array whose normalisation was loaded and never "
           "applied, and the run never beat the zero baseline in either coordinate "
-          "system. The rank gate failed independently at RANK 1.0-1.2. Nothing has "
-          "run on this stage since; the clock-drift fix to the LibriBrain pairing "
-          "(row 11) came later and no paired-MEG skill against a baseline has been "
-          "established since",
+          "system. The rank gate failed independently at RANK 1.0-1.2. "
+          "2026-09-12, TWO THINGS. (1) Paired-MEG skill against a baseline IS now "
+          "established, but by RETRIEVAL and not by variance: contrastive training "
+          "reaches 4.38x chance top-1 over 2,820 held-out windows against a linear "
+          "ridge's 2.89x, paired CI [+1.15, +1.82], shuffled-pairing control 1.02x. "
+          "(2) THIS STAGE'S GATE IS UNACHIEVABLE ON THIS DATA, by a factor of ~230. "
+          "It demands >50% of MEG variance explained. The best any model has got "
+          "here is a correlation of +0.0466 from a linear ridge on the full "
+          "cochleagram, which is r^2 = 0.217% of variance; through the cortical "
+          "state it is +0.0400 = 0.160%. The withdrawn 91-97% is the only reason "
+          "50% ever looked reachable. The gate is NOT lowered -- a gate is not "
+          "moved to make a result pass -- it is recorded as targeting a quantity "
+          "the corpus does not contain, and the materialisation the evidence "
+          "supports is contrastive retrieval rather than MSE regression: installing "
+          "a verified +0.0398 readout into the head and training it with this "
+          "stage's own objective drives it to +0.0136 while the training loss "
+          "halves",
           "local"),
 
     Stage("s4.selfsup", "self-supervised AV continuation", ("s0.gain",),
