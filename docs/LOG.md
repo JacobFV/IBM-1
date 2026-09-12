@@ -59,6 +59,59 @@ already written.
 ---
 
 
+## 2026-09-11 (night) -- RESULT: the contrastive arm BEATS the linear baseline. +1.49x chance, 95% CI [+1.15, +1.82].
+
+The first arm in this line to beat a baseline it did not choose. Scored exactly, on the full
+held-out tail, paired -- as the correction committed before the result required.
+
+**Known answers first.** The closed form for exact top-1 gives `p(rank 1) = 1` and
+`p(rank N) = 0` exactly, and **uniform ranks score chance to 8.5e-14**. Then, over all **2,820**
+non-overlapping 0.5 s windows in the reserved tail (the training runs used 200):
+
+| arm | top-1 | x chance |
+|---|---:|---:|
+| ridge -- the bar | 9.03% | 2.89x |
+| **contrastive intact** | **13.69%** | **4.38x** |
+| contrastive shuffled -- the control | 3.18% | **1.02x** |
+
+**Paired bootstrap over windows, 2,000 resamples:**
+
+| comparison | difference | 95% CI |
+|---|---:|---|
+| **intact − ridge** | **+1.49x** | **[+1.15, +1.82]** — excludes 0 |
+| intact − shuffled | +3.36x | [+3.02, +3.71] — excludes 0 |
+| shuffled − ridge | −1.86x | [−2.15, −1.58] |
+
+**The control is exactly where it must be.** Trained on destroyed pairings, the shuffled arm sits
+at **1.02x chance** and its training loss never moved from `ln(32) = 3.4657` at any step. The
+intact arm's loss fell within 100 steps. The difference between those two arms is the whole
+evidential content, and there is no version of a leak that leaves the control at 1.02x.
+
+**Read it the way it was declared, not the way it flatters.** The headline is the FINAL
+evaluation, not the maximum over thirteen (4.71x at step 2,250 is a maximum over thirteen and is
+not the result). And **the ridge bar re-measures at 2.89x on the full tail against 3.19x on 200
+windows** — that is the same quantity measured with twenty times the power, applied to *both*
+arms by the same procedure. The margin is the claim, not either absolute number.
+
+**The pre-registered expectation is confirmed, including its ceiling.** Before the run:
+*"a final figure in the 3-4x range is the predicted outcome, not a disappointment, and a figure
+near 43x would still be a reason to look for a leak."* It landed at 4.38x. THINGS-EEG2's 43x was
+never on offer here and the corpus said so in advance -- the linear ridge found 2.89x, and the
+cortex found 4.38x.
+
+**What this does and does not establish.** It establishes that changing the objective was the
+right call, demonstrated end to end: MSE drove a verified +0.0398 readout down to +0.0136 while
+its loss fell, and contrastive training on the same substrate and corpus beats the linear
+baseline the same data supports. It does **not** establish that the cortical dynamics are doing
+the work -- the `bypass` arm, which removes the dynamics and changes nothing else, has not been
+run. Until it has, this is a result about the objective, not about the sheet.
+
+`out/paired_retrieval_exact.json`, `ckpt/contrastive_intact.pt`, `ckpt/contrastive_shuffled.pt`,
+`scripts/score_paired_retrieval_exact.py`.
+
+---
+
+
 ## 2026-09-11 (night) -- CORRECTION to the reading rule, made before the result it governs
 
 Twenty minutes after committing the rule below, checking the split found the error in it. The
