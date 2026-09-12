@@ -93,6 +93,14 @@ Specifically:
 - **A margin over a measured baseline must clear sampling error on BOTH sides.**
   The baseline was measured too, with its own error. If both are `sd`, the
   comparison needs about `sqrt(2)·sd`, not `sd` — never a bare "beats the baseline".
+- **Measure on the subset the question is about, not on everything available.**
+  A breast-seating spread was computed over all 13,216 mesh vertices when only the
+  4,097 BASE nodes ever touch the chest wall — the other 69% inflated it by ~18%
+  and, worse, **reversed the subject ranking**: the subject that looked worst on
+  all-vertices was best on the base alone. The headline conclusion survived, but a
+  recommendation made on the wrong subset had to be withdrawn and then un-withdrawn.
+  When a mesh, corpus or population carries a designated subset for the question
+  (`base`, a test split, a labelled cohort), use it, and say which you used.
 - **Nearest-point distance is not additive under translation.** Move an object and
   its nearest neighbour on the other surface CHANGES, so a 12 mm displacement shifted
   a measured mean by 1.61 mm. Any "rigid part plus residual part" decomposition built
