@@ -201,14 +201,39 @@ def main():
         return hits / tot, shuf_hits / tot
 
     chance = 1.0 / a.pool
+    # TWO KNOWN ANSWERS AT INITIALISATION, asserted rather than eyeballed. The first run showed
+    # both holding -- top-1 3.20% against a 3.12% chance, and loss 3.4657 against ln(32) =
+    # 3.465736 -- and they are worth checking every time because each catches a different fault:
+    #   loss ~= ln(batch)  the InfoNCE objective is correctly formed. A transposed logit matrix,
+    #                      a wrong label vector or a missing normalisation moves this immediately.
+    #   top-1 ~= chance    an UNTRAINED model must retrieve at chance. Anything above it here is
+    #                      a leak in the evaluation, not a property of the model, and every
+    #                      subsequent number would inherit it.
+    with torch.no_grad():
+        _i = rng.choice(pool_idx, size=a.batch, replace=False)
+        _l = float(info_nce(enc_s(torch.from_numpy(coch_ctx(_i)).to(dev), a.dyn_steps, a.dt),
+                            enc_m(torch.from_numpy(meg_window(_i)).to(dev)), a.temp))
+    _ln = math.log(a.batch)
+    print(f"KNOWN ANSWER: InfoNCE at initialisation must be ln(batch) = {_ln:.4f}; "
+          f"got {_l:.4f}  {'PASS' if abs(_l - _ln) < 0.05 else 'FAIL'}", flush=True)
+    if abs(_l - _ln) >= 0.05:
+        sys.exit("the contrastive objective is not correctly formed; nothing below is interpretable")
     log = {"config": vars(a), "ridge_bar_x_chance": RIDGE_BAR_X_CHANCE, "chance": chance,
-           "evals": []}
+           "init_info_nce": _l, "init_info_nce_expected": _ln, "evals": []}
     t0 = time.time()
     for step in range(a.steps + 1):
         if step % a.eval_every == 0:
             top1, shuf = evaluate()
             log["evals"].append(dict(step=step, top1=top1, shuffled_pool=shuf,
                                      x_chance=top1 / chance))
+            if step == 0:
+                tol = 4 * math.sqrt(chance * (1 - chance) / (a.draws * a.pool))
+                ok0 = abs(top1 - chance) < tol
+                print(f"  KNOWN ANSWER: an UNTRAINED model must retrieve at chance "
+                      f"({chance:.2%} +/- {tol:.2%}); got {top1:.2%}  "
+                      f"{'PASS' if ok0 else 'FAIL -- the evaluation leaks'}", flush=True)
+                if not ok0:
+                    sys.exit("untrained retrieval is above chance; the evaluation leaks")
             print(f"  step {step:5d}  top-1 {top1:6.2%} = {top1/chance:5.2f}x chance   "
                   f"(shuffled pool {shuf:5.2%}, chance {chance:.2%})   "
                   f"bar {RIDGE_BAR_X_CHANCE}x   {time.time()-t0:6.0f}s", flush=True)
