@@ -92,9 +92,14 @@ Specifically:
   Same shape as row 9 one level up.
 - **A margin over a measured baseline must clear sampling error on BOTH sides.**
   The baseline was measured too, with its own error. If both are `sd`, the
-  comparison needs about `sqrt(2)·sd`, not `sd`. A retrieval arm at 3.62× against
-  a ridge bar of 3.19× is 3.4 single SE and only **2.4 combined SE** — "beats the
-  baseline by roughly two standard errors", never a bare "beats the baseline".
+  comparison needs about `sqrt(2)·sd`, not `sd` — never a bare "beats the baseline".
+- **Resampling the same items many times does not make them independent trials.**
+  Retrieval scored over 200 draws of a 32-window pool gives 6,400 trials but only
+  **200 distinct windows**, and the error scales with the windows. Treating the
+  trials as independent understated it **5.7×** and turned 0.6 SE into a claimed
+  3.4 SE. Bootstrap over the ITEMS, not the draws — and when the comparison is
+  paired on the same items, bootstrap the paired difference, which is what
+  actually cancels the shared sampling error.
 
 ## Randomness
 

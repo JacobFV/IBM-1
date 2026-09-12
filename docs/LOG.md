@@ -59,6 +59,41 @@ already written.
 ---
 
 
+## 2026-09-11 (night) -- CORRECTION to the reading rule, made before the result it governs
+
+Twenty minutes after committing the rule below, checking the split found the error in it. The
+split is fine — disjoint, by exactly one row — but the check surfaced that **the evaluation is
+only 200 distinct windows**, reused across 200 draws of 32. My standard error treated the
+6,400 resulting trials as independent. They are not.
+
+| | SE, in units of chance |
+|---|---:|
+| as committed, `n = 6,400` trials | 0.127x |
+| **window-level, `n = 200`** | **0.717x** |
+
+**5.7x larger.** The margin of 0.43x that I called 3.4 SE is **0.6 SE** against a window-level
+error — not significant on its own. I published a precision I had not earned, in the same entry
+that warned about selecting on the evaluation set.
+
+**What rescues the comparison is that it is PAIRED.** Both arms are scored on the same 200
+windows, so the window-sampling error is shared and largely cancels; 0.6 SE is the pessimistic
+unpaired bound, not the right number. **The right statistic is a bootstrap over WINDOWS of the
+paired difference**, and that is what will be quoted.
+
+**And the evaluation should not have been 200 windows in the first place.** The reserved tail
+holds **2,821** of them — 14x more — and `--n-eval 25000` was left at a value chosen when the
+evaluation cost a ridge solve, not a cortical forward pass. Both arms will be re-scored on the
+full tail, *by the same procedure*, and both figures reported: the pre-registered 200-window
+comparison as declared, and the full-tail one as the better-powered version of the identical
+question. **Enlarging an evaluation symmetrically is not moving a bar** — the bar remains "beat
+the ridge, measured the same way, on the same data".
+
+The rule below stands otherwise: the headline is the final evaluation, not the maximum over
+thirteen.
+
+---
+
+
 ## 2026-09-11 (night) -- HOW the contrastive arm will be read, fixed while it is still running
 
 The arm is at step 1,500 of 3,000 and I have seen it cross the bar. That is exactly the moment to
