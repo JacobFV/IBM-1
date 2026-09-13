@@ -61,6 +61,35 @@ already written.
 ---
 
 
+## 2026-09-12 -- pre-registration: the missing arm. Dynamics PRESENT but never trained.
+
+Intact ties bypass across six seeds, so the dynamics are not needed on this task. That leaves the
+middle case untested: **dynamics present but never updated**. The AV ablation has a "frozen" arm
+for exactly this reason -- it cost +180% there, under MSE.
+
+`--freeze-dynamics` excludes the substrate from the optimiser. **Known answer, checked before any
+run:** the optimiser must receive strictly fewer parameters, by exactly the substrate's count.
+Measured **27,592,003 → 8,391,998**, with **19,200,005** excluded, which is the substrate exactly.
+A flag that changed nothing would be a control that cannot fail; this one is asserted in the
+script.
+
+**PREDICTED: frozen ties intact and bypass, all three indistinguishable.** Four permuted-kernel
+controls put what the dynamics *learned* at a largest difference of −0.0065; an untrained sheet
+transmits stimulus information as well as a trained one; and training collapses the state's
+effective rank 3.74 → 1.07 while changing nothing a linear readout can see. Nothing suggests
+training the sheet buys anything here.
+
+**The outcome that would be worse than a tie, and it is a real possibility.** If frozen comes in
+**below** intact while intact still ties bypass, then random dynamics actively destroy information
+that no dynamics at all would have passed through — and training's only achievement would be
+*undoing the damage of having a substrate*. That reading is available from these three arms and
+from no two of them, which is why the third is worth 2.5 hours.
+
+Three seeds, judged on multi-seed means with the larger seed spread as the uncertainty.
+
+---
+
+
 ## 2026-09-12 -- VOID: the AV retrieval task I built has no signal. The ridge check caught it before the result did.
 
 The experiment below is **void and its arms are not reported as evidence about the cortex.** The

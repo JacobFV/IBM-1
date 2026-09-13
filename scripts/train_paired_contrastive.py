@@ -180,6 +180,13 @@ def main():
     # intact here too, the dynamics are never load-bearing under retrieval and the +324% is
     # specific to MSE prediction.
     ap.add_argument("--task", choices=("meg", "av"), default="meg")
+    # THE MISSING ARM. intact ties bypass across six seeds, so the dynamics are not needed. That
+    # leaves the middle case untested: dynamics PRESENT but never updated. The AV ablation has a
+    # "frozen" arm for exactly this reason (it cost +180% there, under MSE). If frozen also ties
+    # intact here, then training the sheet buys nothing on this task and the dynamics are a fixed
+    # random projection the model routes through -- which is what the four permuted-kernel
+    # controls, and an untrained sheet transmitting as well as a trained one, have been saying.
+    ap.add_argument("--freeze-dynamics", action="store_true")
     ap.add_argument("--save-every", type=int, default=500)
     ap.add_argument("--ckpt", default="ckpt/paired_contrastive.pt")
     ap.add_argument("--out", default="out/paired_contrastive.json")
@@ -240,12 +247,25 @@ def main():
                                     bypass=(a.arm == "bypass")).to(dev)
     enc_m = (FrameEncoder(a.dim) if a.task == "av"
              else MEGEncoder(Y.shape[-1], a.window, a.dim)).to(dev)
-    params = [p for p in enc_s.parameters()] + list(enc_m.parameters())
+    if a.freeze_dynamics:
+        for p_ in dyn.parameters():
+            p_.requires_grad_(False)
+    params = [p for p in enc_s.parameters() if p.requires_grad] + list(enc_m.parameters())
     if a.arm == "bypass":
         params = [p for nm, p in enc_s.named_parameters() if not nm.startswith("dyn.")] + list(enc_m.parameters())
     opt = torch.optim.AdamW(params, lr=a.lr, weight_decay=1e-4)
+    n_trainable = sum(p.numel() for p in params)
     print(f"stimulus encoder {sum(p.numel() for p in enc_s.parameters()):,} | "
-          f"meg encoder {sum(p.numel() for p in enc_m.parameters()):,}", flush=True)
+          f"meg encoder {sum(p.numel() for p in enc_m.parameters()):,} | "
+          f"TRAINABLE {n_trainable:,}"
+          + (f"  (dynamics FROZEN: {sum(p.numel() for p in dyn.parameters()):,} excluded)"
+             if a.freeze_dynamics else ""), flush=True)
+    # KNOWN ANSWER for --freeze-dynamics: the optimiser must receive strictly fewer parameters
+    # than it would otherwise, by exactly the substrate's count. A flag that changes nothing is
+    # a control that cannot fail.
+    if a.freeze_dynamics and a.arm != "bypass":
+        assert n_trainable < sum(p.numel() for p in enc_s.parameters()) + sum(p.numel() for p in enc_m.parameters()), \
+            "--freeze-dynamics did not remove anything from the optimiser"
 
     rng = np.random.default_rng(a.seed)
     erng = np.random.default_rng(20260911)
