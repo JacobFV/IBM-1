@@ -286,7 +286,9 @@
   });
 })();
 
-/* the reel: click a tile, it fills the screen with its caption and description */
+/* the reel: click a tile, it fills the screen with its caption and description.
+   once open, a horizontal swipe, the arrow keys or the side buttons step
+   through every tile on the page in order, across piles, wrapping at the ends */
 (function () {
   function init() {
   var lb = document.getElementById('lightbox');
@@ -294,9 +296,20 @@
   var stage = lb.querySelector('.lb-stage'),
       h3 = lb.querySelector('h3'),
       cap = lb.querySelector('.lb-cap'),
-      desc = lb.querySelector('.lb-desc');
+      desc = lb.querySelector('.lb-desc'),
+      count = lb.querySelector('.lb-count');
+  var tiles = Array.prototype.slice.call(document.querySelectorAll('.reel .tile'));
+  var cur = -1;
 
-  function open(t) {
+  // within a pile the first tile sits on top and each later one behind it
+  document.querySelectorAll('.pile').forEach(function (p) {
+    var ts = p.querySelectorAll('.tile');
+    ts.forEach(function (t, i) { t.style.setProperty('--z', String(ts.length - i)); });
+  });
+
+  function open(i) {
+    cur = (i + tiles.length) % tiles.length;
+    var t = tiles[cur];
     var kind = t.dataset.kind, src = t.dataset.src;
     // a <video> keeps playing behind a hidden lightbox otherwise, so it is
     // rebuilt each time rather than reused
@@ -313,26 +326,52 @@
     h3.textContent = t.dataset.title;
     cap.textContent = t.dataset.cap;
     desc.textContent = t.dataset.desc;
-    lb.hidden = false;
-    document.body.style.overflow = 'hidden';
-    lb.querySelector('.lb-close').focus();
+    count.textContent = (cur + 1) + ' / ' + tiles.length;
+    if (lb.hidden) {
+      lb.hidden = false;
+      document.body.style.overflow = 'hidden';
+      lb.querySelector('.lb-close').focus();
+    }
   }
+  function step(d) { if (!lb.hidden) open(cur + d); }
   function close() {
     lb.hidden = true; stage.innerHTML = '';
     document.body.style.overflow = '';
+    if (tiles[cur]) tiles[cur].focus({ preventScroll: true });
   }
-  document.querySelectorAll('.reel .tile').forEach(function (t) {
-    t.addEventListener('click', function () { open(t); });
+  tiles.forEach(function (t, i) {
+    t.addEventListener('click', function () { open(i); });
     t.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(t); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(i); }
     });
   });
   lb.addEventListener('click', function (e) {
+    if (e.target.closest('.lb-prev')) return step(-1);
+    if (e.target.closest('.lb-next')) return step(1);
     if (e.target === lb || e.target.classList.contains('lb-close')) close();
   });
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && !lb.hidden) close();
+    if (lb.hidden) return;
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
   });
+  // a mostly horizontal swipe steps; a vertical one (scrolling a long
+  // description) is left alone, and so is a drag along a video's control bar
+  var sx = null, sy = 0;
+  lb.addEventListener('touchstart', function (e) {
+    sx = null;
+    if (e.touches.length !== 1) return;
+    var p = e.touches[0], tg = e.target;
+    if (tg.tagName === 'VIDEO' && p.clientY > tg.getBoundingClientRect().bottom - 56) return;
+    sx = p.clientX; sy = p.clientY;
+  }, { passive: true });
+  lb.addEventListener('touchend', function (e) {
+    if (sx == null) return;
+    var p = e.changedTouches[0], dx = p.clientX - sx, dy = p.clientY - sy;
+    sx = null;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > 1.3 * Math.abs(dy)) step(dx < 0 ? 1 : -1);
+  }, { passive: true });
   }
   // the script tag sat BEFORE the lightbox markup, so getElementById returned
   // null and every tile silently did nothing.  bind after the document parses

@@ -489,13 +489,23 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
   font-size: .72rem; letter-spacing: .16em; text-transform: lowercase;
   color: #7d8b95; text-align: center;
 }
-.reel {
+.reels {
   position: relative; z-index: 3;
   margin: 0 auto; padding: 0 1.5rem;
   max-width: 1240px;
   display: flex; justify-content: center; align-items: flex-start;
-  flex-wrap: wrap; row-gap: 1.6rem; column-gap: 0;
+  flex-wrap: wrap; gap: 2.4rem 4.5rem;
+}
+/* one pile per kind of picture: the tiles stack most of the way over one
+   another, each a little off the line, the first on top; a hover lifts one out */
+.reel {
+  display: flex; flex-direction: column; align-items: center;
   pointer-events: none;
+}
+.pile { display: flex; align-items: flex-start; padding: 22px 0 36px; }   /* the strew drops a tile 22px */
+.reel-label {
+  margin: 0; font-family: var(--mono, monospace); font-size: .64rem;
+  letter-spacing: .12em; text-transform: lowercase; color: #7d8b95; text-align: center;
 }
 .reel .tile {
   pointer-events: auto;
@@ -504,22 +514,30 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
   border-radius: 30% / 30%;               /* squircle-ish */
   overflow: hidden;
   background: #0d1013;
+  z-index: var(--z, 0);                    /* set per pile by site.js */
   box-shadow: 0 10px 34px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.07);
   transition: transform .28s cubic-bezier(.2,.7,.3,1), box-shadow .28s;
 }
-.reel .tile + .tile { margin-left: -28px; }   /* semi-overlapping */
-.reel .tile video {
-  width: 100%; height: 100%; object-fit: cover; display: block;
+.reel .tile + .tile { margin-left: -94px; }   /* stacked: ~56px of each shows */
+/* every picture fills its squircle, centred: an <img> left at its natural
+   aspect sat as a strip across the top and the tile read as blank */
+.reel .tile video, .reel .tile img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;
   transform: scale(1.06);
 }
+/* a diagram is mostly white page around its plots: zoom onto the middle */
+.reel .tile-diagram { background: #fff; }
+.reel .tile-diagram img { transform: scale(1.22); }
+/* a network capture is the whole hero, labels and all: zoom onto the brain */
+.reel .tile-net img { transform: scale(1.7); object-position: 50% 54%; }
 /* strewn: each tile sits a little off the line */
-.reel .t0 { transform: translateY(14px)  rotate(-3deg); z-index: 6; }
-.reel .t1 { transform: translateY(-16px) rotate(2.5deg); z-index: 5; }
-.reel .t2 { transform: translateY(22px)  rotate(-1.5deg); z-index: 4; }
-.reel .t3 { transform: translateY(-10px) rotate(3deg);  z-index: 3; }
-.reel .t4 { transform: translateY(18px)  rotate(-2deg); z-index: 2; }
-.reel .t5 { transform: translateY(-6px)  rotate(1.5deg); z-index: 1; }
-.reel .t6 { transform: translateY(10px)  rotate(-2.5deg); z-index: 0; }
+.reel .t0 { transform: translateY(14px)  rotate(-3deg); }
+.reel .t1 { transform: translateY(-16px) rotate(2.5deg); }
+.reel .t2 { transform: translateY(22px)  rotate(-1.5deg); }
+.reel .t3 { transform: translateY(-10px) rotate(3deg); }
+.reel .t4 { transform: translateY(18px)  rotate(-2deg); }
+.reel .t5 { transform: translateY(-6px)  rotate(1.5deg); }
+.reel .t6 { transform: translateY(10px)  rotate(-2.5deg); }
 .reel .tile:hover {
   transform: translateY(-4px) rotate(0deg) scale(1.09); z-index: 20;
   box-shadow: 0 18px 50px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.18);
@@ -537,9 +555,13 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 @media (max-width: 900px) {
   .reel-band { padding: 3.5rem 0 2rem; }
   .reel-head { margin-bottom: 1.4rem; }
-  .reel { margin: 0 auto 1.75rem; }       /* was -2.5rem: same overlap, smaller screen */
+  .reels { gap: 1.4rem 2.5rem; margin-bottom: 1.75rem; }
   .reel .tile { width: 112px; height: 112px; }
-  .reel .tile + .tile { margin-left: -22px; }
+  .reel .tile + .tile { margin-left: -72px; }
+}
+@media (max-width: 480px) {
+  .reel .tile { width: 96px; height: 96px; }
+  .reel .tile + .tile { margin-left: -64px; }   /* nine tiles fit in 336px */
 }
 @media (prefers-reduced-motion: reduce) {
   .reel .tile { transition: none; }
@@ -567,6 +589,15 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
   background: rgba(255,255,255,.07); color: #dfe9ee;
   border: 1px solid rgba(255,255,255,.14); font-size: 1.4rem; line-height: 1; }
 .lb-close:hover { background: rgba(255,255,255,.14); }
+.lb-count { margin: 0 0 .35rem; font-family: var(--mono, monospace); font-size: .66rem; color: #6d7c86; letter-spacing: .08em; }
+.lb-nav { position: absolute; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 64px; border-radius: 14px; cursor: pointer;
+  background: rgba(255,255,255,.06); color: #dfe9ee;
+  border: 1px solid rgba(255,255,255,.12); font-size: 1.7rem; line-height: 1; }
+.lb-nav:hover { background: rgba(255,255,255,.14); }
+.lb-prev { left: 1.1rem; }
+.lb-next { right: 1.1rem; }
+@media (max-width: 700px) { .lb-nav { top: auto; bottom: 1rem; transform: none; width: 52px; height: 44px; } }
 .reel .tile { cursor: zoom-in; }
 .reel .tile:focus-visible { outline: 2px solid #7fd7c4; outline-offset: 3px; }
 @media (max-width: 700px) { .lb { padding: 2rem 1.1rem; } .lb-stage { max-height: 46vh; } }
