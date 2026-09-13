@@ -4720,3 +4720,49 @@ four primitives sealed and validated on load. peripheral nervous system declared
 96 muscles with innervation, 58 nerve trunks with fibre-class-resolved conduction
 (Ia at 6 ms against C at 550 ms down the same sciatic), four spinal reflex arcs,
 a 483-port embodiment interface. joint forging falsified under controlled placebos.
+## 2026-09-13 -- PRE-REGISTRATION: five seeds an arm, because two could not decide 0.17
+
+*Committed before any of the new seeds runs.*
+
+**What the committed verdict says, and it is not being revisited.** The readout comparison
+above returned **NOT DISTINGUISHABLE** for the raw-readout sheet against no cortex on the
+threshold fixed in advance, `max(0.3, the arms' seed spreads) = 0.30`. That verdict stands
+exactly as written. It also recorded, in the same entry, what it could not settle: both
+raw-readout seeds (0.011 apart) sit below both no-cortex seeds (0.039 apart) by **~0.17**,
+and with two seeds an arm there is no way to tell a real 0.17 from two coin flips landing
+the same way. The entry's own last words on it were "Two seeds per arm."
+
+**This is a new test, not a loosened one.** The prior rule binds for the prior comparison and
+its verdict is final. What changes here is the *instrument*, which the programme's rule permits
+after a result and which a fixed margin of 0.30 on two seeds cannot be: **more seeds and a
+test whose uncertainty is estimated from the data rather than declared as a constant.** Nothing
+about the old comparison is rescored.
+
+**The arms.** Seeds **2, 3, 4** of each, added to the two already run, for **five seeds an arm**:
+* sheet, raw readout (`--readout-norm none`)
+* no cortex (`--arms no_cortex`)
+
+Same corpus, same split (3,515 train / 3,400 held-out, persistence 1.040089e-04), same
+`--steps 3000`, same code. The batchnorm arm is NOT extended: it was settled as WORSE by 0.76
+against a 0.30 threshold and adding seeds to a decided question is fishing.
+
+**The statistic is unchanged** -- the mean held-out skill vs persistence over the seven
+evaluations at steps 1500-3000. Changing the statistic *and* the test at once would make the
+two comparisons incomparable, and the statistic is the half that was working.
+
+**THE TEST, fixed now.** Welch's two-sample t-test on the five per-seed late-window means,
+two-sided, **alpha = 0.05**. The verdict is reported as sign and significance *together with
+the effect size*, which is the part that matters: these arms sit near **-3.7**, so a difference
+of 0.17 is **4.6% of the quantity being compared** and both arms are far below persistence
+either way. **A significant result here would mean the sheet is reliably, slightly worse than
+no cortex on this task. It would not mean the sheet does anything.**
+
+**The known answer, and it runs before the arms are compared.** Split the ten runs by SEED
+parity rather than by arm -- a label that cannot carry an effect -- and apply the identical
+test. It must come back non-significant. If a relabelling that cannot matter reads
+significant, the test is void and no arm comparison from this run is reported.
+
+**Declared in advance so it cannot be chosen later:** if the five-seed test is non-significant,
+that is the answer -- the sheet is not distinguishable from no cortex on this task on either
+instrument, and this entry says so rather than proposing a sixth seed.
+
