@@ -61,6 +61,51 @@ already written.
 ---
 
 
+## 2026-09-12 -- THE TRIAD CLOSES: training 19,200,005 parameters changes the result by 0.003
+
+Prediction confirmed, and the tie is tighter than any of the others.
+
+| arm | seeds 0,1,2 | mean | range |
+|---|---|---:|---:|
+| **frozen** — dynamics present, NEVER trained | 4.36, 4.20, 4.11 | **4.223x** | 0.250 |
+| **intact** — dynamics trained | 4.38, 4.19, 4.09 | **4.220x** | 0.290 |
+| **bypass** — no dynamics at all | 4.53, 4.36, 4.30 | **4.397x** | 0.230 |
+
+Under the pre-registered rule — multi-seed means, uncertainty the larger seed spread — **all three
+pairs are NOT DISTINGUISHABLE**: frozen−intact **+0.003**, frozen−bypass −0.173, intact−bypass
+−0.177, against spreads of 0.23–0.29.
+
+**Training the substrate changes the result by 0.0033x of chance.** 19,200,005 parameters, 1.7
+hours a seed, and a frozen random sheet does exactly as well as a trained one. Combined with the
+bypass arm, the three readings say the same thing three ways: **the dynamics contribute nothing
+trained, nothing untrained, and nothing by their absence.**
+
+**The "worse than a tie" branch does not fire.** I named it in advance: if frozen had come in
+*below* intact while intact still tied bypass, random dynamics would have been actively destroying
+information and training's only achievement would have been undoing that damage. It did not
+happen — frozen and intact are within 0.003 of each other, so the sheet is a neutral pass-through
+rather than a harmful one that training repairs.
+
+**Two smaller things worth keeping.** The frozen arms' seed spread at step 1,500 was **0.04**
+against the intact arms' 0.29 — and `torch.manual_seed` redraws the substrate's *topology* per
+seed, so a varying graph with an invariant result is one more sign the specific connectivity does
+not matter. And the two trained-intact checkpoints re-scored in this run reproduced their earlier
+values exactly (4.19 and 4.09 both times), which is the evaluation path's idempotence confirmed a
+second time without being asked for.
+
+**Where this leaves the substrate.** Four permuted-kernel controls said what the dynamics *learned*
+carries nothing. An untrained sheet transmits stimulus information as well as a trained one.
+Training collapses the state's effective rank 3.74 → 1.07 while changing nothing a linear readout
+can see. And now: trained, frozen and absent are indistinguishable on the one task in this
+programme where the objective demonstrably works. **On stimulus-to-MEG retrieval the cortical
+substrate is not doing anything, and that is now five independent measurements rather than one
+suspicion.**
+
+`out/frozen_exact_s{0,1,2}.json`, `ckpt/frozen_s{0,1,2}.pt`.
+
+---
+
+
 ## 2026-09-12 -- pre-registration: the missing arm. Dynamics PRESENT but never trained.
 
 Intact ties bypass across six seeds, so the dynamics are not needed on this task. That leaves the
