@@ -21,50 +21,6 @@
       R.processes.map((p) => row(p.id, p.doc, [p.topology, p.timescale_s && ts(p.timescale_s), p.inputs.length && `in ${p.inputs.map((v) => `<code>${v}</code>`).join(' ')}`, p.outputs.length && `out ${p.outputs.map((v) => `<code>${v}</code>`).join(' ')}`].filter(Boolean).join(' · '))).join(''));
   }
 
-  // ---- the curriculum: one stage per row, a coloured dot on a rail, curved deps
-  const dagEl = $('dag');
-  if (dagEl && R && R.curriculum) {
-    const stages = R.curriculum, byId = Object.fromEntries(stages.map((s) => [s.id, s]));
-    const depth = {}; const d = (id) => depth[id] != null ? depth[id] : (depth[id] = byId[id].deps.length ? 1 + Math.max(...byId[id].deps.map(d)) : 0);
-    stages.forEach((s) => d(s.id));
-    const order = stages.slice().sort((a, b) => depth[a.id] - depth[b.id] || stages.indexOf(a) - stages.indexOf(b));
-    const NOTE = {
-      's0.gain': 'early on, the simulation kept blowing up. the cause: signal strength was set per connection, and some spots in the model have thousands of connections feeding into them at once, so their combined signal was way too strong. the fix scales each connection down by how many others feed into the same place.',
-      's0.window': 'the model needs to remember enough of the recent past to catch a slow brain rhythm, without wasting effort holding onto more than that. giving it about a third of a second of memory turned out to be the sweet spot.',
-      's1.regime': 'real deep-sleep recordings show the brain\'s slowest wave rising and falling about once per second — measured across eight nights of sleep, not assumed. tuning the model\'s internal timing to match produces waves of a realistic size.',
-      's2.spectra': 'some of the frequency numbers used so far were actually measured at the scalp, then mislabeled as if they described activity inside the brain — so they need to be re-measured properly. an earlier attempt to fit everything in one shot turned out wrong and will not be repeated.',
-      's3.paired': 'this stage tries to predict real brain-scan recordings straight from sound. it looked promising by one measure, but a stricter check showed it wasn\'t really learning anything yet — just dressing up its numbers. honestly scored, it currently does no better than a coin flip.',
-      's4.selfsup': 'the model was trained to guess what happens next in audio and video it has already seen, with no answer key. over the course of training it got substantially better at that guessing game, and started drawing on a richer variety of internal patterns to do it.',
-      's4b.crossmodal': 'the connections linking the model\'s vision areas to its hearing and memory areas did grow noticeably stronger than chance would predict. but cutting those same long-distance connections barely changed performance — so despite looking meaningful, they are not yet doing real work.',
-      's4c.longrange': 'the model\'s long-distance connections were starting out far too weak, because they inherited an assumption meant for short, local ones. they now start from a fairer baseline, and the earlier cutting test needs to be re-run to see whether it matters now.',
-      's5.ablate': 'the key question: does the shared brain-like core actually matter, or could it be skipped? removing it, freezing it, or switching off what it had learned to associate all made the model much worse — so it clearly matters. but its long-distance wiring specifically isn\'t pulling its weight yet.',
-      's6.scale': 'training on just eleven minutes of one film risks the model simply memorizing that clip rather than learning general patterns. more computing power won\'t fix that — what\'s needed next is more varied footage.',
-      's7.joint': 'the model learns from two different kinds of data — video and brain recordings — at the same time, in one combined update, instead of alternating between them. most of its parameters are shared across both; only a smaller piece is specific to each.',
-      's8.curriculum': 'training only on whatever is easiest to predict lets a model coast on shortcuts. instead, examples are chosen where it is still making mistakes but steadily improving, and progress is checked against a separate measure that isn\'t part of what it\'s optimizing for.',
-      's9.rl': 'this stage — teaching the model to act toward a goal through trial and reward — can\'t start until earlier stages give it stable internal "concepts" to reason with, and until the brain regions for habit, memory, and replaying past experience, which exist only as placeholders today, are actually built.',
-    };
-    const num = (id) => id.replace(/^s/, '').split('.')[0];
-    dagEl.innerHTML = `<svg class="rail" aria-hidden="true"></svg><ol>${order.map((s) => `
-      <li class="stage ${s.status}" data-id="${s.id}"><span class="dot">${s.status === 'done' ? '<svg viewBox="0 0 16 16"><path d="M3.5,8.5 l3,3 l6,-7"/></svg>' : num(s.id)}</span>
-        <div class="stage-text"><h4>${esc(s.title)}<small>${s.status === 'ready' ? 'runnable' : s.status === 'failed' ? 'gate failed' : s.status}</small></h4><p>${esc(NOTE[s.id] || '')}</p></div></li>`).join('')}</ol>`;
-    const rail = dagEl.querySelector('.rail');
-    const drawRail = () => {
-      const box = dagEl.getBoundingClientRect();
-      const at = {}; dagEl.querySelectorAll('.stage').forEach((li) => { const r = li.querySelector('.dot').getBoundingClientRect(); at[li.dataset.id] = [r.left - box.left + r.width / 2, r.top - box.top + r.height / 2]; });
-      rail.setAttribute('viewBox', `0 0 ${box.width} ${box.height}`); rail.setAttribute('width', box.width); rail.setAttribute('height', box.height);
-      const idx = Object.fromEntries(order.map((s, k) => [s.id, k]));
-      rail.innerHTML = stages.flatMap((s) => s.deps.map((dep) => {
-        const a = at[dep], b = at[s.id]; if (!a || !b) return '';
-        const gap = idx[s.id] - idx[dep], lit = byId[dep].status === 'done';
-        if (gap === 1) return `<path class="${lit ? 'lit' : ''}" d="M${a[0]},${a[1] + 14} L${b[0]},${b[1] - 14}"/>`;
-        const bow = 22 + 10 * gap;
-        return `<path class="${lit ? 'lit' : ''}" d="M${a[0]},${a[1] + 14} C${a[0] - bow},${a[1] + 40} ${b[0] - bow},${b[1] - 40} ${b[0]},${b[1] - 14}"/>`;
-      })).join('');
-    };
-    drawRail(); window.addEventListener('resize', drawRail);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawRail);
-  }
-
   // ---- the corpus as an endless deck: one card in focus, the rest fanned
   // behind it and fading out.  the list is a ring -- swiping never reaches an
   // end -- so the cards are a small pool of elements re-filled as it turns,
