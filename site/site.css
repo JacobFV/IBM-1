@@ -593,14 +593,17 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 .lin-track { position: relative; width: 100%; max-width: 1000px; margin: 0 auto; }
 .lin-svg { display: block; width: 100%; height: auto; overflow: visible; }
 
-.lin-road { fill: var(--accent); fill-opacity: .30; stroke: none; }
-.lin-road.lin-exit { fill-opacity: .22; }
-.lin-road.is-future { fill: none; stroke: var(--rule); stroke-width: 1.2; stroke-dasharray: 6 7; }
+.lin-svg foreignObject { overflow: visible; }
+.lin-roads { opacity: .30; }
+.lin-exits { opacity: .22; }
+.lin-road { fill: var(--accent); stroke: none; }
+.lin-road.is-future { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 7; opacity: .6; }
 
 .lin-rule { stroke: var(--rule); stroke-width: .6; opacity: .5; }
 .lin-rule.is-future { stroke-dasharray: 4 6; }
-.lin-stage { font-family: var(--mono); font-size: 13px; letter-spacing: .16em;
-             text-transform: uppercase; fill: var(--muted); opacity: .75; }
+.lin-stage { font-family: var(--mono); font-size: 12px; letter-spacing: .16em; text-anchor: middle;
+             text-transform: uppercase; fill: var(--muted); opacity: .9;
+             paint-order: stroke; stroke: var(--paper); stroke-width: 5px; stroke-linejoin: round; }
 .lin-stage.is-future { opacity: .45; }
 
 .lin-ann .leader { stroke: var(--muted); stroke-width: 1.2; fill: none; opacity: .55; }
@@ -608,7 +611,8 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 .lin-ann.is-future .leader { stroke-dasharray: 3 4; opacity: .4; }
 .lin-ann.is-future .leader-dot { fill: none; stroke: var(--rule); stroke-width: 1.4; }
 
-.lin-ann-body { display: grid; gap: 2px; padding: 0 8px; color: inherit; text-decoration: none; }
+.lin-ann-body { display: grid; gap: 2px; padding: 0 10px; height: 100%; align-content: center;
+                color: inherit; text-decoration: none; }
 .lin-ann-body.to-left { text-align: right; }
 .lin-kind { font: 400 10px/1.2 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 .lin-label { font-family: var(--display); font-weight: 600; font-size: 17px; line-height: 1.15;
