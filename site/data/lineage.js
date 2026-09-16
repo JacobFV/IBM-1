@@ -1,7 +1,7 @@
 /* the lineage highway.  tributaries join a trunk, checkpoints leave it as exits.
    hand-maintained against each source card and docs/LOG.md: a corpus is named only
-   where its card reads `binding: bound`, and every checkpoint figure comes from
-   releases.js as export_releases.py wrote it.
+   where its card reads `binding: bound`, and every checkpoint figure is read from
+   releases.js (as export_releases.py wrote it) by lineage.js, not typed here.
 
    width is CHECKPOINTS RELEASED, which is the one honest common unit here -- a
    corpus enters at the width of what it has produced, and the trunk is the sum.
@@ -12,10 +12,10 @@ window.IBM_LINEAGE = {
   stages: [
     { y: 0.00, label: "primer" },
     { y: 0.17, label: "paired MEG" },
-    { y: 0.34, label: "evoked + retrieval" },
-    { y: 0.52, label: "two objectives at once" },
-    { y: 0.66, label: "four controls" },
-    { y: 0.82, label: "motion capture" },
+    { y: 0.41, label: "evoked + retrieval" },
+    { y: 0.58, label: "two objectives at once" },
+    { y: 0.72, label: "four controls" },
+    { y: 0.85, label: "motion capture" },
     { y: 1.00, label: "many objectives" }
   ],
 
@@ -43,37 +43,24 @@ window.IBM_LINEAGE = {
       href: "http://mocap.cs.cmu.edu/" }
   ],
 
-  /* an exit leaves the trunk at a stage: a released model, or a control. */
+  /* an exit leaves the trunk at a stage: a released checkpoint, or a control.
+     a checkpoint names its models and nothing else -- its width, its 🤗 links and
+     their sizes are read from releases.js at render time. */
   exits: [
-    { at: 1, side: -1, kind: "model", label: "av_predictor", w: 19,
-      note: "19 checkpoints · 68.9M · obj-av",
-      detail: "The audio-video continuation arm. Its own video prediction measured −0.25 skill against persistence: it matched appearance rather than predicting.",
-      href: "https://huggingface.co/jacob-valdez/ibm-1/tree/main/checkpoints" },
+    { at: 1, side: -1, kind: "model", label: "audio-visual predictor", models: ["av_predictor"] },
 
-    { at: 2, side: 1, kind: "model", label: "meg_encoder", w: 36,
-      note: "36 checkpoints · 26.4M · obj-meg",
-      detail: "The most-iterated model in the programme, and the one whose head carries the low-rank lead field. Its docstring records why: a free readout let the paired head reach skill +0.94 with an effective cortical rank of 1.03 — the readout doing the work and the cortex a scalar.",
-      href: "https://huggingface.co/jacob-valdez/ibm-1/tree/main/checkpoints" },
+    { at: 2, side: 1, kind: "model", label: "speech to MEG encoder", models: ["meg_encoder"] },
 
-    { at: 3, side: -1, kind: "model", label: "visual_evoked · eeg_to_image", w: 4,
-      note: "2 + 2 checkpoints · 63.5% top-1, 127× chance",
-      detail: "Retrieval, not generation: nearest bank entries ranked by the group-mean measured evoked EEG of the image, on the corpus's designated test set.",
-      href: "https://huggingface.co/jacob-valdez/ibm-1/tree/main/checkpoints" },
+    { at: 3, side: -1, kind: "model", label: "visual evoked + EEG to image", models: ["visual_evoked", "eeg_to_image"] },
 
-    { at: 3, side: 1, kind: "model", label: "av_meg_predictor", w: 9,
-      note: "9 checkpoints · 93.7M · obj-av+meg",
-      detail: "The first arm to carry two objectives at once — one schedule over both likelihood terms.",
-      href: "https://huggingface.co/jacob-valdez/ibm-1/tree/main/checkpoints" },
+    { at: 3, side: 1, kind: "model", label: "audio-visual + MEG predictor", models: ["av_meg_predictor"] },
 
     { at: 4, side: -1, kind: "control", label: "four permuted-kernel controls", w: 0,
       note: "largest difference −0.0065",
       detail: "Ablation, disjoint-region retrieval, the motor task and the proprioceptive readout each compared a trained kernel against one with its site rows permuted. The dynamics are load-bearing as a filter; what they LEARNED has not been shown to carry anything. Everything past this point is an attempt to change that.",
       href: "#programme" },
 
-    { at: 6, side: 1, kind: "model", label: "multi-objective materializations", w: 12,
-      future: true,
-      note: "planned · first attempt stopped at step 3,675",
-      detail: "One substrate, many objectives at once. The first run collapsed into the failure PairedNeuralLoop's own docstring names: effective cortical rank fell to 1.01 within 1,000 steps and stayed there. Stopped rather than run to 20,000 — rightly, but the reason given at the time was wrong in the opposite direction. Against the correct per-batch zero baseline the MEG head is WORSE than emitting nothing, and a lead-rank sweep at 64, 16 and 4 then refuted the readout as the cause: the rank collapses at every setting. A later check found the trainer had no train/test split at all, so those figures are in-sample; it now reserves a held-out tail.",
-      href: "#programme" }
+    /* planned: nothing released yet, so it has no link and keeps a hand-set width */
+    { at: 6, side: 1, kind: "model", label: "multi-objective materializations", models: [], w: 12, future: true }
   ]
 };

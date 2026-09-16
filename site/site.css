@@ -31,6 +31,7 @@
   --fail: #b23a2f;
   --moved: #2f7a58;
   --half: #8a6d1d;
+  --lane-1: #2f8a80; --lane-2: #3d68b0; --lane-3: #b0485e; --lane-4: #5b8a36;  /* lineage corpora */
   --fig-in: #bd2f3b;      /* the trace ramp's two ends, weighted for bone paper */
   --fig-out: #6d34c0;
   --fig-note: #14161c;
@@ -46,12 +47,14 @@
   :root:not([data-theme="light"]) {
     --paper: #0f1117; --paper-2: #161a23; --text: #e6e4dd; --muted: #9198a6; --rule: #2a2e38;
     --accent: #f0b34a; --accent-soft: rgba(240, 179, 74, 0.14); --fail: #e5766a; --moved: #6fc39a; --half: #d9b25a;
+    --lane-1: #5fc0b3; --lane-2: #7da6ea; --lane-3: #e58299; --lane-4: #93c870;
     --fig-in: var(--trace-in); --fig-out: var(--trace-out); --fig-note: #e6e4dd; --fig-muted: #9198a6; --fig-panel: rgba(15, 17, 23, 0.6);
   }
 }
 :root[data-theme="dark"] {
   --paper: #0f1117; --paper-2: #161a23; --text: #e6e4dd; --muted: #9198a6; --rule: #2a2e38;
   --accent: #f0b34a; --accent-soft: rgba(240, 179, 74, 0.14); --fail: #e5766a; --moved: #6fc39a; --half: #d9b25a;
+  --lane-1: #5fc0b3; --lane-2: #7da6ea; --lane-3: #e58299; --lane-4: #93c870;
   --fig-in: var(--trace-in); --fig-out: var(--trace-out); --fig-note: #e6e4dd; --fig-muted: #9198a6; --fig-panel: rgba(15, 17, 23, 0.6);
 }
 
@@ -588,51 +591,52 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
   .standfirst-band { padding: 3rem 1.25rem 0; }
 }
 
-/* ---- §3b the lineage highway: solid variable-width roads, annotations like the
-        brain viewer's -- a thin leader, a dot where it lands, and a bare label ---- */
+/* ---- the lineage bundle: vertical roads that veer in and out; each corpus in its own
+        colour until it merges into the trunk's.  labels beside their road, no container ---- */
 .lin-track { position: relative; width: 100%; max-width: 1000px; margin: 0 auto; }
 .lin-svg { display: block; width: 100%; height: auto; overflow: visible; }
-
 .lin-svg foreignObject { overflow: visible; }
-.lin-roads { opacity: .30; }
-.lin-exits { opacity: .22; }
-.lin-road { fill: var(--accent); stroke: none; }
-.lin-road.is-future { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 7; opacity: .6; }
+
+.lin-roads { opacity: .4; }
+.lin-road { stroke: none; }
+.lin-planned { opacity: .6; }
+.lin-road.is-future { fill: none; stroke-width: 1.3; stroke-dasharray: 6 7; }
 
 .lin-rule { stroke: var(--rule); stroke-width: .6; opacity: .5; }
 .lin-rule.is-future { stroke-dasharray: 4 6; }
-.lin-stage { font-family: var(--mono); font-size: 12px; letter-spacing: .16em; text-anchor: middle;
-             text-transform: uppercase; fill: var(--muted); opacity: .9;
-             paint-order: stroke; stroke: var(--paper); stroke-width: 5px; stroke-linejoin: round; }
+.lin-stage { font-family: var(--mono); font-size: 12px; letter-spacing: .16em; text-anchor: start;
+             text-transform: uppercase; fill: var(--muted); opacity: .9; }
 .lin-stage.is-future { opacity: .45; }
 
-.lin-ann .leader { stroke: var(--muted); stroke-width: 1.2; fill: none; opacity: .55; }
-.lin-ann .leader-dot { fill: var(--accent); }
-.lin-ann.is-future .leader { stroke-dasharray: 3 4; opacity: .4; }
-.lin-ann.is-future .leader-dot { fill: none; stroke: var(--rule); stroke-width: 1.4; }
+.lin-leader { stroke: var(--muted); stroke-width: 1.2; fill: none; opacity: .55; }
+.lin-dot { fill: var(--accent); }
 
-.lin-ann-body { display: grid; gap: 2px; padding: 0 10px; height: 100%; align-content: center;
-                color: inherit; text-decoration: none; }
-.lin-ann-body.to-left { text-align: right; }
+.lin-ann-body { display: grid; gap: 2px; padding: 0; height: 100%; align-content: center;
+                color: inherit; text-decoration: none; position: relative; }
+.lin-ann-body.to-left { text-align: right; justify-items: end; }
+.lin-ann-body.to-right { justify-items: start; }
 .lin-kind { font: 400 10px/1.2 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 .lin-label { font-family: var(--display); font-weight: 600; font-size: 17px; line-height: 1.15;
              letter-spacing: -.005em; }
-.lin-ann-body:hover .lin-label { color: var(--accent); }
+a.lin-ann-body:hover .lin-label { color: var(--accent); }
 .lin-note { font: 400 11.5px/1.35 var(--mono); color: var(--muted); }
+.lin-hf { font: 400 12px/1.5 var(--mono); color: var(--text); text-decoration: none; white-space: nowrap; }
+.lin-hf code { font: inherit; }
+.lin-hf .hf { font-size: 13px; }
+.lin-hf:hover { color: var(--accent); }
 .lin-ann.is-future .lin-label, .lin-ann.is-future .lin-note { opacity: .6; }
 
 .lin-tip { display: none; }
-.lin-ann-body { position: relative; }
 .lin-ann-body:hover .lin-tip, .lin-ann-body:focus-visible .lin-tip {
   display: block; position: absolute; top: 100%; width: 300px; z-index: 30;
   background: var(--paper-2); border: 1px solid var(--rule); border-radius: 6px;
   padding: .6rem .75rem; font: 400 12px/1.45 var(--serif); text-align: left; color: var(--text);
   box-shadow: 0 10px 28px rgba(0,0,0,.2);
 }
-.lin-ann-body.to-left:hover .lin-tip { right: 8px; }
-.lin-ann-body.to-right:hover .lin-tip { left: 8px; }
+.lin-ann-body.to-left:hover .lin-tip { right: 0; }
+.lin-ann-body.to-right:hover .lin-tip { left: 0; }
 
 @media (max-width: 760px) {
-  .lin-label { font-size: 14px; } .lin-note { font-size: 10px; }
+  .lin-label { font-size: 14px; } .lin-note, .lin-hf { font-size: 10px; }
   .lin-tip { width: 210px; }
 }
