@@ -27,7 +27,11 @@
   const H = Y(D.stages.length - 1) + 180;
   const TRUNK = "var(--accent)";
   const hue = i => `var(--lane-${(i % 4) + 1})`;
-  const rise = dx => Math.max(72, Math.abs(dx) * 1.8);   /* tall veers: never steeper than ~40deg */
+  /* tall veers.  1.8 puts the steepest point at 48deg from vertical (not the ~40 this
+     comment used to claim), which rails() then holds at constant width to within 9%.
+     raising it flattens the veer further -- 2.2 would get that to 4.6% -- but the top
+     corpus's veer already starts near y=0, so a taller one lifts its label off the canvas. */
+  const rise = dx => Math.max(72, Math.abs(dx) * 1.8);
   const f = n => (+n).toFixed(1);
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const el = (tag, attrs, parent) => {
@@ -36,11 +40,45 @@
     if (parent) parent.appendChild(e);
     return e;
   };
-  /* vertical at (xa,ya), vertical at (xb,yb) */
+  /* vertical at (xa,ya), vertical at (xb,yb).  used for the hairline leaders, where a
+     stroke is already perpendicular to its path and nothing can pinch. */
   const veer = (xa, ya, xb, yb) => {
     const ym = (ya + yb) / 2;
     return `C ${f(xa)} ${f(ym)} ${f(xb)} ${f(ym)} ${f(xb)} ${f(yb)}`;
   };
+
+  /* ---- a ribbon of CONSTANT PERPENDICULAR WIDTH along a veer ----
+     a filled road cannot be drawn as two copies of the same cubic offset sideways by w.
+     that keeps the HORIZONTAL width constant, and the width a reader sees is the one
+     across the road, w*cos(theta) -- so every veer pinched to 66.9% of its lane at the
+     steepest point (48deg from vertical, not the ~40 the rise comment claimed) and
+     swelled back at both ends.  width here means "checkpoints released", so a road that
+     narrows through a bend is telling the reader something untrue.
+     instead: walk the CENTRELINE cubic and widen it by SEC(theta) as it slants, so the
+     across-the-road width stays w.  two points a horizontal w/cos(theta) apart are exactly
+     w apart measured across the road, which is the width the reader sees.
+     the sideways offset stays HORIZONTAL rather than along the normal.  offsetting along
+     the normal gives the same constant width but moves each edge VERTICALLY by
+     (w/2)sin(theta), which grows linearly out of the join and creases the outer edge where
+     the veer leaves the straight stub; sec(theta) grows as theta^2, so it leaves the
+     straight run with matching width AND matching slope, and the join is invisible.
+     the road bulges to w/cos(theta) horizontally through the bend, which GAP already clears. */
+  const STEPS = 40;
+  function rails(xa, ya, xb, yb, w) {
+    const ym = (ya + yb) / 2, h = w / 2, right = [], left = [];
+    for (let i = 0; i <= STEPS; i++) {
+      const t = i / STEPS, u = 1 - t;
+      const x = xa * u * u * u + 3 * xa * u * u * t + 3 * xb * u * t * t + xb * t * t * t;
+      const y = ya * u * u * u + 3 * ym * u * u * t + 3 * ym * u * t * t + yb * t * t * t;
+      const dx = 6 * (xb - xa) * u * t, dy = 1.5 * (yb - ya) * (u * u + t * t);
+      const sec = Math.hypot(dx, dy) / Math.abs(dy);      /* dy is never 0: yb != ya */
+      right.push([x + h * sec, y]);
+      left.push([x - h * sec, y]);
+    }
+    return { right, left };
+  }
+  const trace = pts => pts.map(p => `L ${f(p[0])} ${f(p[1])}`).join(" ");
+  const back = pts => trace(pts.slice().reverse());
 
   /* a checkpoint is as wide as what it released */
   const releases = x => (x.models || []).map(m => ({ model: m, list: REL[m] || [] }));
@@ -110,10 +148,11 @@
   function entry(t, i) {
     const { xl, xr } = lane[t.id], side = t.side, { off, yM, yC, yS } = arrive[t.id];
     const L = xl - (side > 0 ? SEAM : 0), R = xr + (side < 0 ? SEAM : 0);
-    const yEnd = Y(t.to) + 40;
+    const yEnd = Y(t.to) + 40, w = R - L, cIn = L + off + w / 2, cLane = L + w / 2;
+    const { right, left } = rails(cIn, yC, cLane, yM, w);   /* down the page, into the lane */
     const d =
-      `M ${f(L + off)} ${f(yS)} L ${f(R + off)} ${f(yS)} L ${f(R + off)} ${f(yC)} ${veer(R + off, yC, R, yM)} ` +
-      `L ${f(R)} ${f(yEnd)} L ${f(L)} ${f(yEnd)} L ${f(L)} ${f(yM)} ${veer(L, yM, L + off, yC)} Z`;
+      `M ${f(L + off)} ${f(yS)} L ${f(R + off)} ${f(yS)} L ${f(R + off)} ${f(yC)} ${trace(right)} ` +
+      `L ${f(R)} ${f(yEnd)} L ${f(L)} ${f(yEnd)} L ${f(L)} ${f(yM)} ${back(left)} Z`;
     const p = el("path", { d, class: "lin-road" + (t.future ? " is-future" : "") }, t.future ? gPlanned : gRoads);
     p.style[t.future ? "stroke" : "fill"] = paint(t, i);
     return { edge: side < 0 ? L + off : R + off, y: yS + 10 };
@@ -131,9 +170,10 @@
       return { edge: e + off, y: yE };
     }
     const L = side < 0 ? e : e - w, R = L + w;
+    const { right, left } = rails(L + w / 2, yA, L + off + w / 2, yB, w);   /* out of the trunk */
     const d =
-      `M ${f(R)} ${f(yA)} ${veer(R, yA, R + off, yB)} L ${f(R + off)} ${f(yE)} ` +
-      `L ${f(L + off)} ${f(yE)} L ${f(L + off)} ${f(yB)} ${veer(L + off, yB, L, yA)}`;
+      `M ${f(R)} ${f(yA)} ${trace(right)} L ${f(R + off)} ${f(yE)} ` +
+      `L ${f(L + off)} ${f(yE)} L ${f(L + off)} ${f(yB)} ${back(left)}`;
     const p = el("path", { d, class: "lin-road" + (x.future ? " is-future" : "") }, x.future ? gPlanned : gRoads);
     p.style[x.future ? "stroke" : "fill"] = TRUNK;
     return { edge: side < 0 ? L + off : R + off, y: yE - 10 };

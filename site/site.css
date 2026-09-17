@@ -248,6 +248,48 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
 .pull p { grid-column: 2; margin: 0; max-width: 34ch; font-family: var(--display); font-weight: 400; font-style: italic; font-variation-settings: "opsz" 60; font-size: clamp(22px, 2.4vw, 30px); line-height: 1.3; letter-spacing: -0.005em; text-wrap: balance; }
 .pull cite { grid-column: 2; margin-top: 14px; font-family: var(--mono); font-style: normal; font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
 
+/* §2 leads with four propositions rather than the whole assay: a numbered head, one
+   paragraph of claim, then the two or three figures that would have to move for the
+   claim to be untrue -- each with what it was measured AGAINST, never bare.
+   the assay itself is kept entire, one <details> below, because the withdrawals in it
+   are the most reused thing here and must not become a thing you have to ask for. */
+.lede-top { font-size: 1.02rem; line-height: 1.5; color: var(--muted); max-width: 62ch; }
+.lede-top em { font-style: normal; font-weight: 600; color: var(--text); }
+
+.props { display: grid; gap: 34px; margin: 26px 0 8px; }
+.prop { display: grid; gap: 12px; align-content: start; padding-top: 16px; border-top: 1px solid var(--text); }
+.prop-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.prop-head .mono { color: var(--accent); font-size: 0.68rem; letter-spacing: 0.12em; }
+.prop-head h3 { margin: 0; flex: 1 1 18ch; font-family: var(--display); font-weight: 600;
+  font-variation-settings: "opsz" 32; font-size: 1.42rem; line-height: 1.15; letter-spacing: -0.012em; text-wrap: balance; }
+.prop-head .tag { flex: none; }
+.prop > p { margin: 0; max-width: 62ch; }
+.prop em { font-style: normal; font-weight: 600; color: var(--text); }
+
+/* a figure and its baseline, read as one line: the number carries the eye, the clause
+   beside it says what the number is against */
+.prop-figs { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 12px; }
+.prop-figs li { display: grid; grid-template-columns: 15ch minmax(0, 1fr); gap: 4px 20px;
+  align-items: baseline; padding-top: 11px; border-top: 1px solid var(--rule); }
+.prop-figs b { font-family: var(--display); font-weight: 600; font-variation-settings: "opsz" 40;
+  font-size: 1.24rem; line-height: 1.15; letter-spacing: -0.015em; color: var(--accent);
+  font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.prop-figs span { font-size: 0.9rem; line-height: 1.45; color: var(--muted); }
+.prop-figs em { font-style: italic; font-weight: 400; color: var(--text); }
+.prop-figs code { font-size: 0.8rem; padding: 0.05em 0.28em; margin-right: -0.2em; }
+
+.prop-note { margin-top: 30px; max-width: 62ch; }
+.prop-note em { font-style: italic; color: var(--text); }
+
+.assay { margin: 26px 0 0; border-top: 1px solid var(--rule); }
+.assay summary { cursor: pointer; list-style: none; display: flex; align-items: baseline; gap: 8px;
+  padding: 12px 0 2px; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.06em; color: var(--muted); }
+.assay summary::-webkit-details-marker { display: none; }
+.assay summary::before { content: "+"; color: var(--accent); font-size: 0.85rem; }
+.assay[open] summary::before { content: "−"; }
+.assay summary:hover { color: var(--text); }
+.assay summary em { font-style: normal; }
+
 .table-wrap { overflow-x: auto; margin: 8px 0 20px; }
 .claims { width: 100%; border-collapse: collapse; font-size: 0.94rem; line-height: 1.4; min-width: 560px; }
 .claims th { text-align: left; font-family: var(--mono); font-weight: 500; font-size: 0.64rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 0 12px 10px 0; border-bottom: 1px solid var(--text); }
@@ -297,6 +339,8 @@ code { font-family: var(--mono); font-size: 0.82em; background: var(--paper-2); 
   .body { min-width: 0; }
   .pull p, .pull cite { grid-column: 1; }
   .arc { grid-template-columns: 1fr 1fr; }
+  /* the figure stacks over its baseline rather than squeezing the clause to a few words */
+  .prop-figs li { grid-template-columns: minmax(0, 1fr); gap: 3px; }
   .arc-step:nth-child(2) { border-right: 0; }
   .colophon { grid-template-columns: 1fr; }
   .masthead { padding: 44px 0 32px; }

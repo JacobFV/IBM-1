@@ -243,36 +243,102 @@
   <section class="sec" id="status">
     <div class="margin"><span class="mono">§2</span><span>research</span></div>
     <div class="body">
-      <div class="table-wrap">
-      <table class="claims">
-        <thead><tr><th>claim</th><th>measured</th><th class="num">outcome</th></tr></thead>
-        <tbody>
-          <tr><td>the shared cortex is load-bearing</td><td>bypass +324% loss, frozen +180%, association zeroed +180%. on visual retrieval bypass costs 37 of 63 points; on balance, severing drops the body at 2.90 s. <em>load-bearing is not the same as better than a purpose-built baseline</em> — and <strong>narrowed 12 September 2026</strong>: that ablation's own artefact scores <em>every</em> arm below persistence (full −1.08, bypass −8.17), so the dynamics make a losing model lose less rather than producing a win; on speech-to-MEG retrieval, removing them costs nothing across six seeds. <strong>Closed 12 September 2026</strong> by the arm that had been missing — dynamics <em>present but never trained</em>: frozen <b>4.223×</b>, trained <b>4.220×</b>, absent <b>4.397×</b>, all three pairs not distinguishable against seed spreads of 0.23–0.29. <em>Training 19,200,005 parameters moves the result by 0.003</em>, so the sheet is a neutral pass-through — it contributes nothing trained, nothing untrained, and nothing by its absence</td><td class="num"><span class="tag tag-moved">necessary as a path</span><br><span class="tag tag-half">not shown to compute</span></td></tr>
-          <tr><td>band-limited fusion is exact</td><td>real EEG moved the posterior 2.03 prior sd in band; out of band, exactly 0. delays as phase ramps agree to 4.4e-16</td><td class="num"><span class="tag tag-moved">held</span></td></tr>
-          <tr><td>the thalamocortical resonance is alpha</td><td>13.45 Hz, a spindle; held-out +5503 nats/night, p = 7.2e-11</td><td class="num"><span class="tag tag-moved">prior moved</span></td></tr>
-          <tr><td>the slow oscillation sits at the band edge</td><td>1.000 ± 0.296 Hz across 8 scored N3 nights; τ<sub>adapt</sub> = 0.12 s reproduces it</td><td class="num"><span class="tag tag-moved">fitted</span></td></tr>
-          <tr><td>the paired MEG encoder beats baseline</td><td>after the target units were fixed: skill −0.07 to +0.14. the +0.90 to +0.99 reported before measured the target scale. <em>settled 11 September 2026 on the first held-out set this trainer ever had</em>: the head's correlation with the target is <strong>+0.0022</strong>, against a standard error of 0.0025 over 156,672 values — indistinguishable from zero. its skill of −366 is <em>entirely amplitude</em> (output 19.1× too large); pure noise at that scale scores −366.5</td><td class="num"><span class="tag tag-half">no signal</span></td></tr>
-          <tr><td>changing the paired objective from regression to retrieval recovers the signal</td><td>it does. contrastive training reaches <strong>4.220× chance</strong> top-1 over 2,820 held-out windows — a three-seed mean, 4.38 on its best seed — against a linear ridge's 2.89×, paired CI [+1.15, +1.82], with a shuffled-pairing control at 1.02×. and MSE was shown to <em>destroy</em> a verified readout — installed at +0.0398 correlation, driven to +0.0136 in 600 steps <em>while its training loss halved</em>. <strong>but removing the cortex entirely scores 4.397×</strong> (three-seed mean, 4.53 on its best seed), indistinguishable and 174× faster — and so does leaving the dynamics in place and <em>never training them</em>, at 4.223×; and replacing the 64-band cochleagram with a single broadband envelope is also indistinguishable. The arm is an <em>envelope tracker</em> in the literal sense: destroying the envelope's <em>time course</em> while preserving its power drops it to 2.32×, <em>below</em> the ridge. Temporal alignment is worth 60% of its whole margin — the cortex and the spectrum are not, and it beats the ridge with strictly <em>less</em> information than the ridge had</td><td class="num"><span class="tag tag-moved">objective held</span><br><span class="tag tag-half">cortex unnecessary</span></td></tr>
-        </tbody>
-      </table>
+      <p class="lede lede-top">Four things the substrate buys, each with the number that
+      would have to move for it to be untrue. Every figure names the baseline it was
+      measured against and the set it was measured on; the two THINGS-EEG2 splits give
+      <em>different orderings</em> and are never quoted interchangeably. Updated 12 September 2026.</p>
+
+      <div class="props">
+
+        <article class="prop">
+          <div class="prop-head"><span class="mono">01</span><h3>one declaration, forty models</h3><span class="tag tag-moved">holds</span></div>
+          <p>The brain is written down once — fields, anatomy, topologies, processes — and every
+          model is traced out of that declaration rather than built beside it. Training a new task
+          is not a new model, and the parameters a task moves are visible to every other task.</p>
+          <ul class="prop-figs">
+            <li><b>88.7%</b><span>of a task-specific kernel recovered by the <em>fused</em> implicit kernel, on the task that kernel was trained for. Fused from 34 checkpoints, Procrustes-aligned, weighted by measured transfer. A random kernel recovers 0%.</span></li>
+            <li><b>16 → 1</b><span>materializations trained simultaneously to step 32,000 out of one 3.84M-parameter kernel, consolidated every 500 steps. Replica drift cosine 0.998–1.000; none collapsed.</span></li>
+            <li><b>2 of 16</b><span>sit at <em>negative</em> skill against persistence — <code>video</code> and <code>audio_visual</code>. They are reported here as failures rather than dropped from the average.</span></li>
+          </ul>
+        </article>
+
+        <article class="prop">
+          <div class="prop-head"><span class="mono">02</span><h3>the declared anatomy is load-bearing</h3><span class="tag tag-moved">holds</span></div>
+          <p>Anatomy is evidence about where things are, and moving a structure moves the answer.
+          Each figure below is paired with the same model run against a displaced, severed or
+          permuted version of the structure it is about.</p>
+          <ul class="prop-figs">
+            <li><b>8.69% → 0.44%</b><span>retrieval through a declared optic nerve into occipital cortex, against the identical port <em>displaced</em> to a random region of equal size. Three retinal populations at 2.5 / 4.2 / 8.3 ms, resolved.</span></li>
+            <li><b>48.4× → 1.00×</b><span>chance, for image → occipital → sheet → a <em>precentral-only</em> readout with the ports verified disjoint, against a severed sheet. A control that permutes only the readout columns — which cannot change the answer — reads 48.6×.</span></li>
+            <li><b>63.5%</b><span>top-1 on image → cortex → EEG over the designated test set, 200 images, median rank 1. 127× chance.</span></li>
+          </ul>
+        </article>
+
+        <article class="prop">
+          <div class="prop-head"><span class="mono">03</span><h3>one kernel across data that does not combine</h3><span class="tag tag-moved">holds</span></div>
+          <p>Modalities that cannot be pooled in a shared encoding can be pooled in a shared
+          physics, because each is a <em>view</em> of the same state rather than a representation of
+          its own. Fusion is exact, not approximate, and the measurements are free to move the priors.</p>
+          <ul class="prop-figs">
+            <li><b>exactly 0</b><span>out-of-band movement when real EEG is fused into the posterior, while in band it moves 2.03 prior sd. Delays expressed as phase ramps agree to 4.4e-16.</span></li>
+            <li><b>13.45 Hz</b><span>for the thalamocortical resonance — a spindle, not the alpha the prior declared. Held out at +5503 nats/night, p = 7.2e-11.</span></li>
+            <li><b>1.000 Hz</b><span>for the slow oscillation, ± 0.296 across 8 scored N3 nights, reproduced from a single fitted constant, τ<sub>adapt</sub> = 0.12 s.</span></li>
+          </ul>
+        </article>
+
+        <article class="prop">
+          <div class="prop-head"><span class="mono">04</span><h3>a result survives its control, or it is withdrawn here</h3><span class="tag tag-half">the open frontier</span></div>
+          <p>This is the part most likely to be worth something to someone else. A raw loss is not a
+          result; a claim is scored against an explicit baseline on a named held-out split, and when
+          a control kills it, the corpse is published beside the control that killed it. The largest
+          claim this programme has made about itself is one of the dead ones.</p>
+          <ul class="prop-figs">
+            <li><b>+0.0022</b><span>correlation between the paired MEG head and its target over 156,672 held-out values, against a standard error of 0.0025 — indistinguishable from zero. Its skill of −366 is <em>entirely amplitude</em>: the output is 19.1× too large, and pure noise at that scale scores −366.5.</span></li>
+            <li><b>4.220 / 4.223 / 4.397×</b><span>chance on contrastive retrieval with the cortical sheet <em>trained</em>, <em>present but frozen</em>, and <em>absent</em> — three seeds each, not distinguishable against seed spreads of 0.23–0.29. Training 19,200,005 parameters moves the result by 0.003.</span></li>
+            <li><b>10</b><span>claims withdrawn in <code>docs/LOG.md</code>, each recorded with the check that caught it. The 91–97% of MEG variance this page once asserted was a loss in the wrong units — and was <em>worse than predicting nothing</em>.</span></li>
+          </ul>
+        </article>
+
       </div>
 
-      <p class="lede" style="margin-top:2rem">Where the programme actually stands, updated 9 September 2026. Every figure below is measured against an explicit baseline and names the set it was measured on; the two THINGS-EEG2 splits give <em>different orderings</em> and are never quoted interchangeably.</p>
+      <p class="note prop-note">So: the dynamics are necessary as a <em>path</em> — sever them and the
+      body is on the floor at 2.90 s — and they have not been shown to <em>compute</em>. The sheet
+      passes signal it does not appear to transform. Everything past the four permuted-kernel controls
+      is an attempt to change that, and it is the reason the motion-capture corpus is being brought in.</p>
 
-      <div class="table-wrap">
-      <table class="claims">
-        <thead><tr><th>what runs</th><th>measured</th><th class="num">against</th></tr></thead>
-        <tbody>
-          <tr><td>one implicit kernel, published</td><td>fused from 34 checkpoints, Procrustes-aligned, weighted by measured transfer. recovers <b>88.7%</b> of a task-specific kernel on the task that kernel was trained for</td><td class="num"><span class="tag tag-moved">0% for random</span></td></tr>
-          <tr><td>16 materializations, one 3.84M kernel</td><td>trained simultaneously to step 32,000, consolidated every 500 steps, replica drift cosine 0.998–1.000, none collapsed. visual_eeg <b>30.4%</b> top-1, optic_nerve <b>22.8%</b>, ten per-subject terms mean <b>15.4%</b>. two of the sixteen — video and audio_visual — sit at <em>negative</em> skill against persistence and are reported as failures, not omitted</td><td class="num"><span class="tag tag-moved">0.5% chance</span></td></tr>
-          <tr><td>image → cortex → EEG retrieval</td><td><b>63.5%</b> top-1 on the designated test set, 200 images, median rank 1</td><td class="num"><span class="tag tag-moved">127× chance</span></td></tr>
-          <tr><td>a declared optic nerve into occipital cortex</td><td>three retinal populations at 2.5 / 4.2 / 8.3 ms, resolved. displacing the port to a random region of equal size collapses retrieval to <b>0.44%</b></td><td class="num"><span class="tag tag-moved">8.69% in place</span></td></tr>
-          <tr><td>the substrate resolution has an interior optimum</td><td>controlled sweep, resolution the only variable: 128 → 19.4%, <b>512 → 23.0%</b>, 2048 → 23.0%, 8192 → 21.7%</td><td class="num"><span class="tag tag-moved">both tails worse</span></td></tr>
-          <tr><td>the sheet delivers between disjoint regions</td><td>image &rarr; occipital &rarr; sheet &rarr; a <em>precentral-only</em> readout (ports verified disjoint) reaches <b>48.4&times;</b> chance on real THINGS-EEG2, against a severed sheet at <b>1.00&times;</b> &mdash; severed has across-image variance of exactly zero and effective rank 1.0. a positive control that permutes only the readout columns, which cannot change the answer, reads 48.6&times;</td><td class="num"><span class="tag tag-moved">severed = chance</span></td></tr>
-          <tr><td>cortical dynamics hold a body upright</td><td>250 exchanges, five seconds, 5 N pelvis push: <b>0.17 mm</b> COM displacement. severed, the body is on the floor at 2.90 s at 499 mm</td><td class="num"><span class="tag tag-moved">held</span></td></tr>
-        </tbody>
-      </table>
-      </div>
+      <details class="assay">
+        <summary><em>every claim, with what moved it — the full assay</em></summary>
+            <div class="table-wrap">
+            <table class="claims">
+              <thead><tr><th>claim</th><th>measured</th><th class="num">outcome</th></tr></thead>
+              <tbody>
+                <tr><td>the shared cortex is load-bearing</td><td>bypass +324% loss, frozen +180%, association zeroed +180%. on visual retrieval bypass costs 37 of 63 points; on balance, severing drops the body at 2.90 s. <em>load-bearing is not the same as better than a purpose-built baseline</em> — and <strong>narrowed 12 September 2026</strong>: that ablation's own artefact scores <em>every</em> arm below persistence (full −1.08, bypass −8.17), so the dynamics make a losing model lose less rather than producing a win; on speech-to-MEG retrieval, removing them costs nothing across six seeds. <strong>Closed 12 September 2026</strong> by the arm that had been missing — dynamics <em>present but never trained</em>: frozen <b>4.223×</b>, trained <b>4.220×</b>, absent <b>4.397×</b>, all three pairs not distinguishable against seed spreads of 0.23–0.29. <em>Training 19,200,005 parameters moves the result by 0.003</em>, so the sheet is a neutral pass-through — it contributes nothing trained, nothing untrained, and nothing by its absence</td><td class="num"><span class="tag tag-moved">necessary as a path</span><br><span class="tag tag-half">not shown to compute</span></td></tr>
+                <tr><td>band-limited fusion is exact</td><td>real EEG moved the posterior 2.03 prior sd in band; out of band, exactly 0. delays as phase ramps agree to 4.4e-16</td><td class="num"><span class="tag tag-moved">held</span></td></tr>
+                <tr><td>the thalamocortical resonance is alpha</td><td>13.45 Hz, a spindle; held-out +5503 nats/night, p = 7.2e-11</td><td class="num"><span class="tag tag-moved">prior moved</span></td></tr>
+                <tr><td>the slow oscillation sits at the band edge</td><td>1.000 ± 0.296 Hz across 8 scored N3 nights; τ<sub>adapt</sub> = 0.12 s reproduces it</td><td class="num"><span class="tag tag-moved">fitted</span></td></tr>
+                <tr><td>the paired MEG encoder beats baseline</td><td>after the target units were fixed: skill −0.07 to +0.14. the +0.90 to +0.99 reported before measured the target scale. <em>settled 11 September 2026 on the first held-out set this trainer ever had</em>: the head's correlation with the target is <strong>+0.0022</strong>, against a standard error of 0.0025 over 156,672 values — indistinguishable from zero. its skill of −366 is <em>entirely amplitude</em> (output 19.1× too large); pure noise at that scale scores −366.5</td><td class="num"><span class="tag tag-half">no signal</span></td></tr>
+                <tr><td>changing the paired objective from regression to retrieval recovers the signal</td><td>it does. contrastive training reaches <strong>4.220× chance</strong> top-1 over 2,820 held-out windows — a three-seed mean, 4.38 on its best seed — against a linear ridge's 2.89×, paired CI [+1.15, +1.82], with a shuffled-pairing control at 1.02×. and MSE was shown to <em>destroy</em> a verified readout — installed at +0.0398 correlation, driven to +0.0136 in 600 steps <em>while its training loss halved</em>. <strong>but removing the cortex entirely scores 4.397×</strong> (three-seed mean, 4.53 on its best seed), indistinguishable and 174× faster — and so does leaving the dynamics in place and <em>never training them</em>, at 4.223×; and replacing the 64-band cochleagram with a single broadband envelope is also indistinguishable. The arm is an <em>envelope tracker</em> in the literal sense: destroying the envelope's <em>time course</em> while preserving its power drops it to 2.32×, <em>below</em> the ridge. Temporal alignment is worth 60% of its whole margin — the cortex and the spectrum are not, and it beats the ridge with strictly <em>less</em> information than the ridge had</td><td class="num"><span class="tag tag-moved">objective held</span><br><span class="tag tag-half">cortex unnecessary</span></td></tr>
+              </tbody>
+            </table>
+            </div>
+      
+            <p class="lede" style="margin-top:2rem">Where the programme actually stands, updated 9 September 2026. Every figure below is measured against an explicit baseline and names the set it was measured on; the two THINGS-EEG2 splits give <em>different orderings</em> and are never quoted interchangeably.</p>
+      
+            <div class="table-wrap">
+            <table class="claims">
+              <thead><tr><th>what runs</th><th>measured</th><th class="num">against</th></tr></thead>
+              <tbody>
+                <tr><td>one implicit kernel, published</td><td>fused from 34 checkpoints, Procrustes-aligned, weighted by measured transfer. recovers <b>88.7%</b> of a task-specific kernel on the task that kernel was trained for</td><td class="num"><span class="tag tag-moved">0% for random</span></td></tr>
+                <tr><td>16 materializations, one 3.84M kernel</td><td>trained simultaneously to step 32,000, consolidated every 500 steps, replica drift cosine 0.998–1.000, none collapsed. visual_eeg <b>30.4%</b> top-1, optic_nerve <b>22.8%</b>, ten per-subject terms mean <b>15.4%</b>. two of the sixteen — video and audio_visual — sit at <em>negative</em> skill against persistence and are reported as failures, not omitted</td><td class="num"><span class="tag tag-moved">0.5% chance</span></td></tr>
+                <tr><td>image → cortex → EEG retrieval</td><td><b>63.5%</b> top-1 on the designated test set, 200 images, median rank 1</td><td class="num"><span class="tag tag-moved">127× chance</span></td></tr>
+                <tr><td>a declared optic nerve into occipital cortex</td><td>three retinal populations at 2.5 / 4.2 / 8.3 ms, resolved. displacing the port to a random region of equal size collapses retrieval to <b>0.44%</b></td><td class="num"><span class="tag tag-moved">8.69% in place</span></td></tr>
+                <tr><td>the substrate resolution has an interior optimum</td><td>controlled sweep, resolution the only variable: 128 → 19.4%, <b>512 → 23.0%</b>, 2048 → 23.0%, 8192 → 21.7%</td><td class="num"><span class="tag tag-moved">both tails worse</span></td></tr>
+                <tr><td>the sheet delivers between disjoint regions</td><td>image &rarr; occipital &rarr; sheet &rarr; a <em>precentral-only</em> readout (ports verified disjoint) reaches <b>48.4&times;</b> chance on real THINGS-EEG2, against a severed sheet at <b>1.00&times;</b> &mdash; severed has across-image variance of exactly zero and effective rank 1.0. a positive control that permutes only the readout columns, which cannot change the answer, reads 48.6&times;</td><td class="num"><span class="tag tag-moved">severed = chance</span></td></tr>
+                <tr><td>cortical dynamics hold a body upright</td><td>250 exchanges, five seconds, 5 N pelvis push: <b>0.17 mm</b> COM displacement. severed, the body is on the floor at 2.90 s at 499 mm</td><td class="num"><span class="tag tag-moved">held</span></td></tr>
+              </tbody>
+            </table>
+            </div>
+      </details>
     </div>
   </section>
 
