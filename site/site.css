@@ -805,3 +805,10 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 .sp-dot-before { fill: var(--muted); }
 .sp-dot-after { fill: var(--accent); }
 .sp-keytext { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+
+/* the live musculoskeletal body */
+.body-fig { margin: 0; }
+#body3d { width: 100%; min-height: 340px; cursor: grab; opacity: 0; transition: opacity .7s; }
+#body3d.is-ready { opacity: 1; }
+#body3d:active { cursor: grabbing; }
+#body3d canvas { display: block; width: 100%; height: auto; }
