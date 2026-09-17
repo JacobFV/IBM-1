@@ -84,20 +84,29 @@
     svg = el("svg", { class: "spine-svg", viewBox: `0 0 ${W} ${f(H)}`,
                       preserveAspectRatio: "none", "aria-hidden": "true" }, host);
     const defs = el("defs", {}, svg);
-    const g = el("linearGradient", { id: "spine-fade", gradientUnits: "userSpaceOnUse",
-                                     x1: 0, y1: 0, x2: 0, y2: f(H) }, defs);
-    el("stop", { offset: 0, style: "stop-color:var(--accent);stop-opacity:0" }, g);
-    el("stop", { offset: 0.05, style: "stop-color:var(--accent);stop-opacity:.52" }, g);
-    el("stop", { offset: 0.9, style: "stop-color:var(--accent);stop-opacity:.8" }, g);
-    /* the trunk continues past the last station rather than stopping flat against it */
-    el("stop", { offset: 1, style: "stop-color:var(--accent);stop-opacity:0" }, g);
+    /* every road goes in ONE group carrying ONE opacity, and each path inside is fully
+       opaque.  giving the trunk, the feeds and the taps their own alpha made every
+       overlap composite to a different shade, so each merge and each tap showed a
+       lighter patch with a hard seam across it -- the shapes were correct and the
+       compositing was not.  the top-and-tail fade therefore cannot be per-path either:
+       it is a MASK over the whole group, which fades the result rather than the parts. */
+    const mg = el("linearGradient", { id: "spine-fademask", gradientUnits: "userSpaceOnUse",
+                                      x1: 0, y1: 0, x2: 0, y2: f(H) }, defs);
+    el("stop", { offset: 0, style: "stop-color:#000" }, mg);
+    el("stop", { offset: 0.045, style: "stop-color:#fff" }, mg);
+    el("stop", { offset: 0.93, style: "stop-color:#fff" }, mg);
+    el("stop", { offset: 1, style: "stop-color:#000" }, mg);
+    const mask = el("mask", { id: "spine-mask", maskUnits: "userSpaceOnUse",
+                              x: 0, y: 0, width: W, height: f(H) }, defs);
+    el("rect", { x: 0, y: 0, width: W, height: f(H), fill: "url(#spine-fademask)" }, mask);
+    const roads = el("g", { class: "spine-roads", mask: "url(#spine-mask)" }, svg);
 
     /* --- the trunk: a right edge that never moves and a left edge that steps out --- */
     const L = [];
     for (let y = 0; y <= H; y += 2) L.push([leftAt(y), y]);
     L.push([leftAt(H), H]);
-    el("path", { class: "spine-trunk", fill: "url(#spine-fade)",
-      d: `M ${f(X_R)} 0 L ${f(X_R)} ${f(H)} ${back(L)} Z` }, svg);
+    el("path", { class: "spine-trunk",
+      d: `M ${f(X_R)} 0 L ${f(X_R)} ${f(H)} ${back(L)} Z` }, roads);
 
     st.forEach((s, i) => {
       /* ---- a model tapped off the right, veering out with vertical tangents ---- */
@@ -105,7 +114,7 @@
       const tap = rails(X_R - TAP * 0.9, oy, W - TAP / 2 - 2, ey, TAP);
       el("path", { class: "spine-tap",
         d: `M ${f(tap.right[0][0])} ${f(oy)} ${trace(tap.right)} L ${f(W - 2)} ${f(ey + 18)} ` +
-           `L ${f(W - TAP - 2)} ${f(ey + 18)} ${back(tap.left)} Z` }, svg);
+           `L ${f(W - TAP - 2)} ${f(ey + 18)} ${back(tap.left)} Z` }, roads);
 
       if (!s.feed) return;
       /* ---- a corpus fusing in from the left ----
@@ -125,7 +134,7 @@
       el("stop", { offset: 1, style: "stop-color:var(--accent)" }, bg);
       const fp = el("path", { class: "spine-feed",
         d: `M ${f(xI - GROW / 2)} ${f(yS)} L ${f(xI + GROW / 2)} ${f(yS)} ` +
-           `L ${f(r.right[0][0])} ${f(yC)} ${trace(r.right)} ${back(r.left)} Z` }, svg);
+           `L ${f(r.right[0][0])} ${f(yC)} ${trace(r.right)} ${back(r.left)} Z` }, roads);
       fp.style.fill = `url(#${gid})`;
 
       const t = el("text", { class: "spine-label", x: f(xI - GROW / 2 - 11), y: f(yS + 9) }, svg);

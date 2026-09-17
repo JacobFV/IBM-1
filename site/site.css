@@ -706,11 +706,12 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 .spine-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
   opacity: 0; transition: opacity .6s; }
 .spine-rail.is-ready .spine-svg { opacity: 1; }
-/* one group opacity on the fills, so a ribbon overlapping the trunk shows no seam
-   and no darker patch where they meet */
+/* ONE opacity, on the group.  every road inside is fully opaque, so a ribbon crossing
+   the trunk composites to exactly the trunk's colour and no seam appears. */
+.spine-roads { opacity: .62; }
 .spine-trunk, .spine-feed, .spine-tap { stroke: none; }
-.spine-feed { opacity: .72; }   /* fill comes from a per-corpus blend in spine.js */
-.spine-tap { fill: var(--accent); opacity: .5; }
+.spine-trunk { fill: var(--accent); }
+.spine-tap { fill: var(--accent); }
 .spine-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
   text-transform: uppercase; text-anchor: end; fill: var(--muted); }
 
