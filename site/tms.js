@@ -123,14 +123,24 @@
   const joint = new T.MeshStandardMaterial({ color: 0x2c2f38, roughness: 0.55, metalness: 0.25 });
   const coilMat = new T.MeshStandardMaterial({ color: 0xf0b34a, roughness: 0.3, metalness: 0.4,
                                                emissive: 0x3a2400 });
-  const links = [], hubs = [];
+  /* a cobot reads as a cobot because of its PROPORTIONS: pale tapered shells that get
+     slimmer toward the wrist, a dark collar at every axis, and a cast base.  bare
+     equal-radius cylinders read as a stick figure however correct the kinematics are. */
+  const RAD = [0.052, 0.049, 0.046, 0.043, 0.039, 0.034, 0.030, 0.026];
+  const links = [], hubs = [], collars = [];
   for (let i = 0; i < 8; i++) {
-    const m = new T.Mesh(new T.CylinderGeometry(0.036, 0.036, 1, 18), shell);
+    const m = new T.Mesh(new T.CylinderGeometry(RAD[i] * 0.88, RAD[i], 1, 26), shell);
     m.geometry.translate(0, 0.5, 0);
     links.push(m); base.add(m);
-    if (i < 7) { const h = new T.Mesh(new T.SphereGeometry(0.046, 18, 14), joint); hubs.push(h); base.add(h); }
+    if (i < 7) {
+      const h = new T.Mesh(new T.SphereGeometry(RAD[i] * 1.06, 22, 16), shell);
+      hubs.push(h); base.add(h);
+      const c = new T.Mesh(new T.CylinderGeometry(RAD[i] * 1.1, RAD[i] * 1.1, RAD[i] * 0.5, 26), joint);
+      collars.push(c); base.add(c);
+    }
   }
-  base.add(new T.Mesh(new T.CylinderGeometry(0.075, 0.095, 0.05, 24), joint));
+  const pedestal = new T.Mesh(new T.CylinderGeometry(0.082, 0.115, 0.055, 32), joint);
+  pedestal.position.y = 0.027; base.add(pedestal);
   /* the coil: two windings side by side, the figure-of-eight a real TMS coil is */
   const coil = new T.Group();
   [-0.026, 0.026].forEach((dx) => {
@@ -149,14 +159,49 @@
       links[i].scale.set(1, Math.max(L, 1e-4), 1);
       links[i].quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), d.clone().normalize());
       links[i].scale.x = links[i].scale.z = i > 5 ? 0.62 : 1;
-      if (i < 7) hubs[i].position.copy(pts[i + 1]).addScaledVector(new T.Vector3(), 0);
     }
     hubs.forEach((h, i) => h.position.copy(pts[i + 1]));
+    /* a collar sits ON each axis, aligned to the joint's own z, which is what makes the
+       seven axes legible as axes rather than as bends in a tube */
+    collars.forEach((c, i) => {
+      c.position.copy(pts[i + 1]);
+      c.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), zOf(Ms[i]));
+    });
     const M = Ms[7];
     coil.position.copy(posOf(M));
     coil.quaternion.setFromRotationMatrix(M);
     tipDot.position.copy(posOf(M));
   }
+
+  /* ---------- the regions the before/after spectra are read from ----------
+     labelled from the same parcellation the rest of the site draws, so the names on this
+     figure and the ports named elsewhere are the same objects. */
+  const REGIONS = [
+    { r: "precentral", h: "lh", label: "precentral", note: "where the pulse lands" },
+    { r: "superiorfrontal", h: null, label: "superior frontal", note: "spectra read here" },
+    { r: "superiorparietal", h: null, label: "superior parietal", note: "spectra read here" },
+  ];
+  const marks = [];
+  const markGeo = new T.SphereGeometry(0.007, 12, 10);
+  const markMat = new T.MeshStandardMaterial({ color: 0x63d3e6, emissive: 0x0d3a42, roughness: 0.4 });
+  REGIONS.forEach((R) => {
+    const ns = G.nodes.filter((n) => n.r === R.r && (!R.h || n.h === R.h));
+    if (!ns.length) return;
+    const c = ns.reduce((a, n) => a.add(new T.Vector3().fromArray(n.p)), new T.Vector3())
+      .multiplyScalar(1 / ns.length).multiplyScalar(MM).sub(ctr);
+    const m = new T.Mesh(markGeo, markMat); m.position.copy(c); world.add(m);
+    marks.push({ pos: c, label: R.label, note: R.note });
+  });
+  const labelHost = document.createElement("div");
+  labelHost.className = "tms-labels";
+  host.appendChild(labelHost);
+  marks.forEach((m) => {
+    const d = document.createElement("div");
+    d.className = "tms-label";
+    d.innerHTML = `<b>${m.label}</b><span>${m.note}</span>`;
+    labelHost.appendChild(d);
+    m.el = d;
+  });
 
   /* ---------- lighting, camera ---------- */
   scene.add(new T.HemisphereLight(0xcfe0ff, 0x1a1208, 0.6));
@@ -190,9 +235,12 @@
     cam.lookAt(focus);
   }
   function resize() {
-    const w = host.clientWidth, h = Math.max(300, Math.round(w * 0.84));
+    const w = host.clientWidth, h = Math.max(320, Math.round(w * 0.62));
     renderer.setSize(w, h, false);
     cam.aspect = w / h; cam.updateProjectionMatrix();
+    /* refit after the aspect changes -- fitting once at load framed the rig for whatever
+       width the column happened to have before layout settled, and cropped it after */
+    fit();
   }
   host.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, y: e.clientY, az, el }; host.setPointerCapture(e.pointerId); });
   host.addEventListener("pointermove", (e) => {
@@ -226,6 +274,22 @@
     hotMat.emissive.setHex(pulse ? 0xf0b34a : 0x6b4405);
     place();
     renderer.render(scene, cam);
+    /* the labels are HTML, so they stay crisp and themeable; they are just projected */
+    const w = host.clientWidth, hh = renderer.domElement.clientHeight;
+    /* three cortical regions within a few centimetres of each other project to within a
+       few pixels, so the labels land on top of one another.  fan them vertically by
+       projected height order and run a short leader back to the marker. */
+    const proj = marks.map((m) => {
+      const v = m.pos.clone().project(cam);
+      return { m, x: (v.x + 1) / 2 * w, y: (-v.y + 1) / 2 * hh, z: v.z };
+    }).sort((a, b) => a.y - b.y);
+    const MINGAP = 30;
+    for (let i = 1; i < proj.length; i++)
+      if (proj[i].y - proj[i - 1].y < MINGAP) proj[i].y = proj[i - 1].y + MINGAP;
+    proj.forEach((p) => {
+      p.m.el.style.opacity = p.z < 1 ? "1" : "0";
+      p.m.el.style.transform = `translate(${(p.x + 16).toFixed(0)}px, ${(p.y - 9).toFixed(0)}px)`;
+    });
   }
   resize();
   window.addEventListener("resize", resize);

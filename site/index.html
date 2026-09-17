@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="site.css?v=20260917155813">
+<link rel="stylesheet" href="site.css?v=20260917162053">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2307090f'/%3E%3Ccircle cx='11' cy='13' r='2.2' fill='%23f0b34a'/%3E%3Ccircle cx='21' cy='11' r='2.2' fill='%2363d3e6'/%3E%3Ccircle cx='17' cy='21' r='2.2' fill='%23e69422'/%3E%3Cpath d='M11 13L21 11L17 21Z' fill='none' stroke='%23e9e7e0' stroke-opacity='.5' stroke-width='.8'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -55,16 +55,15 @@
     <!-- ------------------------------------------------ the declaration -->
     <section class="station st-design" data-station data-feed="declaration">
       <div class="st-text">
-        <h2>One Declaration, Forty-Four Models</h2>
-        <p class="st-lede">Fields carry physical state on a support, topologies say which state may
-        interact, and processes are dynamics over a topology. A model names regions, a resolution and
-        a bandwidth; dependency tracing instantiates only what that request actually reaches, so the
-        same field can sit at 1 mm across the brain and 50 µm around one electrode.</p>
+        <h2>One Brain, Declared Once</h2>
+        <p class="st-lede">Ask for a model — a region, a resolution, a bandwidth — and only the
+        parts that request actually reaches get built. The same brain can be coarse everywhere and
+        fine around a single electrode.</p>
         <p class="display-math">M = materialize(R, r, B, F, A, T, P)</p>
       </div>
       <div class="st-media">
-        <figure class="snap" data-snap="materialize"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div>
-          <figcaption><code>eeg_forward</code> read off its request. What lights up is what the trace instantiates; the rest of the brain is never built.</figcaption>
+        <figure class="snap snap-tall" data-snap="l_implicit"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div>
+          <figcaption>one parameter set, and three of the forty-four models traced out of it.</figcaption>
         </figure>
       </div>
     </section>
@@ -73,13 +72,14 @@
     <section class="station" data-station data-feed="THINGS-EEG2">
       <div class="st-text">
         <h2>64-Channel EEG to Visual Thought Decoding</h2>
-        <ul class="st-figs">
-                    <li><b>60.0%</b><span>top-1 <em>decoding</em>: given a measured response, the image the subject saw comes first out of all 200 &mdash; <b>120&times; chance</b>. The paired direction, image&rarr;EEG, is <b>63.5%</b>.</span></li>
-          <li><b>48.4× → 1.00×</b><span>through the sheet to a precentral-only readout with ports verified disjoint, against a severed sheet.</span></li>
-          <li><b>8.69% → 0.44%</b><span>when the optic nerve port is displaced to a random region of equal size.</span></li>
+        <p class="st-lede">Show someone a picture, read their scalp, and name what they saw — out
+        of two hundred candidates, where guessing gets you 0.5%.</p>
+        <ul class="st-big">
+          <li><b>63.5<i>%</i></b><span>image &rarr; EEG, top-1</span></li>
+          <li><b>60.0<i>%</i></b><span>EEG &rarr; image, top-1</span></li>
         </ul>
-        <p class="st-control"><b>Control:</b> a dynamics-free encoder, selected the same way, matches
-        this. The substrate is load-bearing inside the model; it has not beaten a purpose-built baseline.</p>
+        <p class="st-control"><b>Control:</b> an encoder with no dynamics at all matches this. The
+        substrate is doing the work inside the model; it has not beaten a purpose-built decoder.</p>
       </div>
       <div class="st-media st-media-wide">
         <div id="retrieval"></div>
@@ -92,19 +92,20 @@
     <!-- ------------------------------------------------ speech + sleep -->
     <section class="station" data-station data-feed="LibriBrain MEG">
       <div class="st-text">
-        <h2>Speech Tracking and Sleep Oscillation Dynamics</h2>
+        <h2>Sleep Rhythms and Speech Tracking</h2>
+        <p class="st-lede">A sleeping brain has a beat. Write down the physics and the beat comes
+        out on its own — nobody fits it to the spectrum.</p>
         <ul class="st-figs">
-          <li><b>1.000 Hz</b><span>slow oscillation, ± 0.296 across 8 scored N3 nights, from one declared constant: τ<sub>adapt</sub> = 0.12 s.</span></li>
-          <li><b>13.45 Hz</b><span>thalamocortical resonance — a spindle, not the alpha the prior declared. Held out at +5503 nats/night, p = 7.2e-11.</span></li>
-          <li><b>4.220×</b><span>chance on speech-to-MEG retrieval over 2,820 held-out windows, against a linear ridge at 2.89×.</span></li>
+          <li><b>1 Hz</b><span>the slow wave of deep sleep, out of a single time constant.</span></li>
+          <li><b>13.45 Hz</b><span>sleep spindles. The prior said this would be alpha. The data moved it.</span></li>
+          <li><b>4.2&times;</b><span>chance at picking which speech someone heard, from their MEG.</span></li>
         </ul>
-        <p class="st-control"><b>Control:</b> removing the cortex scores 4.397× and never training it
-        scores 4.223× — all indistinguishable. That arm is an envelope tracker, and the regression head
-        it replaced reads +0.0022 correlation against an SE of 0.0025.</p>
+        <p class="st-control"><b>Control:</b> on the speech task, taking the cortex out entirely
+        changes nothing. That arm is following the loudness of the sound, not the words.</p>
       </div>
       <div class="st-media">
         <figure class="snap" data-snap="l_state"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div>
-          <figcaption><code>sleep_dynamics</code>: the fronto-thalamic loop the oscillators are declared on.</figcaption>
+          <figcaption>the thalamus and the cortex it drives, where the rhythms are declared.</figcaption>
         </figure>
       </div>
     </section>
@@ -113,72 +114,38 @@
     <section class="station" data-station data-feed="CMU mocap">
       <div class="st-text">
         <h2>Controlling a Musculoskeletal Human <em>En Simulo</em></h2>
+        <p class="st-lede">A full body — bones, muscles, tendons — with the cortex closing the loop
+        to the muscle.</p>
         <ul class="st-figs">
-          <li><b>0.17 mm</b><span>centre-of-mass displacement over 250 exchanges and five seconds under a 5 N push to the pelvis.</span></li>
-          <li><b>2.90 s</b><span>to the floor with the cortex severed — 499 mm of drift. The dynamics are necessary as a path.</span></li>
-          <li><b>11.5°</b><span>worst joint excursion past a declared range while crawling 0.920 m, against 145° for a withdrawn earlier attempt.</span></li>
+          <li><b>0.17 mm</b><span>it moves, when you shove it.</span></li>
+          <li><b>2.90 s</b><span>to the floor, with the cortex cut out.</span></li>
         </ul>
-        <p class="st-control"><b>Control:</b> a kernel with its site rows permuted holds the body up
-        just as well. The cortex is the motor owner; what it learned has not been shown to contribute.</p>
+        <p class="st-control"><b>Control:</b> scramble what the cortex learned and it still stands.
+        The cortex owns the muscles; that is not the same as it knowing how to walk.</p>
       </div>
       <div class="st-media">
         <figure class="body-fig">
           <div id="body3d"></div>
-          <figcaption>1,047 bone and muscle surfaces, bound to the driven skeleton and moving
-          with a solved gait trajectory. Drag to orbit.</figcaption>
         </figure>
       </div>
     </section>
 
-    <!-- ------------------------------------------------ TMS -->
-    <section class="station" data-station data-feed="TMS-EEG">
+    <!-- ------------------------------------------------ stimulation -->
+    <section class="station st-wide" data-station data-feed="TMS-EEG">
       <div class="st-text">
-        <h2>Predicting How TMS Alters the Brain</h2>
-        <p class="st-lede">Place a coil, get the cortex it actually reaches. The pulse is 100 µs;
-        the induced E-field is solved through the head volume at high resolution, because the skull
-        and scalp matter here as much as the brain does. What comes back is the evoked potential
-        a real montage would record.</p>
+        <h2>Aiming Stimulation, and Predicting What It Changes</h2>
+        <p class="st-lede">Put a coil on a head and you are guessing which cortex it reaches, and
+        guessing again about what a month of it will do. Both are questions about the same brain.</p>
         <ul class="st-figs">
-          <li><b>100 µs</b><span>pulse, resolved in the head volume under the coil and coarse in the brain — the resolution follows the physics, not a uniform grid.</span></li>
-          <li><b>E-field → TEP</b><span>coil pose and current to induced field to the potential evoked at each contact, in one traced model.</span></li>
-          <li><b>phantom-checked</b><span>a TEP is notoriously reproducible from the stimulation artifact alone, so the artifact phantoms are a declared negative control rather than an afterthought.</span></li>
+          <li><b>where it lands</b><span>the field is solved through skull and scalp, so the answer is a place on the cortex rather than a spot on the head.</span></li>
+          <li><b>what it does now</b><span>the response every electrode records, milliseconds after the pulse.</span></li>
+          <li><b>what it does by week four</b><span>how the rhythms of the targeted region reorganise over a course of treatment — the thing the treatment is actually chosen for.</span></li>
         </ul>
-        <p class="st-control"><b>Why the head volume:</b> unlike electrical stimulation, a magnetic
-        pulse does not care about scalp impedance — it induces where the field curls, so the geometry
-        of skull and CSF decides which gyrus fires.</p>
       </div>
-      <div class="st-media">
-        <figure class="tms-fig">
-          <div id="tms3d"></div>
-          <figcaption>a 7-axis cobot placing the coil on the motor hotspot — the digitised
-          contact nearest left precentral. The seven joint angles are solved, not posed.
-          Drag to orbit.</figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <!-- ------------------------------------------------ plasticity -->
-    <section class="station" data-station data-feed="longitudinal EEG">
-      <div class="st-text">
-        <h2>Predicting Long-Term Spectral Reorganization</h2>
-        <p class="st-lede">The question a course of treatment is actually chosen on: not what one pulse
-        does, but how the spectrum of a region reorganises over weeks of them. Plasticity is declared
-        over the hippocampal and neuromodulatory systems, so a protocol can be run forward and the
-        band power it lands on read off.</p>
-        <ul class="st-figs">
-          <li><b>weeks, not milliseconds</b><span>the slow variable is synaptic, so the model integrates a protocol rather than replaying a single response.</span></li>
-          <li><b>per-region spectra</b><span>band power before and after, on the region the protocol targeted rather than on the whole head.</span></li>
-          <li><b>against persistence</b><span>spectra drift on their own, so the bar is beating "predicts no change" by more than the test–retest spread.</span></li>
-        </ul>
-        <p class="st-control"><b>Why this is the one that matters:</b> a model that predicts the acute
-        response tells you the coil is on. A model that predicts the reorganisation tells you whether
-        the course is working.</p>
-      </div>
-      <div class="st-media">
-        <figure class="spectra-fig">
-          <div id="spectra"></div>
-          <figcaption>band power over the targeted region, before a protocol and after it.</figcaption>
-        </figure>
+      <div class="st-media st-media-wide">
+        <div id="tms3d"></div>
+        <figcaption class="st-cap">a 7-axis cobot placing the coil on the motor hotspot, and the
+        regions the before/after spectra are read from. Drag to orbit.</figcaption>
       </div>
     </section>
 
@@ -187,29 +154,52 @@
 
 <!-- ------------------------------------------------------------- try it -->
 <section class="try" id="try">
-  <h2>Try It!</h2>
-  <pre class="code"><code>!pip install git+https://github.com/JacobFV/IBM-1
+  <div class="try-inner">
+    <h2>Try It!</h2>
+    <div class="nb">
+      <div class="nb-bar"><span class="nb-dot"></span><span class="nb-dot"></span><span class="nb-dot"></span>
+        <span class="nb-name">materialize.ipynb</span></div>
+      <div class="nb-cell">
+        <span class="nb-gutter">[1]</span>
+        <pre class="nb-code"><code><span class="cm">!</span><span class="fn">pip</span> install git+https://github.com/JacobFV/IBM-1</code></pre>
+      </div>
+      <div class="nb-cell">
+        <span class="nb-gutter">[2]</span>
+        <pre class="nb-code"><code><span class="kw">import</span> ibm
+<span class="kw">from</span> ibm.materialize <span class="kw">import</span> library
 
-import ibm
-from ibm.materialize import library
+ibm.load_all(seal=<span class="bool">True</span>, strict=<span class="bool">True</span>)
+<span class="fn">print</span>(ibm.REGISTRY.summary())</code></pre>
+        <pre class="nb-out">13 fields · 113 components · 22 supports · 20 anatomical systems
+17 topologies · 30 processes · 115 implementations</pre>
+      </div>
+      <div class="nb-cell">
+        <span class="nb-gutter">[3]</span>
+        <pre class="nb-code"><code>m = library.MODELS[<span class="str">"eeg_forward"</span>]
+<span class="fn">print</span>(m.request.describe())</code></pre>
+        <pre class="nb-out">request 'eeg-forward'  subject=template  frame=subject_t1
+  targets     device.contact_potential, electromagnetic.potential
+  regions     cortex, conductor
+  r(q)        3 rules, default 6 mm
+  B(q)        default Band(0.5-100Hz), 3 overrides
+  window      n=2048 dt=0.001s (2.048s, nyquist 500 Hz)</pre>
+      </div>
+      <div class="nb-cell">
+        <span class="nb-gutter">[4]</span>
+        <pre class="nb-code"><code><span class="cm"># one kernel carries the parameters for any materialization</span>
+<span class="kw">from</span> huggingface_hub <span class="kw">import</span> hf_hub_download
 
-ibm.load_all(seal=True, strict=True)
-print(ibm.REGISTRY.summary())
-
-m = library.MODELS["eeg_forward"]
-print(m.request.describe())
-
-<span class="c"># one kernel carries the parameters for any materialization</span>
-from huggingface_hub import hf_hub_download
-ckpt = hf_hub_download("<span data-rel="repo">jacob-valdez/ibm-1</span>",
-                       "<span data-rel="kernel-path">implicit/ibm1.implicit.s30k.e128.fused34.pt</span>")</code></pre>
-  <p class="try-cta">
-    <a class="btn" href="https://colab.research.google.com/github/JacobFV/IBM-1/blob/main/notebooks/materialize.ipynb" target="_blank" rel="noopener">Open in Colab</a>
-    <a class="btn btn-quiet" href="https://github.com/JacobFV/IBM-1" target="_blank" rel="noopener">GitHub</a>
-    <a class="btn btn-quiet" data-rel="kernel-href" href="https://huggingface.co/jacob-valdez/ibm-1/tree/main/implicit" target="_blank" rel="noopener"><span class="hf" aria-hidden="true">🤗</span> <span data-rel="kernel-label">The Implicit Kernel</span></a>
-    <a class="btn btn-quiet" href="https://huggingface.co/jacob-valdez/ibm-1/tree/main/checkpoints" target="_blank" rel="noopener"><span data-rel="ckpt-label">Task Checkpoints</span></a>
-    <a class="btn btn-quiet" href="https://github.com/JacobFV/IBM-1/blob/main/docs/LOG.md" target="_blank" rel="noopener">The Log</a>
-  </p>
+ckpt = hf_hub_download(<span class="str">"<span data-rel="repo">jacob-valdez/ibm-1</span>"</span>,
+                       <span class="str">"<span data-rel="kernel-path">implicit/ibm1.implicit.s30k.e128.fused34.pt</span>"</span>)</code></pre>
+      </div>
+    </div>
+    <p class="try-cta">
+      <a class="btn" href="https://colab.research.google.com/github/JacobFV/IBM-1/blob/main/notebooks/materialize.ipynb" target="_blank" rel="noopener">Open in Colab</a>
+      <a class="btn btn-quiet" href="https://github.com/JacobFV/IBM-1" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn btn-quiet" data-rel="kernel-href" href="https://huggingface.co/jacob-valdez/ibm-1/tree/main/implicit" target="_blank" rel="noopener"><span class="hf" aria-hidden="true">🤗</span> <span data-rel="kernel-label">The Implicit Kernel</span></a>
+      <a class="btn btn-quiet" href="https://huggingface.co/jacob-valdez/ibm-1/tree/main/checkpoints" target="_blank" rel="noopener"><span data-rel="ckpt-label">Task Checkpoints</span></a>
+    </p>
+  </div>
 </section>
 
 </main>
@@ -217,12 +207,12 @@ ckpt = hf_hub_download("<span data-rel="repo">jacob-valdez/ibm-1</span>",
 <div id="tip" class="tip" role="tooltip" hidden><span class="tip-text"></span><div class="tip-extra" hidden></div><a class="tip-link" href="#"></a></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="background.js?v=20260917155813"></script>
-<script src="data/graph.js?v=20260917155813"></script>
-<script src="data/registry.js?v=20260917155813"></script>
-<script src="data/cards.js?v=20260917155813"></script>
-<script src="data/releases.js?v=20260917155813"></script>
-<script src="brain.js?v=20260917155813"></script>
+<script src="background.js?v=20260917162053"></script>
+<script src="data/graph.js?v=20260917162053"></script>
+<script src="data/registry.js?v=20260917162053"></script>
+<script src="data/cards.js?v=20260917162053"></script>
+<script src="data/releases.js?v=20260917162053"></script>
+<script src="brain.js?v=20260917162053"></script>
 <div id="lightbox" class="lb" hidden>
   <button class="lb-close" aria-label="close">×</button>
   <button class="lb-nav lb-prev" aria-label="previous">‹</button>
@@ -230,13 +220,12 @@ ckpt = hf_hub_download("<span data-rel="repo">jacob-valdez/ibm-1</span>",
   <div class="lb-stage"></div>
   <div class="lb-meta"><p class="lb-count"></p><h3></h3><p class="lb-cap"></p><p class="lb-desc"></p></div>
 </div>
-<script src="site.js?v=20260917155813"></script>
-<script src="data/body.js?v=20260917155813"></script>
-<script src="body.js?v=20260917155813"></script>
-<script src="data/retrieval.js?v=20260917155813"></script>
-<script src="retrieval.js?v=20260917155813"></script>
-<script src="tms.js?v=20260917155813"></script>
-<script src="spectra.js?v=20260917155813"></script>
-<script src="spine.js?v=20260917155813"></script>
+<script src="site.js?v=20260917162053"></script>
+<script src="data/body.js?v=20260917162053"></script>
+<script src="body.js?v=20260917162053"></script>
+<script src="data/retrieval.js?v=20260917162053"></script>
+<script src="retrieval.js?v=20260917162053"></script>
+<script src="tms.js?v=20260917162053"></script>
+<script src="spine.js?v=20260917162053"></script>
 </body>
 </html>

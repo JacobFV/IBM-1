@@ -267,6 +267,19 @@
     l_state: { model: 'sleep_dynamics', az: 0.5, el: 0.3, dist: 470, aspect: 0.8 },
     l_body: { model: 'invasive_bci', az: -0.8, el: 0.45, dist: 470, aspect: 0.8 },
     l_surrogate: { model: 'macro_surrogate', az: -0.6, el: 0.3, dist: 470, aspect: 0.8 },
+    // the implicit model itself, with three of the forty-four traced out of it.  no
+    // `model` key, so the atlas colour stays rather than draining to a trace ramp: the
+    // point of this figure is that ONE coloured parameter set is upstream of all of them.
+    l_implicit: {
+      az: -0.62, el: 0.2, dist: 420, aspect: 0.95,
+      weights: () => { const w = new Float32Array(N); w.fill(1); return w; },
+      annotations: () => finish([
+        A.region('IBM-1', 'thalamus', null, { sub: 'the implicit model', side: 'c' }),
+        A.region('IBM-1-EEG-to-Image', 'lateraloccipital', null, { sub: 'eeg_to_image', side: 'l' }),
+        A.region('IBM-1-Speech-Envelope', 'superiortemporal', null, { sub: 'speech_envelope', side: 'r' }),
+        A.region('IBM-1-TMS-Response', 'precentral', 'lh', { sub: 'tms_response', side: 'l' }),
+      ]),
+    },
     // the visual pathway as the substrate actually declares it: 20 retinal sites,
     // the occipital port they arrive at, and the 60 digitised contacts the result is
     // read out at.  drawn from the graph rather than illustrated, so what is lit is

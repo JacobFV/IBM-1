@@ -698,10 +698,13 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 .paper { max-width: none; margin: 0; padding: 0 0 40px;
   background: linear-gradient(to bottom, transparent 0,
     color-mix(in srgb, var(--paper) 86%, transparent) 260px); }
-.spine-band, .try { max-width: 1280px; margin-left: auto; margin-right: auto;
+.spine-band { max-width: 1280px; margin-left: auto; margin-right: auto;
   padding-left: clamp(18px, 4vw, 48px); padding-right: clamp(18px, 4vw, 48px); }
 
-.spine-band { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 34px; padding: 70px 0 40px; }
+/* longhands: a `padding` SHORTHAND here silently reset the padding-left set above,
+   which left the band flush and the try-it column 48px inboard of it. */
+.spine-band { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 34px;
+  padding-top: 70px; padding-bottom: 40px; }
 .spine-rail { position: relative; grid-column: 1; width: 240px; }
 .spine-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
   opacity: 0; transition: opacity .6s; }
@@ -779,7 +782,10 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
   /* the rail cannot survive one column: it degrades to nothing rather than to a
      stripe implying an order it is no longer showing */
   .spine-band, .try { padding-left: 22px; padding-right: 22px; }
-  .spine-band { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 40px 0 20px; }
+  .try { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .try > *, .try-inner > * { grid-column: 1; }
+  .spine-band { grid-template-columns: minmax(0, 1fr); gap: 0;
+    padding-top: 40px; padding-bottom: 20px; }
   .spine-rail { display: none; }
   .spine-flow { grid-column: 1; gap: 78px; }
   .station { grid-template-columns: minmax(0, 1fr); gap: 22px; }
@@ -854,3 +860,70 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
   .rt-row { grid-template-columns: 62px 1fr; }
   .rt-out { grid-column: 1 / -1; }
 }
+
+/* two figures that carry the whole claim, so they get the size */
+.st-big { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 14px 44px; }
+.st-big li { display: grid; gap: 2px; }
+.st-big b { font-family: var(--display); font-weight: 600; font-variation-settings: "opsz" 60;
+  font-size: clamp(42px, 5vw, 66px); line-height: 0.95; letter-spacing: -0.035em;
+  color: var(--accent); font-variant-numeric: tabular-nums; }
+.st-big b i { font-style: normal; font-size: 0.5em; letter-spacing: -0.01em; margin-left: 0.04em; }
+.st-big span { font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted); }
+
+.st-media-wide { position: static; }
+.st-cap { display: block; margin-top: 10px; font-size: 0.8rem; line-height: 1.45; color: var(--muted); }
+
+/* ---- Try It: a notebook, because that is where this actually gets run ---- */
+/* the try-it column uses the SAME grid as the spine band, so its content lines up with
+   the station text rather than with the page edge.  offsetting each child by hand did not
+   work: `.try h2` sets its own margin and is more specific, so the heading stayed left
+   while the notebook moved. */
+/* structurally IDENTICAL to .spine-band -- same max-width, same padding, same two
+   columns, same gap -- because anything else lands a few tens of pixels off and the
+   misalignment is exactly the kind the eye catches without being able to name. */
+.try { max-width: 1280px; margin: 0 auto;
+  padding: 30px clamp(18px, 4vw, 48px) 110px;
+  display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 34px; }
+.try-inner { display: contents; }
+.try > *, .try-inner > * { grid-column: 2; }
+.nb { max-width: 760px; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden;
+  background: var(--paper-2); }
+.nb-bar { display: flex; align-items: center; gap: 6px; padding: 9px 13px;
+  border-bottom: 1px solid var(--rule); background: color-mix(in srgb, var(--paper) 55%, var(--paper-2)); }
+.nb-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--rule); }
+.nb-name { margin-left: 8px; font-family: var(--mono); font-size: .66rem; color: var(--muted); }
+.nb-cell { display: grid; grid-template-columns: 46px minmax(0, 1fr); align-items: start;
+  border-bottom: 1px solid var(--rule); }
+.nb-cell:last-child { border-bottom: 0; }
+.nb-gutter { padding: 14px 0 0; font-family: var(--mono); font-size: .62rem; color: var(--accent);
+  opacity: .7; text-align: center; user-select: none; }
+.nb-code { margin: 0; padding: 13px 16px 13px 0; overflow-x: auto; }
+.nb-code code { display: block; background: none; padding: 0; white-space: pre;
+  font-family: var(--mono); font-size: .78rem; line-height: 1.7; color: var(--text); }
+.nb-out { margin: 0; padding: 0 16px 14px 0; grid-column: 2; font-family: var(--mono);
+  font-size: .72rem; line-height: 1.6; color: var(--muted); white-space: pre; overflow-x: auto;
+  border-left: 2px solid var(--accent-soft); padding-left: 12px; }
+.nb-code .kw { color: var(--lane-3); }
+.nb-code .fn { color: var(--lane-2); }
+.nb-code .str { color: var(--lane-4); }
+.nb-code .bool { color: var(--lane-1); }
+.nb-code .cm { color: var(--muted); font-style: italic; }
+.try .try-cta { margin-top: 22px; }
+
+
+
+/* region labels over the stimulation figure */
+#tms3d { position: relative; }
+.tms-labels { position: absolute; inset: 0; pointer-events: none; }
+.tms-label { position: absolute; top: 0; left: 0; display: grid; gap: 1px;
+  padding-left: 9px; border-left: 1px solid var(--accent-soft); transform-origin: 0 0;
+  white-space: nowrap; transition: opacity .3s; }
+.tms-label b { font-family: var(--display); font-weight: 600; font-size: 12px; color: var(--text); }
+.tms-label span { font-family: var(--mono); font-size: 8.5px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted); }
+
+/* the stimulation station carries the only visualisation for its whole subject, so it
+   gets the width the two it replaced used to have between them */
+.station.st-wide { grid-template-columns: minmax(0, 0.76fr) minmax(0, 1.24fr); }
+@media (max-width: 1000px) { .station.st-wide { grid-template-columns: minmax(0, 1fr); } }
