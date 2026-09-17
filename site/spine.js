@@ -1,18 +1,22 @@
-/* the materialization spine.
-   one continuous rail down the left of the page.  corpora fuse INTO it from the left;
-   each proof-of-concept section is a model traced OUT of it to the right.  this is
-   M = materialize(R, r, B, F, A, T, P) drawn as a road, and it deliberately carries NO
-   chronology -- the lineage diagram owns training order, and only the training line is
-   on it.  sleep, fusion, stimulation and the body are materializations of the same
-   substrate and have no stage to sit at, so a timeline could not have carried them.
+/* the spine.
+   one trunk down the left that GROWS as you scroll: every station fuses a corpus in
+   from the left and splinters a model out to the right, and the trunk is wider below
+   each one than above it.  scrolling the page is meant to feel like one line of work
+   getting steadily more capable, so width is cumulative and never decreases.
 
-   the rail is one <svg> pinned behind the section column.  it is measured from the DOM
-   after layout, so a section growing or wrapping cannot desynchronise it: every station
-   is read from its section's own offsetTop rather than assumed.
+   it is a materialization spine, NOT a timeline.  the stations are models traced out
+   of one declaration, which is why sleep, the body and stimulation can all sit on it;
+   they have no position in training order and a chronological rail could not have
+   carried them.
 
-   a station whose section is marked data-status="declared" is drawn OPEN -- dashed, no
-   fill -- reusing the lineage's own convention that a planned thing is drawn open
-   because it is declared rather than run. */
+   past the last station that has actually been RUN the trunk continues as an open
+   outline rather than a fill -- the same convention the lineage used for a thing that
+   is declared rather than measured.  a declared station must never look like a result.
+
+   geometry: the trunk's half-width is a sum of smoothsteps, one per station, so the
+   widening is smooth everywhere and the edges leave and rejoin the vertical with
+   matching slope.  everything is measured from the DOM after layout, so a section that
+   grows or wraps cannot desynchronise the rail. */
 (function () {
   const host = document.getElementById("spine");
   if (!host) return;
@@ -25,58 +29,93 @@
   };
   const f = n => (+n).toFixed(1);
 
-  const W = 120;            /* user units across the rail's own column */
-  const RAIL = 26;          /* the trunk's width */
-  const X = 46;             /* the trunk's centre within W */
+  const W = 150;          /* the rail's own user-unit width */
+  const X = 62;           /* the trunk's centre line */
+  const W0 = 7;           /* half-width above the first station */
+  const STEP = 5.2;       /* half-width added by each station */
+  const SPAN = 150;       /* vertical distance a widening is spread over */
+  const SAMP = 5;         /* sampling step down the trunk, user units */
+
+  const smooth = t => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 
   let svg = null;
   function draw() {
-    const secs = Array.from(document.querySelectorAll(".poc[data-station]"));
+    const secs = Array.from(document.querySelectorAll("[data-station]"));
     if (!secs.length) return;
-    const top = host.getBoundingClientRect().top + window.scrollY;
     const H = host.offsetHeight;
-    if (!H) return;
+    if (!H) return;                       /* hidden at narrow widths, by design */
+    const top = host.getBoundingClientRect().top + window.scrollY;
+
+    const st = secs.map(sec => ({
+      y: sec.getBoundingClientRect().top + window.scrollY - top + 54,
+      declared: sec.dataset.status === "declared",
+      feed: sec.dataset.feed || "",
+    }));
+
+    /* half-width at y: W0 plus one smoothstep per station passed */
+    const halfAt = y => {
+      let h = W0;
+      for (const s of st) h += STEP * smooth((y - (s.y - SPAN / 2)) / SPAN);
+      return h;
+    };
+    /* where the run-and-measured part ends: just past the last station that ran */
+    const lastRun = st.filter(s => !s.declared).pop();
+    const cut = lastRun ? Math.min(H, lastRun.y + SPAN * 0.7) : 0;
+
+    const edges = (y0, y1) => {
+      const R = [], L = [];
+      for (let y = y0; ; y += SAMP) {
+        if (y > y1) y = y1;
+        const h = halfAt(y);
+        R.push([X + h, y]); L.push([X - h, y]);
+        if (y >= y1) break;
+      }
+      return { R, L };
+    };
+    const poly = pts => pts.map(p => `L ${f(p[0])} ${f(p[1])}`).join(" ");
 
     if (svg) svg.remove();
     svg = el("svg", { class: "spine-svg", viewBox: `0 0 ${W} ${f(H)}`,
                       preserveAspectRatio: "none", "aria-hidden": "true" }, host);
     const defs = el("defs", {}, svg);
-    /* the trunk fades in at the top and out at the bottom rather than butting into
-       the section rules, so it reads as continuing past the page rather than stopping */
-    const g = el("linearGradient", { id: "spine-fade", gradientUnits: "objectBoundingBox",
-                                     x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+    const g = el("linearGradient", { id: "spine-fade", gradientUnits: "userSpaceOnUse",
+                                     x1: 0, y1: 0, x2: 0, y2: f(H) }, defs);
     el("stop", { offset: 0, style: "stop-color:var(--accent);stop-opacity:0" }, g);
-    el("stop", { offset: 0.06, style: "stop-color:var(--accent);stop-opacity:.55" }, g);
-    el("stop", { offset: 0.9, style: "stop-color:var(--accent);stop-opacity:.55" }, g);
-    el("stop", { offset: 1, style: "stop-color:var(--accent);stop-opacity:0" }, g);
+    el("stop", { offset: 0.05, style: "stop-color:var(--accent);stop-opacity:.5" }, g);
+    el("stop", { offset: 1, style: "stop-color:var(--accent);stop-opacity:.72" }, g);
 
-    el("rect", { class: "spine-trunk", x: f(X - RAIL / 2), y: 0, width: RAIL, height: f(H),
-                 fill: "url(#spine-fade)" }, svg);
+    /* the part that has run: filled */
+    if (cut > 0) {
+      const e = edges(0, cut);
+      el("path", { class: "spine-trunk", fill: "url(#spine-fade)",
+        d: `M ${f(X - W0)} 0 ${poly(e.R)} ${poly(e.L.slice().reverse())} Z` }, svg);
+    }
+    /* the part that is only declared: open outline, no fill */
+    if (cut < H) {
+      const e = edges(Math.max(0, cut - SAMP), H);
+      el("path", { class: "spine-rim", d: `M ${f(e.R[0][0])} ${f(e.R[0][1])} ${poly(e.R)}` }, svg);
+      el("path", { class: "spine-rim", d: `M ${f(e.L[0][0])} ${f(e.L[0][1])} ${poly(e.L)}` }, svg);
+    }
 
-    secs.forEach(sec => {
-      const y = sec.getBoundingClientRect().top + window.scrollY - top + 46;
-      const declared = sec.dataset.status === "declared";
-      const cls = declared ? " is-declared" : "";
-      /* the branch out to the section: leaves the trunk vertically, lands horizontally */
+    st.forEach(s => {
+      const h = halfAt(s.y), cls = s.declared ? " is-declared" : "";
+      /* a model splintering out to the right */
       el("path", { class: "spine-branch" + cls,
-                   d: `M ${f(X + RAIL / 2)} ${f(y)} C ${f(X + 40)} ${f(y)} ${f(X + 40)} ${f(y)} ${f(W)} ${f(y)}` }, svg);
-      el("circle", { class: "spine-node" + cls, cx: f(X), cy: f(y), r: 7 }, svg);
-      /* corpora fusing in from the left, where the section names one */
-      if (sec.dataset.feed)
+        d: `M ${f(X + h)} ${f(s.y)} C ${f(X + h + 34)} ${f(s.y)} ${f(X + h + 26)} ${f(s.y)} ${f(W)} ${f(s.y)}` }, svg);
+      el("circle", { class: "spine-node" + cls, cx: f(X + h), cy: f(s.y), r: 4.6 }, svg);
+      /* a corpus fusing in from the left, arriving just above the widening */
+      if (s.feed)
         el("path", { class: "spine-feed" + cls,
-                     d: `M 0 ${f(y - 26)} C ${f(X - 30)} ${f(y - 26)} ${f(X - 30)} ${f(y)} ${f(X - RAIL / 2)} ${f(y)}` }, svg);
+          d: `M 0 ${f(s.y - 46)} C ${f(X - 40)} ${f(s.y - 46)} ${f(X - h - 16)} ${f(s.y - 10)} ${f(X - h)} ${f(s.y)}` }, svg);
     });
+
     host.classList.add("is-ready");
   }
 
-  const ready = () => { draw(); };
-  if (document.readyState === "complete") ready();
-  else window.addEventListener("load", ready);
+  if (document.readyState === "complete") draw();
+  else window.addEventListener("load", draw);
   let t;
-  window.addEventListener("resize", () => { clearTimeout(t); t = setTimeout(draw, 180); });
-  /* sections carry video and lazily-loaded art, so height settles after first paint */
-  if (window.ResizeObserver && host.parentElement) {
-    const ro = new ResizeObserver(() => { clearTimeout(t); t = setTimeout(draw, 120); });
-    ro.observe(host.parentElement);
-  }
+  const again = () => { clearTimeout(t); t = setTimeout(draw, 140); };
+  window.addEventListener("resize", again);
+  if (window.ResizeObserver && host.parentElement) new ResizeObserver(again).observe(host.parentElement);
 })();

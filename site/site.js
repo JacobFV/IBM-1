@@ -262,7 +262,9 @@
       cap = lb.querySelector('.lb-cap'),
       desc = lb.querySelector('.lb-desc'),
       count = lb.querySelector('.lb-count');
-  var tiles = Array.prototype.slice.call(document.querySelectorAll('.reel .tile'));
+  // the fanned reel band is gone; station media carry plain .tile elements, so the
+  // lightbox collects both rather than only the ones under a .reel ancestor
+  var tiles = Array.prototype.slice.call(document.querySelectorAll('.reel .tile, .st-media .tile'));
   var cur = -1;
 
   // within a pile the first tile sits on top and each later one behind it
