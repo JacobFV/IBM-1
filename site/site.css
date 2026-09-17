@@ -691,7 +691,15 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
    sense of progression.  see spine.js for why it is not a timeline.
    ===================================================================== */
 
-.paper { max-width: 1280px; margin: 0 auto; padding: 0 40px; }
+/* the paper wash is FULL-BLEED and fades in from the standfirst.  constraining it
+   to the content width -- which is what max-width here used to do -- turned it into
+   an opaque rectangle sitting on top of the animated background, with four hard
+   edges.  the width belongs on the content, never on the wash. */
+.paper { max-width: none; margin: 0; padding: 0 0 40px;
+  background: linear-gradient(to bottom, transparent 0,
+    color-mix(in srgb, var(--paper) 86%, transparent) 260px); }
+.spine-band, .try { max-width: 1280px; margin-left: auto; margin-right: auto;
+  padding-left: clamp(18px, 4vw, 48px); padding-right: clamp(18px, 4vw, 48px); }
 
 .spine-band { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 40px; padding: 70px 0 40px; }
 .spine-rail { position: relative; grid-column: 1; width: 150px; }
@@ -749,7 +757,7 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
   border-radius: 2px; padding: 2px 6px; margin-left: 4px; white-space: nowrap; vertical-align: 1px; }
 
 /* ---- try it ---------------------------------------------------------- */
-.try { max-width: 1280px; margin: 0 auto; padding: 40px 40px 110px; }
+.try { padding-top: 40px; padding-bottom: 110px; }
 .try h2 { margin: 0 0 20px; font-family: var(--display); font-weight: 600;
   font-variation-settings: "opsz" 60; font-size: clamp(30px, 3.4vw, 46px); line-height: 1;
   letter-spacing: -0.025em; }
@@ -769,7 +777,7 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 @media (max-width: 1000px) {
   /* the rail cannot survive one column: it degrades to nothing rather than to a
      stripe implying an order it is no longer showing */
-  .paper, .try { padding-left: 22px; padding-right: 22px; }
+  .spine-band, .try { padding-left: 22px; padding-right: 22px; }
   .spine-band { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 40px 0 20px; }
   .spine-rail { display: none; }
   .spine-flow { grid-column: 1; gap: 78px; }

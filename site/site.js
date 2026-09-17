@@ -179,6 +179,26 @@
     });
   }
 
+  // ---- the release figures on the page come from data/releases.js, which
+  // scripts/export_releases.py writes from the hub.  the kernel path and the
+  // checkpoint count were hand-typed here once and went stale immediately --
+  // the implicit/ directory was not even exported, so the page had no link to
+  // the one artifact its central claim is about.
+  if (REL) {
+    const put = (key, fn) => document.querySelectorAll(`[data-rel="${key}"]`).forEach(fn);
+    const nck = Object.keys(REL.models || {}).reduce((a, m) => a + REL.models[m].length, 0);
+    const k = (REL.kernels || [])[0];
+    if (REL.repo) put('repo', (e) => { e.textContent = REL.repo; });
+    if (k) {
+      put('kernel-path', (e) => { e.textContent = k.path; });
+      put('kernel-href', (e) => { e.href = k.url; });
+      put('kernel-label', (e) => {
+        e.textContent = k.params ? `The Implicit Kernel (${params(k.params)})` : 'The Implicit Kernel';
+      });
+    }
+    if (nck) put('ckpt-label', (e) => { e.textContent = `${nck} Task Checkpoints`; });
+  }
+
   // ---- references: an underlined phrase opens a note with a link to read more
   const tip = $('tip');
   if (tip) {
