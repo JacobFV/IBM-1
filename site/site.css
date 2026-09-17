@@ -684,3 +684,114 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
   .lin-label { font-size: 14px; } .lin-note, .lin-hf { font-size: 10px; }
   .lin-tip { width: 210px; }
 }
+
+/* =====================================================================
+   the new spine layout: §2 is one band with a continuous rail down the
+   left and a proof-of-concept per station.  see spine.js for why the rail
+   is a materialization spine and deliberately not a timeline.
+   ===================================================================== */
+
+.sec-design .prims-tight { grid-template-columns: 1fr 1fr; gap: 20px 40px; margin: 18px 0 28px; }
+.sec-design .prims-tight .prim p { font-size: 0.88rem; }
+.snap-wide { margin-top: 10px; }
+
+.spine-band { position: relative; display: grid; grid-template-columns: 200px minmax(0, 1fr);
+  gap: 32px; padding: 56px 0; border-bottom: 1px solid var(--rule); }
+.spine-rail { position: relative; grid-column: 1; justify-self: end; width: 120px; }
+.spine-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; opacity: 0; transition: opacity .5s; }
+.spine-rail.is-ready .spine-svg { opacity: 1; }
+.spine-trunk { }
+.spine-branch, .spine-feed { fill: none; stroke: var(--accent); stroke-width: 1.6; opacity: .45; }
+.spine-feed { stroke: var(--muted); stroke-dasharray: 3 4; }
+.spine-node { fill: var(--accent); }
+.spine-branch.is-declared, .spine-feed.is-declared { stroke-dasharray: 5 6; opacity: .3; }
+.spine-node.is-declared { fill: none; stroke: var(--accent); stroke-width: 1.6; stroke-dasharray: 3 3; opacity: .55; }
+
+.spine-flow { grid-column: 2; display: grid; gap: 64px; min-width: 0; }
+.spine-intro { margin: 0; max-width: 62ch; color: var(--muted); font-size: 1.02rem; line-height: 1.5; }
+.spine-intro .mono { color: var(--accent); margin-right: 6px; }
+.spine-intro em { font-style: normal; font-weight: 600; color: var(--text); }
+
+/* a station: the argument on the left, its media on the right */
+.poc { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 36px;
+  align-items: start; padding-top: 22px; border-top: 1px solid var(--text); }
+.poc.is-declared { border-top-color: var(--rule); border-top-style: dashed; }
+.poc-text { min-width: 0; display: grid; gap: 12px; align-content: start; }
+.poc-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.poc-head .mono { flex: 1 0 100%; color: var(--accent); font-size: 0.64rem; letter-spacing: 0.14em; }
+.poc.is-declared .poc-head .mono { color: var(--fail); }
+.poc-head h2 { margin: 0; flex: 1 1 16ch; font-family: var(--display); font-weight: 600;
+  font-variation-settings: "opsz" 40; font-size: clamp(22px, 2.3vw, 31px); line-height: 1.1;
+  letter-spacing: -0.018em; text-wrap: balance; }
+.poc-head .tag { flex: none; }
+.poc-lede { margin: 0; font-size: 1.02rem; line-height: 1.5; max-width: 54ch; }
+.poc-lede em, .poc p em { font-style: italic; }
+
+.poc-figs { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 11px; }
+.poc-figs li { display: grid; grid-template-columns: 13ch minmax(0, 1fr); gap: 4px 18px;
+  align-items: baseline; padding-top: 10px; border-top: 1px solid var(--rule); }
+.poc-figs b { font-family: var(--display); font-weight: 600; font-variation-settings: "opsz" 40;
+  font-size: 1.18rem; line-height: 1.15; letter-spacing: -0.015em; color: var(--accent);
+  font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.poc-figs span { font-size: 0.88rem; line-height: 1.45; color: var(--muted); }
+.poc-figs span b { font-size: inherit; font-family: inherit; color: var(--text); font-weight: 600; }
+.poc-figs em { font-style: italic; color: var(--text); }
+
+.poc-control { margin: 6px 0 0; font-size: 0.88rem; line-height: 1.5; color: var(--muted);
+  border-left: 2px solid var(--rule); padding: 2px 0 2px 14px; max-width: 56ch; }
+.poc-control b { color: var(--text); font-weight: 600; }
+.poc-control em { color: var(--text); font-style: italic; }
+
+.declared-note { margin: 4px 0 0; font-size: 0.88rem; line-height: 1.5; color: var(--muted);
+  border-left: 2px solid var(--fail); padding: 6px 0 6px 14px; max-width: 58ch; }
+.declared-note b { color: var(--text); font-weight: 600; }
+
+.poc-links { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 8px 18px;
+  font-family: var(--mono); font-size: 0.72rem; }
+.poc-links a { text-decoration: none; color: var(--muted); }
+.poc-links a:hover { color: var(--accent); }
+.poc-links code { font-size: 0.72rem; }
+
+.poc-media { min-width: 0; position: sticky; top: 28px; }
+.poc-media .tile, .poc-media .tile-static { margin: 0; }
+.poc-media img, .poc-media video { width: 100%; height: auto; display: block; border-radius: 3px; }
+.poc-media .pile { display: grid; gap: 12px; }
+.tile-static figcaption { margin-top: 8px; font-size: 0.8rem; line-height: 1.4; color: var(--muted); }
+
+/* ---- filler: unmeasured placeholders, unmistakably red ----------------
+   these are NOT results.  they sit where a measured figure will go, and they
+   are coloured, struck and chipped so that no screenshot of this page can be
+   mistaken for one carrying numbers.  delete the class when the number lands. */
+.filler { color: var(--fail) !important; }
+.poc-figs.is-filler li { border-top-color: rgba(229, 118, 106, 0.35); }
+.poc-figs.is-filler b.filler { text-decoration: line-through; text-decoration-thickness: 1px; opacity: .85; }
+.filler-chip { display: inline-block; font-family: var(--mono); font-size: 0.58rem; font-weight: 400;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--fail); border: 1px solid currentColor;
+  border-radius: 2px; padding: 2px 6px; margin-left: 6px; white-space: nowrap; }
+
+/* ---- try it ---------------------------------------------------------- */
+.sec-try .body h3:first-of-type { margin-top: 0; }
+.code { margin: 14px 0 16px; padding: 16px 18px; background: var(--paper-2); border-radius: 4px;
+  border-left: 2px solid var(--accent); overflow-x: auto; }
+.code code { display: block; background: none; padding: 0; font-size: 0.78rem; line-height: 1.7;
+  white-space: pre; color: var(--text); }
+.code .c { color: var(--muted); }
+.try-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0 0 1.6em; }
+.btn { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em;
+  text-decoration: none; color: var(--paper); background: var(--accent); padding: 9px 16px;
+  border-radius: 3px; border: 1px solid var(--accent); transition: opacity .15s; }
+.btn:hover { opacity: .85; color: var(--paper); }
+.btn-quiet { background: none; color: var(--muted); border-color: var(--rule); }
+.btn-quiet:hover { color: var(--accent); border-color: var(--accent); }
+
+@media (max-width: 960px) {
+  /* the rail cannot survive a single column: it degrades to nothing rather than
+     becoming a decorative stripe that implies an ordering it no longer shows */
+  .spine-band { grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 44px 0; }
+  .spine-rail { display: none; }
+  .spine-flow { grid-column: 1; gap: 48px; }
+  .poc { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .poc-media { position: static; }
+  .poc-figs li { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+  .sec-design .prims-tight { grid-template-columns: minmax(0, 1fr); }
+}

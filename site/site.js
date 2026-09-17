@@ -7,7 +7,15 @@
   // ---- the registry lists in §1
   const R = window.IBM_REGISTRY;
   if (R) {
-    const fill = (id, n, html) => { $('n-' + id).textContent = n; $('list-' + id).innerHTML = html; };
+    // the registry lists are OPTIONAL markup -- §1 is brief on the current page and
+    // does not carry them.  this used to assume both nodes existed, and the resulting
+    // throw took out the whole IIFE below it: the snapshots, the tooltips and the
+    // lightbox all stopped silently, which reads exactly like a WebGL problem.
+    const fill = (id, n, html) => {
+      const c = $('n-' + id), l = $('list-' + id);
+      if (c) c.textContent = n;
+      if (l) l.innerHTML = html;
+    };
     // each entry is one run of fine print: the id, what it is, then the rest in a sentence
     const row = (id, doc, rest) => `<p><code>${id}</code> ${esc(doc)}${rest ? ` <span>${rest}</span>` : ''}</p>`;
     fill('fields', `${R.fields.length} fields · ${R.fields.reduce((a, f) => a + f.components.length, 0)} components`,
