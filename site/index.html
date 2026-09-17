@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="site.css?v=20260917154703">
+<link rel="stylesheet" href="site.css?v=20260917155813">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2307090f'/%3E%3Ccircle cx='11' cy='13' r='2.2' fill='%23f0b34a'/%3E%3Ccircle cx='21' cy='11' r='2.2' fill='%2363d3e6'/%3E%3Ccircle cx='17' cy='21' r='2.2' fill='%23e69422'/%3E%3Cpath d='M11 13L21 11L17 21Z' fill='none' stroke='%23e9e7e0' stroke-opacity='.5' stroke-width='.8'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -74,16 +74,17 @@
       <div class="st-text">
         <h2>64-Channel EEG to Visual Thought Decoding</h2>
         <ul class="st-figs">
-          <li><b>63.5%</b><span>top-1 retrieval over the designated test set, 200 images, median rank 1 — <b>127× chance</b>.</span></li>
+                    <li><b>60.0%</b><span>top-1 <em>decoding</em>: given a measured response, the image the subject saw comes first out of all 200 &mdash; <b>120&times; chance</b>. The paired direction, image&rarr;EEG, is <b>63.5%</b>.</span></li>
           <li><b>48.4× → 1.00×</b><span>through the sheet to a precentral-only readout with ports verified disjoint, against a severed sheet.</span></li>
           <li><b>8.69% → 0.44%</b><span>when the optic nerve port is displaced to a random region of equal size.</span></li>
         </ul>
         <p class="st-control"><b>Control:</b> a dynamics-free encoder, selected the same way, matches
         this. The substrate is load-bearing inside the model; it has not beaten a purpose-built baseline.</p>
       </div>
-      <div class="st-media">
+      <div class="st-media st-media-wide">
+        <div id="retrieval"></div>
         <figure class="snap snap-tall" data-snap="l_visual"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div>
-          <figcaption>the pathway as declared: retina, the occipital port, striate cortex, and the sixty contacts the result is read out at. Drag to orbit.</figcaption>
+          <figcaption>the pathway it runs through: retina, the occipital port, striate cortex, and the sixty contacts the result is read out at. Drag to orbit.</figcaption>
         </figure>
       </div>
     </section>
@@ -216,12 +217,12 @@ ckpt = hf_hub_download("<span data-rel="repo">jacob-valdez/ibm-1</span>",
 <div id="tip" class="tip" role="tooltip" hidden><span class="tip-text"></span><div class="tip-extra" hidden></div><a class="tip-link" href="#"></a></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="background.js?v=20260917154703"></script>
-<script src="data/graph.js?v=20260917154703"></script>
-<script src="data/registry.js?v=20260917154703"></script>
-<script src="data/cards.js?v=20260917154703"></script>
-<script src="data/releases.js?v=20260917154703"></script>
-<script src="brain.js?v=20260917154703"></script>
+<script src="background.js?v=20260917155813"></script>
+<script src="data/graph.js?v=20260917155813"></script>
+<script src="data/registry.js?v=20260917155813"></script>
+<script src="data/cards.js?v=20260917155813"></script>
+<script src="data/releases.js?v=20260917155813"></script>
+<script src="brain.js?v=20260917155813"></script>
 <div id="lightbox" class="lb" hidden>
   <button class="lb-close" aria-label="close">×</button>
   <button class="lb-nav lb-prev" aria-label="previous">‹</button>
@@ -229,11 +230,13 @@ ckpt = hf_hub_download("<span data-rel="repo">jacob-valdez/ibm-1</span>",
   <div class="lb-stage"></div>
   <div class="lb-meta"><p class="lb-count"></p><h3></h3><p class="lb-cap"></p><p class="lb-desc"></p></div>
 </div>
-<script src="site.js?v=20260917154703"></script>
-<script src="data/body.js?v=20260917154703"></script>
-<script src="body.js?v=20260917154703"></script>
-<script src="tms.js?v=20260917154703"></script>
-<script src="spectra.js?v=20260917154703"></script>
-<script src="spine.js?v=20260917154703"></script>
+<script src="site.js?v=20260917155813"></script>
+<script src="data/body.js?v=20260917155813"></script>
+<script src="body.js?v=20260917155813"></script>
+<script src="data/retrieval.js?v=20260917155813"></script>
+<script src="retrieval.js?v=20260917155813"></script>
+<script src="tms.js?v=20260917155813"></script>
+<script src="spectra.js?v=20260917155813"></script>
+<script src="spine.js?v=20260917155813"></script>
 </body>
 </html>

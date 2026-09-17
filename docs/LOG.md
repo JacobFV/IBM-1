@@ -4766,3 +4766,43 @@ significant, the test is void and no arm comparison from this run is reported.
 that is the answer -- the sheet is not distinguishable from no cortex on this task on either
 instrument, and this entry says so rather than proposing a sixth seed.
 
+
+---
+
+## 17 September 2026 — the 63.5% is IMAGE→EEG; the decoding direction is 60.0%
+
+Building the site's retrieval panel forced the question of which direction the headline
+number is measured in, and the two are not the same.
+
+`eval_things_test.py` computes `sim[i, j]` = image *i* against EEG *j*, then ranks each
+**row**: given an image, how far down the 200 EEGs does its own response sit. That is
+**image → EEG**, and it is **63.50%** top-1 (top-5 89.00%, median rank 1, 127× chance),
+which is the figure in the README and on the site.
+
+The transpose — given a measured EEG, rank the 200 **images** — is **60.00%** top-1
+(120× chance) on the same checkpoint, the same designated test set and the same forward
+pass. Both are computed from one similarity matrix; only the axis of the ranking differs.
+
+Nothing is withdrawn: 63.5% is correct for what it measures. But the site's station is
+headed *"64-Channel EEG to Visual Thought Decoding"*, and **decoding is the transpose** —
+the direction a reader of that heading assumes is the 60.0% one, not the 63.5% one. The
+station now names both and says which is which.
+
+The asymmetry is expected rather than alarming (the two marginals of a contrastive
+similarity matrix need not agree) but it had never been measured, and quoting the more
+favourable direction under a heading describing the other would have been exactly the
+"compared against the wrong thing" shape this ledger is full of.
+
+**Also recorded: the published number could not be reproduced at all before today.**
+`VisualContrastiveLoop` gained a `port_idx` buffer after `visual_contrastive_v2.pt` was
+saved, so `model.load_state_dict(sd)` raised `Missing key(s): "port_idx"` and
+`eval_things_test.py` failed outright on the checkpoint whose result it published. The
+buffer carries nothing learned — with no `port_region` in that checkpoint's config the
+port is the deterministic `[:n//8]` slice and `port_idx` is `arange(n//8)` — so it is
+rebuilt and loaded non-strictly, with the allowed-missing set pinned to exactly
+`{"port_idx"}` so any other mismatch still fails loudly. With that fix all four arms
+reproduce to the digit: full 63.50, frozen 28.00, no_assoc 28.00, bypass 26.00.
+
+A checkpoint that the current code cannot load is a result that cannot be checked. Worth
+a standing habit: when a module gains a buffer, the checkpoints already on disk are the
+regression test.

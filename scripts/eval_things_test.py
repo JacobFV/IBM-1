@@ -79,7 +79,17 @@ def main() -> None:
         long_topology=cfg.get("long_topology", "random")).to(dev)
     model = P.VisualContrastiveLoop(dyn, n_sensors=C, n_times=T,
                                     port_region=cfg.get("port_region")).to(dev)
-    model.load_state_dict(sd)
+    # `port_idx` was added to VisualContrastiveLoop AFTER these checkpoints were saved,
+    # so a strict load of visual_contrastive_v2.pt now fails outright -- the script that
+    # published 63.5% stopped being able to reproduce it.  the buffer is safe to rebuild:
+    # with no `port_region` in the config the port is the deterministic [:n//8] slice and
+    # port_idx is just arange(n//8), carrying nothing learned.  loading non-strictly is
+    # therefore exact -- but ONLY for that key, so anything else missing still fails loud.
+    missing, unexpected = model.load_state_dict(sd, strict=False)
+    allowed = {"port_idx"}
+    if set(missing) - allowed or unexpected:
+        raise RuntimeError(f"state_dict mismatch beyond {allowed}: "
+                           f"missing={sorted(set(missing) - allowed)} unexpected={sorted(unexpected)}")
     print(f"  sheet {cfg.get('geometry', 'sphere')}, long-range "
           f"{cfg.get('long_topology', 'random')}, port "
           f"{cfg.get('port_region') or 'slice[:n//8]'}", flush=True)
