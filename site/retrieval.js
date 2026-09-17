@@ -45,11 +45,5 @@
       </div>
     </div>`).join("");
 
-  const head = document.createElement("p");
-  head.className = "rt-head";
-  head.innerHTML = `given the measured response, the model ranks all <b>200</b> test images. ` +
-    `<b>${(D.top1 * 100).toFixed(1)}%</b> of the time the image the subject saw comes first — ` +
-    `<b>${Math.round(D.top1 * D.n)}&times;</b> chance.`;
-  host.prepend(head);
   host.classList.add("is-ready");
 })();

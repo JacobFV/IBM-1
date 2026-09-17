@@ -267,19 +267,21 @@
     l_state: { model: 'sleep_dynamics', az: 0.5, el: 0.3, dist: 470, aspect: 0.8 },
     l_body: { model: 'invasive_bci', az: -0.8, el: 0.45, dist: 470, aspect: 0.8 },
     l_surrogate: { model: 'macro_surrogate', az: -0.6, el: 0.3, dist: 470, aspect: 0.8 },
-    // the implicit model itself, with three of the forty-four traced out of it.  no
-    // `model` key, so the atlas colour stays rather than draining to a trace ramp: the
-    // point of this figure is that ONE coloured parameter set is upstream of all of them.
-    l_implicit: {
-      az: -0.62, el: 0.2, dist: 420, aspect: 0.95,
+    // FOUR brains, not one annotated brain.  the implicit model keeps the atlas colour --
+    // no `model` key, so nothing drains to a trace ramp -- and carries every variable.
+    // each materialized one drains to its own trace ramp and is annotated with ONLY the
+    // inputs and outputs that model declares, which is the whole difference between the
+    // substrate and a model traced out of it.
+    m_implicit: {
+      az: -0.62, el: 0.18, dist: 395, aspect: 0.72,
       weights: () => { const w = new Float32Array(N); w.fill(1); return w; },
-      annotations: () => finish([
-        A.region('IBM-1', 'thalamus', null, { sub: 'the implicit model', side: 'c' }),
-        A.region('IBM-1-EEG-to-Image', 'lateraloccipital', null, { sub: 'eeg_to_image', side: 'l' }),
-        A.region('IBM-1-Speech-Envelope', 'superiortemporal', null, { sub: 'speech_envelope', side: 'r' }),
-        A.region('IBM-1-TMS-Response', 'precentral', 'lh', { sub: 'tms_response', side: 'l' }),
-      ]),
     },
+    m_decode: { model: 'eeg_to_image', az: -1.2, el: 0.18, dist: 520, aspect: 0.5,
+                annotations: () => A.model_io('eeg_to_image') },
+    m_speech: { model: 'speech_envelope', az: -1.35, el: 0.16, dist: 520, aspect: 0.5,
+                annotations: () => A.model_io('speech_envelope') },
+    m_stim: { model: 'tms_response', az: -0.85, el: 0.42, dist: 520, aspect: 0.5,
+              annotations: () => A.model_io('tms_response') },
     // the visual pathway as the substrate actually declares it: 20 retinal sites,
     // the occipital port they arrive at, and the 60 digitised contacts the result is
     // read out at.  drawn from the graph rather than illustrated, so what is lit is
