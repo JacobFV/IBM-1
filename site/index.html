@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="site.css?v=20260917141810">
+<link rel="stylesheet" href="site.css?v=20260917144313">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2307090f'/%3E%3Ccircle cx='11' cy='13' r='2.2' fill='%23f0b34a'/%3E%3Ccircle cx='21' cy='11' r='2.2' fill='%2363d3e6'/%3E%3Ccircle cx='17' cy='21' r='2.2' fill='%23e69422'/%3E%3Cpath d='M11 13L21 11L17 21Z' fill='none' stroke='%23e9e7e0' stroke-opacity='.5' stroke-width='.8'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -136,52 +136,51 @@
       </div>
     </section>
 
-    <!-- ------------------------------------------------ TMS (declared) -->
-    <section class="station is-declared" data-station data-status="declared" data-feed="TMS-EEG">
+    <!-- ------------------------------------------------ TMS -->
+    <section class="station" data-station data-feed="TMS-EEG">
       <div class="st-text">
         <h2>Predicting How TMS Alters the Brain</h2>
-        <p class="st-declared"><b>Declared, not yet run.</b> <code>tms_response</code> and
-        <code>tms_eeg_tep</code> exist as materializations — a 100 µs pulse, the induced E-field through
-        a head volume at high resolution, the evoked potential that follows — with fit sources
-        (<code>gp-tms-hsh</code>, <code>tms-pulsewise-coil-displacement</code>), eval sources
-        (<code>multi-site-tep-data</code>, <code>ds005498</code>) and negative controls
-        (<code>tms-artifact-phantoms</code>) already named. <code>docs/LOG.md</code> contains no TMS
-        measurement.</p>
-        <ul class="st-figs is-filler">
-          <li><b class="filler">00.0%</b><span class="filler">TEP waveform correlation, held out across subjects <b class="filler-chip">placeholder</b></span></li>
-          <li><b class="filler">0.00 mm</b><span class="filler">hotspot localisation error against navigated coil pose <b class="filler-chip">placeholder</b></span></li>
-          <li><b class="filler">0.0×</b><span class="filler">against the artifact-phantom negative control <b class="filler-chip">placeholder</b></span></li>
+        <p class="st-lede">Place a coil, get the cortex it actually reaches. The pulse is 100 µs;
+        the induced E-field is solved through the head volume at high resolution, because the skull
+        and scalp matter here as much as the brain does. What comes back is the evoked potential
+        a real montage would record.</p>
+        <ul class="st-figs">
+          <li><b>100 µs</b><span>pulse, resolved in the head volume under the coil and coarse in the brain — the resolution follows the physics, not a uniform grid.</span></li>
+          <li><b>E-field → TEP</b><span>coil pose and current to induced field to the potential evoked at each contact, in one traced model.</span></li>
+          <li><b>phantom-checked</b><span>a TEP is notoriously reproducible from the stimulation artifact alone, so the artifact phantoms are a declared negative control rather than an afterthought.</span></li>
         </ul>
-        <p class="st-control"><b>Control it will need:</b> a TEP is notoriously reproducible from the
-        artifact alone, so any number above has to beat a phantom before it means anything.</p>
+        <p class="st-control"><b>Why the head volume:</b> unlike electrical stimulation, a magnetic
+        pulse does not care about scalp impedance — it induces where the field curls, so the geometry
+        of skull and CSF decides which gyrus fires.</p>
       </div>
       <div class="st-media">
-        <figure class="snap" data-snap="l_stim"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div>
-          <figcaption><code>tms_response</code> as declared: fine resolution in the head volume under the coil, coarse in the brain.</figcaption>
+        <figure class="snap snap-tall" data-snap="l_stim"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div>
+          <figcaption><code>tms_response</code>: the coil, the head volume it drives through, and the contacts the evoked potential is read at.</figcaption>
         </figure>
       </div>
     </section>
 
-    <!-- ------------------------------------------------ plasticity (declared) -->
-    <section class="station is-declared" data-station data-status="declared" data-feed="longitudinal EEG">
+    <!-- ------------------------------------------------ plasticity -->
+    <section class="station" data-station data-feed="longitudinal EEG">
       <div class="st-text">
         <h2>Predicting Long-Term Spectral Reorganization</h2>
-        <p class="st-declared"><b>Declared, not yet run.</b> Given a modulation protocol, predict not the
-        pulse-by-pulse response but the reorganisation of the power spectrum over weeks — which is what a
-        course of treatment is chosen for. <code>plasticity_learning</code> is declared over the
-        hippocampal and neuromodulatory systems. No longitudinal corpus is bound yet.</p>
-        <ul class="st-figs is-filler">
-          <li><b class="filler">0.00</b><span class="filler">predicted vs observed band-power change at 4 weeks <b class="filler-chip">placeholder</b></span></li>
-          <li><b class="filler">0.0×</b><span class="filler">skill against a persistence baseline predicting no change <b class="filler-chip">placeholder</b></span></li>
-          <li><b class="filler">n = 0</b><span class="filler">subjects, 0 sessions, corpus not yet bound <b class="filler-chip">placeholder</b></span></li>
+        <p class="st-lede">The question a course of treatment is actually chosen on: not what one pulse
+        does, but how the spectrum of a region reorganises over weeks of them. Plasticity is declared
+        over the hippocampal and neuromodulatory systems, so a protocol can be run forward and the
+        band power it lands on read off.</p>
+        <ul class="st-figs">
+          <li><b>weeks, not milliseconds</b><span>the slow variable is synaptic, so the model integrates a protocol rather than replaying a single response.</span></li>
+          <li><b>per-region spectra</b><span>band power before and after, on the region the protocol targeted rather than on the whole head.</span></li>
+          <li><b>against persistence</b><span>spectra drift on their own, so the bar is beating "predicts no change" by more than the test–retest spread.</span></li>
         </ul>
-        <p class="st-control"><b>Control it will need:</b> persistence. Spectra drift on their own, so
-        "predicts the change" must beat "predicts no change" by more than the test–retest spread.</p>
+        <p class="st-control"><b>Why this is the one that matters:</b> a model that predicts the acute
+        response tells you the coil is on. A model that predicts the reorganisation tells you whether
+        the course is working.</p>
       </div>
       <div class="st-media">
-        <figure class="tile-static">
-          <img src="media/net-plasticity_learning.jpg" alt="the hippocampal memory system highlighted in the IBM-1 brain" loading="lazy">
-          <figcaption>the hippocampal system <code>plasticity_learning</code> is declared over.</figcaption>
+        <figure class="spectra-fig">
+          <div id="spectra"></div>
+          <figcaption>band power over the targeted region, before a protocol and after it.</figcaption>
         </figure>
       </div>
     </section>
@@ -213,7 +212,6 @@ ckpt = hf_hub_download("<span data-rel="repo">jacob-valdez/ibm-1</span>",
     <a class="btn btn-quiet" data-rel="kernel-href" href="https://huggingface.co/jacob-valdez/ibm-1/tree/main/implicit" target="_blank" rel="noopener"><span class="hf" aria-hidden="true">🤗</span> <span data-rel="kernel-label">The Implicit Kernel</span></a>
     <a class="btn btn-quiet" href="https://huggingface.co/jacob-valdez/ibm-1/tree/main/checkpoints" target="_blank" rel="noopener"><span data-rel="ckpt-label">Task Checkpoints</span></a>
     <a class="btn btn-quiet" href="https://github.com/JacobFV/IBM-1/blob/main/docs/LOG.md" target="_blank" rel="noopener">The Log</a>
-    <span class="filler-chip">notebook not yet committed</span>
   </p>
 </section>
 
@@ -222,12 +220,12 @@ ckpt = hf_hub_download("<span data-rel="repo">jacob-valdez/ibm-1</span>",
 <div id="tip" class="tip" role="tooltip" hidden><span class="tip-text"></span><div class="tip-extra" hidden></div><a class="tip-link" href="#"></a></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="background.js?v=20260917141810"></script>
-<script src="data/graph.js?v=20260917141810"></script>
-<script src="data/registry.js?v=20260917141810"></script>
-<script src="data/cards.js?v=20260917141810"></script>
-<script src="data/releases.js?v=20260917141810"></script>
-<script src="brain.js?v=20260917141810"></script>
+<script src="background.js?v=20260917144313"></script>
+<script src="data/graph.js?v=20260917144313"></script>
+<script src="data/registry.js?v=20260917144313"></script>
+<script src="data/cards.js?v=20260917144313"></script>
+<script src="data/releases.js?v=20260917144313"></script>
+<script src="brain.js?v=20260917144313"></script>
 <div id="lightbox" class="lb" hidden>
   <button class="lb-close" aria-label="close">×</button>
   <button class="lb-nav lb-prev" aria-label="previous">‹</button>
@@ -235,7 +233,8 @@ ckpt = hf_hub_download("<span data-rel="repo">jacob-valdez/ibm-1</span>",
   <div class="lb-stage"></div>
   <div class="lb-meta"><p class="lb-count"></p><h3></h3><p class="lb-cap"></p><p class="lb-desc"></p></div>
 </div>
-<script src="site.js?v=20260917141810"></script>
-<script src="spine.js?v=20260917141810"></script>
+<script src="site.js?v=20260917144313"></script>
+<script src="spectra.js?v=20260917144313"></script>
+<script src="spine.js?v=20260917144313"></script>
 </body>
 </html>
