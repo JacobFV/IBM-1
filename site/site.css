@@ -928,45 +928,40 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 .station.st-wide { grid-template-columns: minmax(0, 0.76fr) minmax(0, 1.24fr); }
 @media (max-width: 1000px) { .station.st-wide { grid-template-columns: minmax(0, 1fr); } }
 
-/* ---- the materialization figure: one implicit brain, three traced out of it ---- */
+/* ---- the materialization diagram: one scene, four brains ---- */
 .station.st-full { grid-template-columns: minmax(0, 1fr); gap: 26px; }
 .station.st-full .st-text { max-width: 62ch; }
 
-.mz { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 76px minmax(0, 0.78fr);
-  align-items: center; gap: 0; max-width: 980px; opacity: 0; transition: opacity .7s; }
+.mz { position: relative; width: 100%; max-width: 1000px; opacity: 0; transition: opacity .7s; }
 .mz.is-ready { opacity: 1; }
-.mz figure { margin: 0; }
-.mz-brain { position: relative; width: 100%; }
-.mz-brain canvas { display: block; width: 100%; height: auto; }
-.mz-links { grid-column: 2; width: 100%; height: 100%; position: absolute; inset: 0;
-  pointer-events: none; overflow: visible; }
-.mz-link { fill: none; stroke: var(--accent); stroke-width: 1.4; opacity: .45; }
-.mz-dot { fill: var(--accent); opacity: .7; }
+.mz-canvas { width: 100%; cursor: grab; }
+.mz-canvas:active { cursor: grabbing; }
+.mz-canvas canvas { display: block; width: 100%; height: auto; }
 
-.mz-implicit { grid-column: 1; }
-.mz-outs { grid-column: 3; display: grid; gap: 18px; }
-
-.mz figcaption { margin-top: 8px; display: grid; gap: 2px; }
-.mz figcaption b { font-family: var(--display); font-weight: 600; font-size: 1rem; letter-spacing: -.01em; }
-.mz figcaption span { font-family: var(--mono); font-size: .62rem; letter-spacing: .09em;
+.mz-labels { position: absolute; inset: 0; pointer-events: none; }
+.mz-mark { position: absolute; top: 0; left: 0; transform-origin: 0 0; white-space: nowrap;
+  transition: opacity .3s; display: grid; gap: 1px; }
+.mz-mark b { font-family: var(--display); font-weight: 600; font-size: 11.5px; color: var(--text); }
+.mz-mark span { font-family: var(--mono); font-size: 7.5px; letter-spacing: .1em;
   text-transform: uppercase; color: var(--muted); }
-.mz-implicit figcaption b { font-size: 1.5rem; color: var(--accent); }
 
-/* the variables the implicit model carries, drifting around it.  they are real component
-   ids out of the registry, sampled across fields rather than taken in order. */
-.mz-vars { position: absolute; inset: -6% -4%; pointer-events: none; }
-.mz-var { position: absolute; transform: translate(-50%, -50%);
-  font-family: var(--mono); font-size: 8.5px; letter-spacing: .04em; color: var(--accent);
-  opacity: .42; white-space: nowrap; animation: mz-drift 9s ease-in-out infinite alternate; }
-@keyframes mz-drift {
-  from { transform: translate(-50%, -50%) translateY(-3px); opacity: .28; }
-  to   { transform: translate(-50%, -50%) translateY(3px); opacity: .55; }
-}
-@media (prefers-reduced-motion: reduce) { .mz-var { animation: none; } }
+/* the hub and the three model names are the labels that carry the diagram */
+.mz-mark.is-hub { transform-origin: 50% 0; margin-left: -60px; text-align: center; }
+.mz-mark.is-hub b { font-size: 19px; color: var(--accent); }
+.mz-mark.is-hub span { font-size: 8px; }
+.mz-mark.is-name { margin-left: -52px; text-align: center; }
+.mz-mark.is-name b { font-size: 12.5px; }
+
+/* inputs and outputs take the same two colours as the traced route in the opener */
+.mz-mark.is-in { padding-left: 7px; border-left: 1.5px solid var(--fig-in); }
+.mz-mark.is-in b { color: var(--fig-in); font-size: 10px; }
+.mz-mark.is-out { padding-left: 7px; border-left: 1.5px solid var(--fig-out); }
+.mz-mark.is-out b { color: var(--fig-out); font-size: 10px; }
+.mz-mark.is-var { font-family: var(--mono); font-size: 8px; letter-spacing: .04em;
+  color: var(--accent); opacity: .5; }
 
 @media (max-width: 1000px) {
-  .mz { grid-template-columns: minmax(0, 1fr); gap: 22px; }
-  .mz-implicit, .mz-outs { grid-column: 1; }
-  .mz-links { display: none; }
-  .mz-outs { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .mz-mark.is-var { display: none; }
+  .mz-mark b { font-size: 10px; }
+}
 }

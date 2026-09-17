@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="site.css?v=20260917162825">
+<link rel="stylesheet" href="site.css?v=20260917163603">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2307090f'/%3E%3Ccircle cx='11' cy='13' r='2.2' fill='%23f0b34a'/%3E%3Ccircle cx='21' cy='11' r='2.2' fill='%2363d3e6'/%3E%3Ccircle cx='17' cy='21' r='2.2' fill='%23e69422'/%3E%3Cpath d='M11 13L21 11L17 21Z' fill='none' stroke='%23e9e7e0' stroke-opacity='.5' stroke-width='.8'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -62,31 +62,7 @@
         <p class="display-math">M = materialize(R, r, B, F, A, T, P)</p>
       </div>
 
-      <div class="mz" id="mz">
-        <figure class="mz-implicit">
-          <div class="mz-brain" data-snap="m_implicit"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div>
-            <div class="mz-vars" id="mz-vars" aria-hidden="true"></div>
-          </div>
-          <figcaption><b>IBM-1</b><span>one parameter set · every variable</span></figcaption>
-        </figure>
-
-        <svg class="mz-links" id="mz-links" aria-hidden="true"></svg>
-
-        <div class="mz-outs">
-          <figure>
-            <div class="mz-brain" data-snap="m_decode"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></div>
-            <figcaption><b>IBM-1-EEG-to-Image</b><span>eeg_to_image</span></figcaption>
-          </figure>
-          <figure>
-            <div class="mz-brain" data-snap="m_speech"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></div>
-            <figcaption><b>IBM-1-Speech-Envelope</b><span>speech_envelope</span></figcaption>
-          </figure>
-          <figure>
-            <div class="mz-brain" data-snap="m_stim"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></div>
-            <figcaption><b>IBM-1-TMS-Response</b><span>tms_response</span></figcaption>
-          </figure>
-        </div>
-      </div>
+      <div class="mz" id="mz" aria-label="the implicit model and three models materialized from it"></div>
     </section>
 
     <!-- ------------------------------------------------ EEG decoding -->
@@ -221,12 +197,12 @@ ckpt = hf_hub_download(<span class="str">"<span data-rel="repo">jacob-valdez/ibm
 <div id="tip" class="tip" role="tooltip" hidden><span class="tip-text"></span><div class="tip-extra" hidden></div><a class="tip-link" href="#"></a></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="background.js?v=20260917162825"></script>
-<script src="data/graph.js?v=20260917162825"></script>
-<script src="data/registry.js?v=20260917162825"></script>
-<script src="data/cards.js?v=20260917162825"></script>
-<script src="data/releases.js?v=20260917162825"></script>
-<script src="brain.js?v=20260917162825"></script>
+<script src="background.js?v=20260917163603"></script>
+<script src="data/graph.js?v=20260917163603"></script>
+<script src="data/registry.js?v=20260917163603"></script>
+<script src="data/cards.js?v=20260917163603"></script>
+<script src="data/releases.js?v=20260917163603"></script>
+<script src="brain.js?v=20260917163603"></script>
 <div id="lightbox" class="lb" hidden>
   <button class="lb-close" aria-label="close">×</button>
   <button class="lb-nav lb-prev" aria-label="previous">‹</button>
@@ -234,13 +210,13 @@ ckpt = hf_hub_download(<span class="str">"<span data-rel="repo">jacob-valdez/ibm
   <div class="lb-stage"></div>
   <div class="lb-meta"><p class="lb-count"></p><h3></h3><p class="lb-cap"></p><p class="lb-desc"></p></div>
 </div>
-<script src="site.js?v=20260917162825"></script>
-<script src="data/body.js?v=20260917162825"></script>
-<script src="body.js?v=20260917162825"></script>
-<script src="data/retrieval.js?v=20260917162825"></script>
-<script src="retrieval.js?v=20260917162825"></script>
-<script src="materialize.js?v=20260917162825"></script>
-<script src="tms.js?v=20260917162825"></script>
-<script src="spine.js?v=20260917162825"></script>
+<script src="site.js?v=20260917163603"></script>
+<script src="data/body.js?v=20260917163603"></script>
+<script src="body.js?v=20260917163603"></script>
+<script src="data/retrieval.js?v=20260917163603"></script>
+<script src="retrieval.js?v=20260917163603"></script>
+<script src="materialize.js?v=20260917163603"></script>
+<script src="tms.js?v=20260917163603"></script>
+<script src="spine.js?v=20260917163603"></script>
 </body>
 </html>
