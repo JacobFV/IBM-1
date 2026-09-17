@@ -813,3 +813,10 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 #body3d.is-ready { opacity: 1; }
 #body3d:active { cursor: grabbing; }
 #body3d canvas { display: block; width: 100%; height: auto; }
+
+/* the cobot + head stimulation figure */
+.tms-fig { margin: 0; }
+#tms3d { width: 100%; min-height: 300px; cursor: grab; opacity: 0; transition: opacity .7s; }
+#tms3d.is-ready { opacity: 1; }
+#tms3d:active { cursor: grabbing; }
+#tms3d canvas { display: block; width: 100%; height: auto; }
