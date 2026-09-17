@@ -935,6 +935,7 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 .mz { position: relative; width: 100%; max-width: 1000px; opacity: 0; transition: opacity .7s; }
 .mz.is-ready { opacity: 1; }
 .mz-canvas { width: 100%; cursor: grab; }
+/* each brain turns on its own axis, so the affordance is per-brain, not per-scene */
 .mz-canvas:active { cursor: grabbing; }
 .mz-canvas canvas { display: block; width: 100%; height: auto; }
 

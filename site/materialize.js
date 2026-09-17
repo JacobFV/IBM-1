@@ -131,12 +131,15 @@
   layer.className = "mz-labels";
   host.appendChild(layer);
   const marks = [];
-  const addMark = (p, cls, html, group) => {
+  /* a mark either sits in world space (the hub, the model names, the variables) or rides
+     a brain (its inputs and outputs).  a riding mark stores LOCAL coordinates and is
+     transformed by its brain's matrix each frame, so it follows when that brain is turned. */
+  const addMark = (p, cls, html, group, ride) => {
     const el = document.createElement("div");
     el.className = "mz-mark " + cls;
     el.innerHTML = html;
     layer.appendChild(el);
-    marks.push({ p: p.clone(), el, group });
+    marks.push({ p: p.clone(), el, group, ride: ride || null });
   };
 
   /* the centre: a sample of the variables it carries, spread ACROSS fields rather than
@@ -149,7 +152,7 @@
     all.filter((_, i) => i % step === 0).slice(0, 6).forEach((id, i, arr) => {
       /* well inside the ring: at the ring radius these landed on the model brains */
       const th = (i / arr.length) * Math.PI * 2 + 0.4;
-      addMark(new T.Vector3(Math.cos(th) * 0.86, Math.sin(th) * 0.74, 0.12), "is-var", id);
+      addMark(new T.Vector3(Math.cos(th) * 0.86, Math.sin(th) * 0.74, 0.12), "is-var", id, null, null);
     });
   }
   addMark(new T.Vector3(0, -1.12, 0), "is-hub", "<b>IBM-1</b><span>one parameter set · every variable</span>");
@@ -161,8 +164,8 @@
     addMark(a.pos.clone().addScaledVector(out, SUB * 1.9), "is-name",
       `<b>${a.model.name}</b><span>${a.model.id}</span>`);
     const io = (list, cls, tag) => (list || []).slice(0, 2).forEach((x) => {
-      const p = new T.Vector3().fromArray(x.anchor).sub(ctr).multiplyScalar(S * SUB).add(a.pos);
-      addMark(p, cls, `<b>${x.label}</b><span>${tag}</span>`, a.model.id);
+      const local = new T.Vector3().fromArray(x.anchor).sub(ctr).multiplyScalar(S);
+      addMark(local, cls, `<b>${x.label}</b><span>${tag}</span>`, a.model.id, a.group);
     });
     io(a.m.inputs, "is-in", "in");
     io(a.m.outputs, "is-out", "out");
@@ -177,11 +180,29 @@
   host.insertBefore(canvasHost, layer);
   canvasHost.appendChild(renderer.domElement);
 
-  let az = 0, el = 0.12, dist = 7.4, drag = null, spin = true;
+  /* the camera does not move.  each brain turns on its own axis, and a drag turns
+     whichever brain it started nearest -- the diagram is four objects, not one scene the
+     reader spins. */
+  const dist = 7.4;
+  const spinners = [{ g: implicit, r: 1.0 }].concat(anchors.map((a) => ({ g: a.group, r: SUB })));
+  spinners.forEach((s2) => { s2.ry = 0; s2.rx = 0; s2.auto = 1; });
+  let drag = null;
   function place() {
-    cam.position.set(Math.sin(az) * Math.cos(el) * dist, Math.sin(el) * dist,
-                     Math.cos(az) * Math.cos(el) * dist);
+    cam.position.set(0, 0.9, dist);
     cam.lookAt(0, 0, 0);
+  }
+  /* pick by projected distance: a raycast would need colliders on a point cloud */
+  function pick(cx, cy) {
+    const b = canvasHost.getBoundingClientRect();
+    const x = cx - b.left, y = cy - b.top;
+    let best = null, bd = Infinity;
+    spinners.forEach((s2) => {
+      const v = s2.g.position.clone().project(cam);
+      const px = (v.x + 1) / 2 * b.width, py = (-v.y + 1) / 2 * b.height;
+      const d = Math.hypot(px - x, py - y);
+      if (d < bd) { bd = d; best = s2; }
+    });
+    return bd < 190 ? best : null;
   }
   function resize() {
     const w = host.clientWidth, h = Math.max(380, Math.round(w * 0.58));
@@ -189,13 +210,16 @@
     cam.aspect = w / h; cam.updateProjectionMatrix();
   }
   canvasHost.addEventListener("pointerdown", (e) => {
-    drag = { x: e.clientX, y: e.clientY, az, el }; spin = false;
+    const s2 = pick(e.clientX, e.clientY);
+    if (!s2) return;
+    drag = { x: e.clientX, y: e.clientY, ry: s2.ry, rx: s2.rx, s: s2 };
+    s2.auto = 0;
     canvasHost.setPointerCapture(e.pointerId);
   });
   canvasHost.addEventListener("pointermove", (e) => {
     if (!drag) return;
-    az = drag.az - (e.clientX - drag.x) * 0.007;
-    el = Math.max(-0.5, Math.min(0.6, drag.el + (e.clientY - drag.y) * 0.004));
+    drag.s.ry = drag.ry + (e.clientX - drag.x) * 0.009;
+    drag.s.rx = Math.max(-0.9, Math.min(0.9, drag.rx + (e.clientY - drag.y) * 0.006));
   });
   const up = () => { drag = null; };
   canvasHost.addEventListener("pointerup", up);
@@ -210,7 +234,11 @@
   function frame() {
     requestAnimationFrame(frame);
     if (!vis) return;
-    if (spin) az = Math.sin((performance.now() - t0) / 9000) * 0.34;
+    const tt = (performance.now() - t0) / 1000;
+    spinners.forEach((s2, i) => {
+      if (s2.auto) s2.ry = Math.sin(tt / 7 + i * 1.7) * 0.5;
+      s2.g.rotation.set(s2.rx, s2.ry, 0);
+    });
     place();
     renderer.render(scene, cam);
     const w = host.clientWidth, h = renderer.domElement.clientHeight;
@@ -220,7 +248,8 @@
     };
     const byGroup = new Map();
     marks.forEach((m) => {
-      const v = m.p.clone().project(cam);
+      const wp = m.ride ? m.ride.localToWorld(m.p.clone()) : m.p.clone();
+      const v = wp.project(cam);
       const e = { m, x: (v.x + 1) / 2 * w, y: (-v.y + 1) / 2 * h, z: v.z };
       if (m.group == null) return put(m, e.x, e.y, e.z);
       if (!byGroup.has(m.group)) byGroup.set(m.group, []);

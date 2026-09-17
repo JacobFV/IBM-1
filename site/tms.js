@@ -16,21 +16,47 @@
   const T = window.THREE;
   const MM = 0.001;                                  /* the graph is in mm, we work in m */
 
-  /* ---------- the head ---------- */
+  /* ---------- the head: the same point cloud the rest of the site draws ----------
+     an opaque scalp shell hides the thing the figure is about.  the cortex is drawn as its
+     own sites, and the pulse is shown as a RIPPLE travelling outward from the stimulated
+     point through those sites -- brightness by distance from the target, delayed so the
+     wave spreads rather than flashing everywhere at once. */
   const ctr = new T.Vector3().fromArray(G.center || [0, 0, 0]).multiplyScalar(MM);
+  const scene = new T.Scene();
+  const world = new T.Group(); scene.add(world);
+
+  const NODES = G.nodes.length;
+  const CORTEX = G.cortex_range ? G.cortex_range[1] : NODES;
+  const npos = new Float32Array(NODES * 3);
+  for (let i = 0; i < NODES; i++) {
+    const p = G.nodes[i].p;
+    npos[i * 3] = p[0] * MM - ctr.x;
+    npos[i * 3 + 1] = p[1] * MM - ctr.y;
+    npos[i * 3 + 2] = p[2] * MM - ctr.z;
+  }
+  const ncol = new Float32Array(NODES * 3);
+  const restCol = G.nodes.map((n) => new T.Color(n.c || "#7a8290"));
+  const brainGeo = new T.BufferGeometry();
+  brainGeo.setAttribute("position", new T.BufferAttribute(npos, 3));
+  brainGeo.setAttribute("color", new T.BufferAttribute(ncol, 3));
+  /* additive, so the cloud GLOWS against a dark page.  the atlas colours are mostly
+     dark blues and purples: drawn normally at this size they vanish into the background,
+     which is exactly what made the first pass look empty. */
+  const brain = new T.Points(brainGeo, new T.PointsMaterial({
+    size: 0.012, vertexColors: true, transparent: true, opacity: 1,
+    sizeAttenuation: true, depthWrite: false, blending: T.AdditiveBlending,
+  }));
+  world.add(brain);
+
+  /* the scalp stays, as a wireframe hint of where the coil actually sits */
   const scalpGeo = new T.BufferGeometry();
   scalpGeo.setAttribute("position", new T.Float32BufferAttribute(
     G.scalp.xyz.flat().map((v) => v * MM), 3));
   scalpGeo.setIndex(G.scalp.faces.flat());
-  scalpGeo.computeVertexNormals();
-
-  const scene = new T.Scene();
-  const head = new T.Mesh(scalpGeo, new T.MeshStandardMaterial({
-    color: 0xd9c2ae, roughness: 0.82, metalness: 0.02,
-    transparent: true, opacity: 0.5, side: T.DoubleSide,
-  }));
-  head.position.sub(ctr);
-  const world = new T.Group(); world.add(head); scene.add(world);
+  const scalp = new T.LineSegments(new T.WireframeGeometry(scalpGeo),
+    new T.LineBasicMaterial({ color: 0x9aa4b4, transparent: true, opacity: 0.055 }));
+  scalp.position.sub(ctr);
+  world.add(scalp);
 
   /* the 60 digitised contacts, and the one the pulse is aimed at */
   const eeg = G.nodes.filter((n) => n.g === "eeg");
@@ -38,12 +64,12 @@
   const pc = pre.length
     ? pre.reduce((a, n) => a.add(new T.Vector3().fromArray(n.p)), new T.Vector3()).multiplyScalar(1 / pre.length)
     : new T.Vector3(-40, 0, 90);
-  const pcm = pc.clone().multiplyScalar(MM).sub(ctr);   /* pc is a Vector3 already */
+  const pcm = pc.clone().multiplyScalar(MM).sub(ctr);
   let target = null, best = Infinity;
   const dots = new T.Group(); world.add(dots);
   const dotGeo = new T.SphereGeometry(0.0045, 10, 8);
-  const dotMat = new T.MeshStandardMaterial({ color: 0xe9e7e0, roughness: 0.5 });
-  const hotMat = new T.MeshStandardMaterial({ color: 0xf0b34a, emissive: 0x6b4405, roughness: 0.35 });
+  const dotMat = new T.MeshBasicMaterial({ color: 0xe9e7e0, transparent: true, opacity: 0.65 });
+  const hotMat = new T.MeshBasicMaterial({ color: 0xf0b34a });   /* basic: no emissive */
   eeg.forEach((n) => {
     const p = new T.Vector3().fromArray(n.p).multiplyScalar(MM).sub(ctr);
     const d = p.distanceTo(pcm);
@@ -52,9 +78,35 @@
   });
   if (!target) { console.warn("tms: no target contact found"); return; }
   target.mesh.material = hotMat;
-  target.mesh.scale.setScalar(1.6);
-  const nrm = target.p.clone().normalize();           /* scalp is convex enough here */
+  target.mesh.scale.setScalar(1.7);
+  const nrm = target.p.clone().normalize();
   const coilAt = target.p.clone().addScaledVector(nrm, 0.012);
+
+  /* distance from the stimulated site to every cortical node, for the ripple */
+  const dist0 = new Float32Array(CORTEX);
+  let dmax = 0;
+  for (let i = 0; i < CORTEX; i++) {
+    const dx = npos[i * 3] - target.p.x, dy = npos[i * 3 + 1] - target.p.y, dz = npos[i * 3 + 2] - target.p.z;
+    dist0[i] = Math.hypot(dx, dy, dz);
+    if (dist0[i] > dmax) dmax = dist0[i];
+  }
+  const HOT = new T.Color(0xffe6b0), LIFT = new T.Color(0xaebbd4);
+  function ripple(phase) {
+    /* phase < 0 means no pulse in flight: everything sits at its resting colour */
+    const c = new T.Color();
+    for (let i = 0; i < NODES; i++) {
+      let amp = 0;
+      if (phase >= 0 && i < CORTEX) {
+        const front = phase * dmax * 1.35;
+        const d = Math.abs(dist0[i] - front);
+        amp = Math.exp(-(d * d) / (2 * 0.026 * 0.026)) * (1 - phase * 0.75) * 1.5;
+      }
+      c.copy(restCol[i]).lerp(LIFT, 0.5).multiplyScalar(0.5).lerp(HOT, Math.min(1, amp));
+      ncol[i * 3] = c.r; ncol[i * 3 + 1] = c.g; ncol[i * 3 + 2] = c.b;
+    }
+    brainGeo.attributes.color.needsUpdate = true;
+  }
+  ripple(-1);
 
   /* ---------- the arm: Franka Panda, modified DH [a, d, alpha] ---------- */
   const DH = [
@@ -120,23 +172,29 @@
 
   /* ---------- arm geometry: one segment per link, rebuilt from FK each frame ---------- */
   const shell = new T.MeshStandardMaterial({ color: 0xe8e6e1, roughness: 0.42, metalness: 0.06 });
-  const joint = new T.MeshStandardMaterial({ color: 0x2c2f38, roughness: 0.55, metalness: 0.25 });
+  const joint = new T.MeshStandardMaterial({ color: 0x2c2f38, roughness: 0.5, metalness: 0.35 });
+  const trim = new T.MeshStandardMaterial({ color: 0xf0b34a, roughness: 0.35, metalness: 0.5 });
   const coilMat = new T.MeshStandardMaterial({ color: 0xf0b34a, roughness: 0.3, metalness: 0.4,
                                                emissive: 0x3a2400 });
   /* a cobot reads as a cobot because of its PROPORTIONS: pale tapered shells that get
      slimmer toward the wrist, a dark collar at every axis, and a cast base.  bare
      equal-radius cylinders read as a stick figure however correct the kinematics are. */
   const RAD = [0.052, 0.049, 0.046, 0.043, 0.039, 0.034, 0.030, 0.026];
-  const links = [], hubs = [], collars = [];
+  const links = [], hubs = [], collars = [], bands = [];
   for (let i = 0; i < 8; i++) {
-    const m = new T.Mesh(new T.CylinderGeometry(RAD[i] * 0.88, RAD[i], 1, 26), shell);
+    /* a segmented shell rather than one tube: a slim waist between two thicker ends is
+       what a cobot link actually looks like, and it catches the key light in two places */
+    const m = new T.Mesh(new T.CylinderGeometry(RAD[i] * 0.8, RAD[i] * 0.86, 1, 36, 1), shell);
     m.geometry.translate(0, 0.5, 0);
     links.push(m); base.add(m);
     if (i < 7) {
-      const h = new T.Mesh(new T.SphereGeometry(RAD[i] * 1.06, 22, 16), shell);
+      const h = new T.Mesh(new T.SphereGeometry(RAD[i] * 1.08, 28, 20), shell);
       hubs.push(h); base.add(h);
-      const c = new T.Mesh(new T.CylinderGeometry(RAD[i] * 1.1, RAD[i] * 1.1, RAD[i] * 0.5, 26), joint);
+      const c = new T.Mesh(new T.CylinderGeometry(RAD[i] * 1.14, RAD[i] * 1.14, RAD[i] * 0.62, 36), joint);
       collars.push(c); base.add(c);
+      /* a thin bright band on each axis: real arms have one, and it reads the rotation */
+      const bd = new T.Mesh(new T.TorusGeometry(RAD[i] * 1.16, RAD[i] * 0.075, 8, 30), trim);
+      bands.push(bd); base.add(bd);
     }
   }
   const pedestal = new T.Mesh(new T.CylinderGeometry(0.082, 0.115, 0.055, 32), joint);
@@ -166,6 +224,9 @@
     collars.forEach((c, i) => {
       c.position.copy(pts[i + 1]);
       c.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), zOf(Ms[i]));
+      bands[i].position.copy(pts[i + 1]);
+      bands[i].quaternion.copy(c.quaternion).multiply(
+        new T.Quaternion().setFromAxisAngle(new T.Vector3(1, 0, 0), Math.PI / 2));
     });
     const M = Ms[7];
     coil.position.copy(posOf(M));
@@ -219,14 +280,14 @@
   let az = 0.78, el = 0.2, dist = 1.25, drag = null;
   const focus = new T.Vector3();
   function fit() {
-    const box = new T.Box3();
     world.updateMatrixWorld(true);
-    world.traverse((o) => { if (o.isMesh) box.expandByObject(o); });
+    const box = new T.Box3().setFromObject(brain);
     if (box.isEmpty()) return;
     box.getCenter(focus);
+    focus.lerp(coilAt, 0.18);                 /* bias toward the coil side */
     const sz = box.getSize(new T.Vector3());
     const r = Math.max(sz.x, sz.y, sz.z) * 0.5;
-    dist = r / Math.tan((cam.fov * Math.PI / 180) / 2) * 1.5;
+    dist = r / Math.tan((cam.fov * Math.PI / 180) / 2) * 2.05;
   }
   function place() {
     cam.position.set(focus.x + Math.sin(az) * Math.cos(el) * dist,
@@ -269,9 +330,12 @@
     const goal = away.clone().lerp(coilAt, e);
     ik(toLocal(goal), base.worldToLocal(base.localToWorld(new T.Vector3()).add(goalZ)).normalize(), 9);
     layout();
-    const pulse = t > 2.5 && t < 3.6;
-    coilMat.emissive.setHex(pulse ? 0xf0b34a : 0x3a2400);
-    hotMat.emissive.setHex(pulse ? 0xf0b34a : 0x6b4405);
+    /* the pulse fires once the coil is seated, and the ripple runs from there */
+    const T0 = 2.15, TR = 1.6;
+    const phase = (t > T0 && t < T0 + TR) ? (t - T0) / TR : -1;
+    ripple(phase);
+    coilMat.emissive.setHex(phase >= 0 && phase < 0.18 ? 0xf0b34a : 0x3a2400);
+    hotMat.color.setHex(phase >= 0 ? 0xfff0cf : 0xf0b34a);
     place();
     renderer.render(scene, cam);
     /* the labels are HTML, so they stay crisp and themeable; they are just projected */
@@ -288,7 +352,7 @@
       if (proj[i].y - proj[i - 1].y < MINGAP) proj[i].y = proj[i - 1].y + MINGAP;
     proj.forEach((p) => {
       p.m.el.style.opacity = p.z < 1 ? "1" : "0";
-      p.m.el.style.transform = `translate(${(p.x + 16).toFixed(0)}px, ${(p.y - 9).toFixed(0)}px)`;
+      p.m.el.style.transform = `translate(${(p.x + 34).toFixed(0)}px, ${(p.y - 9).toFixed(0)}px)`;
     });
   }
   resize();
