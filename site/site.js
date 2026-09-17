@@ -267,6 +267,27 @@
     l_state: { model: 'sleep_dynamics', az: 0.5, el: 0.3, dist: 470, aspect: 0.8 },
     l_body: { model: 'invasive_bci', az: -0.8, el: 0.45, dist: 470, aspect: 0.8 },
     l_surrogate: { model: 'macro_surrogate', az: -0.6, el: 0.3, dist: 470, aspect: 0.8 },
+    // the visual pathway as the substrate actually declares it: 20 retinal sites,
+    // the occipital port they arrive at, and the 60 digitised contacts the result is
+    // read out at.  drawn from the graph rather than illustrated, so what is lit is
+    // what the model has -- including that the port is a REGION, not a point.
+    l_visual: {
+      az: -1.15, el: 0.18, dist: 445, aspect: 0.92,
+      weights: () => anatomyWeights([
+        (i) => group[i] === 'retina',
+        (i) => B.region[i] === 'lateraloccipital',
+        (i) => B.region[i] === 'pericalcarine',
+        (i) => B.region[i] === 'lingual',
+        (i) => B.region[i] === 'cuneus',
+        (i) => group[i] === 'eeg',
+      ]),
+      annotations: () => finish([
+        A.group('retina', 'retina', { sub: 'three populations at 2.5 / 4.2 / 8.3 ms', side: 'l' }),
+        A.region('occipital port', 'lateraloccipital', null, { sub: 'displaced, retrieval falls to 0.44%', side: 'l' }),
+        A.region('striate cortex', 'pericalcarine', null, { sub: 'pericalcarine · lingual · cuneus', side: 'l' }),
+        A.group('64-channel EEG', 'eeg', { sub: '60 digitised contacts', side: 'r' }),
+      ]),
+    },
   });
 })();
 

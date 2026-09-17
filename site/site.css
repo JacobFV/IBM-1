@@ -785,3 +785,7 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
   .st-media { position: static; }
   .st-figs li { grid-template-columns: minmax(0, 1fr); gap: 3px; }
 }
+
+/* the visual-pathway view needs more vertical room than a landscape snap: the
+   retina sits well forward of the occipital port and both must be in frame */
+.snap-tall canvas { min-height: 380px; }
