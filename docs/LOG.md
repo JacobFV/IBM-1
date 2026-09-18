@@ -62,6 +62,54 @@ already written.
 ---
 
 
+## 2026-09-18 -- RESULT: covariance plasticity learned the network's common mode, not the input's structure. The known answer FAILED, and all three verdicts FAILED.
+
+`scripts/plasticity_v2.py`, arms A/B/C x seeds 0/1/2, `out/plasticity_v2/`. Thresholds are
+the ones pre-registered below.
+
+| arm | seed | |P| long | frac P > 0 | P p99 | pairwise corr | joint transitions | revisited | region dwell | rate |
+|---|---|---|---|---|---|---|---|---|---|
+| A real | 0 | 2.25 | 0.86 | 4.00 | 0.206 | 1054 | 122 | 0.73 s | 46.6 Hz |
+| A real | 1 | 2.35 | 0.81 | 4.00 | 0.198 | 1012 | 92 | 0.82 s | 47.2 Hz |
+| A real | 2 | 2.83 | 0.86 | 4.00 | 0.128 | 1146 | 93 | 0.78 s | 45.8 Hz |
+| B shifted | 0 | 2.36 | 0.85 | 4.00 | 0.215 | 1047 | 105 | 0.76 s | 45.9 Hz |
+| B shifted | 1 | 2.32 | 0.83 | 4.00 | 0.118 | 1054 | 71 | 0.83 s | 47.4 Hz |
+| B shifted | 2 | 2.95 | 0.85 | 4.00 | 0.135 | 1142 | 134 | 0.73 s | 45.5 Hz |
+| C static | 0 | 0 | -- | -- | 0.197 | 351 | 30 | 1.90 s | 14.6 Hz |
+| C static | 1 | 0 | -- | -- | 0.159 | 384 | 31 | 1.62 s | 14.7 Hz |
+| C static | 2 | 0 | -- | -- | 0.176 | 368 | 31 | 1.52 s | 14.4 Hz |
+
+* **Known answer, B's |P| < A's in every seed: FAILED.** B is larger in seeds 0 and 2. Under
+  the pre-registration, verdicts 1-3 are reported and NOT interpreted as experience.
+* **1. A - B coordination:** 0.177 - 0.156 = **+0.021**, against max(0.10, spread 0.096).
+  **FAILED.**
+* **2. G3 after experience:** A passes in **0 / 3** seeds. **FAILED.**
+* **3. A - C:** 0.177 - 0.177 = **0.000**. **FAILED.**
+
+**What the rule actually did.** It wrote large weights that were 81-86% POSITIVE, with the
+top 1% pinned at the cap in every run, and it wrote the same thing for input whose
+cross-site structure had been destroyed. It learned the network's own COMMON MODE: at this
+noise the whole sheet's rate fluctuates together, so almost every pair's covariance is
+positive whatever the input is. Centring on each site's own slow mean removes each site's
+offset, not the fluctuation all sites share. The result was a uniformly more excitatory
+kernel. The rate went from 14.6 to ~46 Hz, the per-region dwell halved (1.7 s -> 0.75 s),
+and nothing was coordinated. This is the failure the rule's own comment named ("the same
+flat kernel again, one sign higher"), reached by a route that comment did not see.
+
+**Declared in advance, and held to.** "If A fails 1, plasticity of this form is not the
+lever, and this entry says so instead of tuning eta until it is." It is not the lever. No
+eta, lam or var_ref run follows.
+
+**What would be a different FORM** (not a retune), and is a candidate for its own
+pre-registration: a COMPETITIVE rule that cannot learn a common mode. One version subtracts
+the population-mean activity before the product; another conserves each site's total
+incoming drive (row-zero-sum, subtractive synaptic scaling, DYNAMICS.md mechanism 11). Both
+make independent AND uniformly correlated inputs produce zero net change. Either one needs
+a known-answer check B can actually pass before any verdict is read.
+
+---
+
+
 ## 2026-09-18 -- PRE-REGISTRATION: does experience give the v2 substrate coordinated metastable states?
 
 *Committed before any arm of `scripts/plasticity_v2.py` has run past a 4 s smoke test,
@@ -5755,3 +5803,115 @@ knee is 6 mm off. One literature comparison even matched to 2%. None of them loo
 the route **ends**. A length in the right units between the wrong two points is still wrong,
 and a frame check cannot see it, because both points are in the frame. The check that caught
 it put each authored endpoint beside the structure its own label names.
+
+## 18 September 2026 — FIXED: IHM's relays are on the cord, and the brain's visceral delays have changed
+
+**What changed, in IHM-1** (full account in IHM-1 `docs/BODY_PERIPHERAL.md`, "FIXED, 18 September
+2026"). `scripts/build_spinal_cord_levels.py` places every spinal relay on the Z-Anatomy spinal
+dura centreline at its group's segment level.
+- The dura comes from the staged `Startup.blend`, through this repo's
+  `blender_zanatomy_nerves.py`.
+- It is carried into metres by the landmark registration `anatomy.json` already uses for every
+  Z-Anatomy entity: 99 bones, held-out RMS 4.7 mm. That registration is rebuilt from the stored
+  landmarks and asserted to reproduce the stored affine exactly.
+- It is not carried by the site's bounding-box chain. That chain differs from the registration by
+  9.8 mm at C5 and by under 4 mm below it.
+- Round-trip check: the site's own cord chain, inverted through its chain and re-registered, lands
+  on this centreline to 0.3 mm median, 2.0 mm max.
+- Segment levels are BodyParts3D vertebral bodies, each at the midpoint of the discs above and
+  below. Segments sit rostral to their vertebrae: C6 at C5, T7 at T5, L3 at T11, and the sacral
+  segments at L1.
+- The brainstem relays are the BodyParts3D pons and medulla.
+
+| relay | old y | new position (m) | to dura centreline | vertebral canal there |
+|---|---|---|---|---|
+| cervical (C6) | 0.530 | [±0.004, 0.6192, −0.0289] | 4.0 mm | inside, 24/24 directions, 4.0 mm clear |
+| thoracic (T7) | 0.300 | [±0.004, 0.4855, −0.0685] | 4.0 mm | inside, 24/24, 6.4 mm |
+| lumbar (L3) | 0.040 | [±0.004, 0.3270, −0.0578] | 4.0 mm | inside, 23/24, 3.8 mm |
+| sacral (S2, conus) | −0.080 | [±0.004, 0.2686, −0.0408] | 4.0 mm | inside, 18/24, 4.7 mm |
+| cranial (pons) | 0.650 | [±0.0105, 0.7296, −0.0210] | — | — |
+| solitary (medulla) | 0.655 | [±0.0067, 0.6984, −0.0329] | — | — |
+
+Four endpoints whose labels name an organ were moved onto a vertex of that organ:
+- gastric wall (vagus and greater splanchnic): was 87 mm off the stomach;
+- renal (least splanchnic): was 101 mm off the kidney;
+- pelvic viscera (pelvic splanchnic): was 171 mm below the bladder;
+- diaphragm (phrenic): was 29 mm off.
+
+**Known answers.** IHM's length method, relays on the cord, against the Z-Anatomy centrelines from
+the route's own endpoint to the cord at the relay's level. **10 of 11 same-scope routes are within
+10%, against 1 of 11 before.**
+- Tibial 0.68 → 1.09.
+- Deep fibular 0.72 → 1.08.
+- Superficial fibular 0.71 → 1.09.
+- Median 0.90 → 1.04.
+- Medial plantar (conus → sole) 0.73 → 1.06.
+
+The one outside is the right vagus. Anchored on the posterior gastric wall it reads 0.86 (423
+against 491 mm). The polyline method has no `1.15` tortuosity factor, and `1.15 × 423` is 486.
+Femoral and radial have no same-scope reference: the Z curves stop 57 and 156 mm short of IHM's
+endpoints. The sciatic–tibial route to the sole is now **1,279 mm** (was 879); Z gives 1,219.
+Instrument: 146/146 new lengths reproduced exactly, and 146/146 old ones with the old relays put
+back. `scripts/audit_nerve_route_lengths.py` also reproduces 146/146 on the new file.
+
+**What the brain now reads** (`ihm_bridge.visceral_routes`, `interoception.group_delays_s`):
+
+| group | before | after |
+|---|---|---|
+| vagus A-beta / A-delta / C | 9.2 / 33.9 / 507.8 ms (508 mm) | 8.1 / 29.9 / 447.9 ms (448 mm) |
+| greater splanchnic C | 168.4 ms | 279.1 ms |
+| lesser splanchnic C | 217.2 ms | 411.0 ms |
+| least splanchnic C | 232.2 ms | 258.4 ms |
+| pelvic splanchnic C | 128.0 ms | 301.3 ms |
+| spread | 9.2 → 507.8 ms | 8.1 → 447.9 ms |
+
+The audit predicted the vagus would lengthen, to 551 mm. It SHORTENED, to 448 mm, because moving its
+endpoint up onto the stomach took off more than moving its relay up added. The
+lesser splanchnic is now the second-slowest group at 411 ms. It is routed to the T7 relay, which
+stands for all of T1–T12; the lesser splanchnic's own segments are T10–T11. Somatic routes: legs
+×1.4–3.0, arms ×1.1–1.5, cranial motor ×0.5–0.8. The 1,326 dermatome patches changed only
+`path_length_m` (median ×1.29).
+
+**A contract the fix ran into.** With per-side organ anchors, the right vagus reaches the posterior
+gastric wall (423 mm) and the left reaches the anterior (448 mm). `ihm_bridge.visceral_routes` then
+raised "left and right route lengths differ", which failed four `test_interoception` tests and
+`test_cortical_sheet.test_interoceptive_port_is_the_insula_now`. IHM therefore declares each
+visceral right route as the mirror of the left. The record says so: `mirror_of_left`,
+`on_named_structure: false`. Each relay pair is also an exact mirror image. All four tests pass now.
+A brain-side join that accepted per-side lengths would let the right side be anatomical.
+`ihm_bridge.py` was not edited: it carries another agent's uncommitted work.
+
+**The stature seam, fixed.** Nerve and skin-patch routes now scale by `stature / 1.7195 m`, the
+anatomical body they were measured on. They previously scaled by `stature / 1.7973 m`, the
+scaffold's height. At 2.03 m every delay is **+18.06%**, not +12.95%. `docs/MILESTONES.md`'s
+"vagal C 507.84 → 573.60 ms" is corrected there:
+- the reference fix alone would give 599.5 ms;
+- with the relays and endpoint fixed too, it is **447.91 → 528.80 ms**.
+
+The displayed anatomical entities still scale with the scaffold, because that keeps the declared
+registration between the two bodies. A 2.03 m variant therefore displays a 1.942 m anatomy. The
+variant records this as `known_seam`.
+
+**Gates whose verdict changed** (recorded as FAILED, not rescored):
+- IHM `scale_nerve_conduction.py` at s = 1: "30 mm route floor inactive" **FAILED**. The right
+  sternocleidomastoid's accessory binding is now 29.6 mm by straight line from the C6 relay. The
+  real accessory nerve climbs through the foramen magnum and leaves by the jugular foramen.
+- The same gate's independent arm at 2.03 m **FAILED** (1.3%), because the floor is not
+  homogeneous.
+- So `materialize_body_variant.py` reads 48/49 at 2.03 m and 50/51 at identity, and promotes
+  nothing. The variants on disk under `data/derived/body-variants/` still carry the pre-fix nerves.
+- `build_spinal_cord_levels.py`'s own canal sweep **FAILED 17/18** at C3: 1.5 mm clearance against
+  a 2 mm bar fixed before the first run. The relays are gated on their own four levels, which pass.
+
+**Needs a re-run, NOT re-run here** (the GPU is busy, and the result is not the kind a CPU run
+settles):
+- **Interoception, `cortex_lumped_delays` against trained, 30k: trajectory term −7.97.** That arm
+  lumps every delay to zero. The intact arm it is compared against now receives its splanchnic C
+  channels at 258–411 ms, not 128–232, and its vagal C at 448 ms, not 508. The *size* of the
+  trajectory cost is the open question. Whether timing is load-bearing for the state term (−0.010)
+  plausibly survives.
+
+The drop-arm readings ("vagal C carries two thirds", "each splanchnic group within noise") remove
+groups rather than retime them. They are unchanged in kind, but they were trained with the old
+delays, so a re-run would retime the intact reference too. The "stomach reports twice" claim holds:
+8 ms and 279 ms.

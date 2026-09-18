@@ -1,0 +1,33 @@
+{
+  "arm": "A",
+  "seed": 0,
+  "films": [
+    "BigBoyRidesAgain",
+    "Detour_66",
+    "EveningsForSale1932Restored",
+    "IdentityUnknown"
+  ],
+  "learn_s": 300.0,
+  "eta": 0.033,
+  "lam": 0.5,
+  "sigma": 0.12,
+  "drive": 0.3,
+  "n_visual_sites": 117,
+  "n_auditory_sites": 53,
+  "P_long_mean_abs": 2.245211124420166,
+  "P_long_frac_pos": 0.8583984375,
+  "P_long_p99_abs": 4.0,
+  "P_local_mean_abs": 2.836224317550659,
+  "test": {
+    "transitions": 1054,
+    "median_joint_dwell_s": 0.01,
+    "distinct": 870,
+    "revisited_ge2": 122,
+    "region_dwell_median_s": 0.725,
+    "regions_that_switch": 52,
+    "mean_pairwise_corr": 0.2057083257109701,
+    "mean_rate_hz": 46.56155776977539,
+    "passes_G3_thresholds": false
+  },
+  "seconds": 766.0
+}
