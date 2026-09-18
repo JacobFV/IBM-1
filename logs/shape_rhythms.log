@@ -59,3 +59,9 @@ Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pyto
   [relabelled]  150 wake-eyes-open  L=  21.7263 |g|= 14.334  gamma_visual=0.006347  aperiodic=3.087
   [relabelled]  160 wake-eyes-open  L=  17.5418 |g|= 27.929  gamma_visual=0.07699  aperiodic=3.102
   [relabelled]  170 wake-eyes-open  L=  20.5305 |g|= 30.986  gamma_visual=0.1199  aperiodic=3.258
+  [relabelled]  180 wake-eyes-open  L=  16.8108 |g|= 36.448  gamma_visual=-0.1085  aperiodic=2.641
+  [relabelled]  190 wake-eyes-open  L=  17.8492 |g|= 27.604  gamma_visual=-0.08599  aperiodic=2.85
+  [relabelled]  200 wake-eyes-open  L=  19.2654 |g|= 29.697  gamma_visual=-0.01527  aperiodic=2.926
+  [relabelled]  210 wake-eyes-open  L=  18.9248 |g|= 40.971  gamma_visual=0.08408  aperiodic=2.945
+  [relabelled]  220 wake-eyes-open  L=  18.8745 |g|= 32.627  gamma_visual=-0.03579  aperiodic=3.078
+  [relabelled]  230 wake-eyes-open  L=   0.4052 |g|=  0.278  gamma_visual=-0.4356  aperiodic=1.554

@@ -1143,9 +1143,27 @@ def station_sites(station_ids, region_names):
 # ======================================================================================
 SCORABLE_KINDS = ("relative_power", "peak_prominence", "peak_frequency", "pac", "coherence")
 
+# what a substrate has.  A row's `substrate` field is either "expressible" (cortex alone) or
+# "needs-a+b", so the requirement is readable rather than a free-text note nothing can act on.
+STRUCTURES = ("cortex", "thalamus", "basal-ganglia", "hippocampal-subfields", "cerebellum",
+              "limbic", "neuromodulators", "hypothalamus", "olfactory-bulb", "brainstem",
+              "cord", "body", "task")
+
+
+def needs(r) -> set:
+    """the structures a row needs beyond the cortical field, as a set."""
+    if r.substrate == "expressible":
+        return set()
+    return {x for x in r.substrate.replace("needs-", "", 1).split("+") if x}
+
+
+def substrate_ok(r, have) -> bool:
+    """can a substrate with these structures score this row at all?"""
+    return needs(r) <= set(have)
+
 
 def rhythm_targets(state: str, region_names, only_expressible: bool = True,
-                   min_sites: int = 4):
+                   min_sites: int = 4, have=(), unit_names=()):
     """(targets, skipped) for every catalogue row that can be scored on this substrate.
 
     `region_names` is the substrate's per-site atlas label list.  A target carries the
@@ -1160,15 +1178,49 @@ def rhythm_targets(state: str, region_names, only_expressible: bool = True,
         handful of columns rather than a region.
     """
     targets, skipped = [], []
+    have = set(have)
+    # `unit_names` names the non-cortical units a caller can address (thalamic nuclei, say).
+    # A station resolves to sites when it is cortical and to a unit index when it is not, and
+    # the target says which -- a caller must never have to guess which trace a number came
+    # from.
+    unit_ix = {n: i for i, n in enumerate(unit_names)}
     for r in by_state(state):
-        if only_expressible and r.substrate != "expressible":
-            skipped.append((r.id, f"substrate: {r.substrate}"))
+        if only_expressible and not substrate_ok(r, have):
+            missing = sorted(needs(r) - have)
+            skipped.append((r.id, f"substrate lacks: {', '.join(missing)}"))
             continue
         kind = r.measure.get("kind")
         if kind not in SCORABLE_KINDS:
             skipped.append((r.id, f"kind not scorable as a spectrum: {kind}"))
             continue
         stations = tuple(r.measure.get("stations", ()))
+        # a row whose stations are not cortical is scored on the unit trace instead
+        non_cortex = [st for st in stations if STATIONS[st].kind != "cortex"]
+        if non_cortex and kind != "coherence":
+            units = sorted({unit_ix[STATIONS[st].id] for st in non_cortex
+                            if STATIONS[st].id in unit_ix}
+                           | {unit_ix[k] for st in non_cortex for k in unit_ix
+                              if k == STATIONS[st].id})
+            if not units:
+                # fall back to the nucleus group a caller declared for this station
+                units = sorted({unit_ix[k] for st in non_cortex for k in unit_ix
+                                if k in STATIONS[st].labels or k == st})
+            if not units:
+                skipped.append((r.id, "no unit addresses "
+                                      + ", ".join(sorted({st for st in non_cortex}))))
+                continue
+            t = {"id": r.id, "name": r.name, "kind": kind, "units": units,
+                 "trace": "units", "target": r.measure.get("target"),
+                 "evidence": r.evidence}
+            if kind == "pac":
+                t["phase_band"] = r.measure["phase_band"]
+                t["amp_band"] = r.measure["amp_band"]
+            else:
+                t["band"] = r.measure["band"]
+                if kind == "peak_frequency" and r.peak is not None:
+                    t["target"] = r.measure.get("target", r.peak)
+            targets.append(t)
+            continue
         if kind == "coherence":
             if len(stations) < 2:
                 skipped.append((r.id, "coherence needs two stations"))
@@ -1178,15 +1230,15 @@ def rhythm_targets(state: str, region_names, only_expressible: bool = True,
                 skipped.append((r.id, f"a station resolves to <{min_sites} sites"))
                 continue
             targets.append({"id": r.id, "name": r.name, "kind": kind, "groups": groups,
-                            "band": r.measure["band"], "target": r.measure.get("target"),
-                            "evidence": r.evidence})
+                            "trace": "cortex", "band": r.measure["band"],
+                            "target": r.measure.get("target"), "evidence": r.evidence})
             continue
         sites = station_sites(stations, region_names)
         if len(sites) < min_sites:
             skipped.append((r.id, f"{len(sites)} sites < {min_sites}"))
             continue
         t = {"id": r.id, "name": r.name, "kind": kind, "sites": sites,
-             "target": r.measure.get("target"), "evidence": r.evidence}
+             "trace": "cortex", "target": r.measure.get("target"), "evidence": r.evidence}
         if kind == "pac":
             t["phase_band"] = r.measure["phase_band"]
             t["amp_band"] = r.measure["amp_band"]

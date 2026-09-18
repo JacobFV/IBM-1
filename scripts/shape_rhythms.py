@@ -58,6 +58,14 @@ instruments may change after a failure, thresholds may not.
       pressure is not anatomical -- it is "make the whole sheet oscillate", which any sheet
       can do -- and G3 means nothing.  The control must end HIGHER than the shaped arm.
 
+A caveat measured on the first thalamocortical run and not yet explained: the FIRST
+optimiser step's gradient norm is ~7.6e5 while every later step is ~40, with the spindle
+term's own penalty at 0.002 — so it is the derivative, not the error, that is large, and it
+appears only from the initial state.  Clipping bounds it and the run proceeds, but a gradient
+that large is a fact about the loop (3,200 steps of BPTT through a delayed circuit with a
+`torch.where` switch on the de-inactivation constant) and it is recorded here rather than
+smoothed over.
+
 Memory: CPU by default.  On the GB10 a GPU job is a machine-wide memory risk (CLAUDE.md),
 so `--device cuda` is opt-in and one at a time.
 """
@@ -77,6 +85,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from ibm import spectral as SP                                          # noqa: E402
 from ibm.rhythms import BACKGROUND, RHYTHM, rhythm_targets, station_sites  # noqa: E402
 from ibm.substrate import R_MAX, build_sheet                            # noqa: E402
+from ibm.thalamus import ThalamicField, ThalamoCortical, units_from_regions  # noqa: E402
 
 
 # --------------------------------------------------------------------------------------
@@ -98,17 +107,17 @@ from ibm.substrate import R_MAX, build_sheet                            # noqa: 
 # health guard exists to refuse.  These values sit below each state's threshold.
 PROTOCOLS = {
     "wake-eyes-open": dict(drive_stations=("v1", "v_extra"), drive=0.010, tonic=0.050,
-                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=4.0, burn_s=1.0),
+                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=4.0, burn_s=1.0, arousal=1.0),
     "wake-rest":      dict(drive_stations=(), drive=0.0, tonic=0.050,
-                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=8.0, burn_s=1.5),
+                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=8.0, burn_s=1.5, arousal=0.95),
     "wake-task":      dict(drive_stations=("v_extra", "ips"), drive=0.010, tonic=0.050,
-                           m_beta=1.05, m_sigma=0.9, dt=0.002, seconds=4.0, burn_s=1.0),
+                           m_beta=1.05, m_sigma=0.9, dt=0.002, seconds=4.0, burn_s=1.0, arousal=1.0),
     "listening":      dict(drive_stations=("a1", "stg"), drive=0.010, tonic=0.050,
-                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=4.0, burn_s=1.0),
+                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=4.0, burn_s=1.0, arousal=1.0),
     "nrem3":          dict(drive_stations=(), drive=0.0, tonic=0.020,
-                           m_beta=0.92, m_sigma=1.30, dt=0.005, seconds=16.0, burn_s=4.0),
+                           m_beta=0.92, m_sigma=1.30, dt=0.005, seconds=16.0, burn_s=4.0, arousal=0.12),
     "nrem2":          dict(drive_stations=(), drive=0.0, tonic=0.020,
-                           m_beta=0.95, m_sigma=1.20, dt=0.005, seconds=16.0, burn_s=4.0),
+                           m_beta=0.95, m_sigma=1.20, dt=0.005, seconds=16.0, burn_s=4.0, arousal=0.45),
 }
 
 # When is a target scorable on a given window?  Two conditions, and they are different
@@ -123,21 +132,50 @@ MIN_CYCLES_PER_SEGMENT = 2.0
 NYQUIST_HEADROOM = 1.25
 
 
-def hinge(x: torch.Tensor, target):
-    """0 inside the declared interval, squared distance outside it.
+def hinge(x: torch.Tensor, target, scale: float = 1.0):
+    """0 inside the declared interval, squared distance outside it, in units of `scale`.
 
     A float target means a point (a measured centre frequency, e.g. the 13.45 Hz spindle),
     and is scored as a squared error.  A (lo, hi) target is an interval, which is what a
     declared band is, and anywhere inside it costs nothing.
+
+    `scale` is what makes the terms commensurate, and it is not cosmetic: a frequency error
+    lives in Hz and a prominence error in decades, so an unscaled frequency term of a few Hz
+    squared arrives beside a prominence term of a few tenths squared and simply owns the
+    gradient.  Measured, on the first thalamocortical run: gradient norm **2.9 million**,
+    against ~1 for every other term in the same objective.  Each kind is therefore divided
+    by the width of its own declared band, which makes every term "fraction of the band I am
+    wrong by", squared.
     """
     if target is None:
         return x * 0.0
     if isinstance(target, (int, float)):
-        return (x - float(target)) ** 2
+        return _huber((x - float(target)) / scale)
     lo, hi = float(target[0]), float(target[1])
-    below = torch.clamp(lo - x, min=0.0)
-    above = torch.clamp(x - hi, min=0.0)
-    return below ** 2 + above ** 2
+    below = torch.clamp(lo - x, min=0.0) / scale
+    above = torch.clamp(x - hi, min=0.0) / scale
+    return _huber(below) + _huber(above)
+
+
+def _huber(e):
+    """squared near zero, linear beyond one unit.
+
+    The frequency terms are STIFF: `peak_frequency` is a soft-argmax over a spectrum, so its
+    derivative near a sharp peak is enormous, and a squared penalty multiplies that by the
+    error.  The first thalamocortical run produced a gradient norm of 1.1 million from this
+    one term while every other term in the same objective contributed about 1.  Linear tails
+    bound the term's influence without changing where its minimum is.
+    """
+    a = e.abs()
+    return torch.where(a <= 1.0, e ** 2, 2.0 * a - 1.0)
+
+
+def hinge_scale(t) -> float:
+    """the natural unit of this target's error: the width of the band it is declared in."""
+    if t["kind"] in ("peak_frequency",):
+        band = t.get("band") or (0.0, 1.0)
+        return max(1e-6, float(band[1]) - float(band[0]))
+    return 1.0
 
 
 def trace_of(trace, sites):
@@ -145,9 +183,28 @@ def trace_of(trace, sites):
     return trace[..., sites].mean(-1)
 
 
-def measure_target(t, trace, fs, nperseg):
-    """the catalogue row's declared quantity, measured on this rollout.  Differentiable."""
+def measure_target(t, traces, fs, nperseg):
+    """the catalogue row's declared quantity, measured on this rollout.  Differentiable.
+
+    `traces` is {"cortex": (B, T, N), "units": (B, T, U) or None}, and the target says which
+    it is scored on -- a caller never has to guess which trace a number came from, because a
+    spindle measured on cortex and a spindle measured on the relay are different claims.
+    """
     kind = t["kind"]
+    if t.get("trace") == "units":
+        x = traces["units"][..., t["units"]].mean(-1)
+        if kind == "pac":
+            return SP.pac_mi(x, fs, t["phase_band"], t["amp_band"]).mean()
+        freqs, psd = SP.welch_psd(x, fs, nperseg=nperseg)
+        lo, hi = t["band"]
+        if kind == "relative_power":
+            return SP.relative_band_power(psd, freqs, lo, hi).mean()
+        if kind == "peak_frequency":
+            return SP.peak_frequency(psd, freqs, lo, hi).mean()
+        if kind == "peak_prominence":
+            return SP.peak_prominence(psd, freqs, lo, hi).mean()
+        raise ValueError(f"no measurement for kind {kind!r} on a unit trace")
+    trace = traces["cortex"]
     if kind == "coherence":
         vals = []
         for i in range(len(t["groups"])):
@@ -209,6 +266,18 @@ class Shaper:
         self.field = build_sheet(a.sites, a.k, a.long_frac, seed=a.seed, device=device,
                                  long_topology=a.topology).to(device)
         self.names = self.field.region_names
+        # With a thalamus attached, 14 more catalogue rows become scorable -- including the
+        # spindle, the only frequency this programme has measured on held-out people.  The
+        # loop's conduction delays come from the catalogue, so the pressure is applied to a
+        # circuit with a conduction budget rather than to a sheet on its own.
+        self.tc = self.thal = None
+        self.unit_names = ()
+        self.have = ["cortex"]
+        if getattr(a, "thalamus", False):
+            uos, self.unit_names = units_from_regions(self.names)
+            self.thal = ThalamicField(len(self.unit_names), device=device)
+            self.tc = ThalamoCortical(self.field, self.thal, uos.to(device)).to(device)
+            self.have.append("thalamus")
         # ONE permutation, drawn once, here, and handed to whoever needs it: the relabel
         # control must not draw its own (CLAUDE.md, "a shared generator").
         g = torch.Generator().manual_seed(a.seed + 104729)
@@ -222,7 +291,8 @@ class Shaper:
         if relabel:
             names = [self.names[i] for i in self.perm]
         ts, skipped = rhythm_targets(state, names, only_expressible=True,
-                                     min_sites=self.a.min_sites)
+                                     min_sites=self.a.min_sites, have=self.have,
+                                     unit_names=self.unit_names)
         p = PROTOCOLS[state]
         fs = self.fs_of(state)
         nperseg = self.nperseg(p)
@@ -252,35 +322,44 @@ class Shaper:
         fs = 1.0 / dt
         nb = int(round(p["burn_s"] * fs))
         nt = int(round(p["seconds"] * fs))
-        st = self.field.init_state(1, device=self.device)
         gen = torch.Generator().manual_seed(gen_seed)
-        with torch.no_grad():
-            d = self.drive(state, nb)
-            _, st = self.field.rollout(d, st, dt, noise_gen=gen,
-                                       m_beta=p["m_beta"], m_sigma=p["m_sigma"])
-        st = self.field.detach(st)
         d = self.drive(state, nt)
         if extra_drive is not None:
             d = d + extra_drive
+        if self.tc is not None:
+            ctx = torch.enable_grad() if grad else torch.no_grad()
+            with ctx:
+                ctrace, ttrace, _info = self.tc.rollout(
+                    nt, dt, cortical_drive=d, arousal=p["arousal"], m_beta=p["m_beta"],
+                    m_sigma=p["m_sigma"], noise_gen=gen, b=1, burn=nb)
+            return {"cortex": ctrace, "units": ttrace}
+        st = self.field.init_state(1, device=self.device)
+        with torch.no_grad():
+            db = self.drive(state, nb)
+            _, st = self.field.rollout(db, st, dt, noise_gen=gen,
+                                       m_beta=p["m_beta"], m_sigma=p["m_sigma"])
+        st = self.field.detach(st)
         ctx = torch.enable_grad() if grad else torch.no_grad()
         with ctx:
             trace, st = self.field.rollout(d, st, dt, noise_gen=gen,
                                            m_beta=p["m_beta"], m_sigma=p["m_sigma"])
-        return trace
+        return {"cortex": trace, "units": None}
 
     def loss(self, state, targets, gen_seed, grad=True):
         a = self.a
         p = PROTOCOLS[state]
         fs = self.fs_of(state)
         nperseg = self.nperseg(p)
-        trace = self.rollout(state, gen_seed, grad=grad)
+        traces = self.rollout(state, gen_seed, grad=grad)
+        trace = traces["cortex"]
         parts, total = {}, torch.zeros((), device=self.device)
         for t in targets:
-            v = measure_target(t, trace, fs, nperseg)
-            pen = hinge(v, t["target"])
+            v = measure_target(t, traces, fs, nperseg)
+            pen = hinge(v, t["target"], hinge_scale(t))
             total = total + a.w_rhythm * pen
             parts[t["id"]] = {"measured": float(v.detach()), "penalty": float(pen.detach()),
-                              "target": t["target"], "kind": t["kind"]}
+                              "target": t["target"], "kind": t["kind"],
+                              "scale": hinge_scale(t)}
         # the 1/f background, on the mean cortical trace
         mean_trace = trace.mean(-1)
         freqs, psd = SP.welch_psd(mean_trace, fs, nperseg=nperseg)
@@ -321,8 +400,8 @@ class Shaper:
         extra = torch.zeros(1, nt, self.field.n, device=self.device)
         extra[0, :, sites] = wave[:, None]
         with torch.no_grad():
-            trace = self.rollout(state, self.a.seed + 1, grad=False, extra_drive=extra)
-            x = trace_of(trace, sites)
+            traces = self.rollout(state, self.a.seed + 1, grad=False, extra_drive=extra)
+            x = trace_of(traces["cortex"], sites)
             freqs, psd = SP.welch_psd(x, fs, nperseg=self.nperseg(p))
             f = float(SP.peak_frequency(psd, freqs, 4.0, 20.0).mean())
         return {"ok": abs(f - 10.0) <= 0.5, "measured_hz": f, "expected_hz": 10.0,
@@ -360,7 +439,8 @@ def train(sh, states, relabel, steps, out, tag):
     scorable = [s for s in states if per_state[s][0]]
     if not scorable:
         return {"tag": tag, "error": "no state has a scorable target"}
-    opt = torch.optim.Adam([p for p in sh.field.parameters() if p.requires_grad], lr=a.lr)
+    module = sh.tc if sh.tc is not None else sh.field
+    opt = torch.optim.Adam([p for p in module.parameters() if p.requires_grad], lr=a.lr)
     hist = []
     for step in range(steps):
         state = scorable[step % len(scorable)]
@@ -369,7 +449,7 @@ def train(sh, states, relabel, steps, out, tag):
         total, parts = sh.loss(state, ts, a.seed + 1000 + step, grad=True)
         total.backward()
         gn = torch.nn.utils.clip_grad_norm_(
-            [p for p in sh.field.parameters() if p.requires_grad], a.clip)
+            [p for p in module.parameters() if p.requires_grad], a.clip)
         opt.step()
         rec = {"step": step, "state": state, "loss": float(total), "grad_norm": float(gn),
                "parts": parts}
@@ -391,7 +471,7 @@ def train(sh, states, relabel, steps, out, tag):
             total, parts = sh.loss(s, ts, a.seed + 900001, grad=False)
         final[s] = {"loss": float(total), "parts": parts,
                     "skipped": [list(x) for x in skipped]}
-    torch.save({"state_dict": sh.field.state_dict(), "tag": tag, "args": vars(a)},
+    torch.save({"state_dict": module.state_dict(), "tag": tag, "args": vars(a)},
                out.replace(".json", f"_{tag}.pt"))
     return {"tag": tag, "relabel": relabel, "final": final,
             "history": hist[-1:] if a.thin_history else hist}
@@ -405,6 +485,9 @@ def main() -> int:
     ap.add_argument("--k", type=int, default=32)
     ap.add_argument("--long-frac", type=float, default=0.25)
     ap.add_argument("--topology", default="tract", choices=("tract", "random"))
+    ap.add_argument("--thalamus", action="store_true",
+                    help="attach ibm/thalamus.py and close the loop, which makes the "
+                         "thalamus-blocked catalogue rows scorable (spindles among them)")
     ap.add_argument("--segments", type=float, default=3.0,
                     help="segments per window; nperseg = seconds*fs/segments, rounded down "
                          "to a power of two")

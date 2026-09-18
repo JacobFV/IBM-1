@@ -389,7 +389,7 @@ class ThalamoCortical(nn.Module):
 
     def rollout(self, steps: int, dt: float, drive_sense=None, cortical_drive=None,
                 arousal: float = 1.0, m_beta: float = 1.0, m_sigma: float = 1.0,
-                noise_gen=None, b: int = 1):
+                noise_gen=None, b: int = 1, burn: int = 0):
         """run the closed loop.  Returns (cortical trace, thalamic trace, states).
 
         Both directions are delayed by the catalogue's declared conduction times, rounded
@@ -406,33 +406,47 @@ class ThalamoCortical(nn.Module):
         ring_ct = self._ring(b, self.thal.n, lag_ct, dev, torch.float32)
         W = self.cortex.edge_weights()
         ctx_out, thal_out = [], []
-        for t in range(steps):
+        # `burn` steps run WITHOUT gradients and are not recorded: a loop started from rest
+        # spends its first second in a transient, and the spectrum of a transient is the
+        # transient's.  The rings are carried across the boundary, so the burn-in is a real
+        # run-up and not a discarded restart.
+        for t in range(steps + burn):
+            grad_here = torch.is_grad_enabled() and t >= burn
+            ctx_mgr = torch.enable_grad() if grad_here else torch.no_grad()
             z_c = z_t = None
             if noise_gen is not None:
                 z_c = torch.randn(b, self.cortex.n, generator=noise_gen,
                                   device="cpu").to(dev)
                 z_t = torch.randn(b, self.thal.n, generator=noise_gen, device="cpu").to(dev)
-            # what the cortex hears from the thalamus: emitted lag_tc steps ago
-            relay_in = ring_tc[:, t % ring_tc.shape[1]].clone()
-            drive = relay_in
-            if cortical_drive is not None:
-                drive = drive + (cortical_drive[:, t] if cortical_drive.dim() == 3
-                                 else cortical_drive)
-            cs = self.cortex.step(cs, drive, dt, W=W, noise=z_c,
-                                  m_beta=m_beta, m_sigma=m_sigma)
-            # what the thalamus hears from the cortex: emitted lag_ct steps ago
-            ctx_in = ring_ct[:, t % ring_ct.shape[1]].clone()
-            ds = drive_sense[:, t] if torch.is_tensor(drive_sense) and drive_sense.dim() == 3 \
-                else drive_sense
-            ts = self.thal.step(ts, dt, drive_sense=ds, drive_cortex=ctx_in,
-                                arousal=arousal, noise=z_t)
-            # post into the rings for their arrival times
-            ring_tc = ring_tc.clone() if torch.is_grad_enabled() else ring_tc
-            ring_ct = ring_ct.clone() if torch.is_grad_enabled() else ring_ct
-            ring_tc[:, (t + lag_tc) % ring_tc.shape[1]] = ts["R"] @ self.spread
-            ring_ct[:, (t + lag_ct) % ring_ct.shape[1]] = cs["E"] @ self.pool.transpose(0, 1)
-            ctx_out.append(cs["E"])
-            thal_out.append(ts["R"])
+            with ctx_mgr:
+                # what the cortex hears from the thalamus: emitted lag_tc steps ago
+                relay_in = ring_tc[:, t % ring_tc.shape[1]].clone()
+                drive = relay_in
+                if cortical_drive is not None:
+                    idx = min(max(0, t - burn), cortical_drive.shape[1] - 1)
+                    drive = drive + (cortical_drive[:, idx] if cortical_drive.dim() == 3
+                                     else cortical_drive)
+                cs = self.cortex.step(cs, drive, dt, W=W, noise=z_c,
+                                      m_beta=m_beta, m_sigma=m_sigma)
+                # what the thalamus hears from the cortex: emitted lag_ct steps ago
+                ctx_in = ring_ct[:, t % ring_ct.shape[1]].clone()
+                ds = drive_sense
+                if torch.is_tensor(drive_sense) and drive_sense.dim() == 3:
+                    ds = drive_sense[:, min(max(0, t - burn), drive_sense.shape[1] - 1)]
+                ts = self.thal.step(ts, dt, drive_sense=ds, drive_cortex=ctx_in,
+                                    arousal=arousal, noise=z_t)
+                # post into the rings for their arrival times
+                ring_tc = ring_tc.clone() if grad_here else ring_tc
+                ring_ct = ring_ct.clone() if grad_here else ring_ct
+                ring_tc[:, (t + lag_tc) % ring_tc.shape[1]] = ts["R"] @ self.spread
+                ring_ct[:, (t + lag_ct) % ring_ct.shape[1]] = cs["E"] @ self.pool.transpose(0, 1)
+            if t == burn - 1:
+                cs = self.cortex.detach(cs)
+                ts = self.thal.detach(ts)
+                ring_tc, ring_ct = ring_tc.detach(), ring_ct.detach()
+            if t >= burn:
+                ctx_out.append(cs["E"])
+                thal_out.append(ts["R"])
         return (torch.stack(ctx_out, 1), torch.stack(thal_out, 1),
                 {"cortex": cs, "thalamus": ts,
                  "delays_in_steps": {"relay_to_cortex": lag_tc, "cortex_to_trn": lag_ct}})
