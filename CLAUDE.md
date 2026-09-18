@@ -296,6 +296,16 @@ and measure the element's OWN width at several viewports before believing any br
   'ibm'` however right the cwd looks. Launch with `PYTHONPATH=<repo root>`. It cost two
   failed launches on two machines in one day, and the failure is silent in a nohup log
   until you read it — the process exits in seconds and the GPU sits idle looking busy-free.
+- **On the GB10 the GPU has no memory of its own, so a GPU OOM is a MACHINE OOM.** CPU and
+  GPU share one 121 GB pool, and a cortex-arm `train_proprioceptive_motor.py` run holds
+  **~65 GB**. Two at once is not a slow run, it is a crash: one died on CUDA OOM, and when
+  two grew together the kernel's OOM killer went system-wide, killed the desktop, and took
+  the machine down. A killed run leaves a log that simply **stops after step 0 with no
+  error** — which is exactly how seeds 2 and 3 of the five-seed test sat "abandoned" from
+  13 Sep until someone read the kernel log. Queue GPU jobs strictly one at a time (see
+  `scripts/run_fiveseed_proprio.sh`), check `free -g` before launching a second anything,
+  and when a log ends mid-run with no traceback, `journalctl -k -b -1 | grep -i oom`
+  before believing any other story.
 - **Never commit weights or caches.** History was rewritten once to purge 2.9 GB.
 - **Save the checkpoint before attempting to upload it.** A failed upload once
   destroyed 2,000 steps because `torch.save` sat after the import that threw.

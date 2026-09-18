@@ -12,7 +12,10 @@ config.  it REFUSES to write unless it reproduces that script's published top-1,
 a panel drawn from a subtly different pipeline would be illustrating a number the
 programme never measured.
 
-    python scripts/export_site_retrieval.py
+run it on the CPU -- it is 200 images through one small model, and the GPU is usually
+someone's training run, on a machine where GPU memory is system memory:
+
+    CUDA_VISIBLE_DEVICES="" PYTHONPATH=. .venv/bin/python scripts/export_site_retrieval.py
 """
 from __future__ import annotations
 
@@ -37,7 +40,10 @@ def main() -> int:
     ap.add_argument("--ckpt", default="ckpt/visual_contrastive_v2.pt")
     ap.add_argument("--expect-top1", type=float, default=0.635,
                     help="the published figure this must reproduce")
-    ap.add_argument("--thumb", type=int, default=224)
+    ap.add_argument("--thumb", type=int, default=160,
+                    help="thumbnail edge in px; drawn at <=74 css px, so 160 covers 2x screens")
+    ap.add_argument("--n-trials", type=int, default=23,
+                    help="how many test trials to export, taken in dataset order")
     a = ap.parse_args()
 
     d = torch.load(a.ckpt, map_location="cpu", weights_only=False)
@@ -90,7 +96,13 @@ def main() -> int:
     # the direction eval_things_test.py publishes: given an IMAGE, rank the EEGs
     rank_img = (sim > sim.gather(1, lbl[:, None])).sum(1)
     top1_img = float((rank_img == 0).float().mean())
-    # the direction this panel shows: given an EEG, rank the IMAGES
+    # the direction this panel shows: given an EEG, rank the IMAGES.
+    # this figure is DEVICE-DEPENDENT by exactly one trial: the site's 60.0% (120/200) came
+    # from a GPU pass, and the CPU pass reads 60.5% (121/200).  measured on the CPU, test
+    # image 70's true similarity beats its best competitor by +2.4e-5 on similarities of
+    # ~0.24 -- a tie to within float reduction order -- and the next-closest margin is
+    # 8x larger.  image 70 is outside the first 23, so no exported row depends on it.
+    # the image->eeg figure checked below reproduces 63.50% on both devices.
     simT = sim.T
     rank_eeg = (simT > simT.gather(1, lbl[:, None])).sum(1)
     top1_eeg = float((rank_eeg == 0).float().mean())
@@ -103,29 +115,45 @@ def main() -> int:
               file=sys.stderr)
         return 2
 
-    # ---- pick trials by a stated rule, not by eye ----
-    # walk the test set IN DATASET ORDER and take the first two rank-1 trials and the
-    # first trial whose true image lands in the top five but not first.  no other
-    # selection: reading the ranks first and then choosing would make the panel a
-    # picture of the best three trials rather than of 63.5%.
+    # ---- which trials: the first N of the test set IN DATASET ORDER, and nothing else ----
+    # this used to take "the first two rank-1 trials and the first trial ranked 2-5".  that
+    # rule was stated and was not chosen by eye, but it was still a SELECTION ON THE
+    # OUTCOME: it read the ranks first and kept the trials with the ranks it wanted, so
+    # three slots showed two hits out of three whatever the model's real rate was.  with
+    # enough slots to show a spread, the unbiased thing is to take them in order, read NO
+    # rank before choosing, and let each row's rank line say where the true image landed
+    # -- including rows where it is not in the top five at all.
     order = torch.argsort(simT, dim=1, descending=True).cpu().numpy()
     r = rank_eeg.cpu().numpy()
-    hits = [i for i in range(n) if r[i] == 0][:2]
-    near = [i for i in range(n) if 0 < r[i] < 5][:1]
-    chosen = sorted(hits + near)
-    if len(chosen) < 3:
-        print("  !! not enough trials of the required kinds", file=sys.stderr)
+    if not 1 <= a.n_trials <= n:
+        print(f"  !! --n-trials must be in 1..{n}", file=sys.stderr)
         return 2
+    chosen = list(range(a.n_trials))
+    k1 = int((r[chosen] == 0).sum())
+    print(f"  first {a.n_trials} trials in dataset order: {k1} at rank 1, "
+          f"{int((r[chosen] < 5).sum())} in the top five "
+          f"(a sample of {a.n_trials}, not an estimate of the {100*top1_eeg:.1f}%)")
 
     OUTIMG.mkdir(parents=True, exist_ok=True)
     from PIL import Image
 
-    def thumb(idx: int, tag: str) -> str:
+    # one file per TEST IMAGE, not per slot: the same photograph turns up as the stimulus
+    # of one row and a candidate in several others, and 23 rows x 6 slots written per slot
+    # would ship most of them several times over.  the directory is this script's alone,
+    # so stale files from an earlier export are cleared rather than left to ship unused.
+    for old in OUTIMG.glob("*.jpg"):
+        old.unlink()
+    written: dict[int, str] = {}
+
+    def thumb(idx: int) -> str:
+        if idx in written:
+            return written[idx]
         src = ROOT / str(paths[idx])
         im = Image.open(src).convert("RGB") if src.exists() else Image.fromarray(imgs[idx])
         im = im.resize((a.thumb, a.thumb), Image.LANCZOS)
-        rel = f"media/retrieval/{tag}.jpg"
-        im.save(ROOT / "site" / rel, quality=86, optimize=True)
+        rel = f"media/retrieval/test{idx:03d}.jpg"
+        im.save(ROOT / "site" / rel, quality=84, optimize=True)
+        written[idx] = rel
         return rel
 
     def concept(idx: int) -> str:
@@ -135,10 +163,10 @@ def main() -> int:
     for k, i in enumerate(chosen):
         top5 = [int(j) for j in order[i][:5]]
         trials.append({
-            "seen": {"src": thumb(i, f"t{k}_seen"), "label": concept(i)},
+            "seen": {"src": thumb(i), "label": concept(i)},
             "rank": int(r[i]) + 1,
-            "top5": [{"src": thumb(j, f"t{k}_r{p}"), "label": concept(j), "isTrue": j == i}
-                     for p, j in enumerate(top5)],
+            "top5": [{"src": thumb(j), "label": concept(j), "isTrue": j == i}
+                     for j in top5],
             # the measured response, decimated for drawing: a handful of posterior
             # channels is what the reader can actually parse
             "eeg": [[round(float(v), 3) for v in ev[i, c, ONSET:ONSET + KEEP]]
@@ -148,7 +176,7 @@ def main() -> int:
     payload = {
         "ckpt": a.ckpt, "step": int(d["step"]), "n": n, "chance": 1.0 / n,
         "top1": top1_eeg, "top1_published": top1_img,
-        "selection": "dataset order: first two rank-1 trials and the first trial ranked 2-5",
+        "selection": f"the first {a.n_trials} test trials in dataset order, chosen before any rank was read",
         "trials": trials,
     }
     OUTJS.write_text(

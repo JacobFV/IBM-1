@@ -883,6 +883,29 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 #retrieval { opacity: 0; transition: opacity .6s; margin-bottom: 26px;
   container-type: inline-size; }
 #retrieval.is-ready { opacity: 1; }
+
+/* the sliding window.  its height is set by retrieval.js from the MEASURED rows (3.5 of
+   them on one line, 2.5 when they fold), so nothing here assumes a row height.
+   overflow is CLIP, not hidden: a hidden box can still be scrolled -- the browser does it
+   itself to reveal a focused link -- and a scrollTop underneath the transform would
+   silently offset every position the loop computes.  clip cannot be scrolled at all.
+   the fade is a mask, so rows enter and leave softly instead of being cut at a hard edge;
+   nothing is positioned over this box, so the stacking context a mask creates (see
+   CLAUDE.md, "The site") has nothing to paint over. */
+.rt-window { position: relative; overflow: clip; --rt-fade: 34px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--rt-fade),
+    #000 calc(100% - var(--rt-fade)), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--rt-fade),
+    #000 calc(100% - var(--rt-fade)), transparent 100%); }
+/* column-reverse on BOTH levels: the aria-hidden copy sits on top and each copy runs
+   newest-first visually, while the DOM stays in dataset order for readers and tab order.
+   position:relative makes the track every row's offsetParent, which is what the loop
+   measures against. */
+.rt-track { position: relative; display: flex; flex-direction: column-reverse;
+  will-change: transform; padding-bottom: var(--rt-fade); }
+.rt-copy { display: flex; flex-direction: column-reverse; }
+.rt-window.is-static { -webkit-mask-image: none; mask-image: none; }
+.rt-window.is-static .rt-track { flex-direction: column; will-change: auto; padding-bottom: 0; }
 .rt-head { margin: 0 0 14px; font-size: .78rem; line-height: 1.55; color: var(--muted); max-width: 58ch; }
 .rt-head b { color: var(--accent); font-weight: 600; }
 
@@ -1057,56 +1080,13 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 
 
 
-/* region labels over the stimulation figure */
+/* the stimulation figure's one line of text, UNDER the render: "target: <site> · <band>".
+   it replaced a frosted card inside the frame at the user's request -- one line, nothing else.
+   (the label layer and its z-index are gone with it; the trap that z-index answered is in
+   CLAUDE.md under "The site".) */
 #tms3d { position: relative; }
-/* Z-INDEX IS LOAD-BEARING HERE, and it is not obvious why.  the canvas is an ordinary
-   non-positioned element and the label layer is absolutely positioned, so the labels ought
-   to paint above it whatever the DOM order.  but the canvas carries a `mask-image` (the
-   squircle feather), and a mask makes an element establish a stacking context -- which
-   moves it out of the in-flow paint step and into the SAME step as positioned descendants
-   with z-index auto.  at that point DOM order decides, the canvas is appended last, and it
-   paints over the labels: the protocol card's text was being erased wherever the operator's
-   monitor happened to be behind it.  an explicit z-index puts the layer back on top. */
-.tms-labels { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
-/* a chip, not bare text: the label now lies over a lit clinical room whose value sits
-   between the light theme's ink and the dark theme's, so neither colour alone reads on it.
-   --fig-panel is the page's own translucent paper and carries the label in both. */
-/* right-aligned and hung by its RIGHT edge, because tms.js parks the whole column in the
-   empty space left of the head rather than beside each marker */
-.tms-label { position: absolute; top: 0; left: 0; display: grid; gap: 1px;
-  padding: 3px 9px 3px 7px; border-right: 1px solid var(--accent);
-  background: color-mix(in srgb, var(--paper) 74%, transparent);
-  backdrop-filter: blur(3px); border-radius: 3px 0 0 3px;
-  text-align: right; transform-origin: 100% 0; white-space: nowrap; transition: opacity .3s; }
-.tms-label b { font-family: var(--display); font-weight: 600; font-size: 12px; color: var(--text); }
-.tms-label span { font-family: var(--mono); font-size: 8.5px; letter-spacing: .08em;
-  text-transform: uppercase; color: var(--muted); }
-
-/* the protocol card: which site is being hit, and what the train is aimed at.  parked in
-   the top-left rather than projected, because it belongs to the RUN and not to a point in
-   the head -- and because the only reliably empty corner is that one. */
-.tms-card { position: absolute; top: 12px; left: 12px; display: grid; gap: 1px;
-  width: 186px; padding: 9px 11px 8px; border-left: 2px solid var(--accent);
-  background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(4px);
-  border-radius: 0 4px 4px 0; }
-.tms-card .tms-k { font-family: var(--mono); font-size: 7.5px; letter-spacing: .16em;
-  text-transform: uppercase; color: var(--muted); }
-.tms-card b { font-family: var(--display); font-weight: 600; font-size: 15px; line-height: 1.1;
-  color: var(--text); margin-bottom: 5px; }
-.tms-card b i { display: block; font-style: normal; font-family: var(--mono); font-size: 8px;
-  letter-spacing: .06em; color: var(--muted); margin-top: 2px; }
-.tms-card em { font-family: var(--display); font-style: normal; font-weight: 600;
-  font-size: 12.5px; color: var(--accent); }
-.tms-card .tms-pair { font-family: var(--mono); font-size: 10px; color: var(--text); }
-/* the clique, spelled out: the arcs in the model show WHICH sites, the line shows which
-   parcellation labels they are, so the picture and the atlas agree by name */
-.tms-card .tms-cl { font-family: var(--mono); font-size: 7.5px; line-height: 1.5;
-  color: var(--muted); margin-top: 5px; overflow-wrap: anywhere; }
-.tms-card .tms-dec { font-family: var(--mono); font-size: 7.5px; letter-spacing: .12em;
-  text-transform: uppercase; color: var(--half); margin-top: 6px;
-  border-top: 1px solid var(--rule); padding-top: 5px; }
-@media (max-width: 700px) { .tms-card { width: 152px; padding: 7px 8px 6px; }
-  .tms-card b { font-size: 13px; } }
+.tms-target { margin: 8px 0 0; font-family: var(--mono); font-size: 0.7rem; letter-spacing: .06em;
+  color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* the stimulation station carries the only visualisation for its whole subject, so it
    gets the width the two it replaced used to have between them */
@@ -1163,34 +1143,23 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 /* "more": shaped like a tile -- a figure-sized area and a name under it -- so
    the sixth cell reads as part of the grid, but naked like the tiles are.  the
    ring is the glyph, not card chrome. */
-.rz-more { display: grid; gap: 7px; align-content: start; justify-items: center; min-width: 0;
   margin: 0; padding: 0; background: none; border: 0; box-shadow: none; cursor: pointer;
   color: var(--muted); font: inherit; text-align: center; transition: color .15s; }
-.rz-more:hover, .rz-more:focus-visible { color: var(--accent); }
-.rz-more:focus-visible { outline: 1px solid var(--accent); outline-offset: 6px; border-radius: 2px; }
-.rz-more-glyph { display: grid; place-items: center; width: 100%; aspect-ratio: 1 / 0.88; }
-.rz-more-glyph::before, .rz-more-glyph::after { grid-area: 1 / 1; }
-.rz-more-glyph::before { content: ""; width: 58px; height: 58px; border-radius: 50%;
   border: 1px solid currentColor; opacity: .6; }
-.rz-more-glyph::after { content: "+"; font-family: var(--display); font-weight: 300;
   font-size: 1.9rem; line-height: 1; transform: translateY(-1px); }
-.rz-more[aria-expanded="true"] .rz-more-glyph::after { content: "\2212"; }
-.rz-more-label { font-family: var(--display); font-weight: 600; font-variation-settings: "opsz" 24;
   font-size: 1.04rem; line-height: 1.2; letter-spacing: -0.012em; }
 
 /* open: eleven tiles and the button, packed denser and set smaller */
-.rz-grid.is-more { gap: 28px 20px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-@media (min-width: 760px) { .rz-grid.is-more { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-@media (max-width: 600px) { .rz-grid.is-more { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; } }
-.rz-grid.is-more .rz-tile { gap: 5px; }
-.rz-grid.is-more .rz-tile h3, .rz-grid.is-more .rz-more-label { font-size: 0.9rem; }
-.rz-grid.is-more .rz-say { font-size: 0.78rem; line-height: 1.45; }
-.rz-grid.is-more .rz-figs > li > b { font-size: 0.98rem; }
-.rz-grid.is-more .rz-figs span { font-size: 0.74rem; }
-.rz-grid.is-more .rz-more-glyph::before { width: 46px; height: 46px; }
+.rz-grid.is-all { gap: 28px 20px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+@media (min-width: 760px) { .rz-grid.is-all { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .rz-grid.is-all { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; } }
+.rz-grid.is-all .rz-tile { gap: 5px; }
+.rz-grid.is-all .rz-tile h3 { font-size: 0.9rem; }
+.rz-grid.is-all .rz-say { font-size: 0.78rem; line-height: 1.45; }
+.rz-grid.is-all .rz-figs > li > b { font-size: 0.98rem; }
+.rz-grid.is-all .rz-figs span { font-size: 0.74rem; }
 /* one column: a full-width figure-sized blank for the button would be a
    screen of nothing on a phone */
-@media (max-width: 600px) { .rz-grid:not(.is-more) .rz-more-glyph { aspect-ratio: auto; height: 76px; } }
 
 .mz { position: relative; width: 100%; max-width: 1000px; opacity: 0; transition: opacity .7s; }
 .mz.is-ready { opacity: 1; }
@@ -1232,7 +1201,7 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 .mz-mark.is-out b { color: var(--fig-out); }
 /* variable names ride the implicit brain and fade by which way their site faces, so their
    opacity is set per frame by materialize.js -- a CSS opacity here would multiply it */
-.mz-mark.is-var { font-family: var(--mono); font-size: 7px; letter-spacing: .03em;
+.mz-mark.is-var { font-family: var(--mono); font-size: 6.5px; letter-spacing: .03em;
   color: var(--accent); transition: none;
   text-shadow: 0 0 5px var(--paper), 0 0 2px var(--paper), 0 0 1px var(--paper); }
 

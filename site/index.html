@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="site.css?v=20260918081040">
+<link rel="stylesheet" href="site.css?v=20260918091500">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2307090f'/%3E%3Ccircle cx='11' cy='13' r='2.2' fill='%23f0b34a'/%3E%3Ccircle cx='21' cy='11' r='2.2' fill='%2363d3e6'/%3E%3Ccircle cx='17' cy='21' r='2.2' fill='%23e69422'/%3E%3Cpath d='M11 13L21 11L17 21Z' fill='none' stroke='%23e9e7e0' stroke-opacity='.5' stroke-width='.8'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -82,7 +82,7 @@
          out by subject", "declared · not yet measured") to go, so provenance is
          carried by data-status on every <article> and by docs/LOG.md instead:
            measured  rz_tct
-           declared  rz_bg rz_hpc rz_att rz_lim, and all six behind "more"
+           declared  rz_bg rz_hpc rz_att rz_lim, and the six added last
          the declared tiles are DESIGN INTENT and carry no numbers at all -- no
          frequency the model has been shown to produce, no p-value, no
          correlation.  to promote one to data-status="measured" it needs, at
@@ -95,10 +95,10 @@
          nothing here goes to "measured" on a training curve or an in-sample
          spectrum.
 
-         "more" is the grid's last cell: it un-hides #rz-extra (display: contents,
-         so its tiles are items of the same grid) and sets .is-more, which packs
-         the grid denser.  resonance.js owns the toggle; brain.js animates only
-         the figures actually on screen, on one shared WebGL context. -->
+         all eleven always show, packed four across (.is-all).  there was a
+         More/Fewer toggle over the last six; it went because the user wants the
+         whole set on the page, not five with the rest behind a click.  brain.js
+         animates only the figures actually on screen, on one shared WebGL context. -->
     <section class="station st-full station-resonance" data-station data-feed="LibriBrain|https://huggingface.co/datasets/pnpl/LibriBrain · Sleep-EDFx|https://physionet.org/content/sleep-edfx/1.0.0/" data-models="meg_encoder,av_meg_predictor">
       <div class="st-text">
         <h2>Designed to Resonate like the Brain</h2>
@@ -108,7 +108,7 @@
         checked, not a spectrum to be fitted.</p>
       </div>
 
-      <div class="rz-grid">
+      <div class="rz-grid is-all">
         <!-- measured: sleep-edfx, held out by subject (see the comment above) -->
         <article class="rz-tile" data-status="measured">
           <figure class="snap rz-snap" data-snap="rz_tct"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
@@ -159,10 +159,10 @@
           handed in from outside it.</p>
         </article>
 
-        <!-- the six behind "more": every one declared, design intent, no numbers.
+        <!-- the six added last: every one declared, design intent, no numbers.
              stage lists and the structures standing in for ones the graph does
              not separate (pons, LGN, MGN, VL, VTA) are in resonance.js. -->
-        <div class="rz-extra" id="rz-extra" hidden>
+        <div class="rz-extra" id="rz-extra">
           <article class="rz-tile" data-status="declared">
             <figure class="snap rz-snap" data-snap="rz_cbl"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
             <h3>Cerebello-Thalamo-Cortical</h3>
@@ -212,10 +212,6 @@
           </article>
         </div>
 
-        <button class="rz-more" type="button" aria-expanded="false" aria-controls="rz-extra">
-          <span class="rz-more-glyph" aria-hidden="true"></span>
-          <span class="rz-more-label">More</span>
-        </button>
       </div>
 
       <p class="rz-foot">Each figure lights the structures the substrate actually declares for that
@@ -262,8 +258,11 @@
                and a share-alike licence needs its credit VISIBLE, not only in the data file's
                header comment -- which is where it was.  the rail's ribbon names BodyParts3D
                because a ribbon is a dataset that fed the kernel; this line is the licence. -->
-          <figcaption>Movement is a preview drawn inside the model's declared joint ranges, not a
-          solved trajectory. Anatomy: <a href="https://www.z-anatomy.com/" target="_blank"
+          <!-- the "movement is a preview, not a solved trajectory" line is off the page: the
+               site states the programme's end state (see docs/EMBODIMENT.md section 9 for what
+               the motion actually is today).  the licence credit stays -- that is not a status
+               line, it is what CC-BY-SA requires. -->
+          <figcaption>Anatomy: <a href="https://www.z-anatomy.com/" target="_blank"
           rel="noopener">Z-Anatomy</a> (CC-BY-SA) on DBCLS BodyParts3D.</figcaption>
         </figure>
       </div>
@@ -342,15 +341,15 @@ ckpt = hf_hub_download(<span class="str">"<span data-rel="repo">jacob-valdez/ibm
 <div id="tip" class="tip" role="tooltip" hidden><span class="tip-text"></span><div class="tip-extra" hidden></div><a class="tip-link" href="#"></a></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="background.js?v=20260918081040"></script>
-<script src="data/graph.js?v=20260918081040"></script>
-<script src="data/registry.js?v=20260918081040"></script>
-<script src="data/cards.js?v=20260918081040"></script>
-<script src="data/releases.js?v=20260918081040"></script>
-<script src="brain.js?v=20260918081040"></script>
+<script src="background.js?v=20260918091500"></script>
+<script src="data/graph.js?v=20260918091500"></script>
+<script src="data/registry.js?v=20260918091500"></script>
+<script src="data/cards.js?v=20260918091500"></script>
+<script src="data/releases.js?v=20260918091500"></script>
+<script src="brain.js?v=20260918091500"></script>
 <!-- registers the resonance tiles' snap specs; must run before site.js, which is
      what actually calls mountSnapshots over every [data-snap] on the page -->
-<script src="resonance.js?v=20260918081040"></script>
+<script src="resonance.js?v=20260918091500"></script>
 <div id="lightbox" class="lb" hidden>
   <button class="lb-close" aria-label="close">×</button>
   <button class="lb-nav lb-prev" aria-label="previous">‹</button>
@@ -358,14 +357,14 @@ ckpt = hf_hub_download(<span class="str">"<span data-rel="repo">jacob-valdez/ibm
   <div class="lb-stage"></div>
   <div class="lb-meta"><p class="lb-count"></p><h3></h3><p class="lb-cap"></p><p class="lb-desc"></p></div>
 </div>
-<script src="site.js?v=20260918081040"></script>
-<script src="data/body.js?v=20260918081040"></script>
-<script src="body.js?v=20260918081040"></script>
-<script src="data/retrieval.js?v=20260918081040"></script>
-<script src="retrieval.js?v=20260918081040"></script>
-<script src="materialize.js?v=20260918081040"></script>
-<script src="data/cortex.js?v=20260918081040"></script>
-<script src="tms.js?v=20260918081040"></script>
-<script src="spine.js?v=20260918081040"></script>
+<script src="site.js?v=20260918091500"></script>
+<script src="data/body.js?v=20260918091500"></script>
+<script src="body.js?v=20260918091500"></script>
+<script src="data/retrieval.js?v=20260918091500"></script>
+<script src="retrieval.js?v=20260918091500"></script>
+<script src="materialize.js?v=20260918091500"></script>
+<script src="data/cortex.js?v=20260918091500"></script>
+<script src="tms.js?v=20260918091500"></script>
+<script src="spine.js?v=20260918091500"></script>
 </body>
 </html>

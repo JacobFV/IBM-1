@@ -196,29 +196,41 @@
   });
 
   /* ---- the materialization thread: hub -> each model ----
-     SYMMETRIC, and the way to get that is to make the three curves the same shape.  the
-     old threads started at a y proportional to the lane's (a.y * 0.17) but ended at a fixed
-     offset below it, and added a fixed dip -- so the top thread's rise and dip nearly
-     cancelled and it came out almost straight while the bottom one's compounded into a deep
-     hook.  now every thread starts from ONE point on the hub and ends at the same offset
-     from its own brain, with a horizontal tangent at both ends: the middle one is a
-     straight line and the top and bottom ones are exact mirror images about it. */
-  const threadMat = new T.MeshBasicMaterial({ color: 0xf0b34a, transparent: true, opacity: 0.34 });
-  const T_OFF = -SUB * 0.78;                              /* arrive at each brain's lower left */
-  /* 0.66, not 0.92: normalisation divides by the SUPERIOR-INFERIOR extent, so the brain is
-     only +-0.74 wide in x.  at 0.92 the three threads were rooted in empty space beside the
-     hub rather than on it. */
-  const T_FROM = new T.Vector3(HUB_X + HUB_S * 0.66, T_OFF, 0.05);
+     each thread must END ON ITS BRAIN AND POINT AT IT.  the last version ended at
+     (MODEL_X - 0.95*SUB, lane - 0.78*SUB) arriving horizontally, and every tip landed 30-45px
+     below and left of its brain, pointing along the floor at nothing: 0.95*SUB was sized
+     against the brain's HEIGHT, but normalisation divides by the superior-inferior extent,
+     so a brain is only +-0.74 wide in x and +0.67/-1.0 tall.  now each thread ends on that
+     brain's own lower-left surface, at the same bearing for all three, and its final
+     tangent runs along the radius into the brain's centre, so the arrowhead aims at it.
+
+     the family stays symmetric the way the user asked for: one start point on the hub, at
+     the height the middle thread ends at, horizontal leaving tangents, and the same
+     arrival bearing -- so the middle thread is nearly straight and the outer two are the
+     same curve reflected, give or take the shared approach angle. */
+  const threadMat = new T.MeshBasicMaterial({ color: 0xf0b34a, transparent: true, opacity: 0.4 });
+  /* the brain's half-extents in THIS figure's units, from the normalised cloud */
+  const BX = 0.74 * SUB, BY_DN = 1.0 * SUB, BY_UP = 0.67 * SUB;
+  const BEAR = Math.PI * (205 / 180);                     /* lower-left, same for every lane */
+  const ux = Math.cos(BEAR), uy = Math.sin(BEAR);
+  /* where that bearing leaves an ellipse with the brain's half-extents, 0.9x so the tip
+     sits just inside the edge of the cloud rather than on its outermost point */
+  const rr = 0.9 / Math.sqrt((ux / BX) ** 2 + (uy / (uy < 0 ? BY_DN : BY_UP)) ** 2);
+  const T_FROM = new T.Vector3(HUB_X + HUB_S * 0.66, uy * rr, 0.05);
   anchors.forEach((a) => {
-    const to = new T.Vector3(MODEL_X - SUB * 0.95, a.y + T_OFF, 0.05);
-    const k = (to.x - T_FROM.x) * 0.5;
+    const c = new T.Vector3(MODEL_X, a.y, 0.05);
+    const tip = c.clone().add(new T.Vector3(ux * rr, uy * rr, 0));
+    const k = (tip.x - T_FROM.x) * 0.5;
     const curve = new T.CubicBezierCurve3(T_FROM.clone(),
-      new T.Vector3(T_FROM.x + k, T_FROM.y, 0.05), new T.Vector3(to.x - k, to.y, 0.05), to);
-    world.add(new T.Mesh(new T.TubeGeometry(curve, 40, 0.0085, 8, false), threadMat));
-    const tip = new T.Mesh(new T.ConeGeometry(0.036, 0.1, 12), threadMat);
-    tip.position.copy(to);
-    tip.rotation.z = -Math.PI / 2;
-    world.add(tip);
+      new T.Vector3(T_FROM.x + k, T_FROM.y, 0.05),
+      tip.clone().add(new T.Vector3(ux * k * 0.8, uy * k * 0.8, 0)),   /* back out along the radius */
+      tip);
+    world.add(new T.Mesh(new T.TubeGeometry(curve, 48, 0.0085, 8, false), threadMat));
+    const dir = curve.getTangent(1).normalize();
+    const head = new T.Mesh(new T.ConeGeometry(0.036, 0.1, 12), threadMat);
+    head.position.copy(tip).addScaledVector(dir, -0.05);   /* the cone is centred: tip ON the point */
+    head.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), dir);
+    world.add(head);
   });
 
   /* ---- annotations, as projected HTML so they stay crisp and themeable ----
@@ -250,14 +262,14 @@
      same on every load (CLAUDE.md: a function should return the same answer twice).
 
      the ids are taken across fields in round-robin, not in registry order: in order, the
-     first fourteen would all be components of one field.  a component is a field over the
+     first twenty-six would all be components of one field.  a component is a field over the
      whole brain, so a label marks a place to READ it, not the only place it lives. */
   const R = window.IBM_REGISTRY;
   if (R && R.fields) {
     const perField = R.fields.map((f) => (f.components || []).map((c) => c.id));
     const ids = [];
-    for (let k = 0; ids.length < 14 && perField.some((l) => l.length > k); k++)
-      perField.forEach((l) => { if (l[k] && ids.length < 14) ids.push(l[k]); });
+    for (let k = 0; ids.length < 26 && perField.some((l) => l.length > k); k++)
+      perField.forEach((l) => { if (l[k] && ids.length < 26) ids.push(l[k]); });
     const pick = [0], dmin = new Float32Array(CORTEX).fill(Infinity);
     const d2 = (i, j) => { const dx = pos[i * 3] - pos[j * 3], dy = pos[i * 3 + 1] - pos[j * 3 + 1],
       dz = pos[i * 3 + 2] - pos[j * 3 + 2]; return dx * dx + dy * dy + dz * dz; };

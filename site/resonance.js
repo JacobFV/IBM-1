@@ -237,30 +237,4 @@
     },
   });
 
-  // ---- "more": the sixth grid cell --------------------------------------
-  // the six extra tiles sit in a `hidden` wrapper that is display: contents
-  // when shown, so they are grid items of the same grid.  the grid's own class
-  // makes the tiles smaller.  every view's layout is stale after the re-flow
-  // (all eleven change width, not just the new ones), so relayoutSnaps runs
-  // on the next frame, after the browser has laid the grid out again.
-  const btn = document.querySelector('.rz-more');
-  const extra = btn && document.getElementById(btn.getAttribute('aria-controls'));
-  const grid = btn && btn.closest('.rz-grid');
-  if (btn && extra && grid) {
-    const label = btn.querySelector('.rz-more-label');
-    btn.addEventListener('click', () => {
-      const open = btn.getAttribute('aria-expanded') !== 'true';
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      extra.hidden = !open;
-      grid.classList.toggle('is-more', open);
-      if (label) label.textContent = open ? 'Fewer' : 'More';
-      requestAnimationFrame(() => { if (B.relayoutSnaps) B.relayoutSnaps(); });
-      // closing shrinks the section by several screens; keep the reader at the
-      // grid rather than stranding them in whatever section slid up under them
-      if (!open) {
-        const r = grid.getBoundingClientRect();
-        if (r.top < 0) grid.scrollIntoView({ block: 'start', behavior: 'auto' });
-      }
-    });
-  }
 })();

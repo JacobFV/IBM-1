@@ -132,7 +132,8 @@
      aimed at and the meso clique it belongs to -- which is the thing this model claims to
      be able to predict and the reason the site is worth hitting at all.
 
-     DECLARED, NOT MEASURED, and the card on the figure says so.  nothing here has been
+     DECLARED, NOT MEASURED -- said here and in the caption's data-status, not on the page
+     (the site states the programme's end state, by the user's rule).  nothing here has been
      run: no coupling has been predicted, no course simulated, no before/after spectrum
      compared.  what would have to exist to drop the "declared" chip is, in order: a coil
      pose streaming into the field solve so the stimulated set is computed rather than
@@ -246,15 +247,13 @@
         if (cxDist[i] > cxMax) cxMax = cxDist[i];
       }
     }
-    card.innerHTML =
-      `<span class="tms-k">target</span><b>${P.name}<i>${P.area}</i></b>` +
-      `<span class="tms-k">aimed at</span>` +
-      `<em>${P.band}</em><span class="tms-pair">${P.couple}</span>` +
-      `<span class="tms-cl">${P.clique.map(([r]) => r).join(" · ")}</span>`;
-    /* the "declared · not yet measured" line is off the card by request, as it is off the
-       resonance tiles.  the status is not lost: PROTOCOLS' header comment above says what
-       would have to exist to earn "measured", and the element carries it for anyone
-       reading the source. */
+    /* ONE LINE, under the render: "target: <site> · <band>".  it was a frosted-glass card
+       inside the figure -- site, area, band, the coupled pair, the clique's labels -- and it
+       covered a third of the frame to say what the lit clique already shows.  the pair and
+       the clique list are in PROTOCOLS above; the status ("declared, not measured") is in
+       its header comment and on the element, per the site's rule that status lives in the
+       source and docs/LOG.md, not on the page. */
+    card.textContent = `target: ${P.name} \u00b7 ${P.band}`;
     card.dataset.status = "declared-not-measured";
   }
 
@@ -292,13 +291,12 @@
     cortexMesh.geometry.attributes.color.needsUpdate = true;
   }
 
-  /* the protocol card, and the one projected label on the site being hit */
-  const labelHost = document.createElement("div");
-  labelHost.className = "tms-labels";
-  host.appendChild(labelHost);
-  const card = document.createElement("div");
-  card.className = "tms-card";
-  labelHost.appendChild(card);
+  /* the one-line target caption, OUTSIDE the canvas box: a sibling after #tms3d, so it sits
+     under the render and is never painted over by the masked canvas (see CLAUDE.md) */
+  const card = document.createElement("p");
+  card.className = "tms-target";
+  card.setAttribute("aria-live", "polite");
+  host.insertAdjacentElement("afterend", card);
 
   setProtocol(PROTOCOLS[0]);
   ripple(-1); rippleCortex(-1);

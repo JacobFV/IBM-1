@@ -442,7 +442,9 @@
      nerve -- so they are drawn and never pulsed.  afferent runs up in the site's input
      colour, the cortex brightens when it arrives, and the efferent answer runs back down in
      the output colour.  the speed is a depiction: real conduction is 50-70 m/s and would cross
-     the body in a frame, so it is slowed about fifty-fold. */
+     the body in a frame.  it ran at 1.15 m/s (slowed ~50x) and read as sap rising, not as a
+     nerve firing; at 5 m/s (~12x slow) a leg nerve is crossed in ~0.2 s, which is fast enough
+     to read as a signal and slow enough that the band is still seen to TRAVEL. */
   const AFF = new T.Color(css.getPropertyValue("--fig-in").trim() || "#bd2f3b");
   const EFF = new T.Color(css.getPropertyValue("--fig-out").trim() || "#6d34c0");
   const NV = D.nerves;
@@ -566,14 +568,16 @@
     for (let v = 0; v < nerveBase.length; v += 3) { nerveBase[v] = r; nerveBase[v + 1] = g; nerveBase[v + 2] = b; }
   }
 
-  const SPEED = 1.15, BAND = 0.10;               // m/s on screen; band half-width, metres
+  /* the band widens with the speed: at 5 m/s a 0.10 m band is on any one vertex for ~40 ms,
+     under three frames, and it flickered instead of moving */
+  const SPEED = 5.0, BAND = 0.15;                // m/s on screen; band half-width, metres
   const active = [];
   let fireAt = 0.8, cortexGlow = 0;
   function fire(path, dir) { active.push({ p: path, dir: dir, t: 0 }); }
   function schedulePulses(dt) {
     fireAt -= dt;
-    if (fireAt > 0 || !paths.length || active.length > 3) return;
-    fireAt = 1.0 + Math.random() * 0.6;
+    if (fireAt > 0 || !paths.length || active.length > 6) return;
+    fireAt = 0.35 + Math.random() * 0.35;        /* a pulse now lasts ~0.3 s, so fire more often */
     const want = CLIPS[cur.i].nerves;
     const pool = paths.filter((p) => want.test(p.name));
     const p = (pool.length ? pool : paths)[Math.floor(Math.random() * (pool.length || paths.length))];
@@ -582,7 +586,7 @@
   const ctmp = new T.Color();
   function updatePulses(dt) {
     if (!nerveCol) return;
-    cortexGlow = Math.max(0, cortexGlow - dt * 1.6);
+    cortexGlow = Math.max(0, cortexGlow - dt * 3.2);
     if (cortex) cortex.material.opacity = 0.34 + 0.5 * cortexGlow;
     const col = nerveCol.array, hotA = nerveHot.array;
     col.set(nerveBase);
@@ -595,7 +599,7 @@
       const front = u.dir < 0 ? run : L - run;
       if (run > L + 0.5) {
         active.splice(a, 1);
-        if (u.dir < 0) { cortexGlow = 1; window.setTimeout(() => fire(u.p, 1), 260); }
+        if (u.dir < 0) { cortexGlow = 1; window.setTimeout(() => fire(u.p, 1), 110); }
         continue;
       }
       ctmp.copy(u.dir < 0 ? AFF : EFF);
