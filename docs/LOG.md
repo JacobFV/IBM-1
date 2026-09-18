@@ -6533,3 +6533,56 @@ If that is right, the run should end with the gamma target OUT, a small gradient
 `tau_E` pinned at its lower bound — and the fix is a substrate change (per-site `tau_I`,
 or explicit synaptic kinetics), not more training. If the target arrives anyway, the
 arithmetic above is wrong and that is worth more than the target.
+
+## 18 September 2026 — the thalamus: four gates pass, T5 FAILED, and a mechanism I described but did not implement
+
+`ibm/thalamus.py`. Relay cells with a T-type rebound current, a reticular sector with
+GABA-A and GABA-B, corticothalamic feedback onto both, and `ThalamoCortical`, which closes
+the loop with the conduction delays the catalogue declares (relay→cortex 2 ms,
+cortex→reticular 5 ms). Built because `docs/DISCONNECTS.md` §11 counts 14 declared rhythms
+blocked on this one structure — including the only frequency this programme has measured.
+
+`scripts/gate_thalamus.py`, verdicts fixed before running:
+
+- **T0 BOUNDED — PASS.** Zero excursion outside [0, 1] for every variable at dt = 1, 5 and
+  20 ms with drives of −2, 0 and +2.
+- **T1 IDEMPOTENCE — PASS.** Bit-identical, max difference exactly 0.
+- **T2 REBOUND — PASS**, and this is the mechanism gate. A 300 ms hyperpolarising pulse,
+  then release: the relay peak arrives **16 ms after the release**, at 0.119 against 0.080
+  during the pulse. The cell answers having been *silenced*, which no filter of the input
+  can do.
+- **T3 SPINDLE BAND — PASS. 12.49 Hz**, inside the declared 11–16 Hz, with a prominence of
+  +0.30 decades over its own background. It sits **0.96 Hz below** the 13.45 Hz measured on
+  held-out sleepers, which is the gap the `tau_h_up` sweep exists to close.
+- **T4 AROUSAL ORDER — PASS.** Peak frequency falls monotonically as the cells are
+  hyperpolarised: 21.4 → 18.4 → 14.3 → 11.8 → 10.0 → 8.8 → 8.2 Hz over arousal 1.0 → 0.05,
+  with the mean rate falling 22.8 → 2.2 Hz.
+- **T5 GATING — FAILED.** Declared: waking transmission of a sensory drive must exceed deep
+  sleep's by more than 0.1. Measured: wake **+0.430**, NREM2 +0.421, NREM3 **+0.387**. The
+  thalamus does not gate.
+- **T6 THE LOOP — PASS.** Cortex and thalamus closed on each other stay bounded, and both
+  delays resolve to at least one step (1 and 2 at dt = 2 ms).
+
+**Why T5 failed, and what may and may not be done about it.** The gate is recorded FAILED
+and stays FAILED. But the reason is my *metric*, not only the model: I measured transmission
+as the **correlation** between drive and relay output, and correlation is scale-free. The
+relay's mean rate does fall from 23.4 to 7.9 Hz across the same sweep — the gain collapses
+exactly as it should — and correlation cannot see a gain change at all. Transmission means
+gain, so the instrument was measuring the wrong quantity.
+
+Per CLAUDE.md the instrument may change after a failure and the threshold may not: T5 stays
+in this log as FAILED, and a **new** gate T5b will measure the transfer *slope* with its own
+threshold declared before it runs. What cannot happen is T5 being re-run with a kinder
+number and reported as a pass.
+
+**And a worse one, which no gate caught: I described a mechanism the module does not have.**
+The docstring says that at deep hyperpolarisation "the slow h-current dominates" and the
+loop deepens into delta. There is no h-current in the code. The T4 sweep shows it plainly
+and I nearly missed it, because T4 only checked that the frequency FALLS: delta prominence
+is **negative at every arousal level** (−0.59 to −0.84), so the module never enters the
+1–4 Hz band at all — the peak bottoms out near 8 Hz. The three-regime story (tonic →
+spindle → delta) is a two-regime module with a paragraph claiming three.
+
+This is the same shape as the auditory entry earlier today: prose asserting a result the
+arithmetic does not support. The fix is to implement the sag current (I_h, ~1 s), add a
+declared delta gate, and re-run — not to soften the paragraph.

@@ -1,0 +1,144 @@
+{
+ "script": "scripts/shape_rhythms.py",
+ "args": {
+  "states": "wake-eyes-open,nrem3",
+  "sites": 1024,
+  "k": 32,
+  "long_frac": 0.25,
+  "topology": "tract",
+  "segments": 3.0,
+  "min_sites": 4,
+  "steps": 300,
+  "lr": 0.003,
+  "clip": 5.0,
+  "seed": 0,
+  "w_rhythm": 1.0,
+  "w_background": 1.0,
+  "w_health": 5.0,
+  "w_anatomy": 0.05,
+  "rate_lo": 1.0,
+  "rate_hi": 20.0,
+  "log_every": 10,
+  "thin_history": false,
+  "no_control": false,
+  "device": "cpu",
+  "out": "out/shape_rhythms.json"
+ },
+ "preregistered": "docs/LOG.md 2026-09-18 rhythm shaping G0-G4",
+ "started": "2026-09-18T15:15:44-0700",
+ "git": "71e4984",
+ "gates": {
+  "G0_entrainment": {
+   "ok": true,
+   "measured_hz": 9.821868896484375,
+   "expected_hz": 10.0,
+   "tolerance_hz": 0.5
+  },
+  "G1_idempotence": {
+   "ok": true,
+   "first": 0.645257294178009,
+   "second": 0.645257294178009
+  },
+  "G2_baseline": {
+   "wake-eyes-open": {
+    "loss": 0.37968674302101135,
+    "parts": {
+     "gamma_visual": {
+      "measured": -0.4161872863769531,
+      "penalty": 0.37968674302101135,
+      "target": [
+       0.2,
+       1.2
+      ],
+      "kind": "peak_prominence"
+     },
+     "aperiodic": {
+      "measured": 1.5979068279266357,
+      "penalty": 0.0,
+      "target": [
+       0.8,
+       2.0
+      ],
+      "kind": "exponent"
+     },
+     "health": {
+      "rate_hz": 4.138488292694092,
+      "saturated_frac": 0.0,
+      "penalty": 0.0
+     },
+     "anatomy": {
+      "residual_l2": 0.0
+     }
+    },
+    "skipped": [
+     [
+      "alpha_reactivity",
+      "substrate: needs-thalamus"
+     ],
+     [
+      "ssvep",
+      "substrate: needs-thalamus"
+     ],
+     [
+      "circadian",
+      "substrate: needs-hypothalamus"
+     ]
+    ]
+   },
+   "nrem3": {
+    "loss": 1.6542437076568604,
+    "parts": {
+     "slow_oscillation": {
+      "measured": -0.9861741065979004,
+      "penalty": 1.6542437076568604,
+      "target": [
+       0.3,
+       2.0
+      ],
+      "kind": "peak_prominence"
+     },
+     "aperiodic": {
+      "measured": 1.6565849781036377,
+      "penalty": 0.0,
+      "target": [
+       0.8,
+       2.0
+      ],
+      "kind": "exponent"
+     },
+     "health": {
+      "rate_hz": 4.304383277893066,
+      "saturated_frac": 0.0,
+      "penalty": 0.0
+     },
+     "anatomy": {
+      "residual_l2": 0.0
+     }
+    },
+    "skipped": [
+     [
+      "delta",
+      "substrate: needs-thalamus"
+     ],
+     [
+      "so_spindle_coupling",
+      "substrate: needs-thalamus"
+     ],
+     [
+      "ripples",
+      "substrate: needs-hippocampal-subfields"
+     ],
+     [
+      "ripple_spindle_so",
+      "substrate: needs-thalamus+hippocampal-subfields"
+     ],
+     [
+      "circadian",
+      "substrate: needs-hypothalamus"
+     ]
+    ]
+   }
+  }
+ },
+ "arms": []
+}
