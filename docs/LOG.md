@@ -6586,3 +6586,87 @@ spindle → delta) is a two-regime module with a paragraph claiming three.
 This is the same shape as the auditory entry earlier today: prose asserting a result the
 arithmetic does not support. The fix is to implement the sag current (I_h, ~1 s), add a
 declared delta gate, and re-run — not to soften the paragraph.
+
+## 18 September 2026 — the thalamus, second pass: 13.63 Hz, three modelling errors, and an instrument that finds them
+
+Continues the entry above. The spindle gate T3 now **PASSES at 13.626 Hz**, 0.18 Hz from
+the 13.45 Hz measured on held-out sleepers, with a prominence of +0.49 decades over its own
+background — a real peak, not a bump on a slope. Getting there took four sweeps that each
+ended in *this parameter changes nothing*, and every one of those was a mechanism that was
+not wired in.
+
+**Error 1: the T-current's activation was inverted.** I wrote the rebound as
+`g_T · h · (1 − σ(u))` — bigger the more hyperpolarised the cell is. That is a pacemaker,
+not a rebound: `h` re-arms in 60 ms and fires itself again, giving a limit cycle near 8 Hz
+whatever else happens. It is why the sag could be swept over 2.5× its strength and move the
+output by 0.1 Hz, and why the reticular shell could be silenced to 0.45 Hz with the relay
+still ringing at 7 Hz. The T-current is a **window current**: availability (rises with
+hyperpolarisation) × activation (rises with depolarisation), so an armed cell still needs a
+push to fire. With that fixed, T2's rebound went from 0.119 to **0.535** against 0.052
+during the pulse.
+
+**Error 2: both gating variables read the synaptic input instead of the membrane.** `h` and
+the sag activation were computed from `u_syn`, which excludes the cell's own currents. A
+voltage-gated current that cannot see the voltage it produces has no feedback: the sag sat
+pinned at 1.0 and became a tonic depolarisation. Diagnosed by printing the state variables
+rather than another spectrum — `H` held between 0.307 and 0.364 for ten seconds while the
+cell sat at R = 0.004 with **zero** bursts, in a run whose spectrum reported a "peak" at
+8.15 Hz.
+
+**Error 3: the sag shut off below the window it was supposed to reach.** With the sag's
+half-activation at −0.30 and the T-window's foot at −0.12, the sag self-limited at exactly
+the level that kept the cell below firing — a stable fixed point, which is why a sweep over
+`g_T`, `tau_h_dn` and `g_H` moved the output by 0.1 Hz.
+
+**And the frequency is not set by what the module said it was.** The `--sweep` mode exists
+to set `tau_h_up` from the measured spindle frequency. Swept over **6.5×** (20 → 130 ms) it
+moves the peak by **0.84 Hz**. The clock is the relay–reticular loop: `tau_R` and the GABA-A
+decay `tau_A` move it from 18.7 to 13.1 Hz. Setting `tau_R` = 12 ms and `tau_A` = 26 ms —
+both inside the measured range for TRN→relay IPSCs, which are slower than cortical ones —
+puts the loop at 13.63 Hz. So the measured number does constrain a declared constant, as
+intended; it was simply not the constant the docstring claimed.
+
+**The new instrument: T8, sensitivity.** Every declared constant swept ±50%, the spindle
+frequency re-measured, sorted by how far it moves. The constants the module claims are its
+clock must move it by more than 1 Hz (`tau_R` 6.32 Hz, `tau_A` 2.69 Hz — PASS), and
+everything else is reported. **Seven constants are inert over a 3× sweep**: `tau_h_dn`,
+`w_B`, `tau_B`, `h_theta`, `tau_h_deep`, `w_CT_R`, `w_CT_T`. The last two are an artefact of
+the test, which runs the thalamus with no cortex — but `tau_B` and `w_B` are the GABA-B
+synapse and `tau_h_deep` is the voltage-dependent de-inactivation I added *for* delta, and
+all three do nothing. A parameter that changes nothing is the cheapest detector of a
+mechanism that is not engaging, and this module needed four days of it compressed into one.
+
+**Gate results, all recorded, failures included.**
+
+| gate | verdict | number |
+|---|---|---|
+| T0 bounded | PASS | zero excursion, three timesteps, drives −2/0/+2 |
+| T1 idempotence | PASS | bit-identical |
+| T2 rebound | PASS | peak 12 ms after release, 0.535 vs 0.052 during |
+| T3 spindle band | PASS | **13.626 Hz**, prominence +0.487, 0.18 Hz off the measurement |
+| T4 arousal order | PASS | 14.05 → 11.07 Hz, monotone |
+| T5 gating (correlation) | **FAILED** | wake +0.385 vs deep sleep +0.343, bar 0.1 |
+| T5b gain (transfer slope) | **FAILED** | wake 0.0802 vs deep sleep 0.0561, ratio 1.43, bar 2.0 |
+| T6 the loop | PASS | bounded, delays resolve to 1 and 2 steps |
+| T7 delta | **FAILED** | prominence **−1.21** decades; 0.21 bursts/s |
+| T8 sensitivity | PASS | clock spans 6.32 and 2.69 Hz; 7 inert constants |
+
+T5b was built because T5's metric was wrong, and it fails too — so the thalamus's *gain*
+really does barely change with polarisation (1.43×, wanted 2×), and that is a model
+deficiency rather than an instrument one. Both stay FAILED.
+
+**Delta is not produced, and I am recording that rather than tuning further.** Four
+parameter searches, a correct window current and a voltage-dependent de-inactivation later,
+the module has one clock. The diagnosis is structural: a single slow negative feedback (the
+sag) plus a fast regenerative burst gives a *fast* limit cycle, not a 1–4 Hz relaxation
+cycle; the inter-burst interval is held by the loop, not by the slow variable. Getting delta
+needs the burst to leave behind a refractoriness of several hundred milliseconds — a
+calcium-dependent variable — or the reticular loop to fall silent so the relay can free-run,
+and neither is a parameter away.
+
+**An instrument caveat that cost most of an afternoon.** `peak_frequency` returns a number
+whether or not there is a peak. A run with **0.21 bursts per second** and a flat spectrum
+reported "14.8 Hz" and I read it as a rhythm. `ibm/spectral.py` documents this — the
+soft-argmax is biased toward the band centre when the spectrum is flat — and the guard is
+`peak_prominence`, which was −0.85 the whole time. Every frequency in this log is now quoted
+with its prominence; a frequency without one is not evidence that anything is oscillating.

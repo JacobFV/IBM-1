@@ -10,72 +10,72 @@
      "dt": 0.001,
      "drive": -2.0,
      "R": [
-      2.0884900475692803e-09,
-      3.357197186915073e-09
+      3.351178889943185e-08,
+      5.137658121157074e-08
      ]
     },
     {
      "dt": 0.001,
      "drive": 0.0,
      "R": [
-      0.06635688990354538,
-      0.09703011810779572
+      0.04165077582001686,
+      0.07802297919988632
      ]
     },
     {
      "dt": 0.001,
      "drive": 2.0,
      "R": [
-      0.808384358882904,
-      0.8658897876739502
+      0.8277392387390137,
+      0.8757599592208862
      ]
     },
     {
      "dt": 0.005,
      "drive": -2.0,
      "R": [
-      2.3160711126735123e-09,
-      3.919251589934447e-09
+      3.7335052383014045e-08,
+      5.4381423808536056e-08
      ]
     },
     {
      "dt": 0.005,
      "drive": 0.0,
      "R": [
-      0.06401589512825012,
-      0.11890806257724762
+      0.03764135763049126,
+      0.11881580948829651
      ]
     },
     {
      "dt": 0.005,
      "drive": 2.0,
      "R": [
-      0.8181009292602539,
-      0.8859232068061829
+      0.8348689675331116,
+      0.8814354538917542
      ]
     },
     {
      "dt": 0.02,
      "drive": -2.0,
      "R": [
-      2.3599557863462906e-09,
-      3.1355082974471316e-09
+      3.53971429944977e-08,
+      4.597017166929618e-08
      ]
     },
     {
      "dt": 0.02,
      "drive": 0.0,
      "R": [
-      0.07668257504701614,
-      0.11835939437150955
+      0.027217905968427658,
+      0.15068525075912476
      ]
     },
     {
      "dt": 0.02,
      "drive": 2.0,
      "R": [
-      0.8357470631599426,
-      0.890268087387085
+      0.8410272598266602,
+      0.8823643922805786
      ]
     }
    ]
@@ -86,22 +86,22 @@
   },
   "T2_rebound": {
    "ok": true,
-   "peak_step": 516,
+   "peak_step": 512,
    "pulse_ends": 500,
-   "peak_ms_after_release": 16.0,
-   "peak_value": 0.11930909007787704,
-   "value_during_pulse": 0.07962725311517715
+   "peak_ms_after_release": 12.0,
+   "peak_value": 0.5351764559745789,
+   "value_during_pulse": 0.05249221622943878
   },
   "T3_spindle_band": {
    "ok": true,
-   "measured_hz": 12.487845420837402,
+   "measured_hz": 13.626531600952148,
    "band": [
     11.0,
     16.0
    ],
    "catalogue_peak_hz": 13.45,
-   "prominence_decades": 0.30113744735717773,
-   "off_measured_hz": -0.962154579162597
+   "prominence_decades": 0.48693323135375977,
+   "off_measured_hz": 0.17653160095214915
   },
   "T4_arousal_order": {
    "ok": true,
@@ -109,52 +109,52 @@
    "sweep": [
     {
      "arousal": 1.0,
-     "peak_hz": 21.42778205871582,
-     "spindle_prominence": 0.1692976951599121,
-     "delta_prominence": -0.5897641181945801,
-     "mean_rate_hz": 22.77692413330078
+     "peak_hz": 14.049844741821289,
+     "spindle_prominence": 0.5162076950073242,
+     "delta_prominence": -1.187920331954956,
+     "mean_rate_hz": 13.096301078796387
     },
     {
      "arousal": 0.8,
-     "peak_hz": 18.420503616333008,
-     "spindle_prominence": 0.25463390350341797,
-     "delta_prominence": -0.7212953567504883,
-     "mean_rate_hz": 17.658464431762695
+     "peak_hz": 13.25100326538086,
+     "spindle_prominence": 0.5056216716766357,
+     "delta_prominence": -1.1986346244812012,
+     "mean_rate_hz": 10.40102767944336
     },
     {
      "arousal": 0.6,
-     "peak_hz": 14.321149826049805,
-     "spindle_prominence": 0.30727100372314453,
-     "delta_prominence": -0.8136522769927979,
-     "mean_rate_hz": 12.519402503967285
+     "peak_hz": 12.55482292175293,
+     "spindle_prominence": 0.4901261329650879,
+     "delta_prominence": -1.2103016376495361,
+     "mean_rate_hz": 8.197417259216309
     },
     {
      "arousal": 0.45,
-     "peak_hz": 11.765721321105957,
-     "spindle_prominence": 0.31134891510009766,
-     "delta_prominence": -0.8369503021240234,
-     "mean_rate_hz": 8.866226196289062
+     "peak_hz": 12.104629516601562,
+     "spindle_prominence": 0.47778892517089844,
+     "delta_prominence": -1.2203996181488037,
+     "mean_rate_hz": 6.828216552734375
     },
     {
      "arousal": 0.3,
-     "peak_hz": 10.0200834274292,
-     "spindle_prominence": 0.29456090927124023,
-     "delta_prominence": -0.8246769905090332,
-     "mean_rate_hz": 5.703805446624756
+     "peak_hz": 11.69803237915039,
+     "spindle_prominence": 0.4652562141418457,
+     "delta_prominence": -1.2287373542785645,
+     "mean_rate_hz": 5.664098739624023
     },
     {
      "arousal": 0.15,
-     "peak_hz": 8.765209197998047,
-     "spindle_prominence": 0.2740974426269531,
-     "delta_prominence": -0.7982320785522461,
-     "mean_rate_hz": 3.3198225498199463
+     "peak_hz": 11.317594528198242,
+     "spindle_prominence": 0.4521794319152832,
+     "delta_prominence": -1.2344586849212646,
+     "mean_rate_hz": 4.671591281890869
     },
     {
      "arousal": 0.05,
-     "peak_hz": 8.173856735229492,
-     "spindle_prominence": 0.26346826553344727,
-     "delta_prominence": -0.7821598052978516,
-     "mean_rate_hz": 2.2065892219543457
+     "peak_hz": 11.06869125366211,
+     "spindle_prominence": 0.44241809844970703,
+     "delta_prominence": -1.2360148429870605,
+     "mean_rate_hz": 4.089644908905029
     }
    ]
   },
@@ -162,19 +162,39 @@
    "ok": false,
    "states": {
     "wake": {
-     "corr_with_drive": 0.4303363263607025,
-     "mean_rate_hz": 23.37286949157715
+     "corr_with_drive": 0.3848131597042084,
+     "mean_rate_hz": 21.954120635986328
     },
     "n2": {
-     "corr_with_drive": 0.4207046329975128,
-     "mean_rate_hz": 13.998034477233887
+     "corr_with_drive": 0.36326244473457336,
+     "mean_rate_hz": 15.11715316772461
     },
     "n3": {
-     "corr_with_drive": 0.38718336820602417,
-     "mean_rate_hz": 7.8803205490112305
+     "corr_with_drive": 0.34315797686576843,
+     "mean_rate_hz": 11.336506843566895
     }
    },
    "rule": "wake transmission must exceed deep-sleep transmission by > 0.1"
+  },
+  "T5b_gain": {
+   "ok": false,
+   "wake_over_n3": 1.428086943096548,
+   "states": {
+    "wake": {
+     "transfer_slope": 0.0801849439740181,
+     "mean_rate_hz": 21.954120635986328
+    },
+    "n2": {
+     "transfer_slope": 0.06635339558124542,
+     "mean_rate_hz": 15.11715316772461
+    },
+    "n3": {
+     "transfer_slope": 0.056148502975702286,
+     "mean_rate_hz": 11.336506843566895
+    }
+   },
+   "rule": "waking transfer slope >= 2x deep sleep's",
+   "replaces": "T5, which used a scale-free correlation and stays FAILED"
   },
   "T6_loop": {
    "ok": true,
@@ -190,8 +210,245 @@
     "vl",
     "assoc"
    ],
-   "cortex_rate_hz": 23.598804473876953,
-   "thalamus_rate_hz": 7.60811185836792
+   "cortex_rate_hz": 4.826834201812744,
+   "thalamus_rate_hz": 6.632861614227295
+  },
+  "T7_delta": {
+   "ok": false,
+   "delta_prominence_decades": -1.2145085334777832,
+   "in_band_peak_hz": 3.1524295806884766,
+   "burst_rate_hz": 0.21428571428571427,
+   "note": "peak_frequency returns a number whether or not there is a peak; the prominence is the gate"
+  },
+  "T8_sensitivity": {
+   "ok": true,
+   "baseline_hz": 14.26978588104248,
+   "claimed_clock_span_hz": {
+    "tau_R": 6.3244218826293945,
+    "tau_A": 2.6870956420898438
+   },
+   "rule": "tau_A and tau_R must each move the spindle frequency by > 1 Hz",
+   "inert_within_0.2hz": [
+    "tau_h_dn",
+    "w_B",
+    "tau_B",
+    "h_theta",
+    "tau_h_deep",
+    "w_CT_R",
+    "w_CT_T"
+   ],
+   "sweep": [
+    {
+     "param": "theta_R",
+     "value": 0.35,
+     "hz_at_half": 18.03888702392578,
+     "hz_at_1p5x": 11.612200736999512,
+     "span_hz": 6.4266862869262695
+    },
+    {
+     "param": "tau_R",
+     "value": 0.012,
+     "hz_at_half": 18.25376319885254,
+     "hz_at_1p5x": 11.929341316223145,
+     "span_hz": 6.3244218826293945
+    },
+    {
+     "param": "g_H",
+     "value": 0.85,
+     "hz_at_half": 10.232362747192383,
+     "hz_at_1p5x": 15.5697660446167,
+     "span_hz": 5.337403297424316
+    },
+    {
+     "param": "beta_R",
+     "value": 9.0,
+     "hz_at_half": 15.613476753234863,
+     "hz_at_1p5x": 12.592988967895508,
+     "span_hz": 3.0204877853393555
+    },
+    {
+     "param": "g_T",
+     "value": 0.55,
+     "hz_at_half": 12.304163932800293,
+     "hz_at_1p5x": 15.26857852935791,
+     "span_hz": 2.964414596557617
+    },
+    {
+     "param": "tau_A",
+     "value": 0.026,
+     "hz_at_half": 16.122304916381836,
+     "hz_at_1p5x": 13.435209274291992,
+     "span_hz": 2.6870956420898438
+    },
+    {
+     "param": "w_RT",
+     "value": 1.1,
+     "hz_at_half": 12.767250061035156,
+     "hz_at_1p5x": 15.299243927001953,
+     "span_hz": 2.531993865966797
+    },
+    {
+     "param": "tau_eta",
+     "value": 0.005,
+     "hz_at_half": 15.28376293182373,
+     "hz_at_1p5x": 13.310951232910156,
+     "span_hz": 1.9728116989135742
+    },
+    {
+     "param": "burst_beta",
+     "value": 14.0,
+     "hz_at_half": 13.069864273071289,
+     "hz_at_1p5x": 15.013254165649414,
+     "span_hz": 1.943389892578125
+    },
+    {
+     "param": "tau_H_up",
+     "value": 0.32,
+     "hz_at_half": 15.30817985534668,
+     "hz_at_1p5x": 13.558162689208984,
+     "span_hz": 1.7500171661376953
+    },
+    {
+     "param": "w_A",
+     "value": 0.85,
+     "hz_at_half": 13.278826713562012,
+     "hz_at_1p5x": 14.788128852844238,
+     "span_hz": 1.5093021392822266
+    },
+    {
+     "param": "beta_T",
+     "value": 8.0,
+     "hz_at_half": 13.120018005371094,
+     "hz_at_1p5x": 14.293336868286133,
+     "span_hz": 1.173318862915039
+    },
+    {
+     "param": "theta_T",
+     "value": 0.3,
+     "hz_at_half": 14.404688835144043,
+     "hz_at_1p5x": 13.231972694396973,
+     "span_hz": 1.1727161407470703
+    },
+    {
+     "param": "burst_theta",
+     "value": -0.12,
+     "hz_at_half": 13.786253929138184,
+     "hz_at_1p5x": 14.565425872802734,
+     "span_hz": 0.7791719436645508
+    },
+    {
+     "param": "tau_T",
+     "value": 0.006,
+     "hz_at_half": 14.600822448730469,
+     "hz_at_1p5x": 13.87517261505127,
+     "span_hz": 0.7256498336791992
+    },
+    {
+     "param": "h_H_beta",
+     "value": 16.0,
+     "hz_at_half": 13.952820777893066,
+     "hz_at_1p5x": 14.618697166442871,
+     "span_hz": 0.6658763885498047
+    },
+    {
+     "param": "h_beta",
+     "value": 12.0,
+     "hz_at_half": 13.767592430114746,
+     "hz_at_1p5x": 14.418560028076172,
+     "span_hz": 0.6509675979614258
+    },
+    {
+     "param": "tau_H_dn",
+     "value": 0.14,
+     "hz_at_half": 14.672642707824707,
+     "hz_at_1p5x": 14.119938850402832,
+     "span_hz": 0.552703857421875
+    },
+    {
+     "param": "h_H_theta",
+     "value": 0.02,
+     "hz_at_half": 14.071276664733887,
+     "hz_at_1p5x": 14.461477279663086,
+     "span_hz": 0.3902006149291992
+    },
+    {
+     "param": "w_TT",
+     "value": 0.25,
+     "hz_at_half": 14.431793212890625,
+     "hz_at_1p5x": 14.105510711669922,
+     "span_hz": 0.3262825012207031
+    },
+    {
+     "param": "tau_h_up",
+     "value": 0.06,
+     "hz_at_half": 14.437501907348633,
+     "hz_at_1p5x": 14.124581336975098,
+     "span_hz": 0.31292057037353516
+    },
+    {
+     "param": "deep_theta",
+     "value": -0.35,
+     "hz_at_half": 14.049521446228027,
+     "hz_at_1p5x": 14.338974952697754,
+     "span_hz": 0.28945350646972656
+    },
+    {
+     "param": "deep_beta",
+     "value": 10.0,
+     "hz_at_half": 14.0628023147583,
+     "hz_at_1p5x": 14.334561347961426,
+     "span_hz": 0.271759033203125
+    },
+    {
+     "param": "tau_h_dn",
+     "value": 0.02,
+     "hz_at_half": 14.383673667907715,
+     "hz_at_1p5x": 14.194390296936035,
+     "span_hz": 0.1892833709716797
+    },
+    {
+     "param": "w_B",
+     "value": 0.35,
+     "hz_at_half": 14.349937438964844,
+     "hz_at_1p5x": 14.189220428466797,
+     "span_hz": 0.16071701049804688
+    },
+    {
+     "param": "tau_B",
+     "value": 0.15,
+     "hz_at_half": 14.383176803588867,
+     "hz_at_1p5x": 14.23985481262207,
+     "span_hz": 0.14332199096679688
+    },
+    {
+     "param": "h_theta",
+     "value": 0.2,
+     "hz_at_half": 14.13586711883545,
+     "hz_at_1p5x": 14.234617233276367,
+     "span_hz": 0.09875011444091797
+    },
+    {
+     "param": "tau_h_deep",
+     "value": 0.42,
+     "hz_at_half": 14.317872047424316,
+     "hz_at_1p5x": 14.227008819580078,
+     "span_hz": 0.09086322784423828
+    },
+    {
+     "param": "w_CT_R",
+     "value": 0.35,
+     "hz_at_half": 14.26978588104248,
+     "hz_at_1p5x": 14.26978588104248,
+     "span_hz": 0.0
+    },
+    {
+     "param": "w_CT_T",
+     "value": 0.55,
+     "hz_at_half": 14.26978588104248,
+     "hz_at_1p5x": 14.26978588104248,
+     "span_hz": 0.0
+    }
+   ]
   }
  },
  "all_gates_ok": false

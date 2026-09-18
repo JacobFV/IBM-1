@@ -1,0 +1,198 @@
+{
+ "script": "scripts/gate_thalamus.py",
+ "dt": 0.001,
+ "gates": {
+  "T0_bounded": {
+   "ok": true,
+   "worst_excursion": 0.0,
+   "cases": [
+    {
+     "dt": 0.001,
+     "drive": -2.0,
+     "R": [
+      3.1074154804855425e-08,
+      4.9950973135537424e-08
+     ]
+    },
+    {
+     "dt": 0.001,
+     "drive": 0.0,
+     "R": [
+      0.037456996738910675,
+      0.06485128402709961
+     ]
+    },
+    {
+     "dt": 0.001,
+     "drive": 2.0,
+     "R": [
+      0.8161192536354065,
+      0.8702402710914612
+     ]
+    },
+    {
+     "dt": 0.005,
+     "drive": -2.0,
+     "R": [
+      3.446140084406579e-08,
+      5.8315535511610506e-08
+     ]
+    },
+    {
+     "dt": 0.005,
+     "drive": 0.0,
+     "R": [
+      0.02624039724469185,
+      0.14369502663612366
+     ]
+    },
+    {
+     "dt": 0.005,
+     "drive": 2.0,
+     "R": [
+      0.8247810006141663,
+      0.890447199344635
+     ]
+    },
+    {
+     "dt": 0.02,
+     "drive": -2.0,
+     "R": [
+      3.5114329222096785e-08,
+      4.665393760205916e-08
+     ]
+    },
+    {
+     "dt": 0.02,
+     "drive": 0.0,
+     "R": [
+      0.014723159372806549,
+      0.1785033643245697
+     ]
+    },
+    {
+     "dt": 0.02,
+     "drive": 2.0,
+     "R": [
+      0.8408541679382324,
+      0.8935664296150208
+     ]
+    }
+   ]
+  },
+  "T1_idempotent": {
+   "ok": true,
+   "max_abs_diff": 0.0
+  },
+  "T2_rebound": {
+   "ok": true,
+   "peak_step": 509,
+   "pulse_ends": 500,
+   "peak_ms_after_release": 9.000000000000002,
+   "peak_value": 0.5950707197189331,
+   "value_during_pulse": 0.051157087087631226
+  },
+  "T3_spindle_band": {
+   "ok": false,
+   "measured_hz": 18.617961883544922,
+   "band": [
+    11.0,
+    16.0
+   ],
+   "catalogue_peak_hz": 13.45,
+   "prominence_decades": 0.2806529998779297,
+   "off_measured_hz": 5.167961883544923
+  },
+  "T4_arousal_order": {
+   "ok": true,
+   "monotone_falling_within_1Hz": true,
+   "sweep": [
+    {
+     "arousal": 1.0,
+     "peak_hz": 22.2225341796875,
+     "spindle_prominence": 0.1291670799255371,
+     "delta_prominence": -0.4791398048400879,
+     "mean_rate_hz": 13.10886001586914
+    },
+    {
+     "arousal": 0.8,
+     "peak_hz": 20.895261764526367,
+     "spindle_prominence": 0.18929672241210938,
+     "delta_prominence": -0.592778205871582,
+     "mean_rate_hz": 10.411087036132812
+    },
+    {
+     "arousal": 0.6,
+     "peak_hz": 19.174556732177734,
+     "spindle_prominence": 0.2432694435119629,
+     "delta_prominence": -0.7047500610351562,
+     "mean_rate_hz": 8.201542854309082
+    },
+    {
+     "arousal": 0.45,
+     "peak_hz": 17.76114845275879,
+     "spindle_prominence": 0.2771487236022949,
+     "delta_prominence": -0.7816371917724609,
+     "mean_rate_hz": 6.829208850860596
+    },
+    {
+     "arousal": 0.3,
+     "peak_hz": 16.329177856445312,
+     "spindle_prominence": 0.3047943115234375,
+     "delta_prominence": -0.8498258590698242,
+     "mean_rate_hz": 5.663724422454834
+    },
+    {
+     "arousal": 0.15,
+     "peak_hz": 14.958657264709473,
+     "spindle_prominence": 0.32537412643432617,
+     "delta_prominence": -0.9066019058227539,
+     "mean_rate_hz": 4.670777320861816
+    },
+    {
+     "arousal": 0.05,
+     "peak_hz": 14.112525939941406,
+     "spindle_prominence": 0.3346700668334961,
+     "delta_prominence": -0.9373817443847656,
+     "mean_rate_hz": 4.0887861251831055
+    }
+   ]
+  },
+  "T5_gating": {
+   "ok": false,
+   "states": {
+    "wake": {
+     "corr_with_drive": 0.4423927068710327,
+     "mean_rate_hz": 21.90943717956543
+    },
+    "n2": {
+     "corr_with_drive": 0.41872188448905945,
+     "mean_rate_hz": 15.073624610900879
+    },
+    "n3": {
+     "corr_with_drive": 0.3964274227619171,
+     "mean_rate_hz": 11.302093505859375
+    }
+   },
+   "rule": "wake transmission must exceed deep-sleep transmission by > 0.1"
+  },
+  "T6_loop": {
+   "ok": true,
+   "worst_excursion": 0.0,
+   "delays_in_steps": {
+    "relay_to_cortex": 1,
+    "cortex_to_trn": 2
+   },
+   "units": [
+    "lgn",
+    "mgn",
+    "vpl",
+    "vl",
+    "assoc"
+   ],
+   "cortex_rate_hz": 4.860227584838867,
+   "thalamus_rate_hz": 6.645167827606201
+  }
+ },
+ "all_gates_ok": false
+}

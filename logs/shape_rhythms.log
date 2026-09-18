@@ -24,3 +24,25 @@ Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pyto
   [shaped]  130 wake-eyes-open  L=   0.4893 |g|=  0.867  gamma_visual=-0.4597  aperiodic=2.218
   [shaped]  140 wake-eyes-open  L=  16.3551 |g|= 38.599  gamma_visual=-0.2649  aperiodic=2.859
   [shaped]  150 wake-eyes-open  L=   0.4177 |g|=  1.287  gamma_visual=-0.3662  aperiodic=2.154
+  [shaped]  160 wake-eyes-open  L=   0.2671 |g|= 34.390  gamma_visual=-0.3155  aperiodic=1.912
+  [shaped]  170 wake-eyes-open  L=   0.2014 |g|=  3.460  gamma_visual=-0.1921  aperiodic=2.206
+  [shaped]  180 wake-eyes-open  L=   0.1158 |g|=  2.346  gamma_visual=-0.1057  aperiodic=2.13
+  [shaped]  190 wake-eyes-open  L=   0.1906 |g|=  0.498  gamma_visual=-0.2353  aperiodic=1.99
+  [shaped]  200 wake-eyes-open  L=   0.0896 |g|=  0.882  gamma_visual=-0.05962  aperiodic=2.143
+  [shaped]  210 wake-eyes-open  L=   7.6140 |g|= 21.168  gamma_visual=-0.2409  aperiodic=3.141
+  [shaped]  220 wake-eyes-open  L=  24.0540 |g|= 23.565  gamma_visual=-0.1726  aperiodic=3.007
+  [shaped]  230 wake-eyes-open  L=   0.1737 |g|=  1.430  gamma_visual=-0.1715  aperiodic=2.181
+  [shaped]  240 wake-eyes-open  L=   6.7399 |g|=212.881  gamma_visual=-0.1083  aperiodic=3.408
+  [shaped]  250 wake-eyes-open  L=   7.2861 |g|= 27.078  gamma_visual=-0.1268  aperiodic=2.993
+  [shaped]  260 wake-eyes-open  L=   4.8402 |g|= 12.854  gamma_visual=-0.09841  aperiodic=2.852
+  [shaped]  270 wake-eyes-open  L=   5.9842 |g|= 17.489  gamma_visual=-0.09083  aperiodic=3.007
+  [shaped]  280 wake-eyes-open  L=   5.9720 |g|= 83.571  gamma_visual=-0.01688  aperiodic=2.842
+  [shaped]  290 wake-eyes-open  L=   7.0851 |g|= 15.800  gamma_visual=-0.123  aperiodic=2.507
+  [shaped]  299 nrem3           L=   0.3986 |g|=  3.477  slow_oscillation=0.913  aperiodic=2.4
+  [relabelled] wake-eyes-open: 1 targets (gamma_visual); 3 skipped
+  [relabelled] nrem3: 1 targets (slow_oscillation); 5 skipped
+  [relabelled]    0 wake-eyes-open  L=   0.4225 |g|=  0.284  gamma_visual=-0.45  aperiodic=1.664
+  [relabelled]   10 wake-eyes-open  L=   0.8719 |g|=  6.444  gamma_visual=-0.1395  aperiodic=2.813
+  [relabelled]   20 wake-eyes-open  L=  15.5092 |g|=107.135  gamma_visual=-0.0917  aperiodic=3.657
+  [relabelled]   30 wake-eyes-open  L=   0.4279 |g|=  0.318  gamma_visual=-0.4541  aperiodic=1.37
+  [relabelled]   40 wake-eyes-open  L=   0.4099 |g|=  0.267  gamma_visual=-0.4401  aperiodic=1.488

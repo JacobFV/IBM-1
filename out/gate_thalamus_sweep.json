@@ -1,0 +1,47 @@
+{
+ "script": "scripts/gate_thalamus.py",
+ "dt": 0.001,
+ "gates": {},
+ "sweep_tau_h": [
+  {
+   "tau_h_up_ms": 20.0,
+   "peak_hz": 19.344961166381836,
+   "spindle_prominence": 0.26457977294921875
+  },
+  {
+   "tau_h_up_ms": 30.0,
+   "peak_hz": 19.22240447998047,
+   "spindle_prominence": 0.2716703414916992
+  },
+  {
+   "tau_h_up_ms": 40.0,
+   "peak_hz": 19.10918617248535,
+   "spindle_prominence": 0.2774085998535156
+  },
+  {
+   "tau_h_up_ms": 50.0,
+   "peak_hz": 19.0084171295166,
+   "spindle_prominence": 0.282076358795166
+  },
+  {
+   "tau_h_up_ms": 60.0,
+   "peak_hz": 18.919452667236328,
+   "spindle_prominence": 0.28589296340942383
+  },
+  {
+   "tau_h_up_ms": 80.0,
+   "peak_hz": 18.769479751586914,
+   "spindle_prominence": 0.29175758361816406
+  },
+  {
+   "tau_h_up_ms": 100.0,
+   "peak_hz": 18.64701271057129,
+   "spindle_prominence": 0.296142578125
+  },
+  {
+   "tau_h_up_ms": 130.0,
+   "peak_hz": 18.50006675720215,
+   "spindle_prominence": 0.3009953498840332
+  }
+ ]
+}

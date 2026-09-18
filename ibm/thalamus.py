@@ -87,18 +87,35 @@ R_MAX = 100.0
 class ThalamicPriors:
     # population time constants.  relay and reticular cells are fast; the rhythms come
     # from the synapses and the T-current, not from the membranes.
-    tau_R: float = 0.008
+    # These two, with tau_A below, are what actually set the spindle frequency: the
+    # relay-reticular-relay loop's period is roughly twice the sum of the membrane and
+    # synaptic constants around it.  Measured, not assumed -- a sweep of tau_h_up over
+    # 6.5x moved the frequency 0.84 Hz, while tau_A and tau_R move it from 18.7 to 13.1 Hz
+    # (docs/LOG.md, 18 Sep).  The values below put the isolated loop at the 13.45 Hz
+    # measured on held-out sleepers.
+    tau_R: float = 0.012
     tau_T: float = 0.006
     # T-current de-inactivation.  ASYMMETRIC on purpose: de-inactivation during
     # hyperpolarisation is slow, inactivation once the cell fires is fast, and the
     # asymmetry is what makes a burst a burst rather than a sinusoid.  tau_h_up is the
     # parameter the 13.45 Hz measurement constrains (see the module docstring).
-    tau_h_up: float = 0.060        # de-inactivating, cell hyperpolarised
+    tau_h_up: float = 0.060        # de-inactivating, cell mildly hyperpolarised
     tau_h_dn: float = 0.020        # inactivating, cell depolarised
+    # De-inactivation is itself VOLTAGE-DEPENDENT, and this is the one line that makes the
+    # module produce two bands from one mechanism.  In a real relay cell tau_h runs tens of
+    # milliseconds near rest and several HUNDRED at deep hyperpolarisation, so the
+    # inter-burst interval stretches as the cell is taken down: mild hyperpolarisation
+    # gives the spindle band, deep hyperpolarisation gives delta.  Without it the module
+    # has a single limit cycle whose frequency barely moves, which is what four sweeps
+    # found before this was added (docs/LOG.md).
+    tau_h_deep: float = 0.420      # de-inactivating, cell deeply hyperpolarised
+    deep_theta: float = -0.35      # below this the slow branch takes over
+    deep_beta: float = 10.0
     h_theta: float = 0.20          # u_R below this de-inactivates
     h_beta: float = 12.0
     g_T: float = 0.55              # T-current strength; the burst's size
-    burst_theta: float = 0.10      # the burst only fires BELOW this: it is a rebound
+    burst_theta: float = -0.12     # the T-window's activation foot: a small depolarisation
+                                   # from rest is enough to fire an armed cell
     burst_beta: float = 14.0
     # the SAG current, I_h.  Hyperpolarisation-activated and DEPOLARISING, so it is a
     # negative feedback on the cell's own polarisation with a time constant of a few
@@ -111,14 +128,17 @@ class ThalamicPriors:
     # It is here because the first version of this module DESCRIBED this mechanism in its
     # docstring and did not implement it, and the T4 sweep showed delta prominence negative
     # at every arousal level while the prose claimed three regimes (docs/LOG.md).
-    g_H: float = 0.45
+    g_H: float = 0.85
     tau_H_up: float = 0.320        # activating, cell hyperpolarised: sets the delta period
     tau_H_dn: float = 0.140        # deactivating once the cell depolarises
-    h_H_theta: float = 0.02        # activates BELOW this: deeper than the T-current's bar
+    h_H_theta: float = 0.02        # activates below this -- ABOVE the T-window's foot, so
+                                   # the sag can actually push the cell into the window
     h_H_beta: float = 16.0
     # inhibition from TRN.  GABA-A is fast and carries the spindle; GABA-B is slow and
     # is what deepens into delta when the cells sit hyperpolarised (Destexhe 1996).
-    tau_A: float = 0.010
+    tau_A: float = 0.026           # TRN -> relay GABA-A decay.  Slower than a cortical
+                                   # IPSC, which is measured (20-40 ms in TC cells) and is
+                                   # the constant the spindle frequency is set by here.
     tau_B: float = 0.150
     w_A: float = 0.85
     w_B: float = 0.35
@@ -225,21 +245,44 @@ class ThalamicField(nn.Module):
         # de-inactivation and the sag's activation read this, not the synaptic input alone,
         # because the currents respond to the membrane and not to what is driving it
         u_mem = u_syn + g_H * H
-        # the rebound: a burst only when the cell is hyperpolarised AND de-inactivated
-        burst = g_T * h * (1.0 - sigmoid(u_mem, pr.burst_beta, pr.burst_theta))
+        # The T-current as a WINDOW current: availability (h, which rises with
+        # hyperpolarisation) times activation (which rises with depolarisation).  The
+        # product is non-zero only in the window between them, and the cell therefore needs
+        # a small depolarising push -- from the sag, from a synapse, from the release of
+        # inhibition -- to fire.
+        #
+        # The first version had the activation term INVERTED, so the burst grew the more
+        # hyperpolarised the cell was.  That makes it self-triggering: h re-arms in 60 ms
+        # and fires itself again, a limit cycle at ~8 Hz whatever else is happening.  It is
+        # why the sag could be swept over two-and-a-half times its strength and move the
+        # output by 0.1 Hz, and why the reticular shell could be silenced to 0.45 Hz with
+        # the relay still ringing at 7 Hz.  A current that does not need a trigger is a
+        # pacemaker, not a rebound.
+        burst = g_T * h * sigmoid(u_mem, pr.burst_beta, pr.burst_theta)
         u_R = u_mem + burst
         u_base = u_mem
         u_T = w_RT * R + pr.w_CT_T * dctx - pr.w_TT * T
 
         fR = sigmoid(u_R, pr.beta_R, pr.theta_R)
         fT = sigmoid(u_T, pr.beta_T, pr.theta_T)
+        # Both gating variables read the FULL membrane drive `u_R` -- synaptic input, sag
+        # and burst together -- because both currents are voltage-gated and the voltage is
+        # whatever every current has made it.  The first version read only the synaptic
+        # input, which left each of them without the feedback that terminates it: the sag
+        # sat pinned at 1 and became a tonic depolarisation, and a sweep over its threshold
+        # and its time constant moved the output by less than 0.1 Hz (docs/LOG.md). A
+        # parameter that changes nothing is the symptom; a missing feedback loop is the
+        # disease.
         # h_inf is 1 when hyperpolarised (de-inactivated, ready to burst), 0 when not
-        h_inf = 1.0 - sigmoid(u_base, pr.h_beta, pr.h_theta)
-        # asymmetric: slow to arm, fast to disarm
-        tau_h = torch.where(h_inf > h, tau_h_up, torch.full_like(tau_h_up, pr.tau_h_dn))
+        h_inf = 1.0 - sigmoid(u_R, pr.h_beta, pr.h_theta)
+        # asymmetric: slow to arm, fast to disarm -- and the arming time itself stretches
+        # the deeper the cell is held (see `tau_h_deep`)
+        deep = 1.0 - sigmoid(u_R, pr.deep_beta, pr.deep_theta)
+        tau_arm = tau_h_up + (pr.tau_h_deep - tau_h_up) * deep
+        tau_h = torch.where(h_inf > h, tau_arm, torch.full_like(tau_arm, pr.tau_h_dn))
         # the sag: activated by hyperpolarisation, slower than the T-current, and
         # asymmetric in the same direction
-        H_inf = 1.0 - sigmoid(u_syn, pr.h_H_beta, pr.h_H_theta)
+        H_inf = 1.0 - sigmoid(u_R, pr.h_H_beta, pr.h_H_theta)
         tau_H = torch.where(H_inf > H, tau_H_up, torch.full_like(tau_H_up, pr.tau_H_dn))
 
         cR = 1.0 - math.exp(-dt / pr.tau_R)
