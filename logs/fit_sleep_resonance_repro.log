@@ -1,0 +1,194 @@
+
+==============================================================================
+the model: sleep_dynamics
+==============================================================================
+sleep-edfx is a declared FIT source of `sleep_dynamics`: True
+`thalamocortical_coupling` is among its declared processes: True
+
+the claim under test, quoted from the model's own `constrained`:
+  + slow-oscillation frequency and amplitude, and their change across the night, which thousands of scored hours determine precisely
+  + spindle density, duration and frequency, from `mass`'s expert spindle annotations -- the only place in this corpus where the events themselves are labelled
+  + the stage-transition structure as a slow process, from the staging labels
+and what it says will not move:
+  - spatial structure of anything.  a two-channel montage constrains no map, and the 8 mm cortical grid exists to carry the topology, not because it is resolved
+  - the thalamic mechanism.  the reticular-relay loop is materialized at 2 mm and every parameter in it comes from animal recordings at a literature prior; scalp spindles are consistent with it and do not identify it
+  - the neuromodulator trajectories.  acetylcholine and noradrenaline drive the stage transitions in the model and nothing here measures them in humans
+
+note the first `constrained` entry credits `mass`'s expert spindle annotations for the
+spindle numbers, and `mass` is not held here.  so this script tests the spindle claim
+with sleep-edfx alone, which has stage labels and no event labels: it can ask where the
+sigma resonance sits and how sharp it is, and it cannot ask about spindle DENSITY at
+all.  one third of that `constrained` entry is out of reach and saying so is cheaper
+than quietly answering a smaller question.
+
+==============================================================================
+p(theta): the declaration being tested
+==============================================================================
+process                   impl             param  dist       tying   n  prov        id?
+------------------------  ---------------  -----  ---------  ------  -  ----------  ---
+thalamocortical_coupling  alpha_resonator  f0_hz  normal     global  1  literature     
+thalamocortical_coupling  alpha_resonator  q      lognormal  global  1  literature     
+2 parameters over 2 blocks; 0 (0%) sit on weak or speculative priors, 0 (0%) are per-site or embedding-tied and will mostly stay where the prior put them
+  f0_hz    prior normal     median  10.000   [literature]  individual alpha peak frequency, 8-13 Hz
+  q        prior lognormal  median   4.000   [literature]  alpha peaks are narrow but not ringing; q above ~10 would be a pathological loop
+
+==============================================================================
+data
+==============================================================================
+sleep-edfx root /home/brandonin/Documents/IBM-1/data/sources/sleep-edfx/raw/1.0.0/sleep-cassette  (from data/sources/sleep-edfx/raw/.location.yaml)
+40 nights from 21 participants; up to 60 scored 30 s epochs
+per stage per night, cut into 4 s non-overlapping windows inside each epoch
+  example: SC4001E0-PSG/N2: 420 x 4 s windows, 201 bins to 50 Hz, claimed over 9-20 Hz, dof 840  [60 epochs, 420 windows]
+  fitted over Band(9-20Hz): 44 bins at 0.25 Hz resolution
+
+==============================================================================
+split
+==============================================================================
+BY PARTICIPANT.  sleep-edfx records two consecutive nights per person and both go to
+the same side; a night-level split would report one person's night-to-night stability
+as generalization to new people.
+train 13 participants / 26 nights: SC4001 SC4002 SC4021 SC4022 SC4031 SC4032 SC4041 SC4042 SC4061 SC4062 SC4081 SC4082 SC4101 SC4102 SC4111 SC4112 SC4121 SC4122 SC4161 SC4162 SC4171 SC4172 SC4181 SC4182 SC4191 SC4192
+test  8 participants / 14 nights: SC4011 SC4012 SC4051 SC4052 SC4071 SC4072 SC4091 SC4092 SC4131 SC4141 SC4142 SC4151 SC4152 SC4201
+
+==============================================================================
+forging: one (f0, q) for N2, over the train participants
+==============================================================================
+map over 1 tasks: log posterior -1.356e+05 -> -6035 in 16 iterations
+2/2 blocks (100%) moved more than a quarter of a prior sd; the rest are where the prior put them
+  thalamocortical_coupling:alpha_resonator.f0_hz   +2.88 prior sd
+  thalamocortical_coupling:alpha_resonator.q       -0.68 prior sd
+
+prior      f0 10.000 Hz   q   4.000
+posterior  f0 13.452 Hz   q   2.396
+
+==============================================================================
+held-out: does the fitted resonance beat the declared one on unseen people?
+==============================================================================
+both sides profile the drive exponent and the overall scale identically, so the only
+difference scored is where the resonance sits and how sharp it is.  the likelihood is
+the exact gamma density of an averaged periodogram, so a night with more surviving
+windows carries more weight by construction rather than by a chosen weight.
+
+train: 26 nights, 44 bins each
+  mean log-likelihood per night    prior     -5216.67   posterior      -231.88
+  ... per bin                      prior    -118.5608   posterior      -5.2701
+  paired delta +4984.79 +/- 347.24 sem, dz +2.82, t +14.36, p 1.41e-13, posterior wins 100%
+
+test: 14 nights, 44 bins each
+  mean log-likelihood per night    prior     -5809.92   posterior      -306.74
+  ... per bin                      prior    -132.0436   posterior      -6.9713
+  paired delta +5503.18 +/- 289.56 sem, dz +5.08, t +19.01, p 7.22e-11, posterior wins 100%
+
+HELD-OUT: PASSED -- the fitted resonance beats the declared one on
+8 participants the fit never saw (+5503.2 nats per night, p 7.22e-11, wins 100%).
+
+==============================================================================
+per-night, per-stage resonance (each night refitted on its own)
+==============================================================================
+stage     n            f0 Hz                q   drive e     r^2   Q<0.5
+the last column is the fraction of nights whose fitted Q is below one half, the damping
+at which a second-order loop stops having a peak at all.  it is printed because it
+decides how the f0 column may be read: in a cell with Q < 0.5 there is no resonance, and
+f0 there is a corner frequency rather than the location of anything visible in the
+spectrum.
+W        40    9.983 +/- 0.241    1.300 +/- 0.604    -0.650   0.321    90%
+N1       40    9.769 +/- 0.245    0.571 +/- 0.156    -0.245   0.786    78%
+N2       40   13.407 +/- 0.177    2.836 +/- 0.140     0.990   0.869     0%
+N3       38   12.783 +/- 0.236    2.370 +/- 0.130     1.161   0.913     0%
+REM      40    9.885 +/- 0.256    0.415 +/- 0.160     0.255   0.910    92%
+
+==============================================================================
+FALSIFICATION 1: does the resonance move up in N2, within night?
+==============================================================================
+a sleep spindle is a 11-16 Hz event and a waking alpha rhythm is 8-13 Hz.  `sleep_dynamics`
+claims to constrain spindle FREQUENCY through this loop, and `alpha_resonator` is the only
+resonance it has.  so the fitted f0 must be HIGHER in N2 than in W, in the same night.
+if it is not, the implementation cannot express the spindle, and the `constrained` entry
+that promises spindle frequency is promising something the selected f cannot deliver.
+  f0  N2 - W     +3.424 Hz +/- 0.334 sem   dz  +1.62  t  +10.26  p  1.24e-12  higher in 100% of 40 nights
+  f0  N3 - W     +2.821 Hz +/- 0.362 sem   dz  +1.27  t   +7.80  p  2.49e-09  higher in 92% of 38 nights
+  f0  REM - W     -0.097 Hz +/- 0.272 sem   dz  -0.06  t   -0.36  p     0.722  higher in 25% of 40 nights
+  f0  N2 - REM   +3.521 Hz +/- 0.345 sem   dz  +1.61  t  +10.20  p  1.46e-12  higher in 95% of 40 nights
+
+  FALSIFICATION 1: PASSED -- the fitted resonance does move up from wake to N2.
+
+==============================================================================
+FALSIFICATION 2: does Q stay inside the range the declaration calls physiological?
+==============================================================================
+`alpha_resonator`'s own note: "alpha peaks are narrow but not ringing; q above ~10 would
+be a pathological loop".  that is a falsifiable statement about healthy sleep, and it is
+the kind that a curve-fitting routine will happily violate to buy a sharper peak.
+
+  fitted Q over all 198 (night, stage) cells: median 0.26, 90th pct 3.44, max 20.89
+  fraction above the declared pathological threshold of 10: 1%
+
+  FALSIFICATION 2: PASSED -- the fit stays inside the range the declaration calls
+  physiological.
+
+==============================================================================
+FALSIFICATION 3: REM is the negative control, because REM has no spindles
+==============================================================================
+spindles are an NREM phenomenon: they are generated by the thalamic reticular nucleus
+under the hyperpolarization of NREM and they are absent in REM, which is not a matter
+of degree.  so whatever sigma resonance the fit finds in N2 must NOT be there in REM,
+in the same nights.  a pipeline that reports a spindle in REM is reporting its own
+filter, and every N2 number above would be that filter too.
+
+  Q   N2 - REM   +2.420 +/- 0.176 sem, dz +2.17, p 1.52e-16, sharper in N2 in 98% of 40 nights
+  f0  N2 - REM   +3.521 Hz +/- 0.345 sem, dz +1.61, p 1.46e-12, higher in N2 in 95% of 40 nights
+
+  FALSIFICATION 3: PASSED -- the resonance is sharper in N2 than in REM.
+
+==============================================================================
+where this is weaker than it looks
+==============================================================================
+
+HALF THE CONTRAST IN FALSIFICATION 1 IS NOT A FREQUENCY SHIFT.  the Q<0.5 column
+above is the reason.  in W, N1 and REM the fitted loop is usually OVERDAMPED -- it
+has no peak at all -- while in N2 and N3 it is not.  so "f0 rises from wake to N2"
+is partly "a resonance appears", and the wake f0 it is being compared against is a
+corner frequency of a shape with no maximum.  the test still means something,
+because a form that could not produce a sigma resonance anywhere would fail it,
+but it is weaker than a clean peak-to-peak comparison and must not be quoted as
+one.
+
+TWO CHANNELS.  sleep-edfx cassette gives Fpz-Cz and Pz-Oz, and the psds are
+averaged across them.  spindles are maximal frontocentrally and alpha is maximal
+occipitally, so averaging the two derivations mixes the very topography that would
+separate the two rhythms.  a fitted f0 that sits between 10 and 13 Hz can be one
+generator at 11.5 Hz or two generators being averaged, and nothing here can tell
+those apart.  the model's own `prior_dominated` list says exactly this: "a
+two-channel montage constrains no map".
+
+DENSITY IS OUT OF REACH.  the `constrained` entry promises spindle "density,
+duration and frequency" and credits `mass`'s event annotations for it.  `mass` is
+not held.  a stage-averaged spectrum carries frequency and, through Q, something
+like bandwidth; it carries no information about how many discrete events produced
+it, so two thirds of that promise is untested here and one third of it is
+untestable with this source at all.
+
+INDEPENDENCE.  the degrees of freedom that set the likelihood's precision treat
+every 4 s window of a stage as independent.  windows minutes apart in the same
+night are not: sleep is non-stationary within a stage and spindle rate varies
+across the night.  the per-cell fits are therefore more confident than they should
+be.  the by-participant paired statistics are unaffected because they use one
+number per night.
+
+THE MULTIPLICATIVE FORM IS A COMMITMENT.  S = g f^-e |H|^2 says the loop shapes a
+broadband drive.  a spindle that is genuinely a transient burst on an otherwise
+unchanged background is better described by a sum, and the two forms are not
+nested, so a poor fit here is evidence against the product form and not directly
+evidence about f0 at all.  choosing the product was a reading of what
+`thalamocortical_coupling` claims, and a different reading would give different
+numbers.
+
+==============================================================================
+summary
+==============================================================================
+held-out (N2, unseen participants): PASS   delta +5503.2 nats/night, p 7.22e-11, wins 100%
+falsification_spindle_shift          PASS
+falsification_q_physiological        PASS
+falsification_rem_control            PASS
+
+written to out/repro/fit_sleep_resonance_repro.json
+104.6 s

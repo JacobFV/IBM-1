@@ -21,6 +21,14 @@ the length of the named trunk alone.**  for a delay the route is the right
 quantity, and this repo's numbers understate it by whatever the root and cord
 segment contribute.
 
+**caveat, 18 september 2026 (docs/LOG.md, scripts/audit_nerve_route_lengths.py).**
+"routing over an actual body mesh" overstates it.  the frame is right (metres,
+`bodyparts3d-display-m`; no 15.7% atlas error), but each length is `1.15 x` a
+straight line, or an authored polyline, from an endpoint to a hand-placed relay, and
+the spinal relays sit 89-337 mm BELOW the cord segments they stand for.  leg routes
+read 0.65-0.78x the Z-Anatomy nerve centrelines, and the splanchnics are 1.6-3.5x
+short.  treat every spinal-route delay from here as a schematic lower bound.
+
 *evidence flags on every record*.  `evidence_kind`, `geometry_kind:
 schematic_route`, `measured_axon_geometry: false`, and a `limitations` list
 saying the centrelines are inferred and not dissected.  `TRUNK_LENGTH_MM` is bare

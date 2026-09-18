@@ -51,12 +51,493 @@ pattern is worth more than any single row.
 | 28 | the 66 kinematically admissible tissue elements **replace the joint stops** — they hold the plant to 6.08 deg past its declared ranges with no `CoordinateLimitForce` at all, against 5.30 deg for the stated 30 N.m/rad stop and 17.43 deg bare, so the body's own ligaments do the job an engineering constant was standing in for | that was **one prone drop**. run from a higher drop the same 66 elements give **30.47 deg against a bare plant's 30.69** — no restraint at all — and from a rolled drop 18.50 against 30.27. the stops hold 5.30/6.62/5.96 across the three; the ligaments 6.08/30.47/18.50. what survives is weaker and true: the admissible set is **never worse** than bare where the unfiltered 105 are always worse, and **added to** the stops it improves every drop (5.96 -> 5.27 deg mean, same sign 3/3). the 6.08 was a lucky draw, in a rollout with no randomness in it at all | running the same arms from two more initial conditions, because a deterministic trajectory repeated proves nothing and a deterministic trajectory **varied** is the only thing that says an ordering belongs to the force set |
 | 29 | the sensorimotor materialization is **140x worse than persistence** and the sheet "is handed the answer at its input port and loses it before the readout" -- the transport finding in its starkest form | **the target was never normalised.** The deltas are ~1e-2 while a freshly initialised head emits O(1), so the model spent its budget learning to shrink by two orders of magnitude and never reached the shape. It reached a TRAIN loss of 9.1e-03 against a target whose zero baseline is 6.7e-04 -- **13x worse than emitting nothing, on data it had seen.** A model that cannot beat zero on its training set has not lost a signal in transit; it never fit the scale. With the target normalised, step 0 sits at 7.33e-04 against that 6.67e-04 zero baseline, which is where an untrained model belongs, instead of 4.4e+00 | checking whether the model beat the ZERO baseline, after a rank hypothesis failed. The target's effective rank is 3.1 and 99% of its variance is in 9 dimensions, against a sheet that transports 12.9 -- so rank was never the bottleneck either, and ruling that out is what exposed the scale |
 | 30 | the sheet is a **metric-destroying** transform -- it keeps only **12.4%** of each point's nearest neighbours against a random projection's 98%, so structure is destroyed while values survive, and that asymmetry is why the same substrate helps retrieval and hurts regression | **the retention metric normalised without centring.** The precentral readout carries a common mode **3,500x** its own per-sample spread -- mean magnitude 8.24 against a spread of 0.0024 -- so cosine similarity on the raw readout measures an offset every sample shares and ranks the residual noise. Centred, the same readout keeps **89.5%** of neighbours. Together with linear R^2 **0.9998** and a condition number the sheet *improves* by **435x** (1.95e+08 -> 4.48e+05), the sheet is close to an invertible, well-conditioned change of coordinates: it discards essentially nothing, and neither information loss nor ill-conditioning nor metric distortion explains the regression deficit | asking why a transform that reconstructs its input at R^2 0.9998 could possibly scramble neighbours, since near-invertibility and destroyed structure cannot both be true. **The identity control does not catch this** -- the input is already standardised, so centring is a no-op on it and the gate passes at 1.000 either way. A control only tests the path it exercises |
+| 31 | IHM's nerve route lengths are *measured* -- `ihm_bridge`: "`path_length_m` comes from routing over an actual body mesh"; ledger row 24 and `docs/EMBODIMENT.md` quote vagus 508 mm and greater splanchnic 168 mm as "IHM measured" | they are in the right frame (`bodyparts3d-display-m`, metres; no 15.7% error) and they are NOT routes over the mesh. each is `1.15 x` a straight line, or an authored three-point polyline, from an endpoint to a **relay IHM placed by hand -- and every spinal relay sits below the cord segment it stands for**: cervical 89 mm, thoracic 152 mm, lumbar 276 mm, sacral **337 mm** (under the pelvis, where no cord is). leg routes read **0.65-0.78x** the Z-Anatomy centrelines. IHM's own records say `geometry_kind: schematic_route`, `measured_axon_geometry: false` | a frame audit that came back clean, followed by the landmark test it recommends run on the AUTHORED coordinates rather than the meshes; the Z-Anatomy centrelines as the known answer (`scripts/audit_nerve_route_lengths.py`) |
 
 **the shape they share:** a quantity computed correctly and then compared against
 the wrong thing — the wrong population, the wrong units, the wrong split, the
 wrong baseline, or no baseline. Not one was a modelling error. Every one was
 caught by a measurement that could have been run first, and several by one I had
 already written.
+
+---
+
+
+## 2026-09-18 -- the script behind the programme's one held result had stopped running. Fixed, and it reproduces to the last digit.
+
+`scripts/fit_sleep_resonance.py` (STATE.md §3 row 1: the thalamo-cortical resonance at
+13.45 Hz) raised on every source. `ibm.forge.spectra.local_root` looked for
+`data/sources/<id>/raw/.location.yaml`, but commit 566b085 ("bring the corpora into the
+repo") moved every location file up to `data/sources/<id>/.location.yaml` when the bytes
+moved inside the repository. The eegmmidb resonance agent found it by trying to import the
+function. The fix reads the new place first, still honours the old one, and resolves a
+relative `local_root` against the repository rather than the cwd.
+
+**Reproduced, fresh, CPU** (`out/repro/fit_sleep_resonance_repro.json`, 104.6 s): posterior
+f0 **13.452124672867686 Hz**, held-out delta **+5503.181952005204** nats/night, p 7.22e-11,
+wins 100%, and all three falsification checks PASS. That is identical to the published
+`data/sources/sleep-edfx/evidence/fit_sleep_resonance@v1/posterior.json` to every printed
+digit. The headline is a function of its inputs (CLAUDE.md: call it twice at the same input),
+and it is runnable again.
+
+**The shape of the trap:** a result nobody re-runs can become unreproducible without
+anyone noticing. Nothing in the result changed; the path to it broke silently, three
+weeks before anyone tried it.
+
+---
+
+
+## 2026-09-18 -- DIAGNOSTIC: neither the connectome nor more gain coordinates the regions. At initialisation the long-range weights have no sign structure.
+
+*A diagnostic, following the one below. It does not re-score G3.* The same statistics at
+sigma = 0.12, with the long-range edges drawn from the HCP consensus connectome (as v1's
+`long_topology="tract"`, with conduction delays of 0-10 ms) against uniform random
+partners, at three row gains. `out/diag_substrate_noise_{random,tract}_0.12_GL*.json`.
+
+| wiring | G_L | joint transitions | per-region dwell | regions switching | pairwise corr | mean rate |
+|---|---|---|---|---|---|---|
+| random | 0.45 | 379 | 1.74 s | 40 | 0.22 | 14 Hz |
+| random | 0.90 | 1056 | 0.69 s | 50 | 0.26 | 48 Hz |
+| random | 1.50 | 1855 | 0.29 s | 39 | 0.39 | 77 Hz |
+| connectome | 0.45 | 315 | 2.19 s | 37 | **0.15** | 14 Hz |
+| connectome | 0.90 | 1126 | 0.71 s | 50 | 0.22 | 45 Hz |
+| connectome | 1.50 | 1902 | 0.28 s | 40 | 0.26 | 76 Hz |
+
+No row passes G3's thresholds. More gain buys a little coordination at the price of rates
+no resting cortex has (~77 Hz) and dwells that collapse toward the fast timescale. At equal
+gain the connectome is LESS coordinated than random wiring, so structural wiring alone does
+not bind the regions.
+
+**Why, from the model, not the table.** At initialisation the pair similarity is ~0 for
+every edge (`embed` ~ N(0, 0.02^2)), so `W+ = geo * 2 sigmoid(s sim)` ~ `W- = geo *
+2 sigmoid(-s sim)` ~ geo. Every long-range edge excites its partner's E population and
+drives its interneurons about equally, and the two cancel. A connectome says who is
+connected. An assembly needs the weights to carry a SIGN pattern (these regions support
+each other, those suppress each other), and that is exactly what the untrained kernel does
+not have. In a brain that structure is written by experience.
+
+**So the next lever is plasticity, not wiring.** Coordinated metastable states should be
+LEARNED: by a Hebbian rule on the pair similarity driven by structured input, or by task
+training (research step 2 will show whether the task gradient does it). That is DYNAMICS.md
+mechanisms 3/11/28, and it is a design decision for the programme, not a knob. G3 stays
+FAILED at declared priors. That is now understood as "the landscape of an untrained
+substrate is a product of metastable columns", not as a defect in the columns.
+
+---
+
+
+## 2026-09-18 -- DIAGNOSTIC after G3: each region IS metastable; they switch independently. The missing thing is coordination, not noise.
+
+*A diagnostic, run after G3 failed. It does not re-score G3.* `scripts/diag_substrate_noise.py`,
+30 s per noise level, `out/diag_substrate_noise*.json`.
+
+| noise sigma | 0.04 | 0.08 | 0.12 | 0.16 | 0.20 | 0.25 | 0.30 |
+|---|---|---|---|---|---|---|---|
+| joint transitions / 30 s | 0 | 0 | 379 | 701 | 1068 | 1648 | 2533 |
+| joint (68-region) median dwell | -- | -- | 30 ms | 25 ms | 15 ms | 10 ms | 10 ms |
+| mean rate | 2.7 Hz | 3.2 Hz | 14.3 Hz | 20.9 Hz | 25.1 Hz | 28.4 Hz | 30.8 Hz |
+| h >= 0.8 sites, time up | 0 | 0 | 27% | 38% | 45% | 49% | 52% |
+| h < 0.3 sites, time up | 0 | 0 | 0.005% | 0.1% | 0.6% | 1.7% | 3.2% |
+
+There is a sharp threshold between 0.08 (silent) and 0.12. Above it, activity follows the
+hierarchy strongly, with association cortex up far more than primary cortex. The noise at
+which that happens is also where the mean rate reaches ~14 Hz, which is high for resting
+cortex. That is one more reason the noise must be FIT rather than chosen.
+
+**No noise level passes G3's thresholds**, and the reason is measured, not guessed. At
+sigma 0.12 and 0.20, per region:
+
+| sigma | per-REGION median dwell | per-region p90 | regions switching | mean pairwise corr of region up-states |
+|---|---|---|---|---|
+| 0.12 | **1.74 s** | 4.36 s | 40 / 68 | 0.22 |
+| 0.20 | **0.92 s** | 1.52 s | 41 / 68 | 0.08 |
+
+Each region holds its state for around a second or more. That is quasi-multistability,
+present at the level of the region. But ~40 regions switch nearly INDEPENDENTLY, so the
+joint 68-region code changes whenever any one of them flips, and most joint states are
+never revisited (330 distinct among 379 transitions at 0.12). G3 asks for coordinated
+global states, and at initialisation v2 is a PRODUCT of metastable columns.
+
+That is what it should be, given what its long-range coupling is at initialisation: a
+random graph with pair similarities near zero, so W+ ~ W- ~ the geometric prior and every
+edge excites and feedforward-inhibits about equally. Nothing binds one region's up state
+to another's. **The lever for G3 is the long-range connectivity, not the noise.** Next:
+(a) wire the long-range edges from the HCP connectome that `ibm.cortical_tracts` already
+draws for v1, and (b) set the global coupling by a fit against resting-state functional
+connectivity. The coupling is a parameter to fit to data, as the noise is. Both under
+their own pre-registration.
+
+---
+
+
+## 2026-09-18 -- RESULT: v2 is bounded, multistable and heterogeneous, and does NOT itinerate at its declared noise. G3 FAILED.
+
+`scripts/gate_substrate_v2.py`, declared priors, no training, N = 1024, k = 32, CPU,
+`out/gate_substrate_v2.json`. Thresholds are the ones pre-registered below and have not moved.
+
+| gate | measured | verdict |
+|---|---|---|
+| G0 idempotence | one step and one noiseless rollout both `torch.equal` on repeat | **PASS** |
+| G1 bounded | 32 starts x 30 s, noise + 40 random pulses: E in [0.0005, 1.0000], I in [0.026, 0.961], x in [0.0014, 0.9997], a in [0, 0.709] (<= max g_a 0.90), all finite | **PASS** |
+| G2 invariant sets | **8** distinct asymptotic patterns from 32 starts; control (w_EE x 0.3) counts **exactly 1**, so the counter is live | **PASS** |
+| G3 metastability | **0 transitions in 60 s; no region ever above 0.5; one macrostate (all down)** | **FAIL** |
+| G4 heterogeneity | Spearman rho(tau_autocorr, h) = **+0.853**; permuted-h control +0.007 | **PASS** |
+| G5 memory, 1.0 s after offset | 8-way decode **99.4%** from E, CI [96.5, 99.9], chance 12.5% | **PASS** |
+
+**G3 FAILED, and what the failure is.** At the declared background noise (OU, stationary std
+0.04) the network sits in the all-down state for the whole minute. G2 shows the landscape
+has other invariant sets. Noise at this level never carries the state out of the down
+basin, so there is no itinerancy to measure. v2 is multistable in DYNAMICS.md §6.2's sense
+and is NOT quasi-multistable at its declared parameters. The gate is recorded as FAILED. It
+is not rerun at a different noise and relabelled a pass.
+
+**G5 passed, and the control says most of it is not the attractors.** The monostable arm
+(w_EE x 0.3, one invariant set per G2's control) decodes the same 8 patterns at **85.0%
+from E (CI [78.7, 89.7]) and 100% from the full state**. The pre-registration said that if
+the monostable arm also decoded, "the memory is carried by slow linear variables
+(adaptation, resource), not by the attractor landscape, and this entry says so". It is.
+The attractors add something to what is readable from the RATES (99.4 vs 85.0), but the
+whole state holds the pattern perfectly without them: 1 s is well inside tau_a and
+tau_rec. Two consequences for research step 2:
+1. A memory task only tests the landscape if its delay is long against the slow variables
+   (tau_a up to 1.2 s, tau_rec up to 0.8 s), or if it compares against a monostable arm.
+2. Any STATEFUL model will beat a stateless bypass on a memory task. Step 2 therefore
+   needs a matched-capacity generic recurrent baseline as well as the bypass, or it
+   cannot say the biophysical substrate is the contribution.
+
+**G4 passed, with a caveat on range.** The ordering is strong, but the timescales it ranks
+are the down state's noise-driven fluctuations: medians of 20 / 25 / 30 / 30 ms from the
+primary to the transmodal band. The hierarchy is expressed and compressed, far below the
+0.06 -> 2.08 s dwell gradient the isolated columns show when they are actually up. It will
+spread only in a regime where columns spend time up, which is G3's regime.
+
+**What happens next, and what does not.** The background noise is a parameter like any
+other, and DYNAMICS.md §6.2 already says theta "has to be FIT to land in" the interesting
+regions. A diagnostic sweep of the noise follows, labelled as a diagnostic. It asks one
+question: is itinerancy reachable at ALL by noise at these priors, or does it need other
+parameters to move? It does not re-score G3. Setting the noise for real is a fit against
+resting-state data under its own pre-registration.
+
+---
+
+
+## 2026-09-18 -- PRE-REGISTRATION: the v2 substrate's gates, fixed before it has been run as a network
+
+*Committed before `scripts/gate_substrate_v2.py` has produced a single network-level number.*
+
+**Why a v2.** The triad (below) closed with the v1 sheet contributing nothing trained,
+nothing untrained and nothing by its absence. Reading `CorticalDynamics` says the reason
+is architectural. Every forward calls `init_state` and runs 4 x 4 steps of 5 ms -- 80 ms
+from rest against its own 300 ms adaptation constant -- so it is a smooth filter of the
+current drive, with **no state carried between inputs**. A readout of the drive can do
+anything it does, and memory beyond an input window is impossible for it by construction.
+It is also **homogeneous** (one scalar per parameter for every site), its multistability
+lived in ~0.05% of a swept parameter cube (STATE.md), and its voltage was unbounded (the
+7.5e15 mV run). `ibm/substrate.py` is the replacement. v1 is untouched, and every
+checkpoint still loads into it.
+
+**What v2 is.** Per site: E and I rates, adaptation, Tsodyks-Markram synaptic resource and
+an OU background current. Every one is advanced by exponential Euler, so it is **bounded
+for any dt, parameters or input**. Parameters are **per site**, a declared function of a
+site's place on the sensory-association hierarchy (an ordinal DK table, marked for
+replacement by the Sydnor 2021 map, whose card has no bytes) times a tanh-bounded learned
+residual (+-35%), so training cannot flatten the landscape. Long-range edges carry an
+E-target and an I-target weight (feedforward inhibition), both >= 0 and pushed apart by
+one learned pair similarity. The state is **carried across windows**.
+
+**Measured before choosing the priors, on isolated columns** (kick up with 200 ms, release,
+no noise; four candidates tried, this one kept -- the first draft had NO bistable column
+anywhere, because depression drained every up state in ~0.1 s):
+
+| h | 0.00 | 0.25 | 0.50 | 0.60 | 0.75 | 0.80 | 0.90 |
+|---|---|---|---|---|---|---|---|
+| fast subsystem | mono | mono | bistable | bistable | bistable | bistable | bistable |
+| up-state dwell | -- | -- | 0.06 s | 0.24 s | 0.69 s | 0.94 s | 2.08 s |
+
+That is a monotone timescale hierarchy with every attractor eventually released. It is a
+property of single columns only. **Nothing below has been measured on a network yet.**
+
+**The gates**, on an N = 1024, k = 32 fsaverage sheet at the DECLARED priors (no training),
+CPU, dt = 1 ms, every draw from an explicit generator:
+
+* **G0 idempotence.** The same state, drive and noise draw stepped twice must give
+  `torch.equal` outputs, and so must a whole noiseless rollout. If G0 fails, nothing else
+  is read.
+* **G1 bounded.** 32 random starts x 30 s with noise and random input pulses. E, I, x must
+  stay in [0, 1], a in [0, max g_a], and everything finite. By construction this cannot
+  fail; it is measured once because "cannot" is exactly what gets measured here.
+* **G2 more than one invariant set (DYNAMICS.md §6.2).** Noise off, input off, 32 random
+  starts, 20 s to settle, then 3 s recorded. Each run's asymptotic signature is its
+  time-averaged E pattern. Invariant sets count as distinct when their patterns correlate
+  below 0.9 (a flat all-down pattern is its own set). **PASS: >= 2.** Known-answer
+  control: every w_EE scaled x 0.3 (monostable everywhere), which must count **exactly 1**.
+  If the control counts more, the counter is void.
+* **G3 metastability.** Noise on, no input, 60 s. The macrostate is the binarised pattern of
+  the 68 region means (up if > 0.5). **PASS needs all three:** >= 10 transitions; a median
+  dwell > 50 ms (5 tau_E, so states persist beyond the fast timescale); and >= 3 distinct
+  macrostates each revisited >= 2 times (a repertoire, not a walk through
+  never-repeated states).
+* **G4 heterogeneity is expressed.** Per-site autocorrelation time of E under noise, against
+  the declared h. **PASS: Spearman rho > 0.3.** Control: the same statistic against h
+  PERMUTED across sites (one permutation, drawn once), which must fall below 0.1.
+* **G5 memory beyond the input window** (the precursor to research step 2). 8 input
+  patterns (each a 200 ms pulse to a different set of 4 regions), then 1.0 s of no input,
+  20 noisy trials each. Decode the pattern from E at 1.0 s after offset with a
+  leave-one-trial-out nearest-centroid classifier. **PASS: accuracy with its 95% binomial
+  CI above chance (12.5%).** The bypass arm scores chance by construction: the input is
+  zero at readout time. **Reported beside it, not gated:** the same at w_EE x 0.3. If the
+  monostable control ALSO decodes, the memory is carried by slow linear variables
+  (adaptation, resource), not by the attractor landscape, and this entry says so.
+
+**Declared in advance.** Failing G2 while passing G3 is a coherent outcome, and a likely
+one: every column was built to release its up state, so with noise off the network may
+decay to a single quiet state. That would mean v2 is quasi-stable without being
+multistable in §6.2's sense, and it would be reported as that, not rescored. Thresholds do
+not move after the run. The instrument may be corrected if it is shown broken, and then
+the correction is recorded here.
+
+---
+
+
+## 2026-09-18 -- RESULT: occipital alpha HOLDS as a two-state contrast and beats a power law. Sensorimotor mu FAILS: the declared form cannot hold a small peak. A1, M2, M3 FAILED.
+
+`scripts/fit_eegmmidb_resonance.py`, one run, exactly as pre-registered below. Numbers:
+`out/fit_eegmmidb_resonance.json`; log: `logs/fit_eegmmidb_resonance.log`. CPU only, 6 s
+once the EDFs were read. 109 subjects; S088, S092 and S100 have 128 Hz task runs and leave
+mu only (by the pre-registered rule). Alpha: 65 train / 44 test. Mu: 63 / 43.
+
+**The instrument passed before anything was fitted.** K0: the vectorised likelihood equals
+`SpectralEvidence.log_likelihood` to 5e-14, and a synthetic cohort at f0 11.5 / q 3.0 comes
+back at 11.483 / 3.028. (The pre-registration says "a spectrum". It was implemented as one
+synthetic spectrum per train subject, each at that subject's own dof, because that is the regime the
+fit runs in. It was written that way before the first run, and it is recorded here because it differs
+from the wording.) Bookkeeping: `post_EC` is bit-identical on refit, and moves 1.2e-7
+relative under a shuffled train order. No fit landed on an edge of the exponent grid (0%, every
+model, every condition).
+
+**The known answers came back, so the fits are reportable.**
+* K1 Berger: EC > EO in **107 / 109** subjects (98%), sign p 1.8e-29, median EC/EO 8-13 Hz
+  power 3.16x. PASS.
+* K2 mu ERD: EXEC < REST in **94 / 106** (89%), sign p 6.2e-17, median EXEC/REST 0.73x.
+  PASS. (Imagery, not gated: 84 / 106, 79%, median 0.88x.)
+
+**The gates.** Held-out nats per test subject, paired on the same subjects, with a
+subject-bootstrap 95% CI. alpha = 0.00167 each.
+
+| gate | paired difference | 95% CI | p | wins | verdict |
+|---|---|---|---|---|---|
+| A1 EC: post_EC - prior | +59.1 | [-0.4, +115.1] | 0.057 | 59% of 44 | **FAILED** |
+| A2 EC: post_EC - aperiodic | +201.6 | [+138.0, +265.0] | 1.7e-7 | 82% | PASS |
+| A3 EC/EO contrast D | +200.4 | [+161.7, +239.7] | 1.2e-12 | 95% | PASS, control PASS |
+| M1 REST: post_REST - prior | +3857 | [+3274, +4407] | 1.7e-16 | 93% of 43 | PASS -- **vacuous, see below** |
+| M2 REST: post_REST - aperiodic | +16.5 | [-1.5, +35.4] | 0.088 | 44% | **FAILED** |
+| M3 REST/EXEC contrast D | +0.09 | [-0.08, +0.27] | 0.33 | 53% | **FAILED**, control FAILED |
+
+Fitted posteriors (prior 10.0 Hz / q 4.0): `post_EC` **9.79 Hz / q 1.44**; `post_EO`
+10.19 / q 0.51. Every mu posterior sits at **q = 0.200-0.205**: REST, REST_exec, EXEC,
+REST_imag, IMAG. That is the floor of the feasible box the sleep template set
+(`0.2 < q < 200`), and L-BFGS reports `post_REST_exec` as not converged against that wall.
+
+**Relabelling.** Alpha, 20 balanced EC/EO swaps within the train subjects: held-out mean D
+max |61.3|, median +5.0, against a true +200.4. The contrast vanishes, so the control PASSES.
+Mu: 20 within-subject permutations give max |0.15|, median -0.00, against a true +0.09. The
+control FAILS, trivially, because there was no contrast for it to remove.
+
+**Not gated, reported as registered.**
+* The untouched PRIOR already beats the power law on EC: +142.6 [+21.0, +265.6], p 0.027. So
+  most of A2's margin is "any resonance near 10 Hz with eyes closed", and fitting adds a
+  non-significant +59 (A1).
+* The empirical mean-shape baseline beats every resonance: EC by 82.1 [65.3, 98.7] (post wins
+  9%), EO by 11.4, mu REST by 114.2 [60.5, 172.4]. r2(log psd) on test EC is 0.14 for the
+  posterior against 0.48 for the mean shape. Two parameters of THIS form leave most of the
+  spectral shape unexplained.
+* EO: post vs prior +333 (p 1e-11), post vs aperiodic +16.9 (p 0.009); prior vs aperiodic
+  -316. The prior's q = 4 peak is badly wrong for eyes-open alpha.
+* Imagery contrast D +1.54 [+0.13, +2.97], p 0.039: nothing.
+* 0 of 7 fitted q exceed the declared pathological 10. They fail the other way.
+
+**What the alpha result is.** One declared resonator, fitted separately to the two states,
+tells which state an unseen person's posterior spectrum came from. It wins in 95% of 44 people,
+and the contrast disappears when the labels are scrambled. The eyes-closed resonance also
+beats a power law with no resonance. That is the tile's claim, "eyes open and eyes closed are one
+loop in two states", put where it could fail and holding. **The contrast is carried by q, as
+predicted, but with the same caveat as the sleep result's falsification 1: `post_EO` has
+q = 0.51, at the threshold (0.5) below which a second-order loop has no peak.** So "the
+state changes the resonance" is partly "a resonance appears". What did NOT hold is the
+prediction I wrote down for A1. Unlike the sleep case, the fitted (f0, q) does not beat the
+declared prior on unseen people: the location barely moves (9.79 Hz against 10.0), and people
+differ so much in how sharp their alpha is (sd of the per-subject difference ~200 nats) that
+one global q = 1.44 is not reliably better than q = 4.
+
+**Why mu fails, and it is the FORM, not the data.** The data carry the rhythm and its
+desynchronisation: K2 is 89% of subjects, and the Laplacian rest spectrum has a mean peak
+0.107 dex (1.28x) above a log-log line at 11.7 Hz, which halves (0.056 dex) during execution.
+The declared transfer cannot hold it. `alpha_resonance_transfer` is a LOW-pass with unit DC
+gain, so any peak it makes comes with an `(f0/f)^4` roll-off above it, and the profiled
+drive `f^-e` is a single power law that cannot bend back. A 3.7x eyes-closed alpha peak is
+worth paying that roll-off for. A 1.3x mu peak on a flat Laplacian background is not. A
+diagnostic grid (not a gate) over f0 7-14 Hz x q 0.21-12 with the same log posterior confirms
+this is the MAP and not an optimiser trap. At f0 = 11.67 Hz the summed log-likelihood falls
+monotonically from **61,353 at q = 0.2 to -185,890 at q = 4**, and the grid's best is again
+on the q floor. (The same grid agrees with the alpha fits to within 19 nats.) So M1's
++3857 nats is a peakless corner beating a misplaced q = 4 peak: **a pass against the prior,
+with the posterior on a box bound, is not evidence for the thing the prior describes.** M2 and
+M3 are the honest reading.
+
+**What follows.** The mu tile's claim is not supported by the declared model. The data
+contradict neither the rhythm nor its breaking, and the failure is the transfer function's shape.
+The candidate fix is a true band-pass resonance, or a sum form, `drive + peak`, which the sleep
+script's own closing note already flagged as the alternative. Either is a NEW declaration. It
+has to be pre-registered and scored on these same 43 test subjects against the same power law,
+and nothing here is rescored. Also noted, not fixed: `ibm.forge.spectra.local_root` reads
+`raw/.location.yaml`, but this source (and sleep-edfx) now keep it at
+`data/sources/<id>/.location.yaml`, so `local_root("eegmmidb")` raises. This script falls back to
+the card's `local_root` and prints that it did. `local_root("sleep-edfx")` raises the same
+`FileNotFoundError` (checked), so `fit_sleep_resonance.py`, the script behind STATE.md §3 row 1,
+does not run as it stands. Its docstring's "q x/ 6.0" is also stale (the registry says x/ 1.8).
+
+---
+
+
+## 2026-09-18 -- PRE-REGISTRATION: occipital alpha and sensorimotor mu, on eegmmidb, held out by subject
+
+*Written before `scripts/fit_eegmmidb_resonance.py` has computed a single spectrum. Looked
+at so far: EDF headers, channel names and annotation codes and durations. No psd.*
+
+**What this extends.** STATE.md §3 row 1: `fit_sleep_resonance.py` fitted the declared
+`alpha_resonator` to N2 spectra, split by subject, and scored the fitted posterior against
+the untouched prior on held-out people. This entry applies the same design to two more
+tiles on the site's resonance section, "Retino-Geniculo-Striate Alpha" and "Sensorimotor
+Mu", and adds three things the sleep run did not have: a no-resonance baseline, a
+pipeline known-answer gate and a relabelling control.
+
+**The declared prior, used as-is. I wrote none.** The registry has exactly one resonator,
+`thalamocortical_coupling:alpha_resonator` (`ibm/processes/neural.py`), with
+`f0_hz ~ Normal(10.0, 1.2)` Hz ("individual alpha peak frequency, 8-13 Hz") and
+`q ~ LogNormal(median 4.0, x/ 1.8)` ("q above ~10 would be a pathological loop"),
+`tying=PER_PARTITION`: one resonator per thalamic nucleus and cortical area. There is no
+mu-specific or visual-specific implementation. The site tiles are drawings, with no
+parameters behind them (`site/resonance.js`: `band: 10` and `band: 11` are animation rates). So
+both circuits are tested as two PARTITIONS of the same declaration: one instance for the
+occipital montage and one for the sensorimotor montage. Each instance is collapsed to a single
+value within its montage, exactly as the sleep script did, and `gain` is dropped because it is
+degenerate with the profiled scale. (The sleep script's docstring says `q` is "x/ 6.0". The
+registry says x/ 1.8, and the registry is what is tested.)
+
+**The model**, as in the sleep template: `S(f) = g f^-e |H(f; f0, q)|^2`, where `H` is the
+registry's own `alpha_resonance_transfer`. `g` is profiled in closed form by the exact gamma
+likelihood (`SpectralEvidence.log_likelihood`), and `e` is profiled over a grid. **One
+deliberate change from the template:** the grid is `linspace(-6, 5, 111)`, not `[-1, 5]`.
+`H` is a LOW-pass resonance with unit DC gain, so `|H|^2` falls as `(f0/f)^4` above the
+peak. With `e >= -1` the resonant model is forced to fall at least as `f^-3` above its peak,
+and the comparison with the no-resonance baseline would be decided by where the grid
+happened to end. The same grid serves every model, and the script reports how often each
+model lands on a grid edge.
+
+**Band: 4-20 Hz for both circuits.** It contains the whole 8-13 Hz band plus at least 4 Hz
+of flank on each side, so the aperiodic baseline has background to fit on both sides of the
+peak and neither model is decided by the band edges. The floor sits at the theta boundary,
+well above the detrended bins and the EO ocular delta. The ceiling is the sleep template's,
+below the beta/EMG rise that the card warns 160 Hz sampling aliases. Mu's ~20 Hz harmonic
+sits at the edge and is not modelled. That is a known misfit, shared by every model.
+
+**Data** (`data/sources/eegmmidb`, the card's `local_root`, 109 subjects x 14 runs, all
+present):
+* *Alpha:* R02 (eyes closed) and R01 (eyes open), the 11 parieto-occipital channels
+  `fit_neural_spectra.py` uses (P3 P1 Pz P2 P4 PO3 POz PO4 O1 Oz O2), with psds averaged
+  across channels. `evidence_from_signal`: 4 s Hann windows, non-overlapping, 0.25 Hz bins,
+  and the template's artefact rule (MAD 6).
+* *Mu:* runs R03-R14. A small Laplacian `C3 - mean(FC3, C5, C1, CP3)` and the same around
+  C4, with psds averaged over the two. The Laplacian is there because under a common
+  reference posterior alpha volume-conducts to C3/C4, and a plain C3 would partly re-measure
+  the alpha circuit (Hjorth 1975; McFarland et al. 1997). Each annotated segment of at least
+  3.5 s gives ONE 3.0 s window, `[onset + 0.5, onset + 3.5]` (1/3 Hz bins), identical for rest
+  and task. The 0.5 s skip excludes the cue response and the first half-second after a
+  movement ends. Segments shorter than 3.5 s (456 T0 segments of 1.4 s) are dropped.
+  Artefact rejection is computed ONCE per subject over all of its windows pooled across labels,
+  so that relabelling cannot interact with which windows survive. Conditions: `REST` = T0
+  of all 12 runs; `REST_exec` / `EXEC` = T0 / T1 or T2 of the executed runs (R03 05 07 09 11
+  13); `REST_imag` / `IMAG` = the same for the imagery runs (R04 06 08 10 12 14).
+
+**Split: by SUBJECT, fixed here.** The IDs S001..S109, sorted, are shuffled with
+`np.random.default_rng(0)`; the first round(0.6 x 109) = 65 train and the remaining **44
+test**:
+`S001 S008 S013 S015 S027 S030 S032 S033 S034 S039 S041 S042 S046 S047 S048 S049 S050
+S052 S055 S057 S059 S060 S061 S062 S063 S064 S070 S074 S077 S078 S079 S080 S087 S093
+S096 S097 S098 S099 S100 S102 S105 S106 S108 S109`.
+Exclusions are applied after the split, by rule and independent of any outcome. A subject
+leaves a circuit if any run that circuit uses is not sampled at 160 Hz (the headers already
+show S088, S092 and S100 at 128 Hz; S100 is a test subject), if a required channel is missing,
+or if fewer than 5 windows survive in any condition the circuit uses. Every exclusion is
+printed.
+
+**Fits.** MAP through `ibm.forge.fit.fit_map` with the declared prior, on the train subjects
+only, one (f0, q) per condition: `post_EC`, `post_EO`, `post_REST`, `post_REST_exec`,
+`post_EXEC`, `post_REST_imag`, `post_IMAG`.
+
+**The six primary gates.** alpha = 0.01 / 6 = **0.00167 each** (Bonferroni over the six).
+The score is the held-out log-likelihood in nats per test subject, compared PAIRED on the same
+subjects. Pairing is what makes the baseline's own sampling error cancel rather than be ignored.
+A gate PASSES only if all four hold: the mean paired difference is > 0; the paired t-test gives
+p < 0.00167; a bootstrap over test SUBJECTS (10,000 resamples, seeded) has a
+(1 - 0.00167) CI that excludes 0; and the win rate is > 50%. The 95% CI is reported beside it.
+* **A1** test EC: `post_EC` vs the untouched prior.
+* **A2** test EC: `post_EC` vs the **aperiodic-only baseline** `g f^-e`, which uses the same
+  grid and profile and has no resonance.
+* **A3** the EC/EO contrast: per test subject,
+  `D = [ll(EC | post_EC) - ll(EC | post_EO)] + [ll(EO | post_EO) - ll(EO | post_EC)]`.
+  A contrast the model can really express makes each state's posterior better on its own state.
+* **M1** test REST: `post_REST` vs the prior.
+* **M2** test REST: `post_REST` vs the aperiodic baseline.
+* **M3** the rest/movement contrast `D`, as in A3, with `REST_exec` / `EXEC`.
+
+**Relabelling controls. A3 and M3 are FAILED if these fail, whatever their own statistic.**
+K = 20 draws, each from its own generator (`default_rng(1000 + k)`), drawn once, outside the
+fit and passed in.
+* Alpha: in each draw exactly floor(n_train / 2) train subjects have their EC and EO labels
+  swapped. Both posteriors are refitted, and D is scored on test with TRUE labels. A balanced
+  swap makes both relabelled training sets a 50/50 mixture, so the expected D is exactly zero.
+* Mu: within each train subject, the REST_exec / EXEC labels are permuted across that
+  subject's executed-run windows, with counts preserved. Refit, then score D on test with true
+  labels.
+* PASS if the true mean D exceeds the largest |mean D| of all 20 draws, AND
+  |median over draws of mean D| <= 0.1 x the true mean D.
+
+**Known-answer gates, run on ALL included subjects before any fit, from the same evidence
+objects the fit consumes.**
+* **K0 synthetic recovery.** A spectrum drawn from the model at f0 = 11.5 Hz, q = 3, e = 1.5
+  with gamma noise at a real recording's dof. The fit must return f0 within 0.2 Hz and q within
+  20%. The vectorised profile likelihood must equal `SpectralEvidence.log_likelihood` at the
+  same inputs to 1e-9 relative. If either fails, nothing is fitted.
+* **K1 Berger.** Per subject, mean posterior-channel psd over 8-13 Hz, EC > EO. PASS: >= 75% of
+  subjects and a two-sided sign test p < 1e-3. **If K1 fails, no result from EITHER circuit
+  is reported**, because the pipeline is shared.
+* **K2 mu ERD.** Per subject, mean Laplacian psd over 8-13 Hz, EXEC < REST_exec. PASS: >= 70%
+  and a sign test p < 1e-3. If K2 fails, no mu result is reported.
+* **Bookkeeping (CLAUDE.md "call it twice").** `post_EC` fitted twice on the same input must be
+  identical, and fitted with the train-subject ORDER shuffled must agree to 1e-6 relative. If
+  not, the run is void.
+
+**Reported, NOT gated:** `post_EO` vs the prior and vs aperiodic on test EO; the untouched
+PRIOR vs aperiodic (does the declaration beat a power law before any fitting?); the imagery
+contrast (IMAG / REST_imag); the fitted (f0, q) per condition, and how each state change is
+expressed (with `g` profiled, only `q` and `f0` can carry an amplitude change); the fraction of
+fitted q above the declared pathological 10; grid-edge hits; and an **empirical mean-shape
+baseline** (the train subjects' mean normalised log-psd, with `g` and `e` profiled the same
+way), which is a strong non-parametric reference that measures what two parameters leave out.
+
+**Disclosed: this is not a first look at the EC data.** `fit_neural_spectra.py` (the first 50
+subjects, the `neural_population` prior, alpha at 9.75 Hz) and `forge_joint.py` (60
+subjects, `alpha_resonator.f0_hz` fitted on eegmmidb alone = **10.44 Hz**) both used R02 on
+these channels, and those subjects fall on both sides of this split. So A1 is not blind as
+to location. It is still a held-out test of whether the fitted (f0, q) generalise across
+people. The mu montage and the task runs have not been fitted before in this repo (the only
+other eegmmidb user, `measure_bendr_error_correlation.py`, asks a different question).
+
+**My predictions, written now:** K1 and K2 pass; A1 and A2 pass; A3 passes, carried by `q`
+rising with eyes closed. M1 and M3 are uncertain; M2 is the one most likely to fail, because
+a Laplacian mu peak at rest is modest against its background and the low-pass form's
+`f^-4` roll-off may cost more than the peak buys. Thresholds do not move after the run. A
+failed gate is recorded as FAILED.
 
 ---
 
@@ -5087,3 +5568,135 @@ covering 3.5 cm.
 - Afferent runs up in the site's input colour and the cortex brightens on arrival; the
   efferent answer runs back down in the output colour.
 - The payload is 3.35 MB.
+
+## 18 September 2026 — AUDIT: no nerve route length is in the wrong frame. The relays are in the wrong place
+
+**The question.** Yesterday's withdrawal found IHM-1's two body atlases in different frames:
+the Z-Anatomy display export in a normalised ±1 box, the BodyParts3D canonical body in metres,
+15.7% apart. Every conduction delay here is `path_length_m / velocity`, read from IHM's
+`peripheral.json` (`ihm_bridge.routes`, `interoception.visceral_routes`) or `dermatomes.json`
+(`dermatome.patches`). If any of those lengths came from the normalised atlas, every delay on it
+is off by a uniform 1.157x. `scripts/audit_nerve_route_lengths.py` checks this, CPU only, and
+writes `out/nerve_route_audit.json`.
+
+**The frame is clean.** Five pieces of evidence:
+- `peripheral.json`, `dermatomes.json` and `anatomy.json` all declare `bodyparts3d-display-m`:
+  metres, BodyParts3D millimetres × 0.001.
+- All three IHM builders (`build_body_peripheral.py`, `enrich_peripheral_routes.py`,
+  `build_dermatome_patches.py`) read positions only from `canonical/anatomy.json`, from
+  authored coordinates, or from the skin mesh FJ2810. None of them reads the extended
+  manifest.
+- The frame passes a test on anatomy of known size. The skin is **1,719 mm** tall; a ±1 box
+  would read about 1,990. The femur is 467 mm, the tibia 380, the humerus 310 and the radius
+  238, all adult-sized.
+- Four route endpoints are Z-Anatomy entities. They entered `anatomy.json` through
+  `build_canonical_anatomy.py`'s landmark registration: 99 shared bones, affine plus
+  thin-plate spline, held-out RMS **4.7 mm**. That starts from the blend's world coordinates,
+  not the normalised display box, so those endpoints are in metres too.
+- A re-implementation of IHM's length method reproduces **146/146** declared nerve lengths,
+  worst error 5.6e-17 m. The instrument check comes before anything else it says is believed.
+
+The frame bug is also absent from the numbers. A frame error would show one common factor,
+about 0.865, everywhere. Two tests find none:
+- Route endpoint against the Z-Anatomy centreline that serves it: IHM/Z reads 0.74, 0.78, 0.76,
+  0.65, 0.93 and 1.13 over tibial, deep fibular, superficial fibular, femoral, median and radial.
+- Authored coordinate against the structure it names: the knee endpoint is **6 mm** from the
+  patella and the palm patch 7 mm from the capitate. Everything near the trunk is low (below).
+
+**What the known-answer check found instead.** Every spinal relay sits below the cord segment
+it stands for. The relays are authored at `[±0.012, y, −0.04]` in `build_body_peripheral.py`
+as `regional_group_prior`, and every route ends at one:
+
+| relay | authored y | cord segment it stands for | y there | off by |
+|---|---|---|---|---|
+| cranial / solitary | 0.650 / 0.655 | medulla | 0.698 | −48 / −43 mm |
+| cervical | 0.530 | C5–T1 segments, at the C5 vertebra | 0.619 | −89 mm |
+| thoracic | 0.300 | mid-thoracic segments, at T6 | 0.452 | −152 mm |
+| lumbar | 0.040 | L segments, at T11 | 0.316 | **−276 mm** |
+| sacral | −0.080 | S segments, at the conus (L1) | 0.257 | **−337 mm** |
+
+The sacral relay is below the pelvis, where there is no cord. Every lumbosacral route is
+therefore short. The vagus endpoint, authored as "representative gastric wall", sits 132 mm
+below the stomach's centroid and 73 mm below its lowest vertex.
+
+**Known answers, same scope.** Z-Anatomy centrelines carried to metres as the site exporter
+carries them; the net blend-to-metres scale is 0.992, against the canonical affine's
+0.98/1.005/0.96.
+
+| route | literature | Z-Anatomy centreline | IHM now | IHM's own method, relays on the cord |
+|---|---|---|---|---|
+| sciatic–tibial, conus → sole | "can exceed one metre" (the longest human axons) | **1,207 mm** | medial plantar **879** (0.73x) | 1,262 |
+| median, axilla → wrist | no clean published figure; humerus + radius here 536 mm | 531 mm | median 610 (pronator quadratus → relay; Z same scope 660, 0.92x) | 698 |
+| vagus, brainstem → stomach | no total length found in open literature | 415 (first stomach contact) – 593 (lowest) mm | **508** | 551 |
+| phrenic, root → diaphragm | right 246 ± 17 / left 306 ± 18 mm ([1]); right 300 / left 330 mm ([2]) | not in the atlas | 335 | 418 |
+
+[1] https://pubmed.ncbi.nlm.nih.gov/21993978/ &nbsp; [2] https://pmc.ncbi.nlm.nih.gov/articles/PMC6753454/
+
+Three rows need a reading, not just a number.
+- **Phrenic.** Its agreement with the literature is **two errors cancelling**. The relay is
+  89 mm too low and the endpoint 72 mm too low, below the diaphragm's centroid. The
+  straight-line bound from C4 to the left dome is 245 mm. A number that agrees with
+  literature is not thereby measured.
+- **Vagus.** The only visceral route in the anatomically right range. Its relay (the medulla)
+  is nearly in place, and its too-low endpoint is compensated by the straight chord.
+- **Relays on the cord.** Keep IHM's own method (`1.15 x` the straight line) but put the
+  relays on their cord segments, and it reproduces the Z centrelines to within 5–9% (1,262
+  against 1,207; 698 against 660). So the `1.15` is fine. **The relays are the error.**
+
+**Per route, moving only the relays** (left side; the full list is in the JSON): routes change
+by **x0.53 to x3.49**, median x1.27.
+- Legs x1.4–2.9: tibial 649 → 1,032, medial plantar 879 → 1,262, femoral 333 → 647,
+  sciatic_tibial 201 → 583.
+- Arms x1.1–1.45.
+- Splanchnics x1.6–3.5: greater 168 → 314, lesser 217 → 367, least 232 → 380, pelvic
+  128 → 446.
+- Vagus x1.08.
+- Cranial motor routes x0.5–0.9, because the cranial relay sits at the medulla and not at
+  each nucleus.
+- The special senses do not move (x1.00), because their relays are separate.
+
+The 1,326 dermatome patches use the same five relays through a waypoint, so they inherit the
+same bias.
+
+**Not fixed, deliberately.** The brief was to fix a frame error, and there is none. Moving
+the relays is a design decision about what a "relay" is in IHM's contract. It would change
+all 146 routes, all 1,326 patches, the stature-scaling gate's recomputation and every
+downstream delay at once, so it belongs to the body's owner. Recorded in IHM-1's
+`docs/BODY_PERIPHERAL.md` with the numbers. Stated plainly: **the delays in use are schematic
+lower bounds for spinal routes, and for the lumbosacral and splanchnic ones they are short by
+a factor of 1.4–3.5.**
+
+**IBM-1 results that used these delays, and my read on each. Nothing re-run.**
+- **Interoception, 9 September (8k and 30k): drop arms.** "Vagal C carries two thirds of the
+  signal", "each splanchnic group is within noise", "all C fibres cost −0.42". A drop removes
+  what a group carries, not when it arrives. **Unchanged in kind.** Only the intact
+  reference's input timing moves, so re-running with corrected delays should give the same
+  ordering.
+- **Interoception, `cortex_lumped_delays` against trained (30k): the one to re-check if
+  anything.** Retrained, the state term moved −0.010 (inside noise) and the trajectory term
+  −7.97 (outside it). The intact arm's splanchnic C channels would arrive at 314–446 ms, not
+  128–232. The quoted *spread*, "9.2 → 507.8 ms", becomes about 10 → 551 ms, but most of the
+  mass moves later. "Timing is not load-bearing for state" plausibly survives. The *size* of
+  the trajectory cost is an open question.
+- **"The stomach reports twice, half a second apart"** (`docs/EMBODIMENT.md`). Vagal A-beta at
+  9 ms against greater splanchnic C at 168 ms becomes 10 against about 314 ms. **The claim
+  survives, with a wider gap.** Vagus C stays the slowest group: 551 against 446 for pelvic
+  splanchnic C.
+- **Optic and cochlear terms** (`pretrain_video_loop`, `train_curriculum` `optic_nerve`,
+  `cochlear_nerve`): 65.7 and 25 mm, special-sense relays, **unaffected**.
+- **Somatic ports** (`ibm/embodiment.py` `motor_ports` / `plant_ports`, through
+  `trunk_length_mm`): leg delays short by 1.4–2.9x. **No reported IBM result rests on them.**
+  `body_stance` carries no conduction delay, and the proprioceptive-motor runs do not read
+  them.
+- **Stature scaling** (`docs/MILESTONES.md`, "vagal C 507.84 → 573.60 ms at 2.03 m"). A
+  separate seam in the same family. IHM scales route lengths by `stature / 1.7973 m`, the
+  *mechanical* body's height. The lengths were measured on the *anatomical* body, whose skin
+  is 1.7195 m. A "2.03 m" variant therefore carries the nerves of a 1.942 m body, 4.5% short.
+  IHM declares the two statures in `ihm/body_parameters.py` (`STATURE_DISAGREEMENT`), but the
+  nerve scaling does not cite it.
+
+**The lesson is the phrenic row.** The frame audit passed. The limb landmark tests passed: the
+knee is 6 mm off. One literature comparison even matched to 2%. None of them looked at where
+the route **ends**. A length in the right units between the wrong two points is still wrong,
+and a frame check cannot see it, because both points are in the frame. The check that caught
+it put each authored endpoint beside the structure its own label names.

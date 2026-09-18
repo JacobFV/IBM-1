@@ -85,12 +85,14 @@ verified by running, not by inspection:
 
 ## 3. what measurement has overturned
 
-ten declared claims have been put where they could fail. six did. this is the
+twelve declared claims have been put where they could fail. seven did. this is the
 system working, and the list is the most valuable thing in this document.
 
 | claim | outcome |
 |---|---|
 | the thalamocortical resonance is alpha (10 Hz prior) | **13.45 Hz** — a spindle. held-out +5503 nats/night, p 7.2e-11, 100% of unseen participants |
+| occipital alpha is one declared resonator in two states, eyes closed / open (eegmmidb) | **holds as a contrast** — EC and EO fits tell an unseen person's state, +200 nats/subject [95% CI 162, 240], p 1.2e-12, 95% of 44; gone under 20 relabellings (max 61, median +5). EC beats a no-resonance power law, +202 [138, 265], p 1.7e-7. but the fit does **not** beat the untouched prior (+59, p 0.057), and q is 1.44 / 0.51 (EO at the no-peak edge), not 4 |
+| sensorimotor mu is the same resonator, desynchronised by movement (eegmmidb, C3/C4 Laplacian) | **fails** — every fit drives q to the 0.2 floor (no peak); no better than a power law (+16.5, p 0.088, 44% of 43); rest/movement contrast +0.09 nats, p 0.33. the data carry both: band power 0.73× in movement, 89% of subjects. the low-pass form's (f0/f)⁴ roll-off costs more than a 1.3× peak buys |
 | the neurovascular chain predicts BOLD | **fails**, r = −0.11, permutation p 0.38 |
 | Grubb's law holds | **fails**, slope 0.066 against a declared 0.38 (−5.2 prior sd) |
 | MEG resolves finer source structure than EEG | **fails** per channel: 49.8% vs 63.0%, p 0.0033, MEG higher in 12% of 16 |

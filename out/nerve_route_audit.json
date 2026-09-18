@@ -1,0 +1,517 @@
+{
+ "frame": {
+  "peripheral.json": "bodyparts3d-display-m",
+  "dermatomes.json": "bodyparts3d-display-m",
+  "anatomy.json": "bodyparts3d-display-m",
+  "skin_height_m": 1.7194712,
+  "left femur": 0.4674993155741612,
+  "left tibia": 0.37989831402857666,
+  "left humerus": 0.30950187182781447,
+  "left radius": 0.2376035960816782
+ },
+ "instrument": {
+  "reproduced": true,
+  "n": 146,
+  "worst_abs_m": 5.551115123125783e-17
+ },
+ "landmarks": [
+  {
+   "route": "tibial",
+   "endpoint": "left tibialis posterior",
+   "gap_m": 0.04766529915184631,
+   "ihm_m": 0.6494694137420587,
+   "z_endpoint_to_root_m": 0.876285726405455,
+   "ihm_on_cord_m": 1.0322022550910037,
+   "ratio_ihm_over_z": 0.7411616943781542
+  },
+  {
+   "route": "deep_fibular",
+   "endpoint": "left tendon sheath of extensor digitorum longus",
+   "gap_m": 0.017233491897838807,
+   "ihm_m": 0.7901364954981395,
+   "z_endpoint_to_root_m": 1.0190368886407275,
+   "ihm_on_cord_m": 1.1725494242310341,
+   "ratio_ihm_over_z": 0.7753757536217226
+  },
+  {
+   "route": "superficial_fibular",
+   "endpoint": "left fibularis brevis",
+   "gap_m": 0.009955623555684485,
+   "ihm_m": 0.743432630702965,
+   "z_endpoint_to_root_m": 0.9733915550971891,
+   "ihm_on_cord_m": 1.1258883229335317,
+   "ratio_ihm_over_z": 0.7637549625430399
+  },
+  {
+   "route": "femoral",
+   "endpoint": "left vastus intermedius",
+   "gap_m": 0.055409378041559924,
+   "ihm_m": 0.33324647521129114,
+   "z_endpoint_to_root_m": 0.5151725582092614,
+   "ihm_on_cord_m": 0.6466916987696685,
+   "ratio_ihm_over_z": 0.6468637933077318
+  },
+  {
+   "route": "median",
+   "endpoint": "left pronator quadratus",
+   "gap_m": 0.008960651655990191,
+   "ihm_m": 0.6100308203407737,
+   "z_endpoint_to_root_m": 0.6597256238075923,
+   "ihm_on_cord_m": 0.6981381787022447,
+   "ratio_ihm_over_z": 0.9246735283980543
+  },
+  {
+   "route": "radial",
+   "endpoint": "left ulnar head of extensor carpi ulnaris",
+   "gap_m": 0.12684059625538605,
+   "ihm_m": 0.561576865810419,
+   "z_endpoint_to_root_m": 0.4978037717281393,
+   "ihm_on_cord_m": 0.6511052345037208,
+   "ratio_ihm_over_z": 1.1281089009448235
+  }
+ ],
+ "authored": [
+  {
+   "what": "solitary relay | medulla",
+   "authored_y": 0.655,
+   "anatomy_y": 0.6983805999999999
+  },
+  {
+   "what": "cranial relay | medulla",
+   "authored_y": 0.65,
+   "anatomy_y": 0.6983805999999999
+  },
+  {
+   "what": "cervical relay | C5 vertebra",
+   "authored_y": 0.53,
+   "anatomy_y": 0.6191205999999999
+  },
+  {
+   "what": "thoracic relay | T6 vertebra",
+   "authored_y": 0.3,
+   "anatomy_y": 0.45247059999999995
+  },
+  {
+   "what": "lumbar relay | T11 vertebra (L cord)",
+   "authored_y": 0.04,
+   "anatomy_y": 0.3157355999999999
+  },
+  {
+   "what": "sacral relay | L1 vertebra (conus)",
+   "authored_y": -0.08,
+   "anatomy_y": 0.2568305999999999
+  },
+  {
+   "what": "vagus endpoint | stomach centroid",
+   "authored_y": 0.18,
+   "anatomy_y": 0.31162560000000006
+  },
+  {
+   "what": "phrenic endpoint | diaphragm centroid",
+   "authored_y": 0.23,
+   "anatomy_y": 0.30245659999999985
+  },
+  {
+   "what": "lateral knee endpoint | patella",
+   "authored_y": -0.4,
+   "anatomy_y": -0.40562940000000014
+  }
+ ],
+ "known_answers": [
+  {
+   "route": "sciatic-tibial, conus -> sole",
+   "literature": "~1.0 m or more ('can exceed one metre')",
+   "z_anatomy_mm": "1207",
+   "ihm_mm": "medial_plantar 879",
+   "ihm_relays_on_cord_mm": "1262"
+  },
+  {
+   "route": "median, axilla -> wrist",
+   "literature": "no single published figure found; skeleton humerus+radius ~ 0.54 m",
+   "z_anatomy_mm": "531",
+   "ihm_mm": "median 610 (pronator quadratus -> relay)",
+   "ihm_relays_on_cord_mm": "698"
+  },
+  {
+   "route": "vagus, brainstem -> stomach",
+   "literature": "no total length found in open literature",
+   "z_anatomy_mm": "415 (first stomach contact) - 593 (lowest)",
+   "ihm_mm": "vagus 508",
+   "ihm_relays_on_cord_mm": "551"
+  },
+  {
+   "route": "phrenic, root -> diaphragm",
+   "literature": "right 246 +-17 / left 306 +-18 mm; right 300 / left 330 mm",
+   "z_anatomy_mm": "not in the atlas",
+   "ihm_mm": "phrenic 335",
+   "ihm_relays_on_cord_mm": "418"
+  }
+ ],
+ "relays_on_cord": [
+  {
+   "route": "-accessory",
+   "ihm_m": 0.1368309656701978,
+   "on_cord_m": 0.07224495379525746
+  },
+  {
+   "route": "-great_auricular",
+   "ihm_m": 0.1871383046283955,
+   "on_cord_m": 0.10278061246071737
+  },
+  {
+   "route": "-lesser_occipital",
+   "ihm_m": 0.2213907960581371,
+   "on_cord_m": 0.14541013584865656
+  },
+  {
+   "route": "-oculomotor",
+   "ihm_m": 0.14178128532378667,
+   "on_cord_m": 0.09963174549561357
+  },
+  {
+   "route": "-trochlear",
+   "ihm_m": 0.1436279980329832,
+   "on_cord_m": 0.102145426981073
+  },
+  {
+   "route": "-abducens",
+   "ihm_m": 0.14538648089049266,
+   "on_cord_m": 0.10895956848509707
+  },
+  {
+   "route": "-trigeminal",
+   "ihm_m": 0.1424254630475393,
+   "on_cord_m": 0.11953278408567959
+  },
+  {
+   "route": "-transverse_cervical",
+   "ihm_m": 0.12207443861113386,
+   "on_cord_m": 0.10670285890614145
+  },
+  {
+   "route": "-ansa_cervicalis",
+   "ihm_m": 0.11431338250816031,
+   "on_cord_m": 0.10030587804597915
+  },
+  {
+   "route": "-cervical_plexus",
+   "ihm_m": 0.09508203932499365,
+   "on_cord_m": 0.08599258573300564
+  },
+  {
+   "route": "-facial",
+   "ihm_m": 0.05886568016766851,
+   "on_cord_m": 0.053454342111003174
+  },
+  {
+   "route": "-optic",
+   "ihm_m": 0.06568104749469211,
+   "on_cord_m": 0.0656810474946921
+  },
+  {
+   "route": "-cochlear",
+   "ihm_m": 0.025377155080899043,
+   "on_cord_m": 0.025377155080899043
+  },
+  {
+   "route": "-vestibular",
+   "ihm_m": 0.026981475126464087,
+   "on_cord_m": 0.026981475126464087
+  },
+  {
+   "route": "-olfactory",
+   "ihm_m": 0.011180339887498959,
+   "on_cord_m": 0.011180339887498959
+  },
+  {
+   "route": "-superior_gluteal",
+   "ihm_m": 0.21606135135673837,
+   "on_cord_m": 0.2247831273287654
+  },
+  {
+   "route": "-dorsal_ramus",
+   "ihm_m": 0.11660022573334675,
+   "on_cord_m": 0.12296720486567984
+  },
+  {
+   "route": "-hypoglossal",
+   "ihm_m": 0.09285668434109103,
+   "on_cord_m": 0.0980057472404601
+  },
+  {
+   "route": "-vagus",
+   "ihm_m": 0.5078437245604032,
+   "on_cord_m": 0.5505690370838886
+  },
+  {
+   "route": "-palmar_digital",
+   "ihm_m": 0.7070434448545985,
+   "on_cord_m": 0.7840060449493774
+  },
+  {
+   "route": "-dorsal_digital",
+   "ihm_m": 0.7040917097554148,
+   "on_cord_m": 0.7825072166652882
+  },
+  {
+   "route": "-superficial_radial",
+   "ihm_m": 0.6370155991434046,
+   "on_cord_m": 0.7142733711867306
+  },
+  {
+   "route": "-ulnar",
+   "ihm_m": 0.6998484053532267,
+   "on_cord_m": 0.7874277087439547
+  },
+  {
+   "route": "-glossopharyngeal",
+   "ihm_m": 0.11076472678623424,
+   "on_cord_m": 0.1265194956279339
+  },
+  {
+   "route": "-median",
+   "ihm_m": 0.6100308203407737,
+   "on_cord_m": 0.6981381787022447
+  },
+  {
+   "route": "-anterior_interosseous",
+   "ihm_m": 0.49831904065219396,
+   "on_cord_m": 0.571828226556879
+  },
+  {
+   "route": "-posterior_interosseous",
+   "ihm_m": 0.48603929962395154,
+   "on_cord_m": 0.5616563875753762
+  },
+  {
+   "route": "-radial",
+   "ihm_m": 0.561576865810419,
+   "on_cord_m": 0.6511052345037208
+  },
+  {
+   "route": "-medial_cutaneous_forearm",
+   "ihm_m": 0.45765102117881673,
+   "on_cord_m": 0.5319435881127966
+  },
+  {
+   "route": "-supraclavicular",
+   "ihm_m": 0.15006555615733705,
+   "on_cord_m": 0.17913285546167654
+  },
+  {
+   "route": "-lateral_pectoral",
+   "ihm_m": 0.21401075237738276,
+   "on_cord_m": 0.25897432757776356
+  },
+  {
+   "route": "-phrenic",
+   "ihm_m": 0.3347572330035594,
+   "on_cord_m": 0.41759355744159843
+  },
+  {
+   "route": "-medial_cutaneous_arm",
+   "ihm_m": 0.2417755832643195,
+   "on_cord_m": 0.30548718889346954
+  },
+  {
+   "route": "-long_thoracic",
+   "ihm_m": 0.2725403852127497,
+   "on_cord_m": 0.3465579068238615
+  },
+  {
+   "route": "-medial_pectoral",
+   "ihm_m": 0.21481541692269404,
+   "on_cord_m": 0.2732246724944291
+  },
+  {
+   "route": "-musculocutaneous",
+   "ihm_m": 0.2637216940986929,
+   "on_cord_m": 0.335848833702247
+  },
+  {
+   "route": "-thoracodorsal",
+   "ihm_m": 0.30404347483684524,
+   "on_cord_m": 0.38735934661561267
+  },
+  {
+   "route": "-brachial_plexus",
+   "ihm_m": 0.20938357147217054,
+   "on_cord_m": 0.2673431427887585
+  },
+  {
+   "route": "-intercostal",
+   "ihm_m": 0.2025259622185453,
+   "on_cord_m": 0.25976242549519674
+  },
+  {
+   "route": "-lower_subscapular",
+   "ihm_m": 0.21266185312619387,
+   "on_cord_m": 0.28459138722880006
+  },
+  {
+   "route": "-axillary",
+   "ihm_m": 0.17325893696147115,
+   "on_cord_m": 0.2319262147424889
+  },
+  {
+   "route": "-saphenous",
+   "ihm_m": 0.7914133873596926,
+   "on_cord_m": 1.072067627120006
+  },
+  {
+   "route": "-sympathetic_chain",
+   "ihm_m": 0.10283314773547882,
+   "on_cord_m": 0.14176629553606818
+  },
+  {
+   "route": "-upper_subscapular",
+   "ihm_m": 0.1587669683062202,
+   "on_cord_m": 0.21964848029660972
+  },
+  {
+   "route": "-lateral_plantar",
+   "ihm_m": 0.8883891861173081,
+   "on_cord_m": 1.268107538910235
+  },
+  {
+   "route": "-medial_plantar",
+   "ihm_m": 0.8792099759558146,
+   "on_cord_m": 1.262001433602325
+  },
+  {
+   "route": "-suprascapular",
+   "ihm_m": 0.14418788024572704,
+   "on_cord_m": 0.20897852032524453
+  },
+  {
+   "route": "-deep_fibular",
+   "ihm_m": 0.7901364954981395,
+   "on_cord_m": 1.1725494242310341
+  },
+  {
+   "route": "-subcostal",
+   "ihm_m": 0.2659075450674064,
+   "on_cord_m": 0.4008951193030019
+  },
+  {
+   "route": "-superficial_fibular",
+   "ihm_m": 0.743432630702965,
+   "on_cord_m": 1.1258883229335317
+  },
+  {
+   "route": "-thoracoabdominal",
+   "ihm_m": 0.2415415650406262,
+   "on_cord_m": 0.3714862005961812
+  },
+  {
+   "route": "-dorsal_scapular",
+   "ihm_m": 0.1467434208703792,
+   "on_cord_m": 0.23177227485602653
+  },
+  {
+   "route": "-tibial",
+   "ihm_m": 0.6494694137420587,
+   "on_cord_m": 1.0322022550910037
+  },
+  {
+   "route": "-sural",
+   "ihm_m": 0.5985784583244165,
+   "on_cord_m": 0.9777534867327935
+  },
+  {
+   "route": "-least_splanchnic",
+   "ihm_m": 0.23220577856662136,
+   "on_cord_m": 0.3804014330277333
+  },
+  {
+   "route": "-lesser_splanchnic",
+   "ihm_m": 0.217208879284245,
+   "on_cord_m": 0.36670749917886386
+  },
+  {
+   "route": "-greater_splanchnic",
+   "ihm_m": 0.168356688476182,
+   "on_cord_m": 0.3144450558135016
+  },
+  {
+   "route": "-lateral_femoral_cutaneous",
+   "ihm_m": 0.33186239009277885,
+   "on_cord_m": 0.6307992053518234
+  },
+  {
+   "route": "-common_fibular",
+   "ihm_m": 0.3610165161069343,
+   "on_cord_m": 0.6890272989824249
+  },
+  {
+   "route": "-femoral",
+   "ihm_m": 0.33324647521129114,
+   "on_cord_m": 0.6466916987696685
+  },
+  {
+   "route": "-posterior_femoral_cutaneous",
+   "ihm_m": 0.3062085548648711,
+   "on_cord_m": 0.6366765068572962
+  },
+  {
+   "route": "-obturator",
+   "ihm_m": 0.29262911720506984,
+   "on_cord_m": 0.6124690872922637
+  },
+  {
+   "route": "-inferior_gluteal",
+   "ihm_m": 0.13310901188458907,
+   "on_cord_m": 0.2892131437746074
+  },
+  {
+   "route": "-sciatic_fibular",
+   "ihm_m": 0.2784495957273639,
+   "on_cord_m": 0.607292749825164
+  },
+  {
+   "route": "-genitofemoral",
+   "ihm_m": 0.22930822139197396,
+   "on_cord_m": 0.5004851426235538
+  },
+  {
+   "route": "-ilioinguinal",
+   "ihm_m": 0.2208730152198591,
+   "on_cord_m": 0.48537206954513523
+  },
+  {
+   "route": "-iliohypogastric",
+   "ihm_m": 0.17766629547095766,
+   "on_cord_m": 0.4155115611178588
+  },
+  {
+   "route": "-lumbar_plexus",
+   "ihm_m": 0.19681943016134132,
+   "on_cord_m": 0.4728204244411446
+  },
+  {
+   "route": "-pudendal",
+   "ihm_m": 0.17666068747318506,
+   "on_cord_m": 0.5048281556284192
+  },
+  {
+   "route": "-sciatic_tibial",
+   "ihm_m": 0.20076115326664723,
+   "on_cord_m": 0.5833152752920622
+  },
+  {
+   "route": "-lumbar_splanchnic",
+   "ihm_m": 0.1289950493836208,
+   "on_cord_m": 0.3895455849543734
+  },
+  {
+   "route": "-sacral_plexus",
+   "ihm_m": 0.15952946437965906,
+   "on_cord_m": 0.4861234440628421
+  },
+  {
+   "route": "-pelvic_splanchnic",
+   "ihm_m": 0.128,
+   "on_cord_m": 0.4463313160641933
+  }
+ ]
+}

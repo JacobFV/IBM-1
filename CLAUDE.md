@@ -153,6 +153,15 @@ Specifically:
   paired on the same items, bootstrap the paired difference, which is what
   actually cancels the shared sampling error.
 
+- **A length in the right frame between the wrong two points passes every frame check.**
+  IHM's nerve routes were audited for the 15.7% atlas-frame bug and came back clean:
+  declared metres, adult-sized bones, no common factor. But every spinal route ends at a
+  hand-placed relay 89–337 mm below the cord segment it stands for (the sacral one under the
+  pelvis), so leg routes are 0.65–0.78x the real centrelines and the splanchnics are short
+  by up to 3.5x. The phrenic even matched the literature to 2%, because its relay and its
+  endpoint were each about 8 cm low. When a quantity is "measured", check each ENDPOINT
+  against the structure its own label names; a units or frame audit cannot see it.
+
 ## Randomness
 
 **A shared generator makes two things vary that should have varied

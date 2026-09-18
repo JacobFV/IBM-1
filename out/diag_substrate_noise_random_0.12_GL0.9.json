@@ -1,0 +1,30 @@
+{
+  "diagnostic": true,
+  "T_s": 30.0,
+  "rows": [
+    {
+      "sigma": 0.12,
+      "topology": "random",
+      "G_L": 0.9,
+      "G_F": 0.35,
+      "transitions": 1056,
+      "median_dwell_s": 0.01,
+      "distinct_macrostates": 729,
+      "revisited_ge2": 154,
+      "mean_regions_up": 32.940892857142856,
+      "mean_E": 0.4786784052848816,
+      "mean_rate_hz": 47.86783981323242,
+      "site_frac_time_up_by_h": {
+        "0-0.3": 0.05501931913116124,
+        "0.3-0.6": 0.2936295485175202,
+        "0.6-0.8": 0.6792896825396825,
+        "0.8-1.01": 0.8921100583090379
+      },
+      "region_dwell_median_s": 0.6900000000000001,
+      "region_dwell_p90_s": 1.575,
+      "regions_that_switch": 50,
+      "mean_pairwise_corr_region_up": 0.2565755274552493,
+      "would_pass_G3_thresholds": false
+    }
+  ]
+}

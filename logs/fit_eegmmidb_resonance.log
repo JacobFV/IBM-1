@@ -1,0 +1,183 @@
+
+==============================================================================
+p(theta): the declared prior, from REGISTRY, unedited
+==============================================================================
+process                   impl             param  dist       tying   n  prov        id?
+------------------------  ---------------  -----  ---------  ------  -  ----------  ---
+thalamocortical_coupling  alpha_resonator  f0_hz  normal     global  1  literature     
+thalamocortical_coupling  alpha_resonator  q      lognormal  global  1  literature     
+2 parameters over 2 blocks; 0 (0%) sit on weak or speculative priors, 0 (0%) are per-site or embedding-tied and will mostly stay where the prior put them
+prior median  f0 10.000 Hz  q 4.000
+
+==============================================================================
+split (pre-registered, by SUBJECT)
+==============================================================================
+train 65: S002 S003 S004 S005 S006 S007 S009 S010 S011 S012 S014 S016 S017 S018 S019 S020 S021 S022 S023 S024 S025 S026 S028 S029 S031 S035 S036 S037 S038 S040 S043 S044 S045 S051 S053 S054 S056 S058 S065 S066 S067 S068 S069 S071 S072 S073 S075 S076 S081 S082 S083 S084 S085 S086 S088 S089 S090 S091 S092 S094 S095 S101 S103 S104 S107
+test  44: S001 S008 S013 S015 S027 S030 S032 S033 S034 S039 S041 S042 S046 S047 S048 S049 S050 S052 S055 S057 S059 S060 S061 S062 S063 S064 S070 S074 S077 S078 S079 S080 S087 S093 S096 S097 S098 S099 S100 S102 S105 S106 S108 S109
+
+==============================================================================
+data
+==============================================================================
+eegmmidb root /home/brandonin/Documents/IBM-1/data/sources/eegmmidb/raw/1.0.0  (via card.yaml local_root)
+  read 10/109  (1 s)
+  read 20/109  (2 s)
+  read 30/109  (2 s)
+  read 40/109  (2 s)
+  read 50/109  (3 s)
+  read 60/109  (3 s)
+  read 70/109  (3 s)
+  read 80/109  (3 s)
+  read 90/109  (4 s)
+  read 100/109  (4 s)
+  excluded S088: {'mu': 'ValueError: R03 at 128 Hz'}
+  excluded S092: {'mu': 'ValueError: R03 at 128 Hz'}
+  excluded S100: {'mu': 'ValueError: R03 at 128 Hz'}
+alpha: 65 train / 44 test subjects;  mu: 63 train / 43 test
+  example alpha: eegmmidb/S002/EC: 15 x 4 s windows, 321 bins to 80 Hz, claimed over 4-20 Hz, dof 30  [EC]
+  fitted over 4-20 Hz: 64 bins
+  example mu:    eegmmidb/S002/mu(0, 2): 177 x 3 s windows, 241 bins to 80 Hz, claimed over 4-20 Hz, dof 354
+  fitted over 4-20 Hz: 48 bins
+  mu windows per subject (median): rest_exec 90  exec 90  rest_imag 90  imag 90
+
+==============================================================================
+K0: the instrument, against answers known in advance
+==============================================================================
+  vectorised vs SpectralEvidence.log_likelihood: worst relative error 5.32e-14  -> PASS
+  synthetic recovery: f0 11.483 (true 11.5)  q 3.028 (true 3.0)  -> PASS
+
+==============================================================================
+K1 Berger / K2 mu ERD: known answers, all included subjects, no model
+==============================================================================
+  K1 Berger: EC > EO in 107/109 (98%), sign p 1.8e-29, median EC/EO 8-13 Hz power 3.16x  -> PASS
+  K2 mu ERD (executed): EXEC < REST in 94/106 (89%), sign p 6.2e-17, median EXEC/REST 0.73x  -> PASS
+     (imagery, reported not gated: IMAG < REST in 84/106 (79%), p 1e-09, median 0.88x)
+
+==============================================================================
+ALPHA: fit on train subjects
+==============================================================================
+  prior    f0  10.000 Hz  q   4.000
+  post_EC  f0   9.791 Hz  q   1.442   converged True
+  post_EO  f0  10.190 Hz  q   0.509   converged True
+  bookkeeping: identical on refit True; train-order shuffle moves theta by 1.2e-07 relative  -> PASS
+
+==============================================================================
+ALPHA: held out, on unseen participants
+==============================================================================
+
+  test EC: 44 subjects x 64 bins. mean ll/subject, r2(log psd), fraction of fits on a grid edge:
+    post        ll    1309.26   r2  0.142   e median -1.10   edge 0%
+    prior       ll    1250.17   r2 -1.061   e median -1.00   edge 0%
+    aperiodic   ll    1107.62   r2 -0.091   e median +1.30   edge 0%
+    mean_shape  ll    1391.34   r2  0.480   e median -0.05   edge 0%
+
+  test EO: 44 subjects x 64 bins. mean ll/subject, r2(log psd), fraction of fits on a grid edge:
+    post        ll    1489.83   r2  0.458   e median -0.80   edge 0%
+    prior       ll    1156.71   r2 -4.239   e median -0.75   edge 0%
+    aperiodic   ll    1472.94   r2  0.439   e median +1.05   edge 0%
+    mean_shape  ll    1501.25   r2  0.493   e median +0.00   edge 0%
+
+  A1  EC: post_EC - prior                            +59.08 nats/subject  95% CI [-0.37, +115.11]  t  +1.95  p 0.0574  wins 59% of 44  -> FAIL
+  A2  EC: post_EC - aperiodic                       +201.64 nats/subject  95% CI [+138.03, +264.95]  t  +6.23  p 1.71e-07  wins 82% of 44  -> PASS
+  A3  EC/EO contrast D (before relabelling)         +200.35 nats/subject  95% CI [+161.66, +239.67]  t  +9.88  p 1.23e-12  wins 95% of 44  -> PASS
+      (not gated) EO_post_minus_prior               +333.12 nats/subject  95% CI [+257.96, +398.25]  t  +9.21  p 9.89e-12  wins 89% of 44
+      (not gated) EO_post_minus_aperiodic            +16.90 nats/subject  95% CI [+5.19, +29.02]  t  +2.74  p 0.00888  wins 64% of 44
+      (not gated) EC_prior_minus_aperiodic          +142.56 nats/subject  95% CI [+20.96, +265.60]  t  +2.29  p 0.0268  wins 57% of 44
+      (not gated) EO_prior_minus_aperiodic          -316.23 nats/subject  95% CI [-392.63, -231.12]  t  -7.49  p 2.5e-09  wins 14% of 44
+      (not gated) EC_post_minus_meanshape            -82.08 nats/subject  95% CI [-98.74, -65.26]  t  -9.48  p 4.21e-12  wins 9% of 44
+      (not gated) EO_post_minus_meanshape            -11.42 nats/subject  95% CI [-17.07, -6.28]  t  -4.08  p 0.000192  wins 25% of 44
+
+==============================================================================
+ALPHA relabelling control: 20 balanced EC/EO swaps within train subjects
+==============================================================================
+  draw  0: 'EC' f0  9.992 q  0.865 | 'EO' f0 10.105 q  0.942 | held-out mean D    -16.97
+  draw  1: 'EC' f0 10.355 q  0.914 | 'EO' f0  9.981 q  0.896 | held-out mean D     +1.80
+  draw  2: 'EC' f0  9.846 q  0.928 | 'EO' f0 10.157 q  0.878 | held-out mean D    +12.81
+  draw  3: 'EC' f0 10.072 q  0.966 | 'EO' f0 10.299 q  0.850 | held-out mean D    +27.65
+  draw  4: 'EC' f0  9.990 q  0.926 | 'EO' f0 10.138 q  0.881 | held-out mean D    +10.88
+  draw  5: 'EC' f0  9.999 q  0.902 | 'EO' f0 10.132 q  0.903 | held-out mean D     +0.53
+  draw  6: 'EC' f0  9.856 q  0.929 | 'EO' f0 10.293 q  0.878 | held-out mean D    +13.75
+  draw  7: 'EC' f0  9.919 q  0.964 | 'EO' f0 10.200 q  0.847 | held-out mean D    +27.95
+  draw  8: 'EC' f0  9.676 q  0.886 | 'EO' f0 10.581 q  0.929 | held-out mean D     -4.51
+  draw  9: 'EC' f0 10.022 q  0.953 | 'EO' f0 10.233 q  0.857 | held-out mean D    +22.96
+  draw 10: 'EC' f0 10.084 q  1.041 | 'EO' f0 10.027 q  0.769 | held-out mean D    +61.34
+  draw 11: 'EC' f0  9.623 q  0.880 | 'EO' f0 10.583 q  0.938 | held-out mean D     -7.97
+  draw 12: 'EC' f0 10.137 q  0.916 | 'EO' f0 10.002 q  0.889 | held-out mean D     +5.38
+  draw 13: 'EC' f0 10.408 q  0.924 | 'EO' f0  9.799 q  0.888 | held-out mean D     +4.70
+  draw 14: 'EC' f0 10.214 q  0.898 | 'EO' f0  9.981 q  0.908 | held-out mean D     -3.41
+  draw 15: 'EC' f0  9.978 q  0.891 | 'EO' f0 10.126 q  0.913 | held-out mean D     -4.19
+  draw 16: 'EC' f0 10.551 q  0.812 | 'EO' f0  9.596 q  1.015 | held-out mean D    -50.14
+  draw 17: 'EC' f0 10.087 q  0.952 | 'EO' f0  9.987 q  0.855 | held-out mean D    +21.67
+  draw 18: 'EC' f0 10.113 q  0.925 | 'EO' f0 10.110 q  0.882 | held-out mean D     +9.92
+  draw 19: 'EC' f0  9.983 q  0.910 | 'EO' f0 10.157 q  0.893 | held-out mean D     +4.67
+
+  true mean D +200.35; relabelled: max |mean D| 61.34, median +5.04  -> control PASS
+  A3  EC/EO contrast D (with its control)           +200.35 nats/subject  95% CI [+161.66, +239.67]  t  +9.88  p 1.23e-12  wins 95% of 44  -> PASS
+
+==============================================================================
+MU: fit on train subjects (laplacian C3/C4)
+==============================================================================
+  post_REST       f0  10.026 Hz  q   0.200   converged True
+  post_REST_exec  f0  10.030 Hz  q   0.204   converged False
+  post_EXEC       f0  10.039 Hz  q   0.201   converged True
+  post_REST_imag  f0   5.741 Hz  q   0.205   converged True
+  post_IMAG       f0  10.014 Hz  q   0.201   converged True
+
+==============================================================================
+MU: held out, on unseen participants
+==============================================================================
+  test REST: 43 subjects x 48 bins
+    post        ll     660.78   r2  0.551   e median -1.00   edge 0%
+    prior       ll   -3196.28   r2 -9.189   e median -0.70   edge 0%
+    aperiodic   ll     644.24   r2  0.569   e median +0.90   edge 0%
+    mean_shape  ll     774.96   r2  0.624   e median +0.10   edge 0%
+
+  M1  REST: post_REST - prior                      +3857.07 nats/subject  95% CI [+3273.79, +4406.77]  t +13.16  p 1.7e-16  wins 93% of 43  -> PASS
+  M2  REST: post_REST - aperiodic                    +16.54 nats/subject  95% CI [-1.50, +35.38]  t  +1.75  p 0.088  wins 44% of 43  -> FAIL
+  M3  REST/EXEC contrast D (before relabelling)       +0.09 nats/subject  95% CI [-0.08, +0.27]  t  +0.99  p 0.325  wins 53% of 43  -> FAIL
+      (not gated) REST_prior_minus_aperiodic       -3840.52 nats/subject  95% CI [-4399.22, -3228.54]  t -12.70  p 5.66e-16  wins 9% of 43
+      (not gated) REST_post_minus_meanshape         -114.18 nats/subject  95% CI [-172.38, -60.46]  t  -3.93  p 0.000308  wins 33% of 43
+      (not gated) imagery_contrast_D                  +1.54 nats/subject  95% CI [+0.13, +2.97]  t  +2.13  p 0.0393  wins 60% of 43
+
+==============================================================================
+MU relabelling control: 20 within-subject permutations of REST/EXEC
+==============================================================================
+  draw  0: 'REST' f0 10.021 q  0.201 | 'EXEC' f0 10.038 q  0.200 | held-out mean D     +0.01
+  draw  1: 'REST' f0 10.006 q  0.200 | 'EXEC' f0 10.002 q  0.201 | held-out mean D     -0.01
+  draw  2: 'REST' f0 10.025 q  0.204 | 'EXEC' f0 10.103 q  0.204 | held-out mean D     -0.02
+  draw  3: 'REST' f0  9.998 q  0.200 | 'EXEC' f0 10.015 q  0.200 | held-out mean D     -0.01
+  draw  4: 'REST' f0 10.011 q  0.202 | 'EXEC' f0 10.005 q  0.201 | held-out mean D     +0.02
+  draw  5: 'REST' f0 10.082 q  0.200 | 'EXEC' f0 10.043 q  0.204 | held-out mean D     -0.10
+  draw  6: 'REST' f0 10.008 q  0.201 | 'EXEC' f0 10.003 q  0.201 | held-out mean D     -0.01
+  draw  7: 'REST' f0 10.018 q  0.203 | 'EXEC' f0 10.006 q  0.201 | held-out mean D     +0.05
+  draw  8: 'REST' f0 10.054 q  0.200 | 'EXEC' f0 10.062 q  0.201 | held-out mean D     -0.01
+  draw  9: 'REST' f0 10.000 q  0.200 | 'EXEC' f0 10.095 q  0.200 | held-out mean D     -0.01
+  draw 10: 'REST' f0 10.009 q  0.200 | 'EXEC' f0 10.008 q  0.203 | held-out mean D     -0.07
+  draw 11: 'REST' f0 10.303 q  0.201 | 'EXEC' f0 10.130 q  0.200 | held-out mean D     -0.00
+  draw 12: 'REST' f0 10.000 q  0.200 | 'EXEC' f0 10.003 q  0.200 | held-out mean D     -0.00
+  draw 13: 'REST' f0 10.079 q  0.201 | 'EXEC' f0 10.013 q  0.200 | held-out mean D     +0.02
+  draw 14: 'REST' f0 10.045 q  0.201 | 'EXEC' f0 10.005 q  0.200 | held-out mean D     +0.03
+  draw 15: 'REST' f0 10.003 q  0.201 | 'EXEC' f0 10.003 q  0.207 | held-out mean D     -0.15
+  draw 16: 'REST' f0 10.012 q  0.201 | 'EXEC' f0 10.006 q  0.200 | held-out mean D     +0.01
+  draw 17: 'REST' f0 10.003 q  0.201 | 'EXEC' f0 10.049 q  0.200 | held-out mean D     -0.00
+  draw 18: 'REST' f0 10.057 q  0.200 | 'EXEC' f0 10.012 q  0.201 | held-out mean D     -0.02
+  draw 19: 'REST' f0 10.026 q  0.201 | 'EXEC' f0 10.014 q  0.201 | held-out mean D     -0.00
+
+  true mean D +0.09; relabelled: max |mean D| 0.15, median -0.00  -> control FAIL
+  M3  REST/EXEC contrast D (with its control)         +0.09 nats/subject  95% CI [-0.08, +0.27]  t  +0.99  p 0.325  wins 53% of 43  -> FAIL
+
+==============================================================================
+summary
+==============================================================================
+fitted q above the declared pathological 10: 0 of 7
+  K0  PASS
+  K1  PASS
+  K2  PASS
+  A1  FAIL
+  A2  PASS
+  A3  PASS
+  M1  PASS
+  M2  FAIL
+  M3  FAIL
+
+written to out/fit_eegmmidb_resonance.json
+6.2 s

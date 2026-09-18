@@ -18,15 +18,27 @@ import torch
 
 from ibm.substrate import Priors, build_sheet
 
-import sys
-SIGMAS = [float(x) for x in sys.argv[1:]] or [0.04, 0.08, 0.12, 0.16, 0.20, 0.25, 0.30]
+import argparse
+_ap = argparse.ArgumentParser()
+_ap.add_argument("sigmas", nargs="*", type=float)
+_ap.add_argument("--topology", default="random", choices=("random", "tract"))
+_ap.add_argument("--G_L", type=float, default=None)
+_ap.add_argument("--G_F", type=float, default=None)
+ARGS = _ap.parse_args()
+SIGMAS = ARGS.sigmas or [0.04, 0.08, 0.12, 0.16, 0.20, 0.25, 0.30]
+TAG = "_".join([ARGS.topology] + [f"{x:g}" for x in ARGS.sigmas]
+               + ([f"GL{ARGS.G_L:g}"] if ARGS.G_L is not None else [])
+               + ([f"GF{ARGS.G_F:g}"] if ARGS.G_F is not None else []))
 T, DT = 30.0, 1e-3
 
 
 @torch.no_grad()
 def one(sigma, seed=0):
     pr = Priors(); pr.sigma = sigma
-    f = build_sheet(1024, 32, seed=seed, priors=pr, learn_hetero=False)
+    if ARGS.G_L is not None: pr.G_L = ARGS.G_L
+    if ARGS.G_F is not None: pr.G_F = ARGS.G_F
+    f = build_sheet(1024, 32, seed=seed, priors=pr, learn_hetero=False,
+                    long_topology=ARGS.topology)
     st = f.init_state(1)
     W = f.edge_weights()
     g = torch.Generator().manual_seed(seed + 6)
@@ -66,7 +78,8 @@ def one(sigma, seed=0):
     h = f.h.numpy()
     site_up = (E > 0.5).mean(0)
     bands = {f"{a}-{b}": float(site_up[(h >= a) & (h < b)].mean()) for a, b in [(0, .3), (.3, .6), (.6, .8), (.8, 1.01)]}
-    return {"sigma": sigma, "transitions": len(trans), "median_dwell_s": float(np.median(dwell)),
+    return {"sigma": sigma, "topology": ARGS.topology, "G_L": pr.G_L, "G_F": pr.G_F,
+            "transitions": len(trans), "median_dwell_s": float(np.median(dwell)),
             "distinct_macrostates": len(visits), "revisited_ge2": sum(v >= 2 for v in visits.values()),
             "mean_regions_up": float(code.sum(1).mean()), "mean_E": float(E.mean()),
             "mean_rate_hz": float(E.mean() * 100), "site_frac_time_up_by_h": bands,
@@ -83,5 +96,5 @@ if __name__ == "__main__":
     out = []
     for s in SIGMAS:
         r = one(s); out.append(r); print(json.dumps(r))
-        with open("out/diag_substrate_noise" + ("_" + "_".join(sys.argv[1:]) if sys.argv[1:] else "") + ".json", "w") as fh:
+        with open(f"out/diag_substrate_noise_{TAG}.json", "w") as fh:
             json.dump({"diagnostic": True, "T_s": T, "rows": out}, fh, indent=2)

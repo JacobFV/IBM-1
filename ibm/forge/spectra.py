@@ -80,11 +80,20 @@ def local_root(source_id: str, root: Path | None = None) -> Path:
     import yaml
 
     base = Path(root) if root is not None else repo_root()
-    loc = base / "data" / "sources" / source_id / "raw" / ".location.yaml"
-    if not loc.is_file():
+    # the location file lives beside the card now, not in raw/.  commit 566b085 ("bring
+    # the corpora into the repo") moved every `raw/.location.yaml` up one level when the
+    # bytes moved inside the repository, and this function kept looking in raw/ -- so
+    # `fit_sleep_resonance.py`, the script behind STATE.md section 3 row 1, the
+    # programme's one held result, raised on every source until 2026-09-18.  the new
+    # place is read first; the old one is still honoured for a card staged before the move.
+    src = base / "data" / "sources" / source_id
+    candidates = (src / ".location.yaml", src / "raw" / ".location.yaml")
+    loc = next((c for c in candidates if c.is_file()), None)
+    if loc is None:
         raise FileNotFoundError(
-            f"source {source_id!r} has no {loc.relative_to(base)}; the card has never been "
-            "acquired, and nothing here may invent a path for it")
+            f"source {source_id!r} has no {candidates[0].relative_to(base)} (nor the older "
+            f"{candidates[1].relative_to(base)}); the card has never been acquired, and "
+            "nothing here may invent a path for it")
     with loc.open() as fh:
         d = yaml.safe_load(fh) or {}
     lr = d.get("local_root")
@@ -94,6 +103,11 @@ def local_root(source_id: str, root: Path | None = None) -> Path:
             "is declared but the bytes have not been acquired on this machine; set local_root "
             "there rather than passing a path in.")
     p = Path(str(lr)).expanduser()
+    # a local_root written after the move is RELATIVE to the repository
+    # ("data/sources/sleep-edfx/raw"), so resolve it against the repo, not the cwd --
+    # a relative path read against the cwd works only when the cwd happens to be the root
+    if not p.is_absolute():
+        p = base / p
     if not p.is_dir():
         raise FileNotFoundError(
             f"source {source_id!r}: local_root {p} in {loc.relative_to(base)} does not exist")

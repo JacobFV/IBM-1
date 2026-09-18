@@ -1,0 +1,30 @@
+{
+  "diagnostic": true,
+  "T_s": 30.0,
+  "rows": [
+    {
+      "sigma": 0.12,
+      "topology": "tract",
+      "G_L": 0.45,
+      "G_F": 0.35,
+      "transitions": 315,
+      "median_dwell_s": 0.045,
+      "distinct_macrostates": 291,
+      "revisited_ge2": 17,
+      "mean_regions_up": 7.6901785714285715,
+      "mean_E": 0.14296665787696838,
+      "mean_rate_hz": 14.296666145324707,
+      "site_frac_time_up_by_h": {
+        "0-0.3": 3.759398496240602e-05,
+        "0.3-0.6": 0.020593834231805927,
+        "0.6-0.8": 0.1616714285714286,
+        "0.8-1.01": 0.27606778425655976
+      },
+      "region_dwell_median_s": 2.19,
+      "region_dwell_p90_s": 4.6275,
+      "regions_that_switch": 37,
+      "mean_pairwise_corr_region_up": 0.15187141181313954,
+      "would_pass_G3_thresholds": false
+    }
+  ]
+}

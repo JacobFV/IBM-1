@@ -340,6 +340,14 @@ route lengths IHM measured:
 | least splanchnic / C | 232 mm | 232.2 ms | renal |
 | vagus / C | 508 mm | **507.8 ms** | nutrient load, portal glucose, aortic chemoreception |
 
+*(18 September 2026: these lengths are in the right frame, metres, but they are not measured
+routes. Each is an authored polyline to a relay IHM placed by hand, and the thoracic, lumbar
+and sacral relays sit 152–337 mm below the cord segments they stand for. With the relays on
+the cord, the splanchnic routes lengthen 1.6–3.5x (greater splanchnic 168 → 314 mm) and the
+vagus 1.08x (508 → 551 mm). The Z-Anatomy right vagus measures 415–593 mm from brainstem to
+stomach. The table is what the code uses and is kept as is. The audit is in `docs/LOG.md`,
+18 September, and `scripts/audit_nerve_route_lengths.py`.)*
+
 **the stomach reports twice, on two nerves, half a second apart.** the vagal
 A-beta channel is a low-threshold volume report at 9 ms; the greater splanchnic C
 channel is a high-threshold, nociceptive report of the same organ at 168 ms, and
