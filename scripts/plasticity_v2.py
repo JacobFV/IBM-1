@@ -86,6 +86,50 @@ def load_streams(n_frames):
     return np.stack(vis), np.stack(aud), used                                   # (S, F, 64)
 
 
+def load_lum16(films, n_frames):
+    """16x16 greyscale luminance for the same films and span as load_streams."""
+    out = []
+    for fid in films:
+        fr = np.load(os.path.join(FILMS_DIR, f"{fid}_frames.npy"), mmap_mode="r")
+        a = int(START_S * FPS)
+        f = np.asarray(fr[a:a + n_frames], dtype=np.float32).mean(-1)
+        f = f.reshape(n_frames, 16, 4, 16, 4).mean((2, 4)).reshape(n_frames, 256)
+        out.append((f - f.mean(0)) / (f.std(0) + 1e-6))
+    return np.stack(out)
+
+
+def ports_retinotopic(field, frames_hw=64, grid=16):
+    """each visual site -> ONE patch of the visual field, by where the site IS.
+
+    crude but anatomical, and declared rather than fitted: the LEFT hemisphere sees the
+    RIGHT hemifield and vice versa; cuneus (above the calcarine) sees the LOWER field and
+    lingual (below it) the UPPER, with pericalcarine on the horizontal meridian; eccentricity
+    grows ANTERIORLY from the occipital pole.  so neighbouring sites get neighbouring
+    patches and therefore CORRELATED drive -- the structure a random projection destroyed.
+    returns, per visual site, a pixel index into a grid x grid luminance map."""
+    import numpy as _np
+    names = [r for r in field.region_names]
+    gyr = _np.array([r.split(".", 1)[-1] for r in names])
+    hemi = _np.array([r.split(".", 1)[0] for r in names])
+    vis = _np.flatnonzero(_np.isin(gyr, VISUAL))
+    pos = field.pos.cpu().numpy()
+    ymin, ymax = pos[vis, 1].min(), pos[vis, 1].max()
+    ecc = (pos[vis, 1] - ymin) / max(1e-6, ymax - ymin)          # 0 at the pole -> 1 anterior
+    half = grid // 2
+    col = _np.where(hemi[vis] == "lh", half + _np.round(ecc * (half - 1)),     # right field
+                    half - 1 - _np.round(ecc * (half - 1))).astype(int)        # left field
+    zc = pos[vis, 2]
+    zmed = _np.median(zc)
+    upper = _np.isin(gyr[vis], ("lingual",)) | ((gyr[vis] == "pericalcarine") & (zc < zmed))
+    lower = _np.isin(gyr[vis], ("cuneus",)) | ((gyr[vis] == "pericalcarine") & (zc >= zmed))
+    # lateraloccipital: ventral half upper field, dorsal half lower (by height)
+    lo = gyr[vis] == "lateraloccipital"
+    upper |= lo & (zc < zmed); lower |= lo & (zc >= zmed)
+    rowspan = _np.round(ecc * (half - 1)).astype(int)
+    row = _np.where(upper, half - 1 - rowspan, half + rowspan)
+    return vis, row * grid + col
+
+
 def ports(field, seed):
     names = [r.split(".", 1)[-1] for r in field.region_names]
     vis = np.flatnonzero(np.isin(names, VISUAL))
@@ -162,11 +206,13 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--arm", required=True, choices=("A", "B", "C", "K"))
     ap.add_argument("--rule", default="covariance", choices=("covariance", "competitive"))
+    ap.add_argument("--ports", default="random", choices=("random", "retinotopic"))
+    ap.add_argument("--drive", type=float, default=DRIVE)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--learn-s", type=float, default=LEARN_S)
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
-    tag = "" if a.rule == "covariance" else "_competitive"
+    tag = ("" if a.rule == "covariance" else "_competitive") + ("" if a.ports == "random" else f"_{a.ports}_d{a.drive:g}")
     out = a.out or f"out/plasticity_v2{tag}/{a.arm}_seed{a.seed}.json"
     os.makedirs(os.path.dirname(out), exist_ok=True)
     torch.set_num_threads(int(os.environ.get("THREADS", "4")))
@@ -176,7 +222,16 @@ def main():
     n_frames = int(a.learn_s * FPS)
     vf, af, films = load_streams(n_frames)
     vis, Pv, order, band = ports(field, a.seed)
-    d = drive_frames(field, vf, af, vis, Pv, order, band)
+    if a.ports == "retinotopic":
+        # 16x16 luminance, z-scored per pixel, one pixel per visual site by its position
+        rv, pix = ports_retinotopic(field)
+        vf16 = load_lum16(films, n_frames)
+        d = np.zeros((vf16.shape[0], vf16.shape[1], field.n), dtype=np.float32)
+        d[:, :, rv] = vf16[:, :, pix]
+        d[:, :, order] = af[:, :, band]
+        d *= a.drive
+    else:
+        d = drive_frames(field, vf, af, vis, Pv, order, band) * (a.drive / DRIVE)
     if a.arm == "B":
         d = circ_shift_sites(d, a.seed)
     planted = None
@@ -203,7 +258,7 @@ def main():
         planted = (m1, m2)
     eta = 0.0 if a.arm == "C" else ETA
     comp = a.rule == "competitive"
-    res = {"arm": a.arm, "rule": a.rule, "seed": a.seed, "films": films, "learn_s": a.learn_s, "eta": eta, "lam": LAM,
+    res = {"arm": a.arm, "rule": a.rule, "ports": a.ports, "drive_used": a.drive, "seed": a.seed, "films": films, "learn_s": a.learn_s, "eta": eta, "lam": LAM,
            "sigma": SIGMA, "drive": DRIVE, "n_visual_sites": int(len(vis)), "n_auditory_sites": int(len(order))}
     json.dump(res, open(out, "w"), indent=2, default=jdefault)
 

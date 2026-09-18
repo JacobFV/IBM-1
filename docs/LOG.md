@@ -62,6 +62,44 @@ already written.
 ---
 
 
+## 2026-09-18 -- PRE-REGISTRATION: structure-preserving ports (retinotopy, and a drive that dominates the noise)
+
+*Committed before any retinotopic run. The only thing checked was the mapping's known
+answer: every left-hemisphere visual site maps to the RIGHT hemifield and every right to
+the LEFT (117 sites onto 26 distinct patches of a 16x16 field).*
+
+The competitive rule passed its planted known answer and failed on film. As declared, the
+lever moves to the PORTS. **The rule is unchanged**, as are eta, lam, var_ref, the noise,
+the sheet and the test. Two things change, together, as one "ports" instrument:
+1. **Retinotopy** (`ports_retinotopic`). Each visual site gets ONE patch of a 16x16
+   luminance map by where the site is: the contralateral hemifield; cuneus -> lower field,
+   lingual -> upper, pericalcarine split at the calcarine; eccentricity growing anteriorly
+   from the pole. Neighbouring sites get neighbouring patches and so CORRELATED drive,
+   which is exactly what the random projection destroyed. Auditory stays tonotopic.
+2. **Drive 0.6, not 0.3**, so the input dominates the OU noise (std 0.12) instead of
+   being comparable to it.
+
+**Arms**: A (real film, retinotopic, drive 0.6) and B (the same, per-site circularly
+shifted), competitive rule, seeds 0, 1, 2. K is not re-run: the rule it gates is unchanged
+and passed 3/3.
+
+**Known answer on real input** (unchanged): B's |P| < A's in every seed, or verdicts
+are reported and not interpreted as experience.
+
+**Verdicts** (thresholds unchanged): 1. coordination A - B > max(0.10, larger seed
+spread); 2. A passes G3's thresholds in >= 2 of 3 seeds. The rate is reported against the
+static arm.
+
+**Declared in advance.** Retinotopic input reaches ~12 of the 68 regions directly. Any
+coordination among the other 56 has to be carried by the network, so a failure here is
+informative in two different ways, and the entry will say which. Either the ported regions
+coordinate and nothing else does (the rule writes LOCAL structure but long-range edges
+carry none of it), or nothing coordinates at all (the input is still too weak, or 300 s is
+too little experience).
+
+---
+
+
 ## 2026-09-18 -- acquiring ds008037 in full, for research step 2
 
 The user approved fetching all 109 subjects of `ds008037` (CC0, OpenNeuro, anonymous).
