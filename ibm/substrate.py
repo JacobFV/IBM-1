@@ -291,6 +291,11 @@ class CorticalField(nn.Module):
         g = torch.Generator(device="cpu").manual_seed(seed)
         self.embed = nn.Parameter(torch.randn(n, embed_dim, generator=g).to(dev) * 0.02)
         self.pair_slope = nn.Parameter(torch.tensor(3.0))
+        # EXPERIENCE.  a per-edge term added to the pair drive, written by the covariance
+        # rule in `plasticity_*` below.  a persistent buffer, not a parameter: gradient
+        # descent does not touch it, experience does -- and like every other thing that
+        # selects or weights an edge it is saved with the model (CLAUDE.md: `read_idx`).
+        self.register_buffer("P", torch.zeros(n, k, device=dev))
 
         # heterogeneous parameters: declared prior(h) x (1 + bounded residual).
         # the residual passes through tanh, so |change| <= residual_frac of the prior
@@ -328,7 +333,7 @@ class CorticalField(nn.Module):
         """
         e = F.normalize(self.embed, dim=-1)
         sim = (e.unsqueeze(1) * e[self.idx]).sum(-1)
-        s = self.pair_slope * sim
+        s = self.pair_slope * sim + self.P
         wp = self.geo * torch.sigmoid(s) * 2.0      # x2: at sim = 0 the row gain is 1
         wm = self.geo * torch.sigmoid(-s) * 2.0
         return wp, wm
@@ -459,6 +464,53 @@ class CorticalField(nn.Module):
     def rate_hz(self, state):
         return state["E"] * R_MAX
 
+    # ------------------------------------------------------------------ plasticity
+    #
+    # WHY.  G3 failed and its diagnostics (docs/LOG.md 2026-09-18) found every region
+    # metastable but switching INDEPENDENTLY, on random and connectome wiring alike: at
+    # initialisation W+ ~ W- on every edge, so a partner being up excites and inhibits in
+    # about equal measure.  a connectome says who is connected; an assembly needs a SIGN
+    # pattern, and that is written by experience.
+    #
+    # THE RULE: covariance Hebbian with decay, on the pair drive of each edge,
+    #
+    #     dP_ij/dt = eta * ( <(E_i - Ebar_i)(E_j - Ebar_j)> / var_ref  -  lam * P_ij )
+    #
+    # co-active pairs move toward W+ (mutual excitation), anti-active pairs toward W-
+    # (feedforward inhibition).  COVARIANCE, not plain Hebb: plain Hebb on rates that are
+    # never negative can only grow, and a rule that can only grow saturates every edge --
+    # the same flat kernel again, one sign higher.  centring on a slow running mean Ebar
+    # makes independent sites produce zero drift in expectation, which is the known answer
+    # the plasticity experiment's control is built on.  |P| is capped at P_MAX so no edge
+    # can leave sigmoid's useful range.
+    P_MAX = 4.0
+
+    def plasticity_init(self, b: int, device=None):
+        device = device or self.idx.device
+        return {"Ebar": torch.zeros(b, self.n, device=device), "acc": torch.zeros(self.n, self.k, device=device),
+                "count": 0}
+
+    @torch.no_grad()
+    def plasticity_accumulate(self, pst, state, dt: float, tau_bar: float = 10.0):
+        E = state["E"]
+        rho = math.exp(-dt / tau_bar)
+        pst["Ebar"] = pst["Ebar"] * rho + (1.0 - rho) * E
+        dE = E - pst["Ebar"]
+        # batch-mean product over edges: (B, N, 1) x (B, N, k) -> (N, k)
+        pst["acc"] += (dE.unsqueeze(-1) * dE[:, self.idx]).mean(0)
+        pst["count"] += 1
+
+    @torch.no_grad()
+    def plasticity_apply(self, pst, dt: float, eta: float, lam: float, var_ref: float = 0.01):
+        """apply the accumulated covariance as one update over `count` steps, then reset."""
+        if pst["count"] == 0:
+            return
+        C = pst["acc"] / pst["count"]
+        T = pst["count"] * dt
+        self.P += eta * T * (C / var_ref - lam * self.P)
+        self.P.clamp_(-self.P_MAX, self.P_MAX)
+        pst["acc"].zero_(); pst["count"] = 0
+
     # ------------------------------------------------------------------ analysis
     @torch.no_grad()
     def column_bistable(self) -> torch.Tensor:
@@ -480,7 +532,8 @@ class CorticalField(nn.Module):
 
 
 def build_sheet(n: int = 1024, k: int = 32, long_frac: float = 0.25, seed: int = 0,
-                device="cpu", **kw) -> CorticalField:
+                device="cpu", long_topology: str = "random", tract_threshold: float = 0.5,
+                tract_delays: bool = True, **kw) -> CorticalField:
     """a v2 field on a fresh fsaverage sheet: n area-weighted white-surface sites,
     k-1-n_far nearest neighbours plus n_far uniform long-range partners.
 
@@ -496,7 +549,23 @@ def build_sheet(n: int = 1024, k: int = 32, long_frac: float = 0.25, seed: int =
     d = torch.cdist(pos, pos)
     d.fill_diagonal_(float("inf"))
     loc = d.topk(k - n_far, largest=False).indices
-    if n_far:
+    delay_s = None
+    if n_far and long_topology == "tract":
+        # the long-range partners from the HCP group connectome (braingraph, 1064
+        # subjects), as v1's `long_topology="tract"` draws them: a site in parcel a
+        # draws among the sites of the parcels the consensus joins a to, with the
+        # parcel pair's conduction delay.  G3's diagnostic (docs/LOG.md 2026-09-18)
+        # found regions metastable but switching INDEPENDENTLY on random wiring; the
+        # connectome is the first thing that could couple them.
+        import ibm.cortical_tracts as CT
+        far_np, dly, _len, _note = CT.draw_partners(np.asarray(reg), n_far, seed=seed,
+                                                     threshold=tract_threshold)
+        idx = torch.cat([loc, torch.from_numpy(far_np)], 1)
+        if tract_delays:
+            delay_s = torch.cat([torch.zeros(n, k - n_far), torch.from_numpy(dly)], 1)[:, k - n_far:]
+    elif n_far and long_topology != "random":
+        raise ValueError(f"long_topology must be 'random' or 'tract', not {long_topology!r}")
+    elif n_far:
         rng = np.random.default_rng(seed + 7919)
         far = torch.from_numpy(rng.integers(0, n, size=(n, n_far)))
         # a self-edge or a duplicate of a local partner is re-drawn, not kept: either
@@ -508,8 +577,10 @@ def build_sheet(n: int = 1024, k: int = 32, long_frac: float = 0.25, seed: int =
                 bad = (far[i] == i) | torch.isin(far[i], loc[i])
         idx = torch.cat([loc, far], 1)
     else:
-        idx = loc
+        idx = loc if not (n_far and long_topology == "tract") else idx
     dist = (pos[idx] - pos[:, None, :]).norm(dim=-1)
     names = [CS.REGIONS[i] for i in reg]
     return CorticalField(pos.to(device), idx.to(device), dist.to(device), names,
-                         n_far=n_far, seed=seed, **kw).to(device)
+                         n_far=n_far, seed=seed,
+                         delay_s=delay_s.to(device) if delay_s is not None else None,
+                         **kw).to(device)

@@ -62,6 +62,61 @@ already written.
 ---
 
 
+## 2026-09-18 -- PRE-REGISTRATION: does experience give the v2 substrate coordinated metastable states?
+
+*Committed before any arm of `scripts/plasticity_v2.py` has run past a 4 s smoke test,
+which was read for crashes and runtime only.*
+
+**The question.** G3 failed and two diagnostics located the cause: every region is
+metastable, but regions switch independently, because at initialisation the long-range
+weights carry no sign pattern (W+ ~ W- on every edge), and neither the connectome nor
+more gain supplies one. The claim under test is that the pattern is WRITTEN BY
+EXPERIENCE. `CorticalField` now carries a per-edge term P, updated by a covariance
+Hebbian rule with decay, `dP/dt = eta (<dE_i dE_j>/var_ref - lam P)`, capped at |P| <= 4.
+It is centred on a 10 s running mean, so INDEPENDENT sites produce zero drift in
+expectation.
+
+**Arms**, all on the same connectome-wired sheet (N = 1024, k = 32), declared priors,
+noise sigma = 0.12. That is the onset of activity found by the diagnostic, stated as such
+and not fitted. Each run learns for 300 s on 4 parallel streams (the first four films in
+sorted id order, 600 s in), with 8x8 luminance into the visual sites through one fixed
+seeded projection and the 64-band cochleagram into the auditory sites in tonotopic order.
+* **A**: plastic (eta 0.033, lam 0.5), real input.
+* **B**: plastic, the same input with every (stream, site) drive series circularly
+  shifted by its own random offset. Each site keeps its marginal and autocorrelation;
+  every cross-site co-occurrence is destroyed.
+* **C**: not plastic, real input.
+
+**Test**: 30 s spontaneous (no input), from rest, at the same noise, after learning. The
+statistics are G3's, unchanged (transitions, median joint dwell, joint states revisited),
+plus the coordination measure from the diagnostics: mean pairwise correlation of region
+up-states.
+
+**Seeds 0, 1, 2 for every arm** (the seed moves the sheet, the projection, the shifts and
+the noise). The verdict is on the three-seed means, with the uncertainty taken as the
+larger seed spread of the two arms compared (the programme's existing rule, from the
+triad).
+
+**The verdicts, fixed now:**
+1. **Experience writes coordination:** mean pairwise corr A - B > max(0.10, larger seed
+   spread). This is the primary question.
+2. **G3 is reachable after experience:** A passes G3's thresholds in at least 2 of 3 seeds.
+   The thresholds are unchanged from the first pre-registration.
+3. **Plasticity, not drive history, is doing it:** A - C on the coordination measure, same
+   rule as 1.
+
+**Known answer, read before 1-3:** B's |P| must be smaller than A's in every seed. If the
+shifted input writes as much structure as the real one, the rule is picking up the
+network's own reverberation rather than the input's co-occurrence, and verdicts 1-3 are
+reported but not interpreted as experience.
+
+**Declared in advance:** passing 1 while failing 2 is coherent. It would mean experience
+coordinates the regions without making the global states repeat. If A fails 1, plasticity
+of this form is not the lever, and this entry says so instead of tuning eta until it is.
+
+---
+
+
 ## 2026-09-18 -- the script behind the programme's one held result had stopped running. Fixed, and it reproduces to the last digit.
 
 `scripts/fit_sleep_resonance.py` (STATE.md §3 row 1: the thalamo-cortical resonance at
