@@ -1,0 +1,6 @@
+  frame 0/7500  t=0s  |P| mean 0.000  2s
+  frame 1500/7500  t=60s  |P| mean 2.212  87s
+  frame 3000/7500  t=120s  |P| mean 2.630  194s
+  frame 4500/7500  t=180s  |P| mean 2.733  289s
+  frame 6000/7500  t=240s  |P| mean 2.755  381s
+{"transitions": 544, "median_joint_dwell_s": 0.03, "distinct": 510, "revisited_ge2": 25, "region_dwell_median_s": 1.855, "regions_that_switch": 48, "mean_pairwise_corr": 0.023899185056239038, "mean_rate_hz": 19.356843948364258, "passes_G3_thresholds": false}

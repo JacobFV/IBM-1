@@ -5,12 +5,12 @@
 set -u
 cd "$(dirname "$0")/.."
 export PYTHONPATH="$PWD" CUDA_VISIBLE_DEVICES="" THREADS=5
-mkdir -p out/plasticity_v2 logs/plasticity_v2
+TAG=${RULE:+_$RULE}; mkdir -p out/plasticity_v2$TAG logs/plasticity_v2$TAG
 for s in 0 1 2; do
-  for arm in A B C; do
-    ( .venv/bin/python -u scripts/plasticity_v2.py --arm $arm --seed $s > logs/plasticity_v2/${arm}_seed$s.log 2>&1
-      rc=$?; echo "[$(date -Is)] exit $rc $arm seed $s" >> logs/plasticity_v2/driver.log ) &
+  for arm in ${ARMS:-A B C}; do
+    ( .venv/bin/python -u scripts/plasticity_v2.py --arm $arm --seed $s ${RULE:+--rule $RULE} > logs/plasticity_v2$TAG/${arm}_seed$s.log 2>&1
+      rc=$?; echo "[$(date -Is)] exit $rc $arm seed $s" >> logs/plasticity_v2$TAG/driver.log ) &
   done
   wait
 done
-echo "[$(date -Is)] ALL DONE" >> logs/plasticity_v2/driver.log
+echo "[$(date -Is)] ALL DONE" >> logs/plasticity_v2$TAG/driver.log

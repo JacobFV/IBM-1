@@ -1,0 +1,41 @@
+{
+  "arm": "K",
+  "rule": "competitive",
+  "seed": 0,
+  "films": [
+    "BigBoyRidesAgain",
+    "Detour_66",
+    "EveningsForSale1932Restored",
+    "IdentityUnknown"
+  ],
+  "learn_s": 300.0,
+  "eta": 0.033,
+  "lam": 0.5,
+  "sigma": 0.12,
+  "drive": 0.3,
+  "n_visual_sites": 117,
+  "n_auditory_sites": 53,
+  "P_long_mean_abs": 2.4279072284698486,
+  "P_long_frac_pos": 0.4615478515625,
+  "P_long_p99_abs": 4.0,
+  "P_local_mean_abs": 2.8579483032226562,
+  "planted": {
+    "P_within_mean": 3.8751912117004395,
+    "P_between_mean": -2.00076961517334,
+    "n_within_edges": 2427,
+    "n_between_edges": 184,
+    "P_elsewhere_mean": -0.11901199072599411
+  },
+  "test": {
+    "transitions": 562,
+    "median_joint_dwell_s": 0.025,
+    "distinct": 515,
+    "revisited_ge2": 40,
+    "region_dwell_median_s": 1.7550000000000001,
+    "regions_that_switch": 47,
+    "mean_pairwise_corr": 0.034316391934285574,
+    "mean_rate_hz": 20.025259017944336,
+    "passes_G3_thresholds": false
+  },
+  "seconds": 394.8
+}

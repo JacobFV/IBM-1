@@ -62,6 +62,59 @@ already written.
 ---
 
 
+## 2026-09-18 -- RESULT: the competitive rule PASSES its planted known answer and the real-input known answer, and still FAILS both verdicts. The lever is the ports.
+
+`--rule competitive`, arms K/A/B x seeds 0/1/2, `out/plasticity_v2_competitive/`. Read in
+the pre-registered order.
+
+**1. Instrument gate: the planted known answer. PASS, 3 / 3.**
+
+| seed | P within groups | P between groups | P elsewhere | within - between (bar 0.5) |
+|---|---|---|---|---|
+| 0 | +3.88 | -2.00 | -0.12 | **+5.88** |
+| 1 | +3.84 | -3.07 | -0.13 | **+6.91** |
+| 2 | +3.91 | -3.06 | -0.10 | **+6.97** |
+
+The rule writes a structure it is handed, with the right SIGN on both sides: mutual
+excitation within a group, feedforward inhibition between groups. It is a working
+instrument, which the covariance rule never showed it was.
+
+**2. Known answer on real input: B's |P| < A's in every seed. PASS, narrowly:** A 2.74 /
+2.28 / 2.59 against B 2.31 / 2.21 / 2.53, margins 0.42, 0.07, 0.06.
+
+**3. Verdicts:**
+
+| arm | seed | |P| long | frac P>0 | pairwise corr | joint transitions | revisited | region dwell | rate |
+|---|---|---|---|---|---|---|---|---|
+| A real | 0 / 1 / 2 | 2.74 / 2.28 / 2.59 | 0.51 / 0.42 / 0.45 | 0.055 / 0.082 / 0.097 | 636 / 695 / 570 | 38 / 54 / 27 | 1.37 / 0.98 / 1.94 s | 22.7 / 23.8 / 21.0 Hz |
+| B shifted | 0 / 1 / 2 | 2.31 / 2.21 / 2.53 | 0.46 / 0.43 / 0.44 | 0.047 / 0.071 / 0.103 | 639 / 660 / 648 | 44 / 54 / 41 | 1.36 / 1.61 / 1.18 s | 22.7 / 23.5 / 21.8 Hz |
+
+* **1. Coordination A - B:** 0.078 - 0.074 = **+0.004**, against max(0.10, spread 0.056).
+  **FAILED.**
+* **2. G3 after experience:** 0 / 3. **FAILED.**
+* **Reported, not gated:** the rate is ~22 Hz against the static arm's 14.6 and the
+  covariance rule's ~46. Competition stopped the runaway. It also DEcorrelated the sheet:
+  pairwise corr fell from ~0.18 to ~0.08.
+
+**What that means, as declared in advance:** "if K passes and A fails 1, the rule works
+but the input as ported carries too little cross-site structure to write. The lever would
+then be the PORTS." That is the outcome. The rule writes large weights (|P| ~2.5, capped
+in the top 1%) on real input, but it writes almost as much on input whose cross-site
+co-occurrence was destroyed, so most of what it writes is the sheet's OWN internal
+correlation structure (local geometry, recurrence), not the film's. What the ports deliver
+is too weak and too unstructured to compete: a fixed random projection of 8x8 luminance
+into 117 visual sites, one cochleagram band per auditory site, and a drive of 0.3
+against thresholds of 0.3-0.6. The film has structure; the ports do not carry it.
+
+**Next, as a different instrument under its own pre-registration:** ports that preserve
+structure. That means retinotopy (a site gets the patch of the visual field its position
+maps to, so neighbouring sites share correlated input), a drive that dominates the noise,
+and a cross-modal alignment the rule can find (visual and auditory events on one clock,
+already true in this corpus). The rule itself stays exactly as it is: it passed its gate.
+
+---
+
+
 ## 2026-09-18 -- research step 2 cannot be run on THINGS-EEG2: its input window never closes
 
 Step 2 is meant to test the substrate on a task that needs memory BEYOND the input window.
