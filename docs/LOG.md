@@ -62,6 +62,26 @@ already written.
 ---
 
 
+## 2026-09-18 -- AMENDMENT to step 2's pre-registration: three instrument details, fixed before any arm has run
+
+*Written after the feature extraction started (it computes only the pre-registered EEG
+targets) and before any substrate arm has run or any feature has been read into a score.*
+
+The pre-registration did not fix these three details. They are cost and units, not
+outcomes, and are fixed here so they cannot be chosen later:
+1. **dt = 2 ms** for every dynamical arm, not 1 ms. Exponential Euler keeps v2 bounded at
+   any step. At 1 ms, ~33k trials x 1,500 steps would cost hours per arm on the CPU, and
+   the GPU stays with the five-seed test under the one-GPU-job rule (CLAUDE.md, Jobs).
+2. **The first 120 clean trials per subject, in recording order**, for every arm alike,
+   chosen by position and blind to every outcome. All retained trials are used where cost
+   allows (the ceiling and the bypass).
+3. **v1's drive is the same 1,024-vector x 20**, to put it in v1's millivolt units,
+   following v1's own convention (`20 * g_e` in `CorticalDynamics.step`). v2's drive
+   stays at the pre-registered 0.6 scale in its own units.
+
+---
+
+
 ## 2026-09-18 -- PRE-REGISTRATION: research step 2, on ds008037's working-memory delay
 
 *Committed before any EEG signal from the working-memory recordings has been loaded. Read
