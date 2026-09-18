@@ -1129,7 +1129,8 @@ window.IBM_RHYTHMS = {
    ],
    "peak": 50.0,
    "rhythms": [
-    "gamma_visual"
+    "gamma_visual",
+    "beta_posterior_scalp"
    ]
   },
   {
@@ -2435,6 +2436,23 @@ window.IBM_RHYTHMS = {
    "mechanism": "Mitral cells and granule cells form a reciprocal loop that rings at gamma on each inhalation.",
    "evidence": "target",
    "substrate": "needs-olfactory-bulb"
+  },
+  {
+   "id": "beta_posterior_scalp",
+   "name": "posterior resting beta at the scalp",
+   "loop": "v1_local",
+   "band": [
+    13.0,
+    30.0
+   ],
+   "peak": 16.2,
+   "states": [
+    "wake-rest",
+    "wake-eyes-open"
+   ],
+   "mechanism": "A beta peak over posterior cortex at rest, standing above its own 1/f background. What generates it is not identified, and filing it under the local cortical E/I loop is a placement, not a claim: this row is a MEASURED SCALP CONSTRAINT that any future cortical beta claim has to beat.",
+   "evidence": "measured-here",
+   "substrate": "expressible"
   },
   {
    "id": "stretch_reflex_resonance",

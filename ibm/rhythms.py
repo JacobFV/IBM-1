@@ -543,11 +543,16 @@ RHYTHMS = [
        dict(kind="peak_prominence", band=(8.0, 13.0), stations=("v1", "v_extra"),
             target=(0.4, 1.5)),
        "measured-here", "needs-thalamus",
-       ("Lopes da Silva 1991", "Klimesch 1999"), ("ds008037-rest",),
+       ("Lopes da Silva 1991", "Klimesch 1999"), ("eegmmidb",),
        "MEASURED as a two-state contrast on 44 held-out subjects: the declared occipital alpha "
        "resonator beats a 1/f background by +201.6 and the eyes-open/eyes-closed contrast by "
        "+200.4; the relabelling control collapses. Moving the centre OFF its 10 Hz prior FAILED "
-       "-- the prior is already where the data wants it."),
+       "-- the prior is already where the data wants it.  Measured again on ds008037's "
+       "119 resting subjects, EYES OPEN, which is the other state: peak 10.000 +/- 0.071 Hz, "
+       "so the declared 10 Hz centre survives a second corpus and a second state. Prominence "
+       "there is +0.413 +/- 0.036 decades with 46% of subjects inside this row's declared "
+       "0.4-1.5 interval -- expected with the eyes open, and not a test of an eyes-closed "
+       "declaration."),
 
     _R("alpha_reactivity", "alpha blocking on eye opening", "rgs", (8.0, 13.0), None,
        ("wake-eyes-open", "wake-eyes-closed"), "external",
@@ -556,10 +561,12 @@ RHYTHMS = [
        dict(kind="state_contrast", band=(8.0, 13.0), stations=("v1", "v_extra"),
             states=("wake-eyes-closed", "wake-eyes-open"), target=(0.5, 5.0)),
        "measured-here", "needs-thalamus",
-       ("Berger 1929", "Barry 2007"), ("ds008037-rest",),
+       ("Berger 1929", "Barry 2007"), ("eegmmidb",),
        "A ratio, and the reason this loop is worth more than a power target: a model can be "
        "given an alpha peak by hand, but it cannot be given one that switches off when the eyes "
-       "open unless the gating is real."),
+       "open unless the gating is real.  The corpus is eegmmidb (R01 eyes-open, R02 "
+       "eyes-closed); this row and the one above named ds008037-rest until 18 Sep 2026, and "
+       "that corpus has no eyes-closed data at all -- caught by the run that measured it."),
 
     _R("alpha_travelling", "alpha as a travelling wave", "rgs", (8.0, 13.0), None,
        ("wake-eyes-closed",), "loop delay",
@@ -605,7 +612,14 @@ RHYTHMS = [
        ("Pfurtscheller 1999", "Hari 2006"), ("ds008037-rest",),
        "FAILED once already, and the failure was the DECLARATION, not the data: the declared "
        "resonator was a low-pass form that cannot fit a small peak on a steep background. A "
-       "band-pass declaration is owed a fresh pre-registration before it is fitted again."),
+       "band-pass declaration is owed a fresh pre-registration before it is fitted again.  AND "
+       "IT MUST NOT BE PROMOTED ON A SCALP MEASUREMENT: over ds008037's 119 resting subjects "
+       "the central 8-13 Hz prominence (+0.476 +/- 0.033) correlates with the occipital one at "
+       "r = +0.836 and the two peak frequencies at r = +0.732, and the paired difference runs "
+       "the WRONG way -- central exceeds occipital by 0.063 +/- 0.020 decades, which is what "
+       "volume conduction with an average reference predicts.  A central alpha peak is not "
+       "evidence of a separable mu generator; separating it needs a spatial filter or the "
+       "movement contrast `mu_erd` declares."),
 
     _R("mu_erd", "mu breaking on movement", "smu", (8.0, 13.0), None,
        ("movement", "movement-imagery", "action-observation"), "external",
@@ -997,6 +1011,25 @@ RHYTHMS = [
        dict(kind="peak_prominence", band=(40.0, 100.0), stations=("ob",), target=(0.2, 1.5)),
        "target", "needs-olfactory-bulb", ("Kay 2009",)),
 
+    _R("beta_posterior_scalp", "posterior resting beta at the scalp", "v1_local",
+       (13.0, 30.0), 16.2,
+       ("wake-rest", "wake-eyes-open"), "network",
+       "A beta peak over posterior cortex at rest, standing above its own 1/f background. "
+       "What generates it is not identified, and filing it under the local cortical E/I loop "
+       "is a placement, not a claim: this row is a MEASURED SCALP CONSTRAINT that any future "
+       "cortical beta claim has to beat.",
+       dict(kind="peak_prominence", band=(13.0, 30.0), stations=("v_extra", "ips"),
+            target=(0.0, 0.45)),
+       "measured-here", "expressible",
+       ("this repo, scripts/measure_rhythms_eeg.py",), ("ds008037-rest",),
+       "MEASURED on 119 subjects of ds008037 resting EEG, split 59 declaration / 60 held out: "
+       "prominence +0.178 +/- 0.020 decades, peak 16.18 +/- 0.19 Hz, relative power "
+       "0.122 +/- 0.007. The declared interval is the declaration half's 10-90 range and 70% "
+       "of HELD-OUT subjects fall inside it against an expectation of 80 +/- 7.3%, so it is "
+       "if anything slightly narrow. The catalogue had no row for scalp beta at all -- its "
+       "only 13-30 Hz resting row is `beta_bg` in the subthalamic nucleus, and a scalp "
+       "measurement must never be used to confirm that one."),
+
     _R("stretch_reflex_resonance", "the stretch reflex's own resonance", "stretch_reflex",
        (6.0, 12.0), 9.0,
        ("posture",), "loop delay",
@@ -1031,11 +1064,29 @@ BACKGROUND = {
     "name": "the 1/f background",
     "fit_band": (1.0, 45.0),
     "exclude": ((8.0, 13.0), (0.5, 1.5)),   # do not let the alpha or SO peak bend the fit
-    "exponent_target": (0.8, 2.0),          # awake human EEG/ECoG, resting
-    "evidence": "literature",
-    "refs": ("Gao 2017", "Donoghue 2020"),
-    "note": "Steeper under anaesthesia and in NREM, shallower with arousal -- so the target "
-            "is state-dependent and this interval is the awake resting one.",
+    "exponent_target": (0.73, 1.80),        # MEASURED, see `measured` below
+    "evidence": "measured-here",
+    "refs": ("Gao 2017", "Donoghue 2020", "this repo, scripts/measure_rhythms_eeg.py"),
+    "measured": {
+        "corpus": "ds008037-rest, 119 subjects, awake eyes open",
+        "split": "59 declaration / 60 held out, one seeded draw",
+        "global_exponent": (1.224, 0.037),       # mean, SE over subjects
+        "interval_from_declaration_half": (0.729, 1.803),
+        "held_out_coverage": 0.817,              # against an expectation of 0.80 +/- 0.073
+        "by_group": {"occipital": (1.326, 0.040), "sensorimotor": (1.394, 0.027),
+                     "frontal_midline": (1.542, 0.026)},
+        "method": "average reference, 4 s Hann segments at 50% overlap, linear-bin OLS over "
+                  "1-45 Hz with 8-13 and 45-55 excluded",
+        "caveat": "the fit weights linear bins uniformly, so 13-45 Hz supplies 128 of the 176 "
+                  "bins and the headline is mostly the high-frequency slope: 1.274 +/- 0.043 "
+                  "over 1-20 Hz against 1.332 +/- 0.064 over 20-45 Hz. Not comparable to a "
+                  "published exponent fitted on log-spaced bins.",
+    },
+    "note": "Steeper under anaesthesia and in NREM, shallower with arousal, so the target is "
+            "state-dependent and this is the awake resting one. It was (0.8, 2.0) from the "
+            "literature until 18 Sep 2026; the measured declaration half supports "
+            "(0.73, 1.80), slightly lower and narrower. The untrained cortical field already "
+            "sits at 1.5-1.6 at its healthy operating point, inside both.",
 }
 
 

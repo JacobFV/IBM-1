@@ -234,6 +234,9 @@
     "tau_B",
     "h_theta",
     "tau_h_deep",
+    "g_KCa",
+    "tau_Ca",
+    "ca_gain",
     "w_CT_R",
     "w_CT_T"
    ],
@@ -433,6 +436,27 @@
      "hz_at_half": 14.317872047424316,
      "hz_at_1p5x": 14.227008819580078,
      "span_hz": 0.09086322784423828
+    },
+    {
+     "param": "g_KCa",
+     "value": 0.0,
+     "hz_at_half": 14.26978588104248,
+     "hz_at_1p5x": 14.26978588104248,
+     "span_hz": 0.0
+    },
+    {
+     "param": "tau_Ca",
+     "value": 0.38,
+     "hz_at_half": 14.26978588104248,
+     "hz_at_1p5x": 14.26978588104248,
+     "span_hz": 0.0
+    },
+    {
+     "param": "ca_gain",
+     "value": 1.6,
+     "hz_at_half": 14.26978588104248,
+     "hz_at_1p5x": 14.26978588104248,
+     "span_hz": 0.0
     },
     {
      "param": "w_CT_R",

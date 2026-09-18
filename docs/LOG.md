@@ -6670,3 +6670,64 @@ reported "14.8 Hz" and I read it as a rhythm. `ibm/spectral.py` documents this �
 soft-argmax is biased toward the band centre when the spectrum is flat — and the guard is
 `peak_prominence`, which was −0.85 the whole time. Every frequency in this log is now quoted
 with its prominence; a frequency without one is not evidence that anything is oscillating.
+
+## 18 September 2026 — 121 resting subjects measured through the same instrument the model is scored on
+
+`scripts/measure_rhythms_eeg.py` reads ds008037's resting EEG (121 subjects, 62 channels,
+1 kHz, ~8 minutes each) and measures the catalogue's scorable rows through
+**`ibm/spectral.py`** — the same code path the substrate is scored on, which is the point:
+a model number and a human number that came out of different instruments are not
+comparable.
+
+**119 subjects measured**, split 59 declaration / 60 held out on one seeded draw, every
+interval derived on the declaration half and its coverage reported on the held-out half.
+Two subjects have no rest recording; two more (`sub-016`, `sub-118`) **failed the
+pre-registered 50% artefact-rejection bar and are recorded FAILED, bar not moved**.
+
+Known answers, all passing, all printed: Parseval to 0.35%, a flat spectrum returning the
+band centre exactly (10.500000), a white-noise surrogate returning exponent −0.0001 and
+alpha prominence −0.0007, an 11.3 Hz sinusoid injected at 1× and 4× the subject's own alpha
+power recovering 11.2587 Hz with a prominence rise of +0.30113 against a predicted +0.30103
+and +0.69905 against +0.69897, the line frequency coming back at 49.957 Hz from the data,
+and `measure_subject` called twice on one file returning **bit-identical** output.
+
+**What it changed in the catalogue.**
+
+- **The 1/f background moves to `measured-here`.** Exponent **1.224 ± 0.037** over 119
+  subjects, 81.7% held-out coverage against an expectation of 80 ± 7.3%. The declared
+  interval was (0.8, 2.0) from the literature; the declaration half supports **(0.73, 1.80)**
+  and that is now the target, with the method and its caveat stored beside it — the fit
+  weights linear bins uniformly, so 13–45 Hz supplies 128 of 176 bins and the headline is
+  mostly the high-frequency slope (1.274 over 1–20 Hz against 1.332 over 20–45). By group:
+  occipital 1.326 ± 0.040, sensorimotor 1.394 ± 0.027, frontal midline 1.542 ± 0.026.
+  The untrained cortical field sits at 1.5–1.6, inside both the old interval and the new one.
+- **A new row, `beta_posterior_scalp`, `measured-here`:** prominence +0.178 ± 0.020 decades,
+  peak 16.18 ± 0.19 Hz, 70% held-out coverage. The catalogue had no row for scalp beta at
+  all — its only resting 13–30 Hz row is `beta_bg` in the subthalamic nucleus, and a scalp
+  measurement must never be used to confirm that one, so this is a separate row with its
+  generator explicitly unidentified.
+- **The declared 10 Hz alpha centre survives a second corpus and a second state:** peak
+  **10.000 ± 0.071 Hz** on 119 eyes-open resting subjects.
+
+**Two corrections it forced.**
+
+1. **`alpha_occipital` and `alpha_reactivity` named the wrong corpus.** Both carried
+   `corpus=("ds008037-rest",)` beside a note citing an eyes-open/eyes-closed contrast on 44
+   held-out subjects. **ds008037's rest recordings are eyes-open only** — all 121 sidecars
+   say so and there are no state markers. That measurement is `scripts/fit_neural_spectra.py`
+   on **eegmmidb** runs R01/R02, confirmed by reading the script. Fixed. A citation that
+   names a corpus which cannot contain the measurement is the ledger's recurring shape, and
+   nothing in the catalogue's own checks could have caught it.
+2. **`mu` must not be promoted on a scalp measurement, and the data says why.** Central
+   8–13 Hz prominence is +0.476 ± 0.033 — bigger than occipital — but it correlates with the
+   occipital measurement at **r = +0.836**, the two peak frequencies at **r = +0.732**, and
+   the paired difference runs the *wrong way*: central exceeds occipital by 0.063 ± 0.020
+   decades. That is what volume conduction with an average reference predicts. A central
+   alpha peak is not evidence of a separable mu generator. Separating it needs a spatial
+   filter or the movement contrast the `mu_erd` row declares, and this corpus supports
+   neither. The row stays `literature`.
+
+**And one row that could not be judged at all:** `frontal_midline_theta` declares a *load
+slope* — theta against working-memory set size — which is a different quantity in different
+units from anything a resting corpus contains. Resting frontal-midline theta prominence is
++0.073 ± 0.017 with a peak at 5.83 Hz; that is a new fact, not a verdict on the row.

@@ -20,7 +20,8 @@ Two populations per thalamic unit, plus the two synaptic species that set the ti
     R   relay (thalamocortical) cells      in [0, 1]
     T   reticular (TRN) cells              in [0, 1]
     h   T-current de-inactivation          in [0, 1]   the slow variable that makes a burst
-    H   I_h (sag) activation                in [0, 1]   slower still; the delta variable
+    H   I_h (sag) activation                in [0, 1]   slower still, and depolarising
+    Ca  calcium, and the slow K current it opens   in [0, 1]   the post-burst refractoriness
     sA  GABA-A activation from TRN         in [0, 1]   fast  (~10 ms)
     sB  GABA-B activation from TRN         in [0, 1]   slow  (~150 ms)
     eta background current, Ornstein-Uhlenbeck, exactly advanced
@@ -128,6 +129,27 @@ class ThalamicPriors:
     # It is here because the first version of this module DESCRIBED this mechanism in its
     # docstring and did not implement it, and the T4 sweep showed delta prominence negative
     # at every arousal level while the prose claimed three regimes (docs/LOG.md).
+    # Calcium, and the slow potassium current it opens.  A burst floods the cell with
+    # calcium through the same T-channels that produced it, and the calcium-activated
+    # potassium conductance then holds the cell down for a few hundred milliseconds.  This
+    # is the refractoriness the first two versions lacked: without it the inter-burst
+    # interval is set by the fast loop and the cell cannot produce anything slower than the
+    # spindle band, which is exactly what gate T7 measured (delta prominence -1.21).
+    #
+    # Declared as a MECHANISM, on the diagnosis, not tuned into place: the gate T7 is
+    # unchanged and either it now passes or the diagnosis was wrong.
+    # DEFAULT ZERO, and the reason is the finding, not a preference.  The mechanism is
+    # implemented and the gate T7 still fails: at the polarisation where this refractoriness
+    # would pace delta, the relay does not fire AT ALL (0.00 bursts/s at arousal 0.05), so
+    # there is nothing for it to pace, and all it does at NREM2 is cost burst rate (7.5/s
+    # down to 0.4/s at 0.55) and spindle amplitude.  The missing piece is an operating point
+    # at which a deeply hyperpolarised relay still fires -- the arousal offset, the sag's
+    # strength and the T-window's position have to be designed together -- and that is a
+    # design step, not a constant.  Left in place at zero rather than deleted, because the
+    # diagnosis that called for it is still the diagnosis.
+    g_KCa: float = 0.0
+    tau_Ca: float = 0.380          # calcium clearance: the inter-burst interval it sets
+    ca_gain: float = 1.6           # influx per unit burst
     g_H: float = 0.85
     tau_H_up: float = 0.320        # activating, cell hyperpolarised: sets the delta period
     tau_H_dn: float = 0.140        # deactivating once the cell depolarises
@@ -187,7 +209,8 @@ class ThalamicField(nn.Module):
         z = torch.zeros(self.n, device=device)
         # learned residuals, bounded the same way the cortical field bounds its own: the
         # declared loop may be bent, it may not be replaced.
-        for name in ("tau_h_up", "g_T", "w_A", "w_B", "w_RT", "g_H", "tau_H_up"):
+        for name in ("tau_h_up", "g_T", "w_A", "w_B", "w_RT", "g_H", "tau_H_up",
+                     "g_KCa", "tau_Ca"):
             self.register_buffer(f"prior_{name}", z + float(getattr(self.pr, name)))
             self.register_parameter(f"res_{name}", nn.Parameter(
                 torch.zeros(self.n, device=device), requires_grad=learn))
@@ -202,7 +225,8 @@ class ThalamicField(nn.Module):
         device = device or self.prior_g_T.device
         z = torch.zeros(b, self.n, device=device)
         return {"R": z.clone(), "T": z.clone(), "h": z.clone() + 0.5,
-                "H": z.clone(), "sA": z.clone(), "sB": z.clone(), "eta": z.clone()}
+                "H": z.clone(), "Ca": z.clone(), "sA": z.clone(), "sB": z.clone(),
+                "eta": z.clone()}
 
     @staticmethod
     def detach(state):
@@ -219,15 +243,19 @@ class ThalamicField(nn.Module):
         pr = self.pr
         R, T, h, sA, sB = state["R"], state["T"], state["h"], state["sA"], state["sB"]
         H = state.get("H")
+        Ca = state.get("Ca")
         eta = state.get("eta")
         if eta is None:
             eta = torch.zeros_like(R)
         if H is None:
             H = torch.zeros_like(R)
+        if Ca is None:
+            Ca = torch.zeros_like(R)
         g_T, w_A, w_B, w_RT = (self.site("g_T"), self.site("w_A"),
                                self.site("w_B"), self.site("w_RT"))
         tau_h_up, g_H, tau_H_up = (self.site("tau_h_up"), self.site("g_H"),
                                    self.site("tau_H_up"))
+        g_KCa, tau_Ca = self.site("g_KCa"), self.site("tau_Ca")
 
         rho = math.exp(-dt / pr.tau_eta)
         eta = eta * rho
@@ -244,7 +272,7 @@ class ThalamicField(nn.Module):
         # the cell's polarisation INCLUDING its own sag: both the T-current's
         # de-inactivation and the sag's activation read this, not the synaptic input alone,
         # because the currents respond to the membrane and not to what is driving it
-        u_mem = u_syn + g_H * H
+        u_mem = u_syn + g_H * H - g_KCa * Ca
         # The T-current as a WINDOW current: availability (h, which rises with
         # hyperpolarisation) times activation (which rises with depolarisation).  The
         # product is non-zero only in the window between them, and the cell therefore needs
@@ -291,8 +319,13 @@ class ThalamicField(nn.Module):
         cA = 1.0 - math.exp(-dt / pr.tau_A)
         cB = 1.0 - math.exp(-dt / pr.tau_B)
         cH = 1.0 - torch.exp(-dt / tau_H)
+        # calcium: driven by the BURST (the T-channels are the influx path), cleared with
+        # its own time constant.  Clamped into the box like every other variable.
+        Ca_inf = torch.clamp(pr.ca_gain * burst, 0.0, 1.0)
+        cCa = 1.0 - torch.exp(-dt / tau_Ca)
         return {"R": R + cR * (fR - R), "T": T + cT * (fT - T),
                 "h": h + ch * (h_inf - h), "H": H + cH * (H_inf - H),
+                "Ca": Ca + cCa * (Ca_inf - Ca),
                 "sA": sA + cA * (T - sA), "sB": sB + cB * (T - sB), "eta": eta}
 
     def rollout(self, steps: int, dt: float, state=None, drive_sense=None,

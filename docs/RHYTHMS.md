@@ -24,17 +24,17 @@ than writing it:
 
 | tag | meaning | count |
 |---|---|---|
-| `measured-here` | fitted in this repo on held-out subjects; the row names the script and the number | 3 |
+| `measured-here` | fitted in this repo on held-out subjects; the row names the script and the number | 4 |
 | `measurable-now` | the corpus is on disk and the instrument exists; nobody has run it | 4 |
 | `literature` | declared from published physiology, no local measurement | 26 |
 | `target` | what we intend the substrate to produce; nothing measured at this specificity | 20 |
 
-Only **3** rows have been through anything in this repository that could have
+Only **4** rows have been through anything in this repository that could have
 said no. The rest are declarations, and the column is there so that no reader — including
 a future one of us — can mistake the table's completeness for evidence.
 
 `substrate` says what the **model** would need before a row could be scored at all.
-`ibm/substrate.py` is a cortical field: 9 of 53 rows are expressible
+`ibm/substrate.py` is a cortical field: 10 of 54 rows are expressible
 on it today. A rhythm whose loop runs through the reticular nucleus, the subthalamic
 nucleus or the spinal cord is not expressible by a cortical sheet, and scoring its band in
 cortex anyway would produce a number that moves for the wrong reason.
@@ -53,7 +53,7 @@ olfactory gamma at 70 Hz were both attached to long loops, when both are produce
 reciprocal circuits), and one genuine conflict that is now declared as an exception with
 its reason (the Piper rhythm). `python ibm/rhythms.py` runs every check.
 
-## All 53 rhythms
+## All 54 rhythms
 
 | # | rhythm | band | peak (Hz) | loop | states | set by | evidence | substrate |
 |---|---|---|---|---|---|---|---|---|
@@ -109,7 +109,8 @@ its reason (the Piper rhythm). `python ibm/rhythms.py` runs every check.
 | 50 | **the heartbeat-evoked response** | 1–1.5 Hz | — | gut-vagus-insula interoception | wake-rest | external | `target` | `needs-body` |
 | 51 | **breathing paces the brain** | 0.15–0.4 Hz | 0.25 | respiratory-olfactory-limbic | wake-rest, sleep | external | `target` | `needs-body` |
 | 52 | **olfactory bulb gamma** | 40–100 Hz | 70 | mitral-granule dendrodendritic loop | sniffing | loop delay | `target` | `needs-olfactory-bulb` |
-| 53 | **the stretch reflex's own resonance** | 6–12 Hz | 9 | monosynaptic stretch reflex | posture | loop delay | `literature` | `needs-body` |
+| 53 | **posterior resting beta at the scalp** | 13–30 Hz | 16.2 | local cortical excitation-inhibition | wake-rest, wake-eyes-open | network | `measured-here` | `expressible` |
+| 54 | **the stretch reflex's own resonance** | 6–12 Hz | 9 | monosynaptic stretch reflex | posture | loop delay | `literature` | `needs-body` |
 
 ## Loop by loop
 
@@ -258,8 +259,8 @@ Retina to the lateral geniculate to striate cortex and out into the visual hiera
 
 Ring: retina → lateral geniculate nucleus → primary visual cortex → lateral geniculate nucleus → thalamic reticular nucleus → lateral geniculate nucleus. Round trip 14–33 ms, net inhibitory, ceiling 15–36 Hz.
 
-- **occipital alpha** (8–13 Hz, peak 10 Hz, `measured-here`). The geniculo-cortical loop with the reticular gate closed on it. Eyes closed, the loop rings; eyes open, the retinal drive breaks it. *MEASURED as a two-state contrast on 44 held-out subjects: the declared occipital alpha resonator beats a 1/f background by +201.6 and the eyes-open/eyes-closed contrast by +200.4; the relabelling control collapses. Moving the centre OFF its 10 Hz prior FAILED -- the prior is already where the data wants it.* [Lopes da Silva 1991; Klimesch 1999]
-- **alpha blocking on eye opening** (8–13 Hz, `measured-here`). The same loop in two states. Berger's observation, and the cleanest state contrast in electrophysiology. *A ratio, and the reason this loop is worth more than a power target: a model can be given an alpha peak by hand, but it cannot be given one that switches off when the eyes open unless the gating is real.* [Berger 1929; Barry 2007]
+- **occipital alpha** (8–13 Hz, peak 10 Hz, `measured-here`). The geniculo-cortical loop with the reticular gate closed on it. Eyes closed, the loop rings; eyes open, the retinal drive breaks it. *MEASURED as a two-state contrast on 44 held-out subjects: the declared occipital alpha resonator beats a 1/f background by +201.6 and the eyes-open/eyes-closed contrast by +200.4; the relabelling control collapses. Moving the centre OFF its 10 Hz prior FAILED -- the prior is already where the data wants it.  Measured again on ds008037's 119 resting subjects, EYES OPEN, which is the other state: peak 10.000 +/- 0.071 Hz, so the declared 10 Hz centre survives a second corpus and a second state. Prominence there is +0.413 +/- 0.036 decades with 46% of subjects inside this row's declared 0.4-1.5 interval -- expected with the eyes open, and not a test of an eyes-closed declaration.* [Lopes da Silva 1991; Klimesch 1999]
+- **alpha blocking on eye opening** (8–13 Hz, `measured-here`). The same loop in two states. Berger's observation, and the cleanest state contrast in electrophysiology. *A ratio, and the reason this loop is worth more than a power target: a model can be given an alpha peak by hand, but it cannot be given one that switches off when the eyes open unless the gating is real.  The corpus is eegmmidb (R01 eyes-open, R02 eyes-closed); this row and the one above named ds008037-rest until 18 Sep 2026, and that corpus has no eyes-closed data at all -- caught by the run that measured it.* [Berger 1929; Barry 2007]
 - **alpha as a travelling wave** (8–13 Hz, `literature`). Alpha is not a standing hum: its phase sweeps across the cortical sheet, mostly occipital to frontal, at a few metres per second. *This is the term that makes the substrate's conduction delays load-bearing: a sheet with instantaneous coupling can have the band and cannot have the wave.* [Halgren 2019; Zhang 2018]
 - **steady-state visual entrainment** (4–60 Hz, `literature`). A flickering stimulus drags the visual loop to its own frequency, and the response appears at that frequency and its harmonics. *The calibration rhythm of this table. Drive at f, get a peak at f: any instrument or substrate that fails THIS is broken in a way that has nothing to do with physiology.* [Norcia 2015]
 
@@ -286,6 +287,7 @@ Pyramidal cells excite fast interneurons and the interneurons silence them a few
 Ring: primary visual cortex → primary visual cortex → primary visual cortex. Round trip 3–8 ms, net inhibitory, ceiling 62–167 Hz.
 
 - **visual gamma** (30–80 Hz, peak 50 Hz, `literature`). Pyramidal cells excite fast interneurons, the interneurons silence them, and the cycle is the interneuron's decay. Frequency rises with contrast: it is a property of the drive, not a fixed clock. *The E/I loop that produces it is exactly what `ibm/substrate.py` is, so this is the second rhythm the cortical sheet could own today -- but tau_I is 5 ms, which puts the natural PING frequency near 60-80 Hz, and nothing has checked where it actually lands.* [Buzsaki & Wang 2012; Ray & Maunsell 2010]
+- **posterior resting beta at the scalp** (13–30 Hz, peak 16.2 Hz, `measured-here`). A beta peak over posterior cortex at rest, standing above its own 1/f background. What generates it is not identified, and filing it under the local cortical E/I loop is a placement, not a claim: this row is a MEASURED SCALP CONSTRAINT that any future cortical beta claim has to beat. *MEASURED on 119 subjects of ds008037 resting EEG, split 59 declaration / 60 held out: prominence +0.178 +/- 0.020 decades, peak 16.18 +/- 0.19 Hz, relative power 0.122 +/- 0.007. The declared interval is the declaration half's 10-90 range and 70% of HELD-OUT subjects fall inside it against an expectation of 80 +/- 7.3%, so it is if anything slightly narrow. The catalogue had no row for scalp beta at all -- its only 13-30 Hz resting row is `beta_bg` in the subthalamic nucleus, and a scalp measurement must never be used to confirm that one.* [this repo, scripts/measure_rhythms_eeg.py]
 
 ### sensorimotor mu
 
@@ -293,7 +295,7 @@ Sensorimotor cortex idles in a rhythm that breaks the moment a movement is plann
 
 Ring: ventroposterior thalamus → primary somatosensory cortex → primary motor cortex → ventroposterior thalamus → thalamic reticular nucleus → ventroposterior thalamus. Round trip 9–22 ms, net inhibitory, ceiling 23–56 Hz.
 
-- **sensorimotor mu** (8–13 Hz, peak 10 Hz, `literature`). The somatosensory arm of the same thalamocortical machinery that makes occipital alpha, idling over the central sulcus. *FAILED once already, and the failure was the DECLARATION, not the data: the declared resonator was a low-pass form that cannot fit a small peak on a steep background. A band-pass declaration is owed a fresh pre-registration before it is fitted again.* [Pfurtscheller 1999; Hari 2006]
+- **sensorimotor mu** (8–13 Hz, peak 10 Hz, `literature`). The somatosensory arm of the same thalamocortical machinery that makes occipital alpha, idling over the central sulcus. *FAILED once already, and the failure was the DECLARATION, not the data: the declared resonator was a low-pass form that cannot fit a small peak on a steep background. A band-pass declaration is owed a fresh pre-registration before it is fitted again.  AND IT MUST NOT BE PROMOTED ON A SCALP MEASUREMENT: over ds008037's 119 resting subjects the central 8-13 Hz prominence (+0.476 +/- 0.033) correlates with the occipital one at r = +0.836 and the two peak frequencies at r = +0.732, and the paired difference runs the WRONG way -- central exceeds occipital by 0.063 +/- 0.020 decades, which is what volume conduction with an average reference predicts.  A central alpha peak is not evidence of a separable mu generator; separating it needs a spatial filter or the movement contrast `mu_erd` declares.* [Pfurtscheller 1999; Hari 2006]
 - **mu breaking on movement** (8–13 Hz, `literature`). The rhythm desynchronises before the muscle moves, and on watching someone else move. *The goal is that preparing to act shows in the loop before any muscle moves -- which means this entry cannot be scored until the substrate is attached to a body that can be about to move.* [Pfurtscheller & Lopes da Silva 1999]
 - **post-movement beta rebound** (15–30 Hz, peak 20 Hz, `literature`). Beta collapses during the movement and overshoots its baseline for a second afterwards. [Jurkiewicz 2006]
 

@@ -84,6 +84,13 @@ THINGS THAT WOULD MAKE A NUMBER LOOK RIGHT FOR THE WRONG REASON -- read before q
   shape -- a quantity computed correctly and compared against the wrong population -- so
   this script does NOT propose to confirm that row.  `mu` is declared in `wake-rest`,
   which is what this corpus is, so mu is the row that can honestly move.
+* **Marker files are not uniform.**  114 of 121 rest recordings carry one 200001 and one
+  200002; sub-105/-107 carry two starts, sub-128 two ends, sub-013/-043/-047/-085 a start
+  and no end, and sub-147/-148/-149 have NO events file at all.  The rule is fixed in
+  `measure_subject` (last start before the first end; first end; fall back to the end of
+  the recording when there is no end mark or no file) and each subject's
+  `marker_rule` is recorded, so a subject analysed on a fallback is visible rather than
+  pooled in silently.
 * **The events file marks only the recording's start and end** (values 200001, 200002).
   There is no eyes-open/eyes-closed marker, no task marker, no trial structure.  Every
   `state_contrast`, `load_slope` and `evoked_band` row in the catalogue is therefore OUT
@@ -103,6 +110,21 @@ THINGS THAT WOULD MAKE A NUMBER LOOK RIGHT FOR THE WRONG REASON -- read before q
   because the task named it and because it documents the intent, but the thing that
   actually keeps the 50 Hz line out of the fit is `hi = 45`.  Known answer (f) confirms
   the line is at 50 Hz and not 60 -- a known answer about the DATA, not the instrument.
+* **MEASURED, and it is the most important caveat in this file: the occipital and
+  sensorimotor 8-13 Hz numbers are NOT two independent measurements.**  Over 119
+  subjects, r(occipital alpha prominence, sensorimotor mu prominence) = **+0.836**
+  [+0.784, +0.878] and r of the two peak frequencies = **+0.732** [+0.625, +0.820] --
+  70% of the variance is shared.  The paired difference goes the wrong way for two
+  separate generators: central prominence is HIGHER than occipital by 0.063 +/- 0.020
+  decades (95% CI [-0.102, -0.024] for occ - smr, excluding zero).  At the scalp, with
+  an average reference, a posterior alpha source spreads onto C3/C4/Cz and the average
+  reference subtracts the dominant source from everyone, so this is what volume
+  conduction predicts.  A scalp 8-13 Hz prominence over the central electrodes is
+  therefore NOT evidence of a separate sensorimotor mu generator, and the `mu` row must
+  not be moved to `measured-here` on it.  Separating mu from alpha needs a spatial filter
+  (CSD/Laplacian, ICA or a source model) or the movement contrast the row's sibling
+  `mu_erd` declares -- neither of which this script does and neither of which this corpus
+  supports.
 * **Prominence is a log10 ratio against a fitted background**, so it is insensitive to
   amplifier gain and to the average reference's overall scale -- but it is NOT insensitive
   to the background's shape, and a subject whose 1/f is bent by a broad artefact will show
@@ -316,12 +338,16 @@ def measure_subject(
         raise FileNotFoundError("no *_task-rest_eeg.set")
 
     status = dict(_read_channels_tsv(eeg / f"{sid}_task-rest_channels.tsv"))
-    ev = _read_events_tsv(eeg / f"{sid}_task-rest_events.tsv")
+    evf = eeg / f"{sid}_task-rest_events.tsv"
+    # sub-147, sub-148 and sub-149 have a rest recording and NO events file at all.  This
+    # branch was added after the first full pass found them; it extends the missing-end-mark
+    # fallback below to a missing FILE and it cannot change any already-measured value,
+    # because it only fires where there was no measurement.  Recorded here rather than
+    # applied quietly.
+    ev = _read_events_tsv(evf) if evf.exists() else []
     starts = sorted(float(t) for t, v in ev if v == "200001")
     ends = sorted(float(t) for t, v in ev if v == "200002")
-    if not starts:
-        raise ValueError(f"events file has no 200001 start mark (values seen: "
-                         f"{sorted({v for _, v in ev})})")
+    no_marks = not starts
     # The markers are not always a clean pair.  Across the 121 rest files: 114 are one
     # start and one end; sub-105 and sub-107 have TWO starts before one end (34.45/39.05 s
     # and 12.04/16.39 s -- a restarted mark); sub-128 has two ends 0.15 s apart; sub-013,
@@ -332,11 +358,13 @@ def measure_subject(
     # after the rest period, and dropping four subjects for a missing mark would be a
     # selection on the marker file rather than on the data.
     t1 = min(ends) if ends else None
-    t0 = max([t for t in starts if t1 is None or t < t1], default=starts[0])
-    marker_rule = ("start+end" if len(starts) == 1 and len(ends) == 1 else
-                   ("no-end-mark: trimmed to the end of the recording" if not ends else
-                    f"{len(starts)} start / {len(ends)} end marks: last start before the "
-                    f"first end, first end"))
+    t0 = max([t for t in starts if t1 is None or t < t1], default=(starts[0] if starts else 0.0))
+    marker_rule = ("no events file: the whole recording is analysed" if not evf.exists() else
+                   "no 200001 mark: the whole recording is analysed" if no_marks else
+                   "start+end" if len(starts) == 1 and len(ends) == 1 else
+                   "no-end-mark: trimmed to the end of the recording" if not ends else
+                   f"{len(starts)} start / {len(ends)} end marks: last start before the "
+                   f"first end, first end")
 
     raw = mne.io.read_raw_eeglab(str(setf), preload=True)
     fs = float(raw.info["sfreq"])
@@ -736,6 +764,13 @@ def summarise(per_subject: Dict[str, Dict], split: Dict, gen: np.random.Generato
             rec["held_out_coverage"] = cov
             rec["held_out_coverage_se"] = float(math.sqrt(0.8 * 0.2 / hv.size))
             rec["held_out_coverage_expected"] = 0.8
+            # CLAUDE.md: a margin over a MEASURED baseline must clear sampling error on
+            # BOTH sides.  The 80% expectation is not exact -- the interval's two edges are
+            # order statistics of the declaration half, so the coverage of a FIXED held-out
+            # population is itself ~Beta and carries sqrt(.8*.2/(n_dec+1)).  Judge a
+            # coverage against this combined figure, never against the binomial alone.
+            rec["held_out_coverage_se_combined"] = float(math.sqrt(
+                0.8 * 0.2 / hv.size + 0.8 * 0.2 / (dv.size + 1)))
             rec["held_out_coverage_boot"] = _bootstrap(inside, gen, n_boot)
             lo5, hi5 = float(np.percentile(dv, 5)), float(np.percentile(dv, 95))
             in5 = ((hv >= lo5) & (hv <= hi5)).astype(float)
@@ -787,15 +822,19 @@ PATCH_ROWS = [
                  "events file has only start/end marks, so this corpus contains no "
                  "eyes-closed data at all.  The row's declared state is wake-eyes-closed."),
     dict(row="alpha_occipital.peak", quantity="occ_alpha_peak_hz",
-         declared_kind="peak", declared_band=(8.0, 13.0), declared_target=(10.0, 10.0),
+         declared_kind="peak", declared_band=(8.0, 13.0), declared_target=None,
+         declared_point=10.0,
          declared_states=("wake-eyes-closed",), state_match=False,
-         blocker="same state mismatch; the declared peak is a point, 10.0 Hz."),
+         blocker="same state mismatch.  The declared peak is a POINT, 10.0 Hz, and a point "
+                 "has no width, so 'fraction of subjects inside it' is meaningless -- what "
+                 "is reported instead is whether 10.0 lies inside the measured interval."),
     dict(row="mu", quantity="smr_mu_prominence",
          declared_kind="peak_prominence", declared_band=(8.0, 13.0),
          declared_target=(0.2, 1.0), declared_states=("wake-rest",), state_match=True,
          blocker=""),
     dict(row="mu.peak", quantity="smr_mu_peak_hz",
-         declared_kind="peak", declared_band=(8.0, 13.0), declared_target=(10.0, 10.0),
+         declared_kind="peak", declared_band=(8.0, 13.0), declared_target=None,
+         declared_point=10.0,
          declared_states=("wake-rest",), state_match=True, blocker=""),
     dict(row="BACKGROUND (aperiodic)", quantity="exponent_global",
          declared_kind="aperiodic_exponent", declared_band=(1.0, 45.0),
@@ -828,6 +867,7 @@ def catalogue_patch(summary: Dict) -> List[Dict]:
         rec = {k: spec[k] for k in
                ("row", "quantity", "declared_kind", "declared_band", "declared_target",
                 "declared_states", "state_match", "blocker")}
+        rec["declared_point"] = spec.get("declared_point")
         rec.update({
             "measured_mean": q.get("all", {}).get("mean"),
             "measured_se": q.get("all", {}).get("se"),
@@ -836,6 +876,7 @@ def catalogue_patch(summary: Dict) -> List[Dict]:
             "held_out_coverage": cov,
             "held_out_coverage_expected": q.get("held_out_coverage_expected"),
             "held_out_coverage_se": q.get("held_out_coverage_se"),
+            "held_out_coverage_se_combined": q.get("held_out_coverage_se_combined"),
             "declaration_interval_05_95": q.get("proposed_interval_05_95"),
             "held_out_coverage_05_95": q.get("held_out_coverage_05_95"),
         })
@@ -848,6 +889,13 @@ def catalogue_patch(summary: Dict) -> List[Dict]:
                 dt[0] <= a["ci95"][0] and a["ci95"][1] <= dt[1])
             rec["measured_interval_below_declared"] = bool(a["q90"] < dt[0])
             rec["measured_interval_above_declared"] = bool(a["q10"] > dt[1])
+        pt = spec.get("declared_point")
+        if pt is not None and q.get("all") and q["all"].get("ci95"):
+            a = q["all"]
+            rec["declared_point_inside_declaration_interval"] = bool(
+                iv is not None and iv[0] <= pt <= iv[1])
+            rec["declared_point_inside_mean_ci95"] = bool(a["ci95"][0] <= pt <= a["ci95"][1])
+            rec["mean_minus_declared_point"] = float(a["mean"] - pt)
         out.append(rec)
     return out
 
@@ -1188,9 +1236,16 @@ def _report(payload: Dict) -> None:
         iv = rec["declaration_interval_10_90"]
         print(f"    declaration half supports  [{iv[0]:+.4f}, {iv[1]:+.4f}] (10-90 pct of the "
               f"declaration half)")
+        sc = rec.get("held_out_coverage_se_combined") or rec["held_out_coverage_se"]
         print(f"    held-out coverage          {100 * rec['held_out_coverage']:.1f}% "
               f"(expected {100 * rec['held_out_coverage_expected']:.0f}% +/- "
-              f"{100 * rec['held_out_coverage_se']:.1f}%)")
+              f"{100 * sc:.1f}%, combining the held-out binomial error with the "
+              f"declaration half's own)")
+        if rec.get("declared_point") is not None:
+            print(f"    declared point {rec['declared_point']:.2f}: inside the declaration "
+                  f"interval = {rec['declared_point_inside_declaration_interval']}, inside "
+                  f"the 95% CI of the mean = {rec['declared_point_inside_mean_ci95']} "
+                  f"(mean - point = {rec['mean_minus_declared_point']:+.4f})")
         iv5 = rec.get("declaration_interval_05_95")
         if iv5:
             print(f"    wider 5-95 alternative     [{iv5[0]:+.4f}, {iv5[1]:+.4f}]  held-out "
