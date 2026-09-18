@@ -24,3 +24,6 @@ out/*.gif
 out/*.npy
 # rendered panels and animations under out/ subdirectories
 out/**/*.gif
+
+# learned tensors written beside results (e.g. plasticity P): weights, never committed (CLAUDE.md)
+out/**/*.pt
