@@ -482,6 +482,38 @@ a testis half the expected size. That is a data gap in a single-donor atlas whos
 organ volumes have never been calibrated, and it is on the record before anything
 is scaled by it rather than after.
 
+## 11. Most of the rhythms the brain is specified to have run through structures the model does not contain
+
+**Surfaced by writing the specification down.** `docs/RHYTHMS.md` (generated from
+`ibm/rhythms.py`) declares 53 rhythms over 26 loops. `ibm/substrate.py` is a cortical
+field, and the atlas behind it addresses one `thalamus` blob, one `hippocampus` blob, one
+`pallidum` and one `brainstem`.
+
+| | |
+|---|---|
+| declared | 53 rhythms, 26 loops, 65 stations |
+| expressible on the substrate today | **9** rhythms — the ones whose loop is local cortical E/I or cortico-cortical |
+| blocked on the thalamus (incl. the reticular nucleus) | 14 |
+| blocked on a body, a cord or a viscus | 12 |
+| blocked on hippocampal subfields | 7 |
+| blocked on basal ganglia, cerebellum, limbic or neuromodulatory nuclei | 11 |
+
+Three stations the loops need have **no label at all** in the atlas: the subthalamic
+nucleus, the medial septum and the suprachiasmatic nucleus. Several more are a structure
+inside a blob — the thalamic reticular nucleus is the shell of `thalamus`, CA3 and CA1 are
+both `hippocampus`, GPe and GPi are both `pallidum`. The spindle rhythm, the one frequency
+in the whole table that has been *measured here* (13.45 Hz on held-out subjects), is
+produced by the reticular-to-relay loop, which is exactly one of these.
+
+This is not a complaint about the atlas. It is the reason the table carries a `substrate`
+column: scoring a spindle band in cortex alone, because cortex is what we have, would
+produce a number that moves for the wrong reason — the same shape as every entry in
+CLAUDE.md's corrections ledger. Closing it means giving the substrate the stations, in
+this order: **reticular nucleus and relay cells** (14 rhythms, including the measured
+one), then **hippocampal subfields** (7, including the sequence machinery the programme's
+episodic claims rest on), then **basal ganglia with a real subthalamic nucleus** (4, plus
+action selection).
+
 ## What this list is for
 
 Row 1 is what remains load-bearing for what the programme is trying to

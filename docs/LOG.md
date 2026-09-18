@@ -6386,3 +6386,50 @@ we intend, and shape it toward measured physiology by every pressure we can writ
 anatomy (the connectome and its tract lengths), association, **and now the spectrum** — the
 brain's declared rhythms as a table, and a power-spectral term in the objective that pulls each
 loop toward its band. `docs/RHYTHMS.md` is the table; the next entry reports the instrument.
+
+## 18 September 2026 — the rhythm catalogue: what this brain is specified to have
+
+`ibm/rhythms.py`, and `docs/RHYTHMS.md` generated from it. **53 rhythms over 26 loops and
+65 stations**, each with its band, its declared peak, the behavioural states it exists in,
+what sets its frequency, the circuit that produces it with a conduction budget per edge,
+and a `measure` spec that `ibm/spectral.py` can score — the same spec for the model and for
+real EEG.
+
+This is a specification, not a result. The evidence column says so per row: **3
+measured-here**, 4 measurable on corpora already on disk, 26 from the literature, 20
+declared targets. The site's eleven loops are all in it; so are fifteen more the site does
+not draw, including the spinal locomotor CPG, the cortico-muscular loop, the gastric
+rhythm and the stretch reflex — the ones a brain attached to a body needs and a brain in a
+jar does not.
+
+**The table checks itself, and the check found three errors in its first draft.** The one
+law available is that a loop cannot oscillate faster than it can go round: with a
+round-trip delay D, `f <= 1/(2D)` for a net-inhibitory ring and `f <= 1/D` for a
+net-excitatory one. `python ibm/rhythms.py` runs it over every row.
+
+1. **Purkinje simple-spike synchrony at 200 Hz was filed under the olivo-cerebellar loop**
+   (10–24 ms, ceiling 100 Hz). It is produced by the local Purkinje–basket circuit, 1–3 ms,
+   ceiling 500 Hz. Wrong loop, caught by arithmetic.
+2. **Olfactory bulb gamma at 70 Hz was filed under the respiratory loop** (65–177 ms,
+   ceiling 15 Hz). It is the mitral–granule dendrodendritic loop, 2–5 ms. Same shape.
+3. **The Piper rhythm (30–60 Hz corticomuscular) genuinely violates its loop's bound** —
+   40 Hz needs a round trip under 25 ms and the cortico-muscular loop is 35–57 ms. It is
+   recorded as a declared exemption *with its reason*, which is a claim that the loop
+   assignment is wrong rather than that the measurement is, and the checker prints every
+   exemption on every run so it cannot go quiet.
+
+And one error of my own that no check could have caught, recorded because it is the exact
+failure this repo keeps paying for: **I first wrote the auditory entry claiming the
+conduction budget predicts the 40 Hz steady-state response, by counting the A1–MGN ring
+twice to make the arithmetic come out.** It does not. The ring is 4–9 ms, the ceiling is
+111–250 Hz, and 40 Hz is set by synaptic and rebound time constants like most of the
+table. A bound is a ceiling; the moment it is quoted as a prediction it has become a
+number fitted to the answer. The entry now says this.
+
+**What the table says about the model.** `docs/DISCONNECTS.md` §11: only **9 of 53** rows
+are expressible on `ibm/substrate.py` today, because it is a cortical field and most of
+these loops run through the thalamus, the hippocampal subfields, the basal ganglia, the
+cord or the body. Three stations have no atlas label at all (subthalamic nucleus, medial
+septum, suprachiasmatic nucleus). The measured spindle frequency is produced by the
+reticular-to-relay loop — one of the missing ones. That ordering is now the substrate's
+build order.
