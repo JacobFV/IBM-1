@@ -65,3 +65,19 @@ Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pyto
   [relabelled]  210 wake-eyes-open  L=  18.9248 |g|= 40.971  gamma_visual=0.08408  aperiodic=2.945
   [relabelled]  220 wake-eyes-open  L=  18.8745 |g|= 32.627  gamma_visual=-0.03579  aperiodic=3.078
   [relabelled]  230 wake-eyes-open  L=   0.4052 |g|=  0.278  gamma_visual=-0.4356  aperiodic=1.554
+  [relabelled]  240 wake-eyes-open  L=  19.6750 |g|= 23.493  gamma_visual=0.1069  aperiodic=3.318
+  [relabelled]  250 wake-eyes-open  L=  19.1997 |g|= 13.427  gamma_visual=-0.1538  aperiodic=2.892
+  [relabelled]  260 wake-eyes-open  L=  18.1863 |g|= 13.269  gamma_visual=-0.04506  aperiodic=2.62
+  [relabelled]  270 wake-eyes-open  L=  19.1590 |g|= 18.546  gamma_visual=0.1005  aperiodic=2.749
+  [relabelled]  280 wake-eyes-open  L=  21.1910 |g|= 18.868  gamma_visual=0.1647  aperiodic=2.627
+  [relabelled]  290 wake-eyes-open  L=  18.3725 |g|= 17.365  gamma_visual=-0.1069  aperiodic=2.69
+  [relabelled]  299 nrem3           L=  10.0973 |g|= 38.536  slow_oscillation=0.7495  aperiodic=2.339
+
+G3 reach:
+  [OUT] wake-eyes-open/gamma_visual: 0.01652 vs (0.2, 1.2)
+  [OUT] wake-eyes-open/aperiodic: 2.691 vs (0.8, 2.0)
+  [IN ] nrem3/slow_oscillation: 0.9914 vs (0.3, 2.0)
+  [OUT] nrem3/aperiodic: 2.338 vs (0.8, 2.0)
+G4 relabel control: {'ok': True, 'shaped_loss': 7.532773494720459, 'relabelled_loss': 28.7711124420166}
+
+wrote out/shape_rhythms.json

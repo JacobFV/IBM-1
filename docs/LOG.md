@@ -6731,3 +6731,68 @@ and `measure_subject` called twice on one file returning **bit-identical** outpu
 slope* — theta against working-memory set size — which is a different quantity in different
 units from anything a resting corpus contains. Resting frontal-midline theta prominence is
 +0.073 ± 0.017 with a peak at 5.83 Hz; that is a new fact, not a verdict on the row.
+
+## 18 September 2026 — first shaping run: the pressure reaches, one target of four arrives, and it breaks something that was already right
+
+`scripts/shape_rhythms.py`, 1024 sites, tract topology, 300 steps alternating waking and
+NREM3, shaped arm plus the pre-registered relabel control. Gates in the order they were
+declared.
+
+- **G0 ENTRAINMENT — PASS.** Drove V1 at 10 Hz, measured **9.822 Hz** (bar ±0.5).
+- **G1 IDEMPOTENCE — PASS.** Bit-identical.
+- **G2 BASELINE — recorded.** Below.
+- **G3 REACH — 1 of 4.** Per target, baseline → final:
+
+| state / target | baseline | final | declared | verdict |
+|---|---|---|---|---|
+| waking / visual gamma prominence | −0.416 | **+0.017** | 0.2 – 1.2 | OUT |
+| waking / 1/f exponent | **+1.598** | +2.691 | 0.8 – 2.0 | **OUT, and it started IN** |
+| NREM3 / slow-oscillation prominence | −0.986 | **+0.991** | 0.3 – 2.0 | **IN** |
+| NREM3 / 1/f exponent | **+1.657** | +2.338 | 0.8 – 2.0 | **OUT, and it started IN** |
+
+- **G4 RELABEL CONTROL — PASS, decisively.** Shaped total loss **7.53**, relabelled
+  **28.77**. A substrate whose site-to-station map is permuted cannot reach the same place,
+  so the pressure is anatomical and not "make the whole sheet oscillate". Its gamma ends at
+  −0.236 against the shaped arm's +0.017, and its slow oscillation at +0.652 against +0.991
+  — the relabelled arm gets *partway* on the slow oscillation, which is what it should do,
+  since a slow oscillation is a property of the whole sheet and does not care which region
+  is called which.
+
+**The pressure reaches.** That was the question. A spectral term moved the slow oscillation
+from −0.99 to +0.99 decades — from *below* its own background to a real peak — and visual
+gamma by +0.43 decades, and the control says the anatomy mattered to where it got.
+
+**And it bought those peaks with excitability, which is the finding.** The waking arm's mean
+rate went **4.14 → 15.35 Hz** with saturation **0.000 → 0.112**, and the 1/f exponent, which
+began at 1.598, *inside* its declared window, was pushed to 2.691, outside it. The health
+guard cost 1.26 and the loss in that state got **worse overall, 0.380 → 6.837**. The
+objective was minimised; the state it minimised to is not the one that was wanted. Shaping
+one quantity broke a quantity that was already right, and the current weights do not prevent
+that trade.
+
+**My prediction was half right, and the wrong half is the more interesting one.** I recorded
+before the run that gamma would not arrive, for a structural reason — with `tau_E` 10–20 ms,
+a fixed `tau_I` of 5 ms and a ±35% residual bound, the E/I pair's ceiling is ~28 Hz, below
+the declared 30–80 Hz band — and that the run would end with **`tau_E` pinned at its lower
+bound**.
+
+Gamma did not arrive. **But `tau_E` is nowhere near its bound**: tanh of the residual runs
+−0.438 to +0.249 with *nothing* below −0.9, giving effective time constants of 8.96–20.05 ms
+against a prior of 10–19, and a PING ceiling of **23.8 Hz at the fastest site**. The
+optimiser never pushed on the constant that limits the band. It found +0.43 decades of
+gamma-band prominence the cheap way instead — by raising excitability until the whole
+spectrum changed shape. The ceiling argument stands; the claim about what gradient descent
+would *do* about it was wrong, and a gradient that has a cheap route does not take the
+structural one.
+
+**What follows, in order.**
+1. **The background term has to hold what it already has.** An exponent that starts inside
+   its window and is pushed out is a regression, and the objective should say so — the term
+   needs a weight that reflects that it is `measured-here` on 119 subjects, not a literature
+   guess. (The run used the pre-measurement interval (0.8, 2.0); the measured one is
+   (0.73, 1.80), which it misses by more.)
+2. **The health guard is too permissive.** 11% saturation and a near-fourfold rate rise
+   should not be affordable at a cost of 1.26 against a rhythm term's several.
+3. **Gamma needs `tau_I` per site**, which is a substrate change and was the predicted fix —
+   but it is now clear the change alone is not enough: the cheap route has to be closed at
+   the same time, or the optimiser will keep taking it.
