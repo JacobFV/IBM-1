@@ -4806,3 +4806,45 @@ reproduce to the digit: full 63.50, frozen 28.00, no_assoc 28.00, bypass 26.00.
 A checkpoint that the current code cannot load is a result that cannot be checked. Worth
 a standing habit: when a module gains a buffer, the checkpoints already on disk are the
 regression test.
+
+---
+
+## 17 September 2026 — the body's own trajectories cannot be rendered without tearing it apart
+
+The site animated the musculoskeletal anatomy with a solved trajectory and the result came
+back visibly dislocated: limbs swung out at angles no joint allows, feet detached below.
+
+**It is not the binding.** Rendered at rest -- every segment matrix set to identity -- the
+same 200 meshes are a correctly articulated standing figure with the joints closed. The
+`za-*` meshes and the `body-bp3d-FJ*` entities share a frame (bounding boxes agree), and
+the segment assignment is sound.
+
+**It is the motion.** Five transform conventions were tested against a known answer: a
+joint must stay closed, so the minimum distance between two adjacent segments' entity
+centroids should not change. Rest gaps are 2-10 mm. Every convention -- `R·p + t`, rotation
+about the segment centroid, both transposes, and `R·(p−t)+t` -- drifts **18-30 mm on
+average and up to 77 mm**. No convention closes the joints, because the trajectory does not
+close them. This repository already recorded why: *all 67 stored trajectories are outside
+the model's own declared joint ranges*, crawl-best's left knee past its limit for **95.6%
+of 1,600 frames**, the ankles for 79-94%.
+
+So the figure ships at rest and turns on the spot rather than walking. The anatomy is real
+and the articulation is right; the motion is the part that is not admissible, and animating
+it would have advertised that defect as a feature.
+
+**The earlier gate could not have caught this.** The exporter checked that the posed body
+measured between 1.2 and 2.4 m and it measured 1.649 m -- but a contorted body is still
+1.649 m tall. A height check cannot distinguish a standing figure from a dislocated one,
+which is the "check a metric against a case whose answer you know" rule failing on a metric
+that had no discriminating case. The joint-closure test above is the one that does.
+
+**Separately, two assignment bugs found on the way, both real:**
+1. Meshes were assigned to a segment by the nearest of all 4,000 bound entities to the
+   mesh's CENTROID. Three-quarters of that pool is vessels, muscle and soft organs, and one
+   interior point is a poor summary of a long bone. Now: bone anchors only (`role ==
+   "rigid_bone"`, 334 of them).
+2. A modal vote over each vertex's nearest anchor then put `Femur.l` on **`patella_l`** --
+   the femur riding the kneecap -- because an elongated bone's distal vertices are all
+   nearest the next segment's anchor. Taking the anchor that minimises MEAN distance to
+   every vertex asks which bone the mesh *is*, and the patella loses that over a whole
+   femur. Segment coverage went 18/22 to 22/22.

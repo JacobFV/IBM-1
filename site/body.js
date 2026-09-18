@@ -55,7 +55,15 @@
   const MB = D.motionBySegment || {};
   const times = D.times || [0];
   const tmp = new T.Matrix4();
+  /* THE REST POSE, not a trajectory.  every stored trajectory for this body is outside
+     the model's own declared joint ranges (docs/LOG.md: crawl-best's left knee is past its
+     limit for 95.6% of 1,600 frames, the ankles for 79-94%), so driving the anatomy with
+     one tears the skeleton apart at the joints.  the binding and the geometry are right --
+     rendered at rest this is a correctly articulated standing figure -- and it is the
+     MOTION that is not admissible.  so the figure turns rather than walks. */
   function pose(fi) {
+    for (const s in groups) groups[s].matrix.identity();
+    return;
     for (const s in groups) {
       const f = MB[s] && MB[s][fi];
       if (!f) continue;
@@ -84,7 +92,7 @@
     return (h / 2) / Math.tan((cam.fov * Math.PI / 180) / 2) * 1.16;
   }
 
-  let az = -0.55, el = 0.06, dist = 3.2, drag = null, playing = true, t0 = performance.now();
+  let az = -0.4, el = 0.06, dist = 3.2, drag = null, spin = true, t0 = performance.now();
   dist = fit();
   function place() {
     cam.position.set(Math.sin(az) * Math.cos(el) * dist, Math.sin(el) * dist + 0.05,
@@ -97,13 +105,13 @@
     cam.aspect = w / h; cam.updateProjectionMatrix();
   }
 
-  host.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, y: e.clientY, az, el }; host.setPointerCapture(e.pointerId); playing = false; });
+  host.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, y: e.clientY, az, el }; host.setPointerCapture(e.pointerId); spin = false; });
   host.addEventListener("pointermove", (e) => {
     if (!drag) return;
     az = drag.az - (e.clientX - drag.x) * 0.008;
     el = Math.max(-0.5, Math.min(0.7, drag.el + (e.clientY - drag.y) * 0.005));
   });
-  const stop = () => { drag = null; playing = true; t0 = performance.now(); };
+  const stop = () => { drag = null; };
   host.addEventListener("pointerup", stop);
   host.addEventListener("pointercancel", stop);
 
@@ -115,9 +123,7 @@
   function frame() {
     requestAnimationFrame(frame);
     if (!visible) return;
-    const n = times.length;
-    const fi = playing ? Math.floor(((performance.now() - t0) % dur) / dur * n) % n : 0;
-    pose(fi);
+    if (spin) az = -0.4 + Math.sin((performance.now() - t0) / 11000) * 0.62;
     place();
     renderer.render(scene, cam);
   }

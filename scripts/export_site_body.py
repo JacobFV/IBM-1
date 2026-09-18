@@ -51,6 +51,12 @@ def main() -> int:
     ap.add_argument("--motion", default="gait-best", choices=["gait-best", "cortex-in-loop"])
     ap.add_argument("--structures", type=int, default=150, help="meshes to ship")
     ap.add_argument("--frames", type=int, default=48)
+    ap.add_argument("--rest", action="store_true",
+                    help="ship the atlas rest pose only and no motion.  the stored "
+                         "trajectories are all outside the body model's own declared "
+                         "joint ranges (docs/LOG.md), so animating them tears the "
+                         "skeleton apart at the joints -- the geometry is right and the "
+                         "motion is not.")
     ap.add_argument("--max-tris", type=int, default=340, help="per mesh, after decimation")
     ap.add_argument("--systems", default="skeletal,muscular")
     ap.add_argument("--out", type=Path, default=OUT)
@@ -59,63 +65,77 @@ def main() -> int:
 
     binding = json.loads((BIND / "binding.json").read_text())
     ent_seg = {k: v["segment"] for k, v in binding["entities"].items()}
+    ent_role = {k: v.get("role") for k, v in binding["entities"].items()}
     segments = sorted(binding["segments"])
 
+    if a.rest:
+        # no trajectory at all: segments come from the binding, and the meshes ship in the
+        # atlas rest pose, which IS a correctly articulated standing figure.
+        by_seg = {}
+        for e, sg in ent_seg.items():
+            if e in binding["centroids_m"]:
+                by_seg.setdefault(sg, []).append(e)
+        by_seg = {k: v for k, v in by_seg.items() if len(v) >= 3}
+        eids = [e for m in by_seg.values() for e in m]
+        motion, times, pick, frames = {}, [], [], []
+        print("rest pose only: no trajectory read")
     traj_path = BIND / f"trajectory-{a.motion}.json"
-    print(f"reading {traj_path.name} ({traj_path.stat().st_size / 1e6:.0f} MB)...", flush=True)
-    traj = json.loads(traj_path.read_text())
-    frames = traj["frames"]
-    pick = np.linspace(0, len(frames) - 1, min(a.frames, len(frames))).round().astype(int)
-    eids = [e for e in frames[0]["entities"] if e in ent_seg]
+    if not a.rest:
+      print(f"reading {traj_path.name} ({traj_path.stat().st_size / 1e6:.0f} MB)...", flush=True)
+    if not a.rest:
+      traj = json.loads(traj_path.read_text())
+      frames = traj["frames"]
+      pick = np.linspace(0, len(frames) - 1, min(a.frames, len(frames))).round().astype(int)
+      eids = [e for e in frames[0]["entities"] if e in ent_seg]
 
-    # per-segment member lists, and the rest pose those members sit in at frame 0
-    by_seg: dict[str, list[str]] = {}
-    for e in eids:
-        by_seg.setdefault(ent_seg[e], []).append(e)
-    # ---- per-segment rigid motion, frame by frame, read straight off one member ----
-    motion = {s: [] for s in by_seg}
-    for fi in pick:
-        fr = frames[int(fi)]["entities"]
-        for s, members in by_seg.items():
-            e = fr[members[0]]
-            R = np.asarray(e["rotation_matrix"], dtype=float)
-            t = np.asarray(e["translation_m"], dtype=float)
-            motion[s].append([round(float(v), 5) for v in R.reshape(-1)] +
-                             [round(float(v), 5) for v in t])
+      # per-segment member lists, and the rest pose those members sit in at frame 0
+      by_seg: dict[str, list[str]] = {}
+      for e in eids:
+          by_seg.setdefault(ent_seg[e], []).append(e)
+      # ---- per-segment rigid motion, frame by frame, read straight off one member ----
+      motion = {s: [] for s in by_seg}
+      for fi in pick:
+          fr = frames[int(fi)]["entities"]
+          for s, members in by_seg.items():
+              e = fr[members[0]]
+              R = np.asarray(e["rotation_matrix"], dtype=float)
+              t = np.asarray(e["translation_m"], dtype=float)
+              motion[s].append([round(float(v), 5) for v in R.reshape(-1)] +
+                               [round(float(v), 5) for v in t])
 
-    # a segment is rigid by construction, so every member must agree with the one we read.
-    # check it rather than trust the note: a binding error would show up here as a spread.
-    worst = 0.0
-    for s, members in by_seg.items():
-        fr = frames[int(pick[len(pick) // 2])]["entities"]
-        R0 = np.asarray(fr[members[0]]["rotation_matrix"], dtype=float)
-        for e in members[1:40]:
-            worst = max(worst, float(np.abs(np.asarray(fr[e]["rotation_matrix"], dtype=float) - R0).max()))
-    print(f"segment rigidity: worst member disagreement {worst:.2e} (expect ~0)")
-    if worst > 1e-6:
-        print("  !! members of a segment disagree -- the binding is not rigid", file=sys.stderr)
-    times = [round(float(frames[int(fi)]["time_s"]), 4) for fi in pick]
+      # a segment is rigid by construction, so every member must agree with the one we read.
+      # check it rather than trust the note: a binding error would show up here as a spread.
+      worst = 0.0
+      for s, members in by_seg.items():
+          fr = frames[int(pick[len(pick) // 2])]["entities"]
+          R0 = np.asarray(fr[members[0]]["rotation_matrix"], dtype=float)
+          for e in members[1:40]:
+              worst = max(worst, float(np.abs(np.asarray(fr[e]["rotation_matrix"], dtype=float) - R0).max()))
+      print(f"segment rigidity: worst member disagreement {worst:.2e} (expect ~0)")
+      if worst > 1e-6:
+          print("  !! members of a segment disagree -- the binding is not rigid", file=sys.stderr)
+      times = [round(float(frames[int(fi)]["time_s"]), 4) for fi in pick]
 
-    # sanity: apply the transforms to the rest centroids and check the body is a body.
-    # a wrong convention (about the origin vs about the centroid) shows up instantly as a
-    # figure several metres across or flung away from the floor.
-    c0 = np.array([binding["centroids_m"][e] for e in eids])
-    segi = [ent_seg[e] for e in eids]
-    mid = len(pick) // 2
-    moved = np.zeros_like(c0)
-    for i, (c, sg) in enumerate(zip(c0, segi)):
-        f = motion.get(sg, [None] * len(pick))[mid]
-        if f is None:
-            moved[i] = c
-            continue
-        R = np.array(f[:9]).reshape(3, 3)
-        moved[i] = R @ c + np.array(f[9:])
-    ext = moved.max(0) - moved.min(0)
-    print(f"posed body extent {ext.round(3)} m, centroid {moved.mean(0).round(3)}")
-    if not (1.2 < ext.max() < 2.4):
-        print(f"  !! extent {ext.max():.2f} m is not a human -- transform convention is wrong",
-              file=sys.stderr)
-        return 2
+      # sanity: apply the transforms to the rest centroids and check the body is a body.
+      # a wrong convention (about the origin vs about the centroid) shows up instantly as a
+      # figure several metres across or flung away from the floor.
+      c0 = np.array([binding["centroids_m"][e] for e in eids])
+      segi = [ent_seg[e] for e in eids]
+      mid = len(pick) // 2
+      moved = np.zeros_like(c0)
+      for i, (c, sg) in enumerate(zip(c0, segi)):
+          f = motion.get(sg, [None] * len(pick))[mid]
+          if f is None:
+              moved[i] = c
+              continue
+          R = np.array(f[:9]).reshape(3, 3)
+          moved[i] = R @ c + np.array(f[9:])
+      ext = moved.max(0) - moved.min(0)
+      print(f"posed body extent {ext.round(3)} m, centroid {moved.mean(0).round(3)}")
+      if not (1.2 < ext.max() < 2.4):
+          print(f"  !! extent {ext.max():.2f} m is not a human -- transform convention is wrong",
+                file=sys.stderr)
+          return 2
 
     # ---- the meshes, and which segment each rides on ----
     man = json.loads((ATLAS / "manifest_fragment.json").read_text())
@@ -124,16 +144,56 @@ def main() -> int:
 
     seg_centroids = {s: np.array([binding["centroids_m"][e] for e in m]) for s, m in by_seg.items()}
     seg_names = list(seg_centroids)
-    all_pts = np.concatenate([seg_centroids[s] for s in seg_names])
-    all_owner = np.concatenate([[i] * len(seg_centroids[s]) for i, s in enumerate(seg_names)])
+
+    # the nearest-neighbour pool is BONES ONLY, and the vote is over a mesh's VERTICES.
+    # taking the nearest of all 4,000 bound entities to a mesh's CENTROID -- which is what
+    # this did first -- votes against a pool that is three-quarters vessels, muscles and
+    # soft organs, and picks a segment from one interior point of a long bone.  femurs and
+    # humeri came out attached to the wrong segment and the skeleton visibly came apart at
+    # the joints.  `nearest_bone_group_vertex_vote` is the basis the binding itself used.
+    bone_pts, bone_owner = [], []
+    for si, sg in enumerate(seg_names):
+        for e in by_seg[sg]:
+            if ent_role.get(e) == "rigid_bone":
+                bone_pts.append(binding["centroids_m"][e])
+                bone_owner.append(si)
+    if len(bone_pts) < 20:
+        print(f"  !! only {len(bone_pts)} bone anchors -- falling back to all entities", file=sys.stderr)
+        bone_pts = [binding["centroids_m"][e] for sg in seg_names for e in by_seg[sg]]
+        bone_owner = [i for i, sg in enumerate(seg_names) for _ in by_seg[sg]]
+    all_pts = np.asarray(bone_pts, dtype=float)
+    all_owner = np.asarray(bone_owner, dtype=int)
+    print(f"bone anchors: {len(all_pts)} across {len(set(all_owner))} segments")
 
     # ship the biggest structures first WITHIN EACH SEGMENT, not globally.  sorting by size
     # across the whole body spends the whole budget on the torso and ships a figure with no
     # legs -- which is what the first run produced.  a per-segment quota keeps the silhouette.
     structures.sort(key=lambda s: -(s.get("source_triangles") or s.get("original_faces") or 0))
 
-    def seg_of_centroid(c):
-        return seg_names[int(all_owner[int(np.linalg.norm(all_pts - c, axis=1).argmin())])]
+    weak = []
+
+    def seg_of_mesh(v, name):
+        """the segment whose bone anchor best represents the WHOLE mesh.
+
+        a modal vote over each vertex's nearest anchor is biased by anchor density along an
+        elongated bone: the femur's distal vertices are all nearest the patella anchor, so
+        the femur was assigned to `patella_l` and rode the kneecap.  taking the anchor that
+        minimises MEAN distance to every vertex asks which bone this mesh actually is,
+        which is the question, and the patella anchor loses it badly over a whole femur.
+        """
+        sample = v if len(v) <= 256 else v[np.linspace(0, len(v) - 1, 256).astype(int)]
+        d = np.linalg.norm(sample[:, None, :] - all_pts[None, :, :], axis=2)
+        mean_to_anchor = d.mean(0)
+        best = int(mean_to_anchor.argmin())
+        win = int(all_owner[best])
+        # margin against the best anchor of any OTHER segment
+        other = mean_to_anchor.copy()
+        other[all_owner == win] = np.inf
+        rival = float(other.min()) if np.isfinite(other).any() else np.inf
+        ratio = mean_to_anchor[best] / rival if rival else 0.0
+        if ratio > 0.92:
+            weak.append((name, seg_names[win], round(float(ratio), 2)))
+        return seg_names[win]
 
     quota = max(2, a.structures // max(1, len(seg_names)))
     taken: dict[str, int] = {}
@@ -161,8 +221,7 @@ def main() -> int:
         if len(tri) < 4:
             skipped += 1
             continue
-        c = v.mean(0)
-        seg = seg_of_centroid(c)
+        seg = seg_of_mesh(v, st["name"])
         if taken.get(seg, 0) >= quota:
             deferred.append((seg, v, tri, st))      # comes back only if budget is left over
             continue
@@ -186,6 +245,8 @@ def main() -> int:
             "v": [round(float(x), 4) for x in v.reshape(-1)],
             "i": [int(x) for x in tri.reshape(-1)],
         })
+    if weak:
+        print(f"  {len(weak)} mesh(es) assigned with a thin margin, e.g. {weak[:4]}", file=sys.stderr)
     import collections as _c
     cov = _c.Counter(m["seg"] for m in out_meshes)
     missing = [s for s in seg_names if s not in cov]
