@@ -6486,3 +6486,50 @@ electrode is not in this loop.
 minutes of simulated time are skipped by the script with their reason printed. The first
 run is expected to score a handful of targets, and the script prints every skipped row so
 the count cannot be mistaken for coverage.
+
+## 18 September 2026 — AMENDMENT before the first shaping run: the sheet has an ignition threshold, and a prediction about gamma
+
+Two things measured before running, both of which change what the run means. Written now,
+with the run not yet started.
+
+**1. The drive levels in the first draft were a seizure.** `scripts/shape_rhythms.py` was
+written with a tonic drive of 0.22, and at that drive the 1024-site sheet sits at **61.6 Hz
+mean rate with 47% of (site, time) above E = 0.9**. The health guard caught it on the first
+smoke run, which is the only reason it is a line in this log rather than a result.
+
+Swept (no gradients, 1024 sites, tract topology, seed 0, 4 s windows):
+
+| tonic | awake gain: rate, saturated, 1/f exponent | sleep gain (m_beta 0.92, m_sigma 1.30) |
+|---|---|---|
+| 0.02 | 3.16 Hz, 0.000, 1.52 | 4.34 Hz, 0.000, 1.57 |
+| 0.04 | 3.74 Hz, 0.000, 1.56 | **21.45 Hz, 0.167, 3.27** |
+| 0.06 | 4.45 Hz, 0.000, 1.62 | 20.45 Hz, 0.149, 3.07 |
+| 0.07 | **25.75 Hz, 0.213, 3.29** | 26.91 Hz, 0.204, 3.45 |
+| 0.09 | 31.88 Hz, 0.265, 3.48 | 31.12 Hz, 0.238, 3.83 |
+
+The sheet **ignites** between 0.06 and 0.07 at awake gain, and between 0.02 and 0.04 at
+sleep gain — a global up state it then sits in, rather than the itinerancy the substrate is
+for. The protocols now sit below each threshold (0.050 awake, 0.020 sleep). Two things
+follow. First, the usable drive window is narrow and a single number separates the two
+regimes, so any future protocol must be measured into place rather than typed. Second,
+**the ignition is a latch, not a switch**: 47% saturation is the sheet staying up, which is
+the same failure G3 found in September — metastable parts, no coordinated switching.
+
+**2. The background is already right, and gamma is probably out of reach.** At the healthy
+operating point the aperiodic exponent is **1.5–1.6**, inside the declared 0.8–2.0 window
+before any training. So the one spectral quantity the substrate was never shaped for is the
+one it already has; what it lacks is peaks (visual gamma prominence −0.36, i.e. *below* its
+own 1/f background).
+
+And here is the prediction, made before the run: **the gamma target will not be reached, for
+a structural reason.** An E/I pair with population time constants `tau_E` and `tau_I` rings
+near `1/(2π·sqrt(tau_E·tau_I))`. The declared priors give `tau_E` 10–20 ms and `tau_I` a
+fixed 5 ms, so the natural frequency is ~22 Hz at the sensory end. The learned residual is
+bounded to ±35% by construction, which takes `tau_E` down to 6.5 ms and the ceiling to
+**~28 Hz** — below the 30–80 Hz band the catalogue declares for visual gamma. `tau_I` is not
+in `HETERO` at all, so the optimiser cannot touch it.
+
+If that is right, the run should end with the gamma target OUT, a small gradient, and
+`tau_E` pinned at its lower bound — and the fix is a substrate change (per-site `tau_I`,
+or explicit synaptic kinetics), not more training. If the target arrives anyway, the
+arithmetic above is wrong and that is worth more than the target.

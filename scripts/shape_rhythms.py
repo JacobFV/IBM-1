@@ -84,25 +84,43 @@ from ibm.substrate import R_MAX, build_sheet                            # noqa: 
 # and a neuromodulatory gain -- never a flag the model reads.  `seconds` is per state
 # because the slowest target in it sets the window: you cannot resolve 1 Hz in 2 seconds.
 # --------------------------------------------------------------------------------------
+# `dt` is per state because the fastest target in the state sets it and the slowest sets
+# the window: gamma needs 2 ms steps and 2 seconds, the slow oscillation needs 20+ seconds
+# and does not care about 2 ms.  Running everything at the finest dt would make the slow
+# states four times more expensive for nothing.
+# The drive levels are MEASURED, not guessed (docs/LOG.md 2026-09-18, "the sheet has an
+# ignition threshold").  A 1024-site sheet swept over tonic drive at awake gain sits at
+# 2.7-4.5 Hz with zero saturation up to 0.06, and between 0.06 and 0.07 it IGNITES: 4.45 Hz
+# and 0% saturated becomes 25.8 Hz and 21% saturated, with the 1/f exponent going 1.6 -> 3.3.
+# At sleep gain and noise (m_beta 0.92, m_sigma 1.30) the jump is between 0.02 and 0.04.
+# The first draft of this file used tonic 0.22 and drove the sheet to 61.6 Hz with 47% of
+# (site, time) above E = 0.9 -- a seizure with a lovely spectrum, which is exactly what the
+# health guard exists to refuse.  These values sit below each state's threshold.
 PROTOCOLS = {
-    "wake-eyes-open": dict(drive_stations=("v1", "v_extra"), drive=0.30, tonic=0.22,
-                           m_beta=1.0, m_sigma=1.0, seconds=6.0, burn_s=1.5),
-    "wake-rest":      dict(drive_stations=(), drive=0.0, tonic=0.22,
-                           m_beta=1.0, m_sigma=1.0, seconds=8.0, burn_s=2.0),
-    "wake-task":      dict(drive_stations=("v_extra", "ips"), drive=0.25, tonic=0.22,
-                           m_beta=1.05, m_sigma=0.9, seconds=6.0, burn_s=1.5),
-    "listening":      dict(drive_stations=("a1", "stg"), drive=0.30, tonic=0.22,
-                           m_beta=1.0, m_sigma=1.0, seconds=6.0, burn_s=1.5),
-    "nrem3":          dict(drive_stations=(), drive=0.0, tonic=0.16,
-                           m_beta=0.92, m_sigma=1.30, seconds=10.0, burn_s=2.0),
-    "nrem2":          dict(drive_stations=(), drive=0.0, tonic=0.18,
-                           m_beta=0.95, m_sigma=1.20, seconds=10.0, burn_s=2.0),
+    "wake-eyes-open": dict(drive_stations=("v1", "v_extra"), drive=0.010, tonic=0.050,
+                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=4.0, burn_s=1.0),
+    "wake-rest":      dict(drive_stations=(), drive=0.0, tonic=0.050,
+                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=8.0, burn_s=1.5),
+    "wake-task":      dict(drive_stations=("v_extra", "ips"), drive=0.010, tonic=0.050,
+                           m_beta=1.05, m_sigma=0.9, dt=0.002, seconds=4.0, burn_s=1.0),
+    "listening":      dict(drive_stations=("a1", "stg"), drive=0.010, tonic=0.050,
+                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=4.0, burn_s=1.0),
+    "nrem3":          dict(drive_stations=(), drive=0.0, tonic=0.020,
+                           m_beta=0.92, m_sigma=1.30, dt=0.005, seconds=16.0, burn_s=4.0),
+    "nrem2":          dict(drive_stations=(), drive=0.0, tonic=0.020,
+                           m_beta=0.95, m_sigma=1.20, dt=0.005, seconds=16.0, burn_s=4.0),
 }
 
-# a target is only scorable if the window holds enough cycles of its slowest component.
-# five is the bar: fewer, and the estimate is one or two lumps of a periodogram and its
-# gradient is noise.
-MIN_CYCLES = 5.0
+# When is a target scorable on a given window?  Two conditions, and they are different
+# questions that a single "enough cycles" rule conflates:
+#   * the band must span several BINS, or the measurement is one lump of a periodogram and
+#     "the power in 0.5-1.5 Hz" is really "the power in whatever bin fell there";
+#   * a segment must hold at least a couple of CYCLES of the slowest component, or the
+#     taper has removed the thing being measured before the FFT sees it.
+# and above everything, Nyquist: fs/2 must clear the top of the band with room to spare.
+MIN_BINS_IN_BAND = 4.0
+MIN_CYCLES_PER_SEGMENT = 2.0
+NYQUIST_HEADROOM = 1.25
 
 
 def hinge(x: torch.Tensor, target):
@@ -153,16 +171,32 @@ def measure_target(t, trace, fs, nperseg):
     raise ValueError(f"no measurement for kind {kind!r}")
 
 
-def resolvable(t, seconds, fs, nperseg):
-    """(ok, reason).  Can this window resolve the target's slowest component at all?"""
-    lo = t.get("band", t.get("phase_band", (1.0, 1.0)))[0]
+def resolvable(t, fs, nperseg):
+    """(ok, reason).  Can a window of this length and sample rate score this target?
+
+    Returned as a reason rather than a bool alone, because the reason is what a reader
+    needs: "skipped" with no explanation is how a run ends up optimising three terms while
+    its log claims eight.
+    """
+    band = t.get("band") or t.get("phase_band")
+    lo, hi = band
+    top = t.get("amp_band", band)[1]
     if lo <= 0:
         return False, "band starts at 0 Hz"
+    if fs / 2 < top * NYQUIST_HEADROOM:
+        return False, (f"needs {top:g} Hz with headroom; fs/2 is {fs / 2:g} Hz "
+                       f"(dt too coarse for this state)")
     seg_s = nperseg / fs
+    df = fs / nperseg
+    bins = (hi - lo) / df
+    if bins < MIN_BINS_IN_BAND:
+        return False, (f"{hi - lo:g} Hz band over {df:.3g} Hz bins is {bins:.1f} bins; "
+                       f"needs {MIN_BINS_IN_BAND:g} (a segment of "
+                       f"{MIN_BINS_IN_BAND / (hi - lo):.1f}s)")
     cycles = seg_s * lo
-    if cycles < MIN_CYCLES:
-        return False, (f"{lo:g} Hz needs {MIN_CYCLES:g} cycles = {MIN_CYCLES / lo:.1f}s "
-                       f"per segment; this window gives {seg_s:.1f}s")
+    if cycles < MIN_CYCLES_PER_SEGMENT:
+        return False, (f"{lo:g} Hz gives {cycles:.1f} cycles in a {seg_s:.1f}s segment; "
+                       f"needs {MIN_CYCLES_PER_SEGMENT:g}")
     return True, ""
 
 
@@ -175,11 +209,13 @@ class Shaper:
         self.field = build_sheet(a.sites, a.k, a.long_frac, seed=a.seed, device=device,
                                  long_topology=a.topology).to(device)
         self.names = self.field.region_names
-        self.fs = 1.0 / a.dt
         # ONE permutation, drawn once, here, and handed to whoever needs it: the relabel
         # control must not draw its own (CLAUDE.md, "a shared generator").
         g = torch.Generator().manual_seed(a.seed + 104729)
         self.perm = torch.randperm(len(self.names), generator=g).tolist()
+
+    def fs_of(self, state):
+        return 1.0 / PROTOCOLS[state]["dt"]
 
     def targets(self, state, relabel=False):
         names = self.names
@@ -188,15 +224,16 @@ class Shaper:
         ts, skipped = rhythm_targets(state, names, only_expressible=True,
                                      min_sites=self.a.min_sites)
         p = PROTOCOLS[state]
+        fs = self.fs_of(state)
         nperseg = self.nperseg(p)
         keep = []
         for t in ts:
-            ok, why = resolvable(t, p["seconds"], self.fs, nperseg)
+            ok, why = resolvable(t, fs, nperseg)
             (keep if ok else skipped).append(t if ok else (t["id"], why))
         return keep, skipped
 
     def nperseg(self, p):
-        n = int(round(p["seconds"] * self.fs / self.a.segments))
+        n = int(round(p["seconds"] / p["dt"] / self.a.segments))
         return max(64, 1 << int(math.floor(math.log2(max(64, n)))))
 
     def drive(self, state, T, B=1):
@@ -211,7 +248,8 @@ class Shaper:
         """burn in without gradients, then a graded window.  The burn-in matters: the
         first second from rest is a transient, and its spectrum is the transient's."""
         p = PROTOCOLS[state]
-        dt, fs = self.a.dt, self.fs
+        dt = p["dt"]
+        fs = 1.0 / dt
         nb = int(round(p["burn_s"] * fs))
         nt = int(round(p["seconds"] * fs))
         st = self.field.init_state(1, device=self.device)
@@ -233,38 +271,39 @@ class Shaper:
     def loss(self, state, targets, gen_seed, grad=True):
         a = self.a
         p = PROTOCOLS[state]
+        fs = self.fs_of(state)
         nperseg = self.nperseg(p)
         trace = self.rollout(state, gen_seed, grad=grad)
         parts, total = {}, torch.zeros((), device=self.device)
         for t in targets:
-            v = measure_target(t, trace, self.fs, nperseg)
+            v = measure_target(t, trace, fs, nperseg)
             pen = hinge(v, t["target"])
             total = total + a.w_rhythm * pen
-            parts[t["id"]] = {"measured": float(v), "penalty": float(pen),
+            parts[t["id"]] = {"measured": float(v.detach()), "penalty": float(pen.detach()),
                               "target": t["target"], "kind": t["kind"]}
         # the 1/f background, on the mean cortical trace
         mean_trace = trace.mean(-1)
-        freqs, psd = SP.welch_psd(mean_trace, self.fs, nperseg=nperseg)
+        freqs, psd = SP.welch_psd(mean_trace, fs, nperseg=nperseg)
         _off, expo = SP.aperiodic_fit(psd, freqs, BACKGROUND["fit_band"][0],
-                                      min(BACKGROUND["fit_band"][1], self.fs / 2 - 1),
+                                      min(BACKGROUND["fit_band"][1], fs / 2 - 1),
                                       exclude=BACKGROUND["exclude"])
         expo = expo.mean()
         pen = hinge(expo, BACKGROUND["exponent_target"])
         total = total + a.w_background * pen
-        parts["aperiodic"] = {"measured": float(expo), "penalty": float(pen),
+        parts["aperiodic"] = {"measured": float(expo.detach()), "penalty": float(pen.detach()),
                               "target": BACKGROUND["exponent_target"], "kind": "exponent"}
         # health.  a spectrum reached by saturating the cortex is not the spectrum.
         rate = trace.mean() * R_MAX
         sat = (trace > 0.9).float().mean()
         h = hinge(rate, (a.rate_lo, a.rate_hi)) / 100.0 + (sat ** 2) * 100.0
         total = total + a.w_health * h
-        parts["health"] = {"rate_hz": float(rate), "saturated_frac": float(sat),
-                           "penalty": float(h)}
+        parts["health"] = {"rate_hz": float(rate.detach()), "saturated_frac": float(sat.detach()),
+                           "penalty": float(h.detach())}
         # anatomy: the declared priors are the landscape; the spectrum may bend them.
         anat = sum((getattr(self.field, f"res_{n}") ** 2).mean()
                    for n in ("tau_E", "tau_a", "g_a", "tau_rec", "w_EE", "theta_E"))
         total = total + a.w_anatomy * anat
-        parts["anatomy"] = {"residual_l2": float(anat)}
+        parts["anatomy"] = {"residual_l2": float(anat.detach())}
         return total, parts
 
     # ---------------------------------------------------------------- gates
@@ -272,18 +311,19 @@ class Shaper:
         """G0.  Drive V1 at 10 Hz; the V1 trace must peak at 10 Hz."""
         state = "wake-eyes-open"
         p = PROTOCOLS[state]
-        nt = int(round(p["seconds"] * self.fs))
+        fs = self.fs_of(state)
+        nt = int(round(p["seconds"] * fs))
         sites = station_sites(("v1",), self.names)
         if len(sites) < self.a.min_sites:
             return {"ok": False, "why": f"v1 resolves to {len(sites)} sites"}
-        t = torch.arange(nt, device=self.device) * self.a.dt
+        t = torch.arange(nt, device=self.device) * p["dt"]
         wave = 0.15 * torch.sin(2 * math.pi * 10.0 * t)
         extra = torch.zeros(1, nt, self.field.n, device=self.device)
         extra[0, :, sites] = wave[:, None]
         with torch.no_grad():
             trace = self.rollout(state, self.a.seed + 1, grad=False, extra_drive=extra)
             x = trace_of(trace, sites)
-            freqs, psd = SP.welch_psd(x, self.fs, nperseg=self.nperseg(p))
+            freqs, psd = SP.welch_psd(x, fs, nperseg=self.nperseg(p))
             f = float(SP.peak_frequency(psd, freqs, 4.0, 20.0).mean())
         return {"ok": abs(f - 10.0) <= 0.5, "measured_hz": f, "expected_hz": 10.0,
                 "tolerance_hz": 0.5}
@@ -365,7 +405,6 @@ def main() -> int:
     ap.add_argument("--k", type=int, default=32)
     ap.add_argument("--long-frac", type=float, default=0.25)
     ap.add_argument("--topology", default="tract", choices=("tract", "random"))
-    ap.add_argument("--dt", type=float, default=0.002)
     ap.add_argument("--segments", type=float, default=3.0,
                     help="segments per window; nperseg = seconds*fs/segments, rounded down "
                          "to a power of two")
@@ -411,7 +450,13 @@ def main() -> int:
     torch.manual_seed(a.seed)          # only for anything torch draws internally
     sh = Shaper(a, dev)
     print(f"sheet: {sh.field.n} sites, k={sh.field.k}, {sh.field.n_far} long-range, "
-          f"topology={a.topology}, fs={sh.fs:g} Hz", flush=True)
+          f"topology={a.topology}", flush=True)
+    for st in states:
+        p = PROTOCOLS[st]
+        print(f"  {st}: dt={p['dt']*1000:g} ms, window {p['seconds']:g}s "
+              f"(+{p['burn_s']:g}s burn-in), nperseg {sh.nperseg(p)} "
+              f"({sh.nperseg(p) * p['dt']:.2f}s, df {1 / (sh.nperseg(p) * p['dt']):.3g} Hz)",
+              flush=True)
 
     rec["gates"]["G0_entrainment"] = sh.gate_entrainment()
     print(f"G0 entrainment: {rec['gates']['G0_entrainment']}", flush=True)
