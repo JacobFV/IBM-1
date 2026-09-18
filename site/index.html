@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="site.css?v=20260917171754">
+<link rel="stylesheet" href="site.css?v=20260918081040">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2307090f'/%3E%3Ccircle cx='11' cy='13' r='2.2' fill='%23f0b34a'/%3E%3Ccircle cx='21' cy='11' r='2.2' fill='%2363d3e6'/%3E%3Ccircle cx='17' cy='21' r='2.2' fill='%23e69422'/%3E%3Cpath d='M11 13L21 11L17 21Z' fill='none' stroke='%23e9e7e0' stroke-opacity='.5' stroke-width='.8'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -53,20 +53,180 @@
   <div class="spine-flow">
 
     <!-- ------------------------------------------------ the declaration -->
-    <section class="station st-full" data-station data-feed="film + audio" data-models="av_predictor">
+    <section class="station st-full" data-station data-feed="archive.org PD film|https://archive.org/details/feature_films" data-models="av_predictor">
       <div class="st-text">
-        <h2>One Brain, Declared Once</h2>
-        <p class="st-lede">Ask for a model — a region, a resolution, a bandwidth — and only the
-        parts that request actually reaches get built. The same brain can be coarse everywhere and
-        fine around a single electrode.</p>
+        <h2>One Brain, Many Perspectives</h2>
+        <p class="st-lede">Specify a specific region, resolution, or bandwidth and only the
+        processes and variables that actually matter materialize. The same brain can be coarse
+        everywhere and fine around a single electrode.</p>
         <p class="display-math">M = materialize(R, r, B, F, A, T, P)</p>
       </div>
 
       <div class="mz" id="mz" aria-label="the implicit model and three models materialized from it"></div>
     </section>
+    <!-- ------------------------------------------------ resonance -->
+    <!-- this section replaced the old sleep station.  the two numbers it carries
+         (1 Hz, 13.45 Hz) are the ONLY measurements in it and they belong to the
+         thalamo-cortical tile: scripts/fit_sleep_resonance.py fitted the declared
+         alpha_resonator to N2 spectra from sleep-edfx, split BY SUBJECT (not by
+         night -- two nights of one person share a skull and an individual spindle
+         frequency), and scored the fitted posterior against the UNTOUCHED 10 Hz
+         prior on held-out people: +5503 nats/night, p = 7.2e-11, better in 100% of
+         unseen participants.  docs/STATE.md section 3, row 1, is the citation.  the
+         tile keeps the baseline and the p-value on the page; the effect size and
+         the 100% were cut for length at the user's request and live here.
+         data-feed and data-models are unchanged from the sleep station: spine.js
+         reads them to draw the rail, and both corpora are genuinely behind this.
+
+         STATUS.  the user asked for the visible status lines ("measured · held
+         out by subject", "declared · not yet measured") to go, so provenance is
+         carried by data-status on every <article> and by docs/LOG.md instead:
+           measured  rz_tct
+           declared  rz_bg rz_hpc rz_att rz_lim, and all six behind "more"
+         the declared tiles are DESIGN INTENT and carry no numbers at all -- no
+         frequency the model has been shown to produce, no p-value, no
+         correlation.  to promote one to data-status="measured" it needs, at
+         minimum: (a) a corpus bound in data/sources with a card whose origin is
+         the real one, (b) a declared prior written down BEFORE the fit, the way
+         the 10 Hz alpha prior was, (c) a split by subject, (d) a score of the
+         fitted loop against that untouched prior AND a trivial baseline (1/f
+         alone) on held-out subjects, and (e) a line in docs/LOG.md whether it
+         passed or failed.  the sleep fit is the worked example of all five;
+         nothing here goes to "measured" on a training curve or an in-sample
+         spectrum.
+
+         "more" is the grid's last cell: it un-hides #rz-extra (display: contents,
+         so its tiles are items of the same grid) and sets .is-more, which packs
+         the grid denser.  resonance.js owns the toggle; brain.js animates only
+         the figures actually on screen, on one shared WebGL context. -->
+    <section class="station st-full station-resonance" data-station data-feed="LibriBrain|https://huggingface.co/datasets/pnpl/LibriBrain · Sleep-EDFx|https://physionet.org/content/sleep-edfx/1.0.0/" data-models="meg_encoder,av_meg_predictor">
+      <div class="st-text">
+        <h2>Designed to Resonate like the Brain</h2>
+        <p class="st-lede">A brain's rhythms are not decoration laid over its anatomy — they are
+        what a loop with a delay and a gain does. IBM-1 declares the loops themselves: which
+        structures, in which order, with what conduction delay. A band is then a consequence to be
+        checked, not a spectrum to be fitted.</p>
+      </div>
+
+      <div class="rz-grid">
+        <!-- measured: sleep-edfx, held out by subject (see the comment above) -->
+        <article class="rz-tile" data-status="measured">
+          <figure class="snap rz-snap" data-snap="rz_tct"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
+          <h3>Thalamo-Cortico-Thalamic Alpha</h3>
+          <p class="rz-say">The loop the whole brain integrates through: cortex drives thalamus, and
+          thalamus drives cortex back.</p>
+          <ul class="st-figs rz-figs">
+            <li><b>1 Hz</b><span>deep-sleep slow wave, from one declared time constant.</span></li>
+            <li><b>13.45 Hz</b><span>spindles — on held-out subjects, beats the untouched 10 Hz alpha
+            prior at p = 7.2e-11.</span></li>
+          </ul>
+        </article>
+
+        <!-- declared: design intent, no numbers -->
+        <article class="rz-tile" data-status="declared">
+          <figure class="snap rz-snap" data-snap="rz_bg"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
+          <h3>Cortico-Basal-Ganglia-Thalamic Beta</h3>
+          <p class="rz-say">Motor and premotor cortex propose; the striatum and pallidum release one
+          proposal and suppress the rest; the thalamus returns the winner. The goal is that action
+          selection falls out of a loop that was declared, rather than out of a policy that was trained.</p>
+        </article>
+
+        <!-- declared: design intent, no numbers -->
+        <article class="rz-tile" data-status="declared">
+          <figure class="snap rz-snap" data-snap="rz_hpc"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
+          <h3>Hippocampal–Entorhinal Theta–Gamma</h3>
+          <p class="rz-say">Entorhinal input rides a slow theta cycle, and each cycle is divided into
+          faster gamma slots. The goal is that the order of an episode is carried by <em>when</em>
+          something fires inside the cycle, rather than stored beside it as an index.</p>
+        </article>
+
+        <!-- declared: design intent, no numbers -->
+        <article class="rz-tile" data-status="declared">
+          <figure class="snap rz-snap" data-snap="rz_att"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
+          <h3>Fronto-Parietal Dorsal Attention</h3>
+          <p class="rz-say">Occipito-temporal cortex proposes what is worth looking at, parietal cortex
+          holds the map it is proposed on, and frontal cortex commits to one place. The goal is that
+          visual salience is a competition running inside the substrate, not a saliency map bolted on.</p>
+        </article>
+
+        <!-- declared: design intent, no numbers -->
+        <article class="rz-tile" data-status="declared">
+          <figure class="snap rz-snap" data-snap="rz_lim"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
+          <h3>Amygdala–vmPFC–Accumbens Valuation</h3>
+          <p class="rz-say">The amygdala scores what has just arrived, ventromedial prefrontal cortex and
+          the anterior cingulate revise that score against context, and the accumbens turns it into a pull
+          toward or away. The goal is that value is a state of a brain attached to a body, not a scalar
+          handed in from outside it.</p>
+        </article>
+
+        <!-- the six behind "more": every one declared, design intent, no numbers.
+             stage lists and the structures standing in for ones the graph does
+             not separate (pons, LGN, MGN, VL, VTA) are in resonance.js. -->
+        <div class="rz-extra" id="rz-extra" hidden>
+          <article class="rz-tile" data-status="declared">
+            <figure class="snap rz-snap" data-snap="rz_cbl"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
+            <h3>Cerebello-Thalamo-Cortical</h3>
+            <p class="rz-say">Motor cortex sends a copy of each command through the pons to the cerebellum,
+            which returns a correction through the thalamus before the movement has finished. The goal is
+            timing and error correction that come from the loop, not from a tuned controller.</p>
+          </article>
+
+          <article class="rz-tile" data-status="declared">
+            <figure class="snap rz-snap" data-snap="rz_dmn"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
+            <h3>Default-Mode Network</h3>
+            <p class="rz-say">Posterior cingulate, precuneus, medial prefrontal and angular cortex rise together
+            when nothing outside demands attention. The goal is a resting brain with structure — recollection
+            and self-reference — rather than a model that idles between inputs.</p>
+          </article>
+
+          <article class="rz-tile" data-status="declared">
+            <figure class="snap rz-snap" data-snap="rz_aud"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
+            <h3>Auditory Thalamocortical Gamma</h3>
+            <p class="rz-say">Cochlea, brainstem, medial geniculate and Heschl's gyrus, each station locking to
+            the timing of the sound. The goal is that speech is followed by a loop that entrains to it, not by a
+            spectrogram handed in from outside.</p>
+          </article>
+
+          <article class="rz-tile" data-status="declared">
+            <figure class="snap rz-snap" data-snap="rz_aro"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
+            <h3>Brainstem–Thalamic Arousal</h3>
+            <p class="rz-say">The ascending arousal system sets how the thalamus gates the cortex, and so whether
+            the brain is awake, drowsy or asleep. The goal is that sleep and waking are states the substrate
+            moves between, not modes chosen by a flag.</p>
+          </article>
+
+          <article class="rz-tile" data-status="declared">
+            <figure class="snap rz-snap" data-snap="rz_vis"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
+            <h3>Retino-Geniculo-Striate Alpha</h3>
+            <p class="rz-say">Retina to the lateral geniculate to striate cortex and out into the visual
+            hierarchy, with the thalamus gating what gets through. The goal is that eyes open and eyes closed
+            are one loop in two states.</p>
+          </article>
+
+          <article class="rz-tile" data-status="declared">
+            <figure class="snap rz-snap" data-snap="rz_mu"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div></figure>
+            <h3>Sensorimotor Mu</h3>
+            <p class="rz-say">Sensorimotor cortex idles in a rhythm that breaks the moment a movement is
+            planned, made or watched. The goal is that preparing to act shows in the loop before any muscle
+            moves.</p>
+          </article>
+        </div>
+
+        <button class="rz-more" type="button" aria-expanded="false" aria-controls="rz-extra">
+          <span class="rz-more-glyph" aria-hidden="true"></span>
+          <span class="rz-more-label">More</span>
+        </button>
+      </div>
+
+      <p class="rz-foot">Each figure lights the structures the substrate actually declares for that
+      loop and runs a wave around it. The on-screen rate is a depiction — every band slowed by the same
+      factor so that none of them alias — and is not a measured frequency.</p>
+    </section>
 
     <!-- ------------------------------------------------ EEG decoding -->
-    <section class="station" data-station data-feed="THINGS-EEG2 · THINGS-images" data-models="eeg_to_image,visual_evoked">
+    <!-- st-full: a row is five things in a line (image, two named arrows, the trace, five
+         candidates), and the right-hand column was 387px -- it could only ever fold. -->
+    <section class="station st-full" data-station data-feed="THINGS-EEG2|https://osf.io/3jk45/ · THINGS-images|https://osf.io/jum2f/" data-models="eeg_to_image,visual_evoked">
       <div class="st-text">
         <h2>64-Channel EEG to Visual Thought Decoding</h2>
         <ul class="st-big">
@@ -79,31 +239,16 @@
       </div>
     </section>
 
-    <!-- ------------------------------------------------ sleep -->
-    <section class="station" data-station data-feed="LibriBrain MEG · sleep EEG" data-models="meg_encoder,av_meg_predictor">
-      <div class="st-text">
-        <h2>Sleep Rhythms From First Principles</h2>
-        <p class="st-lede">Nobody fits these to the spectrum. One time constant is declared, the
-        dynamics are run, and the rhythms of a sleeping brain come out.</p>
-        <ul class="st-figs">
-          <li><b>1 Hz</b><span>the slow wave of deep sleep, out of a single declared time constant.</span></li>
-          <li><b>13.45 Hz</b><span>sleep spindles, held out at p = 7.2e-11. The prior said this band would be alpha. The data moved it.</span></li>
-        </ul>
-      </div>
-      <div class="st-media">
-        <figure class="snap" data-snap="l_state"><canvas></canvas><svg class="leaders"></svg><div class="snap-labels"></div>
-          <figcaption>the thalamus and the cortex it drives, where the rhythms are declared.</figcaption>
-        </figure>
-      </div>
-    </section>
-
     <!-- ------------------------------------------------ the body -->
-    <section class="station" data-station data-feed="CMU mocap · BodyParts3D" data-models="body_kernel">
+    <section class="station" data-station data-feed="CMU mocap|http://mocap.cs.cmu.edu/ · BodyParts3D|https://dbarchive.biosciencedbc.jp/en/bodyparts3d/desc.html" data-models="body_kernel">
       <div class="st-text">
-        <h2>Controlling a Musculoskeletal Human <em>En Simulo</em></h2>
-        <p class="st-lede">A full body — bones, muscles, tendons — with the cortex closing the loop
-        to the muscle.</p>
+        <h2>Whole Body Human Simulation</h2>
+        <p class="st-lede">Every system the atlas carries — skeleton, muscle, vessels, viscera and
+        the skin over them — on one driven skeleton, with the cortex closing the loop out to the
+        muscle and back.</p>
         <ul class="st-figs">
+          <li><b>13 systems</b><span>bone, muscle, fascia, artery, vein, lymph, gut, lung, heart,
+          gland, kidney, reproductive tract and skin, each bound to the segment it rides on.</span></li>
           <li><b>0.17 mm</b><span>it moves, when you shove it.</span></li>
           <li><b>2.90 s</b><span>to the floor, with the cortex cut out.</span></li>
         </ul>
@@ -113,12 +258,19 @@
       <div class="st-media">
         <figure class="body-fig">
           <div id="body3d"></div>
+          <!-- the mesh source is Z-Anatomy (CC-BY-SA 4.0, itself built on DBCLS BodyParts3D),
+               and a share-alike licence needs its credit VISIBLE, not only in the data file's
+               header comment -- which is where it was.  the rail's ribbon names BodyParts3D
+               because a ribbon is a dataset that fed the kernel; this line is the licence. -->
+          <figcaption>Movement is a preview drawn inside the model's declared joint ranges, not a
+          solved trajectory. Anatomy: <a href="https://www.z-anatomy.com/" target="_blank"
+          rel="noopener">Z-Anatomy</a> (CC-BY-SA) on DBCLS BodyParts3D.</figcaption>
         </figure>
       </div>
     </section>
 
     <!-- ------------------------------------------------ stimulation -->
-    <section class="station st-wide" data-station data-feed="TMS-EEG · MEP/coil pose" data-models="tms_response,plasticity_learning">
+    <section class="station st-wide" data-station data-feed="ds008037 TEP|https://openneuro.org/datasets/ds008037 · ds005498 TMS-fMRI|https://openneuro.org/datasets/ds005498" data-models="tms_response,plasticity_learning">
       <div class="st-text">
         <h2>Predicting TMS Effects on the Brain</h2>
         <ul class="st-figs">
@@ -190,12 +342,15 @@ ckpt = hf_hub_download(<span class="str">"<span data-rel="repo">jacob-valdez/ibm
 <div id="tip" class="tip" role="tooltip" hidden><span class="tip-text"></span><div class="tip-extra" hidden></div><a class="tip-link" href="#"></a></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="background.js?v=20260917171754"></script>
-<script src="data/graph.js?v=20260917171754"></script>
-<script src="data/registry.js?v=20260917171754"></script>
-<script src="data/cards.js?v=20260917171754"></script>
-<script src="data/releases.js?v=20260917171754"></script>
-<script src="brain.js?v=20260917171754"></script>
+<script src="background.js?v=20260918081040"></script>
+<script src="data/graph.js?v=20260918081040"></script>
+<script src="data/registry.js?v=20260918081040"></script>
+<script src="data/cards.js?v=20260918081040"></script>
+<script src="data/releases.js?v=20260918081040"></script>
+<script src="brain.js?v=20260918081040"></script>
+<!-- registers the resonance tiles' snap specs; must run before site.js, which is
+     what actually calls mountSnapshots over every [data-snap] on the page -->
+<script src="resonance.js?v=20260918081040"></script>
 <div id="lightbox" class="lb" hidden>
   <button class="lb-close" aria-label="close">×</button>
   <button class="lb-nav lb-prev" aria-label="previous">‹</button>
@@ -203,14 +358,14 @@ ckpt = hf_hub_download(<span class="str">"<span data-rel="repo">jacob-valdez/ibm
   <div class="lb-stage"></div>
   <div class="lb-meta"><p class="lb-count"></p><h3></h3><p class="lb-cap"></p><p class="lb-desc"></p></div>
 </div>
-<script src="site.js?v=20260917171754"></script>
-<script src="data/body.js?v=20260917171754"></script>
-<script src="body.js?v=20260917171754"></script>
-<script src="data/retrieval.js?v=20260917171754"></script>
-<script src="retrieval.js?v=20260917171754"></script>
-<script src="materialize.js?v=20260917171754"></script>
-<script src="data/cortex.js?v=20260917171754"></script>
-<script src="tms.js?v=20260917171754"></script>
-<script src="spine.js?v=20260917171754"></script>
+<script src="site.js?v=20260918081040"></script>
+<script src="data/body.js?v=20260918081040"></script>
+<script src="body.js?v=20260918081040"></script>
+<script src="data/retrieval.js?v=20260918081040"></script>
+<script src="retrieval.js?v=20260918081040"></script>
+<script src="materialize.js?v=20260918081040"></script>
+<script src="data/cortex.js?v=20260918081040"></script>
+<script src="tms.js?v=20260918081040"></script>
+<script src="spine.js?v=20260918081040"></script>
 </body>
 </html>

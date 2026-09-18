@@ -4848,3 +4848,242 @@ that had no discriminating case. The joint-closure test above is the one that do
    nearest the next segment's anchor. Taking the anchor that minimises MEAN distance to
    every vertex asks which bone the mesh *is*, and the patella loses that over a whole
    femur. Segment coverage went 18/22 to 22/22.
+
+## 17 September 2026 — the site's sleep station becomes five resonance circuits, four of them declared
+
+The page's "Sleep Rhythms From First Principles" station is replaced by **"Designed to Resonate
+like the Brain"**: five named loops, each a naked tile of {a small brain figure with the loop
+pulsing round it, the circuit's name, a paragraph}. This is a *presentation* change and the
+record of what it now asserts, so that the next person reading the page can tell claim from
+intent without opening the source.
+
+**What the page claims, per tile.**
+
+| tile | structures lit (aparc/aseg labels in `site/data/graph.js`) | status on the page |
+|---|---|---|
+| Thalamo-Cortico-Thalamic Alpha | thalamus → superiorfrontal + caudalmiddlefrontal → superiorparietal + precuneus → lateraloccipital + cuneus + pericalcarine | **measured** |
+| Cortico-Basal-Ganglia-Thalamic Beta | precentral + caudalmiddlefrontal → putamen + caudate → pallidum → thalamus | declared |
+| Hippocampal–Entorhinal Theta–Gamma | entorhinal + parahippocampal → hippocampus → isthmuscingulate + posteriorcingulate | declared |
+| Fronto-Parietal Dorsal Attention | lateraloccipital + fusiform → superiorparietal + inferiorparietal + supramarginal → caudalmiddlefrontal + precentral | declared |
+| Amygdala–vmPFC–Accumbens Valuation | amygdala → medialorbitofrontal + rostralanteriorcingulate → accumbens → hippocampus + insula | declared |
+
+**Only the first tile carries a number, and it carries its baseline with it.** The two figures
+from the old station survive verbatim in it: **1 Hz** for the slow wave out of one declared time
+constant, and **13.45 Hz** for the spindle — stated on the page as beating the *untouched 10 Hz
+alpha prior* by **+5503 nats/night on held-out participants, p = 7.2e-11, in 100% of them**
+(`scripts/fit_sleep_resonance.py`, split BY SUBJECT; `docs/STATE.md` §3 row 1). The old station
+printed "held out at p = 7.2e-11" without naming what it beat; the new tile names the baseline,
+which is the house rule. The `data-feed` (LibriBrain, Sleep-EDFx) and `data-models`
+(`meg_encoder`, `av_meg_predictor`) attributes are unchanged, so the spine rail is unaffected.
+
+**The other four carry no numbers at all** — no frequency the model has been shown to produce,
+no p-value, no correlation, nothing that could be mistaken for a measurement. They are labelled
+`declared · not yet measured` in the page's existing status vocabulary. They are *design intent*
+at the user's explicit instruction, and the four paragraphs say what the loop is for, never what
+it has done. The promotion criteria for moving one of them to `measured` are written into an HTML
+comment beside the section: a bound corpus, a prior declared before the fit, a split by subject,
+a score against both that prior and a trivial baseline on held-out subjects, and a line here
+whether it passed or failed. The sleep fit is the worked example of all five.
+
+**Two things about the figures that are easy to misread, so both are said on the page.** The
+structures lit are real — every region name is checked against the graph's own inventory at load
+(`reg()` warns on a label that does not exist, because an empty stage is a beat nobody can see is
+missing). But the *rate* on screen is a depiction: every band is divided by one common factor so
+that a 13 Hz wave does not alias into a stutter at ~22 fps. The ratios between tiles are the
+ratios between the bands; the absolute rates are not measurements, and the page's closing line
+says so. Where the circuit's anatomy is finer than the substrate's, the substitution is recorded
+in `site/resonance.js` rather than hidden: `hippocampus` is one aseg blob so DG/CA3/CA1 cannot be
+staged; there is no subthalamic nucleus, so only the direct basal-ganglia arm is drawn; the VTA
+is inside the `brainstem` blob and is left out rather than faked; IPS and FEF are not aparc
+labels, so the parietal and caudal-middle-frontal regions they sit inside stand in.
+
+**Implementation.** `site/resonance.js` registers five specs through a new `B.registerSnaps`, and
+`site/brain.js` grew a `spec.pulse` hook: a function of `(weightBuffer, seconds)` called each
+frame, which the shared snap renderer already had everything else for. The hook is written to be
+*pure in its arguments* — it rewrites every element of the buffer from `t` alone — so calling it
+twice at the same `t` produces the same array, and the still frame served under
+`prefers-reduced-motion` is a frame of the same wave rather than a separate code path. That is the
+repo's own idempotence rule applied to a renderer instead of an instrument.
+
+The now-unreferenced `l_state` snap spec was removed from `site.js`.
+
+**18 September, follow-up — six more loops behind a "More", and the status lines come off the
+page.** Three changes at the user's request, recorded here because two of them move provenance
+*out of sight* and this entry is now where a reader finds it.
+
+1. **The visible status lines are gone** ("measured · held out by subject", "declared · not yet
+   measured"). Status now lives in `data-status="measured|declared"` on every `<article>`, in the
+   comment above the section in `site/index.html`, and here. The standing record is unchanged:
+   **exactly one tile is measured** — Thalamo-Cortico-Thalamic Alpha — **and all ten others are
+   declared design intent with no numbers.** A reader of the page can still tell, because the
+   measured tile is the only one that prints a figure and each figure carries its baseline.
+2. **The measured tile's text is cut to a sentence and two figures**, and the cut was made so
+   the baseline survives: *"13.45 Hz — spindles, on held-out subjects, beats the untouched 10 Hz
+   alpha prior at p = 7.2e-11."* What was cut for length is the effect size (+5503 nats/night) and
+   the 100%-of-unseen-participants figure; both are kept in the HTML comment and in
+   `docs/STATE.md` §3, so nothing is lost, only no longer printed.
+3. **"More"** is a real `<button aria-expanded aria-controls="rz-extra">` in the grid's sixth
+   cell. It un-hides six further tiles and packs the grid 4 × 3. All six are **declared, none
+   measured**:
+
+| tile (behind More) | structures lit | stands in for |
+|---|---|---|
+| Cerebello-Thalamo-Cortical | precentral → brainstem → cerebellum → thalamus | pontine nuclei (brainstem), VL (thalamus) |
+| Default-Mode Network | posterior cingulate + isthmus + precuneus → medial OFC + rostral ACC + superior frontal → inferior parietal → parahippocampal + hippocampus | angular gyrus (inferiorparietal); a network drawn in order, not a claimed direction |
+| Auditory Thalamocortical Gamma | cochlea → brainstem → thalamus → transversetemporal → superiortemporal + bankssts | MGN (thalamus), Heschl's gyrus (transversetemporal) |
+| Brainstem–Thalamic Arousal | brainstem → thalamus → broad frontal/parietal/occipital cortex | reticular formation, LC, raphe (all brainstem); no hypothalamus in the graph |
+| Retino-Geniculo-Striate Alpha | retina → thalamus → pericalcarine → cuneus + lingual → lateraloccipital | LGN (thalamus) |
+| Sensorimotor Mu | thalamus → postcentral → precentral → paracentral | VPL/VL (thalamus) |
+
+**The on-screen rate is now clamped at both ends**, and the page's closing line still says the
+rate is a depiction. Below the clamp's floor, the infraslow default-mode and arousal loops would
+not visibly move at all; above its ceiling, a gamma loop at ~12 fps skips whole stages between
+frames. So between the two bounds the ratios between tiles are the ratios between bands, and
+outside them they are not — gamma reads as the fastest, not as twice beta. `resonance.js`'s
+header says this in so many words.
+
+**Cost, measured rather than assumed.** Still one WebGL context for all eleven figures: a
+`getContext` counter reads 6 contexts page-wide before and after opening More (hero, background,
+materialization, TMS, body, and the one shared snap renderer). Pulsing now needs an on-screen
+observer with *no* margin, and the pulse rate is a shared budget: ~22 fps each while six or
+fewer are on screen, proportionally slower above that. A blit counter confirms the gate: with
+the section in view, every tile blitted 8 times in 1.5 s (swiftshader, software GL); scrolled
+away, **0**.
+
+
+## 17 September 2026 — WITHDRAWN: the two body atlases do not share a frame. And the whole body ships, moving
+
+**The withdrawal first.** The entry above ("the body's own trajectories cannot be rendered
+without tearing it apart") says, as an aside, that *"the `za-*` meshes and the
+`body-bp3d-FJ*` entities share a frame (bounding boxes agree)"*. **They do not.** The
+extended atlas's own manifest declares the Z-Anatomy surfaces to be in
+`z-anatomy-display-normalized`, whose bounds are exactly ±1 in y, and says in its
+limitations list that *"display normalization does not establish physical dimensions"*. The
+binding and the nerve routes are in `bodyparts3d-display-m`, whose bounds are ±0.8649 m.
+The two boxes have the same *shape* to about 1%, which is what "agree" was reading; they
+differ in *size* by **15.7%**. Every mesh in the shipped figure was therefore bound to a
+segment using vertices 15.7% too large and about 1 cm off in y.
+
+The registration is the ratio of the two declared boxes, taken on height because height is
+the one dimension that means the same thing in both (the x extent is set by where the hands
+hang): **0.86487**. The exporter now applies it and prints the x and z residuals (−1.1% and
++0.1%) rather than fitting them, because the two atlases are two different people.
+
+**The check that would have caught it, and now does.** A landmark neither side of the
+registration uses: the knee pivot is found from Z-Anatomy *surfaces*, and the bp3d binding
+independently gives a centroid for the patella. Unregistered they disagree by **74 mm**;
+registered, by **12 and 13 mm** — which is two atlases, not an error. A bounding-box
+comparison of two objects that are the same shape cannot see a scale error. A landmark can.
+This is the same shape as CLAUDE.md's standing rule about comparing two artefacts: ask what
+each one *declares* about the shared quantity. Both manifests declared it in writing.
+
+**The station is now "Whole Body Human Simulation".** It ships all thirteen systems the
+atlas carries — 770 structures merged to 119 buffers, 135,113 triangles, 3.15 MB — with the
+skin semi-transparent over the rest, the figure standing in a patch of grass whose alpha
+feathers to zero in material space, and a pulse running muscle → spinal relay → cortex and
+back along IHM-1's `peripheral_display.json` routes (which label their own evidence
+`schematic_anatomical_prior`; the payload carries that word through). *[Removed the next day
+— see 18 September: the routes were straight chords, and the atlas has real nerves.]*
+
+**The motion is synthesised and is labelled as such on the page.** The finding above stands
+— no stored trajectory is admissible — so `site/body.js` instead ships the kinematic tree
+(parent, pivot, axis) plus the declared range of the OpenSim coordinate that owns each
+degree of freedom, read out of `engineering_stance_v1/model.osim`, and authors four clips by
+hand inside those ranges. **The page verifies this itself at load**: it sweeps all four clips
+at 60 Hz and tests every value against the shipped range before the first frame — 1,279
+frames over 24 coordinates, all inside. Five of the twenty-four sit on a *substituted* bound
+and the check names them, because the .osim declares the shoulder angles as [−10, 10] rad,
+which is not a range but the absence of one.
+
+**Three binding errors found by animating what had only ever been rendered at rest.**
+1. **Joint pivots from bone-group centroids put the knee 5 cm below the kneecap.** Most limb
+   segments are ONE bound entity, so "midpoint of the two segments' centroids" is the
+   midpoint of two midshafts. The pivot is now where the two segments' bone *surfaces* come
+   closest — the closest 4% of cross-segment vertex pairs, averaged — which is the distal
+   femoral condyles against the tibial plateau. Only the lumbar joint still falls back to
+   centroids, and the exporter prints which ones do.
+2. **Soft tissue cannot be bound against bone-group centroids at all.** An anchor is a
+   bone's interior point, so every soft structure is tens of centimetres from all of them and
+   the comparison is between two large numbers. A fascial sheet at the hip went to the
+   *humerus* that way: invisible at rest, and a hand's width clear of the body as soon as the
+   arm swung. The skeleton is now loaded first — every bone, whether or not the display
+   budget ships it — and every other system is bound against those surfaces.
+3. **The binding was not left/right symmetric, and the asymmetry tore the skin.** `Lateral
+   region of abdomen.r` went to the torso and its mirror image `.l` to the pelvis, because
+   the case is borderline and the atlas's own halves are not exactly mirrored. Half the
+   abdomen then rode the pelvis and half rode the trunk, and the walk's lumbar rotation
+   opened a flap of skin at the waist. Every structure is now scored twice — itself, and its
+   reflection against mirrored segment labels — and averaged, so a mirrored pair cannot be
+   given unmirrored segments whatever the answer turns out to be.
+
+**Two smaller ones.** The exporter's structure ordering was `sort(key=-(source_triangles or
+original_faces or 0))` and **neither field exists in the manifest**, so it sorted nothing and
+shipped whatever order the file happened to be in; it now sorts on the gzipped geometry's
+size on disk. And the walk's pelvis bob was inverted — highest at double support, where real
+gait is lowest — which sank the stance foot through the grass at mid-stance.
+
+## 18 September 2026 — the body figure's nerves are now the atlas's own, and the schematic routes are gone
+
+**What was removed, and why.** The pulse on the whole-body figure ran as beads along IHM-1's
+`peripheral_display.json` routes: three points each (cortical end, spinal relay, muscle),
+which that file itself labels `schematic_anatomical_prior`. Drawn in 3-D they were straight
+chords through the body that no nerve follows. The user called them inaccurate, correctly.
+Restyling them would have kept the inaccuracy, so they are deleted: from the payload, from
+`site/body.js`, and from the exporter.
+
+**Where the real nerves were.** Yesterday's report said the atlas's display export "has no
+nervous-system meshes". That was true of the *export* and false of the *atlas*.
+- IHM-1's `raw_object_inventory.json` lists 588 nervous-system objects, all marked
+  `sense-organ/nervous collection excluded: third-party license scope`.
+- The Z-Anatomy licence names the two components that scope refers to: the inner ear
+  (University of Dundee, CC-BY-NC-SA) and the kidney (CC-BY-NC). The spinal nerves are
+  Z-Anatomy/BodyParts3D, CC-BY-SA, like everything else the site already ships.
+- The source is staged at `IHM-1/data/raw/anatomy/extended/extracted/Z-Anatomy/Startup.blend`.
+
+`scripts/blender_zanatomy_nerves.py` takes the peripheral nervous system and the spinal dura
+from it and nothing filed under an ear or cranial-nerve collection. Nothing was fetched from
+the network. BodyParts3D's own canonical set has a `nervous` system too (146 meshes), but it
+is the brain and the orbital nerves only: no limb nerve, and a `central canal of spinal cord`
+covering 3.5 cm.
+
+**Checks, in the order they bit:**
+1. **Frame.** The blend is in blender world units, and the display transform has a
+   convention to get right. The blend's femur carried through `scale·R·p + t` then ×0.86487
+   lands on the femur the exporter ships to **0.00 mm**; `scale·R·(p + t)` misses by
+   about a metre. The exporter repeats this check and refuses to ship nerves if it fails.
+2. **The connecting pieces were being filtered out.** A 4 cm "legibility" cut dropped the
+   plexus divisions and the spinal roots (1–5 cm each). Every arm route then reached the
+   cord through the intercostal nerves. Every chain is kept now.
+3. **One junction per chain end was wrong.** The median nerve's top end sits exactly on
+   the superior subscapular nerve's, so a nearest-only junction never reached the plexus
+   division 15 mm away. Each end now links to the nearest point of *every* other chain
+   within 15 mm.
+4. **A shortest path is not an anatomical path.** Routed freely, pulses shortcut along the
+   sympathetic trunk. Autonomic chains and the intercostals are therefore drawn but never
+   routed, and changing named nerve costs 10 cm. Every path is then **gated** against its
+   textbook sequence of named nerves; plexus, root, cauda and cord pieces may sit between
+   them. 12 of 16 pass:
+   - tibial → sciatic → cauda equina → cord
+   - deep fibular → common fibular → sciatic → cauda → cord
+   - superficial fibular → common fibular → sciatic → cauda → cord
+   - femoral → cord
+   - median → superior trunk → roots → cord
+   - radial, both sides of every one of these
+
+   **Ulnar and musculocutaneous FAIL**: they reach the cord through the long thoracic nerve.
+   They are drawn and never pulsed. The gate was not loosened to admit them.
+5. **Depth-tested nerves hid the pulse.** The cord lies inside opaque vertebrae and the
+   sciatic behind the femur, so for most of its run a pulse was invisible. Across six
+   frames of a walk it showed as one faint fleck. The nerves are the highlighted system, so
+   they are drawn over the figure. The pulse also swells the tube along its own normals,
+   not just recolours it; recolouring a 2–3 mm tube alone could not be seen.
+
+**What is on the page now:**
+- One skinned mesh: 6,427 centreline points, 6 vertices round each.
+- Every point is bound to its nearest bone surface and blended across a joint with the
+  adjacent segment.
+- It bends with the preview's limbs, mid-walk and mid-reach, without tearing.
+- The cord is drawn along the dura's centreline.
+- Afferent runs up in the site's input colour and the cortex brightens on arrival; the
+  efferent answer runs back down in the output colour.
+- The payload is 3.35 MB.

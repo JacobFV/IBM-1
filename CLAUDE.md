@@ -237,6 +237,57 @@ Corpora live in `data/sources/<id>/raw` (gitignored); `card.yaml` names the orig
 the bytes actually came from — never the machine that staged them. A card marked
 `binding: bound` does not guarantee the bytes are present.
 
+## The site
+
+**`site/data/graph.js` is surface RAS and three.js is y-up, and nothing enforces the
+conversion.** +x right, +y **anterior**, +z **superior**; three wants y up. Feed the raw
+triple to a scene and you render a head lying on its back looking at the ceiling. The
+mapping is `(-x, z, y)` and `site/brain.js` line 15 (`toWorld`) has owned it from the
+start — but `tms.js` and `materialize.js` were each written later without it and **both
+shipped a quarter-turn out**, one of them for weeks, because a point cloud of a brain
+looks plausible from any angle and nobody had a straight-on reference to compare against.
+Mirror x **as well as** swapping y and z: that keeps the determinant at +1, so it is a
+rotation and triangle winding — and therefore every lit surface's normals — survives.
+A bare `(x, z, y)` swap is a reflection and inverts them.
+
+**A 3-D figure's frame must be fitted against BOTH half-extents, not just the vertical
+one.** `dist = radius / tan(fov/2)` checks height only, and every figure on this page is
+wider than it is tall, so the horizontal field was never tested and content ran off the
+side — which is exactly the report that came back. Use
+`dist = radius / sin(min(vfov, hfov)/2)` with `hfov = 2·atan(tan(vfov/2)·aspect)`, and
+re-fit on resize, because a fit done once at load uses whatever width the column happened
+to have before layout settled.
+
+**A `mask-image` on a canvas silently promotes it above the HTML layer over it.** A mask
+makes an element establish a stacking context, which moves it out of the in-flow paint step
+and into the same step as positioned descendants with `z-index: auto` — and there DOM order
+decides. The canvas is appended last, so it paints over an absolutely positioned label layer
+that, by every ordinary reading of the cascade, should be on top. The symptom is not a
+missing label: it is a label erased *only where something happens to be drawn behind it*,
+which reads as a text-clipping bug and is not one. Give the label layer an explicit
+`z-index`. Any of `opacity`, `filter`, `transform`, `backdrop-filter` and `will-change` does
+the same thing.
+
+**An HTML label projected over a canvas needs to own its ANCHOR SIDE.** A label centred on
+its projected point cannot be clamped back into the canvas, because you do not know which
+edge it is hanging over. Give each mark `l`/`r`/`c`, apply it as a percentage translate
+after the pixel translate, and clamp against the measured width — and measure the width in
+`resize()` and again on `document.fonts.ready`, never in the render loop, which forces a
+layout per label per frame, and never before the webfont lands, which measures the
+fallback.
+
+**A `@media` breakpoint is a statement about the VIEWPORT, and inside a station the two
+come apart.** `.station` is a two-column grid inside a max-width band, so the retrieval
+panel, while it sat in the right column, was **387px wide at a 1400px viewport and 856px at
+900px** — *wider* as the window narrows, because the station folds to one column first.
+(It is `st-full` now; any right-column figure still has this shape.) `.rt-row`'s
+`@media (max-width: 1000px)` therefore unfolded the row exactly where the row had least
+room, and the desktop rule gave `auto` to the candidates and left the EEG trace **one
+pixel wide at 1400px**, the width most readers use. It shipped that way and nobody caught
+it, because a row with one part missing still looks like a row. Inside a station, size on
+content (`flex-wrap`) or query the element (`container-type: inline-size` + `@container`),
+and measure the element's OWN width at several viewports before believing any breakpoint.
+
 ## Jobs
 
 - **`PYTHONPATH` is not optional for `scripts/*.py`.** Python puts the SCRIPT's

@@ -926,6 +926,15 @@ window.IBMBrain = (function () {
   const IDLE_MS = 15000;
   let snapRenderer = null, snapScenes = {};
   const views = [];
+  // other modules declare their own figures here rather than reaching into
+  // site.js's spec map; mountSnapshots merges them, and site.js's own entry
+  // wins on a name collision.
+  const EXTRA_SPECS = {};
+  function registerSnaps(specs) { Object.assign(EXTRA_SPECS, specs); }
+  // re-measure every figure on the next frame.  a figure's size can change
+  // without the window's (the resonance grid's "more" re-flows its tiles), and
+  // a view laid out at the old width would draw a stretched blit until resize.
+  function relayoutSnaps() { views.forEach((v) => { v.camera = null; v.dirty = true; }); }
   function isLight() {
     const t = document.documentElement.dataset.theme;
     if (t === 'dark') return false; if (t === 'light') return true;
@@ -981,11 +990,15 @@ window.IBMBrain = (function () {
     v.svg.style.height = narrow ? SH + 'px' : '';
     return true;
   }
-  function renderView(v) {
+  function renderView(v, now) {
     const light = isLight();
     const S = sceneFor(light);
     v.fig.dataset.theme = light ? 'light' : 'dark';
     if (!v.weights) v.weights = v.spec.weights ? v.spec.weights() : weightsFor(v.spec.model || null, false);
+    // a pulsing figure rewrites its own weights from the clock.  the hook is a
+    // pure function of (buffer, seconds) -- same t, same array -- so the still
+    // frame served under prefers-reduced-motion is a frame of the same wave.
+    if (v.spec.pulse) v.spec.pulse(v.weights, reduceMotion ? 0 : (now == null ? performance.now() : now) / 1000);
     snapRenderer.setSize(v.W, v.H, false);
     S.wCur.set(v.weights); S.syncDerived();
     S.setScalp(v.spec.scalp == null ? 1 : v.spec.scalp);
@@ -1046,6 +1059,14 @@ window.IBMBrain = (function () {
   }
   function viewsLoop(now) {
     let any = false;
+    // pulsing figures share one frame budget, not one frame rate: ~22 fps each
+    // while six or fewer are actually on screen, then proportionally slower, so
+    // opening the resonance grid's "more" (eleven at once) does not double the
+    // cost of the page.  `onScreen` is the tight observer, with no 200px margin:
+    // a figure just below the fold is laid out and drawn once, not animated.
+    let nPulse = 0;
+    for (const v of views) if (v.spec.pulse && v.onScreen) nPulse++;
+    const pulseGap = 45 * Math.max(1, nPulse / 6);
     for (const v of views) {
       if (!v.visible) continue;
       if (!v.camera && !layoutView(v)) continue;
@@ -1055,21 +1076,29 @@ window.IBMBrain = (function () {
         if (Math.abs(o.vAz) > 1e-4 || Math.abs(o.vEl) > 1e-4) { o.tAz += o.vAz; o.tEl += o.vEl; o.vAz *= 0.9; o.vEl *= 0.9; o.tEl = Math.max(-1.3, Math.min(1.3, o.tEl)); moving = true; }
         if (!reduceMotion && now - v.lastTouch > IDLE_MS) { o.tAz += 0.0012; moving = true; }
       } else moving = true;
+      // a pulsing figure is never at rest while it is on screen.  throttled
+      // because every one of them shares one WebGL context and each costs a
+      // render plus a blit (see pulseGap above).
+      if (v.spec.pulse && v.onScreen && !reduceMotion && now - (v.pulsedAt || 0) >= pulseGap) { v.pulsedAt = now; moving = true; }
       const dAz = o.tAz - o.az, dEl = o.tEl - o.el;
       if (Math.abs(dAz) > 1e-4 || Math.abs(dEl) > 1e-4) { o.az += dAz * 0.18; o.el += dEl * 0.18; moving = true; }
-      if (moving) { renderView(v); v.dirty = false; any = true; }
+      if (moving) { renderView(v, now); v.dirty = false; any = true; }
     }
     requestAnimationFrame(viewsLoop);
   }
   function mountSnapshots(specs) {
+    specs = Object.assign({}, EXTRA_SPECS, specs);
     const figs = Array.from(document.querySelectorAll('[data-snap]'));
     figs.forEach((fig) => { const spec = specs[fig.dataset.snap]; if (spec) mountView(fig, spec); });
     const eager = /[?&]eager/.test(location.search);
     const io = new IntersectionObserver((entries) => {
       entries.forEach((en) => { const v = views.find((x) => x.fig === en.target); if (v) { v.visible = en.isIntersecting; if (v.visible) v.dirty = true; } });
     }, { rootMargin: '200px 0px' });
-    views.forEach((v) => { io.observe(v.fig); if (eager) { v.visible = true; } });
-    const redo = () => { views.forEach((v) => { v.camera = null; v.dirty = true; }); };
+    const tight = new IntersectionObserver((entries) => {
+      entries.forEach((en) => { const v = views.find((x) => x.fig === en.target); if (v) v.onScreen = en.isIntersecting; });
+    });
+    views.forEach((v) => { io.observe(v.fig); if (v.spec.pulse) tight.observe(v.fig); if (eager) { v.visible = true; v.onScreen = true; } });
+    const redo = relayoutSnaps;
     const rethemed = () => { views.forEach((v) => { v.dirty = true; }); };
     let t = null;
     window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(redo, 200); });
@@ -1087,5 +1116,5 @@ window.IBMBrain = (function () {
   };
   const finish = (items) => items.map((a) => { if (!a.anchor) a.anchor = centroid(a._nodes); return a; });
 
-  return { G, byId, MATS, createHero, mountSnapshots, weightsFor, A, finish, nodesWhere, group, region, hemi, rest, N };
+  return { G, byId, MATS, createHero, mountSnapshots, registerSnaps, relayoutSnaps, weightsFor, A, finish, nodesWhere, group, region, hemi, rest, N };
 })();

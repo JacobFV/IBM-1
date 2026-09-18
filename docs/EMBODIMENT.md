@@ -471,3 +471,72 @@ property of cortex. that error is now avoidable.
 cells are real populations folded into transfer functions, which asserts their
 only contribution is a delay and a sign. flexor-withdrawal and crossed-extensor
 need multi-segmental interneuron chains and are absent entirely.
+
+---
+
+## 9. the figure on the site, and what it is not
+
+`site/body.js` renders the whole body — all thirteen systems the Z-Anatomy extended atlas
+carries, skin included and semi-transparent over the rest — nested on the joint tree of the
+driven skeleton, with a pulse running muscle → spinal relay → cortex and back.
+
+**Three things about it that have to be said wherever it is read, because they are exactly
+the things a moving picture of a body implies and this one has not earned:**
+
+1. **The movement is synthesised.** Four clips (stand, walk, stand, reach) are authored by
+   hand in `site/body.js` as vectors of OpenSim coordinate values. They are a preview of what
+   §1–§8 are for. **No solved trajectory is shipped**, because none is admissible: every one
+   this body model has produced is outside its own declared joint ranges (`docs/LOG.md`,
+   17 September — crawl-best's left knee past its limit for 95.6% of 1,600 frames), and
+   rigid-driving the anatomy with one dislocates the knees and ankles on screen. The
+   admissible source is CMU mocap, fetched and **not yet bound to this skeleton**; when it is,
+   `poseFromClip` is the only function that changes, because a retargeted mocap frame produces
+   the same vector.
+2. **The clips are gated, at load, in the page.** Every angle is clamped to the range
+   `engineering_stance_v1/model.osim` declares, and the page sweeps all four clips at 60 Hz
+   before drawing to confirm none of them needs the clamp. It logs the result, including the
+   five coordinates running on a *substituted* bound because the .osim declares the shoulder
+   as [−10, 10] rad — which is not a range.
+3. **The nerves are the atlas's own; the pulse is a depiction running along them.** The
+   first version drew IHM-1's `peripheral_display.json` routes (three points each, cortex →
+   spinal relay → muscle, labelled by that file `schematic_anatomical_prior`) as straight
+   lines with beads riding them. They cut across the body in chords no nerve follows, and
+   they were **removed**. What replaced them, and where each part comes from:
+   - **Spinal nerves:** Z-Anatomy's own, CC-BY-SA. 197 curve objects, 561 unbranched runs,
+     6,427 centreline points at 1 cm spacing. They were extracted from the staged source
+     (`~/Documents/IHM-1/data/raw/anatomy/extended/extracted/Z-Anatomy/Startup.blend`) by
+     `scripts/blender_zanatomy_nerves.py`.
+     - IHM-1's display export had excluded the whole "Nervous system & Sense organs"
+       collection for "third-party license scope". The licence file scopes that to two
+       components: the inner ear (Dundee, CC-BY-NC-SA) and the kidney (CC-BY-NC). Nothing
+       under an ear or cranial-nerve collection is taken.
+     - The source curves are centrelines with a 0.5 mm bevel. The page draws them at a
+       display radius of 1.1–3.2 mm (4.2 mm for the cord), which is at or below real calibre.
+   - **Frame:** checked on a known answer. The blend's own femur, carried through the same
+     transform, lands on the shipped femur to 0.00 mm.
+   - **Spinal cord:** there is no cord surface in the atlas. The cord is drawn along the
+     centreline of Z-Anatomy's **spinal dura**, which spans the foramen magnum to about L1.
+     BodyParts3D's `central canal of spinal cord` was the other candidate; it covers only
+     3.5 cm of the upper cervical cord.
+   - **Binding:** every nerve point is bound to its nearest bone surface, blended across a
+     joint with the adjacent segment. The network is one skinned mesh, so it bends with the
+     limbs instead of tearing.
+   - **The pulse** is a band of the nerve's own vertices, swollen and recoloured, moving
+     along arc length. It never runs as an object on top of the nerve. It only runs on a
+     pathway that is a shortest path through the atlas's network from a named nerve's far
+     end to the top of the cord, **and** whose named nerves match the textbook sequence:
+     - **12 of 16 pass:** tibial, deep fibular, superficial fibular, femoral, median and
+       radial, both sides.
+     - **Dropped, drawn but never pulsed:** ulnar and musculocutaneous. Their geometric
+       route reaches the cord through the long thoracic nerve.
+   - **Speed:** slowed about fifty-fold from real conduction.
+   - **Cortex:** the point cloud inside the head is the mne `sample` subject's pial surface,
+     placed by bounding box. It is **not coregistered** with this atlas's skull.
+
+What *is* measured and load-bearing: the surfaces, the segment binding, the joint pivots
+(found where two segments' bone surfaces come closest), and the two figures the station
+already quoted — 0.17 mm and 2.90 s.
+
+The frame bug this work uncovered — the two atlases were being compared across a 15.7% scale
+difference that both their manifests declare in writing — is written up in `docs/LOG.md`
+under 17 September.

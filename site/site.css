@@ -703,9 +703,9 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 
 /* longhands: a `padding` SHORTHAND here silently reset the padding-left set above,
    which left the band flush and the try-it column 48px inboard of it. */
-.spine-band { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 34px;
+.spine-band { display: grid; grid-template-columns: 304px minmax(0, 1fr); gap: 34px;
   padding-top: 70px; padding-bottom: 40px; }
-.spine-rail { position: relative; grid-column: 1; width: 240px; }
+.spine-rail { position: relative; grid-column: 1; width: 304px; }
 .spine-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
   opacity: 0; transition: opacity .6s; }
 .spine-rail.is-ready .spine-svg { opacity: 1; }
@@ -717,6 +717,15 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 .spine-tap { fill: var(--accent); }
 .spine-label { font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
   text-transform: uppercase; text-anchor: end; fill: var(--muted); }
+/* the corpus that fuses in here, named and linked.  right-aligned against its ribbon
+   and free to take a second line, which is what lets it carry a dataset accession
+   rather than a modality. */
+.spine-svg foreignObject { overflow: visible; }
+.spine-inlbl { font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em;
+  line-height: 1.3; text-transform: uppercase; text-align: right; color: var(--muted); }
+.spine-inlbl a { color: var(--muted); text-decoration: none;
+  border-bottom: 1px solid var(--rule); }
+.spine-inlbl a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
 .spine-flow { grid-column: 2; display: grid; gap: 132px; min-width: 0; }
 
@@ -778,7 +787,7 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 .btn-quiet { background: none; color: var(--muted); border-color: var(--rule); }
 .btn-quiet:hover { color: var(--accent); border-color: var(--accent); }
 
-@media (max-width: 1000px) {
+@media (max-width: 1080px) {
   /* the rail cannot survive one column: it degrades to nothing rather than to a
      stripe implying an order it is no longer showing */
   .spine-band, .try { padding-left: 22px; padding-right: 22px; }
@@ -813,53 +822,188 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 .sp-dot-after { fill: var(--accent); }
 .sp-keytext { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
 
-/* the live musculoskeletal body */
+/* the whole-body figure.
+
+   NOTE, because the rule directly below does the opposite: this canvas is deliberately NOT
+   masked at its rim.  the figure stands in a patch of grass whose own alpha falls to zero
+   before its geometry ends, so the feather is in the material and the page shows through it
+   in either theme.  a CSS mask here would feather the FEET along with the grass, which is
+   the one part of this figure that has to stay crisp -- it is where the body meets the
+   ground.  the treatment room below is a box and has no such surface, so it is masked. */
 .body-fig { margin: 0; }
-#body3d { width: 100%; min-height: 340px; cursor: grab; opacity: 0; transition: opacity .7s; }
+#body3d { width: 100%; min-height: 360px; cursor: grab; opacity: 0; transition: opacity .7s; }
 #body3d.is-ready { opacity: 1; }
 #body3d:active { cursor: grabbing; }
 #body3d canvas { display: block; width: 100%; height: auto; }
+/* the figure is the widest thing in the column and the caption under it is the narrowest;
+   holding it to the prose measure stops a one-line label spanning the whole media column */
+.body-fig figcaption { max-width: 46ch; }
 
-/* the cobot + head stimulation figure */
+/* the cobot + head stimulation figure, now set in a treatment room.
+
+   the room is a box with four hard edges, and a box with hard edges sitting on a page is a
+   screenshot rather than a figure.  the canvas is therefore masked away at its rim: a
+   radial gradient rounds the corners off, and a feather on each of the four sides keeps
+   the middle of every edge square, which together is the squircle -- a plain ellipse
+   pinched the floor in at the sides and the room stopped looking rectangular.
+   `mask-composite: intersect` is what makes it an AND of the three; without it the default
+   `add` unions them, and the figure simply keeps its old hard edge rather than breaking. */
 .tms-fig { margin: 0; }
 #tms3d { width: 100%; min-height: 300px; cursor: grab; opacity: 0; transition: opacity .7s; }
 #tms3d.is-ready { opacity: 1; }
 #tms3d:active { cursor: grabbing; }
-#tms3d canvas { display: block; width: 100%; height: auto; }
+#tms3d canvas {
+  display: block; width: 100%; height: auto;
+  --feather:
+    radial-gradient(138% 132% at 50% 46%, #000 0 64%, rgba(0,0,0,.88) 85%, transparent 100%),
+    linear-gradient(to right, transparent 0, #000 5%, #000 95%, transparent 100%),
+    linear-gradient(to bottom, transparent 0, #000 4%, #000 93%, transparent 100%);
+  -webkit-mask-image: var(--feather);
+  mask-image: var(--feather);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
 
-/* the THINGS retrieval panel: stimulus, the measured response, and the model's top five
-   out of 200.  the ranking is the evidence, so it gets the width. */
-#retrieval { opacity: 0; transition: opacity .6s; margin-bottom: 26px; }
+/* the THINGS retrieval panel: the round trip the station's two figures score --
+   stimulus, a named arrow, the measured response, a second named arrow, and the model's
+   top five out of 200.  the ranking is the evidence, so it gets the width.
+
+   the row is sized on content and on @container queries, never on @media, because this
+   panel's width has not tracked the viewport's.  when it sat in the station's right
+   column it was 387px at a 1400px viewport and 856px at 900px -- WIDER as the window
+   narrowed -- and the grid it replaced gave `auto` to the candidates and left .rt-mid
+   ONE PIXEL wide at 1400, so the waveform was simply not drawn at the width most readers
+   use.  the station is now st-full (the row was asked not to wrap, and 387px could only
+   wrap), so the panel is 846px at 1500, 674px at 1100, 856px at 900 and 556px at 600;
+   the queries below are keyed to those, measured, not to the old column.
+
+   the fold order is deliberate: .rt-step keeps each arrow WITH the artefact it points
+   at, so a row that cannot hold five things in a line breaks into
+   [seen -> response] / [-> ranking] and never into an arrow orphaned from its target. */
+#retrieval { opacity: 0; transition: opacity .6s; margin-bottom: 26px;
+  container-type: inline-size; }
 #retrieval.is-ready { opacity: 1; }
-.rt-head { margin: 0 0 16px; font-size: .9rem; line-height: 1.5; color: var(--muted); max-width: 54ch; }
+.rt-head { margin: 0 0 14px; font-size: .78rem; line-height: 1.55; color: var(--muted); max-width: 58ch; }
 .rt-head b { color: var(--accent); font-weight: 600; }
-.rt-row { display: grid; grid-template-columns: 74px 1fr auto; gap: 14px; align-items: center;
-  padding: 12px 0; border-top: 1px solid var(--rule); }
-.rt-seen { margin: 0; }
+
+.rt-row { display: flex; flex-wrap: wrap; align-items: center; gap: 11px 12px;
+  padding: 13px 0; border-top: 1px solid var(--rule); }
+/* the basis is stated, not left at `auto`.  `auto` resolves to the step's MAX-content --
+   both children at their caps, 402px for the first step -- so the row folded while 90px
+   of it was still empty, and then the candidates ran off the right edge because
+   `min-width: 0` let the step shrink under its own contents.  the numbers below are the
+   children's bases plus the gap; keep them in step with .rt-leg / .rt-mid / .rt-out.
+   min-width stays at its `auto` default so a step can never be narrower than it fits in.
+   these are the NARROW-panel numbers; the container query below raises them in lockstep
+   with .rt-leg's min-width, and a step basis left behind is how the 700px viewport ended
+   up with both arrows stacked over their targets instead of beside them. */
+.rt-step { display: flex; flex-wrap: wrap; align-items: center; gap: 11px 12px;
+  flex: 1 1 208px; }
+.rt-step-out { flex: 3 1 332px; }
+
+.rt-seen { margin: 0; flex: 0 0 auto; }
 .rt-seen img { width: 74px; height: 74px; object-fit: cover; border-radius: 3px; display: block; }
 .rt-seen figcaption { margin-top: 5px; font-family: var(--mono); font-size: .58rem;
-  letter-spacing: .06em; text-transform: uppercase; color: var(--muted); line-height: 1.25; }
-.rt-mid { display: grid; justify-items: center; gap: 2px; min-width: 0; }
-.rt-eeg { width: 100%; max-width: 150px; height: auto; }
+  letter-spacing: .06em; text-transform: uppercase; color: var(--muted); line-height: 1.25;
+  width: 74px; }
+
+/* an arrow with the model's name over it -- the materialization figure's .mz-mark.is-name
+   register, in document flow rather than over a canvas.  the shaft is drawn in CSS and not
+   as an SVG because it has to stretch from ~84px to the full row width without the head
+   stretching with it. */
+/* the basis is small and the cap is generous on purpose: flex line-breaking happens on
+   the BASIS, before any shrinking, so a fat basis folds the row earlier than it needs to,
+   and an uncapped grow turns the arrow into the widest thing in the row on a line it has
+   to itself.  the cap is loose (340) because the alternative at a mid width is 90px of
+   dead space at the end of the line: a long arrow reads as a long arrow, a gap reads as a
+   bug. */
+.rt-leg { position: relative; flex: 1 1 84px; min-width: 80px; max-width: 340px;
+  display: grid; gap: 4px; text-align: center; }
+.rt-leg b { font-family: var(--display); font-weight: 600; font-size: 11px;
+  line-height: 1.15; color: var(--text); }
+/* a model name broken at one of its own hyphens -- "IBM-1-EEG-to- / Image" -- reads as two
+   names, so it is kept on one line wherever the panel can spare the width.  the query is
+   on the PANEL, not the viewport, for the reason given at the top of this block.
+   the min-width rises with it: a nowrap name in an 86px box does not clip, it PAINTS OVER
+   the trace beside it, which is the failure this rule would otherwise introduce. */
+@container (min-width: 360px) {
+  .rt-leg { min-width: 112px; }
+  .rt-leg b { white-space: nowrap; }
+  .rt-step { flex-basis: 236px; }      /* 112 + 12 + .rt-mid's 112 */
+  .rt-step-out { flex-basis: 360px; }  /* 112 + 12 + .rt-out's 236 */
+}
+/* ONE LINE, NO WRAP, wherever it can be done without starving the candidates -- the
+   request was that this row not fold.  the station went full-width for it (st-full), so
+   the panel is now ~846px at 1500 and ~674px at 1100.  the tightest single line is
+   60 (stimulus) + 2 x 112 (names, 110.6px measured at 11px) + 80 (trace) + 234 (five
+   42px thumbnails) + gaps = ~640, so the switch sits at 660 and 1100 is on the right
+   side of it; below, the wrap rules above take over.
+
+   .rt-step becomes display:contents so all five pieces are siblings in ONE flex line and
+   each gets its own shrink: nested, the shrink was shared out by the steps' bases and the
+   thumbnails lost to the trace.  the trace gives way first (shrink 3, floor 80px), the
+   candidates last (shrink .5, floor 42px each), the names never.  the stimulus and the
+   gaps scale with the panel in container units, which buys the thumbnails ~20px at 1100. */
+/* every selector carries #retrieval: a @container block adds NO specificity, and the
+   .rt-mid / .rt-out base rules sit further down this file, so unprefixed these lost on
+   source order and the trace kept its wrap-mode basis -- 42px thumbnails at 1100. */
+@container (min-width: 660px) {
+  #retrieval .rt-row { flex-wrap: nowrap; gap: 0 clamp(10px, 1.6cqi, 16px);
+    --rt-seen: clamp(60px, 9cqi, 74px); }
+  #retrieval .rt-step { display: contents; }
+  #retrieval .rt-seen img { width: var(--rt-seen); height: var(--rt-seen); }
+  #retrieval .rt-seen figcaption { width: var(--rt-seen); }
+  #retrieval .rt-mid { flex: 1 3 150px; min-width: 80px; }
+  #retrieval .rt-out { flex: 0 .5 284px; min-width: 234px; }
+}
+.rt-leg a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+.rt-leg a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+.rt-shaft { position: relative; display: block; height: 1.5px; background: currentColor;
+  margin-right: 5px; }
+.rt-shaft::after { content: ""; position: absolute; right: -5px; top: 50%;
+  transform: translateY(-50%); border-left: 6px solid currentColor;
+  border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+/* the two directions take the opener's two route colours: into the brain, and out of it */
+.rt-leg-in { color: var(--fig-in); }
+.rt-leg-out { color: var(--fig-out); }
+
+/* the arrows carry meaning, so they carry text; only the glyph itself is hidden */
+.rt-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+/* the trace keeps its 150x66 aspect, so growing it wide also grows it TALL: past ~190px
+   it towers over the 74px stimulus beside it and stops reading as a row. */
+.rt-mid { margin: 0; flex: 1 1 112px; min-width: 96px; max-width: 190px;
+  display: grid; justify-items: center; gap: 3px; }
+.rt-eeg { width: 100%; height: auto; }
 .rt-eeg path { fill: none; stroke: var(--muted); stroke-width: .7; opacity: .75; }
-.rt-arrow { color: var(--muted); font-size: 1rem; line-height: 1; }
-.rt-out { display: grid; gap: 6px; justify-items: start; }
-.rt-top5 { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; }
-.rt-top5 li { display: grid; gap: 3px; justify-items: center; width: 52px; }
-.rt-top5 img { width: 52px; height: 52px; object-fit: cover; border-radius: 3px; display: block;
-  border: 2px solid transparent; opacity: .55; }
+/* the trace is a RECORDING, and it sits under an arrow named for a model.  the caption is
+   what stops the row being read as "the model drew this waveform". */
+.rt-mid figcaption { font-family: var(--mono); font-size: .5rem; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); text-align: center; }
+/* on the single line at ~1100 the trace is ~83px and the caption must fold; the spans make
+   it fold at the separator ("measured · / 8 ch shown") instead of stranding "shown" */
+.rt-mid figcaption span { white-space: nowrap; }
+
+/* grow 3 against the arrow's 1: the ranking is the evidence, so when a line has slack the
+   candidates take most of it and stay at their full 52px rather than the arrow doing so */
+.rt-out { display: grid; gap: 7px; justify-items: start; flex: 3 1 236px; min-width: 236px; }
+.rt-top5 { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; width: 100%; }
+/* the thumbnails shrink to a floor of 42px and then the whole .rt-step wraps instead:
+   degrading to a readable smaller picture beats squeezing five of them into nothing */
+.rt-top5 li { flex: 0 1 52px; min-width: 42px; display: grid; gap: 3px; justify-items: center; }
+.rt-top5 img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 3px;
+  display: block; border: 2px solid transparent; opacity: .55; }
 .rt-top5 span { font-family: var(--mono); font-size: .5rem; letter-spacing: .04em; color: var(--muted);
   text-align: center; line-height: 1.2; overflow-wrap: anywhere; }
+/* the true image is marked by a border AND full opacity AND the rank line below -- never
+   by hue alone, and its name is spelled out for a screen reader in .rt-sr */
 .rt-top5 li.is-true img { border-color: var(--accent); opacity: 1; }
 .rt-top5 li.is-true span { color: var(--text); }
 .rt-rank { margin: 0; font-family: var(--mono); font-size: .58rem; letter-spacing: .1em;
   text-transform: uppercase; }
 .rt-rank.is-hit { color: var(--moved); }
 .rt-rank.is-miss { color: var(--half); }
-@media (max-width: 1000px) {
-  .rt-row { grid-template-columns: 62px 1fr; }
-  .rt-out { grid-column: 1 / -1; }
-}
 
 /* two figures that carry the whole claim, so they get the size */
 .st-big { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 14px 44px; }
@@ -884,7 +1028,7 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
    misalignment is exactly the kind the eye catches without being able to name. */
 .try { max-width: 1280px; margin: 0 auto;
   padding: 30px clamp(18px, 4vw, 48px) 110px;
-  display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 34px; }
+  display: grid; grid-template-columns: 304px minmax(0, 1fr); gap: 34px; }
 .try-inner { display: contents; }
 .try > *, .try-inner > * { grid-column: 2; }
 .nb { max-width: 760px; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden;
@@ -915,22 +1059,138 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 
 /* region labels over the stimulation figure */
 #tms3d { position: relative; }
-.tms-labels { position: absolute; inset: 0; pointer-events: none; }
+/* Z-INDEX IS LOAD-BEARING HERE, and it is not obvious why.  the canvas is an ordinary
+   non-positioned element and the label layer is absolutely positioned, so the labels ought
+   to paint above it whatever the DOM order.  but the canvas carries a `mask-image` (the
+   squircle feather), and a mask makes an element establish a stacking context -- which
+   moves it out of the in-flow paint step and into the SAME step as positioned descendants
+   with z-index auto.  at that point DOM order decides, the canvas is appended last, and it
+   paints over the labels: the protocol card's text was being erased wherever the operator's
+   monitor happened to be behind it.  an explicit z-index puts the layer back on top. */
+.tms-labels { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+/* a chip, not bare text: the label now lies over a lit clinical room whose value sits
+   between the light theme's ink and the dark theme's, so neither colour alone reads on it.
+   --fig-panel is the page's own translucent paper and carries the label in both. */
+/* right-aligned and hung by its RIGHT edge, because tms.js parks the whole column in the
+   empty space left of the head rather than beside each marker */
 .tms-label { position: absolute; top: 0; left: 0; display: grid; gap: 1px;
-  padding-left: 9px; border-left: 1px solid var(--accent-soft); transform-origin: 0 0;
-  white-space: nowrap; transition: opacity .3s; }
+  padding: 3px 9px 3px 7px; border-right: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--paper) 74%, transparent);
+  backdrop-filter: blur(3px); border-radius: 3px 0 0 3px;
+  text-align: right; transform-origin: 100% 0; white-space: nowrap; transition: opacity .3s; }
 .tms-label b { font-family: var(--display); font-weight: 600; font-size: 12px; color: var(--text); }
 .tms-label span { font-family: var(--mono); font-size: 8.5px; letter-spacing: .08em;
   text-transform: uppercase; color: var(--muted); }
 
+/* the protocol card: which site is being hit, and what the train is aimed at.  parked in
+   the top-left rather than projected, because it belongs to the RUN and not to a point in
+   the head -- and because the only reliably empty corner is that one. */
+.tms-card { position: absolute; top: 12px; left: 12px; display: grid; gap: 1px;
+  width: 186px; padding: 9px 11px 8px; border-left: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(4px);
+  border-radius: 0 4px 4px 0; }
+.tms-card .tms-k { font-family: var(--mono); font-size: 7.5px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--muted); }
+.tms-card b { font-family: var(--display); font-weight: 600; font-size: 15px; line-height: 1.1;
+  color: var(--text); margin-bottom: 5px; }
+.tms-card b i { display: block; font-style: normal; font-family: var(--mono); font-size: 8px;
+  letter-spacing: .06em; color: var(--muted); margin-top: 2px; }
+.tms-card em { font-family: var(--display); font-style: normal; font-weight: 600;
+  font-size: 12.5px; color: var(--accent); }
+.tms-card .tms-pair { font-family: var(--mono); font-size: 10px; color: var(--text); }
+/* the clique, spelled out: the arcs in the model show WHICH sites, the line shows which
+   parcellation labels they are, so the picture and the atlas agree by name */
+.tms-card .tms-cl { font-family: var(--mono); font-size: 7.5px; line-height: 1.5;
+  color: var(--muted); margin-top: 5px; overflow-wrap: anywhere; }
+.tms-card .tms-dec { font-family: var(--mono); font-size: 7.5px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--half); margin-top: 6px;
+  border-top: 1px solid var(--rule); padding-top: 5px; }
+@media (max-width: 700px) { .tms-card { width: 152px; padding: 7px 8px 6px; }
+  .tms-card b { font-size: 13px; } }
+
 /* the stimulation station carries the only visualisation for its whole subject, so it
    gets the width the two it replaced used to have between them */
 .station.st-wide { grid-template-columns: minmax(0, 0.76fr) minmax(0, 1.24fr); }
-@media (max-width: 1000px) { .station.st-wide { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1080px) { .station.st-wide { grid-template-columns: minmax(0, 1fr); } }
 
 /* ---- the materialization diagram: one scene, four brains ---- */
 .station.st-full { grid-template-columns: minmax(0, 1fr); gap: 26px; }
 .station.st-full .st-text { max-width: 62ch; }
+
+/* ---- resonance tiles: naked vstacks, no card chrome ------------------ */
+/* each tile is {pulsing brain, name, paragraph} and nothing else -- no
+   border, no panel, no shadow, no hover lift, and (at the user's request) no
+   visible status line: measured/declared lives in data-status on each article
+   and in the comment above the section.  the grid is auto-fit rather
+   than a literal five-across row: the flow column is 846px here, so five in a
+   row would give each brain ~150px, smaller than the thalamus it has to show. */
+.rz-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 34px 26px; margin: 10px 0 0; align-items: start; }
+.rz-tile { display: grid; gap: 7px; align-content: start; min-width: 0;
+  background: none; border: 0; box-shadow: none; padding: 0; }
+.rz-tile > .rz-snap { margin: 0 0 3px; }
+.rz-snap .snap-labels { display: none; }   /* no leaders or labels at this size */
+.rz-tile h3 { margin: 0; font-family: var(--display); font-weight: 600;
+  font-variation-settings: "opsz" 24; font-size: 1.04rem; line-height: 1.2;
+  letter-spacing: -0.012em; text-wrap: balance; }
+.rz-say { margin: 0; font-size: 0.86rem; line-height: 1.5; color: var(--muted); }
+/* the one measured tile carries its numbers under its paragraph, stacked:
+   .st-figs' 15ch label column does not fit in a tile this narrow */
+.rz-figs { margin: 7px 0 0; gap: 10px; }
+.rz-figs li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.rz-figs > li > b { font-size: 1.12rem; }
+.rz-figs span { font-size: 0.8rem; line-height: 1.45; }
+.rz-foot { margin: 28px 0 0; font-size: 0.82rem; line-height: 1.5; color: var(--muted); max-width: 74ch; }
+/* the measured tile is the only one carrying numbers, so it is half again as tall as the
+   rest.  spanning it down two rows was the first fix and it is worse: a grid row is as
+   tall as its tallest item, so the tile ended a long way above the bottom of the two rows
+   it had claimed and left a column of white in the MIDDLE of the figure.  a ragged last
+   row is the normal shape of five things in a three-column grid, and the empty cell is at
+   the end where nobody reads it as a mistake.
+   that empty sixth cell is now the "more" button, so five tiles plus it fill
+   3 x 2 exactly, and eleven plus it fill 4 x 3 when it is open. */
+@media (min-width: 760px) {
+  .rz-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) { .rz-grid { grid-template-columns: minmax(0, 1fr); gap: 30px; } }
+
+/* the six extra tiles are wrapped so one `hidden` toggles them, and the
+   wrapper is display: contents so its tiles are still items of .rz-grid.
+   [hidden] must win over that, hence the explicit pair. */
+.rz-extra:not([hidden]) { display: contents; }
+.rz-extra[hidden] { display: none; }
+
+/* "more": shaped like a tile -- a figure-sized area and a name under it -- so
+   the sixth cell reads as part of the grid, but naked like the tiles are.  the
+   ring is the glyph, not card chrome. */
+.rz-more { display: grid; gap: 7px; align-content: start; justify-items: center; min-width: 0;
+  margin: 0; padding: 0; background: none; border: 0; box-shadow: none; cursor: pointer;
+  color: var(--muted); font: inherit; text-align: center; transition: color .15s; }
+.rz-more:hover, .rz-more:focus-visible { color: var(--accent); }
+.rz-more:focus-visible { outline: 1px solid var(--accent); outline-offset: 6px; border-radius: 2px; }
+.rz-more-glyph { display: grid; place-items: center; width: 100%; aspect-ratio: 1 / 0.88; }
+.rz-more-glyph::before, .rz-more-glyph::after { grid-area: 1 / 1; }
+.rz-more-glyph::before { content: ""; width: 58px; height: 58px; border-radius: 50%;
+  border: 1px solid currentColor; opacity: .6; }
+.rz-more-glyph::after { content: "+"; font-family: var(--display); font-weight: 300;
+  font-size: 1.9rem; line-height: 1; transform: translateY(-1px); }
+.rz-more[aria-expanded="true"] .rz-more-glyph::after { content: "\2212"; }
+.rz-more-label { font-family: var(--display); font-weight: 600; font-variation-settings: "opsz" 24;
+  font-size: 1.04rem; line-height: 1.2; letter-spacing: -0.012em; }
+
+/* open: eleven tiles and the button, packed denser and set smaller */
+.rz-grid.is-more { gap: 28px 20px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+@media (min-width: 760px) { .rz-grid.is-more { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .rz-grid.is-more { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; } }
+.rz-grid.is-more .rz-tile { gap: 5px; }
+.rz-grid.is-more .rz-tile h3, .rz-grid.is-more .rz-more-label { font-size: 0.9rem; }
+.rz-grid.is-more .rz-say { font-size: 0.78rem; line-height: 1.45; }
+.rz-grid.is-more .rz-figs > li > b { font-size: 0.98rem; }
+.rz-grid.is-more .rz-figs span { font-size: 0.74rem; }
+.rz-grid.is-more .rz-more-glyph::before { width: 46px; height: 46px; }
+/* one column: a full-width figure-sized blank for the button would be a
+   screen of nothing on a phone */
+@media (max-width: 600px) { .rz-grid:not(.is-more) .rz-more-glyph { aspect-ratio: auto; height: 76px; } }
 
 .mz { position: relative; width: 100%; max-width: 1000px; opacity: 0; transition: opacity .7s; }
 .mz.is-ready { opacity: 1; }
@@ -946,34 +1206,58 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 .mz-mark span { font-family: var(--mono); font-size: 7.5px; letter-spacing: .1em;
   text-transform: uppercase; color: var(--muted); }
 
-/* the hub and the three model names are the labels that carry the diagram */
-.mz-mark.is-hub { transform-origin: 50% 0; margin-left: -60px; text-align: center; }
-.mz-mark.is-hub b { font-size: 19px; color: var(--accent); }
-.mz-mark.is-hub span { font-size: 8px; }
-.mz-mark.is-name { margin-left: -52px; text-align: center; }
-.mz-mark.is-name b { font-size: 12.5px; }
+/* every mark is anchored by materialize.js's own translate(), never by a margin: the
+   anchor side is what lets it clamp a label back inside the canvas instead of letting
+   a long model name run off the edge. */
+/* the wordmark and each model's name both sit ON the thing they name -- the hub's crown,
+   the lane's arrow -- so both need a halo to stay legible over a point cloud.  a
+   text-shadow in the PAGE's own colour, not a panel: a panel behind either of them would
+   punch a hole in the brain it is sitting on. */
+.mz-mark.is-hub, .mz-mark.is-name { text-align: center; }
+.mz-mark.is-hub b { font-size: 21px; color: var(--accent);
+  text-shadow: 0 0 9px var(--paper), 0 0 4px var(--paper), 0 0 2px var(--paper); }
+.mz-mark.is-name b { font-size: 12.5px;
+  text-shadow: 0 0 7px var(--paper), 0 0 3px var(--paper), 0 0 2px var(--paper); }
 
-/* inputs and outputs take the same two colours as the traced route in the opener */
-.mz-mark.is-in { padding-left: 7px; border-left: 1.5px solid var(--fig-in); }
-.mz-mark.is-in b { color: var(--fig-in); font-size: 10px; }
-.mz-mark.is-out { padding-left: 7px; border-left: 1.5px solid var(--fig-out); }
-.mz-mark.is-out b { color: var(--fig-out); font-size: 10px; }
-.mz-mark.is-var { font-family: var(--mono); font-size: 8px; letter-spacing: .04em;
-  color: var(--accent); opacity: .5; }
+/* inputs and outputs take the same two colours as the traced route in the opener.
+   the side a port sits on IS its direction -- it carries no "in"/"out" tag -- and now the
+   strand leaving it is its rule too, so the bar each label used to carry was a second line
+   saying the same thing a few pixels from the first.  the halo is what lets the
+   materialization thread run behind a label without cutting its text. */
+.mz-mark.is-in { padding-right: 5px; text-align: right; }
+.mz-mark.is-out { padding-left: 5px; }
+.mz-mark.is-in b, .mz-mark.is-out b { font-size: 10.5px;
+  text-shadow: 0 0 5px var(--paper), 0 0 2px var(--paper); }
+.mz-mark.is-in b { color: var(--fig-in); }
+.mz-mark.is-out b { color: var(--fig-out); }
+/* variable names ride the implicit brain and fade by which way their site faces, so their
+   opacity is set per frame by materialize.js -- a CSS opacity here would multiply it */
+.mz-mark.is-var { font-family: var(--mono); font-size: 7px; letter-spacing: .03em;
+  color: var(--accent); transition: none;
+  text-shadow: 0 0 5px var(--paper), 0 0 2px var(--paper), 0 0 1px var(--paper); }
+
+/* set by materialize.js from the CANVAS's own width, not the viewport's */
+.mz.is-tight .mz-mark b { font-size: 9.5px; }
+.mz.is-tight .mz-mark.is-name b { font-size: 10.5px; }
+.mz.is-tight .mz-mark.is-hub b { font-size: 16px; }
+.mz.is-tight .mz-mark.is-var { font-size: 6.5px; }
 
 @media (max-width: 1000px) {
   .mz-mark.is-var { display: none; }
-  .mz-mark b { font-size: 10px; }
-}
 }
 
 /* rail labels sit outside the roads group, so they keep full contrast and their links
    stay clickable through the mask */
 .spine-labels { pointer-events: auto; }
 .spine-tap.is-wip { opacity: .35; }
-.spine-outlbl { font-family: var(--mono); font-size: 9.5px; letter-spacing: .06em;
-  line-height: 1.25; white-space: nowrap; }
-.spine-outlbl a { color: var(--accent); text-decoration: none; }
+/* one block per splinter point, one line per model that leaves there.  8.5px and
+   free to wrap: "IBM-1-AV-MEG-Predictor (93.7M)" does not fit the rail on one line and
+   the alternative -- widening the rail again -- comes out of the prose. */
+.spine-outlbl { font-family: var(--mono); font-size: 8.5px; letter-spacing: .04em;
+  line-height: 1.3; display: grid; gap: 5px; }
+.spine-outlbl a, .spine-outlbl > span { display: block; color: var(--accent); text-decoration: none; }
 .spine-outlbl a:hover { text-decoration: underline; }
-.spine-outlbl span { color: var(--muted); }
+.spine-outlbl > span { color: var(--muted); }
+.spine-outlbl b { font-weight: 400; color: var(--muted); }
+.spine-outlbl .hf { margin-right: 2px; font-size: 9px; }
 .spine-outlbl i { font-style: normal; opacity: .75; }

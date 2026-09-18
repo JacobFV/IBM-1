@@ -25,14 +25,22 @@
   const scene = new T.Scene();
   const world = new T.Group(); scene.add(world);
 
+  /* THE GRAPH IS SURFACE RAS -- +x right, +y anterior, +z SUPERIOR -- and three.js is
+     y-up.  this figure used the raw triple, so the head lay on its back looking at the
+     ceiling while a cobot reached down the side of it: the whole scene was a quarter turn
+     out.  brain.js line 15 already owned the mapping and this did not use it.
+
+     (-x, z, y) mirrors x as well as swapping y and z, which keeps the determinant at +1.
+     that matters here: a reflection would reverse the pial surface's triangle winding and
+     invert every normal on the one lit mesh in the figure. */
+  const toY = (p, s) => new T.Vector3(-(p[0] * s - ctr.x), p[2] * s - ctr.z, p[1] * s - ctr.y);
+
   const NODES = G.nodes.length;
   const CORTEX = G.cortex_range ? G.cortex_range[1] : NODES;
   const npos = new Float32Array(NODES * 3);
   for (let i = 0; i < NODES; i++) {
-    const p = G.nodes[i].p;
-    npos[i * 3] = p[0] * MM - ctr.x;
-    npos[i * 3 + 1] = p[1] * MM - ctr.y;
-    npos[i * 3 + 2] = p[2] * MM - ctr.z;
+    const v = toY(G.nodes[i].p, MM);
+    npos[i * 3] = v.x; npos[i * 3 + 1] = v.y; npos[i * 3 + 2] = v.z;
   }
   const ncol = new Float32Array(NODES * 3);
   const restCol = G.nodes.map((n) => new T.Color(n.c || "#7a8290"));
@@ -55,9 +63,11 @@
     const rgb = un(CX.col);
     cxN = CX.n_vertices;
     cxPos = new Float32Array(cxN * 3);
-    for (let i = 0; i < cxN * 3; i++) cxPos[i] = (q[i] * CX.scale + CX.origin[i % 3]) * MM;
     for (let i = 0; i < cxN; i++) {
-      cxPos[i * 3] -= ctr.x; cxPos[i * 3 + 1] -= ctr.y; cxPos[i * 3 + 2] -= ctr.z;
+      const v = toY([q[i * 3] * CX.scale + CX.origin[0],
+                     q[i * 3 + 1] * CX.scale + CX.origin[1],
+                     q[i * 3 + 2] * CX.scale + CX.origin[2]], MM);
+      cxPos[i * 3] = v.x; cxPos[i * 3 + 1] = v.y; cxPos[i * 3 + 2] = v.z;
     }
     /* the aparc LUT is FreeSurfer's, and raw it is a bag of fully saturated primaries that
        fights everything else on the page.  keep a third of the hue -- enough that a region
@@ -92,46 +102,162 @@
 
   /* the scalp stays, as a wireframe hint of where the coil actually sits */
   const scalpGeo = new T.BufferGeometry();
-  scalpGeo.setAttribute("position", new T.Float32BufferAttribute(
-    G.scalp.xyz.flat().map((v) => v * MM), 3));
+  const sxyz = new Float32Array(G.scalp.xyz.length * 3);
+  G.scalp.xyz.forEach((p, i) => {
+    const v = toY(p, MM);
+    sxyz[i * 3] = v.x; sxyz[i * 3 + 1] = v.y; sxyz[i * 3 + 2] = v.z;
+  });
+  scalpGeo.setAttribute("position", new T.BufferAttribute(sxyz, 3));
   scalpGeo.setIndex(G.scalp.faces.flat());
   const scalp = new T.LineSegments(new T.WireframeGeometry(scalpGeo),
-    new T.LineBasicMaterial({ color: 0x9aa4b4, transparent: true, opacity: 0.055 }));
-  scalp.position.sub(ctr);
+    new T.LineBasicMaterial({ color: 0x9aa4b4, transparent: true, opacity: 0.11 }));
   world.add(scalp);
+  /* and a skin over it, barely there.  a wireframe at 7% is invisible against a lit room,
+     so the figure read as a cortex floating in mid air beside a robot -- there was no HEAD
+     for the coil to be placed on, which is the whole claim of the picture.  16% is enough
+     to give a silhouette and a highlight and still show the ripple through it. */
+  scalpGeo.computeVertexNormals();
+  const skin = new T.Mesh(scalpGeo, new T.MeshStandardMaterial({
+    color: 0xd9b49c, roughness: 0.78, metalness: 0.0, transparent: true, opacity: 0.24,
+    side: T.DoubleSide, depthWrite: false,
+  }));
+  world.add(skin);
 
-  /* the 60 digitised contacts, and the one the pulse is aimed at */
+  /* ---------- the protocol: four sites, and what each train is FOR ----------
+
+     one site, pulsed over and over, was a demo of a robot.  a course of TMS is a
+     PROTOCOL: a site chosen because of the loop it sits in, a band that loop runs at, and
+     a pair whose coupling the train is meant to move.  the figure cycles four of the
+     targets that are actually used clinically and names, for each, the coupling it is
+     aimed at and the meso clique it belongs to -- which is the thing this model claims to
+     be able to predict and the reason the site is worth hitting at all.
+
+     DECLARED, NOT MEASURED, and the card on the figure says so.  nothing here has been
+     run: no coupling has been predicted, no course simulated, no before/after spectrum
+     compared.  what would have to exist to drop the "declared" chip is, in order: a coil
+     pose streaming into the field solve so the stimulated set is computed rather than
+     assumed; a per-subject motor threshold so the amplitude means something; the paired
+     spectra of the named pair before and after a train, against a sham arm; and the same
+     across sessions, since the week-four claim is about reorganisation and not about the
+     minutes after a pulse.  the cliques below are anatomy -- real aparc labels, the loops
+     as the literature describes them -- and the BANDS are the declared priors, which is
+     exactly the kind of number docs/LOG.md has moved before (the thalamo-cortical prior
+     said alpha and the data said 13.45 Hz).  treat every band here as a prior. */
+  const PROTOCOLS = [
+    { site: ["precentral", "lh"], name: "left M1", area: "precentral",
+      band: "beta 13–30 Hz", couple: "M1 ↔ SMA",
+      clique: [["precentral", "lh"], ["paracentral", "lh"],
+               ["postcentral", "lh"], ["superiorfrontal", "lh"]] },
+    { site: ["rostralmiddlefrontal", "lh"], name: "left DLPFC", area: "rostral middle frontal",
+      band: "theta 4–8 Hz", couple: "DLPFC ↔ ACC",
+      clique: [["rostralmiddlefrontal", "lh"], ["caudalmiddlefrontal", "lh"],
+               ["rostralanteriorcingulate", "lh"], ["caudalanteriorcingulate", "lh"]] },
+    { site: ["superiorparietal", "lh"], name: "left IPS", area: "superior parietal",
+      band: "alpha 8–13 Hz", couple: "IPS ↔ FEF",
+      clique: [["superiorparietal", "lh"], ["inferiorparietal", "lh"],
+               ["caudalmiddlefrontal", "lh"], ["precuneus", "lh"]] },
+    { site: ["supramarginal", "lh"], name: "left TPJ", area: "supramarginal",
+      band: "gamma 30–80 Hz", couple: "TPJ ↔ STG",
+      clique: [["supramarginal", "lh"], ["superiortemporal", "lh"],
+               ["transversetemporal", "lh"], ["bankssts", "lh"]] },
+  ];
+
+  /* the 60 digitised contacts; which one is hot depends on the protocol */
   const eeg = G.nodes.filter((n) => n.g === "eeg");
-  const pre = G.nodes.filter((n) => n.r === "precentral" && n.h === "lh");
-  const pc = pre.length
-    ? pre.reduce((a, n) => a.add(new T.Vector3().fromArray(n.p)), new T.Vector3()).multiplyScalar(1 / pre.length)
-    : new T.Vector3(-40, 0, 90);
-  const pcm = pc.clone().multiplyScalar(MM).sub(ctr);
-  let target = null, best = Infinity;
   const dots = new T.Group(); world.add(dots);
   const dotGeo = new T.SphereGeometry(0.0045, 10, 8);
   const dotMat = new T.MeshBasicMaterial({ color: 0xe9e7e0, transparent: true, opacity: 0.65 });
   const hotMat = new T.MeshBasicMaterial({ color: 0xf0b34a });   /* basic: no emissive */
-  eeg.forEach((n) => {
-    const p = new T.Vector3().fromArray(n.p).multiplyScalar(MM).sub(ctr);
-    const d = p.distanceTo(pcm);
+  const contacts = eeg.map((n) => {
+    const p = toY(n.p, MM);
     const m = new T.Mesh(dotGeo, dotMat); m.position.copy(p); dots.add(m);
-    if (d < best) { best = d; target = { p, mesh: m }; }
+    return { p, mesh: m };
   });
-  if (!target) { console.warn("tms: no target contact found"); return; }
-  target.mesh.material = hotMat;
-  target.mesh.scale.setScalar(1.7);
-  const nrm = target.p.clone().normalize();
-  const coilAt = target.p.clone().addScaledVector(nrm, 0.012);
+  if (!contacts.length) { console.warn("tms: no digitised contacts"); return; }
 
-  /* distance from the stimulated site to every cortical node, for the ripple */
+  const nodesIn = (r, h) => G.nodes.filter((n) => n.r === r && (!h || n.h === h));
+  const centroidOf = (r, h) => {
+    const ns = nodesIn(r, h);
+    if (!ns.length) { console.warn("tms: no nodes for region", r, h); return null; }
+    const m = ns.reduce((a, n) => a.add(new T.Vector3().fromArray(n.p)), new T.Vector3())
+      .multiplyScalar(1 / ns.length);
+    return toY([m.x, m.y, m.z], MM);
+  };
+
+  /* ---- one prepared scene per protocol: the hot contact, the coil pose, and the
+          clique drawn as its own sites plus an arc from the stimulated one to each ---- */
+  const cliqueMat = new T.PointsMaterial({ color: 0x8ef0ff, size: 0.011, transparent: true,
+    opacity: 0, sizeAttenuation: true, depthWrite: false, blending: T.AdditiveBlending });
+  const arcMat = new T.MeshBasicMaterial({ color: 0x63d3e6, transparent: true, opacity: 0,
+    depthWrite: false });
+  PROTOCOLS.forEach((P) => {
+    const aim = centroidOf(P.site[0], P.site[1]);
+    P.target = contacts.reduce((b, c) =>
+      (!b || c.p.distanceTo(aim) < b.p.distanceTo(aim)) ? c : b, null);
+    P.nrm = P.target.p.clone().normalize();
+    P.coilAt = P.target.p.clone().addScaledVector(P.nrm, 0.012);
+    P.away = P.coilAt.clone().addScaledVector(P.nrm, 0.10).add(new T.Vector3(0.03, 0.02, 0));
+
+    const g = new T.Group(); g.visible = false; world.add(g); P.group = g;
+    const pts = [];
+    P.clique.forEach(([r, h]) => nodesIn(r, h).forEach((n) => {
+      const v = toY(n.p, MM); pts.push(v.x, v.y, v.z);
+    }));
+    const cg = new T.BufferGeometry();
+    cg.setAttribute("position", new T.Float32BufferAttribute(pts, 3));
+    g.add(new T.Points(cg, cliqueMat));
+    /* a STAR from the stimulated area, not a ring round all four: a ring says every pair
+       in the clique is coupled, which is a stronger claim than the one being made. */
+    const cs = P.clique.map(([r, h]) => centroidOf(r, h)).filter(Boolean);
+    P.centroids = cs;
+    cs.slice(1).forEach((c) => {
+      const mid = cs[0].clone().lerp(c, 0.5);
+      mid.addScaledVector(mid.clone().normalize(), 0.038);   /* bow it clear of the surface */
+      const curve = new T.QuadraticBezierCurve3(cs[0], mid, c);
+      g.add(new T.Mesh(new T.TubeGeometry(curve, 22, 0.0024, 6, false), arcMat));
+    });
+  });
+
+  /* the ripple is measured from the stimulated site, so both distance tables are rebuilt
+     when the protocol changes -- 3k nodes and 13k vertices, once every seven seconds */
   const dist0 = new Float32Array(CORTEX);
-  let dmax = 0;
-  for (let i = 0; i < CORTEX; i++) {
-    const dx = npos[i * 3] - target.p.x, dy = npos[i * 3 + 1] - target.p.y, dz = npos[i * 3 + 2] - target.p.z;
-    dist0[i] = Math.hypot(dx, dy, dz);
-    if (dist0[i] > dmax) dmax = dist0[i];
+  let dmax = 0, cxDist = CX ? new Float32Array(cxN) : null, cxMax = 0;
+  let live = null;
+  function setProtocol(P) {
+    if (live) { live.group.visible = false; live.target.mesh.material = dotMat;
+                live.target.mesh.scale.setScalar(1); }
+    live = P;
+    P.group.visible = true;
+    P.target.mesh.material = hotMat;
+    P.target.mesh.scale.setScalar(1.7);
+    dmax = 0;
+    for (let i = 0; i < CORTEX; i++) {
+      const dx = npos[i * 3] - P.target.p.x, dy = npos[i * 3 + 1] - P.target.p.y,
+            dz = npos[i * 3 + 2] - P.target.p.z;
+      dist0[i] = Math.hypot(dx, dy, dz);
+      if (dist0[i] > dmax) dmax = dist0[i];
+    }
+    if (CX) {
+      cxMax = 0;
+      for (let i = 0; i < cxN; i++) {
+        const dx = cxPos[i * 3] - P.target.p.x, dy = cxPos[i * 3 + 1] - P.target.p.y,
+              dz = cxPos[i * 3 + 2] - P.target.p.z;
+        cxDist[i] = Math.hypot(dx, dy, dz);
+        if (cxDist[i] > cxMax) cxMax = cxDist[i];
+      }
+    }
+    card.innerHTML =
+      `<span class="tms-k">target</span><b>${P.name}<i>${P.area}</i></b>` +
+      `<span class="tms-k">aimed at</span>` +
+      `<em>${P.band}</em><span class="tms-pair">${P.couple}</span>` +
+      `<span class="tms-cl">${P.clique.map(([r]) => r).join(" · ")}</span>`;
+    /* the "declared · not yet measured" line is off the card by request, as it is off the
+       resonance tiles.  the status is not lost: PROTOCOLS' header comment above says what
+       would have to exist to earn "measured", and the element carries it for anyone
+       reading the source. */
+    card.dataset.status = "declared-not-measured";
   }
+
   const HOT = new T.Color(0xffe6b0), LIFT = new T.Color(0xaebbd4);
   function ripple(phase) {
     /* phase < 0 means no pulse in flight: everything sits at its resting colour */
@@ -149,16 +275,6 @@
     brainGeo.attributes.color.needsUpdate = true;
   }
   /* the same wave, over the surface vertices */
-  let cxDist = null, cxMax = 0;
-  if (CX) {
-    cxDist = new Float32Array(cxN);
-    for (let i = 0; i < cxN; i++) {
-      const dx = cxPos[i * 3] - target.p.x, dy = cxPos[i * 3 + 1] - target.p.y,
-            dz = cxPos[i * 3 + 2] - target.p.z;
-      cxDist[i] = Math.hypot(dx, dy, dz);
-      if (cxDist[i] > cxMax) cxMax = cxDist[i];
-    }
-  }
   function rippleCortex(phase) {
     if (!CX) return;
     const front = phase * cxMax * 1.35;
@@ -175,6 +291,16 @@
     }
     cortexMesh.geometry.attributes.color.needsUpdate = true;
   }
+
+  /* the protocol card, and the one projected label on the site being hit */
+  const labelHost = document.createElement("div");
+  labelHost.className = "tms-labels";
+  host.appendChild(labelHost);
+  const card = document.createElement("div");
+  card.className = "tms-card";
+  labelHost.appendChild(card);
+
+  setProtocol(PROTOCOLS[0]);
   ripple(-1); rippleCortex(-1);
 
   /* ---------- the arm: Franka Panda, modified DH [a, d, alpha] ---------- */
@@ -188,9 +314,19 @@
                [-2.897, 2.897], [-0.0175, 3.752], [-2.897, 2.897]];
   const q = [0.0, -0.5, 0.0, -2.0, 0.0, 1.6, 0.8];
 
+  /* the arm's first DH link runs along its own LOCAL +Z, so the column is z-up in base
+     coordinates while the scene is now y-up.  rotation.x = -pi/2 stands it upright (three
+     composes an 'XYZ' euler as Rx·Ry·Rz, so rotation.z still spins it about its own
+     column, which is the one adjustment a real installation has).  the base sits on the
+     cart to the patient's right, below and in front of the head; q[0] finds the azimuth
+     that reaches the target, so the yaw here is cosmetic. */
   const base = new T.Group();
-  base.position.set(0.30, -0.34, 0.16);
-  base.rotation.y = -Math.PI * 0.62;
+  /* BEHIND the subject's left shoulder, not in front of it.  mounted forward of the head
+     (z > 0) the arm has to fold back over itself and the elbow lands between the camera
+     and the scalp -- the coil was visible and the head it was on was not.  from behind,
+     the whole chain rises on the far side and reaches forward into frame. */
+  base.position.set(0.36, -0.36, -0.26);
+  base.rotation.set(-Math.PI / 2, 0, 0.5);
   world.add(base);
 
   function dhMat(a, d, al, th) {
@@ -266,8 +402,11 @@
       bands.push(bd); base.add(bd);
     }
   }
+  /* the pedestal is a cylinder about its own Y and the column rises along the base's Z,
+     so it has to be laid down to be a base plate rather than a stub beside one */
   const pedestal = new T.Mesh(new T.CylinderGeometry(0.082, 0.115, 0.055, 32), joint);
-  pedestal.position.y = 0.027; base.add(pedestal);
+  pedestal.rotation.x = Math.PI / 2;
+  pedestal.position.z = 0.027; base.add(pedestal);
   /* the coil: two windings side by side, the figure-of-eight a real TMS coil is */
   const coil = new T.Group();
   [-0.026, 0.026].forEach((dx) => {
@@ -303,41 +442,102 @@
     tipDot.position.copy(posOf(M));
   }
 
-  /* ---------- the regions the before/after spectra are read from ----------
-     labelled from the same parcellation the rest of the site draws, so the names on this
-     figure and the ports named elsewhere are the same objects. */
-  const REGIONS = [
-    { r: "precentral", h: "lh", label: "precentral", note: "where the pulse lands" },
-    { r: "superiorfrontal", h: null, label: "superior frontal", note: "spectra read here" },
-    { r: "superiorparietal", h: null, label: "superior parietal", note: "spectra read here" },
-  ];
-  const marks = [];
-  const markGeo = new T.SphereGeometry(0.007, 12, 10);
-  const markMat = new T.MeshStandardMaterial({ color: 0x63d3e6, emissive: 0x0d3a42, roughness: 0.4 });
-  REGIONS.forEach((R) => {
-    const ns = G.nodes.filter((n) => n.r === R.r && (!R.h || n.h === R.h));
-    if (!ns.length) return;
-    const c = ns.reduce((a, n) => a.add(new T.Vector3().fromArray(n.p)), new T.Vector3())
-      .multiplyScalar(1 / ns.length).multiplyScalar(MM).sub(ctr);
-    const m = new T.Mesh(markGeo, markMat); m.position.copy(c); world.add(m);
-    marks.push({ pos: c, label: R.label, note: R.note });
-  });
-  const labelHost = document.createElement("div");
-  labelHost.className = "tms-labels";
-  host.appendChild(labelHost);
-  marks.forEach((m) => {
-    const d = document.createElement("div");
-    d.className = "tms-label";
-    d.innerHTML = `<b>${m.label}</b><span>${m.note}</span>`;
-    labelHost.appendChild(d);
-    m.el = d;
-  });
+  /* the three fixed "spectra read here" markers are gone: which regions matter depends
+     on which site is being hit, and the protocol's own clique now says it -- in the card,
+     and as the lit sites and arcs in the model. */
+
+  /* ---------- the ground the rig stands on ----------
+     the rig used to float on the page, which read as a rendering of a coil rather than as
+     a procedure happening somewhere.  it went through a whole treatment room -- two walls,
+     a skirting line, a ceiling panel, a console on a stand -- and came back down to a floor
+     and the cart the arm is bolted to, because every prop past those competed with the
+     head for attention and every wall was an edge.  the canvas box is still feathered in
+     CSS (see #tms3d's mask) so the frame itself never shows a hard border.
+
+     PLANNED, NOT BUILT: none of this is a model of a clinic.  the neuronavigation loop
+     these props stand for -- a tracked coil pose streaming into the field solve, a stored
+     MEP threshold per subject, a session ledger over a four-week course -- is what the
+     stimulation arm is for, and none of it exists yet.  the geometry here is set dressing
+     at a scale that happens to be right (cart top at the arm's base, head one metre off
+     the floor, seated) so that when a real coil pose arrives it can be dropped in without
+     moving the furniture.
+
+     EVERY PIECE OF IT FADES WITH DISTANCE FROM THE HEAD.  masking the canvas box was not
+     enough: inside the mask the room still had four hard architectural edges -- a skirting
+     line, a wall corner, the lip of the floor -- and a room that ends in a corner reads as
+     a screenshot of a game.  feather() below patches each room material's shader so its
+     ALPHA falls off radially in world space about the subject, which means the page shows
+     through rather than a colour being blended in, and it means the falloff is the same
+     whatever the camera is doing.  the head, the cortex and the arm are never feathered:
+     they are the figure, and everything else is the room dissolving around them. */
+  const FLOOR_Y = -1.02;
+  const room = new T.Group(); world.add(room);
+
+  /* feather(mat, at, r0, r1, planar): alpha is 1 inside r0 of `at`, 0 beyond r1.  with
+     `planar` the distance is taken in the FLOOR PLANE (x,z) only.  the floor needs that: a
+     spherical falloff about the head measures every floor point as at least a metre away,
+     because the floor is a metre down, so the patch directly underfoot could never be both
+     solid and small -- it was 89% opaque and ran out to the frame edge.  measured flat, the
+     floor is a soft disc under the rig that goes fully transparent well inside the frame. */
+  const feather = (mat, at, r0, r1, planar) => {
+    mat.transparent = true;
+    mat.depthWrite = false;      /* a fading plane must not occlude what is behind it */
+    const c = `vec3(${at[0].toFixed(3)}, ${at[1].toFixed(3)}, ${at[2].toFixed(3)})`;
+    const d = planar ? `distance(vFeatherPos.xz, ${c}.xz)` : `distance(vFeatherPos, ${c})`;
+    mat.onBeforeCompile = (sh) => {
+      sh.vertexShader = "varying vec3 vFeatherPos;\n" + sh.vertexShader.replace(
+        "#include <begin_vertex>",
+        "#include <begin_vertex>\n  vFeatherPos = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+      /* dithering_fragment is the last include in both meshphysical and meshbasic in
+         r128, so this runs after gl_FragColor is final in either */
+      sh.fragmentShader = "varying vec3 vFeatherPos;\n" + sh.fragmentShader.replace(
+        "#include <dithering_fragment>",
+        `#include <dithering_fragment>\n  gl_FragColor.a *= 1.0 - smoothstep(${r0.toFixed(3)}, ${r1.toFixed(3)}, ${d});`);
+    };
+    mat.needsUpdate = true;
+    return mat;
+  };
+  const HEAD_AT = [0, -0.05, 0];
+  const roomMat = (hex, rough) => feather(new T.MeshStandardMaterial({
+    color: hex, roughness: rough, metalness: 0.0 }), HEAD_AT, 0.55, 1.6, false);
+  const plate = (w, h, mat, pos, rot) => {
+    const m = new T.Mesh(new T.PlaneGeometry(w, h), mat);
+    m.position.set(pos[0], pos[1], pos[2]);
+    if (rot) m.rotation.set(rot[0], rot[1], rot[2]);
+    room.add(m);
+    return m;
+  };
+  /* NO WALLS.  the corner, the skirting line and the ceiling panel made it a room, and a
+     room has edges however far they are feathered; what the figure needs is a GROUND, so
+     the rig reads as standing somewhere, and nothing else.  the floor is centred between
+     the head and the cart, solid only in a small disc under them, and gone by 1.05 m. */
+  const FLOOR_AT = [(base.position.x) * 0.5, FLOOR_Y, (base.position.z) * 0.5];
+  plate(4, 4, feather(new T.MeshStandardMaterial({ color: 0x7c8385, roughness: 0.95, metalness: 0 }),
+                      FLOOR_AT, 0.12, 1.05, true),
+        [FLOOR_AT[0], FLOOR_Y, FLOOR_AT[2]], [-Math.PI / 2, 0, 0]);
+
+  /* the cart the arm is bolted to: its top face is exactly the arm's base plane */
+  const cart = new T.Mesh(new T.BoxGeometry(0.44, 0.62, 0.44), roomMat(0xa4abab, 0.6));
+  cart.position.set(base.position.x, base.position.y - 0.31, base.position.z); room.add(cart);
+  const cartTop = new T.Mesh(new T.BoxGeometry(0.48, 0.022, 0.48), roomMat(0x8b9294, 0.5));
+  cartTop.position.set(base.position.x, base.position.y - 0.006, base.position.z); room.add(cartTop);
+
+  /* NO MANNEQUIN.  two goes at giving the head a body -- a neck-shoulder-torso stack of
+     cylinders, then a single lathed silhouette -- both came out looking like laboratory
+     glassware with a brain in the top of it, because a translucent torso at this scale has
+     no features to read as anatomy and every smooth revolved solid reads as a vessel.  the
+     rest of this site draws a brain in the air and is legible; a half-modelled person is
+     not, and it stole attention from the one thing the figure is about.  so the head is the
+     subject, the room fades around it, and nothing pretends to be a patient. */
+
+  /* no console either: its stand ran straight up the label column and its screen sat
+     behind the protocol card.  the card is the operator's view now. */
 
   /* ---------- lighting, camera ---------- */
-  scene.add(new T.HemisphereLight(0xcfe0ff, 0x1a1208, 0.85));
-  const k1 = new T.DirectionalLight(0xfff2e0, 1.3); k1.position.set(1.6, 1.8, 1.4); scene.add(k1);
-  const k2 = new T.DirectionalLight(0x8fb2ff, 0.4); k2.position.set(-1.5, 0.4, 0.9); scene.add(k2);
-  const k3 = new T.DirectionalLight(0xffc98a, 0.7); k3.position.set(-0.6, 0.9, -1.8); scene.add(k3);
+  scene.add(new T.HemisphereLight(0xdfe9f2, 0x2b2b28, 0.62));
+  const k1 = new T.DirectionalLight(0xfff6e8, 0.78); k1.position.set(1.4, 2.6, 1.2); scene.add(k1);
+  const k2 = new T.DirectionalLight(0x9fc0ff, 0.38); k2.position.set(-1.5, 0.6, 0.9); scene.add(k2);
+  const k3 = new T.DirectionalLight(0xffc98a, 0.55); k3.position.set(-0.6, 0.9, -1.8); scene.add(k3);
 
   const cam = new T.PerspectiveCamera(34, 1, 0.01, 20);
   const renderer = new T.WebGLRenderer({ antialias: true, alpha: true });
@@ -345,18 +545,32 @@
   host.appendChild(renderer.domElement);
 
   /* frame the whole rig -- head AND the reach of the arm.  fitting to the head alone
-     runs the arm off the bottom of the canvas, and the arm is most of the picture. */
-  let az = 0.78, el = 0.2, dist = 1.25, drag = null;
+     runs the arm off the bottom of the canvas, and the arm is most of the picture.
+
+     a bounding SPHERE of the rig, and the field of view taken as the NARROWER of the
+     vertical and horizontal ones.  the old fit used the largest half-extent against the
+     vertical fov only, so on a canvas wider than it is tall -- which is every canvas this
+     figure gets -- the horizontal fov was never checked and the arm ran out of frame.
+     the ROOM is excluded on purpose: its walls are metres across and fitting to them
+     would leave the head a dozen pixels wide. */
+  let az = 0.58, el = 0.18, dist = 1.25, drag = null;
   const focus = new T.Vector3();
   function fit() {
     world.updateMatrixWorld(true);
-    const box = new T.Box3().setFromObject(cortexMesh || brain);
+    const box = new T.Box3();
+    /* the SUBJECT, not the rig: the head, the contacts, the coil and the wrist end of the
+       arm.  fitting the whole 855 mm chain is what the frame did next, and it is correct
+       and useless -- the arm is two thirds of that sphere and the head came out at 16% of
+       the picture height.  the elbow and the base run off the bottom-right corner, which
+       is exactly where the room is fading out, so the crop never reads as a cut edge. */
+    [cortexMesh || brain, skin, dots, coil].concat(links.slice(5), hubs.slice(5))
+      .forEach((o) => { if (o) box.expandByObject(o); });
     if (box.isEmpty()) return;
-    box.getCenter(focus);
-    focus.lerp(coilAt, 0.18);                 /* bias toward the coil side */
-    const sz = box.getSize(new T.Vector3());
-    const r = Math.max(sz.x, sz.y, sz.z) * 0.5;
-    dist = r / Math.tan((cam.fov * Math.PI / 180) / 2) * 2.05;
+    const sph = box.getBoundingSphere(new T.Sphere());
+    focus.copy(sph.center);
+    const vfov = cam.fov * Math.PI / 180;
+    const hfov = 2 * Math.atan(Math.tan(vfov / 2) * (cam.aspect || 1));
+    dist = sph.radius / Math.sin(Math.min(vfov, hfov) / 2) * 1.55;
   }
   function place() {
     cam.position.set(focus.x + Math.sin(az) * Math.cos(el) * dist,
@@ -365,7 +579,7 @@
     cam.lookAt(focus);
   }
   function resize() {
-    const w = host.clientWidth, h = Math.max(320, Math.round(w * 0.62));
+    const w = host.clientWidth, h = Math.max(340, Math.round(w * 0.66));
     renderer.setSize(w, h, false);
     cam.aspect = w / h; cam.updateProjectionMatrix();
     /* refit after the aspect changes -- fitting once at load framed the rig for whatever
@@ -381,9 +595,11 @@
   const up = () => { drag = null; };
   host.addEventListener("pointerup", up); host.addEventListener("pointercancel", up);
 
-  /* the approach: hold off the scalp, close on it, pulse, retract */
-  const goalZ = nrm.clone().negate();
-  const away = coilAt.clone().addScaledVector(nrm, 0.16).add(new T.Vector3(0.05, 0.03, 0));
+  /* the approach: hold off the scalp, close on it, pulse, retract, move to the next site.
+     the protocol swaps at the TOP of a cycle, with the coil at its retract pose, so the
+     arm slews to the new standoff over the approach rather than jumping -- which is what a
+     navigated rig actually looks like between targets. */
+  const CYCLE = 7;
   const toLocal = (p) => base.worldToLocal(p.clone());
   let vis = true;
   if (window.IntersectionObserver)
@@ -393,40 +609,39 @@
   function frame() {
     requestAnimationFrame(frame);
     if (!vis) return;
-    const t = ((performance.now() - t0) / 1000) % 6;
-    const s = t < 2 ? t / 2 : t < 4 ? 1 : 1 - (t - 4) / 2;
-    const e = s * s * (3 - 2 * s);
-    const goal = away.clone().lerp(coilAt, e);
+    const el2 = (performance.now() - t0) / 1000;
+    const want = PROTOCOLS[Math.floor(el2 / CYCLE) % PROTOCOLS.length];
+    if (want !== live) setProtocol(want);
+    const t = el2 % CYCLE;
+    const s = t < 2.4 ? t / 2.4 : t < 4.8 ? 1 : 1 - (t - 4.8) / 2.2;
+    const e = Math.max(0, Math.min(1, s)) ** 2 * (3 - 2 * Math.max(0, Math.min(1, s)));
+    const goalZ = live.nrm.clone().negate();
+    const goal = live.away.clone().lerp(live.coilAt, e);
     ik(toLocal(goal), base.worldToLocal(base.localToWorld(new T.Vector3()).add(goalZ)).normalize(), 9);
     layout();
     /* the pulse fires once the coil is seated, and the ripple runs from there */
-    const T0 = 2.15, TR = 1.6;
+    const T0 = 2.6, TR = 1.7;
     const phase = (t > T0 && t < T0 + TR) ? (t - T0) / TR : -1;
     ripple(phase); rippleCortex(phase);
+    /* the clique is always faintly lit -- it is a standing property of the substrate, not
+       something the pulse creates -- and the pulse drives it up.  the arcs lag the sites a
+       little so the coupling reads as following the stimulation rather than preceding it. */
+    const glow = phase < 0 ? 0 : Math.sin(Math.min(1, phase * 1.15) * Math.PI);
+    cliqueMat.opacity = 0.16 + 0.74 * glow;
+    arcMat.opacity = 0.10 + 0.5 * Math.max(0, Math.sin(Math.min(1, phase * 0.95) * Math.PI));
     coilMat.emissive.setHex(phase >= 0 && phase < 0.18 ? 0xf0b34a : 0x3a2400);
     hotMat.color.setHex(phase >= 0 ? 0xfff0cf : 0xf0b34a);
     place();
     renderer.render(scene, cam);
-    /* the labels are HTML, so they stay crisp and themeable; they are just projected */
-    const w = host.clientWidth, hh = renderer.domElement.clientHeight;
-    /* three cortical regions within a few centimetres of each other project to within a
-       few pixels, so the labels land on top of one another.  fan them vertically by
-       projected height order and run a short leader back to the marker. */
-    const proj = marks.map((m) => {
-      const v = m.pos.clone().project(cam);
-      return { m, x: (v.x + 1) / 2 * w, y: (-v.y + 1) / 2 * hh, z: v.z };
-    }).sort((a, b) => a.y - b.y);
-    const MINGAP = 30;
-    for (let i = 1; i < proj.length; i++)
-      if (proj[i].y - proj[i - 1].y < MINGAP) proj[i].y = proj[i - 1].y + MINGAP;
-    proj.forEach((p) => {
-      p.m.el.style.opacity = p.z < 1 ? "1" : "0";
-      p.m.el.style.transform = `translate(${(p.x + 34).toFixed(0)}px, ${(p.y - 9).toFixed(0)}px)`;
-    });
+    /* NO projected labels at all any more.  the card names the site, and the contact
+       being hit is already the one amber sphere on the head and the origin the ripple
+       starts from -- a floating "left IPS" beside it repeated the card and landed on the
+       console, which is where the last three of these landed too. */
   }
   resize();
   window.addEventListener("resize", resize);
-  ik(toLocal(away), base.worldToLocal(base.localToWorld(new T.Vector3()).add(goalZ)).normalize(), 40);
+  ik(toLocal(live.away),
+     base.worldToLocal(base.localToWorld(new T.Vector3()).add(live.nrm.clone().negate())).normalize(), 40);
   layout();
   fit();
   frame();

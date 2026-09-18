@@ -4,6 +4,22 @@
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
+  // ---- the name of a materialized model, shared by every figure that names one
+  // (the spine rail, the materialization diagram).  a registry id is snake_case and is
+  // NOT the model's name: `eeg_to_image` is the request, `IBM-1-EEG-to-Image` is the
+  // thing you can download.  the two were being used interchangeably on the page.
+  //
+  // derived rather than tabulated, because a hand table goes stale the first time a new
+  // materialization is added and nobody notices which of the two lists is authoritative.
+  // ACRONYMS are the whole reason a naive title-case will not do -- "Eeg-To-Image".
+  const ACRONYM = new Set(['av', 'eeg', 'meg', 'ecog', 'ieeg', 'lfp', 'csd', 'bci', 'tms',
+    'tes', 'bold', 'fmri', 'emg', 'mep', 'ecg', 'qsm', 'dbs', 'ai']);
+  const JOINER = new Set(['to', 'in', 'of', 'and', 'from', 'via']);
+  window.IBM_MODEL_NAME = (id) => 'IBM-1-' + String(id).split(/[_-]/).map((w, i) =>
+    ACRONYM.has(w) ? w.toUpperCase()
+      : (i > 0 && JOINER.has(w)) ? w
+      : w.charAt(0).toUpperCase() + w.slice(1)).join('-');
+
   // ---- the registry lists in §1
   const R = window.IBM_REGISTRY;
   if (R) {
@@ -149,6 +165,7 @@
   // (site/data/releases.js, written by scripts/export_releases.py from the hub)
   const REL = window.IBM_RELEASES;
   const params = (n) => n == null ? '—' : n >= 1e9 ? (n / 1e9).toFixed(1) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? Math.round(n / 1e3) + 'k' : String(n);
+  window.IBM_PARAMS = params;
   const ckptsOf = (el) => (REL && REL.models && REL.models[el.dataset.model]) || null;
   const hf = '<span class="hf" aria-hidden="true">\u{1f917}</span>';
   if (REL) {
@@ -264,7 +281,6 @@
     l_forward: { model: 'eeg_forward', az: -0.6, el: 0.3, dist: 470, aspect: 0.8 },
     l_decode: { model: 'meg_to_text', az: -1.3, el: 0.2, dist: 470, aspect: 0.8 },
     l_stim: { model: 'tms_response', az: -0.9, el: 0.55, dist: 470, aspect: 0.8 },
-    l_state: { model: 'sleep_dynamics', az: 0.5, el: 0.3, dist: 470, aspect: 0.8 },
     l_body: { model: 'invasive_bci', az: -0.8, el: 0.45, dist: 470, aspect: 0.8 },
     l_surrogate: { model: 'macro_surrogate', az: -0.6, el: 0.3, dist: 470, aspect: 0.8 },
     // the visual pathway as the substrate actually declares it: 20 retinal sites,

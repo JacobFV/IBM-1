@@ -1,25 +1,43 @@
 /* the materialization diagram: ONE scene, four brains.
 
-   the implicit model sits at the centre in full atlas colour and carries every variable.
-   three materialized models ring it, each drained to grey except the sites its own request
-   reaches, with its declared inputs in the observed ramp and its outputs in the target one.
-   an arrow runs from the centre to each: the models are traced OUT of the substrate, and
-   the picture should say that rather than leave it to a caption.
+   the implicit model sits at the LEFT in full atlas colour and carries every variable.
+   three materialized models stack to its right, each drained to grey except the sites its
+   own request reaches, with its declared inputs in the observed ramp and its outputs in
+   the target one.
+
+   READING ORDER IS THE LAYOUT.  each model is a lane read left to right: the declared
+   inputs, then an arrow that cuts straight through the brain -- red on the way in, purple
+   on the way out -- then the declared outputs.  the model's name sits over the arrow.
+   nothing carries an "IN"/"OUT" tag or repeats its own id: side, colour and position say
+   all three, and the tags were three redundant words per label on a figure that had no
+   room for them.
+
+   this replaced a RING of three models around the hub.  the ring only worked if every
+   label sat radially outward from its brain, which put the longest name (IBM-1-EEG-to-Image)
+   off the right edge of the canvas at every width below about 1100px -- the figure was
+   correct and the annotation was outside the picture.  a lane stack has a fixed left and a
+   fixed right, so every label's anchor side is known in advance and can be clamped into
+   the canvas box; see put() at the bottom.
 
    built as one scene rather than four canvases because four separate renders cannot share
-   a camera -- the ring only reads as a ring if all four brains are in the same space and
-   turn together. */
+   a camera -- the stack only reads as one substrate and three views of it if all four
+   brains are in the same space and turn together.
+
+   a faint amber thread still runs from the hub into the lower-left of each model brain:
+   that is the materialization itself, deliberately drawn thinner and dimmer than the data
+   arrow so the two are never confused.  it arrives from BELOW the input column because
+   arriving from the left would have crossed it. */
 (function () {
   const host = document.getElementById("mz");
   const G = window.IBM_GRAPH;
   if (!host || !G || !window.THREE) return;
   const T = window.THREE;
 
-  const MODELS = [
-    { id: "eeg_to_image", name: "IBM-1-EEG-to-Image" },
-    { id: "speech_envelope", name: "IBM-1-Speech-Envelope" },
-    { id: "tms_response", name: "IBM-1-TMS-Response" },
-  ];
+  /* the displayed name comes from site.js's shared deriver, so this figure and the spine
+     rail cannot drift into calling the same model two different things */
+  const NAME = window.IBM_MODEL_NAME || ((id) => id);
+  const MODELS = ["eeg_to_image", "speech_envelope", "tms_response"]
+    .map((id) => ({ id, name: NAME(id) }));
   const MATS = Object.fromEntries((G.materializations || []).map((m) => [m.id, m]));
   const N = G.nodes.length;
   const CORTEX = G.cortex_range ? G.cortex_range[1] : N;
@@ -28,13 +46,21 @@
   const IN = new T.Color(css.getPropertyValue("--trace-in").trim() || "#f5424d");
   const OUT = new T.Color(css.getPropertyValue("--trace-out").trim() || "#a159fa");
 
-  /* positions, centred and scaled so a brain is about one unit tall */
+  /* positions, centred and scaled so a brain is about one unit tall.
+
+     THE GRAPH IS SURFACE RAS: +x right, +y ANTERIOR, +z SUPERIOR.  three.js is y-up, so
+     the raw arrays render a head tipped 90 degrees onto its back, looking at the ceiling.
+     brain.js line 15 already owns the fix -- (-x, z, y) -- and this used the raw triple
+     instead, which is why these three brains and the hero's disagreed about which way up a
+     head is.  mirroring x as well as swapping y and z keeps the determinant at +1, so it is
+     a rotation and not a reflection: triangle winding, and therefore the cortex shell's
+     normals, survive it. */
   const ctr = new T.Vector3().fromArray(G.center || [0, 0, 0]);
   const pos = new Float32Array(N * 3);
   let span = 0;
   for (let i = 0; i < N; i++) {
     const p = G.nodes[i].p;
-    pos[i * 3] = p[0] - ctr.x; pos[i * 3 + 1] = p[1] - ctr.y; pos[i * 3 + 2] = p[2] - ctr.z;
+    pos[i * 3] = -(p[0] - ctr.x); pos[i * 3 + 1] = p[2] - ctr.z; pos[i * 3 + 2] = p[1] - ctr.y;
     span = Math.max(span, Math.abs(pos[i * 3]), Math.abs(pos[i * 3 + 1]), Math.abs(pos[i * 3 + 2]));
   }
   const S = 1 / span;
@@ -79,20 +105,33 @@
   const scene = new T.Scene();
   const world = new T.Group(); scene.add(world);
 
+  /* ---- the frame the whole diagram is laid out in ----
+     every number below is in these world units, and the camera is fitted to HALF_X/HALF_Y
+     at the bottom of the file, so nothing here can drift outside the render. */
+  const HALF_X = 3.30, HALF_Y = 1.95;
+  /* 1.2, not 0.92: the hub now carries its variables pinned to its own surface, and at
+     0.92 it was ~120px across -- eighteen names on that overprinted each other into a
+     smear.  the room is there: the brain is only +-0.74 wide in x once normalised, so at
+     this scale its right edge is still 0.4 clear of the longest input label. */
+  const HUB_X = -2.15, HUB_S = 1.2;      /* the implicit model, left, at its own scale */
+  const MODEL_X = 0.90, SUB = 0.44;      /* the lane of materialized brains */
+  const LANE_Y = [1.3, 0, -1.3];
+  /* the arrow reaches 0.78 either side of the brain's centre, which is 0.34 clear of its
+     edge.  it was 1.25 -- nearly two brain-widths -- and the ports read as a separate
+     column of text on the far side of the picture rather than as that brain's own ports. */
+  const TAIL = MODEL_X - 0.78, HEAD = MODEL_X + 0.78;
+  const CHIP_GAP = 0.225;                /* vertical pitch of one input/output label */
+
   /* the implicit model: every site in its own atlas colour */
   const atlas = G.nodes.map((n) => new T.Color(n.c || "#888"));
   const implicit = makeBrain((i, c) => c.copy(atlas[i]), 0.95);
+  implicit.scale.setScalar(HUB_S);
+  implicit.position.set(HUB_X, 0, 0);
   world.add(implicit);
 
-  /* the ring.  three models evenly spaced, tilted slightly out of plane so the diagram
-     reads as a ring rather than as three brains in a row */
-  const RING = 2.2, SUB = 0.44, FLAT = 0.82;
   const anchors = [];
   MODELS.forEach((M, k) => {
     const m = MATS[M.id];
-    /* start at the TOP: beginning at -90deg put a model brain exactly where the hub
-       label goes, and the two collided every frame. */
-    const th = Math.PI / 2 + (k / MODELS.length) * Math.PI * 2;
     const grey = new T.Color("#6f7681");
     const b = makeBrain((i, c) => {
       const isIn = (m.inputs || []).some((x) => inRanges(x.nodes, i));
@@ -103,72 +142,166 @@
       return c.copy(grey);
     }, 0.55);
     b.scale.setScalar(SUB);
-    b.position.set(Math.cos(th) * RING, Math.sin(th) * RING * FLAT, Math.sin(th * 2) * 0.26);
+    b.position.set(MODEL_X, LANE_Y[k], 0);
     world.add(b);
-    anchors.push({ model: M, m, group: b, pos: b.position.clone() });
+    anchors.push({ model: M, m, group: b, y: LANE_Y[k] });
   });
 
-  /* materialization arrows, centre -> each model */
-  const arrowMat = new T.MeshBasicMaterial({ color: 0xf0b34a, transparent: true, opacity: 0.5 });
+  /* ---- the data: one strand per port, bundled through the brain ----
+     every input gets its own strand, and every strand converges on the brain's centre with
+     a HORIZONTAL tangent; from there the bundle splits again, one strand to each output.
+     a single straight arrow said "these inputs, this model, these outputs" as three
+     separate facts; a bundle says the inputs are fused inside the model and the outputs
+     are read back out of the same state, which is the claim.
+
+     each strand is a cubic whose control points are pulled level with its two ends, so it
+     leaves its port and enters the brain travelling horizontally -- the same
+     tangent-continuity rule spine.js uses for the rail, for the same reason: a strand that
+     arrives at an angle reads as colliding with the thing it joins.
+
+     the colour ramp is laid by WORLD x across the whole lane, not per strand, so every
+     strand is the same hue at the same distance along and the bundle's two halves meet in
+     one colour at the centre, with no strand brighter or earlier than its neighbours. */
+  const bundleMat = new T.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.8 });
+  const headMat = new T.MeshBasicMaterial({ color: OUT, transparent: true, opacity: 0.85 });
+  const rampByX = (g) => {
+    const pa = g.attributes.position, col = new Float32Array(pa.count * 3), c = new T.Color();
+    for (let i = 0; i < pa.count; i++) {
+      c.copy(IN).lerp(OUT, Math.min(1, Math.max(0, (pa.getX(i) - TAIL) / (HEAD - TAIL))));
+      col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+    }
+    g.setAttribute("color", new T.BufferAttribute(col, 3));
+    return g;
+  };
+  const strand = (x0, y0, x1, y1) => {
+    const k = (x1 - x0) * 0.55;
+    const curve = new T.CubicBezierCurve3(
+      new T.Vector3(x0, y0, 0), new T.Vector3(x0 + k, y0, 0),
+      new T.Vector3(x1 - k, y1, 0), new T.Vector3(x1, y1, 0));
+    world.add(new T.Mesh(rampByX(new T.TubeGeometry(curve, 40, 0.0085, 8, false)), bundleMat));
+  };
+  /* the SAME vertical pitch the port labels use, so each strand starts exactly at its label */
+  const portY = (a, n, i) => a.y + ((n - 1) / 2 - i) * CHIP_GAP;
   anchors.forEach((a) => {
-    const dir = a.pos.clone().normalize();
-    const L = a.pos.length();
-    const end = Math.max(L * 0.55, L - SUB * 1.35);
-    const start = Math.min(L * 0.46, end - 0.18);
-    const from = dir.clone().multiplyScalar(start);
-    const to = dir.clone().multiplyScalar(end);
-    const mid = from.clone().lerp(to, 0.5).add(new T.Vector3(0, 0, 0.18));
-    const curve = new T.QuadraticBezierCurve3(from, mid, to);
-    world.add(new T.Mesh(new T.TubeGeometry(curve, 26, 0.012, 8, false), arrowMat));
-    const head = new T.Mesh(new T.ConeGeometry(0.05, 0.14, 14), arrowMat);
-    head.position.copy(to);
-    head.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), curve.getTangent(1).normalize());
-    world.add(head);
+    const ins = a.m.inputs || [], outs = a.m.outputs || [];
+    ins.forEach((_, i) => strand(TAIL, portY(a, ins.length, i), MODEL_X, a.y));
+    outs.forEach((_, j) => {
+      const y = portY(a, outs.length, j);
+      strand(MODEL_X, a.y, HEAD, y);
+      const head = new T.Mesh(new T.ConeGeometry(0.038, 0.11, 14), headMat);
+      head.position.set(HEAD + 0.055, y, 0);
+      head.rotation.z = -Math.PI / 2;
+      world.add(head);
+    });
   });
 
-  /* ---- annotations, as projected HTML so they stay crisp and themeable ---- */
+  /* ---- the materialization thread: hub -> each model ----
+     SYMMETRIC, and the way to get that is to make the three curves the same shape.  the
+     old threads started at a y proportional to the lane's (a.y * 0.17) but ended at a fixed
+     offset below it, and added a fixed dip -- so the top thread's rise and dip nearly
+     cancelled and it came out almost straight while the bottom one's compounded into a deep
+     hook.  now every thread starts from ONE point on the hub and ends at the same offset
+     from its own brain, with a horizontal tangent at both ends: the middle one is a
+     straight line and the top and bottom ones are exact mirror images about it. */
+  const threadMat = new T.MeshBasicMaterial({ color: 0xf0b34a, transparent: true, opacity: 0.34 });
+  const T_OFF = -SUB * 0.78;                              /* arrive at each brain's lower left */
+  /* 0.66, not 0.92: normalisation divides by the SUPERIOR-INFERIOR extent, so the brain is
+     only +-0.74 wide in x.  at 0.92 the three threads were rooted in empty space beside the
+     hub rather than on it. */
+  const T_FROM = new T.Vector3(HUB_X + HUB_S * 0.66, T_OFF, 0.05);
+  anchors.forEach((a) => {
+    const to = new T.Vector3(MODEL_X - SUB * 0.95, a.y + T_OFF, 0.05);
+    const k = (to.x - T_FROM.x) * 0.5;
+    const curve = new T.CubicBezierCurve3(T_FROM.clone(),
+      new T.Vector3(T_FROM.x + k, T_FROM.y, 0.05), new T.Vector3(to.x - k, to.y, 0.05), to);
+    world.add(new T.Mesh(new T.TubeGeometry(curve, 40, 0.0085, 8, false), threadMat));
+    const tip = new T.Mesh(new T.ConeGeometry(0.036, 0.1, 12), threadMat);
+    tip.position.copy(to);
+    tip.rotation.z = -Math.PI / 2;
+    world.add(tip);
+  });
+
+  /* ---- annotations, as projected HTML so they stay crisp and themeable ----
+     a mark owns its ANCHOR SIDE: an input hangs its right edge on its point, an output
+     its left, a name and the hub their centre.  put() below needs that to clamp a label
+     into the canvas instead of letting it run off the edge. */
   const layer = document.createElement("div");
   layer.className = "mz-labels";
   host.appendChild(layer);
   const marks = [];
-  /* a mark either sits in world space (the hub, the model names, the variables) or rides
-     a brain (its inputs and outputs).  a riding mark stores LOCAL coordinates and is
-     transformed by its brain's matrix each frame, so it follows when that brain is turned. */
-  const addMark = (p, cls, html, group, ride) => {
+  const addMark = (p, cls, html, anchor, dy, ride) => {
     const el = document.createElement("div");
     el.className = "mz-mark " + cls;
     el.innerHTML = html;
     layer.appendChild(el);
-    marks.push({ p: p.clone(), el, group, ride: ride || null });
+    marks.push({ p: p.clone(), el, anchor, dy: dy || 0, w: 0, ride: ride || null });
   };
 
-  /* the centre: a sample of the variables it carries, spread ACROSS fields rather than
-     taken in order, which would give every component of one field and none of the rest */
+  /* ---- the variables the implicit model carries, pinned to the brain itself ----
+     each label is a point in the hub brain's LOCAL frame and is carried through its matrix
+     every frame, so when the brain turns the labels turn with it -- the ones swinging round
+     the back fade, the ones coming forward sharpen.  four hand-placed names in screen space
+     said "here are some variables"; labels that orbit with the anatomy say they are fields
+     defined OVER that anatomy, which is what a component of the implicit model is.
+
+     the sites are chosen by FARTHEST-POINT sampling over the cortical nodes, so they spread
+     across the whole surface instead of clumping where the node density is highest.  the
+     sample is deterministic -- seeded from node 0, no random draw -- so the figure is the
+     same on every load (CLAUDE.md: a function should return the same answer twice).
+
+     the ids are taken across fields in round-robin, not in registry order: in order, the
+     first fourteen would all be components of one field.  a component is a field over the
+     whole brain, so a label marks a place to READ it, not the only place it lives. */
   const R = window.IBM_REGISTRY;
   if (R && R.fields) {
-    const all = [];
-    R.fields.forEach((f) => (f.components || []).forEach((c) => all.push(c.id)));
-    const step = Math.max(1, Math.floor(all.length / 6));
-    all.filter((_, i) => i % step === 0).slice(0, 6).forEach((id, i, arr) => {
-      /* well inside the ring: at the ring radius these landed on the model brains */
-      const th = (i / arr.length) * Math.PI * 2 + 0.4;
-      addMark(new T.Vector3(Math.cos(th) * 0.86, Math.sin(th) * 0.74, 0.12), "is-var", id, null, null);
+    const perField = R.fields.map((f) => (f.components || []).map((c) => c.id));
+    const ids = [];
+    for (let k = 0; ids.length < 14 && perField.some((l) => l.length > k); k++)
+      perField.forEach((l) => { if (l[k] && ids.length < 14) ids.push(l[k]); });
+    const pick = [0], dmin = new Float32Array(CORTEX).fill(Infinity);
+    const d2 = (i, j) => { const dx = pos[i * 3] - pos[j * 3], dy = pos[i * 3 + 1] - pos[j * 3 + 1],
+      dz = pos[i * 3 + 2] - pos[j * 3 + 2]; return dx * dx + dy * dy + dz * dz; };
+    while (pick.length < ids.length) {
+      const last = pick[pick.length - 1];
+      let far = -1, fd = -1;
+      for (let i = 0; i < CORTEX; i++) {
+        dmin[i] = Math.min(dmin[i], d2(i, last));
+        if (dmin[i] > fd) { fd = dmin[i]; far = i; }
+      }
+      pick.push(far);
+    }
+    ids.forEach((id, k) => {
+      const i = pick[k];
+      /* 1.06x out from the centre so the text sits just off the surface, not inside it */
+      const local = new T.Vector3(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]).multiplyScalar(1.06);
+      addMark(local, "is-var", id, "m", 0, implicit);
     });
   }
-  addMark(new T.Vector3(0, -1.12, 0), "is-hub", "<b>IBM-1</b><span>one parameter set · every variable</span>");
+  /* the wordmark sits ON the crown of the implicit brain, the way each model's name sits
+     on its own arrow -- the two labels that name a thing now behave the same way.  the
+     caption under it ("one parameter set · every variable") is gone: the ring of variable
+     names around the hub already says it, and the standfirst says it in words. */
+  addMark(new T.Vector3(HUB_X, 0.58 * HUB_S, 0), "is-hub", "<b>IBM-1</b>", "c", 4);
 
   anchors.forEach((a) => {
-    /* OUTWARD from the hub, not below: "below" points back at the centre for the model
-       at the top of the ring, and its name landed on the implicit brain. */
-    const out = a.pos.clone().normalize();
-    addMark(a.pos.clone().addScaledVector(out, SUB * 1.9), "is-name",
-      `<b>${a.model.name}</b><span>${a.model.id}</span>`);
-    const io = (list, cls, tag) => (list || []).slice(0, 2).forEach((x) => {
-      const local = new T.Vector3().fromArray(x.anchor).sub(ctr).multiplyScalar(S);
-      addMark(local, cls, `<b>${x.label}</b><span>${tag}</span>`, a.model.id, a.group);
-    });
-    io(a.m.inputs, "is-in", "in");
-    io(a.m.outputs, "is-out", "out");
+    /* ON the arrow, not floating above it: at +0.40 the name sat halfway to the lane above
+       and it was genuinely ambiguous which brain it belonged to.  anchored bottom-centre at
+       the lane's own y, with a 3px nudge, its BASELINE lands on the arrow and the label
+       overlaps the brain -- which is what makes it read as that brain's name. */
+    addMark(new T.Vector3(MODEL_X, a.y, 0), "is-name", `<b>${a.model.name}</b>`, "c", 3);
+    /* the ports themselves sit in a fixed column at the arrow's end rather than riding
+       their own site in the brain.  a riding label swung with the brain's own turn and
+       two of them crossed the arrow every few seconds; the colour and the side already
+       say which end of the trace a port belongs to. */
+    const column = (list, cls, x) => {
+      const n = (list || []).length;
+      (list || []).forEach((port, i) => {
+        addMark(new T.Vector3(x, portY(a, n, i), 0), cls, `<b>${port.label}</b>`,
+                cls === "is-in" ? "r" : "l");
+      });
+    };
+    column(a.m.inputs, "is-in", TAIL - 0.04);
+    column(a.m.outputs, "is-out", HEAD + 0.15);
   });
 
   /* ---- camera, render ---- */
@@ -183,12 +316,12 @@
   /* the camera does not move.  each brain turns on its own axis, and a drag turns
      whichever brain it started nearest -- the diagram is four objects, not one scene the
      reader spins. */
-  const dist = 7.4;
-  const spinners = [{ g: implicit, r: 1.0 }].concat(anchors.map((a) => ({ g: a.group, r: SUB })));
+  let dist = 10;
+  const spinners = [{ g: implicit, r: HUB_S }].concat(anchors.map((a) => ({ g: a.group, r: SUB })));
   spinners.forEach((s2) => { s2.ry = 0; s2.rx = 0; s2.auto = 1; });
   let drag = null;
   function place() {
-    cam.position.set(0, 0.9, dist);
+    cam.position.set(0, 0, dist);
     cam.lookAt(0, 0, 0);
   }
   /* pick by projected distance: a raycast would need colliders on a point cloud */
@@ -205,10 +338,22 @@
     return bd < 190 ? best : null;
   }
   function resize() {
-    const w = host.clientWidth, h = Math.max(380, Math.round(w * 0.58));
+    const w = host.clientWidth, h = Math.max(400, Math.round(w * 0.59));
+    /* the type is in px and the scene is in world units, so a narrow canvas shrinks the
+       brains and leaves the labels the size they were.  the trigger is the CANVAS's width,
+       not the viewport's -- this figure sits in the second column of a two-column band, so
+       at a 1120px viewport it is only 692px wide and a viewport media query never fires. */
+    host.classList.toggle("is-tight", w < 820);
     renderer.setSize(w, h, false);
     cam.aspect = w / h; cam.updateProjectionMatrix();
+    /* fit BOTH half-extents.  fitting only the height let a short canvas crop the
+       outputs off the right, which is the bug this layout exists to end. */
+    dist = Math.max(HALF_Y, HALF_X / cam.aspect) / Math.tan((cam.fov * Math.PI / 180) / 2);
+    measure();
   }
+  /* label widths are read once per resize, not per frame: reading offsetWidth inside the
+     render loop forces a layout on every mark, every frame. */
+  const measure = () => marks.forEach((m) => { m.w = m.el.offsetWidth; });
   canvasHost.addEventListener("pointerdown", (e) => {
     const s2 = pick(e.clientX, e.clientY);
     if (!s2) return;
@@ -230,6 +375,10 @@
     new IntersectionObserver((es) => { vis = es[0].isIntersecting; }, { rootMargin: "250px" })
       .observe(host);
 
+  /* [x%, y%] applied after the pixel translate: c = centred above the point (a name over
+     its arrow), b = centred below it (the hub's caption), m = centred on it, r/l = the
+     label's right/left edge hung on it (an input column, an output column). */
+  const ANCHOR = { c: [-50, -100], b: [-50, 0], m: [-50, -50], r: [-100, -50], l: [0, -50] };
   const t0 = performance.now();
   function frame() {
     requestAnimationFrame(frame);
@@ -242,30 +391,34 @@
     place();
     renderer.render(scene, cam);
     const w = host.clientWidth, h = renderer.domElement.clientHeight;
-    const put = (m, x, y, vz) => {
-      m.el.style.opacity = vz < 1 ? "1" : "0";
-      m.el.style.transform = `translate(${x.toFixed(0)}px, ${y.toFixed(0)}px)`;
-    };
-    const byGroup = new Map();
+    const hubC = implicit.getWorldPosition(new T.Vector3());
     marks.forEach((m) => {
       const wp = m.ride ? m.ride.localToWorld(m.p.clone()) : m.p.clone();
+      /* a riding label's opacity follows which way its site FACES: the camera is on +z,
+         so the z of (site - brain centre) says front or back.  hard-hiding the back ones
+         made labels blink out mid-turn; a ramp lets them fade as they go round. */
+      let alpha = 1;
+      if (m.ride) {
+        const f = wp.clone().sub(hubC).normalize().z;
+        alpha = Math.max(0.05, Math.min(0.8, 0.36 + f * 0.8));
+      }
       const v = wp.project(cam);
-      const e = { m, x: (v.x + 1) / 2 * w, y: (-v.y + 1) / 2 * h, z: v.z };
-      if (m.group == null) return put(m, e.x, e.y, e.z);
-      if (!byGroup.has(m.group)) byGroup.set(m.group, []);
-      byGroup.get(m.group).push(e);
-    });
-    byGroup.forEach((list) => {
-      list.sort((a, b) => a.y - b.y);
-      for (let i = 1; i < list.length; i++)
-        /* 22, not 15: these labels are two lines (name over IN/OUT), so a 15px gap
-           still let the second line of one sit under the first line of the next. */
-        if (list[i].y - list[i - 1].y < 22) list[i].y = list[i - 1].y + 22;
-      list.forEach((e) => put(e.m, e.x, e.y, e.z));
+      let x = (v.x + 1) / 2 * w;
+      const y = (-v.y + 1) / 2 * h;
+      /* clamp into the canvas by the mark's own anchor side, so a long name or a long
+         port label shortens its margin instead of leaving the picture */
+      const a = ANCHOR[m.anchor], lead = -a[0] / 100 * m.w;
+      x = Math.max(lead + 2, Math.min(w - (m.w - lead) - 2, x));
+      m.el.style.opacity = v.z < 1 ? alpha.toFixed(2) : "0";
+      m.el.style.transform =
+        `translate(${x.toFixed(0)}px, ${(y + m.dy).toFixed(0)}px) translate(${a[0]}%, ${a[1]}%)`;
     });
   }
   resize();
   window.addEventListener("resize", resize);
   frame();
+  /* one more measure after the fonts land: a label measured before Source Serif 4 has
+     loaded is measured in the fallback and clamps against the wrong width */
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
   host.classList.add("is-ready");
 })();
