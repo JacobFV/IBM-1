@@ -62,6 +62,92 @@ already written.
 ---
 
 
+## 2026-09-18 -- PRE-REGISTRATION: research step 2, on ds008037's working-memory delay
+
+*Committed before any EEG signal from the working-memory recordings has been loaded. Read
+so far: BIDS sidecars, events.tsv structure, behavioural column names and four rows. The
+scripts that implement this are written after this entry.*
+
+**The question.** Does the v2 substrate carry task-relevant stimulus information through a
+real delay, and does it do so better than a GENERIC recurrent system of the same size?
+G5 already showed that any stateful system holds a 1 s memory, so beating a stateless
+bypass is expected by construction and is a sanity check, not the result. **The decisive
+comparison is v2 against a matched echo-state network.** Per the user's rule: if the cortex
+ties the generic system here, the architecture needs rethinking before anything is built
+on it.
+
+**Data.** ds008037 `task-workingmemory`: the 117 subjects with both EEG and behaviour.
+Delayed colour recall, set size 2/4/6: memory array ~0.5 s, retention ~1.0 s with nothing
+on screen, colour-wheel report. 62 ch, 1 kHz.
+
+**Split: by SUBJECT.** Sorted subject ids, `np.random.default_rng(0).permutation`, first 70%
+train, rest test. The lists are written into the output json and the result entry.
+
+**G0, alignment (the THINGS-EEG2 ordering trap, CLAUDE.md).** Behavioural row i is paired
+with the i-th `memory_array_onset` event. Every pair's set size must agree between the two
+files. A subject with more than 1% disagreement is EXCLUDED, printed, and never repaired
+by hand.
+
+**Targets: delay-period EEG, per trial**, stimulus absent throughout the window:
+* window 0.3-1.0 s after `retention_interval_onset`; baseline -0.2-0 s before the array;
+* 62 baseline-corrected mean voltages plus 62 log alpha (8-13 Hz) powers = 124 features;
+* z-scored within subject across that subject's trials (removes subject offsets);
+* a trial with any channel over 300 uV peak-to-peak in the epoch is dropped.
+
+**Stimulus descriptors S** (the "perfect memory" ceiling): set-size one-hot (3), a 12-bin
+von Mises (kappa 4) histogram of all item colours (12), and the target colour's cos/sin
+(2). 17 dims.
+
+**Drive**, identical for every dynamical arm: a 1,024-dim vector, one entry per site of the
+N = 1024, k = 32 connectome sheet. Each VISUAL-region site gets a preferred colour phi_i
+(seeded, uniform, drawn once), and during the 0.5 s array its drive is
+`0.6 * sum over items of exp(4 (cos(theta - phi_i) - 1))`. Then zero for the delay.
+
+**Arms** (readout features = the 1,024 E-like activities, time-averaged over the target
+window):
+* **v2**: declared priors, noise 0.04 (declared). Noise 0.12 is reported as secondary.
+* **v2-mono**: w_EE x 0.3 (monostable).
+* **ESN**: 1,024 leaky-tanh units, sparse random recurrence, the same drive vector as its
+  input. Leak rate and spectral radius are chosen on a validation split of TRAINING
+  subjects by this entry's own score. That is a tuning advantage v2 does not get, stated
+  here.
+* **v1**: `CorticalDynamics` run continuously over the same timeline at its prior
+  parameters (its reset-per-forward training protocol is what made it memoryless;
+  running it continuously is the fair test of it as a dynamical system).
+* **bypass**: the drive at readout time, which is zero, so a constant.
+* **ceiling**: S.
+
+**Readout**: ridge from each arm's features to the 124 targets, alpha by 5-fold CV GROUPED
+BY SUBJECT within the training subjects only.
+
+**Score**: held-out R^2 per test subject, averaged over the 124 features, against a floor
+of 0 (the training mean after within-subject z-scoring). Uncertainty is a bootstrap over
+TEST SUBJECTS (CLAUDE.md: resample items, not draws). Comparisons are paired on the same
+subjects.
+
+**Gates, in order:**
+* **VOID gate:** ceiling R^2 > 0 by > 2 bootstrap SE. If it is not, the delay EEG carries
+  no detectable stimulus information in this window, and the neural test is VOID: every
+  arm would tie at the floor.
+* **V1 (sanity):** v2 - bypass > sqrt(2) SE.
+* **V2 (decisive):** v2 - ESN > sqrt(2) SE, and the substrate adds something a generic
+  reservoir does not. |v2 - ESN| within sqrt(2) SE is a TIE, reported as "not the
+  contribution on this task". ESN > v2 by that margin is reported as worse.
+* **V3 (attribution, reported):** v2 - v2-mono.
+
+**Reported, not gated (behavioural signature):** decode the 12-bin colour histogram from
+each arm's delay state (ridge, training subjects), then take its fidelity per set size on
+test subjects against the humans' own recall error per set size, |reported - target| from
+the behavioural files. A substrate with real capacity limits should lose fidelity with
+load; a linear reservoir of this size need not.
+
+**Declared in advance:** the likeliest outcome is that v2 and the ESN both clear the
+bypass and tie each other. If so, this entry's conclusion is written now: the stateful
+biophysical substrate is not, on this task, doing anything a generic reservoir does not.
+
+---
+
+
 ## 2026-09-18 -- the split re-run: it reproduces the first run exactly, and the question it was asked has an empty answer
 
 `out/plasticity_v2_competitive_retinotopic_d0.6/` (re-run), learned P saved beside each as
