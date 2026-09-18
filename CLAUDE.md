@@ -303,6 +303,15 @@ it, because a row with one part missing still looks like a row. Inside a station
 content (`flex-wrap`) or query the element (`container-type: inline-size` + `@container`),
 and measure the element's OWN width at several viewports before believing any breakpoint.
 
+**A media query does not raise specificity: a later desktop rule beats an earlier mobile
+one at every width.** The 1080px block near the top of `site.css` set Try It to one column,
+and the desktop grid rules further down the file, at the same specificity, overrode it on
+every phone. The notebook sat in an implicit second column 300px off-screen, and the whole
+page scrolled sideways (477px wide in a 390px viewport) without anyone seeing it, because
+nobody had loaded the page on a phone. Put a mobile override AFTER the rule it overrides.
+Check `document.documentElement.scrollWidth` against `clientWidth` at 390px before calling
+a page done.
+
 ## Jobs
 
 - **`PYTHONPATH` is not optional for `scripts/*.py`.** Python puts the SCRIPT's

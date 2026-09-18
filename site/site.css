@@ -1054,6 +1054,26 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
   display: grid; grid-template-columns: 304px minmax(0, 1fr); gap: 34px; }
 .try-inner { display: contents; }
 .try > *, .try-inner > * { grid-column: 2; }
+/* THE PHONE RULE HAS TO COME AFTER THE DESKTOP ONE.  the 1080px media query near the top
+   of this file sets one column and `grid-column: 1`, but these two desktop rules come later
+   with the same specificity, so they won at every width: on a phone the notebook sat in
+   column 2 of a one-column grid -- an implicit second column 300px off the right edge -- and
+   the whole page scrolled sideways (documentElement 477px wide in a 390px viewport).  a media
+   query does not raise specificity; only source order was deciding it. */
+@media (max-width: 1080px) {
+  .try { grid-template-columns: minmax(0, 1fr); gap: 0;
+    padding-left: 18px; padding-right: 18px; }
+  .try > *, .try-inner > * { grid-column: 1; }
+  .nb { max-width: 100%; }
+  .nb-code, .nb-out { max-width: 100%; }
+}
+/* a phone: code a size smaller so most lines fit, and what does not SCROLLS inside its own
+   cell (overflow-x on .nb-code / .nb-out) instead of widening the page */
+@media (max-width: 600px) {
+  .nb-code code { font-size: .68rem; line-height: 1.6; }
+  .nb-out { font-size: .64rem; }
+  .nb-cell { grid-template-columns: 34px minmax(0, 1fr); }
+}
 .nb { max-width: 760px; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden;
   background: var(--paper-2); }
 .nb-bar { display: flex; align-items: center; gap: 6px; padding: 9px 13px;

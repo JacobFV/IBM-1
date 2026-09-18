@@ -105,31 +105,72 @@
   const scene = new T.Scene();
   const world = new T.Group(); scene.add(world);
 
-  /* ---- the frame the whole diagram is laid out in ----
-     every number below is in these world units, and the camera is fitted to HALF_X/HALF_Y
-     at the bottom of the file, so nothing here can drift outside the render. */
-  const HALF_X = 3.30, HALF_Y = 1.95;
-  /* 1.2, not 0.92: the hub now carries its variables pinned to its own surface, and at
-     0.92 it was ~120px across -- eighteen names on that overprinted each other into a
-     smear.  the room is there: the brain is only +-0.74 wide in x once normalised, so at
-     this scale its right edge is still 0.4 clear of the longest input label. */
-  const HUB_X = -2.15, HUB_S = 1.2;      /* the implicit model, left, at its own scale */
-  const MODEL_X = 0.90, SUB = 0.44;      /* the lane of materialized brains */
-  const LANE_Y = [1.3, 0, -1.3];
-  /* the arrow reaches 0.78 either side of the brain's centre, which is 0.34 clear of its
-     edge.  it was 1.25 -- nearly two brain-widths -- and the ports read as a separate
-     column of text on the far side of the picture rather than as that brain's own ports. */
-  const TAIL = MODEL_X - 0.78, HEAD = MODEL_X + 0.78;
-  const CHIP_GAP = 0.225;                /* vertical pitch of one input/output label */
+  /* ---- the frame the whole diagram is laid out in: two LAYOUTS ----
+     every number is in world units, and the camera is fitted to the layout's HALF_X/HALF_Y
+     (see resize), so nothing can drift outside the render.
 
+     WIDE is the reading order the figure was designed for: the implicit model on the left,
+     three lanes of materialized brains to its right.  TALL is for phones, and it is a
+     different arrangement rather than the same one shrunk: at 390px the wide layout left
+     each lane ~100px, the model names printed straight over their own port labels
+     ("IBM-1-EEG-to-Imphotoreceptor state"), and the whole figure read as noise.  tall puts
+     the implicit model on TOP and gives each lane the full width, so a lane keeps its
+     left-to-right reading -- inputs, brain, outputs -- at a size a phone can read.  the
+     layout is chosen from the CANVAS's own width (CLAUDE.md: a breakpoint is a statement
+     about the viewport, and inside a station the two come apart) and the scene is rebuilt
+     only when that choice flips, not on every resize. */
+  const LAYOUTS = {
+    wide: { HALF_X: 3.30, HALF_Y: 1.95, CAM_Y: 0.00, HUB_X: -2.15, HUB_Y: 0.00, HUB_S: 1.2,
+            MODEL_X: 0.90, LANE_Y: [1.3, 0, -1.3], threads: "fan" },
+    tall: { HALF_X: 2.45, HALF_Y: 3.10, CAM_Y: 0.33, HUB_X: 0.00, HUB_Y: 2.55, HUB_S: 0.95,
+            MODEL_X: 0.00, LANE_Y: [0.6, -0.8, -2.2], threads: "arrow" },
+  };
+  const TALL_BELOW_PX = 640;
+  const SUB = 0.44;                      /* a materialized brain's scale */
+  const CHIP_GAP = 0.225;                /* vertical pitch of one input/output label */
+  /* the arrow reaches 0.78 either side of a brain's centre, 0.34 clear of its edge.  it
+     was 1.25 -- nearly two brain-widths -- and the ports read as a separate column of text
+     on the far side of the picture rather than as that brain's own ports. */
+  let L = LAYOUTS.wide, layoutName = null;
+  let HUB_X, HUB_Y, HUB_S, MODEL_X, LANE_Y, TAIL, HEAD;
+  let implicit = null, anchors = [], spinners = [];
+
+  /* ---- annotations, as projected HTML so they stay crisp and themeable ----
+     a mark owns its ANCHOR SIDE: an input hangs its right edge on its point, an output
+     its left, a name and the hub their centre.  put() below needs that to clamp a label
+     into the canvas instead of letting it run off the edge. */
+  const layer = document.createElement("div");
+  layer.className = "mz-labels";
+  host.appendChild(layer);
+  const marks = [];
+  const addMark = (p, cls, html, anchor, dy, ride) => {
+    const el = document.createElement("div");
+    el.className = "mz-mark " + cls;
+    el.innerHTML = html;
+    layer.appendChild(el);
+    marks.push({ p: p.clone(), el, anchor, dy: dy || 0, w: 0, ride: ride || null });
+  };
+
+  /* ---- build (or rebuild) the scene and its labels for one layout ---- */
+  function build(name) {
+    layoutName = name;
+    L = LAYOUTS[name];
+    ({ HUB_X, HUB_Y, HUB_S, MODEL_X, LANE_Y } = L);
+    TAIL = MODEL_X - 0.78; HEAD = MODEL_X + 0.78;
+    for (const o of world.children.slice()) {
+      world.remove(o);
+      o.traverse((n) => { if (n.geometry) n.geometry.dispose(); });
+    }
+    layer.innerHTML = "";
+    marks.length = 0;
+    anchors = [];
   /* the implicit model: every site in its own atlas colour */
   const atlas = G.nodes.map((n) => new T.Color(n.c || "#888"));
-  const implicit = makeBrain((i, c) => c.copy(atlas[i]), 0.95);
+  implicit = makeBrain((i, c) => c.copy(atlas[i]), 0.95);
   implicit.scale.setScalar(HUB_S);
-  implicit.position.set(HUB_X, 0, 0);
+  implicit.position.set(HUB_X, HUB_Y, 0);
   world.add(implicit);
 
-  const anchors = [];
   MODELS.forEach((M, k) => {
     const m = MATS[M.id];
     const grey = new T.Color("#6f7681");
@@ -216,8 +257,22 @@
   /* where that bearing leaves an ellipse with the brain's half-extents, 0.9x so the tip
      sits just inside the edge of the cloud rather than on its outermost point */
   const rr = 0.9 / Math.sqrt((ux / BX) ** 2 + (uy / (uy < 0 ? BY_DN : BY_UP)) ** 2);
-  const T_FROM = new T.Vector3(HUB_X + HUB_S * 0.66, uy * rr, 0.05);
-  anchors.forEach((a) => {
+  const T_FROM = new T.Vector3(HUB_X + HUB_S * 0.66, HUB_Y + uy * rr, 0.05);
+  /* TALL: the lanes are stacked UNDER the hub, so three threads cannot fan out sideways
+     without cutting across every lane above their own.  routed down the left margin (the
+     first try) they swung out past the canvas edge and ran behind the input labels, and read
+     as tangle.  on a phone the relation is said once: ONE arrow from the implicit model down
+     into the stack of models materialized from it. */
+  if (L.threads === "arrow") {
+    const from = new T.Vector3(HUB_X, HUB_Y - 1.0 * HUB_S - 0.06, 0.05);
+    const to = new T.Vector3(HUB_X, LANE_Y[0] + 0.62, 0.05);
+    world.add(new T.Mesh(new T.TubeGeometry(new T.LineCurve3(from, to), 8, 0.014, 8, false), threadMat));
+    const head = new T.Mesh(new T.ConeGeometry(0.06, 0.16, 14), threadMat);
+    head.position.copy(to).add(new T.Vector3(0, 0.08, 0));
+    head.rotation.z = Math.PI;                                  /* pointing down */
+    world.add(head);
+  }
+  if (L.threads === "fan") anchors.forEach((a) => {
     const c = new T.Vector3(MODEL_X, a.y, 0.05);
     const tip = c.clone().add(new T.Vector3(ux * rr, uy * rr, 0));
     const k = (tip.x - T_FROM.x) * 0.5;
@@ -232,22 +287,6 @@
     head.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), dir);
     world.add(head);
   });
-
-  /* ---- annotations, as projected HTML so they stay crisp and themeable ----
-     a mark owns its ANCHOR SIDE: an input hangs its right edge on its point, an output
-     its left, a name and the hub their centre.  put() below needs that to clamp a label
-     into the canvas instead of letting it run off the edge. */
-  const layer = document.createElement("div");
-  layer.className = "mz-labels";
-  host.appendChild(layer);
-  const marks = [];
-  const addMark = (p, cls, html, anchor, dy, ride) => {
-    const el = document.createElement("div");
-    el.className = "mz-mark " + cls;
-    el.innerHTML = html;
-    layer.appendChild(el);
-    marks.push({ p: p.clone(), el, anchor, dy: dy || 0, w: 0, ride: ride || null });
-  };
 
   /* ---- the variables the implicit model carries, pinned to the brain itself ----
      each label is a point in the hub brain's LOCAL frame and is carried through its matrix
@@ -293,7 +332,7 @@
      on its own arrow -- the two labels that name a thing now behave the same way.  the
      caption under it ("one parameter set · every variable") is gone: the ring of variable
      names around the hub already says it, and the standfirst says it in words. */
-  addMark(new T.Vector3(HUB_X, 0.58 * HUB_S, 0), "is-hub", "<b>IBM-1</b>", "c", 4);
+  addMark(new T.Vector3(HUB_X, HUB_Y + 0.58 * HUB_S, 0), "is-hub", "<b>IBM-1</b>", "c", 4);
 
   anchors.forEach((a) => {
     /* ON the arrow, not floating above it: at +0.40 the name sat halfway to the lane above
@@ -316,6 +355,11 @@
     column(a.m.outputs, "is-out", HEAD + 0.15);
   });
 
+    spinners = [{ g: implicit, r: HUB_S }].concat(anchors.map((a) => ({ g: a.group, r: SUB })));
+    spinners.forEach((s2) => { s2.ry = 0; s2.rx = 0; s2.auto = 1; });
+    host.dataset.layout = name;
+  }
+
   /* ---- camera, render ---- */
   const cam = new T.PerspectiveCamera(30, 1, 0.1, 60);
   const renderer = new T.WebGLRenderer({ antialias: true, alpha: true });
@@ -329,12 +373,10 @@
      whichever brain it started nearest -- the diagram is four objects, not one scene the
      reader spins. */
   let dist = 10;
-  const spinners = [{ g: implicit, r: HUB_S }].concat(anchors.map((a) => ({ g: a.group, r: SUB })));
-  spinners.forEach((s2) => { s2.ry = 0; s2.rx = 0; s2.auto = 1; });
   let drag = null;
   function place() {
-    cam.position.set(0, 0, dist);
-    cam.lookAt(0, 0, 0);
+    cam.position.set(0, L.CAM_Y, dist);
+    cam.lookAt(0, L.CAM_Y, 0);
   }
   /* pick by projected distance: a raycast would need colliders on a point cloud */
   function pick(cx, cy) {
@@ -350,7 +392,13 @@
     return bd < 190 ? best : null;
   }
   function resize() {
-    const w = host.clientWidth, h = Math.max(400, Math.round(w * 0.59));
+    const w = host.clientWidth;
+    const want = w < TALL_BELOW_PX ? "tall" : "wide";
+    if (want !== layoutName) build(want);
+    /* the canvas takes the layout's own aspect, so the fit below is height- and
+       width-limited at once and neither half-extent is wasted */
+    const h = want === "tall" ? Math.round(w * L.HALF_Y / L.HALF_X)
+                              : Math.max(400, Math.round(w * 0.59));
     /* the type is in px and the scene is in world units, so a narrow canvas shrinks the
        brains and leaves the labels the size they were.  the trigger is the CANVAS's width,
        not the viewport's -- this figure sits in the second column of a two-column band, so
@@ -360,7 +408,7 @@
     cam.aspect = w / h; cam.updateProjectionMatrix();
     /* fit BOTH half-extents.  fitting only the height let a short canvas crop the
        outputs off the right, which is the bug this layout exists to end. */
-    dist = Math.max(HALF_Y, HALF_X / cam.aspect) / Math.tan((cam.fov * Math.PI / 180) / 2);
+    dist = Math.max(L.HALF_Y, L.HALF_X / cam.aspect) / Math.tan((cam.fov * Math.PI / 180) / 2);
     measure();
   }
   /* label widths are read once per resize, not per frame: reading offsetWidth inside the
