@@ -805,7 +805,7 @@ window.IBM_RHYTHMS = {
    "id": "arousal",
    "name": "brainstem-thalamic arousal",
    "summary": "The ascending arousal system sets how the thalamus gates the cortex, and so whether the brain is awake, drowsy or asleep.",
-   "tile": "rz_ars",
+   "tile": "rz_aro",
    "ring": [
     {
      "station": "lc",

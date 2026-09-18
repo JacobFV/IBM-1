@@ -20,6 +20,7 @@ Two populations per thalamic unit, plus the two synaptic species that set the ti
     R   relay (thalamocortical) cells      in [0, 1]
     T   reticular (TRN) cells              in [0, 1]
     h   T-current de-inactivation          in [0, 1]   the slow variable that makes a burst
+    H   I_h (sag) activation                in [0, 1]   slower still; the delta variable
     sA  GABA-A activation from TRN         in [0, 1]   fast  (~10 ms)
     sB  GABA-B activation from TRN         in [0, 1]   slow  (~150 ms)
     eta background current, Ornstein-Uhlenbeck, exactly advanced
@@ -99,6 +100,22 @@ class ThalamicPriors:
     g_T: float = 0.55              # T-current strength; the burst's size
     burst_theta: float = 0.10      # the burst only fires BELOW this: it is a rebound
     burst_beta: float = 14.0
+    # the SAG current, I_h.  Hyperpolarisation-activated and DEPOLARISING, so it is a
+    # negative feedback on the cell's own polarisation with a time constant of a few
+    # hundred milliseconds -- which is a period in the delta band.  Delta is I_h and the
+    # T-current taking turns: the sag slowly lifts a hyperpolarised cell until the
+    # de-inactivated T-current fires, the burst deactivates the sag, the cell falls back,
+    # and it starts again (Destexhe & Sejnowski 2003, and McCormick & Pape 1990's original
+    # measurement of the current itself).
+    #
+    # It is here because the first version of this module DESCRIBED this mechanism in its
+    # docstring and did not implement it, and the T4 sweep showed delta prominence negative
+    # at every arousal level while the prose claimed three regimes (docs/LOG.md).
+    g_H: float = 0.45
+    tau_H_up: float = 0.320        # activating, cell hyperpolarised: sets the delta period
+    tau_H_dn: float = 0.140        # deactivating once the cell depolarises
+    h_H_theta: float = 0.02        # activates BELOW this: deeper than the T-current's bar
+    h_H_beta: float = 16.0
     # inhibition from TRN.  GABA-A is fast and carries the spindle; GABA-B is slow and
     # is what deepens into delta when the cells sit hyperpolarised (Destexhe 1996).
     tau_A: float = 0.010
@@ -150,7 +167,7 @@ class ThalamicField(nn.Module):
         z = torch.zeros(self.n, device=device)
         # learned residuals, bounded the same way the cortical field bounds its own: the
         # declared loop may be bent, it may not be replaced.
-        for name in ("tau_h_up", "g_T", "w_A", "w_B", "w_RT"):
+        for name in ("tau_h_up", "g_T", "w_A", "w_B", "w_RT", "g_H", "tau_H_up"):
             self.register_buffer(f"prior_{name}", z + float(getattr(self.pr, name)))
             self.register_parameter(f"res_{name}", nn.Parameter(
                 torch.zeros(self.n, device=device), requires_grad=learn))
@@ -165,7 +182,7 @@ class ThalamicField(nn.Module):
         device = device or self.prior_g_T.device
         z = torch.zeros(b, self.n, device=device)
         return {"R": z.clone(), "T": z.clone(), "h": z.clone() + 0.5,
-                "sA": z.clone(), "sB": z.clone(), "eta": z.clone()}
+                "H": z.clone(), "sA": z.clone(), "sB": z.clone(), "eta": z.clone()}
 
     @staticmethod
     def detach(state):
@@ -181,12 +198,16 @@ class ThalamicField(nn.Module):
         """
         pr = self.pr
         R, T, h, sA, sB = state["R"], state["T"], state["h"], state["sA"], state["sB"]
+        H = state.get("H")
         eta = state.get("eta")
         if eta is None:
             eta = torch.zeros_like(R)
+        if H is None:
+            H = torch.zeros_like(R)
         g_T, w_A, w_B, w_RT = (self.site("g_T"), self.site("w_A"),
                                self.site("w_B"), self.site("w_RT"))
-        tau_h_up = self.site("tau_h_up")
+        tau_h_up, g_H, tau_H_up = (self.site("tau_h_up"), self.site("g_H"),
+                                   self.site("tau_H_up"))
 
         rho = math.exp(-dt / pr.tau_eta)
         eta = eta * rho
@@ -199,10 +220,15 @@ class ThalamicField(nn.Module):
 
         # the input to the relay cell WITHOUT its own rebound, which is what decides
         # whether the T-current is de-inactivating
-        u_base = dsense + pr.w_CT_R * dctx - w_A * sA - w_B * sB - offset + eta
+        u_syn = dsense + pr.w_CT_R * dctx - w_A * sA - w_B * sB - offset + eta
+        # the cell's polarisation INCLUDING its own sag: both the T-current's
+        # de-inactivation and the sag's activation read this, not the synaptic input alone,
+        # because the currents respond to the membrane and not to what is driving it
+        u_mem = u_syn + g_H * H
         # the rebound: a burst only when the cell is hyperpolarised AND de-inactivated
-        burst = g_T * h * (1.0 - sigmoid(u_base, pr.burst_beta, pr.burst_theta))
-        u_R = u_base + burst
+        burst = g_T * h * (1.0 - sigmoid(u_mem, pr.burst_beta, pr.burst_theta))
+        u_R = u_mem + burst
+        u_base = u_mem
         u_T = w_RT * R + pr.w_CT_T * dctx - pr.w_TT * T
 
         fR = sigmoid(u_R, pr.beta_R, pr.theta_R)
@@ -211,15 +237,20 @@ class ThalamicField(nn.Module):
         h_inf = 1.0 - sigmoid(u_base, pr.h_beta, pr.h_theta)
         # asymmetric: slow to arm, fast to disarm
         tau_h = torch.where(h_inf > h, tau_h_up, torch.full_like(tau_h_up, pr.tau_h_dn))
+        # the sag: activated by hyperpolarisation, slower than the T-current, and
+        # asymmetric in the same direction
+        H_inf = 1.0 - sigmoid(u_syn, pr.h_H_beta, pr.h_H_theta)
+        tau_H = torch.where(H_inf > H, tau_H_up, torch.full_like(tau_H_up, pr.tau_H_dn))
 
         cR = 1.0 - math.exp(-dt / pr.tau_R)
         cT = 1.0 - math.exp(-dt / pr.tau_T)
         ch = 1.0 - torch.exp(-dt / tau_h)
         cA = 1.0 - math.exp(-dt / pr.tau_A)
         cB = 1.0 - math.exp(-dt / pr.tau_B)
+        cH = 1.0 - torch.exp(-dt / tau_H)
         return {"R": R + cR * (fR - R), "T": T + cT * (fT - T),
-                "h": h + ch * (h_inf - h), "sA": sA + cA * (T - sA),
-                "sB": sB + cB * (T - sB), "eta": eta}
+                "h": h + ch * (h_inf - h), "H": H + cH * (H_inf - H),
+                "sA": sA + cA * (T - sA), "sB": sB + cB * (T - sB), "eta": eta}
 
     def rollout(self, steps: int, dt: float, state=None, drive_sense=None,
                 drive_cortex=None, arousal: float = 1.0, noise_gen=None, b: int = 1,

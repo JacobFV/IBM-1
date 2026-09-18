@@ -1160,14 +1160,12 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
 .rz-extra:not([hidden]) { display: contents; }
 .rz-extra[hidden] { display: none; }
 
-/* "more": shaped like a tile -- a figure-sized area and a name under it -- so
-   the sixth cell reads as part of the grid, but naked like the tiles are.  the
-   ring is the glyph, not card chrome. */
-  margin: 0; padding: 0; background: none; border: 0; box-shadow: none; cursor: pointer;
-  color: var(--muted); font: inherit; text-align: center; transition: color .15s; }
-  border: 1px solid currentColor; opacity: .6; }
-  font-size: 1.9rem; line-height: 1; transform: translateY(-1px); }
-  font-size: 1.04rem; line-height: 1.2; letter-spacing: -0.012em; }
+/* The "more" button was removed when all eleven tiles were made to show at once,
+   and its four rule bodies were left behind WITHOUT their selectors.  CSS error
+   recovery then swallowed everything up to the next `{`, which ate the base
+   `.rz-grid.is-all` rule: the grid was computing gap 34px 26px, inherited from
+   `.rz-grid`, instead of its declared 28px 20px.  Nothing looked broken, because a
+   grid with the wrong gap is still a grid. */
 
 /* open: eleven tiles and the button, packed denser and set smaller */
 .rz-grid.is-all { gap: 28px 20px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }

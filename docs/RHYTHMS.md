@@ -368,7 +368,7 @@ interval. The ceiling is what the round-trip bound allows.
 | `dmn` | pcc → vmpfc → ang | 32–68 ms | + | 15–31 Hz | `rz_dmn` |
 | `aud` | mgn → a1 | 4–9 ms | + | 111–250 Hz | `rz_aud` |
 | `aud_afferent` | cochlea → mgn | 6–15 ms | + | 67–167 Hz | — |
-| `arousal` | lc → trn → md → dlpfc | 27–75 ms | + | 13–37 Hz | `rz_ars` |
+| `arousal` | lc → trn → md → dlpfc | 27–75 ms | + | 13–37 Hz | `rz_aro` |
 | `rem_flipflop` | ppt → lc | 20–60 ms | + | 17–50 Hz | — |
 | `rgs` | retina → lgn → v1 → lgn → trn | 14–33 ms | - | 15–36 Hz | `rz_vis` |
 | `cb_local` | cb_ctx → cb_ctx | 1–3 ms | - | 167–500 Hz | — |

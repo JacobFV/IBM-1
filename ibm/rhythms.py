@@ -353,7 +353,7 @@ LOOPS = {l.id: l for l in [
         ("trn", "md", (1.0, 2.0), "-"),
         ("md", "dlpfc", (1.0, 3.0), "+"),
         ("dlpfc", "lc", (15.0, 40.0), "+", "the cortical return onto the arousal nuclei")],
-       "rz_ars"),
+       "rz_aro"),
 
     _L("rem_flipflop", "REM-on / REM-off flip-flop",
        "Two mutually inhibiting brainstem populations; the brain is in one state or the other "
@@ -1150,6 +1150,19 @@ def rhythm_targets(state: str, region_names, only_expressible: bool = True,
 # ======================================================================================
 # the catalogue checks itself.  run this file to see them.
 # ======================================================================================
+def _page_tiles():
+    """the `rz_*` tile ids site/resonance.js actually registers, or None if unreadable."""
+    import os
+    import re
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        "site", "resonance.js")
+    try:
+        with open(path) as fh:
+            return set(re.findall(r"\b(rz_[a-z0-9_]+)\s*:", fh.read()))
+    except OSError:
+        return None
+
+
 def check_catalogue() -> list:
     """every consistency check on the table, as (name, ok, detail) triples.
 
@@ -1217,9 +1230,22 @@ def check_catalogue() -> list:
     bad = [r.id for r in RHYTHMS if r.bound_exempt and len(r.bound_exempt) < 40]
     chk("every exemption carries a reason", not bad, ", ".join(bad))
 
+    # the tile ids are checked against site/resonance.js ITSELF, not merely counted.
+    # counting passed while `rz_ars` sat here and the page called that tile `rz_aro`:
+    # eleven distinct strings, one of them matching nothing.  A check that cannot see
+    # the other side of a correspondence is not checking the correspondence.
     tiles = {l.site_tile for l in LOOPS.values() if l.site_tile}
-    chk("the eleven site tiles all have a loop here", len(tiles) == 11,
-        f"{len(tiles)} tiles: {sorted(tiles)}")
+    page = _page_tiles()
+    if page is None:
+        chk("the site tiles all have a loop here", len(tiles) == 11,
+            f"{len(tiles)} tiles, but site/resonance.js was not readable to compare")
+    else:
+        missing = sorted(tiles - page)
+        unclaimed = sorted(page - tiles)
+        chk("every declared tile id exists in site/resonance.js", not missing,
+            f"not on the page: {missing}" if missing else f"{len(tiles)} matched")
+        chk("every tile on the page has a loop here", not unclaimed,
+            f"no loop for: {unclaimed}" if unclaimed else f"{len(page)} tiles")
 
     return out
 
