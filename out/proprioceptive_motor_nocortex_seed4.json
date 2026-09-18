@@ -1,0 +1,94 @@
+{
+  "ckpt": "ckpt/wiring_surface_slice.pt",
+  "baselines": {
+    "zero": 0.0006671151495538652,
+    "mean": 0.000667228945530951,
+    "persistence": 0.00010400893370388076,
+    "ridge_no_cortex": 0.19537071883678436
+  },
+  "held_out_motions": [
+    "subject02_running_ik",
+    "rra_run_1_Kinematics_q",
+    "subject02_Kinematics_q",
+    "desiredKinematics_padded",
+    "coordinates",
+    "subject_walk_armless_coordinates",
+    "subject01_walk1_ik",
+    "subject01_walk1_ik",
+    "subject01_walk1_Kinematics",
+    "subject01_walk1_ik",
+    "subject01_walk1_ik"
+  ],
+  "arms": {
+    "no_cortex": {
+      "history": [
+        {
+          "step": 0,
+          "held_mse": 0.0006684260442852974,
+          "skill_vs_persistence": -5.426621449541476
+        },
+        {
+          "step": 250,
+          "held_mse": 0.0004373539995867759,
+          "skill_vs_persistence": -3.204965708349123
+        },
+        {
+          "step": 500,
+          "held_mse": 0.00044642534339800477,
+          "skill_vs_persistence": -3.292182676047835
+        },
+        {
+          "step": 750,
+          "held_mse": 0.0004451025160960853,
+          "skill_vs_persistence": -3.2794642752834777
+        },
+        {
+          "step": 1000,
+          "held_mse": 0.00045133187086321414,
+          "skill_vs_persistence": -3.3393567724497704
+        },
+        {
+          "step": 1250,
+          "held_mse": 0.0004556176427286118,
+          "skill_vs_persistence": -3.3805625776895347
+        },
+        {
+          "step": 1500,
+          "held_mse": 0.0004673201765399426,
+          "skill_vs_persistence": -3.4930772761350415
+        },
+        {
+          "step": 1750,
+          "held_mse": 0.00047319900477305055,
+          "skill_vs_persistence": -3.5495996153587592
+        },
+        {
+          "step": 2000,
+          "held_mse": 0.0004762060707435012,
+          "skill_vs_persistence": -3.5785112276920987
+        },
+        {
+          "step": 2250,
+          "held_mse": 0.0004832203849218786,
+          "skill_vs_persistence": -3.64595076320688
+        },
+        {
+          "step": 2500,
+          "held_mse": 0.0004912481526844203,
+          "skill_vs_persistence": -3.723134207711727
+        },
+        {
+          "step": 2750,
+          "held_mse": 0.0004972734022885561,
+          "skill_vs_persistence": -3.78106432380435
+        },
+        {
+          "step": 3000,
+          "held_mse": 0.0005048425518907607,
+          "skill_vs_persistence": -3.853838357078783
+        }
+      ],
+      "best_skill_vs_persistence": -3.204965708349123
+    }
+  }
+}

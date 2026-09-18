@@ -1,0 +1,9 @@
+G0 {'step_equal': True, 'rollout_equal': True, 'PASS': True}
+G1 {'min': {'E': 0.000540658482350409, 'I': 0.0263443011790514, 'x': 0.0013565421104431152, 'a': 1.6678390890589867e-09}, 'max': {'E': 0.9999997019767761, 'I': 0.9606355428695679, 'x': 0.9997032284736633, 'a': 0.7091413140296936}, 'g_a_max': 0.8999999761581421, 'finite': True, 'PASS': True, 'seconds': 91.7}
+G2 {'control_ok': True, 'PASS': True, 'VOID': False} field sets 8 control sets 1
+G3 {'transitions': 0, 'median_dwell_s': 58.0, 'mean_dwell_s': 58.0, 'distinct_macrostates': 1, 'revisited_ge2': 0, 'mean_regions_up': 0.0, 'frac_time_any_region_up': 0.0, 'seconds': 19.9, 'PASS': False}
+G4 {'sites_with_variance': 1024, 'rho_tau_vs_h': 0.8525409484300122, 'rho_control_permuted_h': 0.006663787014519705, 'tau_s_quartiles': [0.02, 0.025, 0.03], 'tau_s_by_h_band': {'0-0.3': 0.02, '0.3-0.6': 0.025, '0.6-0.8': 0.03, '0.8-1.01': 0.03}, 'PASS': True}
+G5 {'label': 'declared priors', 'acc_E': 0.99375, 'ci_E': (0.9654501546624841, 0.9988958966456083), 'acc_full_state': 1.0, 'ci_full_state': (0.9765529633499672, 1.0), 'chance': 0.125, 'readout_s_after_offset': 1.0, 'seconds': 16.0} 
+   monostable {'label': 'w_EE x 0.3 (monostable), reported not gated', 'acc_E': 0.85, 'ci_E': (0.7865048113324178, 0.8970822630125592), 'acc_full_state': 1.0, 'ci_full_state': (0.9765529633499672, 1.0), 'chance': 0.125, 'readout_s_after_offset': 1.0, 'seconds': 15.9}
+
+PASS: {'G0_idempotence': True, 'G1_bounded': True, 'G2_invariant_sets': True, 'G3_metastability': False, 'G4_heterogeneity': True, 'G5_memory': True}

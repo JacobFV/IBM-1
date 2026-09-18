@@ -1,0 +1,10 @@
+[2026-09-18T08:23:38-07:00] start --arms trained --readout-norm none --seed 2 --out out/proprio_readout_raw_seed2.json
+[2026-09-18T08:23:43-07:00] start --arms no_cortex --seed 2 --out out/proprioceptive_motor_nocortex_seed2.json
+[2026-09-18T08:23:48-07:00] start --arms trained --readout-norm none --seed 3 --out out/proprio_readout_raw_seed3.json
+[2026-09-18T08:24:15-07:00] exit 0 --arms no_cortex --seed 2 --out out/proprioceptive_motor_nocortex_seed2.json
+[2026-09-18T08:24:33-07:00] start --arms no_cortex --seed 3 --out out/proprioceptive_motor_nocortex_seed3.json
+[2026-09-18T08:24:50-07:00] exit 1 --arms trained --readout-norm none --seed 3 --out out/proprio_readout_raw_seed3.json
+[2026-09-18T08:24:58-07:00] start --arms trained --readout-norm none --seed 4 --out out/proprio_readout_raw_seed4.json
+[2026-09-18T08:25:03-07:00] exit 0 --arms no_cortex --seed 3 --out out/proprioceptive_motor_nocortex_seed3.json
+[2026-09-18T08:25:03-07:00] start --arms no_cortex --seed 4 --out out/proprioceptive_motor_nocortex_seed4.json
+[2026-09-18T08:25:12-07:00] exit 1 --arms no_cortex --seed 4 --out out/proprioceptive_motor_nocortex_seed4.json

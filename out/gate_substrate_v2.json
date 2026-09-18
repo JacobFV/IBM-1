@@ -1,0 +1,186 @@
+{
+  "preregistered": "docs/LOG.md 2026-09-18",
+  "n": 1024,
+  "k": 32,
+  "dt": 0.001,
+  "seed": 0,
+  "priors": {
+    "tau_E": [
+      0.01,
+      0.02
+    ],
+    "tau_I": 0.005,
+    "tau_a": [
+      0.3,
+      1.2
+    ],
+    "g_a": [
+      0.9,
+      0.3
+    ],
+    "tau_rec": [
+      0.45,
+      0.8
+    ],
+    "U": 0.05,
+    "tau_use": 0.1,
+    "w_EE": [
+      0.4,
+      2.5
+    ],
+    "beta_E": 8.0,
+    "theta_E": [
+      0.3,
+      0.6
+    ],
+    "w_EI": 0.5,
+    "w_IE": 0.9,
+    "w_II": 0.3,
+    "beta_I": 6.0,
+    "theta_I": 0.35,
+    "G_L": 0.45,
+    "G_F": 0.35,
+    "sigma": 0.04,
+    "tau_eta": 0.005,
+    "residual_frac": 0.35
+  },
+  "gates": {
+    "G0_idempotence": {
+      "step_equal": true,
+      "rollout_equal": true,
+      "PASS": true
+    },
+    "G1_bounded": {
+      "min": {
+        "E": 0.000540658482350409,
+        "I": 0.0263443011790514,
+        "x": 0.0013565421104431152,
+        "a": 1.6678390890589867e-09
+      },
+      "max": {
+        "E": 0.9999997019767761,
+        "I": 0.9606355428695679,
+        "x": 0.9997032284736633,
+        "a": 0.7091413140296936
+      },
+      "g_a_max": 0.8999999761581421,
+      "finite": true,
+      "PASS": true,
+      "seconds": 91.7
+    },
+    "G2_invariant_sets": {
+      "field": {
+        "n_sets": 8,
+        "mean_E_per_set": [
+          0.02530931495130062,
+          0.02985953539609909,
+          0.04166027903556824,
+          0.029850389808416367,
+          0.035263389348983765,
+          0.029820039868354797,
+          0.02890888974070549,
+          0.031636759638786316
+        ],
+        "frac_up_per_set": [
+          0.0,
+          0.0048828125,
+          0.017578125,
+          0.0048828125,
+          0.0107421875,
+          0.0048828125,
+          0.00390625,
+          0.0068359375
+        ],
+        "max_swing_last_3s": 0.04516726732254028,
+        "stationary_runs": 30,
+        "seconds": 56.2,
+        "label": "declared priors"
+      },
+      "control": {
+        "n_sets": 1,
+        "mean_E_per_set": [
+          0.022118447348475456
+        ],
+        "frac_up_per_set": [
+          0.0
+        ],
+        "max_swing_last_3s": 0.0,
+        "stationary_runs": 32,
+        "seconds": 58.0,
+        "label": "w_EE x 0.3 control"
+      },
+      "control_ok": true,
+      "PASS": true,
+      "VOID": false
+    },
+    "G3_metastability": {
+      "transitions": 0,
+      "median_dwell_s": 58.0,
+      "mean_dwell_s": 58.0,
+      "distinct_macrostates": 1,
+      "revisited_ge2": 0,
+      "mean_regions_up": 0.0,
+      "frac_time_any_region_up": 0.0,
+      "seconds": 19.9,
+      "PASS": false
+    },
+    "G4_heterogeneity": {
+      "sites_with_variance": 1024,
+      "rho_tau_vs_h": 0.8525409484300122,
+      "rho_control_permuted_h": 0.006663787014519705,
+      "tau_s_quartiles": [
+        0.02,
+        0.025,
+        0.03
+      ],
+      "tau_s_by_h_band": {
+        "0-0.3": 0.02,
+        "0.3-0.6": 0.025,
+        "0.6-0.8": 0.03,
+        "0.8-1.01": 0.03
+      },
+      "PASS": true
+    },
+    "G5_memory": {
+      "field": {
+        "label": "declared priors",
+        "acc_E": 0.99375,
+        "ci_E": [
+          0.9654501546624841,
+          0.9988958966456083
+        ],
+        "acc_full_state": 1.0,
+        "ci_full_state": [
+          0.9765529633499672,
+          1.0
+        ],
+        "chance": 0.125,
+        "readout_s_after_offset": 1.0,
+        "seconds": 16.0
+      },
+      "monostable": {
+        "label": "w_EE x 0.3 (monostable), reported not gated",
+        "acc_E": 0.85,
+        "ci_E": [
+          0.7865048113324178,
+          0.8970822630125592
+        ],
+        "acc_full_state": 1.0,
+        "ci_full_state": [
+          0.9765529633499672,
+          1.0
+        ],
+        "chance": 0.125,
+        "readout_s_after_offset": 1.0,
+        "seconds": 15.9
+      },
+      "bypass": "chance by construction: the input is zero at readout",
+      "PASS": true
+    }
+  },
+  "unknown_regions": [],
+  "n_regions": 66,
+  "column_bistable_fraction": 0.642578125,
+  "column_bistable_fraction_monostable_control": 0.0,
+  "seconds_total": 259.1
+}

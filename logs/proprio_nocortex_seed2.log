@@ -1,0 +1,30 @@
+muscle sets present: [15, 30, 40, 80] -> keeping the 80-muscle set, 22 of 39 motions; 17 are from other OpenSim models and are dropped
+train 3,515 transitions over 17 motions | held out 3,400 over 11 motions
+in 160 (length + rate for 80 muscles) -> out 80
+
+held-out baselines (MSE, and skill against persistence):
+  zero               6.671151e-04   skill -5.4140
+  mean               6.672289e-04   skill -5.4151
+  persistence        1.040089e-04   skill +0.0000
+  ridge, no cortex   1.953707e-01   skill -1877.4032
+
+### no_cortex: encoder -> head, the sheet removed entirely
+/home/brandonin/Documents/IBM-1/scripts/train_proprioceptive_motor.py:235: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  {step:5d}  train {float(ls):.3e}  held {v:.3e}  "
+      0  train 9.577e-01  held 6.687e-04  SKILL vs persistence -5.4296  vs ridge +0.9966
+    250  train 1.226e-01  held 4.302e-04  SKILL vs persistence -3.1358  vs ridge +0.9978
+    500  train 5.354e-02  held 4.322e-04  SKILL vs persistence -3.1551  vs ridge +0.9978
+    750  train 6.463e-02  held 4.401e-04  SKILL vs persistence -3.2310  vs ridge +0.9977
+   1000  train 8.941e-02  held 4.409e-04  SKILL vs persistence -3.2394  vs ridge +0.9977
+   1250  train 1.004e-01  held 4.420e-04  SKILL vs persistence -3.2500  vs ridge +0.9977
+   1500  train 5.573e-02  held 4.466e-04  SKILL vs persistence -3.2938  vs ridge +0.9977
+   1750  train 8.755e-02  held 4.571e-04  SKILL vs persistence -3.3948  vs ridge +0.9977
+   2000  train 2.539e-02  held 4.597e-04  SKILL vs persistence -3.4199  vs ridge +0.9976
+   2250  train 3.086e-02  held 4.649e-04  SKILL vs persistence -3.4696  vs ridge +0.9976
+   2500  train 5.462e-02  held 4.742e-04  SKILL vs persistence -3.5593  vs ridge +0.9976
+   2750  train 3.511e-02  held 4.795e-04  SKILL vs persistence -3.6098  vs ridge +0.9975
+   3000  train 3.426e-02  held 4.918e-04  SKILL vs persistence -3.7284  vs ridge +0.9975
+
+  arm            best skill vs persistence
+  no_cortex      -3.1358
