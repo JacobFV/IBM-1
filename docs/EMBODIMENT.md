@@ -345,8 +345,25 @@ routes. Each is an authored polyline to a relay IHM placed by hand, and the thor
 and sacral relays sit 152–337 mm below the cord segments they stand for. With the relays on
 the cord, the splanchnic routes lengthen 1.6–3.5x (greater splanchnic 168 → 314 mm) and the
 vagus 1.08x (508 → 551 mm). The Z-Anatomy right vagus measures 415–593 mm from brainstem to
-stomach. The table is what the code uses and is kept as is. The audit is in `docs/LOG.md`,
-18 September, and `scripts/audit_nerve_route_lengths.py`.)*
+stomach. The audit is in `docs/LOG.md`, 18 September, and `scripts/audit_nerve_route_lengths.py`.)*
+
+*(18 September 2026, later: **fixed in IHM, and the table above is now the pre-fix record, not what
+the code uses.** The relays are on the registered Z-Anatomy dura at their segment levels, and the
+gastric, renal and pelvic endpoints are on their organs. `ihm_bridge` now reads:*
+
+| group | route | delay |
+|---|---|---|
+| vagus / A-beta | 448 mm | 8.1 ms |
+| vagus / A-delta | 448 mm | 29.9 ms |
+| vagus / C | 448 mm | 447.9 ms |
+| pelvic splanchnic / C | 301 mm | 301.3 ms |
+| greater splanchnic / C | 279 mm | 279.1 ms |
+| lesser splanchnic / C | 411 mm | 411.0 ms |
+| least splanchnic / C | 258 mm | 258.4 ms |
+
+*The vagus got SHORTER, not longer as the audit predicted, because its endpoint moved up 87 mm onto
+the stomach wall. The stomach still reports twice, now at 8 ms and 279 ms. See `docs/LOG.md`,
+18 September, "FIXED", and IHM-1 `docs/BODY_PERIPHERAL.md`.)*
 
 **the stomach reports twice, on two nerves, half a second apart.** the vagal
 A-beta channel is a low-threshold volume report at 9 ms; the greater splanchnic C

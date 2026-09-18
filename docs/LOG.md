@@ -62,6 +62,41 @@ already written.
 ---
 
 
+## 2026-09-18 -- research step 2 cannot be run on THINGS-EEG2: its input window never closes
+
+Step 2 is meant to test the substrate on a task that needs memory BEYOND the input window.
+The obvious corpus looked like THINGS-EEG2: each image is shown for 100 ms and the epochs
+run to 0.79 s. The ridge check CLAUDE.md asks for, run before building anything, says no.
+Ridge from simple image features (16x16 grey + mean colour), alpha chosen on a validation
+split of TRAINING rows, scored on the 200 designated test images against the
+grand-average ERP:
+
+| window | skill vs grand-average ERP | stimulus-specific r | shuffled-pairing control |
+|---|---|---|---|
+| 0.05-0.25 s | +1.5% | **+0.139** (se 0.019) | +0.033 |
+| 0.30-0.79 s | **-0.2%** | +0.024 (se 0.006) | +0.010 |
+
+Even PERFECT memory of the stimulus barely predicts the late window. The margin over the
+shuffled control is ~2 se, which does not clear sampling error on both sides. The card says
+why: THINGS-EEG2 is **10 Hz RSVP**, a new image every 100 ms, so an epoch's 0.3-0.79 s is
+the response to the NEXT three to seven images. Those are randomly ordered and average out
+in the group mean. The input window never closes. A memory test built there measures
+nothing whatever the substrate is, so every arm would tie at the floor and look like a
+negative result about the model.
+
+Also on record: "skill vs zero" in the late window reads **+0.80**, and all of it is the
+stimulus-independent grand average. A result quoted against zero there would have been a
+headline.
+
+**What step 2 needs instead:** isolated stimuli followed by a real delay, with a response
+whose content depends on what was held. The working-memory EEG in `ds008037` (the same
+deposit as the TMS-EEG, CC0) is exactly that. Only its TMS-EEG recordings are staged here
+(3,024 files); the working-memory and rest EEG were never fetched. ERP CORE's oddball
+P3/MMN (sequence memory by construction) is the alternative. Either one needs a fetch.
+
+---
+
+
 ## 2026-09-18 -- PRE-REGISTRATION: a COMPETITIVE plasticity rule, with a planted known answer it must pass first
 
 *Committed before any run of `--rule competitive` beyond a 2 s smoke test, which was read for
@@ -5960,3 +5995,35 @@ The drop-arm readings ("vagal C carries two thirds", "each splanchnic group with
 groups rather than retime them. They are unchanged in kind, but they were trained with the old
 delays, so a re-run would retime the intact reference too. The "stomach reports twice" claim holds:
 8 ms and 279 ms.
+
+## 18 September 2026 — DISCONNECTS §1: the body the brain drives now poses the body you see, every frame
+
+IHM-1 `ihm/assembly/anatomy_pose.py`: `AnatomyPoser.pose(bodies)` takes the 22 OpenSim body
+transforms (or a native frame, or a motion file's coordinates) and returns the pose of every bound
+atlas entity. It costs 1.3 ms per frame.
+- **Coverage:** 3,995 of `anatomy.json`'s 4,000 entities rigid, the skin by its linear blend,
+  the skin's 3 layers following it. One is not posed: the lymphatic network graph, which is listed
+  with its reason on every frame.
+- **Known answers** (`scripts/verify_anatomy_pose.py`, all pass):
+  - FK = Simbody to 7.8e-16;
+  - the registered reference pose reproduces rest to 5e-16 m. The model's *default* pose sits
+    224 mm max from rest, because the atlas was registered at a fitted pose, not at the defaults;
+  - each coordinate moves only its distal entities, with 0 violations over 31 coordinates;
+  - output is bit-identical when called twice;
+  - every frame guard was made to fire: millimetres, the atlas frame, the 15.7% rescale, and
+    normalised-box vertices.
+
+Three findings along the way:
+1. **The FK the renders use is wrong at the patella.** It reads `SimmSpline` as a natural spline,
+   6.5 mm off Simbody.
+2. **binding.json is not left/right symmetric.** 11 of 1,342 pairs are asymmetric, for example
+   the tibialis anterior: left on the tibia, right on the calcaneus. This is the shape that tore
+   the site figure's skin. The poser resolves each pair and lists the overrides.
+3. **The OpenSim joint centre is the wrong pivot for the anatomy.** It is 9–66 mm from where the
+   bones meet. Re-seating at the closest bone surfaces cuts the worst opening at the knee from
+   108 to 32 mm and at the lumbar joint from 105 to 14 mm. The cost is 11 mm median and 50 mm
+   max of departure from the simulated segments, so it is an option (`pivot='anatomical'`), not
+   the default.
+
+What is still missing is in `docs/DISCONNECTS.md` §1: no soft-tissue deformation, no neck or
+spine joints, no force back from the anatomy, and nothing calls the poser yet.

@@ -11,7 +11,7 @@ one is a place where a result could be quietly about the wrong object.
 |---|---|
 | declared / rendered | 3,816 BodyParts3D entities in the simulated body; 2,229 surfaces in the display atlas |
 | actually driven | 22 OpenSim bodies, 80 muscles |
-| mapping between them | **none** |
+| mapping between them | **none** until 18 Sep 2026; now a per-frame runtime mapping, IHM-1 `ihm/assembly/anatomy_pose.py` (below) |
 
 The anatomical entities take their transforms from the native run, not from the
 OpenSim skeleton, so brain-driven motion cannot reach them. Every embodied video
@@ -19,6 +19,76 @@ so far is the 22-body skeleton, which is why it looks like capsules.
 
 Also: the anatomical body's own canonical trajectory moves a maximum of **6.35 mm**
 across 30 s. It is breathing and perfusing, not moving.
+
+**18 September 2026: a runtime mapping now exists.** IHM-1 `ihm/assembly/anatomy_pose.py`.
+
+| | |
+|---|---|
+| mapping | `AnatomyPoser.pose(bodies)`: the 22 OpenSim body transforms in, the pose of every bound atlas entity out. `pose_from_native(frame)` takes a `NativeMechanicalStream` frame; `pose_from_coordinates(q)` takes a motion file's coordinates |
+| cost | 1.3 ms per frame, 57 ms with the whole skin blended; called every frame, not exported |
+| posed | 3,995 of the 4,000 `anatomy.json` entities rigidly, from `binding.json`. The skin by its existing linear blend (`skin_vertices`), with its 3 layers following |
+| not posed, and listed on every frame | 1: the published lymphatic network graph, which no single rigid segment carries. (The "3,816" above is an older count; `anatomy.json` holds 4,000) |
+
+What existed before, and why it was not enough:
+- `render_anatomical_motion.py` used the same binding, but only offline, as a render or export.
+- The embodied runtime's `articulated.py` projects entities every frame through a coarser
+  registration: a global rigid fit with no scale, and segment assignment by bounding-box distance.
+
+**Known answers** (IHM-1 `scripts/verify_anatomy_pose.py`, all pass):
+- **Forward kinematics.** The pure-python FK reproduces Simbody's own `transform_ground` to
+  7.8e-16 over 12 native frames, all 22 bodies. The FK in `scripts/render_body_3d.py` read
+  OpenSim's `SimmSpline` as a natural spline and put the patellae up to **6.5 mm** off. That FK is
+  not changed; the new module implements the real spline.
+- **Rest pose.** At the pose the atlas was registered at, the maximum displacement is 5e-16 m, for
+  centroids and for vertices. The model's *default* pose is not that pose. It sits 224 mm max and
+  110 mm median from rest (pelvis_ty 0.93 against 1.0185, lumbar_rotation 0.24 rad, ...), and that
+  is the anatomy moved, not an error.
+- **Distal only.** Each of the 31 independent coordinates, driven alone through its range, moves
+  exactly the entities downstream of it and no others. There are 0 violations in either pivot
+  mode. `knee_angle_r` moves 274 entities: tibia, talus, calcaneus, toes, and the patella through
+  its coupler.
+- **Idempotence.** The same state twice, and through a fresh poser, gives bit-identical output.
+- **Frames**, asserted at the boundary and each guard made to fire:
+  - millimetres, the atlas frame, the 15.7% display-box rescale and a missing body are refused;
+  - vertices declared `z-anatomy-display-normalized` are refused;
+  - the check is a model invariant: a rotation-only joint's two frames must coincide to 0.1 mm.
+    The rescale misses by 73 mm and the atlas frame by 17 mm;
+  - at load, the binding's similarity scale must be the declared 0.963, not ~1.11.
+- **Symmetry.** 11 of 1,342 mirrored pairs sat on unmirrored segments. For example, the left
+  tibialis anterior was on the tibia and the right on the calcaneus: the asymmetry that tore the
+  site figure's skin. Each pair now takes its higher-coherence side, and all 11 overrides are
+  listed.
+
+**Joint pivots, measured.** Each segment's entities rotate about OpenSim's joint centre carried
+into the atlas frame, which is 9–66 mm from where the two bones actually meet. `pivot='anatomical'`
+re-seats each joint at the closest bone surfaces, keeping every orientation exact. Worst joint
+opening over each joint's range, OpenSim pivot against anatomical:
+
+| joint | OpenSim pivot | anatomical pivot |
+|---|---|---|
+| knee | 108 mm | 32 mm |
+| lumbar | 105 mm | 14 mm |
+| shoulder | 81 mm | 22 mm |
+| hip | 71 mm | 41 mm |
+| ankle | 41 mm | 12 mm |
+| elbow | 27 mm | 21 mm |
+| radioulnar | 30 mm | 29 mm |
+
+The price of the anatomical pivot: over the gait-best trajectory it carries entities off the
+simulated segments by 11 mm median and 50 mm max. The default stays `opensim`, so the anatomy
+follows the body that actually touches the world. Use `anatomical` for display.
+
+**Still missing:**
+- One rigid segment per entity: no soft-tissue deformation, no volume preservation, no sliding.
+  220 entities straddle a joint (coherence below 0.6) and tear at it.
+- The skin blend is a linear blend, not a skin model.
+- The scaffold has no neck, no shoulder girdle and no spine joints. Skull, vertebrae, ribs, scapulae
+  and clavicles all ride `torso`, and the head cannot nod.
+- Nothing flows back: the anatomy feels no contact and applies no force.
+- Nothing calls the poser yet. `articulated.py` still uses its own projection, and
+  `NativeMechanicalStream` frames reach the poser only if a caller passes them.
+- Stature variants scale this binding by the scaffold's factor. Their nerve routes now scale by the
+  anatomical one: IHM-1 `docs/BODY_PERIPHERAL.md`, "known_seam".
 
 ## 2. The cortical sheet was a sphere — CLOSED
 

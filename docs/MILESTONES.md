@@ -42,6 +42,13 @@ model differ is `docs/DISCONNECTS.md`.
   All named in advance. This is the result that says the parametrization reached
   the body rather than a scale factor in a config, and it matters because the
   delay-lumping ablation under C already showed delays are load-bearing.
+  *(Corrected 18 September 2026. The routes were measured on the 1.7195 m anatomical
+  body but scaled against the 1.7973 m scaffold, so "2.03 m" carried a 1.942 m body's
+  nerves. The reference is now the anatomical stature, and every delay at 2.03 m is
+  +18.06%, not +12.95%. The relays have also moved onto the cord. Vagal C now reads
+  **447.91 → 528.80 ms**; fixing the reference alone would have read 507.84 → 599.5.
+  The optic nerve is unchanged in length and now reads 3.28/5.47/10.95 →
+  3.88/6.46/12.92 ms. See `docs/LOG.md`, 18 September.)*
 - **Geometric similarity is measurably false, and the six places are written
   down.** Over 4,822 survey-weighted NHANES adults, mass goes as stature^2.034 ±
   0.083, not ^3 — isometry rejected at z = −11.6; BMI as stature^0.034 where

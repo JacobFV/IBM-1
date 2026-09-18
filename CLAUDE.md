@@ -162,6 +162,12 @@ Specifically:
   endpoint were each about 8 cm low. When a quantity is "measured", check each ENDPOINT
   against the structure its own label names; a units or frame audit cannot see it.
 
+- **`ihm_bridge.visceral_routes` rejects ANY left/right difference in route length**, so a
+  one-sided organ cannot be anchored per side. Putting each vagus endpoint on its own organ
+  gave 448 mm left and 423 mm right, and the join raised and failed five tests. IHM-1 now
+  declares the right-side visceral routes as mirrors of the left (their records say so). To
+  make them anatomical, the join needs a per-side tolerance, not a symmetric assumption.
+
 ## Randomness
 
 **A shared generator makes two things vary that should have varied
