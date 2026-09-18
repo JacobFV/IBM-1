@@ -62,6 +62,28 @@ already written.
 ---
 
 
+## 2026-09-18 -- acquiring ds008037 in full, for research step 2
+
+The user approved fetching all 109 subjects of `ds008037` (CC0, OpenNeuro, anonymous).
+Only its TMS-EEG recordings were staged: 3,032 files, every one verified at its manifest
+size. The deposit's own manifest (`raw/.openneuro-manifest-1.0.0.json`, 7,789 entries with
+VERSIONED S3 urls) lists 4,757 more files, 63.7 GB:
+
+| task | files | GB |
+|---|---|---|
+| workingmemory (EEG + behaviour) | 936 | 48.51 |
+| rest (EEG) | 841 | 15.20 |
+| the behavioural battery (bar, bds, clt, gng, nback, opn, ort, sbs, smt, sst, sym) | ~2,600 | < 0.01 |
+
+`scripts/fetch_openneuro_manifest.py` fetches them from the VERSIONED urls, so the snapshot
+is the one the manifest describes and not whatever the bucket holds today. It writes
+`.part` files and renames each only once its size matches, re-fetches (and never trusts)
+any file present at the wrong size, and rewrites `raw/.fetch_summary.json` after every
+file. The outcome, and the card and `.location.yaml` update, follow when it completes.
+
+---
+
+
 ## 2026-09-18 -- RESULT: the competitive rule PASSES its planted known answer and the real-input known answer, and still FAILS both verdicts. The lever is the ports.
 
 `--rule competitive`, arms K/A/B x seeds 0/1/2, `out/plasticity_v2_competitive/`. Read in
