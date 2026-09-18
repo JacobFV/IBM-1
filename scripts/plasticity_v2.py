@@ -160,12 +160,14 @@ def spontaneous(field, seed):
 @torch.no_grad()
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--arm", required=True, choices=("A", "B", "C"))
+    ap.add_argument("--arm", required=True, choices=("A", "B", "C", "K"))
+    ap.add_argument("--rule", default="covariance", choices=("covariance", "competitive"))
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--learn-s", type=float, default=LEARN_S)
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
-    out = a.out or f"out/plasticity_v2/{a.arm}_seed{a.seed}.json"
+    tag = "" if a.rule == "covariance" else "_competitive"
+    out = a.out or f"out/plasticity_v2{tag}/{a.arm}_seed{a.seed}.json"
     os.makedirs(os.path.dirname(out), exist_ok=True)
     torch.set_num_threads(int(os.environ.get("THREADS", "4")))
     t0 = time.time()
@@ -177,8 +179,31 @@ def main():
     d = drive_frames(field, vf, af, vis, Pv, order, band)
     if a.arm == "B":
         d = circ_shift_sites(d, a.seed)
+    planted = None
+    if a.arm == "K":
+        # THE PLANTED KNOWN ANSWER.  two groups of 6 regions, each driven by its OWN
+        # independent slow signal (OU, tau 0.2 s, unit variance, x DRIVE), everything else
+        # undriven.  a working rule must write within-group P above between-group P.  if it
+        # cannot find a structure it was handed, nothing it writes from film means anything.
+        gk = np.random.default_rng(a.seed + 505)
+        R = len(field.region_list)
+        grp = gk.choice(R, 12, replace=False)
+        g1, g2 = grp[:6], grp[6:]
+        rid = field.region_id.numpy()
+        m1, m2 = np.isin(rid, g1), np.isin(rid, g2)
+        S_, F_, N_ = d.shape
+        sig = np.zeros((S_, F_, 2), dtype=np.float32)
+        rho = math.exp(-(1.0 / FPS) / 0.2)
+        z = gk.standard_normal((S_, F_, 2)).astype(np.float32)
+        for fi in range(1, F_):
+            sig[:, fi] = rho * sig[:, fi - 1] + math.sqrt(1 - rho * rho) * z[:, fi]
+        d = np.zeros_like(d)
+        d[:, :, m1] = sig[:, :, :1] * DRIVE
+        d[:, :, m2] = sig[:, :, 1:] * DRIVE
+        planted = (m1, m2)
     eta = 0.0 if a.arm == "C" else ETA
-    res = {"arm": a.arm, "seed": a.seed, "films": films, "learn_s": a.learn_s, "eta": eta, "lam": LAM,
+    comp = a.rule == "competitive"
+    res = {"arm": a.arm, "rule": a.rule, "seed": a.seed, "films": films, "learn_s": a.learn_s, "eta": eta, "lam": LAM,
            "sigma": SIGMA, "drive": DRIVE, "n_visual_sites": int(len(vis)), "n_auditory_sites": int(len(order))}
     json.dump(res, open(out, "w"), indent=2, default=jdefault)
 
@@ -194,9 +219,9 @@ def main():
         for _ in range(steps_per_frame):
             st = field.step(st, dr, DT, W=W, noise=torch.randn(STREAMS, field.n, generator=g))
             if eta:
-                field.plasticity_accumulate(pst, st, DT)
+                field.plasticity_accumulate(pst, st, DT, competitive=comp)
                 if (t + 1) % APPLY_EVERY == 0:
-                    field.plasticity_apply(pst, DT, eta, LAM)
+                    field.plasticity_apply(pst, DT, eta, LAM, competitive=comp)
                     W = field.edge_weights()          # the kernel changed
             t += 1
         if fi % 1500 == 0:
@@ -209,6 +234,17 @@ def main():
     res["P_long_frac_pos"] = float((Pn > 0).float().mean())
     res["P_long_p99_abs"] = float(Pn.abs().quantile(0.99))
     res["P_local_mean_abs"] = float(field.P[:, :field.k - field.n_far].abs().mean())
+    if planted is not None:
+        m1, m2 = (torch.from_numpy(m) for m in planted)
+        src = torch.arange(field.n)[:, None].expand(-1, field.k)
+        a_in1, b_in1 = m1[src], m1[field.idx]
+        a_in2, b_in2 = m2[src], m2[field.idx]
+        within = (a_in1 & b_in1) | (a_in2 & b_in2)
+        between = (a_in1 & b_in2) | (a_in2 & b_in1)
+        res["planted"] = {"P_within_mean": float(field.P[within].mean()) if within.any() else None,
+                          "P_between_mean": float(field.P[between].mean()) if between.any() else None,
+                          "n_within_edges": int(within.sum()), "n_between_edges": int(between.sum()),
+                          "P_elsewhere_mean": float(field.P[~(within | between)].mean())}
     json.dump(res, open(out, "w"), indent=2, default=jdefault)
     res["test"] = spontaneous(field, a.seed)
     res["seconds"] = round(time.time() - t0, 1)

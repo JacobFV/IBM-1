@@ -62,6 +62,51 @@ already written.
 ---
 
 
+## 2026-09-18 -- PRE-REGISTRATION: a COMPETITIVE plasticity rule, with a planted known answer it must pass first
+
+*Committed before any run of `--rule competitive` beyond a 2 s smoke test, which was read for
+crashes, runtime and edge COUNTS only.*
+
+The covariance rule (result below) learned the network's common mode. This tests a
+different FORM, not a retune: eta, lam, var_ref, the noise, the drive and the arms'
+construction are all unchanged. The rule differs in two ways:
+1. **Common-mode subtraction.** Before the product, the population-mean deviation at that
+   instant is removed from every site's deviation, so a sheet rising and falling as one
+   writes nothing.
+2. **Row-zero-sum updates**, separately over each site's local and long-range edges. A
+   site's total incoming drive is conserved (subtractive synaptic scaling), so learning can
+   redistribute weight but not inflate it.
+
+**Arms** (all `--rule competitive`, seeds 0, 1, 2, everything else as the covariance run):
+* **K, the planted known answer.** Two groups of 6 regions (seeded), each driven by its OWN
+  independent OU signal (tau 0.2 s, unit variance, x DRIVE), everything else undriven.
+* **A**: real film + soundtrack.
+* **B**: the per-site circularly shifted control.
+
+**The instrument gate, read FIRST: K must pass in all three seeds.** Mean P on
+within-group edges minus mean P on between-group edges must be > 0.5. If it fails in any
+seed, the rule cannot find a structure it was handed, the run is VOID, and no A/B verdict
+is read.
+
+**Then the known answer on real input:** B's |P| (long-range) < A's in every seed. If that
+fails, verdicts 1-2 are reported and not interpreted as experience, as before.
+
+**Verdicts, thresholds unchanged from the covariance pre-registration:**
+1. Coordination A - B > max(0.10, larger seed spread).
+2. A passes G3's thresholds in >= 2 of 3 seeds.
+
+**Reported, not gated:** the mean rate against the static arm C of the covariance run
+(~14.6 Hz). A rule that coordinates only by pushing the sheet to 40+ Hz has bought the
+result with a regime no resting cortex is in, and the entry will say so.
+
+**Declared in advance:** if K passes and A fails 1, the rule works but the input as ported
+carries too little cross-site structure to write. The lever would then be the PORTS
+(retinotopy in place of a random projection, stronger drive, cross-modal alignment), not
+the rule. If K fails, the rule is the problem.
+
+---
+
+
 ## 2026-09-18 -- RESULT: covariance plasticity learned the network's common mode, not the input's structure. The known answer FAILED, and all three verdicts FAILED.
 
 `scripts/plasticity_v2.py`, arms A/B/C x seeds 0/1/2, `out/plasticity_v2/`. Thresholds are

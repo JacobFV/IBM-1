@@ -491,23 +491,43 @@ class CorticalField(nn.Module):
                 "count": 0}
 
     @torch.no_grad()
-    def plasticity_accumulate(self, pst, state, dt: float, tau_bar: float = 10.0):
+    def plasticity_accumulate(self, pst, state, dt: float, tau_bar: float = 10.0,
+                              competitive: bool = False):
         E = state["E"]
         rho = math.exp(-dt / tau_bar)
         pst["Ebar"] = pst["Ebar"] * rho + (1.0 - rho) * E
         dE = E - pst["Ebar"]
+        if competitive:
+            # remove the COMMON MODE: the fluctuation every site shares at this instant.
+            # the first (non-competitive) run learned exactly that -- a sheet whose rate
+            # rises and falls as one makes every pair's covariance positive whatever the
+            # input is (docs/LOG.md 2026-09-18, the plasticity RESULT).
+            dE = dE - dE.mean(1, keepdim=True)
         # batch-mean product over edges: (B, N, 1) x (B, N, k) -> (N, k)
         pst["acc"] += (dE.unsqueeze(-1) * dE[:, self.idx]).mean(0)
         pst["count"] += 1
 
     @torch.no_grad()
-    def plasticity_apply(self, pst, dt: float, eta: float, lam: float, var_ref: float = 0.01):
-        """apply the accumulated covariance as one update over `count` steps, then reset."""
+    def plasticity_apply(self, pst, dt: float, eta: float, lam: float, var_ref: float = 0.01,
+                         competitive: bool = False):
+        """apply the accumulated covariance as one update over `count` steps, then reset.
+
+        `competitive` makes the update ROW-ZERO-SUM, separately over a site's local and
+        long-range edges: a site's total incoming drive is conserved (subtractive synaptic
+        scaling, DYNAMICS.md mechanism 11), so learning can only REDISTRIBUTE weight among
+        a site's partners, never inflate all of it -- which is what drove the first run
+        from 15 Hz to 46 Hz."""
         if pst["count"] == 0:
             return
         C = pst["acc"] / pst["count"]
         T = pst["count"] * dt
-        self.P += eta * T * (C / var_ref - lam * self.P)
+        dP = eta * T * (C / var_ref - lam * self.P)
+        if competitive:
+            n_loc = self.k - self.n_far
+            dP[:, :n_loc] -= dP[:, :n_loc].mean(1, keepdim=True)
+            if self.n_far:
+                dP[:, n_loc:] -= dP[:, n_loc:].mean(1, keepdim=True)
+        self.P += dP
         self.P.clamp_(-self.P_MAX, self.P_MAX)
         pst["acc"].zero_(); pst["count"] = 0
 
