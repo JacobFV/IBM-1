@@ -9,3 +9,16 @@ held-out baselines (MSE, and skill against persistence):
   ridge, no cortex   1.953707e-01   skill -1877.4032
 
 ### trained: drive postcentral (1779) -> read precentral (2121), tract edges, readout-norm none
+/home/brandonin/Documents/IBM-1/scripts/train_proprioceptive_motor.py:311: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  print(f"  {step:5d}  train {float(loss):.3e}  held {v:.3e}  "
+      0  train 4.464e+00  held 7.778e-04  SKILL vs persistence -6.4781  vs ridge +0.9960      16s
+    250  train 9.370e-01  held 6.134e-04  SKILL vs persistence -4.8974  vs ridge +0.9969     998s
+    500  train 7.998e-01  held 5.725e-04  SKILL vs persistence -4.5040  vs ridge +0.9971    1953s
+    750  train 5.743e-01  held 5.344e-04  SKILL vs persistence -4.1383  vs ridge +0.9973    2903s
+   1000  train 6.061e-01  held 5.199e-04  SKILL vs persistence -3.9989  vs ridge +0.9973    3855s
+   1250  train 5.392e-01  held 5.102e-04  SKILL vs persistence -3.9056  vs ridge +0.9974    4813s
+   1500  train 2.804e-01  held 4.991e-04  SKILL vs persistence -3.7989  vs ridge +0.9974    5767s
+   1750  train 2.632e-01  held 4.977e-04  SKILL vs persistence -3.7848  vs ridge +0.9975    6769s
+   2000  train 2.747e-01  held 4.933e-04  SKILL vs persistence -3.7428  vs ridge +0.9975    7785s
+   2250  train 3.229e-01  held 4.921e-04  SKILL vs persistence -3.7310  vs ridge +0.9975    8741s

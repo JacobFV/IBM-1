@@ -27,3 +27,6 @@ out/**/*.gif
 
 # learned tensors written beside results (e.g. plasticity P): weights, never committed (CLAUDE.md)
 out/**/*.pt
+
+# extracted feature matrices (regenerable from the corpus by the script that names them)
+out/*.npz

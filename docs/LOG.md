@@ -6339,3 +6339,42 @@ Three findings along the way:
 
 What is still missing is in `docs/DISCONNECTS.md` §1: no soft-tissue deformation, no neck or
 spine joints, no force back from the anatomy, and nothing calls the poser yet.
+
+## 18 September 2026 — research steps 1 and 2 WITHDRAWN by direction, not by result
+
+Both running tests were *comparisons*: does the v1 cortex beat no cortex (step 1, five seeds), and
+does the v2 field beat a tuned echo-state network on held-out delay-period EEG (step 2). The
+programme's direction changed while they ran. v1 and generic-RNN baselines are no longer objects
+of study, so a test whose only output is a verdict about them has nothing to decide. Both were
+stopped mid-run and are recorded here as **WITHDRAWN**. Neither passed, neither failed, and
+**no partial number from either may later be quoted as its result** — a test stopped part way
+through has a sample chosen by when I stopped it.
+
+State at the moment each was stopped:
+
+- **Step 1, five seeds.** `no_cortex` seeds 1–4 complete, `trained --readout-norm none` seed 2
+  complete, seed 3 killed at ~3 h of its 3,000 steps, seed 4 never launched. The pre-registered
+  Welch test over five per-seed late-window means was never computed, and the seed-parity relabel
+  control was never run. Nothing is claimed.
+- **Step 2, ds008037 delay period.** Ran `ceiling`, `bypass` and one `v2` pass (1,016 s) of the
+  arms before being stopped. Split: 78 training subjects, 33 held-out, 25,338 trials.
+
+  The one reading worth keeping is the **ceiling**, because it is a statement about the data and
+  not about any model. A ridge from the *true* stimulus content (17 descriptors: set size, target
+  and non-target colours) to the delay-period features scored **R² = +0.00049 ± 0.00032** over the
+  33 held-out subjects — **1.5 SE**, under the pre-registered 2·SE bar for the VOID gate. If the
+  answer itself cannot be regressed onto these features, no arm in that design could have been
+  told from another, and the comparison would have been void on its own terms. The VOID gate was
+  working; the design was the thing at fault, not the substrate.
+
+  `out/wm_features_ds008037.npz` is kept (111 subjects, 25,338 trials, G0 alignment passed for
+  every subject, 6 excluded with reasons). It is single-trial mean voltage and log alpha power per
+  channel — weak for decoding *what was on screen*, which is what the ceiling just showed, and
+  fine for what the new direction wants from it: **measured band power, per subject, per
+  condition**, a target for the substrate to be shaped toward rather than a label to decode.
+
+**What replaces them.** Stop asking whether an architecture happens to work, and build the brain
+we intend, then shape it toward measured physiology by every pressure we can write down:
+anatomy (the connectome and its tract lengths), association, **and now the spectrum** — the
+brain's declared rhythms as a table, and a power-spectral term in the objective that pulls each
+loop toward its band. `docs/RHYTHMS.md` is the table; the next entry reports the instrument.

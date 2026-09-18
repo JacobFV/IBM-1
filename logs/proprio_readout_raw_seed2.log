@@ -12,4 +12,19 @@ held-out baselines (MSE, and skill against persistence):
 /home/brandonin/Documents/IBM-1/scripts/train_proprioceptive_motor.py:311: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
 Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
   print(f"  {step:5d}  train {float(loss):.3e}  held {v:.3e}  "
-      0  train 4.549e+00  held 7.154e-04  SKILL vs persistence -5.8782  vs ridge +0.9963      38s
+      0  train 4.549e+00  held 7.154e-04  SKILL vs persistence -5.8782  vs ridge +0.9963      15s
+    250  train 7.460e-01  held 6.204e-04  SKILL vs persistence -4.9647  vs ridge +0.9968     954s
+    500  train 5.797e-01  held 5.785e-04  SKILL vs persistence -4.5615  vs ridge +0.9970    1910s
+    750  train 5.258e-01  held 5.425e-04  SKILL vs persistence -4.2160  vs ridge +0.9972    2849s
+   1000  train 6.562e-01  held 5.213e-04  SKILL vs persistence -4.0119  vs ridge +0.9973    3791s
+   1250  train 4.889e-01  held 5.182e-04  SKILL vs persistence -3.9826  vs ridge +0.9973    4734s
+   1500  train 3.333e-01  held 5.137e-04  SKILL vs persistence -3.9388  vs ridge +0.9974    5674s
+   1750  train 4.126e-01  held 5.151e-04  SKILL vs persistence -3.9523  vs ridge +0.9974    6606s
+   2000  train 2.241e-01  held 5.059e-04  SKILL vs persistence -3.8645  vs ridge +0.9974    7536s
+   2250  train 2.247e-01  held 5.050e-04  SKILL vs persistence -3.8556  vs ridge +0.9974    8470s
+   2500  train 2.187e-01  held 4.977e-04  SKILL vs persistence -3.7848  vs ridge +0.9975    9396s
+   2750  train 2.699e-01  held 5.046e-04  SKILL vs persistence -3.8518  vs ridge +0.9974   10336s
+   3000  train 2.881e-01  held 4.973e-04  SKILL vs persistence -3.7813  vs ridge +0.9975   11298s
+
+  arm            best skill vs persistence
+  trained        -3.7813
