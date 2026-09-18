@@ -598,9 +598,15 @@ RHYTHMS = [
             target=(0.2, 1.2)),
        "literature", "expressible",
        ("Buzsaki & Wang 2012", "Ray & Maunsell 2010"), (),
-       "The E/I loop that produces it is exactly what `ibm/substrate.py` is, so this is the "
-       "second rhythm the cortical sheet could own today -- but tau_I is 5 ms, which puts the "
-       "natural PING frequency near 60-80 Hz, and nothing has checked where it actually lands."),
+       "CHECKED, 18 Sep 2026, and the answer is no. The sheet does not ring at its healthy "
+       "operating point at all: gamma prominence is -0.40 decades, i.e. the 30-80 Hz band sits "
+       "BELOW its own 1/f background. tau_I was made per-site and swept from 5 ms to 0.8 ms "
+       "(prominence moved 0.026); w_IE and w_EI were swept 2.7x each (nothing). In a sigmoidal "
+       "rate model the effective loop gain is beta*sigma\'(u)*w, and at 4 Hz mean rate the "
+       "slope term is ~0.04, so the loop is far below oscillation threshold whatever the "
+       "weights say. Positive gamma prominence appears in this substrate ONLY where the sheet "
+       "is 19-45% SATURATED, so it is a saturation signature rather than a PING loop, and any "
+       "claim otherwise must quote the saturated fraction beside it."),
 
     # ---------------------------------------------------------------- sensorimotor
     _R("mu", "sensorimotor mu", "smu", (8.0, 13.0), 10.0,

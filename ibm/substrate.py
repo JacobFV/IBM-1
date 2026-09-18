@@ -172,7 +172,13 @@ class Priors:
     # ~50-80 ms in sensory cortex to ~200-350 ms in prefrontal; the POPULATION time
     # constant here is the fast part of that, the slow part is adaptation below.
     tau_E: tuple = (0.010, 0.020)
-    tau_I: float = 0.005                 # fast-spiking interneurons: ~5 ms
+    # Inhibition's time constant, PER SITE.  It was a single global scalar until 18 Sep
+    # 2026, which made it the last homogeneous thing in a model whose whole argument against
+    # v1 was homogeneity -- and it is the constant that sets how fast the E/I loop can ring,
+    # so a sheet with one tau_I can have only one gamma.  Fast-spiking interneuron kinetics
+    # and GABA-A decay are both faster in primary sensory cortex than in association cortex,
+    # which is the same direction as every other prior here.
+    tau_I: tuple = (0.003, 0.008)
     # adaptation: the slow variable that releases an attractor.  0.3 s at the sensory
     # end is STATE.md 4.10's value (puts the slow oscillation in band); 1.2 s at the
     # transmodal end lets an association up-state outlast a working-memory delay.
@@ -195,6 +201,34 @@ class Priors:
     w_EE: tuple = (0.40, 2.50)
     beta_E: float = 8.0
     theta_E: tuple = (0.30, 0.60)        # higher threshold where recurrence is stronger
+    # INHIBITION-STABILISED, and these three were measured into place on 18 Sep 2026.
+    # With the first values (w_EI 0.50, w_IE 0.90, beta_I 6) the SHEET had no operating point
+    # between silent and saturated: swept over tonic drive it jumped from 4.60 Hz with zero
+    # saturation to 23.95 Hz with 19% saturated between drives of 0.064 and 0.066, and no
+    # drive produced anything in between.  Cortex lives in that middle.  Stronger, steeper
+    # inhibition stabilises the recurrent excitation instead of letting it ignite: the sheet
+    # now answers drive smoothly from 5.16 to 17.03 Hz with saturation under 1.5% across a
+    # fourfold range of drive.
+    #
+    # The cost is measured too, and it is real: raising w_EI erodes the isolated column's
+    # bistability, which is the timescale hierarchy this model exists for.  At w_EI 1.2 only
+    # h = 0.90 is still bistable; at 0.9 the bistable range is h >= 0.75, against h >= 0.50
+    # with the old values.  The association end keeps its attractors and the middle of the
+    # hierarchy loses them.  That trade is the declaration; docs/LOG.md holds both sweeps.
+    # NOT ADOPTED, and the measurement is why.  The inhibition-stabilised values
+    # (w_EI 0.90, w_IE 1.40, beta_I 12) give the sheet the operating range it lacks -- a
+    # smooth 5.16 to 17.03 Hz across a fourfold drive range with under 1.5% saturation,
+    # against the declared values' jump from 4.60 Hz to 23.95 Hz with 19% saturated between
+    # two adjacent drives.  Run against the gates, they cost the substrate its reason for
+    # existing: G2 invariant sets fell from 8 attractors to **1**, and G3 metastability went
+    # to **zero transitions, one macrostate, and no region ever entering an up state at all**.
+    # G0, G1, G4 and G5 still passed.
+    #
+    # An attractor landscape is what DYNAMICS.md says a percept or an intention IS, so a
+    # graded firing range bought with it is not a trade worth taking blind.  The declared
+    # values stay.  The open question -- whether some prior has BOTH, judged on G2, G3 and
+    # the graded-regime criterion together rather than one after the other -- is in
+    # docs/LOG.md, and it needs one search, not a sequence of retries.
     w_EI: float = 0.50                   # I -> E
     w_IE: float = 0.90                   # E -> I
     w_II: float = 0.30                   # I -> I
@@ -221,7 +255,7 @@ class Priors:
         return torch.full_like(h, float(v))
 
 
-HETERO = ("tau_E", "tau_a", "g_a", "tau_rec", "w_EE", "theta_E")
+HETERO = ("tau_E", "tau_I", "tau_a", "g_a", "tau_rec", "w_EE", "theta_E")
 
 
 class CorticalField(nn.Module):
@@ -404,7 +438,8 @@ class CorticalField(nn.Module):
             hist = hist.clone() if torch.is_grad_enabled() else hist
             hist[:, ptr] = E * x            # what arrives is the RELEASED transmitter
         src = E * x
-        tau_E, tau_a, g_a = self.site("tau_E"), self.site("tau_a"), self.site("g_a")
+        tau_E, tau_I = self.site("tau_E"), self.site("tau_I")
+        tau_a, g_a = self.site("tau_a"), self.site("g_a")
         tau_rec, w_EE, th_E = self.site("tau_rec"), self.site("w_EE"), self.site("theta_E")
 
         # the background current, advanced EXACTLY: an OU process with stationary std
@@ -425,7 +460,7 @@ class CorticalField(nn.Module):
         fI = torch.sigmoid(pr.beta_I * (u_I - pr.theta_I))
 
         cE = 1.0 - torch.exp(-dt / tau_E)
-        cI = 1.0 - math.exp(-dt / pr.tau_I)
+        cI = 1.0 - torch.exp(-dt / tau_I)
         ca = 1.0 - torch.exp(-dt / tau_a)
         E2 = E + cE * (fE - E)
         I2 = I + cI * (fI - I)

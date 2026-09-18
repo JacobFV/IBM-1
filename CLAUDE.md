@@ -401,6 +401,45 @@ a page done.
 - The remote has no git repo, so `git rev-parse` there yields `git-unknown` and the
   checkpoint becomes unciteable. Pass `IBM_GIT_SHA` from the launcher.
 
+## A parameter that changes nothing
+
+**Sweep a constant over 3x and watch nothing happen: that is not a robust model, it is a
+mechanism that is not wired in.** This happened **five times in one day** while building
+`ibm/thalamus.py` and probing `ibm/substrate.py`, and every single time the diagnosis was the
+same shape — something that should have been a feedback loop was not closed:
+
+- the T-current's activation term was INVERTED, so the burst grew the more hyperpolarised the
+  cell was: a self-triggering pacemaker at ~8 Hz that swamped everything else, which is why
+  the sag could be swept 2.5x and the reticular shell silenced to 0.45 Hz with no effect;
+- `h` and the sag activation read the SYNAPTIC input instead of the membrane, so a
+  voltage-gated current could not see the voltage it produces;
+- the sag's activation range sat below the T-window's foot, so it self-limited at exactly the
+  level that kept the cell silent;
+- `tau_h_up`, which the module's own docstring said set the spindle frequency, moved it
+  0.84 Hz over a 6.5x sweep — the clock was the relay-reticular loop all along;
+- `tau_I` in the cortical sheet, swept 5 ms down to 0.8 ms, moved gamma prominence 0.026
+  decades, because the sheet was not oscillating at all and there was nothing to speed up.
+
+So: **when a sweep comes back flat, do not conclude the parameter does not matter.** Print
+the state variables and look for the variable that is pinned, or the fixed point the system
+is sitting in. `scripts/gate_thalamus.py`'s T8 does this automatically — every declared
+constant swept +-50%, the constants the module CLAIMS are its clock must move the output, and
+everything inert is listed. Seven of that module's constants are inert; two of them are
+mechanisms that were added and never engaged.
+
+## A frequency without a prominence is not evidence
+
+**`peak_frequency` returns a number whether or not there is a peak.** It is a soft-argmax, so
+on a flat spectrum it returns the centre of the band you asked about — which looks exactly
+like a measurement. A thalamic run with **0.21 bursts per second** and no oscillation
+reported "14.8 Hz" and was read as a rhythm for most of an afternoon; the prominence was
+-0.85 the whole time, and a resting-EEG run reproduced the same thing deliberately (a flat
+spectrum returns 10.500000 for an 8-13 Hz query, exactly the midpoint).
+
+Quote **`peak_prominence` beside every frequency**, always. Negative prominence means the
+band is *below* its own 1/f background: there is nothing there. Same family as reporting an
+amplitude ratio beside a skill score.
+
 ## Write it down where it will be found
 
 **Every agent on this programme records what it did, in the repo, as it goes.** Not at the end, not

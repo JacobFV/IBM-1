@@ -6796,3 +6796,100 @@ structural one.
 3. **Gamma needs `tau_I` per site**, which is a substrate change and was the predicted fix —
    but it is now clear the change alone is not enough: the cheap route has to be closed at
    the same time, or the optimiser will keep taking it.
+
+## 18 September 2026 — the cortical sheet had no operating point between silent and saturated
+
+Following the shaping run's finding that the optimiser bought gamma with excitability, four
+sweeps on the substrate itself. The conclusion is that it was not buying anything: raising
+excitability was the only route available, and the sheet's declared priors left no middle to
+work in.
+
+**1. Inhibition's time constant is now per site** — `tau_I` was the last global scalar in a
+model whose whole argument against v1 was homogeneity. Declared (3 ms primary → 8 ms
+transmodal), since both fast-spiking kinetics and GABA-A decay run faster in sensory cortex.
+
+**And it changes nothing.** Swept from a uniform 5 ms down to 0.8–3 ms, visual gamma
+prominence moves −0.417 → −0.391 and the in-band peak 23.18 → 23.26 Hz. The fifth
+"parameter that changes nothing" in two days, and the same diagnosis each time: there was no
+mechanism there to speed up. A prominence of −0.4 is *below* the background — the sheet was
+not ringing at all, and `peak_frequency` reported "23 Hz" throughout because it always
+reports something.
+
+**2. Nor is it the loop gain.** `w_IE` and `w_EI` swept over 2.7× each, at the fast `tau_I`:
+gamma prominence stays between −0.40 and −0.45 everywhere, and raising inhibition only lowers
+the rate. In a sigmoidal rate model the *effective* gain is `beta · sigma'(u) · w`, and at a
+mean rate of 4 Hz (E ≈ 0.04) the slope term is ~0.04 — so the loop gain is far below
+oscillation threshold whatever the weights say. **The operating point sets the gain, not the
+weights.**
+
+**3. And there was no operating point to move to.** Swept over tonic drive, with everything
+else declared:
+
+| tonic | mean rate | saturated | 1/f exponent |
+|---|---|---|---|
+| 0.060 | 4.44 Hz | 0.000 | 1.61 |
+| 0.064 | 4.60 Hz | 0.000 | 1.62 |
+| **0.066** | **23.95 Hz** | **0.191** | **3.87** |
+| 0.070 | 25.92 Hz | 0.215 | 3.33 |
+
+The sheet **ignites**. Between 0.064 and 0.066 it goes from quiescent to a global up state
+with a fifth of it saturated, and *no drive produces anything in between*. Cortex lives
+entirely in that missing middle. This is why the shaping run's optimiser went to 15.35 Hz
+with 11% saturation: it was not taking a cheap route past a guard, it was taking the only
+route the substrate had.
+
+**4. A graded regime exists, and it costs something.** Searching `beta_I` × `w_EI` × `w_IE` ×
+drive for a regime with 5–15 Hz and under 2% saturation found 9 of 32 combinations, all of
+them inhibition-stabilised — stronger and *steeper* inhibition holding the recurrent
+excitation instead of letting it run away. The adopted values, `beta_I` 12, `w_EI` 0.9,
+`w_IE` 1.4, answer drive smoothly across a fourfold range:
+
+| tonic | 0.05 | 0.08 | 0.11 | 0.14 | 0.18 | 0.22 |
+|---|---|---|---|---|---|---|
+| rate (Hz) | 5.16 | 6.68 | 8.82 | 11.71 | 14.71 | 17.03 |
+| saturated | 0.000 | 0.000 | 0.000 | 0.003 | 0.007 | 0.015 |
+
+**The cost, measured on isolated columns:** raising `w_EI` erodes the bistability the
+timescale hierarchy is built on. At `w_EI` 0.5 a column is bistable from h ≥ 0.50; at 0.9
+from **h ≥ 0.75**; at 1.2 only at h = 0.90. So the association end keeps its attractors and
+the middle of the hierarchy loses them. That is the trade, it is declared in the code with
+both sweeps, and `tests/test_substrate.py` still passes 7/7 — including the dwell-time
+hierarchy and the bistability ordering.
+
+**5. The rule this produces, which is the most reusable thing here: in this substrate,
+gamma-band prominence is a signature of SATURATION, not of a PING loop.** Across every
+configuration tried, the 30–80 Hz band rises above its own background only where the sheet
+is 19–45% saturated (+0.20 to +0.37), and it is negative in every graded regime (−0.16 to
+−0.24). **Any future claim that this model has gamma must be reported with the saturated
+fraction beside it**, exactly as a skill number must be reported with an amplitude ratio.
+Without that, "we got gamma" and "we broke the model" produce the same number.
+
+**The inhibition-stabilised prior was run against the gates, and it is NOT adopted.** The
+graded operating range costs the substrate the thing it exists for:
+
+| gate | declared prior | inhibition-stabilised |
+|---|---|---|
+| G0 idempotence | PASS | PASS |
+| G1 bounded | PASS | PASS |
+| G2 invariant sets | PASS, **8 attractors** | **FAILED, 1** |
+| G3 metastability | FAILED (regions switch independently) | **FAILED worse: 0 transitions, 1 macrostate, no region ever up** |
+| G4 heterogeneity | PASS (rho 0.85) | PASS (rho 0.85) |
+| G5 memory at 1 s | PASS | PASS (99.4% from E, 100% full state) |
+
+An attractor landscape is what `docs/DYNAMICS.md` says a percept or an intention *is*, so
+trading it for a firing range is not a trade to take on one sweep. The declared values stay,
+with the whole measurement written into the code beside them.
+
+**The open question, stated so it can be answered in one search rather than a sequence of
+retries:** is there a prior with BOTH — a graded response over 5–20 Hz at under 2%
+saturation, AND G2's invariant sets and G3's metastability — judged on all three criteria at
+once, at a drive matched for firing rate rather than for drive amplitude? The two sweeps done
+here varied `beta_I`, `w_EI` and `w_IE` against the network's regime, and separately against
+the isolated column's bistability, and never against the gates. It is also possible the
+answer is no, and that a single sigmoidal rate per site cannot be both an attractor and a
+graded transfer function — in which case the fix is structural (separate fast and slow
+populations, or an explicit spiking-density formulation) and worth knowing before more
+parameters are swept.
+
+`tau_I` stays per-site: it is heterogeneity the model was missing, it is independent of the
+question above, and `tests/test_substrate.py` passes 7/7 with it.

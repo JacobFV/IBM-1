@@ -1,0 +1,61 @@
+{
+  "preregistered": "docs/LOG.md 2026-09-18",
+  "n": 1024,
+  "k": 32,
+  "dt": 0.001,
+  "seed": 0,
+  "priors": {
+    "tau_E": [
+      0.01,
+      0.02
+    ],
+    "tau_I": [
+      0.003,
+      0.008
+    ],
+    "tau_a": [
+      0.3,
+      1.2
+    ],
+    "g_a": [
+      0.9,
+      0.3
+    ],
+    "tau_rec": [
+      0.45,
+      0.8
+    ],
+    "U": 0.05,
+    "tau_use": 0.1,
+    "w_EE": [
+      0.4,
+      2.5
+    ],
+    "beta_E": 8.0,
+    "theta_E": [
+      0.3,
+      0.6
+    ],
+    "w_EI": 0.5,
+    "w_IE": 0.9,
+    "w_II": 0.3,
+    "beta_I": 6.0,
+    "theta_I": 0.35,
+    "G_L": 0.45,
+    "G_F": 0.35,
+    "sigma": 0.04,
+    "tau_eta": 0.005,
+    "residual_frac": 0.35
+  },
+  "gates": {
+    "G0_idempotence": {
+      "step_equal": true,
+      "rollout_equal": true,
+      "PASS": true
+    }
+  },
+  "unknown_regions": [],
+  "n_regions": 66,
+  "column_bistable_fraction": 0.642578125,
+  "column_bistable_fraction_monostable_control": 0.0
+}
