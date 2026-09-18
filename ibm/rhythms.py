@@ -1020,6 +1020,26 @@ STATES = ("wake", "wake-rest", "wake-eyes-closed", "wake-eyes-open", "wake-task"
 
 
 # ======================================================================================
+# the background.  not a rhythm, and shaping toward it matters as much as any peak: real
+# cortical spectra are a 1/f^x background with a few peaks ON it, and a model that gets
+# every band's RELATIVE power right on top of a white background has the wrong spectrum.
+# The exponent is also read as an excitation/inhibition ratio (Gao 2017), which makes it
+# the one spectral quantity that speaks directly to what `ibm/substrate.py` parameterises.
+# ======================================================================================
+BACKGROUND = {
+    "id": "aperiodic",
+    "name": "the 1/f background",
+    "fit_band": (1.0, 45.0),
+    "exclude": ((8.0, 13.0), (0.5, 1.5)),   # do not let the alpha or SO peak bend the fit
+    "exponent_target": (0.8, 2.0),          # awake human EEG/ECoG, resting
+    "evidence": "literature",
+    "refs": ("Gao 2017", "Donoghue 2020"),
+    "note": "Steeper under anaesthesia and in NREM, shallower with arousal -- so the target "
+            "is state-dependent and this interval is the awake resting one.",
+}
+
+
+# ======================================================================================
 # queries
 # ======================================================================================
 def by_state(state: str):
@@ -1059,6 +1079,72 @@ def station_sites(station_ids, region_names):
     """
     want = set(labels_of(station_ids))
     return [i for i, n in enumerate(region_names) if str(n).split(".", 1)[-1] in want]
+
+
+# ======================================================================================
+# turning a catalogue row into a training target
+#
+# The output is deliberately NOT `ibm/spectral.py`'s own dict: it is an intermediate with
+# site indices resolved, so that a trainer, an evaluator on real EEG, or a different loss
+# can each consume the same rows.  `skipped` is returned, never swallowed -- a target that
+# silently disappears because its kind is unsupported is how a run ends up optimising
+# three terms while its log claims eight.
+# ======================================================================================
+SCORABLE_KINDS = ("relative_power", "peak_prominence", "peak_frequency", "pac", "coherence")
+
+
+def rhythm_targets(state: str, region_names, only_expressible: bool = True,
+                   min_sites: int = 4):
+    """(targets, skipped) for every catalogue row that can be scored on this substrate.
+
+    `region_names` is the substrate's per-site atlas label list.  A target carries the
+    resolved site indices, so the caller never re-derives them (and cannot re-derive them
+    differently).  A row is skipped, with its reason, when:
+
+      * its loop needs a structure the substrate does not have (`only_expressible`);
+      * its measure kind is not one this instrument can score -- an evoked response, a
+        behavioural rhythm, a phase gradient, a burst statistic all need a protocol or an
+        analysis that is not a spectrum;
+      * its stations resolve to fewer than `min_sites` sites, which would make the trace a
+        handful of columns rather than a region.
+    """
+    targets, skipped = [], []
+    for r in by_state(state):
+        if only_expressible and r.substrate != "expressible":
+            skipped.append((r.id, f"substrate: {r.substrate}"))
+            continue
+        kind = r.measure.get("kind")
+        if kind not in SCORABLE_KINDS:
+            skipped.append((r.id, f"kind not scorable as a spectrum: {kind}"))
+            continue
+        stations = tuple(r.measure.get("stations", ()))
+        if kind == "coherence":
+            if len(stations) < 2:
+                skipped.append((r.id, "coherence needs two stations"))
+                continue
+            groups = [station_sites((s,), region_names) for s in stations]
+            if min(len(g) for g in groups) < min_sites:
+                skipped.append((r.id, f"a station resolves to <{min_sites} sites"))
+                continue
+            targets.append({"id": r.id, "name": r.name, "kind": kind, "groups": groups,
+                            "band": r.measure["band"], "target": r.measure.get("target"),
+                            "evidence": r.evidence})
+            continue
+        sites = station_sites(stations, region_names)
+        if len(sites) < min_sites:
+            skipped.append((r.id, f"{len(sites)} sites < {min_sites}"))
+            continue
+        t = {"id": r.id, "name": r.name, "kind": kind, "sites": sites,
+             "target": r.measure.get("target"), "evidence": r.evidence}
+        if kind == "pac":
+            t["phase_band"] = r.measure["phase_band"]
+            t["amp_band"] = r.measure["amp_band"]
+        else:
+            t["band"] = r.measure["band"]
+            if kind == "peak_frequency" and r.peak is not None:
+                t["target"] = r.measure.get("target", r.peak)
+        targets.append(t)
+    return targets, skipped
 
 
 # ======================================================================================

@@ -6433,3 +6433,56 @@ cord or the body. Three stations have no atlas label at all (subthalamic nucleus
 septum, suprachiasmatic nucleus). The measured spindle frequency is produced by the
 reticular-to-relay loop — one of the missing ones. That ordering is now the substrate's
 build order.
+
+## 18 September 2026 — PRE-REGISTRATION: shaping the cortical field toward its declared spectrum
+
+Written before the first run of `scripts/shape_rhythms.py`, and before `ibm/spectral.py`
+has been run against the substrate at all.
+
+**What is being built, not tested.** `docs/RHYTHMS.md` declares what the brain's spectrum
+must be. This adds that declaration to the objective as a differentiable term, so the
+substrate is pulled toward it during gradient descent beside the anatomical priors — the
+same kind of pressure as the connectome and the tract delays, applied to the frequency
+domain. The question this run answers is **not** "does the substrate deserve to exist". It
+is "does the spectral pressure reach": a term that cannot move the model would sit in every
+future objective doing nothing, and that is worth knowing before it is relied on.
+
+**The objective.**
+`L = Σ_r w·hinge(measured_r, declared interval_r) + w_bg·hinge(1/f exponent, [0.8, 2.0])
++ w_h·health + w_a·anatomy`, with `hinge` zero inside an interval and squared outside it,
+because a declared band is an interval and pulling to its midpoint would invent precision.
+Health is a mean-rate window of 1–20 Hz plus a direct penalty on the saturated fraction;
+anatomy is an L2 on the heterogeneity residuals, which are already bounded to ±35% of their
+declared priors by construction. Both are there because the cheapest way to move a spectral
+term is a regime nobody wants.
+
+**The gates, with their verdicts fixed now.**
+
+- **G0 ENTRAINMENT.** Drive V1 with a 10 Hz sinusoid; the measured V1 peak must be
+  10.0 ± 0.5 Hz. This is the catalogue's `ssvep` row used as a calibration of the whole
+  pipeline — sheet, rollout and spectral instrument together. **If G0 fails the run is VOID
+  and no training is run**: the script returns before the optimiser is built.
+- **G1 IDEMPOTENCE.** The same evaluation twice, same generator, bit-identical. Also VOID on
+  failure.
+- **G2 BASELINE.** Every target's measured value before training, recorded per state, so
+  that any movement is measured from where the substrate already was.
+- **G3 REACH.** After training, each target's measured value is inside its declared
+  interval. Reported per target; targets that do not arrive are named individually. **A
+  partial pass is a partial pass** — "most targets arrived" is not a pass.
+- **G4 RELABEL CONTROL.** The same training on a fresh substrate with the site-to-station
+  map permuted by one draw made outside both arms. If the permuted arm reaches the same
+  loss, the pressure is not anatomical — it is "make the whole sheet oscillate", which any
+  sheet can do — and **G3 means nothing regardless of how many targets arrived**. The
+  control must end with a strictly higher loss than the shaped arm.
+
+**What is NOT claimed by any outcome of this run.** That the substrate is more brain-like
+in any sense beyond the declared spectral quantities; that a spectrum reached under these
+protocols transfers to any task; that a rhythm scored on region-mean activity is the same
+object as the scalp EEG rhythm it is named after. The forward model from cortical field to
+electrode is not in this loop.
+
+**Scope, honestly.** Only 9 of the catalogue's 53 rows are expressible on a cortical field
+(`docs/DISCONNECTS.md` §11), and of those, the ones needing a task, a stimulus protocol or
+minutes of simulated time are skipped by the script with their reason printed. The first
+run is expected to score a handful of targets, and the script prints every skipped row so
+the count cannot be mistaken for coverage.

@@ -398,6 +398,14 @@ def peak_frequency(
     `sharpness`.  the result is mathematically identical (the ratio is scale
     invariant) and the scale is `detach`ed so no gradient flows through the max --
     it is purely there to stop `psd**4` overflowing float32 on a psd of 1e12.
+
+    a uniform floor of 1e-30 is added to the weights.  the largest weight is 1.0 by
+    construction, so for any real spectrum the floor changes nothing; for a band that
+    is numerically EMPTY (a signal with no power there at all) it makes the answer the
+    band centre, which is the documented flat-spectrum answer, instead of whatever
+    denormal happened to be biggest.  without it an empty band returns something near
+    0 Hz -- a number outside the band that was asked about, which reads as a bug in
+    whatever consumed it rather than as "there is nothing here".
     """
     if sharpness <= 0:
         raise ValueError("sharpness must be positive")
@@ -406,8 +414,8 @@ def peak_frequency(
         raise ValueError(f"no frequency bin falls in [{lo}, {hi}] Hz")
     pb = psd * m
     scale = pb.amax(dim=-1, keepdim=True).detach().clamp_min(_EPS)
-    w = (pb / scale).clamp_min(0.0) ** float(sharpness) * m
-    den = w.sum(dim=-1).clamp_min(_EPS)
+    w = ((pb / scale).clamp_min(0.0) ** float(sharpness) + 1e-30) * m
+    den = w.sum(dim=-1)
     return (w * freqs).sum(dim=-1) / den
 
 
@@ -582,7 +590,11 @@ def pac_mi(
         kappa       concentration of the soft binning kernel (see below).
 
     returns `(...)`, in `[0, 1)`.  0 is a flat amplitude-by-phase distribution (no
-    coupling); it rises toward 1 as the amplitude concentrates at one phase.
+    coupling); it rises toward 1 as the amplitude concentrates at one phase.  an
+    exactly uniform distribution lands a few times 1e-16 BELOW zero, because
+    `(log n - H)/log n` is a difference of two nearly equal floats; it is not clamped,
+    so that a reader can tell "exactly uniform" from "clamped from something".  do not
+    write a one-sided `mi < tol` test against it.
 
     **soft von Mises binning instead of a histogram.**  Tort assigns each sample to one
     of `n_bins` phase bins, which is a step function of phase and has zero gradient
