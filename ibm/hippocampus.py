@@ -82,22 +82,46 @@ class HippocampalPriors:
     g_a: float = 0.55
     # sparseness.  Measured target: ~1-3% of granule cells active, ~5-10% of CA3.  These are
     # the inhibitory gains that produce it, not a k to select.
-    w_I_dg: float = 6.5
-    w_I_ca3: float = 3.2
-    w_I_ca1: float = 2.6
-    w_IE: float = 14.0                   # region mean rate -> its inhibitory population
-    theta_I: float = 0.055
+    w_I_dg: float = 5.00
+    w_I_ca3: float = 3.20
+    w_I_ca1: float = 2.00
+    # PER REGION, and derived rather than guessed: each region's inhibitory population
+    # should sit at half activation when its region is at the sparsity it is declared to run
+    # at, so that it can GRADE a competition instead of switching.  With one shared w_IE of
+    # 14 the CA3 inhibition saturated at 1.0 the moment anything fired, which is a hard
+    # switch -- and an attractor network whose inhibition is a switch cannot hold a pattern:
+    # measured CA3 activity after cue release was exactly 0.000.
+    #   w_IE_r = theta_I / (rate_r * typical rate of an active unit ~0.5)
+    w_IE_dg: float = 16.0                # 0.25 / (0.03 * 0.5)
+    w_IE_ca3: float = 6.20               # 0.25 / (0.08 * 0.5)
+    w_IE_ca1: float = 5.00               # 0.25 / (0.10 * 0.5)
+    # The inhibitory population must be OFF at rest and ON at the declared sparsity.  The
+    # first version had theta_I = 0.055 with beta_I = 10, so F(0) = 0.37: every region sat
+    # under 2.4 units of tonic inhibition with nothing active to cause it, and the whole
+    # formation ran at 0.0005 Hz.  At theta_I = 0.25 and beta_I = 20, F(0) = 0.007 and the
+    # feedback switches on as the region's mean rate passes its target (w_IE * 0.03 = 0.42
+    # for the dentate).  Inhibition that is present before there is anything to inhibit is
+    # not feedback, it is a bias.
+    theta_I: float = 0.25
     beta_E: float = 12.0
-    beta_I: float = 10.0
+    beta_I: float = 8.0                  # gentle: the inhibition must grade, not switch
     theta_E_dg: float = 0.42
     theta_E_ca3: float = 0.34
     theta_E_ca1: float = 0.30
     # pathways.  The mossy fibre is the "detonator": few, strong, and it is what makes DG's
     # sparse code able to set CA3's state at all.
-    w_pp: float = 0.55                   # perforant path, EC -> DG
-    w_mf: float = 2.40                   # mossy fibre, DG -> CA3
-    w_rec: float = 1.35                  # CA3 recurrent gain on the stored matrix
-    w_sc: float = 1.10                   # Schaffer collateral, CA3 -> CA1
+    w_pp: float = 0.95                   # perforant path, EC -> DG
+    w_mf: float = 1.30                   # mossy fibre, DG -> CA3
+    # Measured into place against SPECIFICITY, not against the headline overlap.  Cueing
+    # each stored pattern in turn with a 40% fragment, w_rec 2.6 retrieves the cued pattern
+    # 5 times out of 6; 3.6 manages 4 of 6 while every individual overlap still reads
+    # +1.000, and 5.0 retrieves blends.  Below 2.6 the state dies outright (0.000 active).
+    # The single-pattern number is the one that misleads: a network with ONE global
+    # attractor scores +1.000 on every cue it is given.
+    w_rec: float = 2.60                  # CA3 recurrent gain on the stored matrix
+    ach_suppression: float = 0.65        # how much septal tone damps it: 0 = no state
+                                         # dependence, 1 = recurrence off during theta
+    w_sc: float = 0.95                   # Schaffer collateral, CA3 -> CA1
     w_ec_ca1: float = 0.45               # EC direct to CA1: the comparison path
     w_ca1_sub: float = 1.20
     # the septum.  An E/I pair with adaptation; these put it in the theta band, and the gate
@@ -118,6 +142,20 @@ class HippocampalPriors:
     d_mf_s: float = 0.003
     d_sc_s: float = 0.003
     d_ms_s: float = 0.007
+    # The activity each population is DECLARED to run at, and the number every projection
+    # gain is scaled against.  These are the measured sparsities: ~1-3% of granule cells
+    # active, ~5-10% of CA3, a few percent of entorhinal input.  They are not a target the
+    # model is pushed toward -- they are the operating point the gains are written for, and
+    # `scripts/gate_hippocampus.py` H0b checks the running model against them before any
+    # other gate is allowed to report a number.
+    rate_ec: float = 0.20
+    rate_dg: float = 0.03
+    rate_ca3: float = 0.08
+    rate_ca1: float = 0.10
+    # how far the running model may sit from those numbers before every downstream gate is
+    # VOID.  A factor of three either way: sparsity is a property of the regime, not a
+    # constant, and a model at 0.0005 Hz is not "slightly sparse", it is dead.
+    rate_tolerance: float = 3.0
     # background
     sigma: float = 0.035
     tau_eta: float = 0.005
@@ -149,11 +187,22 @@ class Hippocampus(nn.Module):
         mf = (torch.rand(n_ca3, n_dg, generator=g) < sparsity_mf).float()
         sc = (torch.rand(n_ca1, n_ca3, generator=g) < 0.25).float()
         ec1 = (torch.rand(n_ca1, n_ec, generator=g) < 0.20).float()
-        # row-normalised so a gain is a gain and not a fan-in count
-        self.register_buffer("W_pp", (pp / pp.sum(1, keepdim=True).clamp_min(1)).to(device))
-        self.register_buffer("W_mf", (mf / mf.sum(1, keepdim=True).clamp_min(1)).to(device))
-        self.register_buffer("W_sc", (sc / sc.sum(1, keepdim=True).clamp_min(1)).to(device))
-        self.register_buffer("W_ec1", (ec1 / ec1.sum(1, keepdim=True).clamp_min(1)).to(device))
+        # Row-normalised AND divided by the expected presynaptic rate.  The first version
+        # normalised rows to sum 1 and stopped there, which makes the drive equal the MEAN
+        # rate of the presynaptic population -- and a population held at 3% sparsity has a
+        # mean rate of 0.03, so every stage received about a thirtieth of its threshold and
+        # the whole hippocampus sat at 0.0005 Hz.  Dividing by the expected rate makes the
+        # drive O(1) when the sending population is at the sparsity it is supposed to be at,
+        # which is what the gains below are then declared against.
+        pr_ = self.pr
+        self.register_buffer("W_pp", (pp / pp.sum(1, keepdim=True).clamp_min(1)
+                                      / pr_.rate_ec).to(device))
+        self.register_buffer("W_mf", (mf / mf.sum(1, keepdim=True).clamp_min(1)
+                                      / pr_.rate_dg).to(device))
+        self.register_buffer("W_sc", (sc / sc.sum(1, keepdim=True).clamp_min(1)
+                                      / pr_.rate_ca3).to(device))
+        self.register_buffer("W_ec1", (ec1 / ec1.sum(1, keepdim=True).clamp_min(1)
+                                       / pr_.rate_ec).to(device))
         # CA3's recurrent matrix is EXPERIENCE: written by `store`, never by an optimiser.
         self.register_buffer("W_rec", torch.zeros(n_ca3, n_ca3, device=device))
         self.register_buffer("stored", torch.zeros(0, n_ca3, device=device))
@@ -171,8 +220,13 @@ class Hippocampus(nn.Module):
         """
         p = patterns.to(self.W_rec.device).float()
         a = p.mean()
-        dev = p - a
-        W = dev.t() @ dev
+        # Treves-Rolls: the PRESYNAPTIC term is mean-subtracted and the postsynaptic one is
+        # not.  The first version subtracted the mean on both sides, which double-counts the
+        # inhibition the network already has as a global population -- and the measured
+        # result was retrieval into the COMPLEMENT of the cued pattern, overlap -0.21 at a
+        # 40% cue, with every cue level negative.  A network with both a covariance matrix
+        # and a global inhibitory population is subtracting the mean twice.
+        W = p.t() @ (p - a)
         W.fill_diagonal_(0.0)
         if normalise:
             W = W / max(1, p.shape[0]) / max(1e-6, a * (1 - a))
@@ -234,7 +288,14 @@ class Hippocampus(nn.Module):
 
         # ---- the septum: an E/I pair with adaptation, which is what makes it oscillate
         msE, msI, msa = state["ms_E"], state["ms_I"], state["ms_a"]
-        back = pr.w_hpc_ms * ca3.mean(-1, keepdim=True) if ms_feedback else torch.zeros_like(msE)
+        # The return limb, scaled by the rate CA3 is DECLARED to run at -- the same
+        # correction the feedforward projections needed.  Unscaled, `w_hpc_ms` multiplied a
+        # mean rate of about 0.01 and delivered 0.008 to the septum, so cutting it changed
+        # theta by 0.015 decades and gate H4b failed: theta was the septum's own oscillation
+        # and the hippocampus had no say in it.  The sensitivity sweep had already listed
+        # `w_hpc_ms` as inert, which is that gate doing its job.
+        back = (pr.w_hpc_ms * ca3.mean(-1, keepdim=True) / pr.rate_ca3
+                if ms_feedback else torch.zeros_like(msE))
         u_msE = pr.w_ms_EE * msE - pr.w_ms_EI * msI - msa + back + 0.30 * septal_tone
         u_msI = pr.w_ms_IE * msE
         fE = F(u_msE, pr.beta_ms, pr.theta_ms)
@@ -250,19 +311,29 @@ class Hippocampus(nn.Module):
         # ---- inhibitory populations, one per region, driven by the region's own mean rate
         i_dg, i_ca3, i_ca1 = state["i_dg"], state["i_ca3"], state["i_ca1"]
         i_dg2 = i_dg + (1 - math.exp(-dt / pr.tau_I)) * (
-            F(pr.w_IE * dg.mean(-1, keepdim=True) - disinh, pr.beta_I, pr.theta_I) - i_dg)
+            F(pr.w_IE_dg * dg.mean(-1, keepdim=True) - disinh, pr.beta_I, pr.theta_I) - i_dg)
         i_ca32 = i_ca3 + (1 - math.exp(-dt / pr.tau_I)) * (
-            F(pr.w_IE * ca3.mean(-1, keepdim=True) - disinh, pr.beta_I, pr.theta_I) - i_ca3)
+            F(pr.w_IE_ca3 * ca3.mean(-1, keepdim=True) - disinh, pr.beta_I, pr.theta_I) - i_ca3)
         i_ca12 = i_ca1 + (1 - math.exp(-dt / pr.tau_I_ca1)) * (
-            F(pr.w_IE * ca1.mean(-1, keepdim=True) - disinh, pr.beta_I, pr.theta_I) - i_ca1)
+            F(pr.w_IE_ca1 * ca1.mean(-1, keepdim=True) - disinh, pr.beta_I, pr.theta_I) - i_ca1)
 
         # ---- the three stages
         u_dg = pr.w_pp * (ec @ self.W_pp.t()) - pr.w_I_dg * i_dg
         dg2 = dg + (1 - math.exp(-dt / pr.tau_E)) * (
             F(u_dg, pr.beta_E, pr.theta_E_dg) - dg)
 
-        rec = (ca3 @ self.W_rec.t()) / max(1, self.n_ca3)
-        u_ca3 = (pr.w_mf * (dg @ self.W_mf.t()) + pr.w_rec * rec
+        # the recurrent drive is scaled by the number of units EXPECTED to be active, not
+        # by the population size -- same correction as the feedforward projections
+        rec = (ca3 @ self.W_rec.t()) / max(1.0, self.n_ca3 * pr.rate_ca3)
+        # Cholinergic septal tone SUPPRESSES the recurrent synapses (Hasselmo's account of
+        # why encoding and retrieval are different states of one circuit): during theta the
+        # recurrent collaterals are damped so new input can write, and when the tone is
+        # withdrawn they are released and CA3 can detonate.  The first version had no such
+        # modulation, so withdrawing septal tone only REMOVED disinhibition and made the
+        # quiet state quieter -- gate H6 measured ripple prominence going the wrong way,
+        # -1.51 in the theta state against -2.22 in the quiet one.
+        rec_gain = pr.w_rec * (1.0 - pr.ach_suppression * septal_tone)
+        u_ca3 = (pr.w_mf * (dg @ self.W_mf.t()) + rec_gain * rec
                  - pr.w_I_ca3 * i_ca3 - a3 + eta)
         ca3_2 = ca3 + (1 - math.exp(-dt / pr.tau_E)) * (
             F(u_ca3, pr.beta_E, pr.theta_E_ca3) - ca3)

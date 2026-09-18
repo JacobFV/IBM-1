@@ -6934,3 +6934,78 @@ Ten new stations came with them, and **six have no atlas label at all**: the mam
 bodies, the paraventricular hypothalamus, the pituitary, the adrenal cortex, the
 baroreceptors and the extraocular muscles — on top of the subthalamic nucleus, medial septum,
 suprachiasmatic nucleus, nucleus basalis and olfactory bulb already listed.
+
+## 18 September 2026 — the hippocampus: completion works, theta is a loop, ripples FAILED
+
+`ibm/hippocampus.py` and `scripts/gate_hippocampus.py`. EC → DG → CA3 → CA1 → subiculum
+with a septal pacemaker. Built ahead of the basal ganglia and the cerebellum for a specific
+reason: **CA3 is multistability built the other way** — attractors from a stored recurrent
+matrix rather than from every site sitting on a bistable sigmoid — and this morning's
+finding was that the cortical sheet cannot have both an attractor landscape and a firing
+range.
+
+**Results, verdicts declared before each run.**
+
+| gate | verdict | number |
+|---|---|---|
+| H0 bounded | PASS | zero excursion, three timesteps |
+| H0b alive | PASS | DG 4.4%, CA3 8.9%, CA1 11.1% against declared 3/8/10% |
+| H1 idempotence | PASS | bit-identical |
+| H2 separation | PASS | entorhinal correlation 0.741 → dentate 0.598 |
+| H3 completion | PASS | **6/6 specificity**, shuffled-weight control **1/6** (chance) |
+| H4 theta | PASS | **5.33 Hz, prominence +1.08**, rate 18.8 Hz |
+| H4b theta is a loop | PASS | cutting the return limb: prominence 1.08 → **0.27** |
+| H5 theta–gamma | PASS | MI 0.0182 against a phase-randomised surrogate at 0.0014 |
+| H6 ripples | **FAILED** | quiet state −3.16; theta state **+0.75 at 185 Hz** |
+
+**Four bugs, and three of them were the same bug.**
+
+1. **The first run reported five numbers about a hippocampus sitting at 0.0005 Hz** —
+   totally silent — and **H2 PASSED**, because two all-zero vectors are uncorrelated and
+   "less correlated than the input" was true in the most useless possible way. That is
+   CLAUDE.md's "a control that can pass for a reason unrelated to what it tests", and the
+   answer is a new gate, **H0b**: every population within a factor of three of its declared
+   sparsity, with every downstream gate VOID if it fails. It voided a later run, correctly.
+2. **Projections were scaled against population size instead of expected activity.** A
+   row-normalised projection delivers the *mean rate* of the sending population, and a
+   population held at 3% sparsity has a mean rate of 0.03 — so every stage received about a
+   thirtieth of its threshold. The same bug hit the septal return limb (`w_hpc_ms` × a mean
+   rate of 0.01 delivered 0.008, so cutting it changed theta by 0.015 decades and H4b
+   failed), and the sensitivity sweep had already listed `w_hpc_ms` as **inert**, which is
+   that instrument doing exactly its job for the sixth time in two days.
+3. **Inhibition that switches cannot hold an attractor.** With one shared gain the CA3
+   inhibitory population saturated at 1.0 the moment anything fired, and CA3 went to
+   **0.000 active** after cue release. Each region's inhibition is now half-activated at its
+   own declared sparsity — derived, not guessed — and grades instead of switching.
+4. **The covariance rule subtracted the mean twice.** A network with both a covariance
+   matrix and a global inhibitory population is subtracting the population mean on both
+   sides, and the measured consequence was retrieval into the **complement** of the cue
+   (overlap −0.21 at every cue level). The Treves–Rolls form, presynaptic term
+   mean-subtracted only, fixes it.
+
+**And one mistake that was mine and not the model's.** H3 originally required that an
+**unstored** pattern not be completed to anything, and the model duly completed one to
+overlap 1.000 — which I first read as a failure. It is not: an autoassociative network cued
+with a novel pattern falling into a stored attractor is the defining behaviour, and novelty
+detection is CA1's job, comparing entorhinal input against CA3's output. The control was
+mis-specified. What a single-pattern overlap **cannot** see is a network with one global
+attractor, which scores +1.000 on every cue it is ever given — and only "does cue k retrieve
+pattern k" can. The rewritten gate found exactly that: at `w_rec` 3.6 every individual
+overlap reads +1.000 while specificity is 4 of 6. Because the 5/6 bar was chosen after
+seeing 5/6, it was judged on a **fresh pattern set and fresh cue seeds** with the
+exploratory draw excluded, and came back **6/6 against a shuffled control at 1/6**.
+
+**H6 stays FAILED, with its diagnosis.** The quiet state produces no ripples (−3.16) and the
+*theta* state produces a continuous 185 Hz rhythm at +0.75 — the fast CA1 interneuron loop
+ringing because the region is active, which is not what a ripple is. A ripple is a
+**transient** event riding a sharp wave: the quiet state has to be metastable and
+occasionally ignite. This model's quiet state is simply quiet (1.33 Hz). That is the same
+shape as the cortical sheet's missing middle, in a second architecture, and it is recorded
+rather than tuned away.
+
+**What this says about the open cortical question.** CA3 does hold discrete states without
+any unit being bistable: 6/6 retrieval with a shuffled control at chance, at 6% active, from
+a 40% cue. So a recurrent stored matrix is a working route to multistability in this
+codebase. What it did *not* do is produce transient spontaneous ignition — so it answers
+"can a non-bistable network hold a state" (yes) and not yet "can one switch between states
+on its own" (the thing G3 has been failing since September).

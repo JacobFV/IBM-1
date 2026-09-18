@@ -1,0 +1,416 @@
+{
+ "script": "scripts/gate_hippocampus.py",
+ "dt": 0.001,
+ "gates": {
+  "H0_bounded": {
+   "ok": true,
+   "worst_excursion": 0.0
+  },
+  "H0b_alive": {
+   "ok": true,
+   "populations": {
+    "dg": {
+     "active_fraction": 0.04374999925494194,
+     "declared": 0.03,
+     "window": [
+      0.01,
+      0.09
+     ],
+     "inside": true
+    },
+    "ca3": {
+     "active_fraction": 0.08888889104127884,
+     "declared": 0.08,
+     "window": [
+      0.02666666666666667,
+      0.24
+     ],
+     "inside": true
+    },
+    "ca1": {
+     "active_fraction": 0.1111111119389534,
+     "declared": 0.1,
+     "window": [
+      0.03333333333333333,
+      0.30000000000000004
+     ],
+     "inside": true
+    }
+   },
+   "septum_mean": 0.2027946263551712,
+   "rule": "every population within a factor of 3 of its declared sparsity"
+  },
+  "H1_idempotent": {
+   "ok": true,
+   "max_abs_diff": 0.0
+  },
+  "H2_separation": {
+   "ok": true,
+   "ec_input_corr": 0.7413666844367981,
+   "dg_output_corr": 0.597832441329956,
+   "drop": 0.14353424310684204,
+   "dg_sparsity": 0.05416666716337204,
+   "dg_is_coding": true,
+   "rule": "the dentate code must be less correlated than its input by > 0.05 AND the dentate must be active (0.2%-25% of units), because a silent dentate is trivially uncorrelated"
+  },
+  "H3_completion": {
+   "ok": true,
+   "specificity": "6/6",
+   "control_shuffled_specificity": "1/6",
+   "by_cue": {
+    "cue_0": {
+     "retrieved": 0,
+     "overlap_with_cued": 1.0000005960464478,
+     "best_overlap": 1.0000005960464478,
+     "active_fraction": 0.06111111119389534
+    },
+    "cue_1": {
+     "retrieved": 1,
+     "overlap_with_cued": 0.9999997019767761,
+     "best_overlap": 0.9999997019767761,
+     "active_fraction": 0.11666666716337204
+    },
+    "cue_2": {
+     "retrieved": 2,
+     "overlap_with_cued": 0.9999983310699463,
+     "best_overlap": 0.9999983310699463,
+     "active_fraction": 0.07222222536802292
+    },
+    "cue_3": {
+     "retrieved": 3,
+     "overlap_with_cued": 0.9999998211860657,
+     "best_overlap": 0.9999998211860657,
+     "active_fraction": 0.06111111119389534
+    },
+    "cue_4": {
+     "retrieved": 4,
+     "overlap_with_cued": 0.9984779953956604,
+     "best_overlap": 0.9984779953956604,
+     "active_fraction": 0.0555555559694767
+    },
+    "cue_5": {
+     "retrieved": 5,
+     "overlap_with_cued": 1.000002384185791,
+     "best_overlap": 1.000002384185791,
+     "active_fraction": 0.0833333358168602
+    }
+   },
+   "rule": "cue k must retrieve pattern k for >= 5 of 6, on a pattern set and cue seeds not used to choose the parameters; the shuffled-weight control must manage at most 2 of 6"
+  },
+  "H4_theta": {
+   "ok": true,
+   "peak_hz": 5.333436965942383,
+   "prominence": 1.0849623680114746,
+   "mean_rate_hz": 18.780576705932617,
+   "rule": "prominence > 0 in 3-8 Hz; the frequency is reported beside it, never alone"
+  },
+  "H4b_theta_is_a_loop": {
+   "ok": true,
+   "intact": {
+    "peak_hz": 5.333436965942383,
+    "prominence": 1.0849623680114746,
+    "mean_rate_hz": 18.780576705932617
+   },
+   "feedback_cut": {
+    "peak_hz": 5.69126558303833,
+    "prominence": 0.2740468978881836,
+    "mean_rate_hz": 6.627326965332031
+   },
+   "drop": 0.810915470123291,
+   "rule": "cutting the hippocampal return limb must cost more than 0.05 decades of theta prominence; if it costs nothing, theta was an imposed drive"
+  },
+  "H5_theta_gamma": {
+   "ok": true,
+   "mi": 0.018185697495937347,
+   "mi_phase_randomised_control": 0.001360543305054307,
+   "rule": "MI > 0 and at least 1.5x a phase-randomised surrogate with the same power spectrum"
+  },
+  "H6_ripples": {
+   "ok": false,
+   "states": {
+    "theta_state": {
+     "ripple_prominence": 0.7541146278381348,
+     "ripple_peak_hz": 185.27638244628906,
+     "theta_prominence": 0.6370775699615479,
+     "mean_rate_hz": 20.30429458618164
+    },
+    "quiet_state": {
+     "ripple_prominence": -3.1592979431152344,
+     "ripple_peak_hz": 146.1214141845703,
+     "theta_prominence": 0.10236835479736328,
+     "mean_rate_hz": 1.3284589052200317
+    }
+   },
+   "rule": "ripple prominence > 0 in the quiet state AND more than 0.1 decades above the theta state"
+  },
+  "H7_sensitivity": {
+   "ok": true,
+   "baseline_hz": 3.4183967113494873,
+   "baseline_prominence": 1.7197356224060059,
+   "claimed_septal_clock_hz_span": {
+    "g_ms_a": 1.257922649383545,
+    "tau_ms_a": 0.7450733184814453,
+    "w_ms_EE": 1.5782132148742676
+   },
+   "inert": [
+    "tau_I_ca1",
+    "tau_eta",
+    "w_rec",
+    "ach_suppression",
+    "w_ca1_sub",
+    "rate_ca1",
+    "rate_tolerance"
+   ],
+   "rule": "at least one of the septal constants the module claims sets theta must move it by > 0.3 Hz over a 3x sweep",
+   "sweep": [
+    {
+     "param": "theta_ms",
+     "value": 0.32,
+     "hz_span": 2.3499748706817627,
+     "prominence_span": 3.034775495529175
+    },
+    {
+     "param": "w_IE_dg",
+     "value": 16.0,
+     "hz_span": 1.635237216949463,
+     "prominence_span": 3.0974783897399902
+    },
+    {
+     "param": "w_I_ca3",
+     "value": 3.2,
+     "hz_span": 2.5703349113464355,
+     "prominence_span": 1.831052541732788
+    },
+    {
+     "param": "w_I_dg",
+     "value": 5.0,
+     "hz_span": 1.4103407859802246,
+     "prominence_span": 2.79921817779541
+    },
+    {
+     "param": "g_ms_a",
+     "value": 1.3,
+     "hz_span": 1.257922649383545,
+     "prominence_span": 2.913804054260254
+    },
+    {
+     "param": "rate_ec",
+     "value": 0.2,
+     "hz_span": 2.6082687377929688,
+     "prominence_span": 1.1757245063781738
+    },
+    {
+     "param": "rate_dg",
+     "value": 0.03,
+     "hz_span": 1.3955609798431396,
+     "prominence_span": 2.0781800746917725
+    },
+    {
+     "param": "tau_ms_a",
+     "value": 0.075,
+     "hz_span": 0.7450733184814453,
+     "prominence_span": 2.7253923416137695
+    },
+    {
+     "param": "theta_I",
+     "value": 0.25,
+     "hz_span": 1.3420484066009521,
+     "prominence_span": 2.021984100341797
+    },
+    {
+     "param": "theta_E_ca3",
+     "value": 0.34,
+     "hz_span": 1.9422645568847656,
+     "prominence_span": 1.3192174434661865
+    },
+    {
+     "param": "tau_ms_E",
+     "value": 0.02,
+     "hz_span": 0.416339635848999,
+     "prominence_span": 2.6006810665130615
+    },
+    {
+     "param": "w_hpc_ms",
+     "value": 0.85,
+     "hz_span": 2.5089826583862305,
+     "prominence_span": 0.4810795783996582
+    },
+    {
+     "param": "tau_I",
+     "value": 0.004,
+     "hz_span": 1.7237884998321533,
+     "prominence_span": 1.2265934944152832
+    },
+    {
+     "param": "beta_I",
+     "value": 8.0,
+     "hz_span": 2.064730167388916,
+     "prominence_span": 0.739497184753418
+    },
+    {
+     "param": "theta_E_dg",
+     "value": 0.42,
+     "hz_span": 1.60408353805542,
+     "prominence_span": 1.055279016494751
+    },
+    {
+     "param": "w_ms_EI",
+     "value": 1.8,
+     "hz_span": 1.7685637474060059,
+     "prominence_span": 0.5661892890930176
+    },
+    {
+     "param": "w_ms_EE",
+     "value": 2.2,
+     "hz_span": 1.5782132148742676,
+     "prominence_span": 0.5132603645324707
+    },
+    {
+     "param": "w_ms_IE",
+     "value": 2.0,
+     "hz_span": 0.6235740184783936,
+     "prominence_span": 1.4203920364379883
+    },
+    {
+     "param": "beta_ms",
+     "value": 9.0,
+     "hz_span": 0.17961692810058594,
+     "prominence_span": 1.3930537700653076
+    },
+    {
+     "param": "tau_ms_I",
+     "value": 0.012,
+     "hz_span": 0.13698720932006836,
+     "prominence_span": 1.3656926155090332
+    },
+    {
+     "param": "rate_ca3",
+     "value": 0.08,
+     "hz_span": 1.1983842849731445,
+     "prominence_span": 0.2179393768310547
+    },
+    {
+     "param": "w_IE_ca3",
+     "value": 6.2,
+     "hz_span": 0.0007214546203613281,
+     "prominence_span": 1.2276253700256348
+    },
+    {
+     "param": "w_ms_out",
+     "value": 0.42,
+     "hz_span": 1.035168170928955,
+     "prominence_span": 0.16612696647644043
+    },
+    {
+     "param": "w_I_ca1",
+     "value": 2.0,
+     "hz_span": 0.7096061706542969,
+     "prominence_span": 0.4542112350463867
+    },
+    {
+     "param": "w_mf",
+     "value": 1.3,
+     "hz_span": 0.9810309410095215,
+     "prominence_span": 0.016633987426757812
+    },
+    {
+     "param": "w_pp",
+     "value": 0.95,
+     "hz_span": 0.6830573081970215,
+     "prominence_span": 0.23971199989318848
+    },
+    {
+     "param": "beta_E",
+     "value": 12.0,
+     "hz_span": 0.0007126331329345703,
+     "prominence_span": 0.5832722187042236
+    },
+    {
+     "param": "w_sc",
+     "value": 0.95,
+     "hz_span": 0.06725358963012695,
+     "prominence_span": 0.5063657760620117
+    },
+    {
+     "param": "tau_E",
+     "value": 0.01,
+     "hz_span": 0.2336115837097168,
+     "prominence_span": 0.2752420902252197
+    },
+    {
+     "param": "w_IE_ca1",
+     "value": 5.0,
+     "hz_span": 0.016165733337402344,
+     "prominence_span": 0.3420140743255615
+    },
+    {
+     "param": "g_a",
+     "value": 0.55,
+     "hz_span": 0.03721189498901367,
+     "prominence_span": 0.2990097999572754
+    },
+    {
+     "param": "tau_a",
+     "value": 0.18,
+     "hz_span": 0.0002834796905517578,
+     "prominence_span": 0.18197178840637207
+    },
+    {
+     "param": "w_ec_ca1",
+     "value": 0.45,
+     "hz_span": 0.011651754379272461,
+     "prominence_span": 0.1358344554901123
+    },
+    {
+     "param": "theta_E_ca1",
+     "value": 0.3,
+     "hz_span": 0.002399921417236328,
+     "prominence_span": 0.0916128158569336
+    },
+    {
+     "param": "tau_I_ca1",
+     "value": 0.0022,
+     "hz_span": 3.266334533691406e-05,
+     "prominence_span": 0.026077747344970703
+    },
+    {
+     "param": "tau_eta",
+     "value": 0.005,
+     "hz_span": 5.0067901611328125e-06,
+     "prominence_span": 0.024270296096801758
+    },
+    {
+     "param": "w_rec",
+     "value": 2.6,
+     "hz_span": 0.0,
+     "prominence_span": 0.0
+    },
+    {
+     "param": "ach_suppression",
+     "value": 0.65,
+     "hz_span": 0.0,
+     "prominence_span": 0.0
+    },
+    {
+     "param": "w_ca1_sub",
+     "value": 1.2,
+     "hz_span": 0.0,
+     "prominence_span": 0.0
+    },
+    {
+     "param": "rate_ca1",
+     "value": 0.1,
+     "hz_span": 0.0,
+     "prominence_span": 0.0
+    },
+    {
+     "param": "rate_tolerance",
+     "value": 3.0,
+     "hz_span": 0.0,
+     "prominence_span": 0.0
+    }
+   ]
+  }
+ },
+ "all_gates_ok": false
+}

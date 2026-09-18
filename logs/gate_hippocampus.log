@@ -1,0 +1,27 @@
+[PASS] H0_bounded: {'ok': True, 'worst_excursion': 0.0}
+[PASS] H0b_alive: {'ok': True, 'populations': {'dg': {'active_fraction': 0.04374999925494194, 'declared': 0.03, 'window': [0.01, 0.09], 'inside': True}, 'ca3': {'active_fraction': 0.08888889104127884, 'declared': 0.08, 'window': [0.02666666666666667, 0.24], 'inside': True}, 'ca1': {'active_fraction': 0.1111111119389534, 'declared': 0.1, 'window': [0.03333333333333333, 0.30000000000000004], 'inside': True}}, 'septum_mean': 0.2027946263551712, 'rule': 'every population within a factor of 3 of its declared sparsity'}
+[PASS] H1_idempotent: {'ok': True, 'max_abs_diff': 0.0}
+[PASS] H2_separation: {'ok': True, 'ec_input_corr': 0.7413666844367981, 'dg_output_corr': 0.597832441329956, 'drop': 0.14353424310684204, 'dg_sparsity': 0.05416666716337204, 'dg_is_coding': True, 'rule': 'the dentate code must be less correlated than its input by > 0.05 AND the dentate must be active (0.2%-25% of units), because a silent dentate is trivially uncorrelated'}
+[PASS] H3_completion: {'ok': True, 'specificity': '6/6', 'control_shuffled_specificity': '1/6', 'rule': 'cue k must retrieve pattern k for >= 5 of 6, on a pattern set and cue seeds not used to choose the parameters; the shuffled-weight control must manage at most 2 of 6'}
+      cue_0: retrieved 0  overlap with cued +1.000  best +1.000  active 0.061
+      cue_1: retrieved 1  overlap with cued +1.000  best +1.000  active 0.117
+      cue_2: retrieved 2  overlap with cued +1.000  best +1.000  active 0.072
+      cue_3: retrieved 3  overlap with cued +1.000  best +1.000  active 0.061
+      cue_4: retrieved 4  overlap with cued +0.998  best +0.998  active 0.056
+      cue_5: retrieved 5  overlap with cued +1.000  best +1.000  active 0.083
+[PASS] H4_theta: {'ok': True, 'peak_hz': 5.333436965942383, 'prominence': 1.0849623680114746, 'mean_rate_hz': 18.780576705932617, 'rule': 'prominence > 0 in 3-8 Hz; the frequency is reported beside it, never alone'}
+[PASS] H4b_theta_is_a_loop: {'ok': True, 'intact': {'peak_hz': 5.333436965942383, 'prominence': 1.0849623680114746, 'mean_rate_hz': 18.780576705932617}, 'feedback_cut': {'peak_hz': 5.69126558303833, 'prominence': 0.2740468978881836, 'mean_rate_hz': 6.627326965332031}, 'drop': 0.810915470123291, 'rule': 'cutting the hippocampal return limb must cost more than 0.05 decades of theta prominence; if it costs nothing, theta was an imposed drive'}
+[PASS] H5_theta_gamma: {'ok': True, 'mi': 0.018185697495937347, 'mi_phase_randomised_control': 0.001360543305054307, 'rule': 'MI > 0 and at least 1.5x a phase-randomised surrogate with the same power spectrum'}
+[FAIL] H6_ripples: {'ok': False, 'rule': 'ripple prominence > 0 in the quiet state AND more than 0.1 decades above the theta state'}
+      theta_state: ripple +0.754 at 185.3 Hz, theta +0.637, rate 20.30 Hz
+      quiet_state: ripple -3.159 at 146.1 Hz, theta +0.102, rate 1.33 Hz
+[PASS] H7_sensitivity: {'ok': True, 'baseline_hz': 3.4183967113494873, 'baseline_prominence': 1.7197356224060059, 'claimed_septal_clock_hz_span': {'g_ms_a': 1.257922649383545, 'tau_ms_a': 0.7450733184814453, 'w_ms_EE': 1.5782132148742676}, 'inert': ['tau_I_ca1', 'tau_eta', 'w_rec', 'ach_suppression', 'w_ca1_sub', 'rate_ca1', 'rate_tolerance'], 'rule': 'at least one of the septal constants the module claims sets theta must move it by > 0.3 Hz over a 3x sweep'}
+      theta_ms       hz span   2.35  prominence span  3.035
+      w_IE_dg        hz span   1.64  prominence span  3.097
+      w_I_ca3        hz span   2.57  prominence span  1.831
+      w_I_dg         hz span   1.41  prominence span  2.799
+      g_ms_a         hz span   1.26  prominence span  2.914
+      rate_ec        hz span   2.61  prominence span  1.176
+      inert: tau_I_ca1, tau_eta, w_rec, ach_suppression, w_ca1_sub, rate_ca1, rate_tolerance
+
+SOME GATES FAILED -- wrote out/gate_hippocampus.json
