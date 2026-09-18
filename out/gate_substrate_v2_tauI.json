@@ -52,10 +52,142 @@
       "step_equal": true,
       "rollout_equal": true,
       "PASS": true
+    },
+    "G1_bounded": {
+      "min": {
+        "E": 0.0005417114007286727,
+        "I": 0.018724508583545685,
+        "x": 0.0013565421104431152,
+        "a": 1.6678390890589867e-09
+      },
+      "max": {
+        "E": 0.9999997019767761,
+        "I": 0.9606756567955017,
+        "x": 0.9997032284736633,
+        "a": 0.7091489434242249
+      },
+      "g_a_max": 0.8999999761581421,
+      "finite": true,
+      "PASS": true,
+      "seconds": 74.6
+    },
+    "G2_invariant_sets": {
+      "field": {
+        "n_sets": 10,
+        "mean_E_per_set": [
+          0.03719736635684967,
+          0.02530927211046219,
+          0.030842144042253494,
+          0.02985953539609909,
+          0.04260594770312309,
+          0.029850393533706665,
+          0.03526339679956436,
+          0.029820038005709648,
+          0.0289088636636734,
+          0.026252247393131256
+        ],
+        "frac_up_per_set": [
+          0.0126953125,
+          0.0,
+          0.005859375,
+          0.0048828125,
+          0.0185546875,
+          0.0048828125,
+          0.0107421875,
+          0.0048828125,
+          0.00390625,
+          0.0
+        ],
+        "max_swing_last_3s": 0.915647566318512,
+        "stationary_runs": 30,
+        "seconds": 63.3,
+        "label": "declared priors"
+      },
+      "control": {
+        "n_sets": 1,
+        "mean_E_per_set": [
+          0.022118447348475456
+        ],
+        "frac_up_per_set": [
+          0.0
+        ],
+        "max_swing_last_3s": 0.0,
+        "stationary_runs": 32,
+        "seconds": 60.3,
+        "label": "w_EE x 0.3 control"
+      },
+      "control_ok": true,
+      "PASS": true,
+      "VOID": false
+    },
+    "G3_metastability": {
+      "transitions": 0,
+      "median_dwell_s": 58.0,
+      "mean_dwell_s": 58.0,
+      "distinct_macrostates": 1,
+      "revisited_ge2": 0,
+      "mean_regions_up": 0.0,
+      "frac_time_any_region_up": 0.0,
+      "seconds": 19.8,
+      "PASS": false
+    },
+    "G4_heterogeneity": {
+      "sites_with_variance": 1024,
+      "rho_tau_vs_h": 0.8530532173127816,
+      "rho_control_permuted_h": 0.010208854874472498,
+      "tau_s_quartiles": [
+        0.02,
+        0.025,
+        0.03
+      ],
+      "tau_s_by_h_band": {
+        "0-0.3": 0.02,
+        "0.3-0.6": 0.025,
+        "0.6-0.8": 0.03,
+        "0.8-1.01": 0.03
+      },
+      "PASS": true
+    },
+    "G5_memory": {
+      "field": {
+        "label": "declared priors",
+        "acc_E": 0.99375,
+        "ci_E": [
+          0.9654501546624841,
+          0.9988958966456083
+        ],
+        "acc_full_state": 1.0,
+        "ci_full_state": [
+          0.9765529633499672,
+          1.0
+        ],
+        "chance": 0.125,
+        "readout_s_after_offset": 1.0,
+        "seconds": 14.1
+      },
+      "monostable": {
+        "label": "w_EE x 0.3 (monostable), reported not gated",
+        "acc_E": 0.85,
+        "ci_E": [
+          0.7865048113324178,
+          0.8970822630125592
+        ],
+        "acc_full_state": 1.0,
+        "ci_full_state": [
+          0.9765529633499672,
+          1.0
+        ],
+        "chance": 0.125,
+        "readout_s_after_offset": 1.0,
+        "seconds": 14.1
+      },
+      "bypass": "chance by construction: the input is zero at readout",
+      "PASS": true
     }
   },
   "unknown_regions": [],
   "n_regions": 66,
   "column_bistable_fraction": 0.642578125,
-  "column_bistable_fraction_monostable_control": 0.0
+  "column_bistable_fraction_monostable_control": 0.0,
+  "seconds_total": 248.7
 }

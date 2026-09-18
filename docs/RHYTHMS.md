@@ -26,15 +26,15 @@ than writing it:
 |---|---|---|
 | `measured-here` | fitted in this repo on held-out subjects; the row names the script and the number | 4 |
 | `measurable-now` | the corpus is on disk and the instrument exists; nobody has run it | 4 |
-| `literature` | declared from published physiology, no local measurement | 26 |
-| `target` | what we intend the substrate to produce; nothing measured at this specificity | 20 |
+| `literature` | declared from published physiology, no local measurement | 27 |
+| `target` | what we intend the substrate to produce; nothing measured at this specificity | 29 |
 
 Only **4** rows have been through anything in this repository that could have
 said no. The rest are declarations, and the column is there so that no reader — including
 a future one of us — can mistake the table's completeness for evidence.
 
 `substrate` says what the **model** would need before a row could be scored at all.
-`ibm/substrate.py` is a cortical field: 10 of 54 rows are expressible
+`ibm/substrate.py` is a cortical field: 11 of 64 rows are expressible
 on it today. A rhythm whose loop runs through the reticular nucleus, the subthalamic
 nucleus or the spinal cord is not expressible by a cortical sheet, and scoring its band in
 cortex anyway would produce a number that moves for the wrong reason.
@@ -53,7 +53,7 @@ olfactory gamma at 70 Hz were both attached to long loops, when both are produce
 reciprocal circuits), and one genuine conflict that is now declared as an exception with
 its reason (the Piper rhythm). `python ibm/rhythms.py` runs every check.
 
-## All 54 rhythms
+## All 64 rhythms
 
 | # | rhythm | band | peak (Hz) | loop | states | set by | evidence | substrate |
 |---|---|---|---|---|---|---|---|---|
@@ -110,7 +110,17 @@ its reason (the Piper rhythm). `python ibm/rhythms.py` runs every check.
 | 51 | **breathing paces the brain** | 0.15–0.4 Hz | 0.25 | respiratory-olfactory-limbic | wake-rest, sleep | external | `target` | `needs-body` |
 | 52 | **olfactory bulb gamma** | 40–100 Hz | 70 | mitral-granule dendrodendritic loop | sniffing | loop delay | `target` | `needs-olfactory-bulb` |
 | 53 | **posterior resting beta at the scalp** | 13–30 Hz | 16.2 | local cortical excitation-inhibition | wake-rest, wake-eyes-open | network | `measured-here` | `expressible` |
-| 54 | **the stretch reflex's own resonance** | 6–12 Hz | 9 | monosynaptic stretch reflex | posture | loop delay | `literature` | `needs-body` |
+| 54 | **stopping a movement already under way** | — | — | basal-ganglia hyperdirect pathway | wake-task, movement | network | `target` | `needs-basal-ganglia` |
+| 55 | **completing a pattern from a fragment** | — | — | CA3 recurrent collaterals | retrieval, quiet-wake | network | `target` | `needs-hippocampal-subfields` |
+| 56 | **theta reset by a salient input** | 3–8 Hz | — | septo-hippocampal theta | encoding, wake-task | network | `target` | `needs-hippocampal-subfields` |
+| 57 | **the head-direction signal** | — | — | Papez circuit | movement, exploration | network | `target` | `needs-hippocampal-subfields+body` |
+| 58 | **pulvinar alpha and the second visual route** | 8–13 Hz | 10 | collicular-pulvinar orienting | wake-eyes-open, wake-task | loop delay | `target` | `needs-thalamus` |
+| 59 | **acetylcholine desynchronises the cortex** | 1–8 Hz | — | basal forebrain cholinergic | wake-task, wake-rest | network | `target` | `needs-neuromodulators` |
+| 60 | **the vestibulo-ocular reflex's gain** | — | — | vestibulo-ocular reflex | movement, posture | loop delay | `target` | `needs-body+cerebellum` |
+| 61 | **cortisol pulses** | 2.00e-04–4.00e-04 Hz | 2.80e-04 | hypothalamic-pituitary-adrenal axis | all | time constants | `target` | `needs-hypothalamus` |
+| 62 | **Mayer waves** | 0.08–0.12 Hz | 0.1 | baroreflex | wake-rest, posture | loop delay | `target` | `needs-body` |
+| 63 | **the intrinsic timescale gradient** | — | — | cortico-cortical hierarchy | wake-rest, wake-task | network | `literature` | `expressible` |
+| 64 | **the stretch reflex's own resonance** | 6–12 Hz | 9 | monosynaptic stretch reflex | posture | loop delay | `literature` | `needs-body` |
 
 ## Loop by loop
 
@@ -342,6 +352,86 @@ Ring: pre-Botzinger complex → diaphragm and lungs → olfactory bulb → parah
 
 - **breathing paces the brain** (0.15–0.4 Hz, peak 0.25 Hz, `target`). Nasal airflow drives the olfactory bulb and, behind it, entorhinal cortex, hippocampus and amygdala; memory and reaction time vary with the phase of the breath. [Zelano 2016; Herrero 2018]
 
+### basal-ganglia hyperdirect pathway
+
+Cortex reaches the subthalamic nucleus straight, skipping the striatum, and can stop a movement already under way faster than the loop that started it.
+
+Ring: premotor and supplementary motor cortex → subthalamic nucleus → internal pallidum → ventroanterior thalamus → premotor and supplementary motor cortex. Round trip 8–18 ms, net inhibitory, ceiling 28–62 Hz.
+
+- **stopping a movement already under way** (—, `target`). Cortex reaches the subthalamic nucleus without passing through the striatum, and can cancel a movement in about 150 ms -- faster than the loop that launched it. Not a band: a latency and an outcome. [Aron & Poldrack 2006; Schmidt 2013]
+
+### CA3 recurrent collaterals
+
+The most densely recurrent excitatory network in the brain, wired onto itself: the structure autoassociation and pattern completion are attributed to.
+
+Ring: CA3 → CA3 → CA3. Round trip 3–7 ms, net inhibitory, ceiling 71–167 Hz.
+
+- **completing a pattern from a fragment** (—, `target`). CA3's recurrent collaterals are wired onto themselves densely enough to hold an attractor, so a fragment of a stored pattern settles into the whole of it. This is the one place in the specification where multistability is the POINT rather than a property, and it is a different way to get it than a per-site sigmoid. [Marr 1971; Nakazawa 2002]
+
+### septo-hippocampal theta
+
+The medial septum paces the hippocampus and the hippocampus answers: the pacemaker theta is attributed to, and it is a loop rather than a clock handed in from outside.
+
+Ring: medial septum / diagonal band → CA3 → medial septum / diagonal band. Round trip 9–22 ms, net excitatory, ceiling 45–111 Hz.
+
+- **theta reset by a salient input** (3–8 Hz, `target`). A salient stimulus resets the phase of the septo-hippocampal theta, so the cycle that encodes it starts when it arrives. A pacemaker that cannot be reset is a clock bolted on; one that can is part of the circuit. [Buzsaki 2002; Givens 1996]
+
+### Papez circuit
+
+Hippocampus to mammillary bodies to anterior thalamus to cingulate and back: the circuit episodic memory and head direction both run through.
+
+Ring: subiculum → mammillary bodies → anterior thalamic nuclei → posterior cingulate and precuneus → parahippocampal and entorhinal cortex → subiculum. Round trip 25–62 ms, net excitatory, ceiling 16–40 Hz.
+
+- **the head-direction signal** (—, `target`). Cells in the anterior thalamus fire for the direction the head points, whatever the place. The signal survives without vision, so it is maintained by the loop rather than read off the world. [Taube 1990; Winter 2015]
+
+### collicular-pulvinar orienting
+
+The second visual pathway: retina to superior colliculus to pulvinar to cortex, which orients toward something before the geniculate route has identified it.
+
+Ring: retina → superior colliculus → pulvinar → extrastriate visual cortex → pulvinar. Round trip 19–43 ms, net excitatory, ceiling 23–53 Hz.
+
+- **pulvinar alpha and the second visual route** (8–13 Hz, peak 10 Hz, `target`). The colliculo-pulvinar route carries an alpha rhythm of its own and paces the cortical areas it reaches, which is one account of how attention samples. [Saalmann 2012; Zhou 2016]
+
+### basal forebrain cholinergic
+
+The nucleus basalis sets cortical gain and desynchronises the cortex, and cortex tells it when to: attention as a loop rather than a multiplier applied from outside.
+
+Ring: nucleus basalis → dorsolateral prefrontal cortex → nucleus basalis. Round trip 25–60 ms, net excitatory, ceiling 17–40 Hz.
+
+- **acetylcholine desynchronises the cortex** (1–8 Hz, `target`). Basal forebrain activity flattens low-frequency cortical power and raises gain. The goal is that attention is a state the loop enters, not a multiplier applied to a layer from outside it. [Buzsaki 1988; Harris & Thiele 2011]
+
+### vestibulo-ocular reflex
+
+Three neurons from the semicircular canal to the eye muscle, with the cerebellar flocculus learning the gain: the fastest closed loop in the brain, and it closes through the world.
+
+Ring: vestibular nuclei → oculomotor and abducens nuclei → extraocular muscles → vestibular nuclei → cerebellar flocculus. Round trip 8–18 ms, net inhibitory, ceiling 28–62 Hz.
+
+- **the vestibulo-ocular reflex's gain** (—, `target`). The eye counter-rotates the head's movement at a gain near 1 with a latency near 10 ms, and the cerebellum re-learns that gain when the optics change. Three neurons, and the loop closes through the world rather than inside the head. [Robinson 1976; Lisberger 1988]
+
+### hypothalamic-pituitary-adrenal axis
+
+The slowest loop in the body: hypothalamus to pituitary to adrenal cortex and back as cortisol, which shuts its own origin off hours later.
+
+Ring: paraventricular hypothalamus → anterior pituitary → adrenal cortex → paraventricular hypothalamus. Round trip 450000–2.52e+06 ms, net inhibitory, ceiling 0–0 Hz.
+
+- **cortisol pulses** (2.00e-04–4.00e-04 Hz, peak 2.80e-04 Hz, `target`). The adrenal answers the pituitary in pulses about an hour apart, and the whole axis sits inside the circadian envelope. The slowest loop that still counts as a rhythm. [Lightman & Conway-Campbell 2010]
+
+### baroreflex
+
+Blood pressure read at the carotid, answered at the heart, and the answer changes the pressure: a loop whose delay is long enough to make its own oscillation.
+
+Ring: carotid and aortic baroreceptors → nucleus of the solitary tract → heart → carotid and aortic baroreceptors. Round trip 430–1160 ms, net inhibitory, ceiling 0–1 Hz.
+
+- **Mayer waves** (0.08–0.12 Hz, peak 0.1 Hz, `target`). Blood pressure oscillates near 0.1 Hz because the baroreflex answers too slowly not to overshoot -- a rhythm that is a delay in a loop and nothing else, which makes it the cleanest test of a conduction budget in the whole table. *The round trip is 430-1160 ms and net inhibitory, so the bound allows 0.43-1.16 Hz: the measured 0.1 Hz sits comfortably under it, and a model that produced Mayer waves with a faster loop would be producing them for the wrong reason.* [Julien 2006]
+
+### cortico-cortical hierarchy
+
+Feedforward up the hierarchy and feedback down it, over association fibres whose conduction time is a real part of the computation.
+
+Ring: extrastriate visual cortex → intraparietal / superior parietal cortex → extrastriate visual cortex. Round trip 25–60 ms, net excitatory, ceiling 17–40 Hz.
+
+- **the intrinsic timescale gradient** (—, `literature`). Activity decorrelates in tens of milliseconds in sensory cortex and in hundreds in association cortex, and the ordering follows the hierarchy. Not a band -- a gradient -- and it is the signature of the one loop in this table that the model already runs. *The cortical field HAS this: `scripts/gate_substrate_v2.py` G4 measures a rank correlation of 0.85 between each site's measured timescale and its declared place on the hierarchy, against 0.03 for a permuted control. That is a measurement on the MODEL, not on people, which is why the row's evidence stays `literature`.* [Murray 2014; Raut 2020]
+
 ### suprachiasmatic circadian
 
 A transcriptional clock with a period near a day, which every other rhythm here is nested inside.
@@ -382,11 +472,22 @@ interval. The ceiling is what the round-trip bound allows.
 | `cpg` | mlr → cord_lumbar → cord_lumbar | 15–40 ms | - | 12–33 Hz | — |
 | `intero` | gut → nts → pb → vpl | 262–536 ms | + | 2–4 Hz | — |
 | `resp` | preBotC → lung → ob → mtl_ctx | 65–177 ms | + | 6–15 Hz | — |
+| `bg_indirect` | pmc → striatum → gpe → stn → gpi → va_vl_bg | 15–32 ms | - | 16–33 Hz | — |
+| `bg_hyperdirect` | pmc → stn → gpi → va_vl_bg | 8–18 ms | - | 28–62 Hz | — |
+| `ca3_recurrent` | ca3 → ca3 | 3–7 ms | - | 71–167 Hz | — |
+| `septohpc` | ms → ca3 | 9–22 ms | + | 45–111 Hz | — |
+| `papez` | sub → mammillary → ant_thal → pcc → mtl_ctx | 25–62 ms | + | 16–40 Hz | — |
+| `sc_pulvinar` | retina → sc_coll → pulvinar → v_extra | 19–43 ms | + | 23–53 Hz | — |
+| `bf_cholinergic` | nbm → dlpfc | 25–60 ms | + | 17–40 Hz | — |
+| `vor` | vestibular → oculomotor → eye_muscle → vestibular | 8–18 ms | - | 28–62 Hz | — |
+| `hpa` | pvn → pituitary → adrenal | 450000–2.52e+06 ms | - | 0–0 Hz | — |
+| `baroreflex` | baroreceptor → nts → heart | 430–1160 ms | - | 0–1 Hz | — |
+| `ctx_ctx` | v_extra → ips | 25–60 ms | + | 17–40 Hz | — |
 | `circ` | scn → lc | 40–120 ms | + | 8–25 Hz | — |
 
 ## Stations that do not exist yet
 
-The atlas addresses 65 stations, and some of the ones these loops need are
+The atlas addresses 75 stations, and some of the ones these loops need are
 inside a blob or absent altogether. Listed here rather than glossed, because a loop drawn
 through a structure the model cannot address is a loop the model cannot have:
 
@@ -428,6 +529,16 @@ through a structure the model cannot address is a loop the model cannot have:
 - **suprachiasmatic nucleus** (`scn`) — NO label: the circadian clock is absent from this atlas
 - **nucleus basalis** (`nbm`) — NO label; cholinergic basal forebrain
 - **mesencephalic locomotor region** (`mlr`) — inside `brainstem`
+- **mammillary bodies** (`mammillary`) — NO label: the Papez circuit's relay is absent from this atlas
+- **anterior thalamic nuclei** (`ant_thal`) — the Papez and head-direction relay; inside `thalamus`
+- **vestibular nuclei** (`vestibular`) — inside `brainstem`
+- **cerebellar flocculus** (`flocculus`) — the vestibulo-cerebellum; inside the `cerebellum` blob
+- **oculomotor and abducens nuclei** (`oculomotor`) — inside `brainstem`
+- **paraventricular hypothalamus** (`pvn`) — NO label: the HPA axis's origin is absent from this atlas
+- **anterior pituitary** (`pituitary`) — NO label; endocrine, not neural tissue
+- **adrenal cortex** (`adrenal`) — IHM-1 owns the organs
+- **carotid and aortic baroreceptors** (`baroreceptor`) — IHM-1
+- **extraocular muscles** (`eye_muscle`) — IHM-1
 - **olfactory bulb** (`ob`) — NO label in this atlas
 - **lumbar central pattern generator** (`cord_lumbar`) — the CPG is a distributed interneuron network, not a segment
 - **skeletal muscle (EMG)** (`muscle`) — IHM-1 owns the muscles; the EEG/MEG graph has no body

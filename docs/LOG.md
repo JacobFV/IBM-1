@@ -6893,3 +6893,44 @@ parameters are swept.
 
 `tau_I` stays per-site: it is heterogeneity the model was missing, it is independent of the
 question above, and `tests/test_substrate.py` passes 7/7 with it.
+
+## 18 September 2026 — the twenty loops, checked one by one, and the five that were missing
+
+Prompted by a direct question: list the major loops of the brain from scratch, then say which
+are in the model. Doing it in that order — knowledge first, repo second — is the point, because
+a catalogue checked only against itself cannot find what was never written down.
+
+**Of twenty canonical loops: 3 running, 12 declared, 5 missing.** Running means it steps in
+time — the thalamo-cortico-thalamic loop, the local cortical E/I circuit, and cortico-cortical
+long-range coupling with tract delays. Declared means stations, a per-edge conduction budget, a
+band and a measure spec, with nothing executing.
+
+The five missing were the basal ganglia's **indirect** and **hyperdirect** pathways, **CA3's
+recurrent collaterals**, the **septo-hippocampal** theta loop, and the **Papez circuit**.
+Listing further found five more absent: collicular–pulvinar orienting, basal forebrain
+cholinergic, the vestibulo-ocular reflex, the HPA axis and the baroreflex.
+
+All eleven are now in `ibm/rhythms.py` (the eleventh is `ctx_ctx`, the cortico-cortical
+hierarchy — **which the model has been running all along and the catalogue never listed**,
+because the table was built around bands and that loop's signature is a gradient). The
+catalogue is now **64 rhythms over 37 loops and 75 stations**, and all 13 self-checks pass.
+
+Three of the new rows are worth naming:
+
+- **`pattern_completion`** (CA3 recurrent). The one place in the specification where
+  multistability is the *point* rather than a property — and a different way to get it than a
+  per-site sigmoid, which is exactly the open question left by today's operating-point
+  finding.
+- **`mayer_wave`** (baroreflex, 0.1 Hz). A rhythm that is a delay in a loop and nothing else,
+  which makes it the cleanest test of a conduction budget in the table. The round trip is
+  430–1160 ms and net inhibitory, so the bound allows 0.43–1.16 Hz and the measured 0.1 Hz
+  sits comfortably under it.
+- **`timescale_gradient`** (cortico-cortical). The model already has it:
+  `scripts/gate_substrate_v2.py` G4 measures rank correlation **0.85** between each site's
+  timescale and its declared hierarchy position, against 0.03 for a permuted control. Its
+  evidence stays `literature` because that is a measurement on the model, not on people.
+
+Ten new stations came with them, and **six have no atlas label at all**: the mammillary
+bodies, the paraventricular hypothalamus, the pituitary, the adrenal cortex, the
+baroreceptors and the extraocular muscles — on top of the subthalamic nucleus, medial septum,
+suprachiasmatic nucleus, nucleus basalis and olfactory bulb already listed.

@@ -176,6 +176,21 @@ STATIONS = {s.id: s for s in [
        "NO label: the circadian clock is absent from this atlas"),
     _S("nbm", "nucleus basalis", "brainstem", (), "NO label; cholinergic basal forebrain"),
     _S("mlr", "mesencephalic locomotor region", "brainstem", ("brainstem",), "inside `brainstem`"),
+    _S("mammillary", "mammillary bodies", "mtl", (),
+       "NO label: the Papez circuit's relay is absent from this atlas"),
+    _S("ant_thal", "anterior thalamic nuclei", "thalamus", ("thalamus",),
+       "the Papez and head-direction relay; inside `thalamus`"),
+    _S("vestibular", "vestibular nuclei", "brainstem", ("brainstem",), "inside `brainstem`"),
+    _S("flocculus", "cerebellar flocculus", "cerebellum", ("cerebellum",),
+       "the vestibulo-cerebellum; inside the `cerebellum` blob"),
+    _S("oculomotor", "oculomotor and abducens nuclei", "brainstem", ("brainstem",),
+       "inside `brainstem`"),
+    _S("pvn", "paraventricular hypothalamus", "brainstem", (),
+       "NO label: the HPA axis's origin is absent from this atlas"),
+    _S("pituitary", "anterior pituitary", "body", (), "NO label; endocrine, not neural tissue"),
+    _S("adrenal", "adrenal cortex", "body", (), "IHM-1 owns the organs"),
+    _S("baroreceptor", "carotid and aortic baroreceptors", "body", (), "IHM-1"),
+    _S("eye_muscle", "extraocular muscles", "body", (), "IHM-1"),
 
     # ---- periphery and body ----------------------------------------------------------
     _S("retina", "retina", "periphery", ("retina",), ""),
@@ -436,6 +451,88 @@ LOOPS = {l.id: l for l in [
         ("lung", "ob", (30.0, 80.0), "+", "airflow through the nose is the stimulus"),
         ("ob", "mtl_ctx", (10.0, 25.0), "+"),
         ("mtl_ctx", "ca1", (5.0, 12.0), "+")]),
+
+    _L("bg_indirect", "basal-ganglia indirect pathway",
+       "The arm that suppresses what was not chosen: striatum inhibits the external pallidum, "
+       "which releases the subthalamic nucleus, which drives the output nucleus harder.",
+       [("pmc", "striatum", (3.0, 8.0), "+", "D2 medium spiny neurons"),
+        ("striatum", "gpe", (3.0, 6.0), "-"),
+        ("gpe", "stn", (3.0, 5.0), "-", "releasing the STN is the point of this arm"),
+        ("stn", "gpi", (2.0, 4.0), "+"),
+        ("gpi", "va_vl_bg", (2.0, 5.0), "-"),
+        ("va_vl_bg", "pmc", (2.0, 4.0), "+")]),
+
+    _L("bg_hyperdirect", "basal-ganglia hyperdirect pathway",
+       "Cortex reaches the subthalamic nucleus straight, skipping the striatum, and can stop a "
+       "movement already under way faster than the loop that started it.",
+       [("pmc", "stn", (2.0, 5.0), "+", "the fastest route out of cortex into the BG"),
+        ("stn", "gpi", (2.0, 4.0), "+"),
+        ("gpi", "va_vl_bg", (2.0, 5.0), "-"),
+        ("va_vl_bg", "pmc", (2.0, 4.0), "+")]),
+
+    _L("ca3_recurrent", "CA3 recurrent collaterals",
+       "The most densely recurrent excitatory network in the brain, wired onto itself: the "
+       "structure autoassociation and pattern completion are attributed to.",
+       [("ca3", "ca3", (1.0, 3.0), "+", "recurrent collateral onto another CA3 pyramid"),
+        ("ca3", "ca3", (2.0, 4.0), "-", "and onto the basket cells that keep it from running away")]),
+
+    _L("septohpc", "septo-hippocampal theta",
+       "The medial septum paces the hippocampus and the hippocampus answers: the pacemaker "
+       "theta is attributed to, and it is a loop rather than a clock handed in from outside.",
+       [("ms", "ca3", (4.0, 10.0), "+", "cholinergic and GABAergic, onto interneurons"),
+        ("ca3", "ms", (5.0, 12.0), "+", "the hippocampal return through the fornix")]),
+
+    _L("papez", "Papez circuit",
+       "Hippocampus to mammillary bodies to anterior thalamus to cingulate and back: the "
+       "circuit episodic memory and head direction both run through.",
+       [("sub", "mammillary", (8.0, 20.0), "+", "the fornix"),
+        ("mammillary", "ant_thal", (3.0, 8.0), "+", "the mammillothalamic tract"),
+        ("ant_thal", "pcc", (3.0, 8.0), "+"),
+        ("pcc", "mtl_ctx", (8.0, 18.0), "+", "cingulum bundle"),
+        ("mtl_ctx", "sub", (3.0, 8.0), "+")]),
+
+    _L("sc_pulvinar", "collicular-pulvinar orienting",
+       "The second visual pathway: retina to superior colliculus to pulvinar to cortex, which "
+       "orients toward something before the geniculate route has identified it.",
+       [("retina", "sc_coll", (8.0, 15.0), "+"),
+        ("sc_coll", "pulvinar", (3.0, 8.0), "+"),
+        ("pulvinar", "v_extra", (3.0, 8.0), "+"),
+        ("v_extra", "pulvinar", (5.0, 12.0), "+", "the cortical return that makes it a loop")]),
+
+    _L("bf_cholinergic", "basal forebrain cholinergic",
+       "The nucleus basalis sets cortical gain and desynchronises the cortex, and cortex tells "
+       "it when to: attention as a loop rather than a multiplier applied from outside.",
+       [("nbm", "dlpfc", (10.0, 25.0), "+", "slow, thin, widely branching cholinergic axons"),
+        ("dlpfc", "nbm", (15.0, 35.0), "+")]),
+
+    _L("vor", "vestibulo-ocular reflex",
+       "Three neurons from the semicircular canal to the eye muscle, with the cerebellar "
+       "flocculus learning the gain: the fastest closed loop in the brain, and it closes "
+       "through the world.",
+       [("vestibular", "oculomotor", (2.0, 4.0), "-", "the direct arc"),
+        ("oculomotor", "eye_muscle", (3.0, 6.0), "+"),
+        ("eye_muscle", "vestibular", (1.0, 3.0), "+", "the eye moves, the head signal changes"),
+        ("vestibular", "flocculus", (2.0, 5.0), "+", "the arm that learns the gain")]),
+
+    _L("hpa", "hypothalamic-pituitary-adrenal axis",
+       "The slowest loop in the body: hypothalamus to pituitary to adrenal cortex and back as "
+       "cortisol, which shuts its own origin off hours later.",
+       [("pvn", "pituitary", (30000.0, 120000.0), "+", "CRH, in the portal circulation"),
+        ("pituitary", "adrenal", (120000.0, 600000.0), "+", "ACTH, in the bloodstream"),
+        ("adrenal", "pvn", (300000.0, 1800000.0), "-", "cortisol's negative feedback")]),
+
+    _L("baroreflex", "baroreflex",
+       "Blood pressure read at the carotid, answered at the heart, and the answer changes the "
+       "pressure: a loop whose delay is long enough to make its own oscillation.",
+       [("baroreceptor", "nts", (30.0, 60.0), "+"),
+        ("nts", "heart", (100.0, 300.0), "-", "vagal efferent slows the heart"),
+        ("heart", "baroreceptor", (300.0, 800.0), "+", "the mechanical return")]),
+
+    _L("ctx_ctx", "cortico-cortical hierarchy",
+       "Feedforward up the hierarchy and feedback down it, over association fibres whose "
+       "conduction time is a real part of the computation.",
+       [("v_extra", "ips", (10.0, 25.0), "+", "feedforward"),
+        ("ips", "v_extra", (15.0, 35.0), "+", "feedback, slower and more diffuse")]),
 
     _L("circ", "suprachiasmatic circadian",
        "A transcriptional clock with a period near a day, which every other rhythm here is "
@@ -1035,6 +1132,105 @@ RHYTHMS = [
        "if anything slightly narrow. The catalogue had no row for scalp beta at all -- its "
        "only 13-30 Hz resting row is `beta_bg` in the subthalamic nucleus, and a scalp "
        "measurement must never be used to confirm that one."),
+
+    # ---------------------------------------------------------------- the loops added
+    # on 18 Sep 2026 after listing the major loops from scratch and checking each against
+    # this table.  Five of the twenty were not here at all; these are their rows.
+    _R("stop_signal", "stopping a movement already under way", "bg_hyperdirect", None, None,
+       ("wake-task", "movement"), "network",
+       "Cortex reaches the subthalamic nucleus without passing through the striatum, and can "
+       "cancel a movement in about 150 ms -- faster than the loop that launched it. Not a "
+       "band: a latency and an outcome.",
+       dict(kind="selection_contrast", stations=("pmc", "stn", "gpi"), target=(0.8, 1.0),
+            latency_ms=(120.0, 200.0)),
+       "target", "needs-basal-ganglia", ("Aron & Poldrack 2006", "Schmidt 2013")),
+
+    _R("pattern_completion", "completing a pattern from a fragment", "ca3_recurrent",
+       None, None,
+       ("retrieval", "quiet-wake"), "network",
+       "CA3's recurrent collaterals are wired onto themselves densely enough to hold an "
+       "attractor, so a fragment of a stored pattern settles into the whole of it. This is "
+       "the one place in the specification where multistability is the POINT rather than a "
+       "property, and it is a different way to get it than a per-site sigmoid.",
+       dict(kind="completion_accuracy", stations=("ca3",), target=(0.7, 1.0)),
+       "target", "needs-hippocampal-subfields", ("Marr 1971", "Nakazawa 2002")),
+
+    _R("theta_reset", "theta reset by a salient input", "septohpc", (3.0, 8.0), None,
+       ("encoding", "wake-task"), "network",
+       "A salient stimulus resets the phase of the septo-hippocampal theta, so the cycle that "
+       "encodes it starts when it arrives. A pacemaker that cannot be reset is a clock bolted "
+       "on; one that can is part of the circuit.",
+       dict(kind="phase_reset", band=(3.0, 8.0), stations=("ca3", "ca1"), target=(0.2, 0.8)),
+       "target", "needs-hippocampal-subfields", ("Buzsaki 2002", "Givens 1996")),
+
+    _R("head_direction", "the head-direction signal", "papez", None, None,
+       ("movement", "exploration"), "network",
+       "Cells in the anterior thalamus fire for the direction the head points, whatever the "
+       "place. The signal survives without vision, so it is maintained by the loop rather "
+       "than read off the world.",
+       dict(kind="tuning_stability", stations=("ant_thal", "sub"), target=(0.6, 1.0)),
+       "target", "needs-hippocampal-subfields+body", ("Taube 1990", "Winter 2015")),
+
+    _R("pulvinar_alpha", "pulvinar alpha and the second visual route", "sc_pulvinar",
+       (8.0, 13.0), 10.0,
+       ("wake-eyes-open", "wake-task"), "loop delay",
+       "The colliculo-pulvinar route carries an alpha rhythm of its own and paces the "
+       "cortical areas it reaches, which is one account of how attention samples.",
+       dict(kind="peak_prominence", band=(8.0, 13.0), stations=("pulvinar", "v_extra"),
+            target=(0.1, 1.0)),
+       "target", "needs-thalamus", ("Saalmann 2012", "Zhou 2016")),
+
+    _R("cholinergic_desync", "acetylcholine desynchronises the cortex", "bf_cholinergic",
+       (1.0, 8.0), None,
+       ("wake-task", "wake-rest"), "network",
+       "Basal forebrain activity flattens low-frequency cortical power and raises gain. The "
+       "goal is that attention is a state the loop enters, not a multiplier applied to a "
+       "layer from outside it.",
+       dict(kind="state_contrast", band=(1.0, 8.0), stations=("dlpfc", "v_extra"),
+            states=("wake-rest", "wake-task"), target=(1.2, 3.0)),
+       "target", "needs-neuromodulators", ("Buzsaki 1988", "Harris & Thiele 2011")),
+
+    _R("vor_gain", "the vestibulo-ocular reflex's gain", "vor", None, None,
+       ("movement", "posture"), "loop delay",
+       "The eye counter-rotates the head's movement at a gain near 1 with a latency near "
+       "10 ms, and the cerebellum re-learns that gain when the optics change. Three neurons, "
+       "and the loop closes through the world rather than inside the head.",
+       dict(kind="reflex_gain", stations=("vestibular", "oculomotor", "eye_muscle"),
+            target=(0.85, 1.05), latency_ms=(7.0, 14.0)),
+       "target", "needs-body+cerebellum", ("Robinson 1976", "Lisberger 1988")),
+
+    _R("cortisol_ultradian", "cortisol pulses", "hpa", (2.0e-4, 4.0e-4), 2.8e-4,
+       ("all",), "time constants",
+       "The adrenal answers the pituitary in pulses about an hour apart, and the whole axis "
+       "sits inside the circadian envelope. The slowest loop that still counts as a rhythm.",
+       dict(kind="peak_prominence", band=(2.0e-4, 4.0e-4), stations=("pvn",), target=(0.2, 1.5)),
+       "target", "needs-hypothalamus", ("Lightman & Conway-Campbell 2010",)),
+
+    _R("mayer_wave", "Mayer waves", "baroreflex", (0.08, 0.12), 0.1,
+       ("wake-rest", "posture"), "loop delay",
+       "Blood pressure oscillates near 0.1 Hz because the baroreflex answers too slowly not "
+       "to overshoot -- a rhythm that is a delay in a loop and nothing else, which makes it "
+       "the cleanest test of a conduction budget in the whole table.",
+       dict(kind="peak_prominence", band=(0.08, 0.12), stations=("heart", "insula"),
+            target=(0.2, 1.5)),
+       "target", "needs-body", ("Julien 2006",),
+       note="The round trip is 430-1160 ms and net inhibitory, so the bound allows "
+            "0.43-1.16 Hz: the measured 0.1 Hz sits comfortably under it, and a model that "
+            "produced Mayer waves with a faster loop would be producing them for the wrong "
+            "reason."),
+
+    _R("timescale_gradient", "the intrinsic timescale gradient", "ctx_ctx", None, None,
+       ("wake-rest", "wake-task"), "network",
+       "Activity decorrelates in tens of milliseconds in sensory cortex and in hundreds in "
+       "association cortex, and the ordering follows the hierarchy. Not a band -- a gradient "
+       "-- and it is the signature of the one loop in this table that the model already runs.",
+       dict(kind="timescale_correlation", stations=("v1", "v_extra", "ips", "dlpfc", "pcc"),
+            target=(0.5, 1.0)),
+       "literature", "expressible", ("Murray 2014", "Raut 2020"), (),
+       "The cortical field HAS this: `scripts/gate_substrate_v2.py` G4 measures a rank "
+       "correlation of 0.85 between each site's measured timescale and its declared place on "
+       "the hierarchy, against 0.03 for a permuted control. That is a measurement on the "
+       "MODEL, not on people, which is why the row's evidence stays `literature`."),
 
     _R("stretch_reflex_resonance", "the stretch reflex's own resonance", "stretch_reflex",
        (6.0, 12.0), 9.0,

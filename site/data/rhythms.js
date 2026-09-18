@@ -1544,6 +1544,654 @@ window.IBM_RHYTHMS = {
    ]
   },
   {
+   "id": "bg_indirect",
+   "name": "basal-ganglia indirect pathway",
+   "summary": "The arm that suppresses what was not chosen: striatum inhibits the external pallidum, which releases the subthalamic nucleus, which drives the output nucleus harder.",
+   "tile": "",
+   "ring": [
+    {
+     "station": "pmc",
+     "name": "premotor and supplementary motor cortex",
+     "labels": [
+      "caudalmiddlefrontal",
+      "paracentral"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      3.0,
+      8.0
+     ]
+    },
+    {
+     "station": "striatum",
+     "name": "striatum",
+     "labels": [
+      "caudate",
+      "putamen"
+     ],
+     "sign": "-",
+     "delay_ms": [
+      3.0,
+      6.0
+     ]
+    },
+    {
+     "station": "gpe",
+     "name": "external pallidum",
+     "labels": [
+      "pallidum"
+     ],
+     "sign": "-",
+     "delay_ms": [
+      3.0,
+      5.0
+     ]
+    },
+    {
+     "station": "stn",
+     "name": "subthalamic nucleus",
+     "labels": [],
+     "sign": "+",
+     "delay_ms": [
+      2.0,
+      4.0
+     ]
+    },
+    {
+     "station": "gpi",
+     "name": "internal pallidum",
+     "labels": [
+      "pallidum"
+     ],
+     "sign": "-",
+     "delay_ms": [
+      2.0,
+      5.0
+     ]
+    },
+    {
+     "station": "va_vl_bg",
+     "name": "ventroanterior thalamus",
+     "labels": [
+      "thalamus"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      2.0,
+      4.0
+     ]
+    }
+   ],
+   "round_trip_ms": [
+    15.0,
+    32.0
+   ],
+   "net": "-",
+   "band": null,
+   "peak": null,
+   "rhythms": []
+  },
+  {
+   "id": "bg_hyperdirect",
+   "name": "basal-ganglia hyperdirect pathway",
+   "summary": "Cortex reaches the subthalamic nucleus straight, skipping the striatum, and can stop a movement already under way faster than the loop that started it.",
+   "tile": "",
+   "ring": [
+    {
+     "station": "pmc",
+     "name": "premotor and supplementary motor cortex",
+     "labels": [
+      "caudalmiddlefrontal",
+      "paracentral"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      2.0,
+      5.0
+     ]
+    },
+    {
+     "station": "stn",
+     "name": "subthalamic nucleus",
+     "labels": [],
+     "sign": "+",
+     "delay_ms": [
+      2.0,
+      4.0
+     ]
+    },
+    {
+     "station": "gpi",
+     "name": "internal pallidum",
+     "labels": [
+      "pallidum"
+     ],
+     "sign": "-",
+     "delay_ms": [
+      2.0,
+      5.0
+     ]
+    },
+    {
+     "station": "va_vl_bg",
+     "name": "ventroanterior thalamus",
+     "labels": [
+      "thalamus"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      2.0,
+      4.0
+     ]
+    }
+   ],
+   "round_trip_ms": [
+    8.0,
+    18.0
+   ],
+   "net": "-",
+   "band": null,
+   "peak": null,
+   "rhythms": [
+    "stop_signal"
+   ]
+  },
+  {
+   "id": "ca3_recurrent",
+   "name": "CA3 recurrent collaterals",
+   "summary": "The most densely recurrent excitatory network in the brain, wired onto itself: the structure autoassociation and pattern completion are attributed to.",
+   "tile": "",
+   "ring": [
+    {
+     "station": "ca3",
+     "name": "CA3",
+     "labels": [
+      "hippocampus"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      1.0,
+      3.0
+     ]
+    },
+    {
+     "station": "ca3",
+     "name": "CA3",
+     "labels": [
+      "hippocampus"
+     ],
+     "sign": "-",
+     "delay_ms": [
+      2.0,
+      4.0
+     ]
+    }
+   ],
+   "round_trip_ms": [
+    3.0,
+    7.0
+   ],
+   "net": "-",
+   "band": null,
+   "peak": null,
+   "rhythms": [
+    "pattern_completion"
+   ]
+  },
+  {
+   "id": "septohpc",
+   "name": "septo-hippocampal theta",
+   "summary": "The medial septum paces the hippocampus and the hippocampus answers: the pacemaker theta is attributed to, and it is a loop rather than a clock handed in from outside.",
+   "tile": "",
+   "ring": [
+    {
+     "station": "ms",
+     "name": "medial septum / diagonal band",
+     "labels": [],
+     "sign": "+",
+     "delay_ms": [
+      4.0,
+      10.0
+     ]
+    },
+    {
+     "station": "ca3",
+     "name": "CA3",
+     "labels": [
+      "hippocampus"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      5.0,
+      12.0
+     ]
+    }
+   ],
+   "round_trip_ms": [
+    9.0,
+    22.0
+   ],
+   "net": "+",
+   "band": [
+    3.0,
+    8.0
+   ],
+   "peak": null,
+   "rhythms": [
+    "theta_reset"
+   ]
+  },
+  {
+   "id": "papez",
+   "name": "Papez circuit",
+   "summary": "Hippocampus to mammillary bodies to anterior thalamus to cingulate and back: the circuit episodic memory and head direction both run through.",
+   "tile": "",
+   "ring": [
+    {
+     "station": "sub",
+     "name": "subiculum",
+     "labels": [
+      "hippocampus"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      8.0,
+      20.0
+     ]
+    },
+    {
+     "station": "mammillary",
+     "name": "mammillary bodies",
+     "labels": [],
+     "sign": "+",
+     "delay_ms": [
+      3.0,
+      8.0
+     ]
+    },
+    {
+     "station": "ant_thal",
+     "name": "anterior thalamic nuclei",
+     "labels": [
+      "thalamus"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      3.0,
+      8.0
+     ]
+    },
+    {
+     "station": "pcc",
+     "name": "posterior cingulate and precuneus",
+     "labels": [
+      "posteriorcingulate",
+      "isthmuscingulate",
+      "precuneus"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      8.0,
+      18.0
+     ]
+    },
+    {
+     "station": "mtl_ctx",
+     "name": "parahippocampal and entorhinal cortex",
+     "labels": [
+      "entorhinal",
+      "parahippocampal"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      3.0,
+      8.0
+     ]
+    }
+   ],
+   "round_trip_ms": [
+    25.0,
+    62.0
+   ],
+   "net": "+",
+   "band": null,
+   "peak": null,
+   "rhythms": [
+    "head_direction"
+   ]
+  },
+  {
+   "id": "sc_pulvinar",
+   "name": "collicular-pulvinar orienting",
+   "summary": "The second visual pathway: retina to superior colliculus to pulvinar to cortex, which orients toward something before the geniculate route has identified it.",
+   "tile": "",
+   "ring": [
+    {
+     "station": "retina",
+     "name": "retina",
+     "labels": [
+      "retina"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      8.0,
+      15.0
+     ]
+    },
+    {
+     "station": "sc_coll",
+     "name": "superior colliculus",
+     "labels": [
+      "brainstem"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      3.0,
+      8.0
+     ]
+    },
+    {
+     "station": "pulvinar",
+     "name": "pulvinar",
+     "labels": [
+      "thalamus"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      3.0,
+      8.0
+     ]
+    },
+    {
+     "station": "v_extra",
+     "name": "extrastriate visual cortex",
+     "labels": [
+      "lateraloccipital",
+      "cuneus",
+      "lingual",
+      "fusiform"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      5.0,
+      12.0
+     ]
+    }
+   ],
+   "round_trip_ms": [
+    19.0,
+    43.0
+   ],
+   "net": "+",
+   "band": [
+    8.0,
+    13.0
+   ],
+   "peak": 10.0,
+   "rhythms": [
+    "pulvinar_alpha"
+   ]
+  },
+  {
+   "id": "bf_cholinergic",
+   "name": "basal forebrain cholinergic",
+   "summary": "The nucleus basalis sets cortical gain and desynchronises the cortex, and cortex tells it when to: attention as a loop rather than a multiplier applied from outside.",
+   "tile": "",
+   "ring": [
+    {
+     "station": "nbm",
+     "name": "nucleus basalis",
+     "labels": [],
+     "sign": "+",
+     "delay_ms": [
+      10.0,
+      25.0
+     ]
+    },
+    {
+     "station": "dlpfc",
+     "name": "dorsolateral prefrontal cortex",
+     "labels": [
+      "rostralmiddlefrontal",
+      "superiorfrontal"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      15.0,
+      35.0
+     ]
+    }
+   ],
+   "round_trip_ms": [
+    25.0,
+    60.0
+   ],
+   "net": "+",
+   "band": [
+    1.0,
+    8.0
+   ],
+   "peak": null,
+   "rhythms": [
+    "cholinergic_desync"
+   ]
+  },
+  {
+   "id": "vor",
+   "name": "vestibulo-ocular reflex",
+   "summary": "Three neurons from the semicircular canal to the eye muscle, with the cerebellar flocculus learning the gain: the fastest closed loop in the brain, and it closes through the world.",
+   "tile": "",
+   "ring": [
+    {
+     "station": "vestibular",
+     "name": "vestibular nuclei",
+     "labels": [
+      "brainstem"
+     ],
+     "sign": "-",
+     "delay_ms": [
+      2.0,
+      4.0
+     ]
+    },
+    {
+     "station": "oculomotor",
+     "name": "oculomotor and abducens nuclei",
+     "labels": [
+      "brainstem"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      3.0,
+      6.0
+     ]
+    },
+    {
+     "station": "eye_muscle",
+     "name": "extraocular muscles",
+     "labels": [],
+     "sign": "+",
+     "delay_ms": [
+      1.0,
+      3.0
+     ]
+    },
+    {
+     "station": "vestibular",
+     "name": "vestibular nuclei",
+     "labels": [
+      "brainstem"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      2.0,
+      5.0
+     ]
+    }
+   ],
+   "round_trip_ms": [
+    8.0,
+    18.0
+   ],
+   "net": "-",
+   "band": null,
+   "peak": null,
+   "rhythms": [
+    "vor_gain"
+   ]
+  },
+  {
+   "id": "hpa",
+   "name": "hypothalamic-pituitary-adrenal axis",
+   "summary": "The slowest loop in the body: hypothalamus to pituitary to adrenal cortex and back as cortisol, which shuts its own origin off hours later.",
+   "tile": "",
+   "ring": [
+    {
+     "station": "pvn",
+     "name": "paraventricular hypothalamus",
+     "labels": [],
+     "sign": "+",
+     "delay_ms": [
+      30000.0,
+      120000.0
+     ]
+    },
+    {
+     "station": "pituitary",
+     "name": "anterior pituitary",
+     "labels": [],
+     "sign": "+",
+     "delay_ms": [
+      120000.0,
+      600000.0
+     ]
+    },
+    {
+     "station": "adrenal",
+     "name": "adrenal cortex",
+     "labels": [],
+     "sign": "-",
+     "delay_ms": [
+      300000.0,
+      1800000.0
+     ]
+    }
+   ],
+   "round_trip_ms": [
+    450000.0,
+    2520000.0
+   ],
+   "net": "-",
+   "band": [
+    0.0002,
+    0.0004
+   ],
+   "peak": 0.00028,
+   "rhythms": [
+    "cortisol_ultradian"
+   ]
+  },
+  {
+   "id": "baroreflex",
+   "name": "baroreflex",
+   "summary": "Blood pressure read at the carotid, answered at the heart, and the answer changes the pressure: a loop whose delay is long enough to make its own oscillation.",
+   "tile": "",
+   "ring": [
+    {
+     "station": "baroreceptor",
+     "name": "carotid and aortic baroreceptors",
+     "labels": [],
+     "sign": "+",
+     "delay_ms": [
+      30.0,
+      60.0
+     ]
+    },
+    {
+     "station": "nts",
+     "name": "nucleus of the solitary tract",
+     "labels": [
+      "brainstem"
+     ],
+     "sign": "-",
+     "delay_ms": [
+      100.0,
+      300.0
+     ]
+    },
+    {
+     "station": "heart",
+     "name": "heart",
+     "labels": [],
+     "sign": "+",
+     "delay_ms": [
+      300.0,
+      800.0
+     ]
+    }
+   ],
+   "round_trip_ms": [
+    430.0,
+    1160.0
+   ],
+   "net": "-",
+   "band": [
+    0.08,
+    0.12
+   ],
+   "peak": 0.1,
+   "rhythms": [
+    "mayer_wave"
+   ]
+  },
+  {
+   "id": "ctx_ctx",
+   "name": "cortico-cortical hierarchy",
+   "summary": "Feedforward up the hierarchy and feedback down it, over association fibres whose conduction time is a real part of the computation.",
+   "tile": "",
+   "ring": [
+    {
+     "station": "v_extra",
+     "name": "extrastriate visual cortex",
+     "labels": [
+      "lateraloccipital",
+      "cuneus",
+      "lingual",
+      "fusiform"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      10.0,
+      25.0
+     ]
+    },
+    {
+     "station": "ips",
+     "name": "intraparietal / superior parietal cortex",
+     "labels": [
+      "superiorparietal",
+      "inferiorparietal",
+      "supramarginal"
+     ],
+     "sign": "+",
+     "delay_ms": [
+      15.0,
+      35.0
+     ]
+    }
+   ],
+   "round_trip_ms": [
+    25.0,
+    60.0
+   ],
+   "net": "+",
+   "band": null,
+   "peak": null,
+   "rhythms": [
+    "timescale_gradient"
+   ]
+  },
+  {
    "id": "circ",
    "name": "suprachiasmatic circadian",
    "summary": "A transcriptional clock with a period near a day, which every other rhythm here is nested inside.",
@@ -2452,6 +3100,160 @@ window.IBM_RHYTHMS = {
    ],
    "mechanism": "A beta peak over posterior cortex at rest, standing above its own 1/f background. What generates it is not identified, and filing it under the local cortical E/I loop is a placement, not a claim: this row is a MEASURED SCALP CONSTRAINT that any future cortical beta claim has to beat.",
    "evidence": "measured-here",
+   "substrate": "expressible"
+  },
+  {
+   "id": "stop_signal",
+   "name": "stopping a movement already under way",
+   "loop": "bg_hyperdirect",
+   "band": null,
+   "peak": null,
+   "states": [
+    "wake-task",
+    "movement"
+   ],
+   "mechanism": "Cortex reaches the subthalamic nucleus without passing through the striatum, and can cancel a movement in about 150 ms -- faster than the loop that launched it. Not a band: a latency and an outcome.",
+   "evidence": "target",
+   "substrate": "needs-basal-ganglia"
+  },
+  {
+   "id": "pattern_completion",
+   "name": "completing a pattern from a fragment",
+   "loop": "ca3_recurrent",
+   "band": null,
+   "peak": null,
+   "states": [
+    "retrieval",
+    "quiet-wake"
+   ],
+   "mechanism": "CA3's recurrent collaterals are wired onto themselves densely enough to hold an attractor, so a fragment of a stored pattern settles into the whole of it. This is the one place in the specification where multistability is the POINT rather than a property, and it is a different way to get it than a per-site sigmoid.",
+   "evidence": "target",
+   "substrate": "needs-hippocampal-subfields"
+  },
+  {
+   "id": "theta_reset",
+   "name": "theta reset by a salient input",
+   "loop": "septohpc",
+   "band": [
+    3.0,
+    8.0
+   ],
+   "peak": null,
+   "states": [
+    "encoding",
+    "wake-task"
+   ],
+   "mechanism": "A salient stimulus resets the phase of the septo-hippocampal theta, so the cycle that encodes it starts when it arrives. A pacemaker that cannot be reset is a clock bolted on; one that can is part of the circuit.",
+   "evidence": "target",
+   "substrate": "needs-hippocampal-subfields"
+  },
+  {
+   "id": "head_direction",
+   "name": "the head-direction signal",
+   "loop": "papez",
+   "band": null,
+   "peak": null,
+   "states": [
+    "movement",
+    "exploration"
+   ],
+   "mechanism": "Cells in the anterior thalamus fire for the direction the head points, whatever the place. The signal survives without vision, so it is maintained by the loop rather than read off the world.",
+   "evidence": "target",
+   "substrate": "needs-hippocampal-subfields+body"
+  },
+  {
+   "id": "pulvinar_alpha",
+   "name": "pulvinar alpha and the second visual route",
+   "loop": "sc_pulvinar",
+   "band": [
+    8.0,
+    13.0
+   ],
+   "peak": 10.0,
+   "states": [
+    "wake-eyes-open",
+    "wake-task"
+   ],
+   "mechanism": "The colliculo-pulvinar route carries an alpha rhythm of its own and paces the cortical areas it reaches, which is one account of how attention samples.",
+   "evidence": "target",
+   "substrate": "needs-thalamus"
+  },
+  {
+   "id": "cholinergic_desync",
+   "name": "acetylcholine desynchronises the cortex",
+   "loop": "bf_cholinergic",
+   "band": [
+    1.0,
+    8.0
+   ],
+   "peak": null,
+   "states": [
+    "wake-task",
+    "wake-rest"
+   ],
+   "mechanism": "Basal forebrain activity flattens low-frequency cortical power and raises gain. The goal is that attention is a state the loop enters, not a multiplier applied to a layer from outside it.",
+   "evidence": "target",
+   "substrate": "needs-neuromodulators"
+  },
+  {
+   "id": "vor_gain",
+   "name": "the vestibulo-ocular reflex's gain",
+   "loop": "vor",
+   "band": null,
+   "peak": null,
+   "states": [
+    "movement",
+    "posture"
+   ],
+   "mechanism": "The eye counter-rotates the head's movement at a gain near 1 with a latency near 10 ms, and the cerebellum re-learns that gain when the optics change. Three neurons, and the loop closes through the world rather than inside the head.",
+   "evidence": "target",
+   "substrate": "needs-body+cerebellum"
+  },
+  {
+   "id": "cortisol_ultradian",
+   "name": "cortisol pulses",
+   "loop": "hpa",
+   "band": [
+    0.0002,
+    0.0004
+   ],
+   "peak": 0.00028,
+   "states": [
+    "all"
+   ],
+   "mechanism": "The adrenal answers the pituitary in pulses about an hour apart, and the whole axis sits inside the circadian envelope. The slowest loop that still counts as a rhythm.",
+   "evidence": "target",
+   "substrate": "needs-hypothalamus"
+  },
+  {
+   "id": "mayer_wave",
+   "name": "Mayer waves",
+   "loop": "baroreflex",
+   "band": [
+    0.08,
+    0.12
+   ],
+   "peak": 0.1,
+   "states": [
+    "wake-rest",
+    "posture"
+   ],
+   "mechanism": "Blood pressure oscillates near 0.1 Hz because the baroreflex answers too slowly not to overshoot -- a rhythm that is a delay in a loop and nothing else, which makes it the cleanest test of a conduction budget in the whole table.",
+   "evidence": "target",
+   "substrate": "needs-body"
+  },
+  {
+   "id": "timescale_gradient",
+   "name": "the intrinsic timescale gradient",
+   "loop": "ctx_ctx",
+   "band": null,
+   "peak": null,
+   "states": [
+    "wake-rest",
+    "wake-task"
+   ],
+   "mechanism": "Activity decorrelates in tens of milliseconds in sensory cortex and in hundreds in association cortex, and the ordering follows the hierarchy. Not a band -- a gradient -- and it is the signature of the one loop in this table that the model already runs.",
+   "evidence": "literature",
    "substrate": "expressible"
   },
   {
