@@ -1,0 +1,10 @@
+  frame 0/7500  t=0s  |P| mean 0.000  4s
+  frame 1500/7500  t=60s  |P| mean 1.997  76s
+  frame 3000/7500  t=120s  |P| mean 2.475  183s
+  frame 4500/7500  t=180s  |P| mean 2.596  262s
+  frame 6000/7500  t=240s  |P| mean 2.673  331s
+/home/brandonin/Documents/IBM-1/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:3036: RuntimeWarning: invalid value encountered in divide
+  c /= stddev[:, None]
+/home/brandonin/Documents/IBM-1/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py:3037: RuntimeWarning: invalid value encountered in divide
+  c /= stddev[None, :]
+{"coordination_split": {"ported_ported": [null, 0], "unported_unported": [0.07669234037546281, 1081], "ported_unported": [null, 0], "n_ported_regions": 12}, "transitions": 590, "median_joint_dwell_s": 0.025, "distinct": 553, "revisited_ge2": 24, "region_dwell_median_s": 1.8900000000000001, "regions_that_switch": 47, "mean_pairwise_corr": 0.07669234037546281, "mean_rate_hz": 21.47557258605957, "passes_G3_thresholds": false}

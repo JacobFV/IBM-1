@@ -62,6 +62,44 @@ already written.
 ---
 
 
+## 2026-09-18 -- the split re-run: it reproduces the first run exactly, and the question it was asked has an empty answer
+
+`out/plasticity_v2_competitive_retinotopic_d0.6/` (re-run), learned P saved beside each as
+`*_P.pt` (git-ignored: CLAUDE.md, never commit weights).
+
+**Idempotence of the whole pipeline: PASS, 6 / 6.** Every re-run reproduces the first
+run's |P|, pairwise corr and transition count exactly, including A0, A1 and B0, whose
+files the first re-run destroyed. Sheet, ports, plasticity, noise and test are a
+function of the seed, end to end.
+
+**Which failure, ported-only or nothing? Neither can be shown, because the ported regions
+never switch.** In every seed, **zero** ported-ported and **zero** ported-unported pairs
+had any variance in the spontaneous test: all 11-12 ported regions stayed down for the
+whole 30 s. They are primary visual and auditory cortex (h <= 0.25), which the declared
+prior makes MONOSTABLE. That is the prior doing what it was designed to do, and it means
+the pre-registered question was ill-posed for this substrate. Plasticity writes structure
+where the input lands, in sensory cortex; the coordination measure can only see regions
+that CAN be up, in association cortex; and the input never reaches association cortex
+directly. All the coordination G3 measured (0.06-0.10) is among unported association
+regions, driven only indirectly.
+
+**What that implies for the design, stated before any further run:** a test of whether
+experience writes coordinated states has to measure coordination where the written
+structure CAN be expressed. That means either
+1. evoked, not spontaneous: probe after learning by re-presenting input and measuring
+   coordination while the ported regions are driven, against the shifted-input arm; or
+2. through the hierarchy: learning that reaches association cortex, which needs
+   feedforward association paths from the sensory ports (the connectome has them) to carry
+   drive during learning, and a test there.
+
+Both are new pre-registrations. The G3 line of work pauses here: plasticity is
+implemented, it passes its known answer (the planted groups), and it runs identically
+twice. What is not yet shown is whether real experience, delivered through these ports,
+writes coordination anywhere the tests can see.
+
+---
+
+
 ## 2026-09-18 -- RESULT: structure-preserving ports pass the known answer more clearly and still FAIL both verdicts. And a re-run overwrote three results.
 
 `--rule competitive --ports retinotopic --drive 0.6`, A/B x seeds 0-2. Thresholds as

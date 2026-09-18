@@ -1,0 +1,65 @@
+{
+  "arm": "B",
+  "rule": "competitive",
+  "ports": "retinotopic",
+  "drive_used": 0.6,
+  "seed": 2,
+  "films": [
+    "BigBoyRidesAgain",
+    "Detour_66",
+    "EveningsForSale1932Restored",
+    "IdentityUnknown"
+  ],
+  "learn_s": 300.0,
+  "eta": 0.033,
+  "lam": 0.5,
+  "sigma": 0.12,
+  "drive": 0.3,
+  "n_visual_sites": 116,
+  "n_auditory_sites": 63,
+  "P_long_mean_abs": 2.5713510513305664,
+  "P_long_frac_pos": 0.448974609375,
+  "P_long_p99_abs": 4.0,
+  "P_local_mean_abs": 2.749749183654785,
+  "ported_regions": [
+    "lh.cuneus",
+    "lh.lateraloccipital",
+    "lh.lingual",
+    "lh.pericalcarine",
+    "lh.superiortemporal",
+    "lh.transversetemporal",
+    "rh.cuneus",
+    "rh.lateraloccipital",
+    "rh.lingual",
+    "rh.pericalcarine",
+    "rh.superiortemporal",
+    "rh.transversetemporal"
+  ],
+  "test": {
+    "coordination_split": {
+      "ported_ported": [
+        null,
+        0
+      ],
+      "unported_unported": [
+        0.07669234037546281,
+        1081
+      ],
+      "ported_unported": [
+        null,
+        0
+      ],
+      "n_ported_regions": 12
+    },
+    "transitions": 590,
+    "median_joint_dwell_s": 0.025,
+    "distinct": 553,
+    "revisited_ge2": 24,
+    "region_dwell_median_s": 1.8900000000000001,
+    "regions_that_switch": 47,
+    "mean_pairwise_corr": 0.07669234037546281,
+    "mean_rate_hz": 21.47557258605957,
+    "passes_G3_thresholds": false
+  },
+  "seconds": 437.4
+}
