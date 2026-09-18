@@ -6340,12 +6340,20 @@ Three findings along the way:
 What is still missing is in `docs/DISCONNECTS.md` §1: no soft-tissue deformation, no neck or
 spine joints, no force back from the anatomy, and nothing calls the poser yet.
 
-## 18 September 2026 — research steps 1 and 2 WITHDRAWN by direction, not by result
+## 18 September 2026 — research steps 1 and 2 WITHDRAWN: they asked a question the programme was not asking
 
 Both running tests were *comparisons*: does the v1 cortex beat no cortex (step 1, five seeds), and
-does the v2 field beat a tuned echo-state network on held-out delay-period EEG (step 2). The
-programme's direction changed while they ran. v1 and generic-RNN baselines are no longer objects
-of study, so a test whose only output is a verdict about them has nothing to decide. Both were
+does the v2 field beat a tuned echo-state network on held-out delay-period EEG (step 2).
+
+**The direction did not change while they ran.** It was clarified, and what it cleared up was my
+own misreading of it — a misreading old enough that it had shaped a whole line of work. I had been
+running the programme as a search: build a substrate, put a generic baseline beside it, and let the
+comparison decide whether the substrate deserves to exist. That is not, and was never, what this
+programme is. It is to **build the brain we intend** — the anatomy, the loops, the rhythms — and
+shape it toward measured physiology. v1 and a tuned ESN were never objects of study; they are
+things a search would need and a construction does not.
+
+So a test whose only output is a verdict about them decides nothing we were asking. Both were
 stopped mid-run and are recorded here as **WITHDRAWN**. Neither passed, neither failed, and
 **no partial number from either may later be quoted as its result** — a test stopped part way
 through has a sample chosen by when I stopped it.
@@ -6373,8 +6381,8 @@ State at the moment each was stopped:
   fine for what the new direction wants from it: **measured band power, per subject, per
   condition**, a target for the substrate to be shaped toward rather than a label to decode.
 
-**What replaces them.** Stop asking whether an architecture happens to work, and build the brain
-we intend, then shape it toward measured physiology by every pressure we can write down:
+**What replaces them.** Not a new direction — the standing one, followed properly. Build the brain
+we intend, and shape it toward measured physiology by every pressure we can write down:
 anatomy (the connectome and its tract lengths), association, **and now the spectrum** — the
 brain's declared rhythms as a table, and a power-spectral term in the objective that pulls each
 loop toward its band. `docs/RHYTHMS.md` is the table; the next entry reports the instrument.

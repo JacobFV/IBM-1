@@ -421,3 +421,21 @@ only when it works.
   prune a trap that no longer exists, and add one the moment it bites.
 - **A caution that lives only in a conversation is one revision from being lost.** Put it in the
   script's header, the artefact, or the doc.
+
+## Construction, not search
+
+**This programme builds a brain to a specification; it does not search for one that scores
+well.** The work is to state what the brain must be — the anatomy, the loops, the rhythms, the
+spectra — and shape the model toward it by every pressure that can be written down. It is *not*
+to produce a candidate, stand a generic baseline beside it (an ESN, an ablated v1), and let the
+comparison decide whether the candidate deserves to exist.
+
+That misreading cost two pre-registered comparisons, withdrawn mid-run on 18 Sep 2026 with a
+GPU-week between them. The tell is a test whose only possible outputs are "the substrate earns
+its place" and "it does not": neither answer tells you what to build next, so the test was never
+worth running. A baseline is for **calibrating an instrument** — the ceiling regression that
+showed the delay-EEG features carry almost no stimulus information is exactly the right use of
+one — never for deciding what the thing should be.
+
+Before writing a test, write the sentence "this is what I want to build". If the test does not
+measure distance to that sentence, it is the wrong test.
