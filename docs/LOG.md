@@ -197,7 +197,20 @@ VERSIONED S3 urls) lists 4,757 more files, 63.7 GB:
 is the one the manifest describes and not whatever the bucket holds today. It writes
 `.part` files and renames each only once its size matches, re-fetches (and never trusts)
 any file present at the wrong size, and rewrites `raw/.fetch_summary.json` after every
-file. The outcome, and the card and `.location.yaml` update, follow when it completes.
+file. **COMPLETED 2026-09-18 14:07:** 4,757 fetched, 63.72 GB, **0 failed**, at ~7 MB/s over
+~5 h. A fresh dry run confirms **7,789 / 7,789** manifest files present at their exact
+manifest size, none at a wrong size. `.location.yaml` now records 7,790 files, 98.09 GiB.
+
+**What the working-memory task is**, read from the BIDS sidecars and behavioural tsv
+(structure only; no EEG signal has been examined): delayed colour recall. A memory array
+of 2, 4 or 6 coloured items (~0.5 s), a **~1.0 s retention interval with nothing on
+screen**, then a colour-wheel response screen and a mouse report. Events carry set size
+and phase (`memory_array_onset`, `retention_interval_onset`, `response_screen_onset`,
+`participant_response`). Per trial, the behavioural file records the set size, the target
+colour, every non-target colour and the reported colour, all in degrees. EEG: 62 channels
+at 1 kHz, FCz reference, ~32 min per subject. This is exactly the isolated-stimulus,
+real-delay design research step 2 needs, and it carries the remembered CONTENT, not only
+its presence.
 
 ---
 

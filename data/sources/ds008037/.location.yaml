@@ -1,9 +1,14 @@
 local_root: data/sources/ds008037/raw
 acquired_at: '2026-09-04'
-files: 3033
-bytes: 41600053165
-gib: 38.74
+completed_at: '2026-09-18'
+files: 7790
+bytes: 105321089939
+gib: 98.09
 checksums: deferred -- see checksums.txt
 note: bytes now live INSIDE the repository under raw/ and are gitignored; source_url above is the origin
   of record
 source_url: https://openneuro.org/datasets/ds008037
+completion: 2026-09-18, scripts/fetch_openneuro_manifest.py fetched the 4,757 files the deposit's
+  own manifest lists and 2026-09-04 had not (the working-memory and rest EEG and the behavioural
+  battery; 63.72 GB) from its VERSIONED urls; 0 failed; all 7,789 manifest files verified at their
+  manifest size.  files counts the manifest plus the openneuro manifest itself.
