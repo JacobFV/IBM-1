@@ -966,3 +966,14 @@ a.lin-ann-body:hover .lin-label { color: var(--accent); }
   .mz-mark b { font-size: 10px; }
 }
 }
+
+/* rail labels sit outside the roads group, so they keep full contrast and their links
+   stay clickable through the mask */
+.spine-labels { pointer-events: auto; }
+.spine-tap.is-wip { opacity: .35; }
+.spine-outlbl { font-family: var(--mono); font-size: 9.5px; letter-spacing: .06em;
+  line-height: 1.25; white-space: nowrap; }
+.spine-outlbl a { color: var(--accent); text-decoration: none; }
+.spine-outlbl a:hover { text-decoration: underline; }
+.spine-outlbl span { color: var(--muted); }
+.spine-outlbl i { font-style: normal; opacity: .75; }

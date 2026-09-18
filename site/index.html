@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="site.css?v=20260917171029">
+<link rel="stylesheet" href="site.css?v=20260917171754">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2307090f'/%3E%3Ccircle cx='11' cy='13' r='2.2' fill='%23f0b34a'/%3E%3Ccircle cx='21' cy='11' r='2.2' fill='%2363d3e6'/%3E%3Ccircle cx='17' cy='21' r='2.2' fill='%23e69422'/%3E%3Cpath d='M11 13L21 11L17 21Z' fill='none' stroke='%23e9e7e0' stroke-opacity='.5' stroke-width='.8'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -53,7 +53,7 @@
   <div class="spine-flow">
 
     <!-- ------------------------------------------------ the declaration -->
-    <section class="station st-full" data-station data-feed="declaration">
+    <section class="station st-full" data-station data-feed="film + audio" data-models="av_predictor">
       <div class="st-text">
         <h2>One Brain, Declared Once</h2>
         <p class="st-lede">Ask for a model — a region, a resolution, a bandwidth — and only the
@@ -66,7 +66,7 @@
     </section>
 
     <!-- ------------------------------------------------ EEG decoding -->
-    <section class="station" data-station data-feed="THINGS-EEG2">
+    <section class="station" data-station data-feed="THINGS-EEG2 · THINGS-images" data-models="eeg_to_image,visual_evoked">
       <div class="st-text">
         <h2>64-Channel EEG to Visual Thought Decoding</h2>
         <ul class="st-big">
@@ -80,7 +80,7 @@
     </section>
 
     <!-- ------------------------------------------------ sleep -->
-    <section class="station" data-station data-feed="sleep EEG">
+    <section class="station" data-station data-feed="LibriBrain MEG · sleep EEG" data-models="meg_encoder,av_meg_predictor">
       <div class="st-text">
         <h2>Sleep Rhythms From First Principles</h2>
         <p class="st-lede">Nobody fits these to the spectrum. One time constant is declared, the
@@ -98,7 +98,7 @@
     </section>
 
     <!-- ------------------------------------------------ the body -->
-    <section class="station" data-station data-feed="CMU mocap">
+    <section class="station" data-station data-feed="CMU mocap · BodyParts3D" data-models="body_kernel">
       <div class="st-text">
         <h2>Controlling a Musculoskeletal Human <em>En Simulo</em></h2>
         <p class="st-lede">A full body — bones, muscles, tendons — with the cortex closing the loop
@@ -118,7 +118,7 @@
     </section>
 
     <!-- ------------------------------------------------ stimulation -->
-    <section class="station st-wide" data-station data-feed="TMS-EEG">
+    <section class="station st-wide" data-station data-feed="TMS-EEG · MEP/coil pose" data-models="tms_response,plasticity_learning">
       <div class="st-text">
         <h2>Predicting TMS Effects on the Brain</h2>
         <ul class="st-figs">
@@ -190,12 +190,12 @@ ckpt = hf_hub_download(<span class="str">"<span data-rel="repo">jacob-valdez/ibm
 <div id="tip" class="tip" role="tooltip" hidden><span class="tip-text"></span><div class="tip-extra" hidden></div><a class="tip-link" href="#"></a></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="background.js?v=20260917171029"></script>
-<script src="data/graph.js?v=20260917171029"></script>
-<script src="data/registry.js?v=20260917171029"></script>
-<script src="data/cards.js?v=20260917171029"></script>
-<script src="data/releases.js?v=20260917171029"></script>
-<script src="brain.js?v=20260917171029"></script>
+<script src="background.js?v=20260917171754"></script>
+<script src="data/graph.js?v=20260917171754"></script>
+<script src="data/registry.js?v=20260917171754"></script>
+<script src="data/cards.js?v=20260917171754"></script>
+<script src="data/releases.js?v=20260917171754"></script>
+<script src="brain.js?v=20260917171754"></script>
 <div id="lightbox" class="lb" hidden>
   <button class="lb-close" aria-label="close">×</button>
   <button class="lb-nav lb-prev" aria-label="previous">‹</button>
@@ -203,13 +203,14 @@ ckpt = hf_hub_download(<span class="str">"<span data-rel="repo">jacob-valdez/ibm
   <div class="lb-stage"></div>
   <div class="lb-meta"><p class="lb-count"></p><h3></h3><p class="lb-cap"></p><p class="lb-desc"></p></div>
 </div>
-<script src="site.js?v=20260917171029"></script>
-<script src="data/body.js?v=20260917171029"></script>
-<script src="body.js?v=20260917171029"></script>
-<script src="data/retrieval.js?v=20260917171029"></script>
-<script src="retrieval.js?v=20260917171029"></script>
-<script src="materialize.js?v=20260917171029"></script>
-<script src="tms.js?v=20260917171029"></script>
-<script src="spine.js?v=20260917171029"></script>
+<script src="site.js?v=20260917171754"></script>
+<script src="data/body.js?v=20260917171754"></script>
+<script src="body.js?v=20260917171754"></script>
+<script src="data/retrieval.js?v=20260917171754"></script>
+<script src="retrieval.js?v=20260917171754"></script>
+<script src="materialize.js?v=20260917171754"></script>
+<script src="data/cortex.js?v=20260917171754"></script>
+<script src="tms.js?v=20260917171754"></script>
+<script src="spine.js?v=20260917171754"></script>
 </body>
 </html>

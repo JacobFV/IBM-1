@@ -42,11 +42,53 @@
   /* additive, so the cloud GLOWS against a dark page.  the atlas colours are mostly
      dark blues and purples: drawn normally at this size they vanish into the background,
      which is exactly what made the first pass look empty. */
+  /* the WRINKLED pial surface, when data/cortex.js is present.  the node cloud alone is a
+     sampling of an oct5 source space and reads as a smooth blob; this is the subject's own
+     folded cortex, same frame, so it drops straight in beside the scalp and the contacts. */
+  const CX = window.IBM_CORTEX;
+  let cortexMesh = null, cxPos = null, cxCol = null, cxBase = null, cxN = 0;
+  if (CX) {
+    const un = (b64) => { const s2 = atob(b64), u = new Uint8Array(s2.length);
+      for (let i = 0; i < s2.length; i++) u[i] = s2.charCodeAt(i); return u; };
+    const q = new Uint16Array(un(CX.pos).buffer);
+    const idx = new Uint16Array(un(CX.idx).buffer);
+    const rgb = un(CX.col);
+    cxN = CX.n_vertices;
+    cxPos = new Float32Array(cxN * 3);
+    for (let i = 0; i < cxN * 3; i++) cxPos[i] = (q[i] * CX.scale + CX.origin[i % 3]) * MM;
+    for (let i = 0; i < cxN; i++) {
+      cxPos[i * 3] -= ctr.x; cxPos[i * 3 + 1] -= ctr.y; cxPos[i * 3 + 2] -= ctr.z;
+    }
+    /* the aparc LUT is FreeSurfer's, and raw it is a bag of fully saturated primaries that
+       fights everything else on the page.  keep a third of the hue -- enough that a region
+       stays identifiable -- over a warm grey at the page's own value. */
+    cxBase = new Float32Array(cxN * 3);
+    for (let i = 0; i < cxN; i++) {
+      const r = rgb[i * 3] / 255, g = rgb[i * 3 + 1] / 255, b = rgb[i * 3 + 2] / 255;
+      const lum = 0.3 * r + 0.59 * g + 0.11 * b;
+      const tint = [lum * 0.92 + 0.10, lum * 0.88 + 0.085, lum * 0.82 + 0.075];
+      cxBase[i * 3] = (tint[0] + (r - lum) * 0.34) * 0.8;
+      cxBase[i * 3 + 1] = (tint[1] + (g - lum) * 0.34) * 0.8;
+      cxBase[i * 3 + 2] = (tint[2] + (b - lum) * 0.34) * 0.8;
+    }
+    cxCol = new Float32Array(cxBase);
+    const g2 = new T.BufferGeometry();
+    g2.setAttribute("position", new T.BufferAttribute(cxPos, 3));
+    g2.setAttribute("color", new T.BufferAttribute(cxCol, 3));
+    g2.setIndex(new T.BufferAttribute(idx, 1));
+    g2.computeVertexNormals();
+    cortexMesh = new T.Mesh(g2, new T.MeshStandardMaterial({
+      vertexColors: true, roughness: 0.92, metalness: 0.0,
+      flatShading: false, side: T.DoubleSide,
+    }));
+    world.add(cortexMesh);
+  }
+
   const brain = new T.Points(brainGeo, new T.PointsMaterial({
     size: 0.012, vertexColors: true, transparent: true, opacity: 1,
     sizeAttenuation: true, depthWrite: false, blending: T.AdditiveBlending,
   }));
-  world.add(brain);
+  if (!CX) world.add(brain);
 
   /* the scalp stays, as a wireframe hint of where the coil actually sits */
   const scalpGeo = new T.BufferGeometry();
@@ -106,7 +148,34 @@
     }
     brainGeo.attributes.color.needsUpdate = true;
   }
-  ripple(-1);
+  /* the same wave, over the surface vertices */
+  let cxDist = null, cxMax = 0;
+  if (CX) {
+    cxDist = new Float32Array(cxN);
+    for (let i = 0; i < cxN; i++) {
+      const dx = cxPos[i * 3] - target.p.x, dy = cxPos[i * 3 + 1] - target.p.y,
+            dz = cxPos[i * 3 + 2] - target.p.z;
+      cxDist[i] = Math.hypot(dx, dy, dz);
+      if (cxDist[i] > cxMax) cxMax = cxDist[i];
+    }
+  }
+  function rippleCortex(phase) {
+    if (!CX) return;
+    const front = phase * cxMax * 1.35;
+    for (let i = 0; i < cxN; i++) {
+      let amp = 0;
+      if (phase >= 0) {
+        const d = Math.abs(cxDist[i] - front);
+        amp = Math.exp(-(d * d) / (2 * 0.028 * 0.028)) * (1 - phase * 0.7) * 1.6;
+      }
+      amp = Math.min(1, amp);
+      cxCol[i * 3] = cxBase[i * 3] + (1 - cxBase[i * 3]) * amp;
+      cxCol[i * 3 + 1] = cxBase[i * 3 + 1] + (0.86 - cxBase[i * 3 + 1]) * amp;
+      cxCol[i * 3 + 2] = cxBase[i * 3 + 2] + (0.48 - cxBase[i * 3 + 2]) * amp;
+    }
+    cortexMesh.geometry.attributes.color.needsUpdate = true;
+  }
+  ripple(-1); rippleCortex(-1);
 
   /* ---------- the arm: Franka Panda, modified DH [a, d, alpha] ---------- */
   const DH = [
@@ -265,7 +334,7 @@
   });
 
   /* ---------- lighting, camera ---------- */
-  scene.add(new T.HemisphereLight(0xcfe0ff, 0x1a1208, 0.6));
+  scene.add(new T.HemisphereLight(0xcfe0ff, 0x1a1208, 0.85));
   const k1 = new T.DirectionalLight(0xfff2e0, 1.3); k1.position.set(1.6, 1.8, 1.4); scene.add(k1);
   const k2 = new T.DirectionalLight(0x8fb2ff, 0.4); k2.position.set(-1.5, 0.4, 0.9); scene.add(k2);
   const k3 = new T.DirectionalLight(0xffc98a, 0.7); k3.position.set(-0.6, 0.9, -1.8); scene.add(k3);
@@ -281,7 +350,7 @@
   const focus = new T.Vector3();
   function fit() {
     world.updateMatrixWorld(true);
-    const box = new T.Box3().setFromObject(brain);
+    const box = new T.Box3().setFromObject(cortexMesh || brain);
     if (box.isEmpty()) return;
     box.getCenter(focus);
     focus.lerp(coilAt, 0.18);                 /* bias toward the coil side */
@@ -333,7 +402,7 @@
     /* the pulse fires once the coil is seated, and the ripple runs from there */
     const T0 = 2.15, TR = 1.6;
     const phase = (t > T0 && t < T0 + TR) ? (t - T0) / TR : -1;
-    ripple(phase);
+    ripple(phase); rippleCortex(phase);
     coilMat.emissive.setHex(phase >= 0 && phase < 0.18 ? 0xf0b34a : 0x3a2400);
     hotMat.color.setHex(phase >= 0 ? 0xfff0cf : 0xf0b34a);
     place();
