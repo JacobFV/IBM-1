@@ -164,7 +164,7 @@ def circ_shift_sites(d, seed):
 
 
 @torch.no_grad()
-def spontaneous(field, seed):
+def spontaneous(field, seed, ported_regions=None):
     st = field.init_state(1)
     W = field.edge_weights()
     g = torch.Generator().manual_seed(seed + 303)
@@ -193,7 +193,22 @@ def spontaneous(field, seed):
     act = code[:, code.std(0) > 0].astype(float)
     pc = float(np.nanmean(np.corrcoef(act.T)[np.triu_indices(act.shape[1], 1)])) if act.shape[1] >= 2 else float("nan")
     revisited = sum(v >= 2 for v in visits.values())
-    return {"transitions": len(trans), "median_joint_dwell_s": float(np.median(dwell)),
+    # coordination SPLIT by whether a region receives input: added after the retinotopic
+    # run, whose pre-registration promised to say whether the PORTED regions coordinate
+    # while nothing else does -- and whose summaries could not say it.
+    split = None
+    if ported_regions is not None:
+        sw = code.std(0) > 0
+        Cm = np.corrcoef(code.T.astype(float))
+        pr = np.zeros(R, bool); pr[list(ported_regions)] = True
+        def mc(a, b, same):
+            m = np.outer(a & sw, b & sw)
+            if same: m = np.triu(m, 1)
+            v = Cm[m]; v = v[np.isfinite(v)]
+            return (float(v.mean()) if v.size else None, int(v.size))
+        split = {"ported_ported": mc(pr, pr, True), "unported_unported": mc(~pr, ~pr, True),
+                 "ported_unported": mc(pr, ~pr, False), "n_ported_regions": int(pr.sum())}
+    return {"coordination_split": split, "transitions": len(trans), "median_joint_dwell_s": float(np.median(dwell)),
             "distinct": len(visits), "revisited_ge2": revisited,
             "region_dwell_median_s": float(np.median(runs)) if runs else None,
             "regions_that_switch": int((code.std(0) > 0).sum()),
@@ -211,10 +226,24 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--learn-s", type=float, default=LEARN_S)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--overwrite", action="store_true",
+                    help="replace an existing COMPLETED result (refused by default)")
     a = ap.parse_args()
     tag = ("" if a.rule == "covariance" else "_competitive") + ("" if a.ports == "random" else f"_{a.ports}_d{a.drive:g}")
     out = a.out or f"out/plasticity_v2{tag}/{a.arm}_seed{a.seed}.json"
     os.makedirs(os.path.dirname(out), exist_ok=True)
+    # REFUSE TO OVERWRITE A FINISHED RESULT.  the first re-run of the retinotopic arms (to add
+    # region-split coordination) wrote into the same directory, and this script dumps its
+    # json at START, so three completed pre-registered results were replaced within seconds
+    # by stubs with no test in them.  their numbers survived only because they had been
+    # printed.  a completed result is now kept unless --overwrite is passed explicitly.
+    if os.path.exists(out) and not a.overwrite:
+        try:
+            if "test" in json.load(open(out)):
+                raise SystemExit(f"{out} holds a completed result; refusing to overwrite "
+                                 f"(pass --overwrite, or --out elsewhere)")
+        except (json.JSONDecodeError, OSError):
+            pass
     torch.set_num_threads(int(os.environ.get("THREADS", "4")))
     t0 = time.time()
     pr = Priors(); pr.sigma = SIGMA
@@ -301,7 +330,13 @@ def main():
                           "n_within_edges": int(within.sum()), "n_between_edges": int(between.sum()),
                           "P_elsewhere_mean": float(field.P[~(within | between)].mean())}
     json.dump(res, open(out, "w"), indent=2, default=jdefault)
-    res["test"] = spontaneous(field, a.seed)
+    # the learned structure IS the artefact, failed run or not (CLAUDE.md: publish what a
+    # failed run learned) -- saved before the test, which is the part that can raise
+    torch.save({"P": field.P.cpu(), "idx": field.idx.cpu(), "region_names": field.region_names,
+                "args": vars(a)}, out.replace(".json", "_P.pt"))
+    ported = sorted(set(field.region_id[vis].tolist()) | set(field.region_id[order].tolist()))
+    res["ported_regions"] = [field.region_list[i] for i in ported]
+    res["test"] = spontaneous(field, a.seed, ported)
     res["seconds"] = round(time.time() - t0, 1)
     json.dump(res, open(out, "w"), indent=2, default=jdefault)
     print(json.dumps(res["test"]), flush=True)

@@ -62,6 +62,48 @@ already written.
 ---
 
 
+## 2026-09-18 -- RESULT: structure-preserving ports pass the known answer more clearly and still FAIL both verdicts. And a re-run overwrote three results.
+
+`--rule competitive --ports retinotopic --drive 0.6`, A/B x seeds 0-2. Thresholds as
+pre-registered below.
+
+| arm | seed | |P| long | frac P>0 | pairwise corr | joint transitions | revisited | region dwell | regions switching | rate |
+|---|---|---|---|---|---|---|---|---|---|
+| A | 0 | 2.410 | 0.42 | 0.061 | 881 | 104 | 0.49 s | 48 | 20.5 Hz |
+| A | 1 | 2.460 | 0.41 | 0.083 | 787 | 78 | 0.77 s | 48 | 22.7 Hz |
+| A | 2 | 2.712 | 0.43 | 0.099 | 565 | 31 | 1.72 s | 46 | 21.4 Hz |
+| B | 0 | 2.201 | 0.43 | 0.055 | 767 | 80 | 0.63 s | 48 | 21.3 Hz |
+| B | 1 | 2.308 | 0.43 | 0.061 | 679 | 55 | 1.51 s | 46 | 23.7 Hz |
+| B | 2 | 2.571 | 0.45 | 0.077 | 590 | 24 | 1.89 s | 47 | 21.5 Hz |
+
+* **Known answer, B's |P| < A's in every seed: PASS**, with wider margins than with random
+  ports (0.21, 0.15, 0.14 against 0.42, 0.07, 0.06). Structured input writes measurably
+  more than its scrambled twin.
+* **1. Coordination A - B:** 0.081 - 0.064 = **+0.017**, against max(0.10, spread 0.038).
+  **FAILED.**
+* **2. G3:** 0 / 3. **FAILED.**
+
+**Which of the two declared failures is it?** The pre-registration promised to say whether
+the ported regions coordinate while nothing else does, or nothing coordinates. The runs
+recorded only whole-sheet summaries, so as run **they cannot say.** That is an instrument
+gap, recorded as one. The verdicts above are final and are not revisited. A re-run of the
+same arms with coordination SPLIT by ported / unported region, and with the learned P
+saved (CLAUDE.md: publish what a failed run learned), follows. Its only job is to answer
+that question. It is deterministic from the same seeds, so it must also reproduce the
+table above exactly, which makes it an idempotence check of the whole pipeline.
+
+**The re-run first destroyed three of these results.** It wrote into the same directory,
+and `plasticity_v2.py` dumps its json at START, so the completed files for A0, A1 and B0
+were replaced within seconds by stubs with no test in them. The other three were copied to
+`out/plasticity_v2_competitive_retinotopic_d0.6.first_run/` before their slots came up. The
+table above is the record for A0, A1 and B0: their numbers were printed before the
+overwrite, and they are transcribed here. The script now REFUSES to overwrite a completed
+result without `--overwrite`. That is CLAUDE.md's "a stage that rewrites its
+predecessor's output file", hit by rewriting its own.
+
+---
+
+
 ## 2026-09-18 -- PRE-REGISTRATION: structure-preserving ports (retinotopy, and a drive that dominates the noise)
 
 *Committed before any retinotopic run. The only thing checked was the mapping's known
