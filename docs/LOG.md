@@ -7891,3 +7891,52 @@ baseline, so it tests the edge's existence and not its gain.
   opt-in, because the structures written before it are calibrated against the other reading.
 - **`Mod` cannot target a projection**, so "acetylcholine suppresses the CA3 recurrent
   collateral" has no expression and is declared as a labelled proxy. Reported, not built.
+
+## 18 September 2026 — the hypothalamus runs a 24.18-hour clock, and finds that my engine is not safe to branch
+
+`ibm/brain/hypothalamus.py`: suprachiasmatic, ventrolateral preoptic, lateral, arcuate,
+paraventricular, preoptic thermoregulatory, plus median preoptic (thirst) and a process-S
+population the four-drive spec left nowhere to put. **No population is sparse, deliberately:
+a drive is a level, and divisive normalisation would normalise away the signal.**
+
+| gate | verdict | measured |
+|---|---|---|
+| Y2b free-run | PASS | period **24.181 ± 0.006 h** over 26 cycles with **no input at all**; prominence **+4.130 decades**, z = **28.3** against an ensemble null of +0.070 ± 0.143 |
+| Y3 entrainment | PASS | locks to **0.000 h error at 22, 23, 24, 25 and 26 h**; fails at 20 h and 32 h |
+| Y4 sleep pressure | PASS | spontaneous **16.23 h wake / 7.95 h sleep**; **0 of 38 bouts** moved the pressure the wrong way |
+| Y5b drive → value | PASS | hungry beats sated at all six stand-in settings; **severed, the difference is exactly 0.0000 at every one** |
+| Y1 idempotence | **FAILED** | branching, 3.66e-7 — an engine bug, below |
+| Y2, Y5, Y6, Y6b | **FAILED** | recorded, with two replaced by instruments whose defects were diagnosed first |
+
+**A real clock.** 24.181 h free-running, entrainable over roughly −2.2/+1.8 h and refusing to
+lock beyond that, which is what an entrainable oscillator does rather than a follower. The
+instrument's own bias is measured and reported: a 24.000 h sine reads 24.353 h, +1.47%.
+
+**And an engine bug that matters more than the module.** `Circuit` was **not safe to branch
+under `no_grad`.** The ring buffer for a delayed projection was written in place unless
+gradients were on, so two rollouts started from one saved state shared the buffer and wrote
+over each other — re-running the first gave a different answer by 3.66e-7, and *only* when a
+delayed projection existed. Every gate in this repository that saves a state and explores
+from it twice was exposed. The class's own docstring promised the state was carried in the
+state; the code kept that promise only with gradients enabled. Now it always clones: the
+cost is one copy per delayed projection per step, and re-running a branch is bit-identical.
+
+**Four orphan edges, and the consequence stated rather than glossed:** all four need the
+brainstem, and until it exists **no drive is ever relieved** — the arcuate sits at 0.858
+saying so. That is the correct behaviour for a hypothalamus with no viscera attached, and it
+is in the module's docstring as a standing condition rather than a bug to be worked around.
+
+**Withdrawn or not claimed, recorded here because the agent could not write to `docs/`:**
+the HPA loop cannot close, because the pituitary and adrenal are IHM-1's organs — the
+paraventricular population carries an adaptation *surrogate* and `cortisol_ultradian` is
+listed under `not_claimed` rather than scored. `ibm/interoception.py` has **no endocrine or
+thermal channel** — no cortisol, leptin, ghrelin, insulin, osmolality or core temperature —
+so osmotic thirst has no osmoreceptor and the arcuate reads a nutrient *arrival* rather than
+an energy store. The sleep-pressure rise/fall asymmetry is **2.50 against the ~4.3 of human
+process-S fits**. And the thermoregulatory population is warm-sensitive only, so thermal
+discomfort is one-sided.
+
+**Seven constants stayed unexplained after two sensitivity instruments, and the author went
+and looked rather than concluding.** All seven are time constants; probed on a transient
+they move the output by 1.48× to 3.08×. They are wired in — the sweep's three quantities are
+all steady-state, and *a time constant does not move a fixed point*. The gates stay FAILED.

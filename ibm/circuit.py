@@ -489,8 +489,16 @@ class Circuit(nn.Module):
                 s = s * (src["u"] / max(self.pops[pr.src].U, 1e-6))
             lag = int(round(pr.delay_s / dt))
             if lag > 0:
-                ring = rings[pr.key]
-                ring = ring.clone() if torch.is_grad_enabled() else ring
+                # ALWAYS clone.  The `if torch.is_grad_enabled()` this used to carry made
+                # the ring an in-place write under `no_grad`, so two rollouts branched from
+                # one saved state shared the buffer and wrote over each other: re-running
+                # the first gave a different answer by 3.66e-7, and only when a delayed
+                # projection existed.  Found by the hypothalamus gate's branching check.
+                # A state a caller holds must be a value, not a view -- the docstring of
+                # this class promised that and the code did not keep it.  The clone costs a
+                # copy per delayed projection per step and buys back the property every gate
+                # in this repository assumes.
+                ring = rings[pr.key].clone()
                 ring[:, t % ring.shape[1]] = s
                 rings[pr.key] = ring
                 s_eff = ring[:, (t - lag) % ring.shape[1]]

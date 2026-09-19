@@ -1,0 +1,4773 @@
+{
+ "script": "scripts/gate_brain_hypothalamus.py",
+ "module": "ibm/brain/hypothalamus.py",
+ "git_sha": "ec07938175b876cbc52713f9bfb587cfdc4a1d63",
+ "engine_note": "ibm/circuit.py changed three times under this gate on 18 Sep 2026 (80b23c5, db29e7e, ec07938).  Every gate in this record was re-run together against the sha above; a suite whose rows were measured against different engines is not a record.",
+ "dt": {
+  "slow": 60.0,
+  "sweep": 150.0
+ },
+ "constants": {
+  "N": 16,
+  "TAU_SCN": 900.0,
+  "BETA_SCN": 8.0,
+  "THETA_SCN": -0.2,
+  "W_SCN_REC": 1.2,
+  "PER_TAU": 68000.0,
+  "PER_G": 1.8,
+  "TAU_SOM": 54000.0,
+  "BETA_SOM": 10.0,
+  "THETA_SOM": 0.3,
+  "W_LH_SOM": 1.0,
+  "SOM_CLEAR_GAIN": -0.6,
+  "SOM_CLEAR_LO": 0.25,
+  "SOM_CLEAR_HI": 1.0,
+  "TAU_VLPO": 60.0,
+  "BETA_VLPO": 10.0,
+  "THETA_VLPO": 0.55,
+  "W_SOM_VLPO": 1.2,
+  "W_POA_VLPO": 0.35,
+  "W_LH_VLPO": 0.7,
+  "TAU_LH": 60.0,
+  "BETA_LH": 10.0,
+  "THETA_LH": 0.3,
+  "W_VLPO_LH": 0.9,
+  "W_ARC_LH": 0.3,
+  "W_MNPO_LH": 0.15,
+  "D_LH": 0.45,
+  "PROCESS_C_GAIN": 1.0,
+  "PROCESS_C_BASE": 0.45,
+  "PROCESS_C_LO": 0.55,
+  "PROCESS_C_HI": 1.6,
+  "TAU_ARC": 10800.0,
+  "BETA_ARC": 6.0,
+  "THETA_ARC": 0.25,
+  "D_ARC": 0.55,
+  "W_NTS_ARC": 0.9,
+  "TAU_MNPO": 7200.0,
+  "BETA_MNPO": 6.0,
+  "THETA_MNPO": 0.25,
+  "D_MNPO": 0.5,
+  "W_NTS_MNPO": 0.8,
+  "TAU_POA": 1200.0,
+  "BETA_POA": 6.0,
+  "THETA_POA": 0.3,
+  "D_POA": 0.35,
+  "W_PB_POA": 0.8,
+  "W_SCN_POA": 0.25,
+  "TAU_PVN": 600.0,
+  "BETA_PVN": 8.0,
+  "THETA_PVN": 0.35,
+  "D_PVN": 0.3,
+  "W_SCN_PVN": 0.5,
+  "GC_TAU": 3600.0,
+  "GC_G": 0.9,
+  "W_LIGHT_SCN": 1.0,
+  "W_VLPO_NM": 0.9,
+  "W_LH_ORX": 0.8,
+  "W_DRIVE_VAL": 0.7,
+  "W_LH_VTA": 0.6,
+  "VAL_GAIN": 0.8,
+  "VAL_GAIN_BASE": 0.3,
+  "VAL_GAIN_LO": 0.5,
+  "VAL_GAIN_HI": 2.5,
+  "W_SCN_LC": 0.35,
+  "W_LC_SCN": 0.35,
+  "D_LIGHT_SCN": 0.02,
+  "D_CIRC": 0.04,
+  "D_VISCERAL": 0.03,
+  "D_PB_POA": 0.02,
+  "D_SLEEP_SWITCH": 0.015
+ },
+ "gates": {
+  "Y0_bounded": {
+   "ok": true,
+   "worst_rate_excursion": 0.0,
+   "worst_adapt_excursion_beyond_adapt_g": 0.0,
+   "vanishing_delays": {
+    "0.001": 0,
+    "60.0": 8,
+    "300.0": 8
+   },
+   "n_delayed_projections": 8,
+   "delays_in_steps_at_dt_60": {
+    "hyp.scn->hyp.scn": 0,
+    "hyp.lh->hyp.som": 0,
+    "hyp.som->hyp.vlpo": 0,
+    "hyp.poa->hyp.vlpo": 0,
+    "hyp.lh->hyp.vlpo": 0,
+    "hyp.vlpo->hyp.lh": 0,
+    "hyp.arc->hyp.lh": 0,
+    "hyp.mnpo->hyp.lh": 0,
+    "hyp.scn->hyp.pvn": 0,
+    "hyp.scn->hyp.poa": 0
+   },
+   "cases": [
+    {
+     "dt": 0.001,
+     "drive": "none",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 0.001,
+     "drive": "all_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 0.001,
+     "drive": "all_-5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 0.001,
+     "drive": "declared",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 0.001,
+     "drive": "only_hyp.scn_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 0.001,
+     "drive": "only_hyp.som_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 0.001,
+     "drive": "only_hyp.vlpo_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 0.001,
+     "drive": "only_hyp.lh_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 0.001,
+     "drive": "only_hyp.arc_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 0.001,
+     "drive": "only_hyp.mnpo_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 0.001,
+     "drive": "only_hyp.poa_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 0.001,
+     "drive": "only_hyp.pvn_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 60.0,
+     "drive": "none",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 60.0,
+     "drive": "all_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 60.0,
+     "drive": "all_-5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 60.0,
+     "drive": "declared",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 60.0,
+     "drive": "only_hyp.scn_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 60.0,
+     "drive": "only_hyp.som_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 60.0,
+     "drive": "only_hyp.vlpo_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 60.0,
+     "drive": "only_hyp.lh_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 60.0,
+     "drive": "only_hyp.arc_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 60.0,
+     "drive": "only_hyp.mnpo_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 60.0,
+     "drive": "only_hyp.poa_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 60.0,
+     "drive": "only_hyp.pvn_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 300.0,
+     "drive": "none",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 300.0,
+     "drive": "all_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 300.0,
+     "drive": "all_-5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 300.0,
+     "drive": "declared",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 300.0,
+     "drive": "only_hyp.scn_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 300.0,
+     "drive": "only_hyp.som_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 300.0,
+     "drive": "only_hyp.vlpo_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 300.0,
+     "drive": "only_hyp.lh_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 300.0,
+     "drive": "only_hyp.arc_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 300.0,
+     "drive": "only_hyp.mnpo_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 300.0,
+     "drive": "only_hyp.poa_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    },
+    {
+     "dt": 300.0,
+     "drive": "only_hyp.pvn_+5",
+     "worst_rate_excursion": 0.0,
+     "worst_adapt_excursion": 0.0
+    }
+   ]
+  },
+  "Y1_idempotence": {
+   "ok": false,
+   "a_rollout_twice": true,
+   "b_step_twice_same_state": true,
+   "b_rings_equal": true,
+   "c_step_twice_under_no_grad": true,
+   "c_rings_equal_under_no_grad": true,
+   "e_branch_rerun_identical_under_no_grad": false,
+   "e_detail": {
+    "0.001": {
+     "identical": false,
+     "rings": 8,
+     "max_abs_diff": 3.657332854345441e-07
+    },
+    "60.0": {
+     "identical": true,
+     "rings": 0,
+     "max_abs_diff": 0.0
+    },
+    "0.001_grad_enabled": {
+     "identical": true,
+     "rings": 8,
+     "max_abs_diff": 0.0
+    }
+   },
+   "e_finding": "ibm/circuit.py's Circuit docstring claims two rollouts from one state cannot interfere.  Under torch.no_grad() they DO: Circuit.step writes the delay ring in place unless grad is enabled, and the ring tensors are shared by every state derived from the branch point.  Measured at dt = 1e-3 with 8 rings allocated; clean with grad enabled, and clean at dt = 60 s only because no delay in this module survives that timestep so no ring exists to share.  Not fixed here: ibm/circuit.py is out of scope for this task.  Callers must not branch a rollout under no_grad from a shared state.",
+   "rings_allocated_per_dt": {
+    "0.001": 8,
+    "60.0": 0
+   },
+   "c_note": "Circuit.step clones a delay ring only when grad is enabled; under no_grad it writes IN PLACE into the ring it was handed.  That is harmless for (b) -- the write goes to the slot indexed by the state's own _t with a value computed from that same state, so a repeat call writes the same slot with the same value -- and (e) is the form that could actually catch it: two rollouts branching from one state with different drives, then the first re-run.  ibm/circuit.py claims in its own docstring that this cannot interfere; (e) measures the claim.",
+   "d_declaration_stable": true,
+   "d_weights_stable_at_seed_0": true
+  },
+  "Y2_free_run": {
+   "ok": false,
+   "precondition_no_input": false,
+   "projections_into_hyp_scn": [
+    "hyp.scn->hyp.scn"
+   ],
+   "hyp_scn_in_drives": false,
+   "dt_s": 60.0,
+   "days": 40,
+   "period_h": 24.180666232638888,
+   "period_sd_h": 0.006110100746154785,
+   "n_cycles": 26,
+   "declared_window_h": [
+    22.0,
+    26.0
+   ],
+   "peak_hz": 1.1288851965218782e-05,
+   "peak_period_h": 24.60637969508482,
+   "peak_prominence_decades": 4.130242347717285,
+   "df_hz": 1.0172526572205243e-06,
+   "band_hz": [
+    1e-05,
+    1.3e-05
+   ],
+   "known_answers": {
+    "sine_24h": {
+     "peak_hz": 1.1406494195398409e-05,
+     "peak_period_h": 24.352598880893524,
+     "prominence": 5.826391220092773
+    },
+    "white_noise": {
+     "peak_hz": 1.7502707123639993e-05,
+     "peak_period_h": 15.870560811852803,
+     "prominence": 0.1445603370666504
+    },
+    "constant": {
+     "peak_hz": 1.5258790881489404e-05,
+     "peak_period_h": 18.204442274305816,
+     "prominence": 0.0
+    }
+   },
+   "known_answers_ok": false,
+   "spectral_period_bias_from_known_sine": 0.014691620037230235,
+   "note": "the period is gated on the crossing interval; the spectral peak is quoted beside the prominence and carries the bias above, which the 24.000 h known-answer sine measures on the same grid"
+  },
+  "Y2b_free_run_replacement": {
+   "ok": true,
+   "precondition_no_foreign_input": true,
+   "foreign_projections_into_hyp_scn": [],
+   "self_projections_into_hyp_scn": [
+    "hyp.scn->hyp.scn"
+   ],
+   "hyp_scn_in_drives": false,
+   "dt_s": 60.0,
+   "days": 40,
+   "period_h": 24.180666232638888,
+   "period_sd_h": 0.006110100746154785,
+   "n_cycles": 26,
+   "declared_window_h": [
+    22.0,
+    26.0
+   ],
+   "peak_hz": 1.1288851965218782e-05,
+   "peak_period_h": 24.60637969508482,
+   "peak_prominence_decades": 4.130242347717285,
+   "df_hz": 1.0172526572205243e-06,
+   "band_hz": [
+    1e-05,
+    1.3e-05
+   ],
+   "null_prominence_mean": 0.06987226009368896,
+   "null_prominence_sd": 0.14333724975585938,
+   "null_draws": 16,
+   "prominence_z_vs_null": 28.327389387890886,
+   "declared_null_sd": 5.0,
+   "known_answer_sine_24h": {
+    "peak_period_h": 24.352598880893524,
+    "prominence": 5.826391220092773
+   },
+   "known_answer_constant": {
+    "peak_period_h": 18.204442274305816,
+    "prominence": 0.0
+   },
+   "controls_ok": true,
+   "spectral_period_bias_from_known_sine": 0.014691620037230235,
+   "note": "the period is GATED on the crossing interval.  the spectral peak carries the bias above -- a true 24.000 h sine reads high on this grid -- so the peak is quoted beside the prominence and the prominence is judged against an ensemble null, never against zero"
+  },
+  "Y3_entrainment": {
+   "ok": true,
+   "free_run_h": 24.180666232638888,
+   "light_amplitude": 0.06,
+   "must_lock_h": [
+    22.0,
+    23.0,
+    24.0,
+    25.0,
+    26.0
+   ],
+   "must_fail_h": [
+    20.0,
+    32.0
+   ],
+   "report_only_h": [
+    16.0
+   ],
+   "all_locked": true,
+   "all_failed_outside": true,
+   "locked": {
+    "22h": true,
+    "23h": true,
+    "24h": true,
+    "25h": true,
+    "26h": true,
+    "20h": false,
+    "32h": false,
+    "16h": false
+   },
+   "rows": {
+    "22h": {
+     "T_light_h": 22.0,
+     "measured_h": 22.0,
+     "sd_h": 0.0,
+     "err_h": 0.0,
+     "offset_from_free_h": -2.180666232638888
+    },
+    "23h": {
+     "T_light_h": 23.0,
+     "measured_h": 23.0,
+     "sd_h": 0.0,
+     "err_h": 0.0,
+     "offset_from_free_h": -1.1806662326388881
+    },
+    "24h": {
+     "T_light_h": 24.0,
+     "measured_h": 24.0,
+     "sd_h": 0.0,
+     "err_h": 0.0,
+     "offset_from_free_h": -0.18066623263888815
+    },
+    "25h": {
+     "T_light_h": 25.0,
+     "measured_h": 25.0,
+     "sd_h": 0.0,
+     "err_h": 0.0,
+     "offset_from_free_h": 0.8193337673611119
+    },
+    "26h": {
+     "T_light_h": 26.0,
+     "measured_h": 26.0,
+     "sd_h": 0.0,
+     "err_h": 0.0,
+     "offset_from_free_h": 1.8193337673611119
+    },
+    "20h": {
+     "T_light_h": 20.0,
+     "measured_h": 22.345833333333335,
+     "sd_h": 1.7555616590711804,
+     "err_h": 2.345833333333335,
+     "offset_from_free_h": -4.180666232638888
+    },
+    "32h": {
+     "T_light_h": 32.0,
+     "measured_h": 24.789286024305557,
+     "sd_h": 2.296120062934028,
+     "err_h": 7.210713975694443,
+     "offset_from_free_h": 7.819333767361112
+    },
+    "16h": {
+     "T_light_h": 16.0,
+     "measured_h": 24.0,
+     "sd_h": 0.4666666666666667,
+     "err_h": 8.0,
+     "offset_from_free_h": -8.180666232638888
+    }
+   },
+   "entrainment_range_h": [
+    -2.180666232638888,
+    1.8193337673611119
+   ],
+   "note": "16 h is reported and not gated: a relaxation oscillator frequency-demultiplies and locks 3:2, which is neither entrainment to 16 h nor a failure to be pulled"
+  },
+  "Y4_sleep_pressure": {
+   "ok": true,
+   "spontaneous_ok": true,
+   "bouts_wrong_way": 0,
+   "n_wake_bouts": 19,
+   "n_sleep_bouts": 19,
+   "mean_wake_bout_h": 16.227192982456142,
+   "mean_sleep_bout_h": 7.948245614035089,
+   "sleep_fraction": 0.32034721970558167,
+   "som_range": [
+    5.266615335131064e-05,
+    0.764512300491333
+   ],
+   "clamped": {
+    "tau_rise_h": 15.008379703016805,
+    "tau_fall_h": 6.015134948943308,
+    "t10_90_rise_h": 30.683333333333334,
+    "t90_10_fall_h": 12.833333333333334,
+    "som_start": 5.266615335131064e-05,
+    "som_peak": 0.9807701706886292,
+    "som_end": 0.05375349149107933,
+    "asymptote_rise": 0.9990897178649902,
+    "asymptote_fall": 0.047295942902565,
+    "mean_vlpo_wake": 6.992020352460104e-13,
+    "mean_vlpo_sleep": 0.9996766448020935,
+    "predicted_tau_rise_h": 14.999999999993706,
+    "predicted_tau_fall_h": 6.0029101967811584
+   },
+   "tau_rise_ok": true,
+   "tau_fall_ok": true,
+   "rise_slower_than_fall": true,
+   "declared_TAU_SOM_h": 15.0,
+   "rise_over_fall": 2.495102741735389,
+   "literature_note": "human process-S fits give ~18 h rise against ~4 h decay, a ratio of 4.3; this module declares a smaller ratio and the measured one is reported above",
+   "bouts": [
+    {
+     "state": "sleep",
+     "hours": 7.466666666666667,
+     "som_start": 0.6983793377876282,
+     "som_end": 0.27384045720100403,
+     "delta": -0.42453888058662415
+    },
+    {
+     "state": "wake",
+     "hours": 16.6,
+     "som_start": 0.27454760670661926,
+     "som_end": 0.7638218998908997,
+     "delta": 0.4892742931842804
+    },
+    {
+     "state": "sleep",
+     "hours": 8.016666666666667,
+     "som_start": 0.7642151117324829,
+     "som_end": 0.27469679713249207,
+     "delta": -0.48951831459999084
+    },
+    {
+     "state": "wake",
+     "hours": 16.166666666666668,
+     "som_start": 0.2753865718841553,
+     "som_end": 0.75657057762146,
+     "delta": 0.4811840057373047
+    },
+    {
+     "state": "sleep",
+     "hours": 7.966666666666667,
+     "som_start": 0.7569653987884521,
+     "som_end": 0.27451467514038086,
+     "delta": -0.4824507236480713
+    },
+    {
+     "state": "wake",
+     "hours": 16.216666666666665,
+     "som_start": 0.27515438199043274,
+     "som_end": 0.757381021976471,
+     "delta": 0.4822266399860382
+    },
+    {
+     "state": "sleep",
+     "hours": 7.983333333333333,
+     "som_start": 0.7577799558639526,
+     "som_end": 0.275073379278183,
+     "delta": -0.48270657658576965
+    },
+    {
+     "state": "wake",
+     "hours": 16.2,
+     "som_start": 0.275947630405426,
+     "som_end": 0.7573660612106323,
+     "delta": 0.4814184308052063
+    },
+    {
+     "state": "sleep",
+     "hours": 7.966666666666667,
+     "som_start": 0.7577680945396423,
+     "som_end": 0.27455806732177734,
+     "delta": -0.483210027217865
+    },
+    {
+     "state": "wake",
+     "hours": 16.216666666666665,
+     "som_start": 0.27521786093711853,
+     "som_end": 0.7574346661567688,
+     "delta": 0.48221680521965027
+    },
+    {
+     "state": "sleep",
+     "hours": 7.966666666666667,
+     "som_start": 0.7578389644622803,
+     "som_end": 0.2746410369873047,
+     "delta": -0.4831979274749756
+    },
+    {
+     "state": "wake",
+     "hours": 16.216666666666665,
+     "som_start": 0.27534571290016174,
+     "som_end": 0.7574970722198486,
+     "delta": 0.4821513593196869
+    },
+    {
+     "state": "sleep",
+     "hours": 7.966666666666667,
+     "som_start": 0.757902204990387,
+     "som_end": 0.27473184466362,
+     "delta": -0.48317036032676697
+    },
+    {
+     "state": "wake",
+     "hours": 16.216666666666665,
+     "som_start": 0.27548107504844666,
+     "som_end": 0.7575596570968628,
+     "delta": 0.48207858204841614
+    },
+    {
+     "state": "sleep",
+     "hours": 7.966666666666667,
+     "som_start": 0.757963240146637,
+     "som_end": 0.27483099699020386,
+     "delta": -0.4831322431564331
+    },
+    {
+     "state": "wake",
+     "hours": 16.2,
+     "som_start": 0.2756233215332031,
+     "som_end": 0.757229745388031,
+     "delta": 0.4816064238548279
+    },
+    {
+     "state": "sleep",
+     "hours": 7.983333333333333,
+     "som_start": 0.7576237320899963,
+     "som_end": 0.27493584156036377,
+     "delta": -0.48268789052963257
+    },
+    {
+     "state": "wake",
+     "hours": 16.2,
+     "som_start": 0.27576765418052673,
+     "som_end": 0.7572900652885437,
+     "delta": 0.48152241110801697
+    },
+    {
+     "state": "sleep",
+     "hours": 7.983333333333333,
+     "som_start": 0.7576878070831299,
+     "som_end": 0.2750507593154907,
+     "delta": -0.48263704776763916
+    },
+    {
+     "state": "wake",
+     "hours": 16.2,
+     "som_start": 0.2759189307689667,
+     "som_end": 0.7573512196540833,
+     "delta": 0.4814322888851166
+    },
+    {
+     "state": "sleep",
+     "hours": 7.966666666666667,
+     "som_start": 0.7577522397041321,
+     "som_end": 0.2745293974876404,
+     "delta": -0.4832228422164917
+    },
+    {
+     "state": "wake",
+     "hours": 16.216666666666665,
+     "som_start": 0.2751726806163788,
+     "som_end": 0.757413387298584,
+     "delta": 0.4822407066822052
+    },
+    {
+     "state": "sleep",
+     "hours": 7.966666666666667,
+     "som_start": 0.7578170895576477,
+     "som_end": 0.27461302280426025,
+     "delta": -0.48320406675338745
+    },
+    {
+     "state": "wake",
+     "hours": 16.216666666666665,
+     "som_start": 0.2753029763698578,
+     "som_end": 0.7574769258499146,
+     "delta": 0.48217394948005676
+    },
+    {
+     "state": "sleep",
+     "hours": 7.966666666666667,
+     "som_start": 0.7578819990158081,
+     "som_end": 0.27470287680625916,
+     "delta": -0.48317912220954895
+    },
+    {
+     "state": "wake",
+     "hours": 16.216666666666665,
+     "som_start": 0.2754383981227875,
+     "som_end": 0.7575402855873108,
+     "delta": 0.4821018874645233
+    },
+    {
+     "state": "sleep",
+     "hours": 7.966666666666667,
+     "som_start": 0.7579447627067566,
+     "som_end": 0.2747974097728729,
+     "delta": -0.48314735293388367
+    },
+    {
+     "state": "wake",
+     "hours": 16.2,
+     "som_start": 0.27557578682899475,
+     "som_end": 0.7572093605995178,
+     "delta": 0.48163357377052307
+    },
+    {
+     "state": "sleep",
+     "hours": 7.983333333333333,
+     "som_start": 0.7576020359992981,
+     "som_end": 0.2748984098434448,
+     "delta": -0.48270362615585327
+    },
+    {
+     "state": "wake",
+     "hours": 16.2,
+     "som_start": 0.2757168412208557,
+     "som_end": 0.7572681903839111,
+     "delta": 0.4815513491630554
+    },
+    {
+     "state": "sleep",
+     "hours": 7.983333333333333,
+     "som_start": 0.7576646208763123,
+     "som_end": 0.2750086188316345,
+     "delta": -0.48265600204467773
+    },
+    {
+     "state": "wake",
+     "hours": 16.2,
+     "som_start": 0.27586427330970764,
+     "som_end": 0.7573289275169373,
+     "delta": 0.4814646542072296
+    },
+    {
+     "state": "sleep",
+     "hours": 7.983333333333333,
+     "som_start": 0.7577288150787354,
+     "som_end": 0.27512824535369873,
+     "delta": -0.4826005697250366
+    },
+    {
+     "state": "wake",
+     "hours": 16.2,
+     "som_start": 0.2760170102119446,
+     "som_end": 0.7573912143707275,
+     "delta": 0.48137420415878296
+    },
+    {
+     "state": "sleep",
+     "hours": 7.966666666666667,
+     "som_start": 0.7577940821647644,
+     "som_end": 0.274582177400589,
+     "delta": -0.4832119047641754
+    },
+    {
+     "state": "wake",
+     "hours": 16.216666666666665,
+     "som_start": 0.27525538206100464,
+     "som_end": 0.7574539184570312,
+     "delta": 0.4821985363960266
+    },
+    {
+     "state": "sleep",
+     "hours": 7.966666666666667,
+     "som_start": 0.7578586935997009,
+     "som_end": 0.2746688723564148,
+     "delta": -0.48318982124328613
+    },
+    {
+     "state": "wake",
+     "hours": 16.216666666666665,
+     "som_start": 0.275387704372406,
+     "som_end": 0.7575162649154663,
+     "delta": 0.4821285605430603
+    }
+   ]
+  },
+  "Y5_drive_changes_value": {
+   "ok": false,
+   "valuation": {
+    "module_present": true,
+    "id_declared": true,
+    "valuation_pops": [
+     "val.bla",
+     "val.cea",
+     "val.nacc_core",
+     "val.nacc_shell",
+     "val.vp",
+     "val.lhb"
+    ]
+   },
+   "stand_in": "val.nacc_shell",
+   "declared_edges": [
+    "hyp.arc->val.nacc_shell",
+    "hyp.mnpo->val.nacc_shell",
+    "hyp.lh->val.nacc_shell"
+   ],
+   "declared_mods": [
+    "hyp.arc=>val.nacc_shell:gain_in"
+   ],
+   "cue": 0.35,
+   "intact_difference": 0.02913069725036621,
+   "severed_difference": 0.0,
+   "declared_min_effect": 0.05,
+   "declared_max_severed": 0.005,
+   "arms": {
+    "hungry_intact": {
+     "hyp.arc": 0.8578609824180603,
+     "hyp.lh": 0.055173005908727646,
+     "response": 0.9999999403953552,
+     "no_cue_baseline": 0.9999927282333374,
+     "cue_evoked": 7.212162017822266e-06,
+     "max_rate": 0.9999998807907104,
+     "active_fraction": 1.0,
+     "w_inh": 0.0,
+     "n_edges": 3
+    },
+    "hungry_severed": {
+     "hyp.arc": 0.8578609824180603,
+     "hyp.lh": 0.055173005908727646,
+     "response": 0.5986875891685486,
+     "no_cue_baseline": 0.08317268639802933,
+     "cue_evoked": 0.5155149102210999,
+     "max_rate": 0.5986876487731934,
+     "active_fraction": 1.0,
+     "w_inh": 0.0,
+     "n_edges": 0
+    },
+    "sated_intact": {
+     "hyp.arc": 0.026588067412376404,
+     "hyp.lh": 0.00451403483748436,
+     "response": 0.970869243144989,
+     "no_cue_baseline": 0.7889878153800964,
+     "cue_evoked": 0.18188142776489258,
+     "max_rate": 0.9709357023239136,
+     "active_fraction": 1.0,
+     "w_inh": 0.0,
+     "n_edges": 3
+    },
+    "sated_severed": {
+     "hyp.arc": 0.026588067412376404,
+     "hyp.lh": 0.00451403483748436,
+     "response": 0.5986875891685486,
+     "no_cue_baseline": 0.08317268639802933,
+     "cue_evoked": 0.5155149102210999,
+     "max_rate": 0.5986876487731934,
+     "active_fraction": 1.0,
+     "w_inh": 0.0,
+     "n_edges": 0
+    }
+   },
+   "note": "ibm/brain/valuation.py does not exist.  val.nacc_shell here is a stand-in built inside this script; the edges into it are read off hypothalamus.external() rather than written here, so what is measured is the module's own declaration.  The severed arm is the control: gate on an ablation, never on a magnitude."
+  },
+  "Y5b_drive_changes_value_replacement": {
+   "ok": true,
+   "valuation": {
+    "module_present": true,
+    "id_declared": true,
+    "valuation_pops": [
+     "val.bla",
+     "val.cea",
+     "val.nacc_core",
+     "val.nacc_shell",
+     "val.vp",
+     "val.lhb"
+    ]
+   },
+   "stand_in": "val.nacc_shell",
+   "declared_edges": [
+    "hyp.arc->val.nacc_shell",
+    "hyp.mnpo->val.nacc_shell",
+    "hyp.lh->val.nacc_shell"
+   ],
+   "declared_mods": [
+    "hyp.arc=>val.nacc_shell:gain_in"
+   ],
+   "cue": 0.35,
+   "sparsities": [
+    "None",
+    "0.06",
+    "0.08",
+    "0.1",
+    "0.12",
+    "0.2"
+   ],
+   "sign_positive_everywhere": true,
+   "severed_exactly_zero_everywhere": true,
+   "intact_difference": {
+    "None": 0.02913069725036621,
+    "0.06": 0.4235360622406006,
+    "0.08": 0.4229722023010254,
+    "0.1": 0.40263432264328003,
+    "0.12": 0.3752879500389099,
+    "0.2": 0.2758011817932129
+   },
+   "severed_difference": {
+    "None": 0.0,
+    "0.06": 0.0,
+    "0.08": 0.0,
+    "0.1": 0.0,
+    "0.12": 0.0,
+    "0.2": 0.0
+   },
+   "saturated": {
+    "None": true,
+    "0.06": false,
+    "0.08": false,
+    "0.1": false,
+    "0.12": false,
+    "0.2": true
+   },
+   "clears_Y5_bar": {
+    "None": false,
+    "0.06": true,
+    "0.08": true,
+    "0.1": true,
+    "0.12": true,
+    "0.2": true
+   },
+   "rows": {
+    "None": {
+     "sparsity": null,
+     "intact_difference": 0.02913069725036621,
+     "severed_difference": 0.0,
+     "sign_ok": true,
+     "ablation_ok": true,
+     "saturated_intact": true,
+     "clears_Y5_bar_0.05": false,
+     "arms": {
+      "hungry_intact": {
+       "hyp.arc": 0.8578609824180603,
+       "hyp.lh": 0.055173005908727646,
+       "response": 0.9999999403953552,
+       "no_cue_baseline": 0.9999927282333374,
+       "cue_evoked": 7.212162017822266e-06,
+       "max_rate": 0.9999998807907104,
+       "active_fraction": 1.0,
+       "w_inh": 0.0,
+       "n_edges": 3
+      },
+      "hungry_severed": {
+       "hyp.arc": 0.8578609824180603,
+       "hyp.lh": 0.055173005908727646,
+       "response": 0.5986875891685486,
+       "no_cue_baseline": 0.08317268639802933,
+       "cue_evoked": 0.5155149102210999,
+       "max_rate": 0.5986876487731934,
+       "active_fraction": 1.0,
+       "w_inh": 0.0,
+       "n_edges": 0
+      },
+      "sated_intact": {
+       "hyp.arc": 0.026588067412376404,
+       "hyp.lh": 0.00451403483748436,
+       "response": 0.970869243144989,
+       "no_cue_baseline": 0.7889878153800964,
+       "cue_evoked": 0.18188142776489258,
+       "max_rate": 0.9709357023239136,
+       "active_fraction": 1.0,
+       "w_inh": 0.0,
+       "n_edges": 3
+      },
+      "sated_severed": {
+       "hyp.arc": 0.026588067412376404,
+       "hyp.lh": 0.00451403483748436,
+       "response": 0.5986875891685486,
+       "no_cue_baseline": 0.08317268639802933,
+       "cue_evoked": 0.5155149102210999,
+       "max_rate": 0.5986876487731934,
+       "active_fraction": 1.0,
+       "w_inh": 0.0,
+       "n_edges": 0
+      }
+     }
+    },
+    "0.06": {
+     "sparsity": 0.06,
+     "intact_difference": 0.4235360622406006,
+     "severed_difference": 0.0,
+     "sign_ok": true,
+     "ablation_ok": true,
+     "saturated_intact": false,
+     "clears_Y5_bar_0.05": true,
+     "arms": {
+      "hungry_intact": {
+       "hyp.arc": 0.8578609824180603,
+       "hyp.lh": 0.055173005908727646,
+       "response": 0.8868037462234497,
+       "no_cue_baseline": 0.7962092161178589,
+       "cue_evoked": 0.09059453010559082,
+       "max_rate": 0.8893036842346191,
+       "active_fraction": 1.0,
+       "w_inh": 0.10499999999999998,
+       "n_edges": 3
+      },
+      "hungry_severed": {
+       "hyp.arc": 0.8578609824180603,
+       "hyp.lh": 0.055173005908727646,
+       "response": 0.3479990065097809,
+       "no_cue_baseline": 0.08317268639802933,
+       "cue_evoked": 0.26482632756233215,
+       "max_rate": 0.3479991853237152,
+       "active_fraction": 1.0,
+       "w_inh": 0.05,
+       "n_edges": 0
+      },
+      "sated_intact": {
+       "hyp.arc": 0.026588067412376404,
+       "hyp.lh": 0.00451403483748436,
+       "response": 0.4632676839828491,
+       "no_cue_baseline": 0.33465346693992615,
+       "cue_evoked": 0.12861421704292297,
+       "max_rate": 0.46421900391578674,
+       "active_fraction": 1.0,
+       "w_inh": 0.10499999999999998,
+       "n_edges": 3
+      },
+      "sated_severed": {
+       "hyp.arc": 0.026588067412376404,
+       "hyp.lh": 0.00451403483748436,
+       "response": 0.3479990065097809,
+       "no_cue_baseline": 0.08317268639802933,
+       "cue_evoked": 0.26482632756233215,
+       "max_rate": 0.3479991853237152,
+       "active_fraction": 1.0,
+       "w_inh": 0.05,
+       "n_edges": 0
+      }
+     }
+    },
+    "0.08": {
+     "sparsity": 0.08,
+     "intact_difference": 0.4229722023010254,
+     "severed_difference": 0.0,
+     "sign_ok": true,
+     "ablation_ok": true,
+     "saturated_intact": false,
+     "clears_Y5_bar_0.05": true,
+     "arms": {
+      "hungry_intact": {
+       "hyp.arc": 0.8578609824180603,
+       "hyp.lh": 0.055173005908727646,
+       "response": 0.9455304741859436,
+       "no_cue_baseline": 0.8730418682098389,
+       "cue_evoked": 0.07248860597610474,
+       "max_rate": 0.9472450613975525,
+       "active_fraction": 1.0,
+       "w_inh": 0.10499999999999998,
+       "n_edges": 3
+      },
+      "hungry_severed": {
+       "hyp.arc": 0.8578609824180603,
+       "hyp.lh": 0.055173005908727646,
+       "response": 0.37792733311653137,
+       "no_cue_baseline": 0.08317268639802933,
+       "cue_evoked": 0.29475465416908264,
+       "max_rate": 0.37792739272117615,
+       "active_fraction": 1.0,
+       "w_inh": 0.05,
+       "n_edges": 0
+      },
+      "sated_intact": {
+       "hyp.arc": 0.026588067412376404,
+       "hyp.lh": 0.00451403483748436,
+       "response": 0.5225582718849182,
+       "no_cue_baseline": 0.3727719187736511,
+       "cue_evoked": 0.1497863531112671,
+       "max_rate": 0.5227387547492981,
+       "active_fraction": 1.0,
+       "w_inh": 0.10499999999999998,
+       "n_edges": 3
+      },
+      "sated_severed": {
+       "hyp.arc": 0.026588067412376404,
+       "hyp.lh": 0.00451403483748436,
+       "response": 0.37792733311653137,
+       "no_cue_baseline": 0.08317268639802933,
+       "cue_evoked": 0.29475465416908264,
+       "max_rate": 0.37792739272117615,
+       "active_fraction": 1.0,
+       "w_inh": 0.05,
+       "n_edges": 0
+      }
+     }
+    },
+    "0.1": {
+     "sparsity": 0.1,
+     "intact_difference": 0.40263432264328003,
+     "severed_difference": 0.0,
+     "sign_ok": true,
+     "ablation_ok": true,
+     "saturated_intact": false,
+     "clears_Y5_bar_0.05": true,
+     "arms": {
+      "hungry_intact": {
+       "hyp.arc": 0.8578609824180603,
+       "hyp.lh": 0.055173005908727646,
+       "response": 0.9736220836639404,
+       "no_cue_baseline": 0.9209527373313904,
+       "cue_evoked": 0.05266934633255005,
+       "max_rate": 0.9746764898300171,
+       "active_fraction": 1.0,
+       "w_inh": 0.10499999999999998,
+       "n_edges": 3
+      },
+      "hungry_severed": {
+       "hyp.arc": 0.8578609824180603,
+       "hyp.lh": 0.055173005908727646,
+       "response": 0.40097716450691223,
+       "no_cue_baseline": 0.08317268639802933,
+       "cue_evoked": 0.3178044855594635,
+       "max_rate": 0.4009771943092346,
+       "active_fraction": 1.0,
+       "w_inh": 0.05,
+       "n_edges": 0
+      },
+      "sated_intact": {
+       "hyp.arc": 0.026588067412376404,
+       "hyp.lh": 0.00451403483748436,
+       "response": 0.5709877610206604,
+       "no_cue_baseline": 0.4041253328323364,
+       "cue_evoked": 0.16686242818832397,
+       "max_rate": 0.5711537599563599,
+       "active_fraction": 1.0,
+       "w_inh": 0.10499999999999998,
+       "n_edges": 3
+      },
+      "sated_severed": {
+       "hyp.arc": 0.026588067412376404,
+       "hyp.lh": 0.00451403483748436,
+       "response": 0.40097716450691223,
+       "no_cue_baseline": 0.08317268639802933,
+       "cue_evoked": 0.3178044855594635,
+       "max_rate": 0.4009771943092346,
+       "active_fraction": 1.0,
+       "w_inh": 0.05,
+       "n_edges": 0
+      }
+     }
+    },
+    "0.12": {
+     "sparsity": 0.12,
+     "intact_difference": 0.3752879500389099,
+     "severed_difference": 0.0,
+     "sign_ok": true,
+     "ablation_ok": true,
+     "saturated_intact": false,
+     "clears_Y5_bar_0.05": true,
+     "arms": {
+      "hungry_intact": {
+       "hyp.arc": 0.8578609824180603,
+       "hyp.lh": 0.055173005908727646,
+       "response": 0.986725389957428,
+       "no_cue_baseline": 0.9502278566360474,
+       "cue_evoked": 0.036497533321380615,
+       "max_rate": 0.9873505234718323,
+       "active_fraction": 1.0,
+       "w_inh": 0.10499999999999998,
+       "n_edges": 3
+      },
+      "hungry_severed": {
+       "hyp.arc": 0.8578609824180603,
+       "hyp.lh": 0.055173005908727646,
+       "response": 0.4194146990776062,
+       "no_cue_baseline": 0.08317268639802933,
+       "cue_evoked": 0.33624202013015747,
+       "max_rate": 0.4194146990776062,
+       "active_fraction": 1.0,
+       "w_inh": 0.05,
+       "n_edges": 0
+      },
+      "sated_intact": {
+       "hyp.arc": 0.026588067412376404,
+       "hyp.lh": 0.00451403483748436,
+       "response": 0.6114374399185181,
+       "no_cue_baseline": 0.4306340515613556,
+       "cue_evoked": 0.18080338835716248,
+       "max_rate": 0.611611008644104,
+       "active_fraction": 1.0,
+       "w_inh": 0.10499999999999998,
+       "n_edges": 3
+      },
+      "sated_severed": {
+       "hyp.arc": 0.026588067412376404,
+       "hyp.lh": 0.00451403483748436,
+       "response": 0.4194146990776062,
+       "no_cue_baseline": 0.08317268639802933,
+       "cue_evoked": 0.33624202013015747,
+       "max_rate": 0.4194146990776062,
+       "active_fraction": 1.0,
+       "w_inh": 0.05,
+       "n_edges": 0
+      }
+     }
+    },
+    "0.2": {
+     "sparsity": 0.2,
+     "intact_difference": 0.2758011817932129,
+     "severed_difference": 0.0,
+     "sign_ok": true,
+     "ablation_ok": true,
+     "saturated_intact": true,
+     "clears_Y5_bar_0.05": true,
+     "arms": {
+      "hungry_intact": {
+       "hyp.arc": 0.8578609824180603,
+       "hyp.lh": 0.055173005908727646,
+       "response": 0.9985421299934387,
+       "no_cue_baseline": 0.9898855686187744,
+       "cue_evoked": 0.008656561374664307,
+       "max_rate": 0.9986380934715271,
+       "active_fraction": 1.0,
+       "w_inh": 0.10499999999999998,
+       "n_edges": 3
+      },
+      "hungry_severed": {
+       "hyp.arc": 0.8578609824180603,
+       "hyp.lh": 0.055173005908727646,
+       "response": 0.46743661165237427,
+       "no_cue_baseline": 0.08317268639802933,
+       "cue_evoked": 0.38426393270492554,
+       "max_rate": 0.46743661165237427,
+       "active_fraction": 1.0,
+       "w_inh": 0.05,
+       "n_edges": 0
+      },
+      "sated_intact": {
+       "hyp.arc": 0.026588067412376404,
+       "hyp.lh": 0.00451403483748436,
+       "response": 0.7227409482002258,
+       "no_cue_baseline": 0.506813108921051,
+       "cue_evoked": 0.2159278392791748,
+       "max_rate": 0.7229330539703369,
+       "active_fraction": 1.0,
+       "w_inh": 0.10499999999999998,
+       "n_edges": 3
+      },
+      "sated_severed": {
+       "hyp.arc": 0.026588067412376404,
+       "hyp.lh": 0.00451403483748436,
+       "response": 0.46743661165237427,
+       "no_cue_baseline": 0.08317268639802933,
+       "cue_evoked": 0.38426393270492554,
+       "max_rate": 0.46743661165237427,
+       "active_fraction": 1.0,
+       "w_inh": 0.05,
+       "n_edges": 0
+      }
+     }
+    }
+   },
+   "note": "ibm/brain/valuation.py does not exist.  val.nacc_shell is a stand-in built inside this script and nowhere else; the edges into it are read off hypothalamus.external() rather than written here, so what is measured is the module's own declaration.  The magnitude is reported at every sparsity and gated at none, because Y5's diagnosis showed it moves with the instrument."
+  },
+  "Y6_sensitivity": {
+   "ok": false,
+   "n_constants": 70,
+   "baseline": {
+    "period_h": 24.430555555555557,
+    "n_cycles": 4,
+    "tau_rise_h": 15.020837797541958,
+    "tau_fall_h": 6.020990965404473
+   },
+   "dt_s": 150.0,
+   "clock_constants_live": {
+    "PER_TAU": true,
+    "PER_G": true,
+    "W_SCN_REC": true,
+    "BETA_SCN": true,
+    "THETA_SCN": true,
+    "TAU_SCN": true
+   },
+   "somnogen_constants_live": {
+    "TAU_SOM": true,
+    "SOM_CLEAR_GAIN": true
+   },
+   "inert": [
+    "BETA_ARC",
+    "BETA_LH",
+    "BETA_MNPO",
+    "BETA_POA",
+    "BETA_PVN",
+    "BETA_SOM",
+    "BETA_VLPO",
+    "D_ARC",
+    "D_CIRC",
+    "D_LH",
+    "D_LIGHT_SCN",
+    "D_MNPO",
+    "D_PB_POA",
+    "D_POA",
+    "D_PVN",
+    "D_SLEEP_SWITCH",
+    "D_VISCERAL",
+    "GC_G",
+    "GC_TAU",
+    "N",
+    "PROCESS_C_BASE",
+    "PROCESS_C_GAIN",
+    "PROCESS_C_HI",
+    "PROCESS_C_LO",
+    "SOM_CLEAR_LO",
+    "TAU_ARC",
+    "TAU_LH",
+    "TAU_MNPO",
+    "TAU_POA",
+    "TAU_PVN",
+    "TAU_VLPO",
+    "THETA_ARC",
+    "THETA_LH",
+    "THETA_MNPO",
+    "THETA_POA",
+    "THETA_PVN",
+    "THETA_SOM",
+    "THETA_VLPO",
+    "VAL_GAIN",
+    "VAL_GAIN_BASE",
+    "VAL_GAIN_HI",
+    "VAL_GAIN_LO",
+    "W_ARC_LH",
+    "W_DRIVE_VAL",
+    "W_LC_SCN",
+    "W_LH_ORX",
+    "W_LH_SOM",
+    "W_LH_VLPO",
+    "W_LH_VTA",
+    "W_LIGHT_SCN",
+    "W_MNPO_LH",
+    "W_NTS_ARC",
+    "W_NTS_MNPO",
+    "W_PB_POA",
+    "W_POA_VLPO",
+    "W_SCN_LC",
+    "W_SCN_POA",
+    "W_SCN_PVN",
+    "W_SOM_VLPO",
+    "W_VLPO_LH",
+    "W_VLPO_NM"
+   ],
+   "inert_by_kind": {
+    "orphan": [
+     "D_CIRC",
+     "D_LIGHT_SCN",
+     "D_PB_POA",
+     "D_VISCERAL",
+     "VAL_GAIN",
+     "VAL_GAIN_BASE",
+     "VAL_GAIN_HI",
+     "VAL_GAIN_LO",
+     "W_DRIVE_VAL",
+     "W_LC_SCN",
+     "W_LH_ORX",
+     "W_LH_VTA",
+     "W_LIGHT_SCN",
+     "W_NTS_ARC",
+     "W_NTS_MNPO",
+     "W_PB_POA",
+     "W_SCN_LC",
+     "W_VLPO_NM"
+    ],
+    "unmeasured": [
+     "BETA_PVN",
+     "D_PVN",
+     "GC_G",
+     "GC_TAU",
+     "N",
+     "TAU_PVN",
+     "THETA_PVN",
+     "W_SCN_PVN"
+    ],
+    "unexplained": [
+     "BETA_ARC",
+     "BETA_LH",
+     "BETA_MNPO",
+     "BETA_POA",
+     "BETA_SOM",
+     "BETA_VLPO",
+     "D_ARC",
+     "D_LH",
+     "D_MNPO",
+     "D_POA",
+     "D_SLEEP_SWITCH",
+     "PROCESS_C_BASE",
+     "PROCESS_C_GAIN",
+     "PROCESS_C_HI",
+     "PROCESS_C_LO",
+     "SOM_CLEAR_LO",
+     "TAU_ARC",
+     "TAU_LH",
+     "TAU_MNPO",
+     "TAU_POA",
+     "TAU_VLPO",
+     "THETA_ARC",
+     "THETA_LH",
+     "THETA_MNPO",
+     "THETA_POA",
+     "THETA_SOM",
+     "THETA_VLPO",
+     "W_ARC_LH",
+     "W_LH_SOM",
+     "W_LH_VLPO",
+     "W_MNPO_LH",
+     "W_POA_VLPO",
+     "W_SCN_POA",
+     "W_SOM_VLPO",
+     "W_VLPO_LH"
+    ]
+   },
+   "sweep": [
+    {
+     "const": "BETA_ARC",
+     "baseline": 6.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "BETA_LH",
+     "baseline": 10.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.0209900158310665,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 9.495734065723127e-07,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "BETA_MNPO",
+     "baseline": 6.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "BETA_POA",
+     "baseline": 6.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "BETA_PVN",
+     "baseline": 8.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unmeasured"
+    },
+    {
+     "const": "BETA_SCN",
+     "baseline": 8.0,
+     "period_h": [
+      12.817708333333334,
+      31.875
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 19.057291666666664,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "BETA_SOM",
+     "baseline": 10.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020846662414371,
+      15.02084518493491
+     ],
+     "tau_fall_h": [
+      6.021023251078538,
+      6.020968175725361
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 1.477479461442499e-06,
+     "span_tau_fall_h": 5.507535317672563e-05,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "BETA_VLPO",
+     "baseline": 10.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020989541044474,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 1.4243599988361666e-06,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "D_ARC",
+     "baseline": 0.55,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "D_CIRC",
+     "baseline": 0.04,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "D_LH",
+     "baseline": 0.45,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "D_LIGHT_SCN",
+     "baseline": 0.02,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "D_MNPO",
+     "baseline": 0.5,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "D_PB_POA",
+     "baseline": 0.02,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "D_POA",
+     "baseline": 0.35,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "D_PVN",
+     "baseline": 0.3,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unmeasured"
+    },
+    {
+     "const": "D_SLEEP_SWITCH",
+     "baseline": 0.015,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "D_VISCERAL",
+     "baseline": 0.03,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "GC_G",
+     "baseline": 0.9,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unmeasured"
+    },
+    {
+     "const": "GC_TAU",
+     "baseline": 3600.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unmeasured"
+    },
+    {
+     "const": "N",
+     "baseline": 16,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unmeasured"
+    },
+    {
+     "const": "PER_G",
+     "baseline": 1.8,
+     "period_h": [
+      null,
+      20.864583333333332
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": null,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [
+      "x0.5"
+     ],
+     "inert": false
+    },
+    {
+     "const": "PER_TAU",
+     "baseline": 68000.0,
+     "period_h": [
+      13.73611111111111,
+      34.770833333333336
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 21.034722222222225,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "PROCESS_C_BASE",
+     "baseline": 0.45,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "PROCESS_C_GAIN",
+     "baseline": 1.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "PROCESS_C_HI",
+     "baseline": 1.6,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "PROCESS_C_LO",
+     "baseline": 0.55,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "SOM_CLEAR_GAIN",
+     "baseline": -0.6,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      10.520929726574387,
+      3.7709005475134676
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 6.7500291790609195,
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "SOM_CLEAR_HI",
+     "baseline": 1.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      7.520854028808373,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020986692326499,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 7.499983768733585,
+     "span_tau_fall_h": 4.273077974126238e-06,
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "SOM_CLEAR_LO",
+     "baseline": 0.25,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "TAU_ARC",
+     "baseline": 10800.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "TAU_LH",
+     "baseline": 60.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.02084518493491,
+      15.020852572335126
+     ],
+     "tau_fall_h": [
+      6.0209601044220475,
+      6.021416879271092
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 7.387400216884998e-06,
+     "span_tau_fall_h": 0.00045677484904427246,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "TAU_MNPO",
+     "baseline": 7200.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "TAU_POA",
+     "baseline": 1200.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "TAU_PVN",
+     "baseline": 600.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unmeasured"
+    },
+    {
+     "const": "TAU_SCN",
+     "baseline": 900.0,
+     "period_h": [
+      22.75,
+      25.86111111111111
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 3.1111111111111107,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "TAU_SOM",
+     "baseline": 54000.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      7.520854028808373,
+      22.520829237862973
+     ],
+     "tau_fall_h": [
+      3.020990546205844,
+      9.021014244607636
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 14.9999752090546,
+     "span_tau_fall_h": 6.000023698401792,
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "TAU_VLPO",
+     "baseline": 60.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020890312290065,
+      6.022238013716172
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0013477014261065179,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "THETA_ARC",
+     "baseline": 0.25,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "THETA_LH",
+     "baseline": 0.3,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "THETA_MNPO",
+     "baseline": 0.25,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "THETA_POA",
+     "baseline": 0.3,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "THETA_PVN",
+     "baseline": 0.35,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unmeasured"
+    },
+    {
+     "const": "THETA_SCN",
+     "baseline": -0.2,
+     "period_h": [
+      25.59722222222222,
+      24.083333333333332
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 1.5138888888888893,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "THETA_SOM",
+     "baseline": 0.3,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020857004778744,
+      15.020839275019966
+     ],
+     "tau_fall_h": [
+      6.0210783274393,
+      6.020966751376146
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 1.7729758777562665e-05,
+     "span_tau_fall_h": 0.00011157606315403967,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "THETA_VLPO",
+     "baseline": 0.55,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "VAL_GAIN",
+     "baseline": 0.8,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "VAL_GAIN_BASE",
+     "baseline": 0.3,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "VAL_GAIN_HI",
+     "baseline": 2.5,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "VAL_GAIN_LO",
+     "baseline": 0.5,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_ARC_LH",
+     "baseline": 0.3,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "W_DRIVE_VAL",
+     "baseline": 0.7,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_LC_SCN",
+     "baseline": 0.35,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_LH_ORX",
+     "baseline": 0.8,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_LH_SOM",
+     "baseline": 1.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020883599495386,
+      15.02083188763283
+     ],
+     "tau_fall_h": [
+      6.020973873128966,
+      6.021004259463626
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 5.171186255559235e-05,
+     "span_tau_fall_h": 3.038633466001528e-05,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "W_LH_VLPO",
+     "baseline": 0.7,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "W_LH_VTA",
+     "baseline": 0.6,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_LIGHT_SCN",
+     "baseline": 1.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_MNPO_LH",
+     "baseline": 0.15,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "W_NTS_ARC",
+     "baseline": 0.9,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_NTS_MNPO",
+     "baseline": 0.8,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_PB_POA",
+     "baseline": 0.8,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_POA_VLPO",
+     "baseline": 0.35,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "W_SCN_LC",
+     "baseline": 0.35,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_SCN_POA",
+     "baseline": 0.25,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "W_SCN_PVN",
+     "baseline": 0.5,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unmeasured"
+    },
+    {
+     "const": "W_SCN_REC",
+     "baseline": 1.2,
+     "period_h": [
+      8.666666666666666,
+      null
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": null,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [
+      "x1.5"
+     ],
+     "inert": false
+    },
+    {
+     "const": "W_SOM_VLPO",
+     "baseline": 1.2,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "W_VLPO_LH",
+     "baseline": 0.9,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "W_VLPO_NM",
+     "baseline": 0.9,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    }
+   ]
+  },
+  "Y6b_sensitivity_replacement": {
+   "ok": false,
+   "n_constants": 70,
+   "baseline": {
+    "period_h": 24.430555555555557,
+    "n_cycles": 4,
+    "tau_rise_h": 15.020837797541958,
+    "tau_fall_h": 6.020990965404473,
+    "state": {
+     "hyp.scn": 0.4510127305984497,
+     "hyp.som": 0.5239834785461426,
+     "hyp.vlpo": 0.3245651423931122,
+     "hyp.lh": 0.6859176158905029,
+     "hyp.arc": 0.8581467270851135,
+     "hyp.mnpo": 0.8175726532936096,
+     "hyp.poa": 0.7062289118766785,
+     "hyp.pvn": 0.317421555519104,
+     "_sleep_fraction": 0.32421875
+    }
+   },
+   "dt_s": 150.0,
+   "clock_constants_live": {
+    "PER_TAU": true,
+    "PER_G": true,
+    "W_SCN_REC": true,
+    "BETA_SCN": true,
+    "THETA_SCN": true,
+    "TAU_SCN": true
+   },
+   "somnogen_constants_live": {
+    "TAU_SOM": true,
+    "SOM_CLEAR_GAIN": true
+   },
+   "clamp_binding_fraction_at_baseline": {
+    "SOM_CLEAR_LO": 0.0,
+    "SOM_CLEAR_HI": 0.0,
+    "PROCESS_C_LO": 0.0,
+    "PROCESS_C_HI": 0.0
+   },
+   "inert": [
+    "D_CIRC",
+    "D_LIGHT_SCN",
+    "D_PB_POA",
+    "D_SLEEP_SWITCH",
+    "D_VISCERAL",
+    "GC_TAU",
+    "N",
+    "SOM_CLEAR_LO",
+    "TAU_ARC",
+    "TAU_LH",
+    "TAU_MNPO",
+    "TAU_POA",
+    "TAU_PVN",
+    "TAU_VLPO",
+    "VAL_GAIN",
+    "VAL_GAIN_BASE",
+    "VAL_GAIN_HI",
+    "VAL_GAIN_LO",
+    "W_DRIVE_VAL",
+    "W_LC_SCN",
+    "W_LH_ORX",
+    "W_LH_VTA",
+    "W_LIGHT_SCN",
+    "W_NTS_ARC",
+    "W_NTS_MNPO",
+    "W_PB_POA",
+    "W_SCN_LC",
+    "W_VLPO_NM"
+   ],
+   "inert_by_kind": {
+    "orphan": [
+     "D_CIRC",
+     "D_LIGHT_SCN",
+     "D_PB_POA",
+     "D_VISCERAL",
+     "VAL_GAIN",
+     "VAL_GAIN_BASE",
+     "VAL_GAIN_HI",
+     "VAL_GAIN_LO",
+     "W_DRIVE_VAL",
+     "W_LC_SCN",
+     "W_LH_ORX",
+     "W_LH_VTA",
+     "W_LIGHT_SCN",
+     "W_NTS_ARC",
+     "W_NTS_MNPO",
+     "W_PB_POA",
+     "W_SCN_LC",
+     "W_VLPO_NM"
+    ],
+    "vanishes_at_dt": [
+     "D_SLEEP_SWITCH"
+    ],
+    "clamp": [
+     "SOM_CLEAR_LO"
+    ],
+    "unmeasured": [
+     "N"
+    ],
+    "unexplained": [
+     "GC_TAU",
+     "TAU_ARC",
+     "TAU_LH",
+     "TAU_MNPO",
+     "TAU_POA",
+     "TAU_PVN",
+     "TAU_VLPO"
+    ]
+   },
+   "sweep": [
+    {
+     "const": "BETA_ARC",
+     "baseline": 6.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.2260769009590149,
+     "span_state_worst_on": "hyp.arc",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "BETA_LH",
+     "baseline": 10.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.0209900158310665,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 9.495734065723127e-07,
+     "span_state": 0.1549479365348816,
+     "span_state_worst_on": "_sleep_fraction",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "BETA_MNPO",
+     "baseline": 6.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.2254716157913208,
+     "span_state_worst_on": "hyp.mnpo",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "BETA_POA",
+     "baseline": 6.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.15003395080566406,
+     "span_state_worst_on": "hyp.poa",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "BETA_PVN",
+     "baseline": 8.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.06795346736907959,
+     "span_state_worst_on": "hyp.pvn",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "BETA_SCN",
+     "baseline": 8.0,
+     "period_h": [
+      12.817708333333334,
+      31.875
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 19.057291666666664,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.08934023976325989,
+     "span_state_worst_on": "hyp.som",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "BETA_SOM",
+     "baseline": 10.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020846662414371,
+      15.02084518493491
+     ],
+     "tau_fall_h": [
+      6.021023251078538,
+      6.020968175725361
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 1.477479461442499e-06,
+     "span_tau_fall_h": 5.507535317672563e-05,
+     "span_state": 0.1935763657093048,
+     "span_state_worst_on": "_sleep_fraction",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "BETA_VLPO",
+     "baseline": 10.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020989541044474,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 1.4243599988361666e-06,
+     "span_state": 0.06415849924087524,
+     "span_state_worst_on": "hyp.vlpo",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "D_ARC",
+     "baseline": 0.55,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.4318010210990906,
+     "span_state_worst_on": "hyp.arc",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "D_CIRC",
+     "baseline": 0.04,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "D_LH",
+     "baseline": 0.45,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.20833972096443176,
+     "span_state_worst_on": "hyp.som",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "D_LIGHT_SCN",
+     "baseline": 0.02,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "D_MNPO",
+     "baseline": 0.5,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.45257359743118286,
+     "span_state_worst_on": "hyp.mnpo",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "D_PB_POA",
+     "baseline": 0.02,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "D_POA",
+     "baseline": 0.35,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.3834244906902313,
+     "span_state_worst_on": "hyp.poa",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "D_PVN",
+     "baseline": 0.3,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.18679288029670715,
+     "span_state_worst_on": "hyp.pvn",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "D_SLEEP_SWITCH",
+     "baseline": 0.015,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "vanishes_at_dt"
+    },
+    {
+     "const": "D_VISCERAL",
+     "baseline": 0.03,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "GC_G",
+     "baseline": 0.9,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.20751067996025085,
+     "span_state_worst_on": "hyp.pvn",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "GC_TAU",
+     "baseline": 3600.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0021550357341766357,
+     "span_state_worst_on": "hyp.pvn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "N",
+     "baseline": 16,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 3.5762786865234375e-07,
+     "span_state_worst_on": "hyp.lh",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unmeasured"
+    },
+    {
+     "const": "PER_G",
+     "baseline": 1.8,
+     "period_h": [
+      null,
+      20.864583333333332
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": null,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.6833029985427856,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [
+      "x0.5"
+     ],
+     "inert": false
+    },
+    {
+     "const": "PER_TAU",
+     "baseline": 68000.0,
+     "period_h": [
+      13.73611111111111,
+      34.770833333333336
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 21.034722222222225,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.11920186877250671,
+     "span_state_worst_on": "hyp.som",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "PROCESS_C_BASE",
+     "baseline": 0.45,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.10167306661605835,
+     "span_state_worst_on": "hyp.vlpo",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "PROCESS_C_GAIN",
+     "baseline": 1.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.08800959587097168,
+     "span_state_worst_on": "hyp.som",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "PROCESS_C_HI",
+     "baseline": 1.6,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.11456260085105896,
+     "span_state_worst_on": "hyp.vlpo",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "PROCESS_C_LO",
+     "baseline": 0.55,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.10841107368469238,
+     "span_state_worst_on": "hyp.som",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "SOM_CLEAR_GAIN",
+     "baseline": -0.6,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      10.520929726574387,
+      3.7709005475134676
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 6.7500291790609195,
+     "span_state": 0.2560763955116272,
+     "span_state_worst_on": "_sleep_fraction",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "SOM_CLEAR_HI",
+     "baseline": 1.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      7.520854028808373,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020986692326499,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 7.499983768733585,
+     "span_tau_fall_h": 4.273077974126238e-06,
+     "span_state": 0.09463357925415039,
+     "span_state_worst_on": "hyp.som",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "SOM_CLEAR_LO",
+     "baseline": 0.25,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "clamp"
+    },
+    {
+     "const": "TAU_ARC",
+     "baseline": 10800.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 1.245737075805664e-05,
+     "span_state_worst_on": "hyp.lh",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "TAU_LH",
+     "baseline": 60.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.02084518493491,
+      15.020852572335126
+     ],
+     "tau_fall_h": [
+      6.0209601044220475,
+      6.021416879271092
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 7.387400216884998e-06,
+     "span_tau_fall_h": 0.00045677484904427246,
+     "span_state": 0.0021701455116271973,
+     "span_state_worst_on": "_sleep_fraction",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "TAU_MNPO",
+     "baseline": 7200.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 1.0728836059570312e-06,
+     "span_state_worst_on": "hyp.mnpo",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "TAU_POA",
+     "baseline": 1200.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.001302093267440796,
+     "span_state_worst_on": "_sleep_fraction",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "TAU_PVN",
+     "baseline": 600.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.00035762786865234375,
+     "span_state_worst_on": "hyp.pvn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "TAU_SCN",
+     "baseline": 900.0,
+     "period_h": [
+      22.75,
+      25.86111111111111
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 3.1111111111111107,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.02505338191986084,
+     "span_state_worst_on": "hyp.som",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "TAU_SOM",
+     "baseline": 54000.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      7.520854028808373,
+      22.520829237862973
+     ],
+     "tau_fall_h": [
+      3.020990546205844,
+      9.021014244607636
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 14.9999752090546,
+     "span_tau_fall_h": 6.000023698401792,
+     "span_state": 0.10152029991149902,
+     "span_state_worst_on": "hyp.som",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "TAU_VLPO",
+     "baseline": 60.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020890312290065,
+      6.022238013716172
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0013477014261065179,
+     "span_state": 0.0021701455116271973,
+     "span_state_worst_on": "_sleep_fraction",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "unexplained"
+    },
+    {
+     "const": "THETA_ARC",
+     "baseline": 0.25,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.18679845333099365,
+     "span_state_worst_on": "hyp.arc",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "THETA_LH",
+     "baseline": 0.3,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.1818695068359375,
+     "span_state_worst_on": "hyp.som",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "THETA_MNPO",
+     "baseline": 0.25,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.2254716157913208,
+     "span_state_worst_on": "hyp.mnpo",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "THETA_POA",
+     "baseline": 0.3,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.3323787450790405,
+     "span_state_worst_on": "hyp.poa",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "THETA_PVN",
+     "baseline": 0.35,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.21718764305114746,
+     "span_state_worst_on": "hyp.pvn",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "THETA_SCN",
+     "baseline": -0.2,
+     "period_h": [
+      25.59722222222222,
+      24.083333333333332
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 1.5138888888888893,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.09084179997444153,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "THETA_SOM",
+     "baseline": 0.3,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020857004778744,
+      15.020839275019966
+     ],
+     "tau_fall_h": [
+      6.0210783274393,
+      6.020966751376146
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 1.7729758777562665e-05,
+     "span_tau_fall_h": 0.00011157606315403967,
+     "span_state": 0.241319477558136,
+     "span_state_worst_on": "_sleep_fraction",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "THETA_VLPO",
+     "baseline": 0.55,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.342013880610466,
+     "span_state_worst_on": "_sleep_fraction",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "VAL_GAIN",
+     "baseline": 0.8,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "VAL_GAIN_BASE",
+     "baseline": 0.3,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "VAL_GAIN_HI",
+     "baseline": 2.5,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "VAL_GAIN_LO",
+     "baseline": 0.5,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_ARC_LH",
+     "baseline": 0.3,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.1552993655204773,
+     "span_state_worst_on": "hyp.som",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "W_DRIVE_VAL",
+     "baseline": 0.7,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_LC_SCN",
+     "baseline": 0.35,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_LH_ORX",
+     "baseline": 0.8,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_LH_SOM",
+     "baseline": 1.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020883599495386,
+      15.02083188763283
+     ],
+     "tau_fall_h": [
+      6.020973873128966,
+      6.021004259463626
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 5.171186255559235e-05,
+     "span_tau_fall_h": 3.038633466001528e-05,
+     "span_state": 0.05946183204650879,
+     "span_state_worst_on": "_sleep_fraction",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "W_LH_VLPO",
+     "baseline": 0.7,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.3502604216337204,
+     "span_state_worst_on": "_sleep_fraction",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "W_LH_VTA",
+     "baseline": 0.6,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_LIGHT_SCN",
+     "baseline": 1.0,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_MNPO_LH",
+     "baseline": 0.15,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.07280343770980835,
+     "span_state_worst_on": "hyp.som",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "W_NTS_ARC",
+     "baseline": 0.9,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_NTS_MNPO",
+     "baseline": 0.8,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_PB_POA",
+     "baseline": 0.8,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_POA_VLPO",
+     "baseline": 0.35,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.1740451455116272,
+     "span_state_worst_on": "_sleep_fraction",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "W_SCN_LC",
+     "baseline": 0.35,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    },
+    {
+     "const": "W_SCN_POA",
+     "baseline": 0.25,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.09194469451904297,
+     "span_state_worst_on": "hyp.poa",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "W_SCN_PVN",
+     "baseline": 0.5,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.15849821269512177,
+     "span_state_worst_on": "hyp.pvn",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "W_SCN_REC",
+     "baseline": 1.2,
+     "period_h": [
+      8.666666666666666,
+      null
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": null,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.39062148332595825,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [
+      "x1.5"
+     ],
+     "inert": false
+    },
+    {
+     "const": "W_SOM_VLPO",
+     "baseline": 1.2,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.606153130531311,
+     "span_state_worst_on": "hyp.som",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "W_VLPO_LH",
+     "baseline": 0.9,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.5981345176696777,
+     "span_state_worst_on": "hyp.som",
+     "oscillation_lost_at": [],
+     "inert": false
+    },
+    {
+     "const": "W_VLPO_NM",
+     "baseline": 0.9,
+     "period_h": [
+      24.430555555555557,
+      24.430555555555557
+     ],
+     "tau_rise_h": [
+      15.020837797541958,
+      15.020837797541958
+     ],
+     "tau_fall_h": [
+      6.020990965404473,
+      6.020990965404473
+     ],
+     "span_period_h": 0.0,
+     "span_tau_rise_h": 0.0,
+     "span_tau_fall_h": 0.0,
+     "span_state": 0.0,
+     "span_state_worst_on": "hyp.scn",
+     "oscillation_lost_at": [],
+     "inert": true,
+     "inert_kind": "orphan"
+    }
+   ]
+  }
+ },
+ "all_gates_ok": false,
+ "gates_failed": [
+  "Y1_idempotence",
+  "Y2_free_run",
+  "Y5_drive_changes_value",
+  "Y6_sensitivity",
+  "Y6b_sensitivity_replacement"
+ ]
+}
