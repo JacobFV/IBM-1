@@ -7606,3 +7606,37 @@ normalisation is *too* complete above drive 1.2: the rate and the active fractio
 changing entirely, so the population has no contrast-response function left. Real cortex
 normalises and still varies with input strength. Nothing here depends on it yet, and it is
 the next thing to measure on this engine rather than a thing to tune away today.
+
+## 18 September 2026 — v3 in build: the spec, the package, and a calibration that proves the thesis on day one
+
+`docs/BRAIN_SPEC.md` says what the brain is being built to be, unconditionally. `ibm/brain/`
+is the package that declares it, one module per structure against a fixed contract, so the
+brain is an **assembly** rather than ten bespoke interfaces. `ibm/brain/cortex.py` is the
+reference implementation: 30 areas on the declared hierarchy, E and I per area, every
+excitatory population sparse and divisively normalised, cortico-cortical delays scaling with
+hierarchy distance. 60 populations, 2,400 units, 786 projections; bounded, idempotent.
+
+**And the first thing the assembly measured is the thesis itself.** Calibrating the cortex
+*alone* does not converge. The worst relative sparsity error sits at 100% pass after pass,
+because with only its declared tonic drive of 0.06 against a threshold near 0.30, most areas
+sit at about 8% firing and never reach the 6–12% ACTIVE fraction they are declared to run
+at. The calibration is not broken and neither is the cortex: **cortex is supposed to be
+driven by the thalamus, and the thalamus does not exist yet.**
+
+That is worth stating plainly because it is the architecture's own claim, arriving
+uninvited in the tooling on the first day: *a structure cannot be brought to its operating
+point alone if its drive comes from a structure that is absent.* Calibration therefore
+belongs at the assembly level, with every structure present, and a per-structure calibration
+number is meaningless in isolation. The same will be true of the rhythms: this is why
+nothing in the programme has ever ignited on one circuit.
+
+**Notes added to the things that were shortsighted**, in those files rather than only here:
+`docs/DYNAMICS.md` (its formulation takes brain state as a vector over cortical, thalamic,
+hippocampal, basal-ganglia, cerebellar, neuromodulatory, metabolic and structural fields —
+which was right, and what got built had no joint state anywhere and four floats where the
+neuromodulatory field should be); `docs/ARCHITECTURE.md` (its four primitives describe one
+system and the modules under them cannot be run together); `docs/DEVELOPMENTAL_COMPONENTS.md`
+(it identified the valuation gap on 9 September and nothing acted on it for nine days);
+`ibm/substrate.py` (the three measurements that superseded it); and `ibm/rhythms.py` (a
+specification that became a build-priority metric without anyone deciding to, and which by
+construction cannot see any structure whose job is not rhythmic).
