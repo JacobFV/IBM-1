@@ -145,9 +145,31 @@ def collect(names=None):
             orphans.append({
                 "edge": e.key, "missing": end, "end": which,
                 "declared_by": (e.dst if which == "src" else e.src).split(".", 1)[0],
-                "reason": ("structure not built yet" if struct in missing()
-                           else "id does not exist in a structure that IS built"),
+                # tested against the structures in THIS assembly, not against what exists
+                # on disk: `collect(['thalamus'])` is a legitimate isolated build and its
+                # edges to `bg.*` are not typos
+                "reason": ("structure not in this assembly"
+                           if struct not in {p.id.split(".", 1)[0] for p in pops}
+                           else "id does not exist in a structure that IS assembled"),
                 "did_you_mean": suggestion, "similarity": round(score, 3)})
+    # Mod edges are filtered here too.  They were not, and `Circuit.__init__` asserted
+    # their endpoints instead -- so a modulatory edge naming a structure that is simply not
+    # in this assembly CRASHED the build while the identical Proj would have been reported.
+    # Whole-brain assembly was failing on exactly that for part of today.
+    mods_kept = [m for m in mods if m.src in have and m.dst in have]
+    for m in mods:
+        for end in (m.src, m.dst):
+            if end in have:
+                continue
+            suggestion, score = _near(end)
+            orphans.append({
+                "edge": f"{m.src}=>{m.dst}", "missing": end, "end": "mod",
+                "declared_by": m.src.split(".", 1)[0],
+                "reason": ("structure not in this assembly" if end.split(".", 1)[0]
+                           not in {p.id.split(".", 1)[0] for p in pops}
+                           else "id does not exist in a structure that IS assembled"),
+                "did_you_mean": suggestion, "similarity": round(score, 3)})
+
     typos = [o for o in orphans
              if o["reason"].startswith("id does not exist") and o["did_you_mean"]]
     report = {"structures": names, "missing_structures": missing(),
@@ -155,7 +177,7 @@ def collect(names=None):
               "n_pops": len(pops), "n_internal": len(internal),
               "n_external_kept": len(kept), "orphans": orphans,
               "units": sum(p.n for p in pops)}
-    return pops, internal + kept, mods, drives, targets, report
+    return pops, internal + kept, mods_kept, drives, targets, report
 
 
 def assemble(names=None, seed: int = 0, device="cpu"):

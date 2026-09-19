@@ -7733,3 +7733,59 @@ negative-valence amygdala ensemble cannot be separated from the positive-valence
 
 **Assembly so far: 6 of 11 structures, 134 populations, 3,728 units, 244 internal and 793
 cross-structure projections.**
+
+## 18 September 2026 — the v3 thalamus hits the measured spindle, passes the gate v2 failed, and finds three engine bugs
+
+`ibm/brain/thalamus.py`: eight nuclei — LGN, MGN, VPL, VL, VA, MD, pulvinar, centromedian —
+each with a relay, **its own reticular sector**, and separate GABA-A (40 ms) and GABA-B
+(150 ms) pools. 32 populations, 512 units.
+
+| gate | verdict | number |
+|---|---|---|
+| T2 rebound | PASS | peak **0.652 at 21 ms after release** against 0.0092 during the pulse; an armed-but-unpushed control shows **no burst**; silencing the sector costs **1.46 decades** |
+| T3 spindle | PASS | **13.470 ± 0.281 Hz**, prominence **+1.889** |
+| T4 selective gating | **PASS** | gated modality **0.032×**, ungated **1.000×** |
+| T5 higher-order relay | **FAILED** | ratio 1.23 against a bar of 4 |
+| T6 sensitivity | PASS | the clock is `tau_relay` (5.02 Hz) and `tau_gabaa` (4.04 Hz) |
+
+**The spindle lands 0.020 Hz from the human measurement.** 13.470 Hz against the 13.45 Hz
+fitted on held-out sleepers, and 0.156 Hz from v2's 13.626 — inside the 0.28 Hz seed spread,
+so it is the same clock reached by a different implementation. T6 independently reproduces
+v2's finding that the clock is the relay membrane and the GABA-A decay rather than the
+T-current de-inactivation.
+
+**T4 is the gate v2 failed twice** — once on a scale-free metric, once because the gain
+genuinely did not change. Here it passes with a positive control that could have caught a
+false pass: two nuclei sharing *one* reticular population lose **both** modalities
+(0.032×, 0.036×), so the instrument can see collateral gating, and the per-nucleus sectors
+are what prevent it. Selective gating is the property the thalamus exists for and it now
+works.
+
+**T5 failed, and the control says it is not the thalamus's failure.** Replacing the pulvinar
+with a *direct* cortico-cortical projection of the same weight delivers nothing either:
+**no pathway of any kind carries a signal between two areas of `ibm/brain/cortex.py`.** That
+is my module's defect, not the thalamus's, and it is recorded against cortex.
+
+**Three engine bugs, all mine, all now fixed.**
+
+1. **Synaptic depression has never depleted anything.** `kx = 1/tau_rec + use·r·R_MAX/100`
+   with `R_MAX = 100` — the two cancel, leaving a depletion rate of `U·r ≤ 0.25/s` against a
+   recovery of 6.67/s. Measured: a relay's resource sat at **0.9913 with a range of 0.0013
+   over five seconds**. Every `depress=True` population in the package was affected. The
+   facilitation branch eight lines below carries a comment about exactly this units error,
+   written by the same hand that made it here. Fixed: the resource now falls to 0.091 under
+   strong drive.
+2. **A `Mod` edge naming a missing structure crashed the assembly** instead of being
+   reported, because `collect()` filtered `Proj` orphans and not `Mod` ones while
+   `Circuit.__init__` asserted them. Whole-brain assembly was failing on exactly that for
+   part of today. Now filtered and reported like any other edge.
+3. **The orphan "reason" tested what exists on disk rather than what is in this assembly**,
+   so `collect(['thalamus'])` called its legitimate edges to the basal ganglia typos.
+
+**And the depression bug was causing the cortical failure.** With it fixed, a mid-hierarchy
+cortical area is no longer bistable in its inhibitory gain: 48.7 Hz / 57% active at zero,
+**10.9 Hz / 7.1% active / transfer slope 0.19 at 0.10**, 5.0 Hz / 0% at 0.50 — a graded
+curve with a working point near the declared 9% sparsity. Two calibration faults on top of
+that are fixed: it started the search an order of magnitude *above* the useful range, and
+its burn-in was shorter than the ignition transient, so it read 0% active at a setting that
+ignites a second later and drove the gain the wrong way.

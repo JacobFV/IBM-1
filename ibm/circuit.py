@@ -168,8 +168,13 @@ class Circuit(nn.Module):
         for pr in self.projs:
             assert pr.src in self.pops, f"{pr.key}: no such source"
             assert pr.dst in self.pops, f"{pr.key}: no such target"
-        for m in self.mods:
-            assert m.src in self.pops and m.dst in self.pops, f"{m.src}->{m.dst}: unknown"
+        bad_mods = [f"{m.src}->{m.dst}" for m in self.mods
+                    if m.src not in self.pops or m.dst not in self.pops]
+        if bad_mods:
+            raise ValueError(
+                f"modulatory edges naming populations that do not exist: {bad_mods}. "
+                f"`ibm.brain.collect` filters these into its orphan report before building "
+                f"a Circuit; reaching this error means a caller assembled by hand.")
         self.device_ = device
         # every fixed connectivity draw comes from ONE dedicated generator, so the wiring is
         # a pure function of `seed` and not of whatever the caller drew before
@@ -221,13 +226,20 @@ class Circuit(nn.Module):
             for q in self.projs:
                 if q.dst == p.id and q.sign > 0:
                     worst += q.weight / max(self.pops[q.src].sparsity or 1.0, 1e-6)
+            # scaled DOWN from the saturation-balance figure, because that is the wrong end
+            # of the range: measured on a mid-hierarchy cortical area, the useful band is
+            # w_inh 0.05-0.10 (7% active, transfer slope 0.19) and the saturation-balance
+            # estimate was 10.25.  Starting an order of magnitude above the answer costs the
+            # multiplicative search four passes before it even enters the range where the
+            # measurement means anything.
+            worst *= 0.05
             # A STARTING POINT ONLY.  Balancing the saturation-level excitation is far too
             # strong at the operating point -- measured: ctx.E fell to 0.41 Hz with 1% active
             # against a declared 8%.  The gain that actually holds a population at its
             # declared sparsity is not an algebraic consequence of the wiring, it is a
             # property of the whole circuit at a drive, so it is MEASURED by
             # `calibrate_sparsity()` and this value is only where that search starts.
-            self.w_inh[p.id] = max(1.0, worst)
+            self.w_inh[p.id] = max(0.05, worst)
 
     # ------------------------------------------------------------------ wiring
     def _make_weights(self, pr: Proj, g) -> torch.Tensor:
@@ -458,7 +470,16 @@ class Circuit(nn.Module):
             if p.depress:
                 x = s["x"]
                 use = s["u"] if p.facilitate else torch.full_like(r, p.U)
-                kx = 1.0 / p.tau_rec + use * r * R_MAX / 100.0
+                # `r` is a NORMALISED rate in [0, 1]; depletion is per spike, so the rate
+                # has to be in spikes per second -- r * R_MAX.  The first version wrote
+                # `use * r * R_MAX / 100.0`, and R_MAX is 100, so the two cancelled and the
+                # depletion rate was U*r <= 0.25/s against a recovery of 1/tau_rec = 6.67/s.
+                # Measured by the thalamus gate: a relay population's resource sat at 0.9913
+                # with a range of 0.0013 over five seconds.  Synaptic depression has never
+                # depleted anything in this engine, in any population declaring it -- and
+                # the facilitation branch eight lines below carried a comment about exactly
+                # this units error, written by the same hand that made it here.
+                kx = 1.0 / p.tau_rec + use * r * R_MAX
                 x_inf = (1.0 / p.tau_rec) / kx
                 out["x"] = x_inf + (x - x_inf) * torch.exp(-dt * kx)
             if p.facilitate:
@@ -529,8 +550,12 @@ class Circuit(nn.Module):
         history = []
         for it in range(passes):
             g = torch.Generator().manual_seed(seed)
+            # the burn-in has to outlast the IGNITION TRANSIENT, not just the membrane
+            # time constants.  At 0.5 s it read 0% active at a setting that ignites a second
+            # later, and drove the gain the wrong way -- which is how the cortical
+            # calibration ended up oscillating instead of converging.
             tr, _ = self.rollout(int(seconds / dt), dt, state=self.init_state(1, dt),
-                                 drive=drive, noise_gen=g, burn=int(0.5 / dt),
+                                 drive=drive, noise_gen=g, burn=int(max(1.5, seconds) / dt),
                                  record=[p.id for p in sparse_pops])
             row = {}
             for p in sparse_pops:
@@ -545,7 +570,7 @@ class Circuit(nn.Module):
                 print(f"    pass {it:2d}  worst relative error {err:6.2%}", flush=True)
         g = torch.Generator().manual_seed(seed)
         tr, _ = self.rollout(int(seconds / dt), dt, state=self.init_state(1, dt),
-                             drive=drive, noise_gen=g, burn=int(0.5 / dt),
+                             drive=drive, noise_gen=g, burn=int(max(1.5, seconds) / dt),
                              record=[p.id for p in sparse_pops])
         out = {}
         for p in sparse_pops:

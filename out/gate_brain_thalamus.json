@@ -1,0 +1,942 @@
+{
+ "script": "scripts/gate_brain_thalamus.py",
+ "dt": 0.001,
+ "gates": {
+  "T0_bounded": {
+   "ok": true,
+   "worst_excursion": 0.0,
+   "checked": "every population's r at every step, and x/u/inh in the final state, against [0, 1]; a and eta reported, not gated",
+   "cases": [
+    {
+     "dt": 0.001,
+     "relay_drive_offset": -2.0,
+     "worst": 0.0,
+     "relay_hz": 2.5616935090511106e-05,
+     "adapt_range": [
+      1.1482277528784834e-07,
+      1.602581392035063e-07
+     ],
+     "eta_range": [
+      -0.05886372923851013,
+      0.061258286237716675
+     ]
+    },
+    {
+     "dt": 0.001,
+     "relay_drive_offset": 0.0,
+     "worst": 0.0,
+     "relay_hz": 23.405391693115234,
+     "adapt_range": [
+      0.11405524611473083,
+      0.13598641753196716
+     ],
+     "eta_range": [
+      -0.05886372923851013,
+      0.061258286237716675
+     ]
+    },
+    {
+     "dt": 0.001,
+     "relay_drive_offset": 2.0,
+     "worst": 0.0,
+     "relay_hz": 88.89273834228516,
+     "adapt_range": [
+      0.4764409363269806,
+      0.49167463183403015
+     ],
+     "eta_range": [
+      -0.05886372923851013,
+      0.061258286237716675
+     ]
+    },
+    {
+     "dt": 0.005,
+     "relay_drive_offset": -2.0,
+     "worst": 0.0,
+     "relay_hz": 2.569307980593294e-05,
+     "adapt_range": [
+      1.1571759017670047e-07,
+      1.6517769552137906e-07
+     ],
+     "eta_range": [
+      -0.07572208344936371,
+      0.02385854348540306
+     ]
+    },
+    {
+     "dt": 0.005,
+     "relay_drive_offset": 0.0,
+     "worst": 0.0,
+     "relay_hz": 23.03199005126953,
+     "adapt_range": [
+      0.1169520914554596,
+      0.1429663449525833
+     ],
+     "eta_range": [
+      -0.07572208344936371,
+      0.02385854348540306
+     ]
+    },
+    {
+     "dt": 0.005,
+     "relay_drive_offset": 2.0,
+     "worst": 0.0,
+     "relay_hz": 88.97842407226562,
+     "adapt_range": [
+      0.47815242409706116,
+      0.4927709698677063
+     ],
+     "eta_range": [
+      -0.07572208344936371,
+      0.02385854348540306
+     ]
+    },
+    {
+     "dt": 0.02,
+     "relay_drive_offset": -2.0,
+     "worst": 0.0,
+     "relay_hz": 2.5826846467680298e-05,
+     "adapt_range": [
+      1.1901664720426197e-07,
+      1.7988537592827925e-07
+     ],
+     "eta_range": [
+      -0.08679284155368805,
+      0.08929037302732468
+     ]
+    },
+    {
+     "dt": 0.02,
+     "relay_drive_offset": 0.0,
+     "worst": 0.0,
+     "relay_hz": 23.44182586669922,
+     "adapt_range": [
+      0.1625220775604248,
+      0.19532452523708344
+     ],
+     "eta_range": [
+      -0.08679284155368805,
+      0.08929037302732468
+     ]
+    },
+    {
+     "dt": 0.02,
+     "relay_drive_offset": 2.0,
+     "worst": 0.0,
+     "relay_hz": 89.22335052490234,
+     "adapt_range": [
+      0.4756699204444885,
+      0.4975505471229553
+     ],
+     "eta_range": [
+      -0.08679284155368805,
+      0.08929037302732468
+     ]
+    }
+   ],
+   "seconds": 2.1
+  },
+  "T1_idempotent": {
+   "ok": true,
+   "bit_identical": true,
+   "max_abs_diff": 0.0,
+   "seconds": 1.2
+  },
+  "T2_rebound": {
+   "ok": true,
+   "a_rebound_after_release": {
+    "pre_pulse": 0.23252084851264954,
+    "during_pulse": 0.009178430773317814,
+    "peak": 0.6522177457809448,
+    "peak_step": 721,
+    "release_step": 700,
+    "peak_ms_after_release": 21.0,
+    "ok": true
+   },
+   "b_armed_with_no_push": {
+    "pre_pulse": 0.024161843582987785,
+    "during_pulse": 0.0009370460174977779,
+    "peak": 0.026219477877020836,
+    "peak_step": 755,
+    "release_step": 700,
+    "peak_ms_after_release": 55.0,
+    "ok": true
+   },
+   "c_no_self_oscillation": {
+    "ok": true,
+    "intact": {
+     "peak_hz": 13.529595375061035,
+     "spindle_prominence": 1.8230996131896973,
+     "relay_hz": 23.264238357543945,
+     "relay_sd_hz": 0.9425827264785767,
+     "trn_hz": 34.25934982299805
+    },
+    "relay_to_trn_weight_zero": {
+     "peak_hz": 6.883601188659668,
+     "spindle_prominence": 0.36206674575805664,
+     "relay_hz": 53.42112350463867,
+     "relay_sd_hz": 0.5250639915466309,
+     "trn_hz": 10.05195140838623
+    },
+    "prominence_drop_decades": 1.4610328674316406,
+    "note": "zeroing relay->trn also raises the relay's rate, and that confound is reported rather than corrected: the claim is only that the ring is the loop's"
+   },
+   "seconds": 7.1
+  },
+  "T3_spindle_band": {
+   "ok": true,
+   "mean_peak_hz": 13.469508171081543,
+   "sd_over_seeds_hz": 0.2805882394313812,
+   "mean_prominence_decades": 1.8885754346847534,
+   "band": [
+    11.0,
+    16.0
+   ],
+   "seeds": [
+    {
+     "peak_hz": 13.529595375061035,
+     "spindle_prominence": 1.8230996131896973,
+     "relay_hz": 23.264238357543945,
+     "relay_sd_hz": 0.9425827264785767,
+     "trn_hz": 34.25934982299805
+    },
+    {
+     "peak_hz": 13.715184211730957,
+     "spindle_prominence": 1.9258575439453125,
+     "relay_hz": 23.268171310424805,
+     "relay_sd_hz": 1.0080327987670898,
+     "trn_hz": 34.2692756652832
+    },
+    {
+     "peak_hz": 13.163743019104004,
+     "spindle_prominence": 1.916769027709961,
+     "relay_hz": 23.248323440551758,
+     "relay_sd_hz": 1.0014492273330688,
+     "trn_hz": 34.270118713378906
+    }
+   ],
+   "polarisation": {
+    "relay": 0.7,
+    "trn": 0.05
+   },
+   "minus_v2_13.626_hz": -0.15649182891845648,
+   "minus_measured_13.45_hz": 0.01950817108154368,
+   "seconds": 9.5
+  },
+  "T4_selective_gating": {
+   "ok": true,
+   "a_gated_modality_falls": {
+    "ok": true,
+    "lgn_ratio": 0.03237580613947065,
+    "bar": "<= 0.5"
+   },
+   "b_other_modality_holds": {
+    "ok": true,
+    "mgn_ratio": 1.0,
+    "bar": "0.75 to 1.25"
+   },
+   "c_positive_control_lumped": {
+    "ok": true,
+    "ratios": {
+     "lgn": 0.032195002083249734,
+     "mgn": 0.0360641817724228
+    },
+    "bar": "both <= 0.5",
+    "note": "without this arm (b) is a control that cannot fail"
+   },
+   "polarisation": {
+    "relay": 1.0,
+    "trn": -0.35
+   },
+   "gated_sector_drive": 0.6,
+   "detail": {
+    "sectored": {
+     "ungated": {
+      "lgn": {
+       "transfer_slope": 0.07487993687391281,
+       "relay_hz": 56.85493850708008
+      },
+      "mgn": {
+       "transfer_slope": 0.0724363625049591,
+       "relay_hz": 56.86079788208008
+      }
+     },
+     "gated": {
+      "lgn": {
+       "transfer_slope": 0.002424298319965601,
+       "relay_hz": 0.5053663849830627
+      },
+      "mgn": {
+       "transfer_slope": 0.0724363625049591,
+       "relay_hz": 56.86079788208008
+      }
+     },
+     "ratio": {
+      "lgn": 0.03237580613947065,
+      "mgn": 1.0
+     }
+    },
+    "lumped_one_shared_sector": {
+     "ungated": {
+      "lgn": {
+       "transfer_slope": 0.07519427686929703,
+       "relay_hz": 57.548011779785156
+      },
+      "mgn": {
+       "transfer_slope": 0.07406926900148392,
+       "relay_hz": 57.2492790222168
+      }
+     },
+     "gated": {
+      "lgn": {
+       "transfer_slope": 0.002420879900455475,
+       "relay_hz": 0.5043665170669556
+      },
+      "mgn": {
+       "transfer_slope": 0.0026712475810199976,
+       "relay_hz": 0.5321083068847656
+      }
+     },
+     "ratio": {
+      "lgn": 0.032195002083249734,
+      "mgn": 0.0360641817724228
+     }
+    }
+   },
+   "seconds": 16.0
+  },
+  "T5_higher_order_relay": {
+   "ok": false,
+   "pair": [
+    "pulvinar",
+    "pericalcarine",
+    "inferiorparietal"
+   ],
+   "no_direct_fibre_in_cortex": true,
+   "intact": {
+    "source_slope": 0.004505378194153309,
+    "target_slope": -2.710811168071814e-05,
+    "target_slope_vs_surrogate": 2.198866604885552e-05,
+    "source_hz": 1.2565126419067383,
+    "target_hz": 0.9469025731086731,
+    "relay_slope": -0.0006380946142598987,
+    "relay_hz": 40.81977462768555
+   },
+   "pulvinar_cut": {
+    "source_slope": 0.004427738022059202,
+    "target_slope": 3.7893100852670614e-06,
+    "target_slope_vs_surrogate": 1.3360745754198433e-07,
+    "source_hz": 1.2515161037445068,
+    "target_hz": 1.3177608251571655
+   },
+   "direct_fibre_control": {
+    "source_slope": 0.004427738022059202,
+    "target_slope": -1.5418704606418032e-06,
+    "target_slope_vs_surrogate": 1.3300620594236534e-05,
+    "source_hz": 1.2515161037445068,
+    "target_hz": 1.3102643489837646
+   },
+   "noise_floor": 2.198866604885552e-05,
+   "ratio_intact_over_floor": 1.2328220193297754,
+   "bar": "|intact| >= 4 x max(|cut|, |surrogate null|)",
+   "diagnosis": "the direct-fibre arm says whether ANY pathway can carry a signal between two areas of this cortex; it is reported, not gated",
+   "seconds": 19.5
+  },
+  "T6_sensitivity": {
+   "ok": true,
+   "baseline_hz": 13.389877319335938,
+   "baseline_prominence": 1.5645146369934082,
+   "claimed_clock_span_hz": {
+    "tau_relay": 5.019695281982422,
+    "tau_gabaa": 4.0435590744018555
+   },
+   "rule": "tau_relay and tau_gabaa must each move the spindle frequency > 1 Hz",
+   "inert_within_0.2hz": [
+    "tau_rec",
+    "u_tc"
+   ],
+   "inert_by_construction_of_the_test": [
+    "w_ct_relay",
+    "w_ct_trn",
+    "w_tc_e",
+    "w_tc_i",
+    "w_ho_driver",
+    "w_cm_ctx",
+    "w_cm_str",
+    "d_relay_cortex",
+    "d_cortex_trn",
+    "d_cortex_relay"
+   ],
+   "pinned_state": {
+    "variables": {
+     "thal.lgn.relay:eta": {
+      "min": -0.129427969455719,
+      "max": 0.1301984339952469,
+      "range": 0.2596264034509659
+     },
+     "thal.lgn.relay:a": {
+      "min": 0.11160580813884735,
+      "max": 0.1463874727487564,
+      "range": 0.03478166460990906
+     },
+     "thal.lgn.relay:r": {
+      "min": 0.1583510935306549,
+      "max": 0.33919525146484375,
+      "range": 0.18084415793418884
+     },
+     "thal.lgn.relay:x": {
+      "min": 0.9906711578369141,
+      "max": 0.9920188784599304,
+      "range": 0.0013477206230163574
+     },
+     "thal.trn.lgn:eta": {
+      "min": -0.08737290650606155,
+      "max": 0.09427640587091446,
+      "range": 0.181649312376976
+     },
+     "thal.trn.lgn:r": {
+      "min": 0.26024433970451355,
+      "max": 0.4436052441596985,
+      "range": 0.18336090445518494
+     },
+     "thal.lgn.gabaa:r": {
+      "min": 0.23767423629760742,
+      "max": 0.2712675929069519,
+      "range": 0.03359335660934448
+     },
+     "thal.lgn.gabab:r": {
+      "min": 0.06933881342411041,
+      "max": 0.07297592610120773,
+      "range": 0.0036371126770973206
+     }
+    },
+    "pinned_range_below_1e-3": []
+   },
+   "sweep": [
+    {
+     "param": "tau_relay",
+     "value": 0.016,
+     "hz_at_half": 16.56015968322754,
+     "hz_at_1p5x": 11.540464401245117,
+     "span_hz": 5.019695281982422,
+     "prominence_at_half": 0.823967456817627,
+     "prominence_at_1p5x": 1.5462417602539062
+    },
+    {
+     "param": "beta_syn",
+     "value": 10.0,
+     "hz_at_half": 9.501494407653809,
+     "hz_at_1p5x": 14.141549110412598,
+     "span_hz": 4.640054702758789,
+     "prominence_at_half": 0.7156667709350586,
+     "prominence_at_1p5x": 3.4589133262634277
+    },
+    {
+     "param": "w_relay_trn",
+     "value": 1.1,
+     "hz_at_half": 9.87920093536377,
+     "hz_at_1p5x": 14.161639213562012,
+     "span_hz": 4.282438278198242,
+     "prominence_at_half": 0.7317843437194824,
+     "prominence_at_1p5x": 3.265714168548584
+    },
+    {
+     "param": "tau_gabaa",
+     "value": 0.04,
+     "hz_at_half": 16.08696746826172,
+     "hz_at_1p5x": 12.043408393859863,
+     "span_hz": 4.0435590744018555,
+     "prominence_at_half": 2.9677071571350098,
+     "prominence_at_1p5x": 1.2375712394714355
+    },
+    {
+     "param": "theta_gabaa",
+     "value": 0.45,
+     "hz_at_half": 8.691719055175781,
+     "hz_at_1p5x": 12.268960952758789,
+     "span_hz": 3.577241897583008,
+     "prominence_at_half": 0.7457876205444336,
+     "prominence_at_1p5x": 1.3597321510314941
+    },
+    {
+     "param": "beta_relay",
+     "value": 9.0,
+     "hz_at_half": 11.0394287109375,
+     "hz_at_1p5x": 14.545284271240234,
+     "span_hz": 3.5058555603027344,
+     "prominence_at_half": 0.9662556648254395,
+     "prominence_at_1p5x": 2.9742729663848877
+    },
+    {
+     "param": "beta_trn",
+     "value": 8.0,
+     "hz_at_half": 11.455103874206543,
+     "hz_at_1p5x": 14.74599552154541,
+     "span_hz": 3.290891647338867,
+     "prominence_at_half": 0.9340372085571289,
+     "prominence_at_1p5x": 1.9964988231658936
+    },
+    {
+     "param": "tau_trn",
+     "value": 0.008,
+     "hz_at_half": 15.612971305847168,
+     "hz_at_1p5x": 12.354491233825684,
+     "span_hz": 3.2584800720214844,
+     "prominence_at_half": 1.1375598907470703,
+     "prominence_at_1p5x": 1.9591341018676758
+    },
+    {
+     "param": "theta_relay",
+     "value": 0.35,
+     "hz_at_half": 14.46291446685791,
+     "hz_at_1p5x": 11.820581436157227,
+     "span_hz": 2.6423330307006836,
+     "prominence_at_half": 3.202965497970581,
+     "prominence_at_1p5x": 0.9840989112854004
+    },
+    {
+     "param": "theta_gabab",
+     "value": 0.6,
+     "hz_at_half": 12.025899887084961,
+     "hz_at_1p5x": 13.782421112060547,
+     "span_hz": 1.756521224975586,
+     "prominence_at_half": 1.1664180755615234,
+     "prominence_at_1p5x": 1.6108741760253906
+    },
+    {
+     "param": "w_gabaa",
+     "value": 1.3,
+     "hz_at_half": 12.211762428283691,
+     "hz_at_1p5x": 13.698978424072266,
+     "span_hz": 1.4872159957885742,
+     "prominence_at_half": 1.269622802734375,
+     "prominence_at_1p5x": 1.7349839210510254
+    },
+    {
+     "param": "g_t",
+     "value": 0.55,
+     "hz_at_half": 13.886469841003418,
+     "hz_at_1p5x": 12.435884475708008,
+     "span_hz": 1.4505853652954102,
+     "prominence_at_half": 1.9544901847839355,
+     "prominence_at_1p5x": 1.3512153625488281
+    },
+    {
+     "param": "t_deinact_s",
+     "value": 0.06,
+     "hz_at_half": 14.130449295043945,
+     "hz_at_1p5x": 12.972013473510742,
+     "span_hz": 1.1584358215332031,
+     "prominence_at_half": 1.4285469055175781,
+     "prominence_at_1p5x": 1.592818260192871
+    },
+    {
+     "param": "w_trn_trn",
+     "value": 0.25,
+     "hz_at_half": 13.520421981811523,
+     "hz_at_1p5x": 12.408888816833496,
+     "span_hz": 1.1115331649780273,
+     "prominence_at_half": 2.3367066383361816,
+     "prominence_at_1p5x": 1.2848129272460938
+    },
+    {
+     "param": "sigma_relay",
+     "value": 0.03,
+     "hz_at_half": 13.53486156463623,
+     "hz_at_1p5x": 12.689194679260254,
+     "span_hz": 0.8456668853759766,
+     "prominence_at_half": 1.7503643035888672,
+     "prominence_at_1p5x": 1.5489063262939453
+    },
+    {
+     "param": "sigma_trn",
+     "value": 0.02,
+     "hz_at_half": 12.789397239685059,
+     "hz_at_1p5x": 13.478946685791016,
+     "span_hz": 0.689549446105957,
+     "prominence_at_half": 1.6058778762817383,
+     "prominence_at_1p5x": 1.6349234580993652
+    },
+    {
+     "param": "theta_trn",
+     "value": 0.3,
+     "hz_at_half": 11.845647811889648,
+     "hz_at_1p5x": 12.339701652526855,
+     "span_hz": 0.49405384063720703,
+     "prominence_at_half": 1.22847318649292,
+     "prominence_at_1p5x": 1.4208688735961914
+    },
+    {
+     "param": "w_gabab",
+     "value": 0.35,
+     "hz_at_half": 13.613131523132324,
+     "hz_at_1p5x": 13.1621732711792,
+     "span_hz": 0.450958251953125,
+     "prominence_at_half": 1.5871834754943848,
+     "prominence_at_1p5x": 1.5446157455444336
+    },
+    {
+     "param": "tau_gabab",
+     "value": 0.15,
+     "hz_at_half": 13.661980628967285,
+     "hz_at_1p5x": 13.285165786743164,
+     "span_hz": 0.3768148422241211,
+     "prominence_at_half": 1.618565559387207,
+     "prominence_at_1p5x": 1.5458979606628418
+    },
+    {
+     "param": "d_relay_trn",
+     "value": 0.0015,
+     "hz_at_half": 13.701157569885254,
+     "hz_at_1p5x": 13.389877319335938,
+     "span_hz": 0.3112802505493164,
+     "prominence_at_half": 1.3657140731811523,
+     "prominence_at_1p5x": 1.5645146369934082
+    },
+    {
+     "param": "d_trn_relay",
+     "value": 0.0015,
+     "hz_at_half": 13.65314769744873,
+     "hz_at_1p5x": 13.389877319335938,
+     "span_hz": 0.26327037811279297,
+     "prominence_at_half": 1.3579797744750977,
+     "prominence_at_1p5x": 1.5645146369934082
+    },
+    {
+     "param": "tau_rec",
+     "value": 0.15,
+     "hz_at_half": 13.435575485229492,
+     "hz_at_1p5x": 13.342556953430176,
+     "span_hz": 0.0930185317993164,
+     "prominence_at_half": 1.5719294548034668,
+     "prominence_at_1p5x": 1.5571894645690918
+    },
+    {
+     "param": "u_tc",
+     "value": 0.25,
+     "hz_at_half": 13.433818817138672,
+     "hz_at_1p5x": 13.34472942352295,
+     "span_hz": 0.08908939361572266,
+     "prominence_at_half": 1.5730113983154297,
+     "prominence_at_1p5x": 1.5561485290527344
+    },
+    {
+     "param": "w_ct_relay",
+     "value": 0.35,
+     "hz_at_half": 13.389877319335938,
+     "hz_at_1p5x": 13.389877319335938,
+     "span_hz": 0.0,
+     "prominence_at_half": 1.5645146369934082,
+     "prominence_at_1p5x": 1.5645146369934082
+    },
+    {
+     "param": "w_ct_trn",
+     "value": 0.55,
+     "hz_at_half": 13.389877319335938,
+     "hz_at_1p5x": 13.389877319335938,
+     "span_hz": 0.0,
+     "prominence_at_half": 1.5645146369934082,
+     "prominence_at_1p5x": 1.5645146369934082
+    },
+    {
+     "param": "w_tc_e",
+     "value": 0.55,
+     "hz_at_half": 13.389877319335938,
+     "hz_at_1p5x": 13.389877319335938,
+     "span_hz": 0.0,
+     "prominence_at_half": 1.5645146369934082,
+     "prominence_at_1p5x": 1.5645146369934082
+    },
+    {
+     "param": "w_tc_i",
+     "value": 0.25,
+     "hz_at_half": 13.389877319335938,
+     "hz_at_1p5x": 13.389877319335938,
+     "span_hz": 0.0,
+     "prominence_at_half": 1.5645146369934082,
+     "prominence_at_1p5x": 1.5645146369934082
+    },
+    {
+     "param": "w_ho_driver",
+     "value": 0.95,
+     "hz_at_half": 13.389877319335938,
+     "hz_at_1p5x": 13.389877319335938,
+     "span_hz": 0.0,
+     "prominence_at_half": 1.5645146369934082,
+     "prominence_at_1p5x": 1.5645146369934082
+    },
+    {
+     "param": "w_cm_ctx",
+     "value": 0.1,
+     "hz_at_half": 13.389877319335938,
+     "hz_at_1p5x": 13.389877319335938,
+     "span_hz": 0.0,
+     "prominence_at_half": 1.5645146369934082,
+     "prominence_at_1p5x": 1.5645146369934082
+    },
+    {
+     "param": "w_cm_str",
+     "value": 0.6,
+     "hz_at_half": 13.389877319335938,
+     "hz_at_1p5x": 13.389877319335938,
+     "span_hz": 0.0,
+     "prominence_at_half": 1.5645146369934082,
+     "prominence_at_1p5x": 1.5645146369934082
+    },
+    {
+     "param": "d_relay_cortex",
+     "value": 0.002,
+     "hz_at_half": 13.389877319335938,
+     "hz_at_1p5x": 13.389877319335938,
+     "span_hz": 0.0,
+     "prominence_at_half": 1.5645146369934082,
+     "prominence_at_1p5x": 1.5645146369934082
+    },
+    {
+     "param": "d_cortex_trn",
+     "value": 0.005,
+     "hz_at_half": 13.389877319335938,
+     "hz_at_1p5x": 13.389877319335938,
+     "span_hz": 0.0,
+     "prominence_at_half": 1.5645146369934082,
+     "prominence_at_1p5x": 1.5645146369934082
+    },
+    {
+     "param": "d_cortex_relay",
+     "value": 0.006,
+     "hz_at_half": 13.389877319335938,
+     "hz_at_1p5x": 13.389877319335938,
+     "span_hz": 0.0,
+     "prominence_at_half": 1.5645146369934082,
+     "prominence_at_1p5x": 1.5645146369934082
+    }
+   ],
+   "seconds": 68.6
+  }
+ },
+ "assembly_cortex_thalamus": {
+  "structures": [
+   "cortex",
+   "thalamus"
+  ],
+  "missing_structures": [
+   "hippocampus",
+   "cerebellum",
+   "brainstem",
+   "cord",
+   "olfactory"
+  ],
+  "likely_typos": [],
+  "n_pops": 92,
+  "n_internal": 138,
+  "n_external_kept": 737,
+  "orphans": [
+   {
+    "edge": "thal.cm.relay->bg.d1.motor",
+    "missing": "bg.d1.motor",
+    "end": "dst",
+    "declared_by": "thal",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": null,
+    "similarity": 0.227
+   },
+   {
+    "edge": "thal.cm.relay->bg.d2.motor",
+    "missing": "bg.d2.motor",
+    "end": "dst",
+    "declared_by": "thal",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": null,
+    "similarity": 0.227
+   },
+   {
+    "edge": "thal.cm.relay->bg.d1.associative",
+    "missing": "bg.d1.associative",
+    "end": "dst",
+    "declared_by": "thal",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": null,
+    "similarity": 0.235
+   },
+   {
+    "edge": "thal.cm.relay->bg.d2.associative",
+    "missing": "bg.d2.associative",
+    "end": "dst",
+    "declared_by": "thal",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": null,
+    "similarity": 0.235
+   }
+  ],
+  "units": 2912
+ },
+ "assembly_all_available": {
+  "structures": [
+   "cortex",
+   "thalamus",
+   "basal_ganglia",
+   "valuation",
+   "neuromodulators",
+   "hypothalamus"
+  ],
+  "missing_structures": [
+   "hippocampus",
+   "cerebellum",
+   "brainstem",
+   "cord",
+   "olfactory"
+  ],
+  "likely_typos": [
+   {
+    "edge": "bg.gpi.motor->thal.vl",
+    "missing": "thal.vl",
+    "end": "dst",
+    "declared_by": "bg",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": "thal.vl.gabab",
+    "similarity": 0.857
+   },
+   {
+    "edge": "bg.gpi.oculomotor->thal.va",
+    "missing": "thal.va",
+    "end": "dst",
+    "declared_by": "bg",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": "thal.va.gabaa",
+    "similarity": 0.857
+   },
+   {
+    "edge": "bg.gpi.associative->thal.va",
+    "missing": "thal.va",
+    "end": "dst",
+    "declared_by": "bg",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": "thal.va.gabaa",
+    "similarity": 0.857
+   },
+   {
+    "edge": "bg.gpi.limbic->thal.va",
+    "missing": "thal.va",
+    "end": "dst",
+    "declared_by": "bg",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": "thal.va.gabaa",
+    "similarity": 0.857
+   }
+  ],
+  "n_pops": 134,
+  "n_internal": 244,
+  "n_external_kept": 794,
+  "orphans": [
+   {
+    "edge": "bg.gpi.motor->thal.vl",
+    "missing": "thal.vl",
+    "end": "dst",
+    "declared_by": "bg",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": "thal.vl.gabab",
+    "similarity": 0.857
+   },
+   {
+    "edge": "bg.gpi.oculomotor->thal.va",
+    "missing": "thal.va",
+    "end": "dst",
+    "declared_by": "bg",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": "thal.va.gabaa",
+    "similarity": 0.857
+   },
+   {
+    "edge": "bg.gpi.associative->thal.va",
+    "missing": "thal.va",
+    "end": "dst",
+    "declared_by": "bg",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": "thal.va.gabaa",
+    "similarity": 0.857
+   },
+   {
+    "edge": "bg.gpi.limbic->thal.va",
+    "missing": "thal.va",
+    "end": "dst",
+    "declared_by": "bg",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": "thal.va.gabaa",
+    "similarity": 0.857
+   },
+   {
+    "edge": "bs.nts->hyp.arc",
+    "missing": "bs.nts",
+    "end": "src",
+    "declared_by": "hyp",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": null,
+    "similarity": 0.35
+   },
+   {
+    "edge": "bs.nts->hyp.mnpo",
+    "missing": "bs.nts",
+    "end": "src",
+    "declared_by": "hyp",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": null,
+    "similarity": 0.35
+   },
+   {
+    "edge": "bs.pb->hyp.poa",
+    "missing": "bs.pb",
+    "end": "src",
+    "declared_by": "hyp",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": null,
+    "similarity": 0.261
+   },
+   {
+    "edge": "hyp.pvn->bs.nts",
+    "missing": "bs.nts",
+    "end": "dst",
+    "declared_by": "hyp",
+    "reason": "id does not exist in a structure that IS built",
+    "did_you_mean": null,
+    "similarity": 0.35
+   }
+  ],
+  "units": 3728
+ },
+ "missing_afferents": {
+  "lgn": {
+   "from": "retina",
+   "owner": "NO STRUCTURE -- there is no retina in ibm/brain's STRUCTURES",
+   "declared": false
+  },
+  "mgn": {
+   "from": "inferior colliculus",
+   "owner": "brainstem",
+   "declared": false
+  },
+  "vpl": {
+   "from": "medial lemniscus / dorsal column nuclei",
+   "owner": "cord or brainstem",
+   "declared": false
+  },
+  "vl": {
+   "from": "cerebellar deep nuclei",
+   "owner": "cerebellum",
+   "declared": false
+  },
+  "va": {
+   "from": "GPi / SNr",
+   "owner": "basal_ganglia",
+   "declared": false
+  },
+  "cm": {
+   "from": "brainstem reticular formation",
+   "owner": "brainstem",
+   "declared": false
+  }
+ },
+ "failed": [
+  "T5_higher_order_relay"
+ ],
+ "all_ok": false
+}
