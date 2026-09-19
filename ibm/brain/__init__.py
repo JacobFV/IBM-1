@@ -46,6 +46,22 @@ import pkgutil
 
 from ibm.circuit import Circuit, Mod, Pop, Proj  # noqa: F401  (re-exported for modules)
 
+#: The canonical neuromodulatory population ids.  Every structure's `Mod` edges name these,
+#: and `ibm/brain/neuromodulators.py` is the one module that creates them -- so there is one
+#: locus coeruleus in the brain and not one per structure that wanted a gain knob.  These
+#: replace `m_beta`, `arousal`, `septal_tone` and `dopamine`, the four floats that four
+#: separate v2-era modules used to fake a system nobody had built.
+NM = {
+    "na": "nm.lc",          # locus coeruleus, noradrenaline: gain and arousal
+    "ach_bf": "nm.nbm",     # nucleus basalis, cortical acetylcholine: attention, gain
+    "ach_bs": "nm.ppt",     # pedunculopontine/laterodorsal, brainstem ACh: REM, thalamic gating
+    "5ht": "nm.raphe",      # dorsal raphe, serotonin
+    "da_vta": "nm.vta",     # ventral tegmental area, dopamine: limbic and prefrontal
+    "da_snc": "nm.snc",     # substantia nigra pars compacta, dopamine: motor striatum
+    "ha": "nm.tmn",         # tuberomammillary, histamine: wakefulness
+    "orx": "nm.orx",        # orexinergic lateral hypothalamus: state stability
+}
+
 #: every structure module in this package, in the order they are assembled.  A module not in
 #: this list is not in the brain -- there is no discovery by accident.
 STRUCTURES = (

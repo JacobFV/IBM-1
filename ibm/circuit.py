@@ -464,52 +464,61 @@ class Circuit(nn.Module):
         return {k: torch.stack(v, 1) for k, v in out.items()}, state
 
     # ------------------------------------------------------------------ calibration
-    def calibrate_sparsity(self, drive, dt: float = 1e-3, seconds: float = 2.0,
-                           passes: int = 3, iters: int = 14, seed: int = 0,
-                           lo: float = 0.05, hi: float = 60.0, verbose: bool = False):
-        """bisect each sparse population's inhibitory gain until it runs at its declared
-        sparsity, at the drive it is going to be used at.
+    def calibrate_sparsity(self, drive, dt: float = 1e-3, seconds: float = 1.5,
+                           passes: int = 12, seed: int = 0, alpha: float = 0.7,
+                           step_clip: float = 2.0, verbose: bool = False):
+        """bring every sparse population to its declared sparsity, all at once.
 
-        This replaces guessing a number per population, and it is a MEASUREMENT: the value
-        that holds a population at 8% active depends on every projection into it, on the
-        drive, and on what the populations upstream are doing, so it cannot be read off the
-        declarations.  `ibm/hippocampus.py` needed exactly this and got it by hand -- three
-        gains swept until the sparsities matched -- which is a step that should not have to
-        be redone by hand for every structure.
+        A MEASUREMENT, not a guess: the gain that holds a population at 8% active depends on
+        every projection into it, on the drive, and on what the populations upstream are
+        doing, so it cannot be read off the declarations.  `ibm/hippocampus.py` needed
+        exactly this and got it by hand -- three gains swept until the sparsities matched --
+        and that is not a step anyone should repeat per structure.
 
-        Several `passes` because the populations are coupled: fixing the dentate changes what
-        CA3 receives.  Returns what it measured, including any population it could NOT bring
-        to target, which is reported rather than left at whatever the last bisection tried.
+        All populations are updated TOGETHER by a multiplicative fixed point,
+
+            w <- w * clip((measured / target) ** alpha, 1/step_clip, step_clip)
+
+        rather than bisected one at a time.  Bisecting 30 cortical populations would need
+        about 840 rollouts of the whole brain; this needs `passes`.  The populations are
+        coupled -- quietening the dentate changes what CA3 receives -- so a simultaneous
+        update is also the honest shape: it finds a joint operating point rather than a
+        sequence of local ones that each invalidate the last.
+
+        Returns what it measured per population, including any that did not reach target,
+        which is reported rather than left silently wrong.
         """
-        out = {}
         sparse_pops = [p for p in self.pops.values() if p.sparsity]
-        for _ in range(passes):
+        if not sparse_pops:
+            return {}
+        keep = int(min(0.5, seconds * 0.5) / dt)
+        history = []
+        for it in range(passes):
+            g = torch.Generator().manual_seed(seed)
+            tr, _ = self.rollout(int(seconds / dt), dt, state=self.init_state(1, dt),
+                                 drive=drive, noise_gen=g, burn=int(0.5 / dt),
+                                 record=[p.id for p in sparse_pops])
+            row = {}
             for p in sparse_pops:
-                a, b = lo, hi
-
-                def active_at(w):
-                    self.w_inh[p.id] = w
-                    g = torch.Generator().manual_seed(seed)
-                    tr, _ = self.rollout(int(seconds / dt), dt, state=self.init_state(1, dt),
-                                         drive=drive, noise_gen=g,
-                                         burn=int(0.5 / dt), record=(p.id,))
-                    return float((tr[p.id][:, -int(0.5 / dt):] > 0.2).float().mean())
-
-                # more inhibition means fewer active, so the bracket runs the other way
-                for _ in range(iters):
-                    mid = 0.5 * (a + b)
-                    if active_at(mid) > p.sparsity:
-                        a = mid
-                    else:
-                        b = mid
-                w = 0.5 * (a + b)
-                got = active_at(w)
-                out[p.id] = {"w_inh": w, "active": got, "target": p.sparsity,
-                             "on_target": abs(got - p.sparsity) <= max(0.25 * p.sparsity,
-                                                                      0.01)}
-                if verbose:
-                    print(f"    {p.id:16s} w_inh {w:7.3f} -> {got:.4f} active "
-                          f"(target {p.sparsity})", flush=True)
+                act = float((tr[p.id][:, -keep:] > 0.2).float().mean())
+                row[p.id] = act
+                ratio = (max(act, 1e-4) / p.sparsity) ** alpha
+                ratio = min(max(ratio, 1.0 / step_clip), step_clip)
+                self.w_inh[p.id] = max(1e-3, self.w_inh[p.id] * ratio)
+            history.append(row)
+            if verbose:
+                err = max(abs(row[p.id] - p.sparsity) / p.sparsity for p in sparse_pops)
+                print(f"    pass {it:2d}  worst relative error {err:6.2%}", flush=True)
+        g = torch.Generator().manual_seed(seed)
+        tr, _ = self.rollout(int(seconds / dt), dt, state=self.init_state(1, dt),
+                             drive=drive, noise_gen=g, burn=int(0.5 / dt),
+                             record=[p.id for p in sparse_pops])
+        out = {}
+        for p in sparse_pops:
+            act = float((tr[p.id][:, -keep:] > 0.2).float().mean())
+            out[p.id] = {"w_inh": float(self.w_inh[p.id]), "active": act,
+                         "target": p.sparsity,
+                         "on_target": abs(act - p.sparsity) <= max(0.3 * p.sparsity, 0.01)}
         self.calibration = out
         return out
 
