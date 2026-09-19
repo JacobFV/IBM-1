@@ -123,8 +123,9 @@
          a row's second token is its SUBSTRATE requirement (expressible,
          needs-thalamus, needs-body, needs-cerebellum, ...): 11 of the 64 need nothing
          but a cortical sheet, and the other 53 each name a structure they wait on --
-         13 a thalamus, 11 a body, 9 hippocampal subfields, 5 basal ganglia, 4 a
-         cerebellum, and so on.  Two of those structures now exist as gated modules
+         15 a thalamus, 13 a body, 10 hippocampal subfields, 5 basal ganglia, 4 a
+         cerebellum, and so on (a row that waits on two structures is counted under
+         both, so these do not sum to 53).  Two of those structures now exist as gated modules
          (ibm/thalamus.py, ibm/hippocampus.py), which takes the addressable count to 32
          of 64; docs/DISCONNECTS.md section 11 keeps that tally and docs/LOG.md holds
          the gate results, including the failures.  Promotion to "measured-here" needs
