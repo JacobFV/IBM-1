@@ -37,6 +37,7 @@ per cortical site i, five state variables, all bounded by construction:
     I_i  inhibitory population rate           in [0, 1]
     a_i  spike-frequency adaptation           in [0, g_a,i]
     x_i  synaptic resource (Tsodyks-Markram)  in [0, 1]
+    u_i  synaptic utilisation (facilitation)  in [0, 1]   OPTIONAL; the memory, when on
     eta_i background current, Ornstein-Uhlenbeck, stationary std sigma * m_sigma
 
     u_E = w_EE,i x_i E_i  +  G_L sum_j W+_ij x_j E_j(t - d_ij)
@@ -192,6 +193,22 @@ class Priors:
     # all -- depression, not adaptation, was setting every dwell time.  measured on
     # isolated columns before choosing (see the dwell table in the class docstring).
     tau_use: float = 0.10
+    # SYNAPTIC FACILITATION, off by default.  Declared 18 Sep 2026 after the
+    # operating-point search returned 0 of 18: no prior gives this model class both a
+    # graded firing range and an attractor landscape, because the recurrent gain that holds
+    # a pattern is the gain that runs away when drive rises (docs/LOG.md).  The escape is
+    # to stop asking the RATES to hold the memory.  With facilitation the released
+    # transmitter is u*x*E rather than x*E, and `u` -- which rises with use and decays over
+    # a second or more -- is a memory that persists while the rates return to baseline
+    # (Mongillo, Barak & Tsodyks 2008).
+    #
+    # OFF by default because every gate result on record was measured without it, and a
+    # default that silently changes the model would invalidate them without saying so.  It
+    # is switched on by a declared prior and judged by its own pre-registered search.
+    facilitation: bool = False
+    U_f: float = 0.15                    # utilisation increment per unit rate
+    tau_f: float = 1.50                  # facilitation decay: the memory's timescale
+    u_max: float = 1.0
     # recurrent excitation.  beta * w_EE / 4 = 1 is the rule of thumb for an isolated
     # E population, but the E -> I -> E loop LINEARISES a column (STATE.md found the
     # same thing in v1) and the first draft, (0.40, 1.30) with w_EI = 0.70, had NO
@@ -387,10 +404,11 @@ class CorticalField(nn.Module):
             assert generator is not None, "a random start needs an explicit generator"
             E = torch.rand(b, self.n, generator=generator, device="cpu").to(device)
             x = torch.rand(b, self.n, generator=generator, device="cpu").to(device)
-            return {"E": E, "I": z.clone(), "a": z.clone(), "x": x, "eta": z.clone(),
+            return {"E": E, "I": z.clone(), "a": z.clone(), "x": x,
+                    "u": z.clone() + self.pr.U_f, "eta": z.clone(),
                     "hist": None, "ptr": 0}
         return {"E": z, "I": z.clone(), "a": z.clone(), "x": torch.ones_like(z),
-                "eta": z.clone(), "hist": None, "ptr": 0}
+                "u": z.clone() + self.pr.U_f, "eta": z.clone(), "hist": None, "ptr": 0}
 
     @staticmethod
     def detach(state):
@@ -437,7 +455,13 @@ class CorticalField(nn.Module):
             assert hist.shape[1] == depth, "dt changed inside a trajectory"
             hist = hist.clone() if torch.is_grad_enabled() else hist
             hist[:, ptr] = E * x            # what arrives is the RELEASED transmitter
-        src = E * x
+        u = state.get("u")
+        if u is None:
+            u = torch.full_like(E, pr.U_f)
+        # what a spike releases: the resource present times the fraction used.  Without
+        # facilitation `u` is the constant U_f and this is the old `E * x` up to that
+        # scale; with it, `u` carries the trace of recent use.
+        src = E * x * (u / pr.U_f if pr.facilitation else 1.0)
         tau_E, tau_I = self.site("tau_E"), self.site("tau_I")
         tau_a, g_a = self.site("tau_a"), self.site("g_a")
         tau_rec, w_EE, th_E = self.site("tau_rec"), self.site("w_EE"), self.site("theta_E")
@@ -465,11 +489,32 @@ class CorticalField(nn.Module):
         E2 = E + cE * (fE - E)
         I2 = I + cI * (fI - I)
         a2 = a + ca * (g_a * E - a)
-        # depression, exactly integrated over the step with E held: dx/dt = (1-x)/tau_rec - (U E / tau_use) x
-        kx = 1.0 / tau_rec + pr.U * E / pr.tau_use
+        # facilitation, exactly integrated with E held: du/dt = (U_f - u)/tau_f + U_f(1-u)E.
+        # Both terms are linear in u, so the step is again a convex combination toward a
+        # target inside [0, 1] -- boundedness is preserved for any dt, as everywhere else
+        # in this file.
+        if pr.facilitation:
+            # E is a NORMALISED rate in [0, 1]; the facilitation rate constant is per SPIKE,
+            # so the drive term needs spikes per second -- E * R_MAX.  Written with E
+            # directly (the first version) the increment was U_f*(1-u)*E ~ 0.06/s against a
+            # decay of 1/tau_f = 0.67/s, so `u` moved by 8% during a cue and 0.8% two
+            # seconds later: a memory variable that cannot remember, for the same reason a
+            # constant is not portable across a change of units.
+            r_hz = E * R_MAX
+            ku = 1.0 / pr.tau_f + pr.U_f * r_hz
+            u_inf = (pr.U_f / pr.tau_f + pr.U_f * r_hz) / ku
+            u2 = u_inf + (u - u_inf) * torch.exp(-dt * ku)
+            u2 = u2.clamp(0.0, pr.u_max)
+            use = u2                                   # depression is driven by what is used
+        else:
+            u2 = u
+            use = torch.full_like(E, pr.U)
+        # depression, exactly integrated over the step with E held:
+        #   dx/dt = (1-x)/tau_rec - (use E / tau_use) x
+        kx = 1.0 / tau_rec + use * E / pr.tau_use
         x_inf = (1.0 / tau_rec) / kx
         x2 = x_inf + (x - x_inf) * torch.exp(-dt * kx)
-        out = {"E": E2, "I": I2, "a": a2, "x": x2, "eta": eta, "hist": hist,
+        out = {"E": E2, "I": I2, "a": a2, "x": x2, "u": u2, "eta": eta, "hist": hist,
                "ptr": (ptr + 1) % hist.shape[1] if hist is not None else 0}
         return out
 

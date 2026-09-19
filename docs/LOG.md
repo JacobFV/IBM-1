@@ -7499,3 +7499,61 @@ synapses instead of the rates (Mongillo, Barak & Tsodyks 2008): the rates stay l
 graded, and what persists is a pattern of synaptic efficacy that a weak cue can reactivate.
 That is precisely a model whose memory does not live in the variable that has to remain
 graded — which is what this result says is needed — and it is one state variable away.
+
+## 18 September 2026 — synaptic facilitation: implemented, measured, and it does NOT rescue this
+
+The operating-point search said the escape was to stop asking the firing rates to hold the
+memory. `ibm/substrate.py` now carries the matching **facilitation** variable `u` beside its
+existing Tsodyks–Markram depression, exponential-Euler like everything else, **off by
+default** because every gate result on record was measured without it.
+
+**A units bug first, caught by the mechanism not working.** The facilitation rate constant
+is per spike, so its drive term needs spikes per second — `E * R_MAX`. Written with the
+normalised `E` directly, the increment was ~0.06/s against a decay of 0.67/s, and `u` moved
+**8% during a cue and 0.8% two seconds later**: a memory variable that cannot remember. Same
+family as "a constant is not portable across a change of units", which is row four of the
+corrections ledger.
+
+**The test is the claim, not the variable.** Synaptic working memory does not assert that
+`u` changes; it asserts that after the cue is gone and the rates have returned, a **weak
+uniform probe reactivates the cued population selectively**. So: 300 ms cue to 64 of 512
+sites, 1 s delay with nothing, then a 100 ms probe delivered equally to every site, and the
+measurement is the ratio of cued to uncued response.
+
+**Result: it makes selectivity WORSE.**
+
+| tonic drive | facilitation | base rate | u cued/other | selectivity |
+|---|---|---|---|---|
+| 0.020 | off | 3.14 Hz | — | **1.617** |
+| 0.020 | **on** | 3.72 Hz | 0.613 / 0.614 | **0.652** |
+| 0.035 | off | 3.57 Hz | — | 1.105 |
+| 0.035 | **on** | 4.39 Hz | 0.621 / 0.623 | 0.855 |
+| 0.050 | on | 2.92 Hz | 0.625 / 0.599 | 0.863 |
+
+With facilitation on, the cued population answers the probe **less** than the untouched one,
+every time. And `u` after the delay is **0.613 against 0.614** — no selective trace at all.
+
+**Why, and it closes a loop.** `u` equilibrates to nearly the same value everywhere because
+the *uncued* population is also firing at about 3 Hz and facilitating just as hard. The cue
+does differentiate `u` while it is on (0.697 vs 0.666 at cue offset), and a second of
+background activity erases the difference. Meanwhile the variable that *does* carry a
+selective trace is the depleted resource `x` — in the wrong direction, since a depleted
+synapse responds less.
+
+So the synaptic escape fails for **the same underlying reason the parameter search failed**:
+this sheet has no sparse regime. There is no state in which a cued subset is active and the
+rest is quiet — it is broadly active or broadly silent, and that is the missing middle
+wearing a third hat. Putting the memory in the synapses does not help while every synapse in
+the sheet is being facilitated by background firing.
+
+**What would be needed**, stated so the next attempt is not a re-run of this one: sparse
+coding — a regime where a small subset fires and the remainder is genuinely silent. The
+hippocampal module already has that and gets it from *global inhibition scaled to a declared
+target sparsity*, which is the one mechanism in this repository demonstrated to produce a
+sparse code (`ibm/hippocampus.py`, H0b: 4.4% / 8.9% / 11.1% of three populations active).
+The cortical field has no equivalent: its inhibition is per-site, not a population that
+tracks the region's own mean rate. That is the next thing to try, and it is a structural
+change rather than a constant.
+
+Facilitation stays **off by default** with this finding in the code beside it. It is not
+deleted: the mechanism is correct and the measurement says the substrate cannot yet use it.
