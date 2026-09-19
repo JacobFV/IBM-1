@@ -58,6 +58,12 @@ nothing would have missed the point."
       burst duration too.  Measured on this model: a supercritical loop gives an envelope
       CV of 0.05-0.14 and still reports "47 ms bursts".  Without the CV floor this gate
       could pass for a reason unrelated to what it tests.
+      DECLARED HERE BEFORE THE RUN, because it is the kind of thing that is easy to
+      forget afterwards: the module's loop gain was CHOSEN on the CV, from `--sweep`, as
+      the sharpest resonance still clearly noise-driven.  So the CV clause is satisfied by
+      construction and is NOT independent evidence -- it is a guard that stops the
+      duration clause being satisfied by a tone, nothing more.  The duration clause is the
+      one that tests the model, and it is the one that decides this gate.
   B6  DOPAMINE, and the direction is declared BEFORE the run.  Lowering dopamine from 0.5
       to 0.2 must move BOTH of:
           * beta prominence UP   (less dopamine -> a tonically over-driven indirect arm
@@ -336,10 +342,15 @@ def gate_dopamine(bg):
         tr, rest, on, _ = selection_run(bg, dopamine=da)
         drop, final = _drop(tr, rest, on)
         ratio = final / rest
-        win = int(torch.argmin(ratio))
+        # PAIRED on the same channel in both conditions -- the one with the largest
+        # cortical drive, which is the channel that ought to win.  Taking argmin(ratio)
+        # separately at each dopamine level would compare two different channels and
+        # would report a "winner" even when nothing was selected at all.
+        win = int(torch.argmax(DRIVES[0]))
         below = (tr["GPi"][0, :, win] < SELECT_MAX * rest[win]).nonzero().flatten()
         out[name] = {"beta_peak_hz": f, "beta_prominence_decades": p,
-                     "winner_channel": win, "winner_gpi_drop": float(drop[win]),
+                     "channel": win, "winner_gpi_drop": float(drop[win]),
+                     "best_drop_any_channel": float(drop.max()),
                      "select_latency_ms": (float(int(below[0]) - on) if below.numel() else None),
                      "n_channels_selected": int((ratio < SELECT_MAX).sum()),
                      "stn_mean_hz": float(stn.mean()) * R_MAX}

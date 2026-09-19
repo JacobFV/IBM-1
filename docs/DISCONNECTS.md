@@ -514,6 +514,32 @@ one), then **hippocampal subfields** (7, including the sequence machinery the pr
 episodic claims rest on), then **basal ganglia with a real subthalamic nucleus** (4, plus
 action selection).
 
+### §11 update, 18 September 2026 (evening): two of the blocking structures now exist
+
+| | then (morning) | now |
+|---|---|---|
+| rhythms declared | 53 | **64** |
+| scorable on the cortical field alone | 9 | **11** |
+| scorable with the thalamus (`ibm/thalamus.py`) | — | **24** |
+| scorable with the hippocampal subfields too (`ibm/hippocampus.py`) | — | **32** |
+
+Half the catalogue is now addressable by structures that exist and have passed gates. What
+is still blocked, by what is missing:
+
+| missing | rhythms |
+|---|---|
+| body | 11 (+1 needing body and a task, +1 body and cerebellum) |
+| basal ganglia | 5 |
+| cerebellum | 3 |
+| neuromodulators | 3 |
+| limbic, hypothalamus, cord | 2 each |
+| brainstem, olfactory bulb | 1 each |
+
+"Scorable" is not "produced": of the 32, the ones actually measured in a running model are
+the thalamic spindle at 13.63 Hz, hippocampal theta at 5.33 Hz with its nested gamma, the
+slow oscillation, and the cortical timescale gradient. Two are recorded FAILED — thalamic
+gating and hippocampal ripples — and the rest have not been asked.
+
 ## What this list is for
 
 Row 1 is what remains load-bearing for what the programme is trying to
