@@ -73,6 +73,19 @@ class Pop:
     theta: float = 0.30
     r_rest: float = 0.0              # tonic level with no input (GPi and Purkinje are high)
     sparsity: float | None = None
+    input_budget: float | None = None
+    #: the TOTAL excitatory input this population should receive at the operating point,
+    #: with incoming weights rescaled to be shares of it.  Opt-in, because it changes what a
+    #: weight means and the structures written before it are calibrated against the other
+    #: reading.
+    #:
+    #: Why it exists: a projection's weight is normalised so that IT delivers its weight
+    #: when its source is at its declared sparsity.  That is right for one projection and
+    #: wrong for twelve.  Measured on `ibm/brain/cortex.py`: each area receives 12-25
+    #: long-range projections summing to an effective excitatory weight of 3.9 to 74.9 --
+    #: a median of 28 times the intended budget, and a 19-fold spread BETWEEN areas, so no
+    #: single inhibitory gain could hold them all at their declared sparsity.  The
+    #: calibration oscillated instead of converging, which is what sent me looking.
     tau_inh: float = 0.005
     w_inh: float | None = None       # how hard the partner presses back.  None means
                                      # DERIVED: see Circuit.__init__ -- the inhibition must
@@ -157,6 +170,21 @@ class Mod:
     baseline: float = 0.0
     lo: float = 0.25
     hi: float = 4.0
+    delay_s: float = 0.0             # conduction delay on the modulatory edge itself.
+                                     #
+                                     # `ibm/rhythms.py`'s `arousal` loop gives locus
+                                     # coeruleus to reticular nucleus a 10-30 ms budget, and
+                                     # expressed as a `Mod` -- which is how the thalamus
+                                     # module wants it -- that budget was simply absent, so
+                                     # the assembled arousal loop had a delay on its
+                                     # cortical return leg and none on its neuromodulatory
+                                     # one.  No resonance measured on such a loop would have
+                                     # been a measurement of that loop.  Reported by the
+                                     # neuromodulators gate, added here.
+    tau_syn: float = 0.0             # and its transmitter's decay, for the same reason a
+                                     # projection has one: volume-transmitted modulators are
+                                     # slow, and a step change in a firing rate is not a
+                                     # step change in a tissue concentration
     note: str = ""
 
 
@@ -223,6 +251,24 @@ class Circuit(nn.Module):
         # must be half-activated exactly at the target sparsity, or it switches instead of
         # grading.  ibm/hippocampus.py paid for that lesson (CA3 went to 0.000 active after
         # cue release with one shared gain).
+        # input budgets: rescale each population's incoming excitatory weights to be shares
+        # of the total it declares.  Computed once, reported, and applied at contribution
+        # time so the declared `Proj.weight` still reads as the RELATIVE strength it is.
+        self._scale = {}
+        self.budget_report = {}
+        for p in self.pops.values():
+            if not p.input_budget:
+                continue
+            inc = [q for q in self.projs if q.dst == p.id and q.sign > 0]
+            raw = sum(q.weight / max(self.pops[q.src].sparsity or 1.0, 1e-6) for q in inc)
+            if raw <= 0:
+                continue
+            f = p.input_budget / raw
+            for q in inc:
+                self._scale[q.key] = f
+            self.budget_report[p.id] = {"n_incoming": len(inc), "raw_total": raw,
+                                        "budget": p.input_budget, "scale": f}
+
         self.w_drive_inh = {}
         self.w_inh = {}
         for p in self.pops.values():
@@ -240,10 +286,13 @@ class Circuit(nn.Module):
             # Inhibition that cannot reach it cannot prevent a runaway -- which is exactly
             # what the first smoke run did: a recurrent projection able to deliver 6.0
             # against a declared w_inh of 2.0, and every population pinned at 100 Hz.
-            worst = 0.0
-            for q in self.projs:
-                if q.dst == p.id and q.sign > 0:
-                    worst += q.weight / max(self.pops[q.src].sparsity or 1.0, 1e-6)
+            if p.input_budget:
+                worst = p.input_budget
+            else:
+                worst = 0.0
+                for q in self.projs:
+                    if q.dst == p.id and q.sign > 0:
+                        worst += q.weight / max(self.pops[q.src].sparsity or 1.0, 1e-6)
             # scaled DOWN from the saturation-balance figure, because that is the wrong end
             # of the range: measured on a mid-hierarchy cortical area, the useful band is
             # w_inh 0.05-0.10 (7% active, transfer slope 0.19) and the saturation-balance
@@ -331,6 +380,8 @@ class Circuit(nn.Module):
                 s["eta"] = torch.zeros(b, p.n, device=dev)
             st[p.id] = s
         st["_syn"] = {}
+        st["_mod_rings"] = {}
+        st["_mod_level"] = {}
         for pr in self.projs:
             lag = int(round(pr.delay_s / dt))
             if lag > 0:
@@ -344,7 +395,7 @@ class Circuit(nn.Module):
     def detach(state: dict) -> dict:
         out = {}
         for k, v in state.items():
-            if k in ("_rings", "_syn"):
+            if k in ("_rings", "_syn", "_mod_rings", "_mod_level"):
                 out[k] = {kk: vv.detach() for kk, vv in v.items()}
             elif isinstance(v, dict):
                 out[k] = {kk: (vv.detach() if torch.is_tensor(vv) else vv)
@@ -354,11 +405,26 @@ class Circuit(nn.Module):
         return out
 
     # ------------------------------------------------------------------ modulation
-    def _modulation(self, state) -> dict:
-        """{pop_id: {param: factor}} from the modulatory populations' current rates."""
+    def _mod_key(self, m) -> str:
+        return f"{m.src}=>{m.dst}:{m.param}"
+
+    def _modulation(self, state, dt: float = 1e-3) -> dict:
+        """{pop_id: {param: factor}} from the modulatory populations' rates, read at each
+        edge's own delay and filtered by its own transmitter time constant."""
         out = {}
+        t = state["_t"]
+        rings = state.get("_mod_rings", {})
+        levels = state.get("_mod_level", {})
         for m in self.mods:
+            key = self._mod_key(m)
             r = state[m.src]["r"].mean()
+            if m.tau_syn > 0 and key in levels:
+                r = levels[key]                      # already delayed, then filtered
+            else:
+                lag = int(round(m.delay_s / dt))
+                if lag > 0 and key in rings:
+                    ring = rings[key]
+                    r = ring[(t - lag) % ring.shape[0]]
             f = 1.0 + m.gain * (r - m.baseline)
             f = torch.clamp(f, m.lo, m.hi) if torch.is_tensor(f) else min(max(f, m.lo), m.hi)
             d = out.setdefault(m.dst, {})
@@ -376,10 +442,36 @@ class Circuit(nn.Module):
         drive = drive or {}
         noise = noise or {}
         t = state["_t"]
-        mod = self._modulation(state)
+        # advance the modulatory edges' own rings and transmitter levels BEFORE reading
+        # them, so a Mod edge sees the same kind of history a Proj does
+        mod_rings = dict(state.get("_mod_rings", {}))
+        mod_level = dict(state.get("_mod_level", {}))
+        for m in self.mods:
+            key = self._mod_key(m)
+            raw = state[m.src]["r"].mean()
+            arrived = raw
+            if m.delay_s > 0:
+                ring = mod_rings.get(key)
+                if ring is None:
+                    ring = torch.zeros(int(round(m.delay_s / dt)) + 1, device=raw.device)
+                ring = ring.clone()
+                ring[t % ring.shape[0]] = raw
+                mod_rings[key] = ring
+                lag = int(round(m.delay_s / dt))
+                arrived = ring[(t - lag) % ring.shape[0]]
+            if m.tau_syn > 0:
+                # the transmitter filters WHAT ARRIVED, not what was sent.  The first
+                # version filtered the undelayed rate and then let it override the delayed
+                # one, so an edge with both a delay and a time constant behaved as though it
+                # had neither -- the factor was already 1.13 at 20 ms on a 30 ms edge.
+                prev = mod_level.get(key, torch.zeros((), device=raw.device))
+                mod_level[key] = prev + (1 - math.exp(-dt / m.tau_syn)) * (arrived - prev)
+        mod = self._modulation(
+            {**state, "_mod_rings": mod_rings, "_mod_level": mod_level}, dt)
         rings = dict(state["_rings"])
         syn = dict(state.get("_syn", {}))
-        new = {"_t": t + 1, "_rings": rings, "_syn": syn}
+        new = {"_t": t + 1, "_rings": rings, "_syn": syn,
+               "_mod_rings": mod_rings, "_mod_level": mod_level}
 
         # what each projection delivers this step, read at its own lag.  EXCITATORY and
         # INHIBITORY sums are kept APART, because only the excitatory one is normalised.
@@ -411,7 +503,7 @@ class Circuit(nn.Module):
                     self.pops[pr.src].n * (self.pops[pr.src].sparsity or 1.0), 1.0)
             else:
                 contrib = s_eff @ W.t()
-            contrib = pr.weight * contrib
+            contrib = pr.weight * self._scale.get(pr.key, 1.0) * contrib
             if pr.tau_syn > 0:
                 # a first-order synapse: the arriving rate charges a conductance that then
                 # decays with its own constant, which is what gives a projection a timescale

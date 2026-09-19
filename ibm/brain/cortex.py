@@ -62,6 +62,7 @@ SPARSITY = (0.06, 0.12)       # transmodal cortex runs a little denser than prim
 THETA_E = (0.28, 0.34)
 ADAPT_TAU = (0.30, 1.20)      # the slow variable that releases a state
 ADAPT_G = (0.60, 0.25)
+INPUT_BUDGET = (1.30, 1.00)   # primary areas are driven harder from outside than transmodal
 
 
 def h_of(area: str) -> float:
@@ -80,6 +81,11 @@ def pops():
             id=f"{STRUCTURE}.{a}.E", n=N_E, kind="E",
             tau=_lerp(TAU_E, h), beta=10.0, theta=_lerp(THETA_E, h),
             sparsity=_lerp(SPARSITY, h),
+            # the total excitatory input an area should receive at its operating point.
+            # Without it an area receives a median of 28x this, and 19x more than its
+            # neighbour, because each of its 12-25 incoming projections is normalised as
+            # though it were the only one.
+            input_budget=_lerp(INPUT_BUDGET, h),
             adapt_tau=_lerp(ADAPT_TAU, h), adapt_g=_lerp(ADAPT_G, h),
             depress=True, tau_rec=0.5, U=0.2, sigma=0.02,
             note=f"h={h:.2f} on the sensory-association axis"))

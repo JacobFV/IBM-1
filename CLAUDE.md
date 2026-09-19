@@ -472,6 +472,25 @@ The same shape as reporting an amplitude ratio beside a skill score, and as quot
 `peak_prominence` beside a frequency: a number that a null model also produces is not
 evidence until it is compared against what the null model produces.
 
+## A modulator stated from a baseline it already sits at is inert, and an ablation cannot see it
+
+A modulatory edge whose effect is written as a deviation from a baseline -- `factor = 1 +
+gain * (rate - baseline)` -- does **nothing at all** if its source population sits at that
+baseline, whatever the gain. Sweeping the gain then moves the output by exactly 0.000 and the
+constant looks like one that does not matter.
+
+**And the obvious control does not catch it.** Ablating the modulator moves its rate far off
+the baseline, so the ablation arm shows a large effect and the mechanism reads as alive.
+Measured while building `ibm/brain/neuromodulators.py`: orexin's gain moved the flip-flop's
+dwell time by 0.000 over a full sweep, while silencing orexin changed the dwell 13.3 s ->
+8.5 s on all three seeds. One says the edge does nothing; the other says it does a great
+deal; both are correct, and only the first is about the edge's gain.
+
+State a modulator's effect from a point its source can actually be at and is not -- silence
+is usually the right one -- so that the declared gain is the strength of something that
+happens. And when a gain sweep reads exactly zero, check where the source is sitting before
+concluding anything about the mechanism.
+
 ## Write it down where it will be found
 
 **Every agent on this programme records what it did, in the repo, as it goes.** Not at the end, not

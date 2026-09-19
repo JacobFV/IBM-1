@@ -7836,3 +7836,58 @@ at one time constant and 0.860 at two, against 0.632 and 0.865.
 This matters most for what comes next. **Resonance modes are the point of v3**, and a
 measurement of what bands the assembled brain amplifies would have been measuring conduction
 delays alone.
+
+## 18 September 2026 — the neuromodulators exist, and the four dials are gone
+
+`ibm/brain/neuromodulators.py`: eight populations — locus coeruleus, nucleus basalis,
+pedunculopontine, raphe, VTA, substantia nigra, tuberomammillary, orexin — with **239
+modulatory edges**, of which 237 resolve today. **6 of 8 gates pass; both failures are
+recorded as failed and no threshold was moved.**
+
+| gate | verdict | measured |
+|---|---|---|
+| N2 two states | PASS | central-third occupancy **0.0070** against a bar of 0.15 (a continuum gives 0.33), bimodality 0.960 |
+| N3 fast transition | PASS | crossing **1.08 s** against a dwell of **13.3 s**, ratio 0.081 |
+| N4 orexin stabilises | PASS | silenced: 13 → 21 transitions, dwell **13.3 → 8.5 s**, on all three seeds |
+| N5 modulation reaches | **FAILED** | 1.479× against a bar of 1.5 |
+| N6 sensitivity | **FAILED** | three constants outside the declared band |
+| N7 one edge, one factor | PASS | 258 triples, zero duplicates, zero dead ids |
+
+**The four dials are gone.** `m_beta` and `m_sigma` are now 60 edges from the locus
+coeruleus onto cortex; `arousal` is 16 edges from the pedunculopontine nucleus onto the
+thalamic relays and their reticular sectors; `dopamine` is declared by the basal ganglia
+from `nm.snc` and `nm.vta`; `septal_tone` is two edges onto the hippocampus, currently the
+only orphans because that module is unwritten. A state is now where the network sits.
+
+**N5's failure is mine, and traceable to the hour.** The same arm read 1.90× earlier; I then
+changed a sparse population's derived starting gain from `max(1.0, worst)` to
+`max(0.05, 0.05·worst)`, which left the cortical target's normaliser 20× weaker and nearer
+its linear regime, where a gain change buys proportionally less. A structure's gate failing
+because of an engine commit an hour earlier is the cost of building the two together, and
+the record should say which it was.
+
+**A trap worth more than the module** (now in `CLAUDE.md`): **a modulator stated from a
+baseline its source already sits at is inert, and an ablation cannot see it.** Orexin's gain
+moved the dwell by *exactly 0.000* over a full sweep, while silencing orexin changed the
+dwell from 13.3 to 8.5 s on every seed. One says the edge does nothing, the other says it
+does a great deal, and both are correct — the ablation moves the source far off its
+baseline, so it tests the edge's existence and not its gain.
+
+**Three more engine gaps, two now filled.**
+
+- **`Mod` had no delay and no transmitter kinetics.** The catalogue gives locus coeruleus to
+  reticular nucleus a 10–30 ms budget; as a `Mod` that budget was simply absent, so the
+  assembled arousal loop had a delay on its cortical leg and none on its neuromodulatory
+  one. Added, with the filter applied to **what arrived** rather than what was sent — the
+  first version filtered the undelayed rate and let it override the delayed one, so an edge
+  with both read 1.13 at 20 ms on a 30 ms delay. Now exactly 1.000 until 30 ms in both
+  configurations.
+- **A population's incoming weights had no budget.** Each projection is normalised so *it*
+  delivers its weight at the operating point, which is right for one and wrong for twelve:
+  measured on cortex, each area receives 12–25 long-range projections totalling **3.9 to
+  74.9** in effective weight — a median of **28× the intended input** and a **19-fold spread
+  between areas**, so no single inhibitory gain could hold them at their declared
+  sparsities. `Pop.input_budget` rescales incoming excitation to shares of a declared total;
+  opt-in, because the structures written before it are calibrated against the other reading.
+- **`Mod` cannot target a projection**, so "acetylcholine suppresses the CA3 recurrent
+  collateral" has no expression and is declared as a labelled proxy. Reported, not built.
