@@ -1,5 +1,32 @@
 """the cortical field, v2: nonlinear, bounded, heterogeneous, stateful, metastable.
 
+SUPERSEDED FOR NEW WORK, 18 September 2026.  This module is kept, unchanged, because its
+gate results are on record and every checkpoint measured on it must keep loading.  New work
+goes to `ibm/circuit.py` and `ibm/brain/`, for three reasons that are measurements rather
+than preferences:
+
+  1. **Its inhibition is subtractive, and subtractive inhibition cannot normalise.**  An
+     inhibitory term bounded by its own gain stops answering once it saturates, so the sheet
+     ignites: swept over drive it goes from 4.60 Hz with zero saturation to 23.95 Hz with
+     19% saturated between two ADJACENT drives, with nothing in between at any drive.  A
+     pre-registered 18-point search over beta_I, w_EI and w_IE found no setting with both a
+     firing range and an attractor landscape -- 0 of 18 -- and the v3 engine gets both from
+     dividing by the inhibition instead of subtracting it.
+  2. **Its memory lives in the firing rates.**  A single sigmoidal rate per site cannot be
+     both an attractor and a graded transfer function, because one loop gain sets both.  CA3
+     holds 6/6 pattern retrieval at 6% active with no bistable unit anywhere, by putting the
+     attractor in a stored weight matrix.  Adding synaptic facilitation here did not rescue
+     it (selectivity 0.652, worse than without) for a related reason: with no sparse regime,
+     the uncued population facilitates as hard as the cued one.
+  3. **It was built to stand alone.**  It has no populations for anything else and four
+     stand-in scalars where other structures should be, so it cannot be assembled with them.
+     Nothing in this programme ever ran more than two structures together, and the resonance
+     of a loop -- what the conduction budgets in `ibm/rhythms.py` are for -- could not be
+     computed at all.
+
+docs/V3_ARCHITECTURE.md has the argument in full; docs/BRAIN_SPEC.md says what replaces it.
+
+
 why a second substrate, and not an edit to `CorticalDynamics`
 -------------------------------------------------------------
 five independent measurements (docs/LOG.md, 2026-09-12, "the triad closes") say the

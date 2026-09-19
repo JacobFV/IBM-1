@@ -1,5 +1,27 @@
 """the rhythms this brain is built to have, and the circuits that have to produce them.
 
+A WARNING ABOUT USING THIS FILE THE WAY IT WAS USED, added 18 September 2026.
+
+This catalogue was written as a specification and then, without anyone deciding to, became a
+**build-priority metric**: structures were ranked by "rhythms unlocked per unit of work",
+computed from the rows below.  That is a catalogue of OSCILLATIONS, so a structure whose job
+is not rhythmic scores near zero on it by construction.  The thalamus has a famous band; the
+amygdala does not.
+
+The consequence, measured against the repository rather than guessed: five rhythm-bearing
+structures were built to a high standard -- thalamus, hippocampus, basal ganglia, cerebellum,
+cord -- while the amygdala, the accumbens, the ventral tegmental area, the lateral habenula
+and the entire hypothalamus had **no implementation of any kind**, and the neuromodulatory
+nuclei were faked by four hand-set floats in four separate modules.  Those are exactly the
+systems that make a body want anything, and `docs/DEVELOPMENTAL_COMPONENTS.md` had already
+said so on 9 September: a body with only nociception can learn to avoid and cannot learn to
+seek.
+
+So: this file says what the brain's rhythms should be.  It does not say what to build next,
+it cannot, and it should never again be used to decide that.  `docs/BRAIN_SPEC.md` is the
+inventory; every structure in it is on equal footing whether or not it has a band.
+
+
 WHAT THIS IS
 ------------
 A specification, not a measurement.  This programme is a construction: we say what the
