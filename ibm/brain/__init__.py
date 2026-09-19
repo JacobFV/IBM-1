@@ -42,6 +42,7 @@ so that object can be built at all.
 from __future__ import annotations
 
 import importlib
+import os
 import pkgutil
 
 from ibm.circuit import Circuit, Mod, Pop, Proj  # noqa: F401  (re-exported for modules)
@@ -109,9 +110,48 @@ def collect(names=None):
         targets[n] = m.targets()
     have = {p.id for p in pops}
     kept = [e for e in external if e.src in have and e.dst in have]
-    orphans = [{"edge": e.key, "declared_by": e.src.split(".", 1)[0]}
-               for e in external if e.src not in have or e.dst not in have]
+
+    def _near(missing_id: str):
+        """the closest existing population id, ignoring punctuation and case.
+
+        A cross-structure edge is written by one module and its target is owned by another,
+        so a naming disagreement between two authors looks exactly like a structure that has
+        not been built yet -- and is reported the same way.  It happened on the first day:
+        `ibm/brain/hypothalamus.py` wrote `val.nac.shell` for the population
+        `ibm/brain/valuation.py` calls `val.nacc_shell`, and three edges would have sat in
+        the orphan list looking like a missing module.  This turns that into a suggestion.
+        """
+        flat = missing_id.replace(".", "").replace("_", "").lower()
+        best, score = None, 0.0
+        for cand in have:
+            c = cand.replace(".", "").replace("_", "").lower()
+            if c == flat:
+                return cand, 1.0
+            common = len(set(c) & set(flat))
+            ratio = common / max(len(set(c) | set(flat)), 1)
+            pref = len(os.path.commonprefix([c, flat])) / max(len(flat), 1)
+            sc = 0.5 * ratio + 0.5 * pref
+            if sc > score:
+                best, score = cand, sc
+        return (best, score) if score >= 0.72 else (None, score)
+
+    orphans = []
+    for e in external:
+        for end, which in ((e.src, "src"), (e.dst, "dst")):
+            if end in have:
+                continue
+            struct = end.split(".", 1)[0]
+            suggestion, score = _near(end)
+            orphans.append({
+                "edge": e.key, "missing": end, "end": which,
+                "declared_by": (e.dst if which == "src" else e.src).split(".", 1)[0],
+                "reason": ("structure not built yet" if struct in missing()
+                           else "id does not exist in a structure that IS built"),
+                "did_you_mean": suggestion, "similarity": round(score, 3)})
+    typos = [o for o in orphans
+             if o["reason"].startswith("id does not exist") and o["did_you_mean"]]
     report = {"structures": names, "missing_structures": missing(),
+              "likely_typos": typos,
               "n_pops": len(pops), "n_internal": len(internal),
               "n_external_kept": len(kept), "orphans": orphans,
               "units": sum(p.n for p in pops)}

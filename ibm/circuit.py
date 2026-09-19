@@ -173,6 +173,21 @@ class Circuit(nn.Module):
         self.device_ = device
         # every fixed connectivity draw comes from ONE dedicated generator, so the wiring is
         # a pure function of `seed` and not of whatever the caller drew before
+        # A DUPLICATE PROJECTION IS A SILENT DOUBLING.  Weights are keyed by `Proj.key`, so
+        # two declarations of the same src->dst overwrite one entry while BOTH still deliver
+        # a contribution every step -- the pathway then runs at the sum of the two weights
+        # and nothing says so.  Found by the valuation gate's assembly check, which noticed
+        # `ctx.rostralmiddlefrontal.E->thal.md.relay` declared twice.  If two pathways
+        # between the same populations are really wanted (a fast and a slow arm, say), they
+        # are one `Proj` with the combined weight or two populations; they are never two
+        # entries hoping the engine adds them.
+        keys = [pr.key for pr in self.projs]
+        dups = sorted({k for k in keys if keys.count(k) > 1})
+        if dups:
+            raise ValueError(
+                f"duplicate projections: {dups}. Two declarations of the same src->dst "
+                f"would run the pathway at the sum of their weights with nothing reporting "
+                f"it. Declare one Proj, or two populations.")
         g = torch.Generator(device="cpu").manual_seed(seed)
         self._W = {}
         for pr in self.projs:

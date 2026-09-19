@@ -7676,3 +7676,60 @@ numbers were right for the case tested. The bug appeared the moment a population
 normaliser and an inhibitory projection, which is every population in a real structure. A
 result that holds on the simple case and breaks on the general one is not a wrong
 measurement; it is a measurement whose scope was never stated.
+
+## 18 September 2026 — valuation is built, and assembling it found two engine defects
+
+`ibm/brain/valuation.py` and `scripts/gate_brain_valuation.py`. The structure
+`docs/DEVELOPMENTAL_COMPONENTS.md` said was missing on 9 September and that nothing acted on
+for nine days: basolateral and central amygdala, accumbens core and shell, ventral pallidum,
+lateral habenula. **All gates pass.**
+
+The mechanism is a subtraction at the dopaminergic cell group, between what arrived (from
+the amygdala) and what was expected. The expectation is a recency-weighted trace in the
+accumbens core, reaching the habenula through two GABAergic inversions, so a standing
+expectation *raises* the habenula and a raised habenula *lowers* dopamine.
+
+| gate | result |
+|---|---|
+| V2 three-way | baseline drive −0.632; **unexpected +0.358, fully predicted +0.005, omitted −0.543** |
+| V3 separable | reward and aversive states at **73.6°**, against a signed-scalar control at exactly 180° |
+| V4 habenula load-bearing | silencing it removes **94.7%** of the omission dip |
+| V5 extinction | first omission −0.543 → eighth −0.036, monotone |
+| V6 sensitivity | all six claimed-mechanism constants move the result |
+
+That is a prediction error rather than a reward signal: it is silent for a fully predicted
+reward and goes below baseline for an omitted one, which is the thing a reward scalar cannot
+do. **Value is now produced inside the brain**, which was property 6 of `docs/BRAIN_SPEC.md`.
+
+**Two engine defects the assembly found, both now fixed.**
+
+1. **A duplicate projection was a silent doubling.** Weights are keyed by `src->dst`, so two
+   declarations of the same pathway overwrite one entry while *both* still deliver a
+   contribution every step — the pathway runs at the sum of the two weights and nothing says
+   so. Found because the valuation gate's assembly check noticed
+   `ctx.rostralmiddlefrontal.E->thal.md.relay` declared twice. `Circuit` now raises.
+2. **A mistyped population id was indistinguishable from an unbuilt structure.** Both land
+   in the orphan list. On the first day of assembly `ibm/brain/hypothalamus.py` wrote
+   `val.nac.shell` for the population `ibm/brain/valuation.py` calls `val.nacc_shell`, and
+   three edges would have sat there looking like a missing module. `collect()` now says
+   which orphans are a structure that does not exist yet and which are an id that does not
+   exist *in a structure that is built*, with the nearest match — it currently reports
+   `val.nac.shell → did you mean val.nacc_shell (0.773)` and four basal-ganglia edges naming
+   `thal.vl` and `thal.va` where the thalamus module declares receptor-suffixed ids.
+
+**And a defect in a structure that only a graph check could find.** The valuation gate's
+sensitivity sweep flagged two constants as inert; the diagnosis step then found that
+`val.nacc_shell` — the population carrying the entire appetitive score — **had no outgoing
+edge at all**. It sent its answer nowhere. That is the "parameter that changes nothing" trap
+pointing at a dead-end population rather than a dead mechanism, and the gate now fails if
+any inert constant lacks a computed reason.
+
+**Engine features wanted and deliberately not added** (reported rather than built, which is
+the right call): no plasticity rule that runs during a rollout, so the expectation is a
+membrane state standing in for a synaptic weight — the expectation is therefore *temporal*
+rather than cue-specific, and the omission response is a sustained depression rather than a
+phasic pause. And `Proj` cannot address a subset of a population's units, so a
+negative-valence amygdala ensemble cannot be separated from the positive-valence one.
+
+**Assembly so far: 6 of 11 structures, 134 populations, 3,728 units, 244 internal and 793
+cross-structure projections.**
