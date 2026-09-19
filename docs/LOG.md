@@ -7640,3 +7640,39 @@ system and the modules under them cannot be run together); `docs/DEVELOPMENTAL_C
 `ibm/substrate.py` (the three measurements that superseded it); and `ibm/rhythms.py` (a
 specification that became a build-priority metric without anyone deciding to, and which by
 construction cannot see any structure whose job is not rhythmic).
+
+## 18 September 2026 — the normaliser was dividing its own inhibition
+
+A bug in `ibm/circuit.py`, found because the cortical calibration would not converge and
+oscillated between *every population silent* and *one at sixteen times its target*.
+
+The divisive step was written as `u = u / (1 + w·inh)` where `u` is the **net** input —
+excitation minus inhibition. Dividing a net input divides the inhibitory part too, so the
+harder a population works the more its own inhibition is shrunk. That is a positive feedback
+wearing the costume of a normaliser, and it is why the fixed point could not be found: the
+two regimes it oscillated between are the two things that circuit can do.
+
+Normalisation applies to the **excitatory drive only** — `r = E / (σ + I)` is the form, and
+the sum has to be split by sign before the division. Excitatory and inhibitory inputs are
+now accumulated separately, a tonic drive is normalised with the excitation while a
+hyperpolarising pulse is not, and the division touches only the excitatory side.
+
+**Measured after the fix**, one population declared at 8% active, calibrated once, then
+swept over a **64-fold** drive range:
+
+| drive | rate | active | saturated |
+|---|---|---|---|
+| 0.15 | 3.70 Hz | 0.0003 | 0.0000 |
+| 0.60 | 7.33 Hz | 0.0835 | 0.0000 |
+| 1.20 | 7.86 Hz | 0.0940 | 0.0000 |
+| 9.60 | 7.86 Hz | 0.0940 | **0.0000** |
+
+Calibration lands at 8.13% against a declared 8%, bounded and idempotent throughout.
+
+Worth noting what the earlier "success" was. The first divisive result — the one recorded
+two entries ago as the middle regime v2 never had — was measured on a circuit whose *only*
+inhibitory input was the normaliser itself, so nothing was being wrongly divided and the
+numbers were right for the case tested. The bug appeared the moment a population had both a
+normaliser and an inhibitory projection, which is every population in a real structure. A
+result that holds on the simple case and breaks on the general one is not a wrong
+measurement; it is a measurement whose scope was never stated.

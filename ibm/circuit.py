@@ -332,8 +332,13 @@ class Circuit(nn.Module):
         rings = dict(state["_rings"])
         new = {"_t": t + 1, "_rings": rings}
 
-        # what each projection delivers this step, read at its own lag
-        inputs = {pid: None for pid in self.pops}
+        # what each projection delivers this step, read at its own lag.  EXCITATORY and
+        # INHIBITORY sums are kept APART, because only the excitatory one is normalised.
+        # Dividing the net input would divide the inhibition too, which disinhibits a
+        # population exactly when it is busiest -- and that is a positive feedback wearing
+        # the costume of a normaliser.
+        exc = {pid: None for pid in self.pops}
+        inh_in = {pid: None for pid in self.pops}
         for pr in self.projs:
             src = state[pr.src]
             s = src["r"]
@@ -357,8 +362,9 @@ class Circuit(nn.Module):
                     self.pops[pr.src].n * (self.pops[pr.src].sparsity or 1.0), 1.0)
             else:
                 contrib = s_eff @ W.t()
-            contrib = pr.sign * pr.weight * contrib
-            inputs[pr.dst] = contrib if inputs[pr.dst] is None else inputs[pr.dst] + contrib
+            contrib = pr.weight * contrib
+            bag = exc if pr.sign > 0 else inh_in
+            bag[pr.dst] = contrib if bag[pr.dst] is None else bag[pr.dst] + contrib
 
         for p in self.pops.values():
             s = state[p.id]
@@ -371,13 +377,19 @@ class Circuit(nn.Module):
             w_inh = (self.w_inh.get(p.id, 0.0)) * m.get("w_inh", 1.0)
             gain_in = m.get("gain_in", 1.0)
 
-            u = inputs[p.id] if inputs[p.id] is not None else torch.zeros_like(r)
-            u = u * gain_in
+            e_in = exc[p.id] if exc[p.id] is not None else torch.zeros_like(r)
+            i_in = inh_in[p.id] if inh_in[p.id] is not None else torch.zeros_like(r)
             d = drive.get(p.id)
             if d is not None:
-                u = u + (d if torch.is_tensor(d) else float(d))
+                dd = d if torch.is_tensor(d) else torch.full_like(r, float(d))
+                # a tonic drive is excitatory input and is normalised with the rest of it;
+                # a hyperpolarising pulse is not, so the two signs are split here too
+                e_in = e_in + dd.clamp_min(0.0)
+                i_in = i_in - dd.clamp_max(0.0)
+            e_in = e_in * gain_in
 
             out = {}
+            eta_add = None
             if p.sigma:
                 eta = s.get("eta", torch.zeros_like(r))
                 rho = math.exp(-dt / p.tau_eta)
@@ -386,11 +398,12 @@ class Circuit(nn.Module):
                 if z is not None:
                     eta = eta + sigma * math.sqrt(1.0 - rho * rho) * z
                 out["eta"] = eta
-                u = u + eta
+                eta_add = eta
+            adapt = None
             if p.adapt_tau:
-                a = s["a"]
-                u = u - a
-                out["a"] = a + (1 - math.exp(-dt / p.adapt_tau)) * (p.adapt_g * r - a)
+                adapt = s["a"]
+                out["a"] = s["a"] + (1 - math.exp(-dt / p.adapt_tau)) * (
+                    p.adapt_g * r - s["a"])
             if p.sparsity:
                 # DIVISIVE, not subtractive, and this is the one design decision in the file
                 # that came from a failed measurement rather than from the literature first.
@@ -409,9 +422,15 @@ class Circuit(nn.Module):
                 # rate LINEARLY -- no sigmoid, because a sigmoid would reintroduce exactly
                 # the ceiling this replaces.
                 inh = s["inh"]
-                u = u / (1.0 + w_inh * inh)
+                e_in = e_in / (1.0 + w_inh * inh)
                 out["inh"] = inh + (1 - math.exp(-dt / p.tau_inh)) * (
                     self.w_drive_inh[p.id] * r.mean(-1, keepdim=True) - inh)
+
+            u = e_in - i_in
+            if eta_add is not None:
+                u = u + eta_add
+            if adapt is not None:
+                u = u - adapt
 
             target = sig(u, beta, theta)
             if p.r_rest:
