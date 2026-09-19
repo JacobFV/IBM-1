@@ -160,7 +160,7 @@ class CerebellarPriors:
     # them together; `theta_G` is expressed on the MEAN of its 4 inputs, so 0.62 is
     # "about two and a half of four".  this is the sparsifier, and without it the
     # expansion is a random linear map that preserves correlation exactly (gate C2).
-    theta_G: float = 0.33
+    theta_G: float = 0.28
     # STEEP on purpose, and this is the constant the decorrelation lives in.  a soft
     # threshold returns a graded version of the input and a graded version of a
     # correlated input is still correlated: measured, an input pair at r = 0.898 came back

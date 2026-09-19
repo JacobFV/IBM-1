@@ -263,12 +263,34 @@ class BasalGangliaPriors:
     # from 0.55 to 0.14 by w = 1.6: a tone, which is precisely the object the catalogue's
     # `beta_bursts` row exists to exclude.  Neither end of that sweep is bursting.
     #
-    # A burst of 100-500 ms needs a slow variable of its own.  The pair is put ABOVE its
-    # bifurcation so it wants to ring; the adaptation then builds up, moves the STN off
-    # the operating point where the sigmoid's slope is steepest, and quenches it; the
-    # current decays and it rings again.  `tau_adapt` is therefore the constant this
-    # module CLAIMS sets the burst duration, and gate B7 requires it to move it.
-    g_adapt: float = 1.00
+    # The idea was: put the pair ABOVE its bifurcation so it wants to ring, let the
+    # adaptation build up and quench it, let the current decay and let it ring again.
+    #
+    # DEFAULT ZERO, and the reason is the finding, not a preference.  IT DOES NOT WORK,
+    # and the diagnosis is clean.  A slow negative feedback on a SUPERCRITICAL Hopf
+    # regulates the limit cycle's amplitude; it does not make it intermittent, because
+    # once the cycle is running the adaptation reaches a steady value and simply moves the
+    # operating point to a new, equally steady one.  Measured across w in {1.8, 2.0, 2.2}
+    # x g_adapt in {0.8, 1.2} x tau_adapt in {0.20, 0.35} s, twelve arms: the envelope's
+    # coefficient of variation stayed between 0.048 and 0.092 in every one of them -- a
+    # tone, in all twelve -- and the median burst duration moved from 41 to 50 ms with no
+    # trend in either constant.  Re-measured at w = 1.40, the subcritical operating point
+    # the module actually uses, g_adapt = 0 and g_adapt = 1 give prominence +1.07 vs
+    # +1.09, CV 0.455 vs 0.446, median 54 vs 58 ms: inert to three decimal places, and it
+    # is inert BY CONSTRUCTION there, because `_tonic` solves the bias current at the
+    # declared resting rate and therefore cancels exactly the DC shift this current makes.
+    #
+    # Left in place at zero rather than deleted, because the problem it was added for is
+    # still open and gate B5 still FAILS: the burst duration measured on this module is
+    # 45-59 ms at every loop gain from 1.20 to 2.20, against the catalogue's 100-500 ms,
+    # and the reason is not the model.  The envelope of ANY signal filtered into the
+    # 17 Hz-wide 13-30 Hz band has a correlation time near 1/(17 Hz) = 59 ms, so the
+    # measurement is reporting the ANALYSIS BAND's timescale and not the circuit's.  A
+    # burst of 100-500 ms needs a resonance a few Hz wide, i.e. a system so close to its
+    # bifurcation that it is a tone by every other test -- or a slow modulator that is not
+    # intrinsic to this pair at all.  The catalogue's own `beta_bursts` row names its
+    # stations as ("stn", "m1"): the cortex is on that list, and it is not in this file.
+    g_adapt: float = 0.00
     tau_adapt: float = 0.250
 
     # ---- dopamine --------------------------------------------------------------------

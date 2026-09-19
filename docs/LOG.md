@@ -7009,3 +7009,20 @@ a 40% cue. So a recurrent stored matrix is a working route to multistability in 
 codebase. What it did *not* do is produce transient spontaneous ignition — so it answers
 "can a non-bistable network hold a state" (yes) and not yet "can one switch between states
 on its own" (the thing G3 has been failing since September).
+
+**H7 sensitivity — PASS, with a caveat about the instrument itself.** Top movers over a 3×
+sweep, against theta frequency and theta prominence: `theta_ms` (2.35 Hz, 3.04 decades),
+`w_IE_dg`, `w_I_ca3`, `w_I_dg`, `g_ms_a`, `rate_ec`. Inert: `tau_I_ca1`, `tau_eta`,
+**`w_rec`**, `ach_suppression`, `w_ca1_sub`, `rate_ca1`.
+
+`w_rec` appearing in that list is the caveat: it is emphatically *not* inert — it is the
+constant that takes retrieval from 6/6 specificity to 4/6 to blends — it just does nothing
+to **theta**, which is what this sweep measures. **"Inert" is a statement about the pair
+(constant, measured quantity), never about the constant.** A sensitivity sweep answers only
+the question it was pointed at, and this one is pointed at theta.
+
+Two entries in that list are not so easily excused. `tau_I_ca1` and `ach_suppression` exist
+*only* for the ripple mechanism, and H6 failed — so there is no measurement anywhere in this
+repo showing either of them does anything at all. They stay, because the diagnosis for H6
+says the missing piece is transient ignition rather than these two constants, but they are
+unevidenced until a gate says otherwise.
