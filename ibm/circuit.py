@@ -259,7 +259,14 @@ class Circuit(nn.Module):
         for p in self.pops.values():
             if not p.input_budget:
                 continue
-            inc = [q for q in self.projs if q.dst == p.id and q.sign > 0]
+            # AFFERENT input only.  A population's own recurrence is its own property, not
+            # a share of what arrives from elsewhere -- and putting it in the budget is
+            # destructive rather than merely arbitrary: measured on V1, a declared local
+            # recurrence of 0.30 came out at 0.0133 after sharing a budget with ten
+            # long-range projections, which erases the recurrence gradient from 0.30 at V1
+            # to 1.10 at prefrontal cortex that the whole hierarchy is built on.
+            inc = [q for q in self.projs
+                   if q.dst == p.id and q.sign > 0 and q.src != p.id]
             raw = sum(q.weight / max(self.pops[q.src].sparsity or 1.0, 1e-6) for q in inc)
             if raw <= 0:
                 continue

@@ -7940,3 +7940,45 @@ discomfort is one-sided.
 and looked rather than concluding.** All seven are time constants; probed on a transient
 they move the output by 1.48× to 3.08×. They are wired in — the sweep's three quantities are
 all steady-state, and *a time constant does not move a fixed point*. The gates stay FAILED.
+
+## 18 September 2026 — the cortex could not hold its operating point, and every cause was mine
+
+`ibm/brain/cortex.py` is the reference every other structure was written against, and it was
+the worst module in the package. Four causes, found in order, each hiding the next.
+
+1. **Synaptic depression had never depleted anything** (engine). With it fixed, a
+   mid-hierarchy area stopped being bistable in its inhibitory gain and became graded:
+   48.7 Hz at zero, **10.9 Hz and 7.1% active with a transfer slope of 0.19 at 0.10**,
+   5.0 Hz at 0.50.
+2. **Calibration started an order of magnitude above the useful range** and **burned in for
+   less time than the ignition transient**, so it read 0% active at a setting that ignites a
+   second later and drove the gain the wrong way.
+3. **A population's incoming weights had no budget.** Each projection is normalised so *it*
+   delivers its weight when its source is at its declared sparsity — right for one, wrong
+   for twelve. Each cortical area receives 12–25 long-range projections totalling **3.9 to
+   74.9** in effective weight: a median of **28× the intended input**, with a **19-fold
+   spread between areas**, so no single inhibitory gain could serve them.
+4. **And the budget, once added, ate the recurrence gradient.** It rescaled *all* incoming
+   excitation including a population's own recurrent projection, so V1's declared local
+   recurrence of 0.30 came out at **0.0133** — a factor of 23 — and with it the 0.30-to-1.10
+   gradient from primary to prefrontal cortex that the entire hierarchy is built on. A
+   population's own recurrence is its own property, not a share of what arrives from
+   elsewhere; the budget is now afferent-only.
+
+With all four fixed, the assembled cortex at a fixed inhibitory gain of 0.10 runs at
+**5.18 Hz with 8.83% of units active and zero saturation**, inside its declared 6–12% band,
+and the recurrence gradient is intact (V1 0.300, prefrontal 0.940).
+
+**What this cost, and what it bought.** The thalamus gate's T5 failed on a cortex that could
+not carry a signal between two areas — 0.5% transfer — and its control arm correctly
+concluded the fault was not the thalamus's. The neuromodulators gate's N5 failed at 1.479×
+against a bar of 1.5 on a cortical target whose normaliser I had changed an hour earlier.
+Both are recorded as failures against modules that were behaving correctly, which is the
+right way round, and both are worth re-running now.
+
+**The pattern worth keeping.** Four structure authors found four engine bugs today —
+depression that could not deplete, a modulator with no delay, a state that was not safe to
+branch, and an input budget that ate the thing it was protecting. Every one surfaced because
+a gate measured something that should have been impossible, and none because anybody read
+the engine. That is the discipline working, and it is also a warning: the engine is the one
+part of this package that no independent gate is pointed at.
