@@ -7191,3 +7191,51 @@ with selection and a dopamine dependence, Purkinje synchrony at 196 Hz, the oliv
 8.13 Hz, and a locomotor rhythm at 1.25 Hz that survives deafferentation. Recorded FAILED:
 thalamic gating, hippocampal ripples, cerebellar learning, cerebellar per-pair
 decorrelation, the cord's frequency range and its `g_nap` clock claim.
+
+## 18 September 2026 — the nociceptor, both halves: a visceral component and a cutaneous transducer
+
+**Attribution first, because the log is how anyone finds this later.** The IBM-1 half of this
+work (`ibm/fields/transduction.py`, `ibm/interoception.py`, `ibm/processes/transduction.py`
++4 lines, `ibm/processes/device.py` +1 token, `ibm/topologies/ihm_bridge.py`,
+`scripts/gate_nociception_routes.py`, `out/gate_nociception_routes.json`, and the
+`docs/DYNAMICS.md` / `docs/EMBODIMENT.md` edits) was committed inside `7f13de7`, *"the
+cerebellum and the cord"*. A concurrent session in this checkout committed the whole
+working tree. The content is exactly what was written here: the committed gate script is
+byte-identical, and re-running it rewrites its output unchanged. The message does not
+describe it, and this entry does.
+
+**Visceral.** `transduction.visceral_nociceptor` is declared on the `viscera` support. It is
+written by the `transduction` process and read by the afferent relay, so the registry does
+not report it dead. That check is live: a probe component with neither a reader nor a
+writer is reported `dead`. The five splanchnic rows now bind it instead of
+`transduction.baroreceptor`. The split follows Cervero and Jänig 1992 (Trends Neurosci
+15:374), who describe high-threshold, silent and intensity-encoding visceral receptors; the
+first two go on the new component. `interoception.check()` now refuses a row whose
+`nociceptive` flag and receptor component disagree, in either direction, and the gate
+corrupts a row each way to show both refusals fire. What stays open, in `ONTOLOGY_GAPS`: a
+threshold for those rows. IHM emits them in mL, human visceral pain thresholds are barostat
+pressures, and converting between them needs an organ compliance nobody declares.
+
+**Cutaneous.** The transducer lives in IHM-1 (`ihm/assembly/nociception.py`,
+`docs/NOCICEPTION.md`). The join lives here: `ihm_bridge.cutaneous_nociceptive_routes()`
+gives one record per skin patch, with A-delta and C delays over that patch's own route. It
+raises if a patch's trunk lacks either class. All 21 trunks carry both, and removing `c`
+from one makes the join raise. A-delta arrives before C on all 1,326 patches, at the
+typical velocities and also in the worst case (slowest A-delta, 5 m/s, against fastest C,
+2 m/s). The C-minus-A-delta lead runs from 56 to 1,122 ms, median 432 ms. **Every delay is
+a schematic lower bound**, per the caveat above in this file, and every record carries that
+scope string.
+
+**The docstring was stale, and nothing caught it.** `interoception.py` said the vagus route
+was 508 mm and the splanchnic arrival 168 ms. The live values are 447.9 mm and 279 ms,
+because IHM moved the vagal endpoint onto the stomach and the relays onto the dura. The
+paragraph is corrected and now says where the live values print.
+
+**A prior nociceptor this does not reconcile.** `nociceptor_polymodal` (`8b85e1a`, 9
+September) covers the same cutaneous ground in `ibm/processes/transduction.py`. Its
+threshold is a force with no area: 8 N, provenance WEAK. That is 267 kPa over 30 mm² and
+about 5 kPa over a 15 cm² patch, so the number means nothing without the area it is
+applied over. Its ceiling is 100 Hz, ten times the maximum mechanically evoked human C
+discharge (Van Hees and Gybels 1981). Its docstring calls its rate "usable as a reward
+signal". It was left untouched, and whether to retire it or reparameterise it from IHM's
+`nociception.EVIDENCE` is for the owner of that file to decide.
