@@ -7428,3 +7428,29 @@ only that result counts as a gate verdict.
 What this run may NOT do: adopt a candidate on the strength of the cheapened settings, move
 any gate's threshold, or report the best of 18 as though it were a pre-selected hypothesis.
 The 18 are a grid, the criteria are fixed, and the confirmation is a separate full-size run.
+
+## 18 September 2026 — the hippocampus can now be shaped, and two things that came with it
+
+`ibm/hippocampus.py` gains **8 bounded residuals** — the recurrent gain, the three
+inhibitory gains, and four septal constants — each passing through `tanh` and scaled to at
+most ±35% of its declared prior, the same construction `ibm/substrate.py` uses. Until now
+every weight in the module was a buffer, so a spectral objective could not move it at all
+and its rows were reported with `shaped: false`. The projections, the sparsities and the
+conduction delays are deliberately **not** learnable: they are anatomy and measurement.
+
+**A bug I introduced and caught in the same hour.** `site()` returns a *tensor* for a
+learnable constant, and the septal adaptation step read it through `math.exp`, which
+converts a tensor to a float and **silently detaches it from the graph**. `tau_ms_a` would
+have been a parameter that exists, receives no gradient, and is inert for a reason no sweep
+could distinguish from "this constant does not matter" — the exact failure mode CLAUDE.md
+now has a section about, introduced by the person who wrote that section. Caught by the
+cheapest possible check: assert every parameter receives a gradient. Seven of eight now do;
+the eighth is `res_w_rec`, which is zero because `W_rec` is all zeros until `store()` is
+called, and that is correct.
+
+**And the change is not numerically free.** Reading constants as float32 tensors instead of
+Python float64 scalars moved the measured values slightly: H4 theta **5.333 → 5.348 Hz**,
+prominence **+1.085 → +1.137**; H0b's sparsities are unchanged to four decimals. Both gates
+still pass on the same thresholds. This is not a re-run with a kinder bar — it is the same
+gates on arithmetic that changed by a fraction of a percent — but it is the kind of drift
+that goes unrecorded and then confuses someone comparing two numbers a month apart.

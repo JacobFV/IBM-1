@@ -173,6 +173,13 @@ class Hippocampus(nn.Module):
     than entorhinal inputs is what lets two similar inputs land on different sparse codes.
     """
 
+    #: the constants a spectral objective may bend.  Deliberately short: the recurrent gain
+    #: and the three inhibitory gains set the operating point, and the four septal constants
+    #: set theta.  The projections, the sparsities and the conduction delays are NOT here --
+    #: they are anatomy and measurement, not things to tune.
+    LEARNABLE = ("w_rec", "w_I_dg", "w_I_ca3", "w_I_ca1",
+                 "w_ms_EE", "w_ms_EI", "g_ms_a", "tau_ms_a")
+
     def __init__(self, n_ec: int = 120, n_dg: int = 480, n_ca3: int = 180, n_ca1: int = 180,
                  priors: HippocampalPriors | None = None, seed: int = 0, device="cpu",
                  sparsity_pp: float = 0.12, sparsity_mf: float = 0.06):
@@ -205,8 +212,30 @@ class Hippocampus(nn.Module):
                                        / pr_.rate_ec).to(device))
         # CA3's recurrent matrix is EXPERIENCE: written by `store`, never by an optimiser.
         self.register_buffer("W_rec", torch.zeros(n_ca3, n_ca3, device=device))
+        # BOUNDED RESIDUALS, so the module can be SHAPED and not only measured.  Until
+        # 18 Sep 2026 every weight here was a buffer, which meant a spectral objective could
+        # not move this structure at all -- its rhythms were reported with `shaped: false`
+        # beside them.  Each residual passes through tanh and is scaled by `residual_frac`,
+        # so training can bend a declared constant by at most 35% and cannot replace the
+        # circuit with a different one.  Same construction as `ibm/substrate.py`.
+        self.residual_frac = 0.35
+        for name in self.LEARNABLE:
+            self.register_buffer(f"prior_{name}",
+                                 torch.tensor(float(getattr(self.pr, name)), device=device))
+            self.register_parameter(f"res_{name}",
+                                    nn.Parameter(torch.zeros((), device=device)))
         self.register_buffer("stored", torch.zeros(0, n_ca3, device=device))
         self.device_ = device
+
+    def site(self, name: str):
+        """a declared constant, bent by its bounded residual.  Falls back to the prior for
+        anything not in `LEARNABLE`, so the step function can read every constant the same
+        way and nothing silently becomes untrainable by being spelled differently."""
+        if name not in self.LEARNABLE:
+            return float(getattr(self.pr, name))
+        p = getattr(self, f"prior_{name}")
+        r = getattr(self, f"res_{name}")
+        return p * (1.0 + self.residual_frac * torch.tanh(r))
 
     # ------------------------------------------------------------------ storage
     def store(self, patterns: torch.Tensor, normalise: bool = True):
@@ -296,13 +325,20 @@ class Hippocampus(nn.Module):
         # `w_hpc_ms` as inert, which is that gate doing its job.
         back = (pr.w_hpc_ms * ca3.mean(-1, keepdim=True) / pr.rate_ca3
                 if ms_feedback else torch.zeros_like(msE))
-        u_msE = pr.w_ms_EE * msE - pr.w_ms_EI * msI - msa + back + 0.30 * septal_tone
+        u_msE = self.site("w_ms_EE") * msE - self.site("w_ms_EI") * msI - msa + back + 0.30 * septal_tone
         u_msI = pr.w_ms_IE * msE
         fE = F(u_msE, pr.beta_ms, pr.theta_ms)
         fI = F(u_msI, pr.beta_ms, pr.theta_ms)
         msE2 = msE + (1 - math.exp(-dt / pr.tau_ms_E)) * (fE - msE)
         msI2 = msI + (1 - math.exp(-dt / pr.tau_ms_I)) * (fI - msI)
-        msa2 = msa + (1 - math.exp(-dt / pr.tau_ms_a)) * (pr.g_ms_a * msE - msa)
+        # torch.exp, not math.exp: `site()` returns a TENSOR for a learnable constant, and
+        # math.exp converts it to a float, which silently detaches it from the graph.  The
+        # parameter would then exist, receive no gradient, and be inert for a reason no
+        # sweep could distinguish from "this constant does not matter" -- the failure mode
+        # CLAUDE.md now has a section about.  Caught by checking that every parameter
+        # receives a gradient, which is the cheapest version of that check.
+        c_msa = 1.0 - torch.exp(-torch.as_tensor(dt) / self.site("tau_ms_a"))
+        msa2 = msa + c_msa * (self.site("g_ms_a") * msE - msa)
         # the septal output DISINHIBITS: it lands on interneurons, so hippocampal inhibition
         # is rhythmically lifted rather than the pyramids being rhythmically driven.  That
         # is the anatomy, and it is also what makes theta a window rather than a push.
@@ -318,7 +354,7 @@ class Hippocampus(nn.Module):
             F(pr.w_IE_ca1 * ca1.mean(-1, keepdim=True) - disinh, pr.beta_I, pr.theta_I) - i_ca1)
 
         # ---- the three stages
-        u_dg = pr.w_pp * (ec @ self.W_pp.t()) - pr.w_I_dg * i_dg
+        u_dg = pr.w_pp * (ec @ self.W_pp.t()) - self.site("w_I_dg") * i_dg
         dg2 = dg + (1 - math.exp(-dt / pr.tau_E)) * (
             F(u_dg, pr.beta_E, pr.theta_E_dg) - dg)
 
@@ -332,9 +368,9 @@ class Hippocampus(nn.Module):
         # modulation, so withdrawing septal tone only REMOVED disinhibition and made the
         # quiet state quieter -- gate H6 measured ripple prominence going the wrong way,
         # -1.51 in the theta state against -2.22 in the quiet one.
-        rec_gain = pr.w_rec * (1.0 - pr.ach_suppression * septal_tone)
+        rec_gain = self.site("w_rec") * (1.0 - pr.ach_suppression * septal_tone)
         u_ca3 = (pr.w_mf * (dg @ self.W_mf.t()) + rec_gain * rec
-                 - pr.w_I_ca3 * i_ca3 - a3 + eta)
+                 - self.site("w_I_ca3") * i_ca3 - a3 + eta)
         ca3_2 = ca3 + (1 - math.exp(-dt / pr.tau_E)) * (
             F(u_ca3, pr.beta_E, pr.theta_E_ca3) - ca3)
         if ca3_clamp is not None:
@@ -342,7 +378,7 @@ class Hippocampus(nn.Module):
         a3_2 = a3 + (1 - math.exp(-dt / pr.tau_a)) * (pr.g_a * ca3 - a3)
 
         u_ca1 = (pr.w_sc * (ca3 @ self.W_sc.t()) + pr.w_ec_ca1 * (ec @ self.W_ec1.t())
-                 - pr.w_I_ca1 * i_ca1)
+                 - self.site("w_I_ca1") * i_ca1)
         ca1_2 = ca1 + (1 - math.exp(-dt / pr.tau_E)) * (
             F(u_ca1, pr.beta_E, pr.theta_E_ca1) - ca1)
         sub2 = state["sub"] + (1 - math.exp(-dt / pr.tau_E)) * (
