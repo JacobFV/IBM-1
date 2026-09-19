@@ -232,9 +232,12 @@ class CerebellarPriors:
     # is the mechanism gate C4 is about: a climbing fibre that only nudged the rate would
     # not disinhibit the nucleus, and a rate change without a pause is not this.
     g_cs: float = 0.55             # the complex spike's own depolarisation
-    g_pause: float = 1.8           # the post-complex-spike silence
+    g_pause: float = 1.2           # the post-complex-spike silence
     tau_pause_up: float = 0.0020
-    tau_pause_dn: float = 0.0220
+    # measured on a 3 ms complex spike: this pair takes the Purkinje population from
+    # 0.757 to 0.055 and holds it under 90% of baseline for 37 ms.  at 0.022 the same
+    # probe gave a 57 ms silence, which is longer than a complex-spike pause is.
+    tau_pause_dn: float = 0.0120
 
     # ---------------------------------------------------------------- deep nucleus
     tau_N: float = 0.010

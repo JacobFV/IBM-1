@@ -210,35 +210,43 @@ class BasalGangliaPriors:
     # Be precise about what the CODE does, which is not quite what that sentence implies:
     # the interneurons are not a population here, so the term is written as inhibition
     # proportional to the MEAN RATE OF THE OTHER CHANNELS' MSNs -- recurrent, not
-    # feedforward.  The difference is not cosmetic and it showed up immediately: a
-    # recurrent term suppresses the UNIFORM mode of the striatum by 1/(1 + w * slope), so
-    # when dopamine was lowered and every channel's D2 population rose together, three
-    # quarters of that rise was cancelled by this term before it reached the pallidum.
+    # feedforward.  The difference is not cosmetic: a recurrent term suppresses the
+    # UNIFORM mode of the striatum by a factor 1/(1 + w * slope), which at the operating
+    # point where lowered dopamine drives every channel's D2 population up together is
+    # about 0.23 -- so roughly three quarters of that common rise is cancelled by this
+    # term before it reaches the pallidum.  (That factor is algebra at the fixed point,
+    # not a measurement; what IS measured is that enough survives it to move gate B6.)
     # A genuinely feedforward version, reading the other channels' cortical DRIVE, would
-    # not do that -- but measured, it also gives a far weaker winner (D1 at 0.38 against
-    # 0.99), because feedforward inhibition cannot compound.  The recurrent form is kept
-    # and the attenuation is real; it is stated here so it is not rediscovered.
+    # not attenuate the uniform mode at all, but solving its fixed point gives a far
+    # weaker winner -- D1 near 0.38 rather than 0.99 -- because feedforward inhibition
+    # cannot compound as the loser is suppressed.  The recurrent form is kept and the
+    # attenuation is real; it is written here so it is not rediscovered.
     w_msn_lat: float = 3.00
     w_d1_gpi: float = 1.60         # the direct arm: the inhibition whose withdrawal IS
                                    # the selection
     w_d2_gpe: float = 1.40         # the indirect arm's first inhibitory step
     # The pair's loop gain, and the one pair of constants in this file that a MEASUREMENT
     # sets rather than the literature.  `gate_basal_ganglia.py --sweep` walks them from
-    # 1.20 to 2.00 and records the whole curve.  What it shows:
+    # 1.20 to 2.00 and records the whole curve (60 s at rest, channel-averaged STN, which
+    # is the signal the gates read -- see `g_adapt` for why that choice matters):
     #
-    #   w     prominence   envelope CV   median "burst"
-    #   1.20    +0.55         0.554          47 ms
-    #   1.40    +1.07         0.455          54 ms
-    #   1.48    +1.50         0.235          55 ms
-    #   1.60    +1.76         0.142          53 ms
-    #   2.00    +2.20         0.065          45 ms
+    #   w     peak Hz   prominence   envelope CV   median burst
+    #   1.20   18.52      +1.195        0.506          58 ms
+    #   1.35   19.11      +1.731        0.488          87 ms
+    #   1.40   19.22      +2.013        0.411         100 ms      <- declared
+    #   1.45   19.19      +2.292        0.242          79 ms
+    #   1.50   19.19      +2.467        0.113          66 ms
+    #   1.60   19.15      +2.614        0.061          56 ms
+    #   2.00   18.92      +3.035        0.021          49 ms
     #
-    # The bifurcation is between 1.44 and 1.48: above it the envelope's coefficient of
-    # variation collapses and the pair is a TONE.  The declared value is the largest that
-    # keeps the envelope clearly noise-driven (CV 0.455 against the Rayleigh 0.523 a
-    # linear resonator would give), which is the sharpest resonance that is still a
-    # resonance.  It is NOT chosen to satisfy the burst-duration gate, because no value
-    # does -- see `g_adapt` below.
+    # The bifurcation is between 1.40 and 1.45: above it the envelope's coefficient of
+    # variation collapses and the pair is a TONE, which is exactly the object the
+    # catalogue's `beta_bursts` row exists to exclude.  The declared value is the largest
+    # that keeps the envelope clearly noise-driven (CV 0.411 against the 0.523 a linear
+    # resonator driven by noise would give) -- the sharpest resonance that is still a
+    # resonance.  The burst duration peaks there too, and only just reaches the
+    # catalogue's 100 ms floor; `g_adapt` says how much of that number belongs to the
+    # circuit and how much to the instrument.
     w_gpe_stn: float = 1.40        # pallidosubthalamic, topographic
     w_stn_gpe: float = 1.40        # subthalamopallidal, diffuse
     w_stn_gpi: float = 2.20        # the brake's grip on the output nucleus.  LARGER than
@@ -278,16 +286,6 @@ class BasalGangliaPriors:
     # calcium-dependent potassium conductance; Hallworth 2003), tracking the STN's own
     # rate with a few hundred milliseconds' lag.
     #
-    # It is here for a reason worth stating, because the first version of this module did
-    # not have it and the burst gate could not be satisfied at ANY loop gain.  With the
-    # pair below its bifurcation the beta is broadband-driven, and the envelope of a
-    # broadband signal filtered to 13-30 Hz has a correlation time of about 1/(17 Hz) --
-    # so the measured "burst duration" came back at 45-57 ms across a 2x sweep of the loop
-    # gain.  That number was the ANALYSIS BAND's, not the circuit's.  Pushing the gain up
-    # instead gives a limit cycle, and the envelope's coefficient of variation collapses
-    # from 0.55 to 0.14 by w = 1.6: a tone, which is precisely the object the catalogue's
-    # `beta_bursts` row exists to exclude.  Neither end of that sweep is bursting.
-    #
     # The idea was: put the pair ABOVE its bifurcation so it wants to ring, let the
     # adaptation build up and quench it, let the current decay and let it ring again.
     #
@@ -299,22 +297,34 @@ class BasalGangliaPriors:
     # x g_adapt in {0.8, 1.2} x tau_adapt in {0.20, 0.35} s, twelve arms: the envelope's
     # coefficient of variation stayed between 0.048 and 0.092 in every one of them -- a
     # tone, in all twelve -- and the median burst duration moved from 41 to 50 ms with no
-    # trend in either constant.  Re-measured at w = 1.40, the subcritical operating point
-    # the module actually uses, g_adapt = 0 and g_adapt = 1 give prominence +1.07 vs
-    # +1.09, CV 0.455 vs 0.446, median 54 vs 58 ms: inert to three decimal places, and it
-    # is inert BY CONSTRUCTION there, because `_tonic` solves the bias current at the
-    # declared resting rate and therefore cancels exactly the DC shift this current makes.
+    # trend in either constant.  Re-measured at w = 1.40, the operating point the module
+    # actually uses, g_adapt = 0 and g_adapt = 1 give prominence +1.07 vs +1.09, CV 0.455
+    # vs 0.446, median 54 vs 58 ms: inert to three decimal places, and inert BY
+    # CONSTRUCTION there, because `_tonic` solves the bias current at the declared resting
+    # rate and so cancels exactly the DC shift this current makes.  It is left at zero
+    # rather than deleted, because the problem it was added for is real and open.
     #
-    # Left in place at zero rather than deleted, because the problem it was added for is
-    # still open and gate B5 still FAILS: the burst duration measured on this module is
-    # 45-59 ms at every loop gain from 1.20 to 2.20, against the catalogue's 100-500 ms,
-    # and the reason is not the model.  The envelope of ANY signal filtered into the
-    # 17 Hz-wide 13-30 Hz band has a correlation time near 1/(17 Hz) = 59 ms, so the
-    # measurement is reporting the ANALYSIS BAND's timescale and not the circuit's.  A
-    # burst of 100-500 ms needs a resonance a few Hz wide, i.e. a system so close to its
-    # bifurcation that it is a tone by every other test -- or a slow modulator that is not
-    # intrinsic to this pair at all.  The catalogue's own `beta_bursts` row names its
-    # stations as ("stn", "m1"): the cortex is on that list, and it is not in this file.
+    # THE PROBLEM, which is about the instrument as much as the model, and which anyone
+    # reading gate B5's verdict should have in front of them.  Bursts are detected in the
+    # 13-30 Hz band, and the envelope of ANY signal filtered into a 17 Hz-wide band has a
+    # correlation time near 1/(17 Hz) = 59 ms.  A model that produced nothing at all would
+    # still report "bursts" of about that length.  So a measured 50-60 ms is the ANALYSIS
+    # BAND's number, not the circuit's, and only a value well clear of it is evidence.
+    # Two measurements on this module, same 60 s run, same detector:
+    #
+    #   one STN channel        median  53 ms, CV 0.453, 3.59 bursts/s   -> would FAIL
+    #   the channel MEAN       median 100 ms, CV 0.411, 1.88 bursts/s   -> passes, by 0 ms
+    #
+    # Both are honest and they differ because averaging eight channels cancels their
+    # independent background and leaves the shared, far narrower, diffusely-coupled beta.
+    # The channel mean is the right signal -- an LFP is a population signal and the STN's
+    # efferent is diffuse -- but the verdict rests on that choice and on a median that
+    # lands exactly on the catalogue's 100 ms floor, with nothing to spare.  It should not
+    # be quoted as a comfortable pass.  Getting clear of the instrument would need a
+    # resonance a few Hz wide, i.e. a system so near its bifurcation that it is a tone by
+    # every other test, or a slow modulator that is not intrinsic to this pair: the
+    # catalogue's own `beta_bursts` row names its stations as ("stn", "m1"), and the
+    # cortex on that list is not in this file.
     g_adapt: float = 0.00
     tau_adapt: float = 0.250
 

@@ -1,0 +1,97 @@
+{
+ "script": "scripts/gate_basal_ganglia.py",
+ "dt": 0.001,
+ "n_channels": 8,
+ "bars": {
+  "select_max_frac_of_rest": 0.5,
+  "loser_floor": 0.98,
+  "stop_max_ms": 200.0,
+  "cv_min": 0.3,
+  "burst_quantile": 0.75,
+  "clock_hz": 1.0,
+  "select_sens": 0.05
+ },
+ "gates": {},
+ "sweep_loop_gain": [
+  {
+   "loop_weight": 1.2,
+   "peak_hz": 18.517127990722656,
+   "prominence_decades": 1.194629192352295,
+   "burst_rate_hz": 3.389830508474576,
+   "median_duration_ms": 58.000003814697266,
+   "max_duration_ms": 333.0,
+   "envelope_cv": 0.5057034492492676,
+   "n_bursts": 200
+  },
+  {
+   "loop_weight": 1.35,
+   "peak_hz": 19.109514236450195,
+   "prominence_decades": 1.7309045791625977,
+   "burst_rate_hz": 1.9322033898305084,
+   "median_duration_ms": 87.00000762939453,
+   "max_duration_ms": 651.0,
+   "envelope_cv": 0.48820364475250244,
+   "n_bursts": 114
+  },
+  {
+   "loop_weight": 1.45,
+   "peak_hz": 19.186124801635742,
+   "prominence_decades": 2.292343854904175,
+   "burst_rate_hz": 2.23728813559322,
+   "median_duration_ms": 79.0,
+   "max_duration_ms": 562.0000610351562,
+   "envelope_cv": 0.24173787236213684,
+   "n_bursts": 132
+  },
+  {
+   "loop_weight": 1.5,
+   "peak_hz": 19.1862735748291,
+   "prominence_decades": 2.467099189758301,
+   "burst_rate_hz": 2.8983050847457625,
+   "median_duration_ms": 66.0,
+   "max_duration_ms": 508.0000305175781,
+   "envelope_cv": 0.11316315084695816,
+   "n_bursts": 171
+  },
+  {
+   "loop_weight": 1.55,
+   "peak_hz": 19.173620223999023,
+   "prominence_decades": 2.5437471866607666,
+   "burst_rate_hz": 3.135593220338983,
+   "median_duration_ms": 64.0,
+   "max_duration_ms": 396.0000305175781,
+   "envelope_cv": 0.07966284453868866,
+   "n_bursts": 185
+  },
+  {
+   "loop_weight": 1.6,
+   "peak_hz": 19.151533126831055,
+   "prominence_decades": 2.613534927368164,
+   "burst_rate_hz": 3.440677966101695,
+   "median_duration_ms": 56.0,
+   "max_duration_ms": 496.0000305175781,
+   "envelope_cv": 0.06137369945645332,
+   "n_bursts": 203
+  },
+  {
+   "loop_weight": 1.8,
+   "peak_hz": 19.033672332763672,
+   "prominence_decades": 2.86378812789917,
+   "burst_rate_hz": 4.067796610169491,
+   "median_duration_ms": 54.0,
+   "max_duration_ms": 236.00001525878906,
+   "envelope_cv": 0.031470999121665955,
+   "n_bursts": 240
+  },
+  {
+   "loop_weight": 2.0,
+   "peak_hz": 18.92314338684082,
+   "prominence_decades": 3.0347824096679688,
+   "burst_rate_hz": 4.406779661016949,
+   "median_duration_ms": 49.000003814697266,
+   "max_duration_ms": 346.0000305175781,
+   "envelope_cv": 0.020729664713144302,
+   "n_bursts": 260
+  }
+ ]
+}

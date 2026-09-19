@@ -15,7 +15,10 @@ why in its own note -- "a model that reproduced every band in this file while se
 nothing would have missed the point."
 
   B0  BOUNDED.  Every rate and every synaptic activation stays in [0, 1] at three
-      timesteps (1, 5, 20 ms) under extreme drive, including a saturating stop pulse.
+      timesteps (1, 5, 20 ms) under extreme drive, including a saturating stop pulse --
+      checked at EVERY STEP of every case, not at the endpoint, because "for any dt and
+      any input" is a promise about the trajectory and a variable that leaves the box and
+      returns has still been represented outside it.
       The exponential-Euler step makes this a property rather than a hope, so the gate
       exists to check the claim is true of the code and not only of the algebra.
       The OU background currents are deliberately NOT tested: they are currents, not
@@ -107,7 +110,8 @@ import torch
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from ibm import spectral as SP                                          # noqa: E402
-from ibm.basal_ganglia import BasalGanglia, BasalGangliaPriors, R_MAX   # noqa: E402
+from ibm.basal_ganglia import (BasalGanglia, BasalGangliaPriors,      # noqa: E402
+                                NOISE_POPS, R_MAX)
 from ibm.rhythms import RHYTHM                                          # noqa: E402
 
 DT = 0.001
@@ -214,7 +218,15 @@ def _drop(tr, rest, on, window=0.20):
 # the gates
 # --------------------------------------------------------------------------------------
 def gate_bounded(bg):
-    """B0.  Rates and synaptic activations in [0, 1] at three dt under extreme drive."""
+    """B0.  Rates and synaptic activations in [0, 1] at three dt under extreme drive.
+
+    Checked at EVERY step, not at the end of the run.  Boundedness is a claim about the
+    trajectory, not about where it settles: a variable that leaves the box and comes back
+    has still been represented outside it, and an endpoint test would certify the run
+    anyway.  (The opposite reading -- that a gate judges the solved state -- is right for
+    a solver's convergence and wrong here; CLAUDE.md has the former case and this is not
+    it, because "for any dt and any input" is a per-step promise.)
+    """
     keys = ("D1", "D2", "GPe", "GPi", "STN", "Thal",
             "sD1", "sD2", "sSG", "sSI", "sGS", "sGG", "sGT", "aSTN")
     worst, cases = 0.0, []
@@ -224,18 +236,21 @@ def gate_bounded(bg):
                 g = torch.Generator().manual_seed(11)
                 st = bg.init_state(1)
                 pars = bg.params()
-                for _ in range(int(4.0 / dt)):
-                    z = torch.randn(1, 6, bg.n, generator=g)
+                bad, n_steps = 0.0, int(4.0 / dt)
+                for _ in range(n_steps):
+                    z = torch.randn(1, len(NOISE_POPS), bg.n, generator=g)
                     st = bg.step(st, dt, ctx=drive, stop=stop, noise=z, params=pars)
-                bad = 0.0
-                for k in keys:
-                    v = st[k]
-                    bad = max(bad, float(max((-v).clamp_min(0).max(), (v - 1).clamp_min(0).max())))
+                    for k in keys:
+                        v = st[k]
+                        bad = max(bad, float(max((-v).clamp_min(0).max(),
+                                                 (v - 1).clamp_min(0).max())))
                 worst = max(worst, bad)
-                cases.append({"dt": dt, "ctx": drive, "stop": stop, "excursion": bad,
+                cases.append({"dt": dt, "ctx": drive, "stop": stop,
+                              "worst_excursion_over_all_steps": bad, "steps": n_steps,
                               "GPi_hz": float(st["GPi"].mean()) * R_MAX,
                               "STN_hz": float(st["STN"].mean()) * R_MAX})
     return {"ok": worst <= 0.0, "worst_excursion": worst,
+            "checked": "every variable at every step of every case, not the endpoint",
             "variables_tested": list(keys),
             "not_tested": "eta -- the OU background is a CURRENT, not a rate, and is not "
                           "claimed to be in [0, 1]",
@@ -441,6 +456,38 @@ def gate_sensitivity():
                     f"{CLOCK_HZ} Hz; w_d1_gpi must move the selection margin by > {SELECT_SENS}",
             "inert_both": [p for p in inert if p not in zeroed],
             "inert_but_declared_zero": zeroed,
+            # A sweep is only as informative as the operating point it is run at, and
+            # this one has three blind spots that are properties of the MEASUREMENT and
+            # not of the model.  Written down here so that an inert row is not read as a
+            # mechanism that is missing when it is a mechanism that was not exercised.
+            "measured_at": {"dopamine": 0.5, "resting_cortical_drive": 0.0,
+                            "selection_drives": DRIVES[0].tolist(),
+                            "stop_pulse": 0.0},
+            "blind_spots": {
+                "k_da_d1/k_da_d2/e_da_d1/e_da_d2": "both metrics are measured at "
+                    "dopamine = da_tonic, where every dopamine term is multiplied by "
+                    "(dopamine - da_tonic) = 0.  They cannot move anything here by "
+                    "construction; gate B6 is what exercises them, and it moves.",
+                "w_stop_stn/d_ctx_stn_s": "no stop pulse is delivered in either "
+                    "measurement, so the stopping projection is never engaged.  Gate B3 "
+                    "is what exercises it.",
+                "w_ctx_thal/w_gpi_thal/rest_thal/tau_thal/beta_thal/theta_thal/"
+                "tau_gaba_gpi/d_gpi_thal_s/d_thal_ctx_s": "the thalamic relay is a pure "
+                    "READOUT in this module -- nothing returns from it, because cortex "
+                    "belongs to ibm/substrate.py -- so nothing downstream of GPi can "
+                    "move a GPi-based margin or an STN spectrum.  That is a real "
+                    "structural fact about the module, not a broken mechanism, and it is "
+                    "the one an eventual closed cortico-basal-ganglia loop would change.",
+                "tau_msn/tau_gaba_str/tau_gpi/d_ctx_str_s/d_str_gpi_s/d_str_gpe_s/"
+                "d_stn_gpi_s/d_gpe_gpi_s": "both observables are STEADY-STATE -- the "
+                    "margin is averaged over the last 150 ms of the run and the spectrum "
+                    "is measured at rest -- so a constant that sets how fast a selection "
+                    "ARRIVES, or that only shifts the phase of a signal on its way into "
+                    "an output nucleus nothing feeds back from, has nothing to move here. "
+                    "That is a limitation of this gate's choice of observables, not a "
+                    "statement about the constants: B6 does record a selection latency "
+                    "(39 ms at normal dopamine) and a latency sweep would separate them.",
+            },
             "inert_definition": f"span < {INERT_HZ} Hz in beta AND < {INERT_MARGIN} in margin",
             "sweep": by_hz}
 
@@ -491,7 +538,7 @@ def main() -> int:
     if a.sweep:
         print("STN-GPe loop gain sweep (resting, 60 s, channel-averaged STN):", flush=True)
         rec["sweep_loop_gain"] = sweep_loop_gain(
-            [1.20, 1.35, 1.45, 1.50, 1.55, 1.60, 1.80, 2.00])
+            [1.20, 1.35, 1.40, 1.45, 1.50, 1.55, 1.60, 1.80, 2.00])
         save()
         print(f"\nwrote {a.out}")
         return 0

@@ -15,6 +15,7 @@
   "B0_bounded": {
    "ok": true,
    "worst_excursion": 0.0,
+   "checked": "every variable at every step of every case, not the endpoint",
    "variables_tested": [
     "D1",
     "D2",
@@ -37,7 +38,8 @@
      "dt": 0.001,
      "ctx": -3.0,
      "stop": 0.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 4000,
      "GPi_hz": 19.68701481819153,
      "STN_hz": 5.047219246989698e-05
     },
@@ -45,7 +47,8 @@
      "dt": 0.001,
      "ctx": -3.0,
      "stop": 3.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 4000,
      "GPi_hz": 99.9928891658783,
      "STN_hz": 99.99997615814209
     },
@@ -53,7 +56,8 @@
      "dt": 0.001,
      "ctx": 0.0,
      "stop": 0.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 4000,
      "GPi_hz": 66.22211337089539,
      "STN_hz": 26.906204223632812
     },
@@ -61,7 +65,8 @@
      "dt": 0.001,
      "ctx": 0.0,
      "stop": 3.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 4000,
      "GPi_hz": 99.99260306358337,
      "STN_hz": 99.99998807907104
     },
@@ -69,7 +74,8 @@
      "dt": 0.001,
      "ctx": 3.0,
      "stop": 0.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 4000,
      "GPi_hz": 92.72094964981079,
      "STN_hz": 99.99998807907104
     },
@@ -77,7 +83,8 @@
      "dt": 0.001,
      "ctx": 3.0,
      "stop": 3.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 4000,
      "GPi_hz": 92.72094964981079,
      "STN_hz": 99.99998807907104
     },
@@ -85,7 +92,8 @@
      "dt": 0.005,
      "ctx": -3.0,
      "stop": 0.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 800,
      "GPi_hz": 20.72710692882538,
      "STN_hz": 6.700529411318712e-05
     },
@@ -93,7 +101,8 @@
      "dt": 0.005,
      "ctx": -3.0,
      "stop": 3.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 800,
      "GPi_hz": 99.99291896820068,
      "STN_hz": 99.99997615814209
     },
@@ -101,7 +110,8 @@
      "dt": 0.005,
      "ctx": 0.0,
      "stop": 0.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 800,
      "GPi_hz": 21.85588628053665,
      "STN_hz": 20.412226021289825
     },
@@ -109,7 +119,8 @@
      "dt": 0.005,
      "ctx": 0.0,
      "stop": 3.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 800,
      "GPi_hz": 99.99260902404785,
      "STN_hz": 100.0
     },
@@ -117,7 +128,8 @@
      "dt": 0.005,
      "ctx": 3.0,
      "stop": 0.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 800,
      "GPi_hz": 92.83763766288757,
      "STN_hz": 100.0
     },
@@ -125,7 +137,8 @@
      "dt": 0.005,
      "ctx": 3.0,
      "stop": 3.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 800,
      "GPi_hz": 92.83763766288757,
      "STN_hz": 100.0
     },
@@ -133,7 +146,8 @@
      "dt": 0.02,
      "ctx": -3.0,
      "stop": 0.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 200,
      "GPi_hz": 18.975462019443512,
      "STN_hz": 5.435754246718716e-05
     },
@@ -141,7 +155,8 @@
      "dt": 0.02,
      "ctx": -3.0,
      "stop": 3.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 200,
      "GPi_hz": 99.99246001243591,
      "STN_hz": 99.99997615814209
     },
@@ -149,7 +164,8 @@
      "dt": 0.02,
      "ctx": 0.0,
      "stop": 0.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 200,
      "GPi_hz": 35.46666204929352,
      "STN_hz": 83.30770134925842
     },
@@ -157,7 +173,8 @@
      "dt": 0.02,
      "ctx": 0.0,
      "stop": 3.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 200,
      "GPi_hz": 99.9921441078186,
      "STN_hz": 100.0
     },
@@ -165,7 +182,8 @@
      "dt": 0.02,
      "ctx": 3.0,
      "stop": 0.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 200,
      "GPi_hz": 92.1526312828064,
      "STN_hz": 100.0
     },
@@ -173,12 +191,13 @@
      "dt": 0.02,
      "ctx": 3.0,
      "stop": 3.0,
-     "excursion": 0.0,
+     "worst_excursion_over_all_steps": 0.0,
+     "steps": 200,
      "GPi_hz": 92.1526312828064,
      "STN_hz": 100.0
     }
    ],
-   "seconds": 3.6
+   "seconds": 5.8
   },
   "B1_idempotent": {
    "ok": true,
@@ -330,7 +349,7 @@
    "stn_mean_hz": 25.62708854675293,
    "stn_sd_hz": 6.552452594041824,
    "note": "peak_frequency is a soft-argmax and returns the band centre on a flat spectrum; the prominence is the gate",
-   "seconds": 10.8
+   "seconds": 10.6
   },
   "B5_bursts": {
    "ok": true,
@@ -354,7 +373,7 @@
     "n_bursts": 212
    },
    "rule": "median duration in the catalogue's 100-500 ms, rate >= 0.5/s, and envelope CV >= 0.30 -- the CV is what a constant tone fails, and a 75th-percentile threshold on its own cannot tell the two apart",
-   "seconds": 10.5
+   "seconds": 10.4
   },
   "B6_dopamine": {
    "ok": true,
@@ -385,7 +404,7 @@
      "stn_mean_hz": 28.82201373577118
     }
    },
-   "seconds": 14.9
+   "seconds": 14.7
   }
  },
  "declared_rest_hz": {
