@@ -88,17 +88,21 @@ phase condition for a delayed negative feedback is
              + atan(2*pi*f*tau_gpe) + atan(2*pi*f*tau_gaba_pal)  =  pi
 
 and with the declared values (D = 7 ms, taus 5, 4, 6, 9 ms) that crosses at ~18 Hz, in
-band.  `tau_gaba_pal` and `tau_ampa_stn` are the constants this module CLAIMS set the
-frequency, and gate B7 requires each of them to move it by more than 1 Hz.
+band.  The measured resting peak is 19.2 Hz at a prominence of +2.0 decades, against the
+catalogue's declared 20 Hz -- and the phase condition, not a fit, is where it came from.
+`tau_gaba_pal` and `tau_ampa_stn` are the constants this module CLAIMS set the frequency,
+and gate B7 requires each of them to move it by more than 1 Hz.
 
 **AND THE PAIR SITS JUST BELOW ITS BIFURCATION, ON PURPOSE.**  `beta_bursts` is the row
 that stops a band-power target from being satisfied the wrong way: a constant 13-30 Hz
 tone scores the same band power as real bursting and is not the same object.  A loop gain
 above 1 gives a limit cycle -- a tone.  A loop gain just below 1 gives a DAMPED resonance,
 which is silent on its own and rings for a few cycles whenever the background current
-knocks it, and that is a burst of 100-500 ms.  So the weights are chosen to put the open
-loop near unity gain at the resonance rather than comfortably above it, and the bursts are
-a property of the operating point rather than an envelope imposed on a tone.
+knocks it.  So the weights are chosen to put the open loop near unity gain at the
+resonance rather than comfortably above it, and the fluctuation of the envelope is a
+property of the operating point rather than an envelope imposed on a tone.  How far that
+gets toward the catalogue's 100-500 ms, and what part of the measured answer belongs to
+the analysis band rather than to the circuit, is written out at `g_adapt`.
 
 **BOUNDED, like the cortical field and the thalamus.**  Every rate and every synaptic
 activation is advanced by an exponential-Euler step, `x <- x + (1 - exp(-dt/tau)) * (f - x)`
@@ -172,6 +176,16 @@ class BasalGangliaPriors:
     # MSNs have a HIGH threshold on purpose: a striatal projection neuron sits in a
     # down-state and is essentially silent until a coherent cortical input arrives, which
     # is why the striatum can act as a detector of proposals rather than a relay of them.
+    #
+    # A NOTE ON `theta_gpe`, `theta_gpi`, `theta_stn`, `theta_thal`, which gate B7 will
+    # report as inert to five decimal places.  That is correct and it is not a mechanism
+    # failing to engage: `_tonic` SOLVES each bias current by inverting the same sigmoid
+    # at the same declared resting rate, so a shift of one of these thresholds is
+    # cancelled exactly by the bias current it implies.  They are unidentifiable by
+    # construction -- a reparametrisation, not a lever.  The `beta_*` slopes are a
+    # different matter and do move the output, because they change the GAIN at the fixed
+    # point and not only where the fixed point sits.  `theta_msn` is also a real lever,
+    # because the striatum's resting rate is solved FROM it rather than declared.
     beta_msn: float = 10.0
     theta_msn: float = 0.55
     beta_gpe: float = 6.0
@@ -188,11 +202,22 @@ class BasalGangliaPriors:
     w_ctx_d2: float = 1.20         # and onto the indirect-pathway MSNs, equal at rest:
                                    # the ASYMMETRY between the arms is dopamine's job, not
                                    # a wiring difference, or `dopamine` would be a flag.
-    # Competition between channels.  This is NOT the weak MSN-to-MSN collateral, which is
-    # far too sparse to implement a winner-take-all; it is the FEEDFORWARD inhibition of
-    # the fast-spiking interneuron pool, which is powerful, divergent and is what actually
-    # makes the striatum competitive (Gittis & Kreitzer 2012; Tepper 2008).  It acts on
-    # the MEAN of the OTHER channels, so a channel never inhibits itself.
+    # Competition between channels.  It stands for the fast-spiking interneuron pool,
+    # which is powerful and divergent and is what actually makes the striatum competitive
+    # (Gittis & Kreitzer 2012; Tepper 2008), rather than for the weak MSN-to-MSN
+    # collateral, which is far too sparse to implement a winner-take-all.
+    #
+    # Be precise about what the CODE does, which is not quite what that sentence implies:
+    # the interneurons are not a population here, so the term is written as inhibition
+    # proportional to the MEAN RATE OF THE OTHER CHANNELS' MSNs -- recurrent, not
+    # feedforward.  The difference is not cosmetic and it showed up immediately: a
+    # recurrent term suppresses the UNIFORM mode of the striatum by 1/(1 + w * slope), so
+    # when dopamine was lowered and every channel's D2 population rose together, three
+    # quarters of that rise was cancelled by this term before it reached the pallidum.
+    # A genuinely feedforward version, reading the other channels' cortical DRIVE, would
+    # not do that -- but measured, it also gives a far weaker winner (D1 at 0.38 against
+    # 0.99), because feedforward inhibition cannot compound.  The recurrent form is kept
+    # and the attenuation is real; it is stated here so it is not rediscovered.
     w_msn_lat: float = 3.00
     w_d1_gpi: float = 1.60         # the direct arm: the inhibition whose withdrawal IS
                                    # the selection
@@ -373,6 +398,14 @@ class BasalGanglia(nn.Module):
                  learn: bool = True, device="cpu"):
         super().__init__()
         self.pr = priors or BasalGangliaPriors()
+        for k in ("rest_gpe", "rest_gpi", "rest_stn", "rest_thal"):
+            v = float(getattr(self.pr, k))
+            # the tonic bias currents are found by INVERTING each sigmoid at these rates,
+            # so a resting rate outside (0, 1) is not a large number, it is not a number.
+            # Said here, once, rather than as a `math domain error` from inside `_logit`
+            # forty constants into a sweep -- which is how this assert came to be written.
+            assert 0.0 < v < 1.0, f"{k}={v} must be strictly inside (0, 1): it is a rate"
+        assert 0.0 <= float(self.pr.stn_diffuse) <= 1.0, "stn_diffuse is a mixing fraction"
         self.n = int(n)
         self.learn = learn
         z = torch.zeros(self.n, device=device)
@@ -510,12 +543,14 @@ class BasalGanglia(nn.Module):
         """one exponential-Euler step.
 
         `ctx`      (B, N) cortical proposal per channel, or a scalar, or None.
-        `stop`     (B, N) or scalar: an EXTRA cortical drive that reaches the STN only.
-                   It is the hyperdirect pulse, and it is separate from `ctx` because a
-                   stop signal is not a proposal -- it never touches the striatum.
+        `stop`     (B, N) or scalar: the stopping network's drive, which reaches the STN
+                   only and is scaled by `w_stop_stn`, not by `w_ctx_stn`.  It is separate
+                   from `ctx` because a stop signal is not a proposal -- it comes from a
+                   different cortical population and it never touches the striatum.
         `dopamine` in [0, 1]; `da_tonic` is the level the weights are declared at.
         `delayed`  a dict of the presynaptic rates ALREADY delayed by the caller, keyed
-                   ctx_str, ctx_stn, d1, d2, gpe_stn, gpe_gpi, stn_gpe, stn_gpi, gpi.
+                   ctx_str, ctx_stn, stop_stn, d1, d2, gpe_stn, gpe_gpi, stn_gpe,
+                   stn_gpi, gpi.
                    The delays belong to the loop and `rollout` owns them; applying them
                    here as well would apply them twice.  None means zero delay, which is
                    what a boundedness check wants and not what a rhythm wants.
@@ -557,7 +592,10 @@ class BasalGanglia(nn.Module):
             e = e + (pr.sigma * math.sqrt(1.0 - rho * rho)) * noise
         eta = {name: e[:, k] for k, name in enumerate(NOISE_POPS)}
 
-        # dopamine: one scalar, two opposite gains, and nothing else in the file reads it
+        # dopamine: ONE scalar, entering in exactly two places and in opposite directions
+        # in each -- a gain on the corticostriatal synapse and a shift of the MSN's own
+        # excitability.  Nothing else in this file reads `dopamine`; there is no branch on
+        # it anywhere, which is what makes it a parameter and not a mode.
         da = float(dopamine) - pr.da_tonic
         g_d1 = 1.0 + pr.k_da_d1 * da
         g_d2 = 1.0 - pr.k_da_d2 * da
@@ -710,6 +748,11 @@ class BasalGanglia(nn.Module):
                 rings[k][:, (t + lag_of[k]) % rings[k].shape[1]] = v
             state = self.step(state, dt, ctx=c_t, stop=None, dopamine=dopamine,
                               delayed=delayed, noise=z, params=pars)
+            if torch.is_grad_enabled():
+                # a ring written in place is a tensor autograd still needs; clone it
+                # first, exactly as `ThalamoCortical.rollout` does.  Under no_grad the
+                # clone is skipped and the numbers are bit-identical either way.
+                rings = {k: v.clone() for k, v in rings.items()}
             for k, (src, _f) in routes.items():
                 if src == "ctx":
                     continue

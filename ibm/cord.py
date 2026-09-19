@@ -45,7 +45,7 @@ joints, one per side, each driven by its own flexor/extensor pair.  State, all i
 [0, 1] except the noise:
 
     V    half-centre activity
-    a    adaptation / spike-frequency depression       the variable that RELEASES
+    h    inactivation of the persistent inward current       the RELEASE variable
     sR   reciprocal inhibition received (ipsilateral flexor <-> extensor)
     sC   commissural inhibition received (left <-> right, homologous)
     M    alpha motoneuron pool
@@ -55,17 +55,51 @@ joints, one per side, each driven by its own flexor/extensor pair.  State, all i
     Lm   muscle length at the previous step, so the spindle has a velocity term
     eta  background current, Ornstein-Uhlenbeck, exactly advanced
 
-**The alternation is the adaptation, not an assertion.**  Read `a` in `step`: while a
-half-centre is active `a` climbs toward `V` with `tau_a_up` and is SUBTRACTED from that
-half-centre's own drive (`- g_adapt * a`).  Its partner, silenced by `w_recip * sR`,
-meanwhile lets its own `a` decay with `tau_a_dn`.  The partner escapes when
+**The alternation is `h`, and it is in the code, not in a comment.**  Each half-centre
+carries a slow depolarising current `g_nap * h` -- the persistent inward current of
+lumbar CPG interneurons, its slow inactivation gate `h` recovering during
+hyperpolarisation.  `theta_hc = 1.05` sits ABOVE the descending drive's whole declared
+range, so a half-centre CANNOT fire on the brainstem command alone: it fires when `h`
+has recovered enough to carry it over.  Then:
 
-    w_mlr * drive - w_recip * V_active - g_adapt * a_partner  >  theta_hc
+    active    u = drive + g_nap * h              (partner silent, so no inhibition)
+              h inactivates with `tau_h_dn`, u falls, the burst drains
+    silent    u = drive - w_recip*sR - w_comm*sC + g_nap * h
+              h recovers with `tau_h_up`, and the centre ESCAPES when
 
-and the moment it does, its rise drives `sR` on the first centre and the pair swaps.
-That inequality is also why the frequency follows the drive: a larger `drive` moves the
-escape earlier in the active phase's decline, so the half-period shortens.  Nothing
-anywhere in this file contains a clock, a phase variable or a sinusoid.
+                  g_nap * h  >  theta_hc - drive + w_recip + w_comm
+
+and the moment it does its rise drives `sR`/`sC` onto the first centre, which -- its own
+`h` now inactivated -- cannot answer, and the pair swaps.  That inequality is also why
+the frequency follows the drive: a larger `drive` lowers the `h` the silent centre has
+to reach, so the silent phase shortens.  Nothing in this file contains a clock, a phase
+variable or a sinusoid.
+
+TWO MECHANISMS THAT WERE BUILT HERE AND MEASURED WRONG, kept because they cost a day
+-------------------------------------------------------------------------------------
+Both produced a clean 180 deg alternation in the locomotor band.  A band and a phase
+are not enough to tell a pattern generator from a puppet, and only the drive sweep
+separated them:
+
+  * **Subtractive spike-frequency adaptation** (`-g_adapt*a`, `a` tracking the centre's
+    own activity).  The burst then ends when the centre exhausts ITSELF, so a bigger
+    drive means a longer climb before exhaustion: measured 0.91 Hz at drive 0.4 falling
+    to 0.49 Hz at 1.2 -- monotone, and BACKWARDS.  This is release mode (Skinner, Kopell
+    & Marder 1994) and it fails the catalogue's stated specification while passing every
+    band and phase check.
+  * **Presynaptic depression of the reciprocal inhibition.**  Right direction (0.60 ->
+    1.44 Hz) and dead above drive 0.8.  It cannot be repaired by any choice of constants,
+    and the algebra says why in one line: escape needs the depressed inhibition to be
+    too weak to hold the partner down, and NOT co-activating needs it to be strong enough
+    to hold the partner down.  The same inequality, both ways.  When two requirements
+    reduce to `x < c` and `x > c`, stop sweeping.
+
+A third near-miss is worth the same line.  The escape mechanism above LATCHES -- one
+centre on, one off, for ever -- whenever `h_theta` sits below `theta_hc`, because the
+depolarisation `h` produces then shuts `h`'s own recovery off before the centre reaches
+firing threshold.  `ibm/thalamus.py` records the identical trap in its `h_H_theta`
+comment.  `h_theta` is declared ABOVE `theta_hc` here for that reason and S7 is what
+would catch it moving back.
 
 DELAYS ARE RING BUFFERS, from the catalogue, in the state
 ----------------------------------------------------------
@@ -153,37 +187,57 @@ class CordPriors:
     # ---- half-centre membrane ----------------------------------------------------
     # Interneuron populations are fast; the locomotor period is hundreds of
     # milliseconds, so the membrane must not be what sets it.  30 ms is a population
-    # time constant, not a cell's, and it is two orders below the period on purpose:
+    # time constant, not a cell's, and it is an order below the period on purpose:
     # if a sweep of THIS constant moved the frequency, the rhythm would be a membrane
-    # filter rather than an adaptation cycle, and S7 would say so.
+    # filter rather than a current cycling, and S7 would say so.
     tau_hc: float = 0.030
-    beta_hc: float = 8.0           # recruitment slope of the half-centre population
-    theta_hc: float = 0.35         # drive needed for half activation
-    # ---- adaptation: the mechanism that releases ---------------------------------
-    # Spike-frequency adaptation / synaptic depression in the half-centre.  This is the
-    # clock: the half-period is roughly the time `a` takes to climb far enough that the
-    # silenced partner clears `theta_hc`.  0.25 s puts the free-running period near the
-    # catalogue's 1.2 Hz; `--sweep` shows the whole curve rather than one nudged value.
-    tau_a_up: float = 0.250        # building, while the centre is active
-    tau_a_dn: float = 0.400        # recovering, while it is silent.  SLOWER than the
-                                   # build, which is what spike-frequency adaptation
-                                   # does and what keeps the duty cycle from being 0.5
-                                   # at every drive level.
-    g_adapt: float = 0.70          # how much of the drive the adaptation can cancel.
-                                   # Below ~ (drive - theta_hc) the centre never
-                                   # releases and the pair latches.
+    beta_hc: float = 9.0           # recruitment slope of the half-centre population
+    theta_hc: float = 1.05         # firing threshold.  ABOVE the descending drive's
+                                   # entire declared range, which is the model's claim
+                                   # that the brainstem command alone does not make a
+                                   # half-centre fire -- the inward current does.
+    # ---- the persistent inward current: the mechanism that releases ---------------
+    # g_nap * h.  `h` is its slow inactivation: 1 is fully recovered (the centre can
+    # fire), 0 is fully inactivated (it cannot).  The half-period is roughly the time
+    # `h` takes to recover far enough to clear the inhibition, so `tau_h_up` is the
+    # clock -- and `scripts/gate_cord.py --sweep` is where it is SET, against the
+    # catalogue's declared 1.2 Hz peak, with the whole curve recorded rather than one
+    # nudged value.
+    g_nap: float = 2.40
+    tau_h_up: float = 0.370        # recovering, while the centre is inhibited.  THE
+                                   # CLOCK.  It must be several times `tau_hc`, or `h`
+                                   # tracks the membrane instead of pacing it and the
+                                   # whole thing collapses onto a stable co-active
+                                   # fixed point -- measured, at tau_h_up = 0.12 s.
+    tau_h_dn: float = 0.093        # inactivating, while it is firing.  Faster than the
+                                   # recovery, which is what makes a burst a burst.
+    h_beta: float = 4.0            # SHALLOW on purpose.  A steep h_inf makes `h` a fast
+                                   # follower of the membrane with a large instantaneous
+                                   # gain, and that gain stabilises exactly the symmetric
+                                   # co-active state the alternation has to break out of.
+    h_theta: float = 1.40          # recovers below this.  ABOVE `theta_hc` by 0.35, so
+                                   # `h` keeps recovering all the way through the firing
+                                   # threshold.  Put it below `theta_hc` and the pair
+                                   # latches (see the module docstring).
     # ---- reciprocal and commissural inhibition -----------------------------------
     tau_inh: float = 0.020         # glycinergic IPSC in the cord; fast, so the swap is
                                    # a swap and not a fade
-    w_recip: float = 0.90          # ipsilateral flexor <-> extensor.  Strong enough
+    w_recip: float = 1.05          # ipsilateral flexor <-> extensor.  Strong enough
                                    # that the active centre genuinely silences its
                                    # partner: this is what makes the phase 180 deg
                                    # rather than merely "not in phase".
-    w_comm: float = 0.50           # commissural, homologous.  WEAKER than `w_recip`:
+    w_comm: float = 0.45           # commissural, homologous.  WEAKER than `w_recip`:
                                    # left-right coordination is looser than the
                                    # ipsilateral one, which is why a human can trot,
                                    # hop or limp while flexor/extensor alternation is
                                    # never optional.
+                                   # `w_recip`, `w_comm` and `g_nap` were raised 1.5x
+                                   # TOGETHER from the first working set: the frequency
+                                   # span a drive sweep can reach before it latches at
+                                   # one end or co-activates at the other went 2.7x ->
+                                   # 4.0x.  The ratio between them is what sets the
+                                   # phase; their common scale is what sets how much
+                                   # range the drive has to work in.
     # ---- descending drive --------------------------------------------------------
     # The MLR's one weight.  It is a SINGLE scalar applied identically to all four
     # half-centres, and that identity is the model's statement that the brainstem sets
@@ -274,7 +328,7 @@ class SpinalCord(nn.Module):
         # the declared loop may be BENT by learning, it may not be replaced.  Per-unit,
         # so a left/right or flexor/extensor asymmetry can be learned -- real gait is
         # not symmetric -- without any of it being able to invent a new edge.
-        for name in ("tau_a_up", "g_adapt", "w_recip", "w_comm", "w_mlr", "w_hc_mn",
+        for name in ("tau_h_up", "g_nap", "w_recip", "w_comm", "w_mlr", "w_hc_mn",
                      "w_reflex", "w_aff_hc", "tau_force"):
             self.register_buffer(f"prior_{name}", z + float(getattr(self.pr, name)))
             self.register_parameter(f"res_{name}", nn.Parameter(
@@ -332,7 +386,7 @@ class SpinalCord(nn.Module):
         V0[:, 3] = asym
         th = torch.zeros(b, 2, device=device) + TH_NEUTRAL
         L0 = self._lengths(th)
-        return {"V": V0, "a": z.clone(), "sR": z.clone(), "sC": z.clone(),
+        return {"V": V0, "h": z.clone() + 0.30, "sR": z.clone(), "sC": z.clone(),
                 "M": z.clone(), "F": z.clone(), "th": th, "S": z.clone(),
                 "Lm": L0, "eta": z.clone(),
                 "ring_drive": torch.zeros(b, lg["mlr_to_cord"] + 1, self.n, device=device),
@@ -379,7 +433,7 @@ class SpinalCord(nn.Module):
         noise          standard-normal draw supplied by the caller, never drawn here.
         """
         pr = self.pr
-        V, a, sR, sC = state["V"], state["a"], state["sR"], state["sC"]
+        V, h, sR, sC = state["V"], state["h"], state["sR"], state["sC"]
         M, F, th, S, Lm, eta = (state["M"], state["F"], state["th"], state["S"],
                                 state["Lm"], state["eta"])
         rd, rV, rM, rS = (state["ring_drive"], state["ring_V"], state["ring_M"],
@@ -392,9 +446,9 @@ class SpinalCord(nn.Module):
             and rS.shape[1] == lg["spindle_to_mn"] + 1, \
             "delay rings were built for a different dt than this step was called with"
 
-        tau_a_up = self.site("tau_a_up")
-        g_adapt, w_recip, w_comm = (self.site("g_adapt"), self.site("w_recip"),
-                                    self.site("w_comm"))
+        tau_h_up = self.site("tau_h_up")
+        g_nap, w_recip, w_comm = (self.site("g_nap"), self.site("w_recip"),
+                                  self.site("w_comm"))
         w_mlr, w_hc_mn = self.site("w_mlr"), self.site("w_hc_mn")
         w_reflex, w_aff_hc = self.site("w_reflex"), self.site("w_aff_hc")
         tau_force = self.site("tau_force")
@@ -411,17 +465,22 @@ class SpinalCord(nn.Module):
         M_arr = rM[:, 0]
         S_arr = rS[:, 0] * float(afferent_gain)
 
-        # ---- the half-centres.  The whole alternation is the `- g_adapt * a` term and
-        # the `- w_recip * sR` term pulling against a drive that is identical for all
-        # four: the active centre drains itself while holding its partner down, and the
-        # partner escapes when the sum clears theta_hc.  Nothing else is going on.
-        u_hc = (w_mlr * drive_arr - w_recip * sR - w_comm * sC - g_adapt * a
+        # ---- the half-centres.  The whole alternation is `+ g_nap * h` pulling against
+        # `- w_recip * sR - w_comm * sC`, with a drive that is identical for all four
+        # and below threshold on its own: the active centre's `h` drains, the silent
+        # centre's recovers, and the pair swaps when the silent one clears theta_hc.
+        u_hc = (w_mlr * drive_arr - w_recip * sR - w_comm * sC + g_nap * h
                 + w_aff_hc * S_arr + eta)
         V_inf = sigmoid(u_hc, pr.beta_hc, pr.theta_hc)
-        # adaptation tracks the centre's OWN activity: it builds while active and
-        # recovers while silent, with different time constants in the two directions.
-        a_inf = V
-        tau_a = torch.where(a_inf > a, tau_a_up, torch.full_like(tau_a_up, pr.tau_a_dn))
+        # The inactivation gate reads the FULL membrane drive `u_hc` -- the inward
+        # current it itself carries included -- because it is voltage-gated and the
+        # voltage is whatever every current has made it.  Reading the synaptic input
+        # alone would leave the current without the feedback that terminates it, which
+        # is the failure `ibm/thalamus.py`'s docstring records twice.
+        # h_inf is 1 when hyperpolarised (recovered, ready to fire), 0 when depolarised.
+        h_inf = 1.0 - sigmoid(u_hc, pr.h_beta, pr.h_theta)
+        # asymmetric: slow to recover, faster to inactivate -- a burst, not a sinusoid.
+        tau_h = torch.where(h_inf > h, tau_h_up, torch.full_like(tau_h_up, pr.tau_h_dn))
         # the two inhibitory species.  Each reads exactly one partner, so each target is
         # a single value in [0, 1] and the synapse cannot leave the box however many
         # partners are shouting.
@@ -454,7 +513,7 @@ class SpinalCord(nn.Module):
                         pr.spindle_theta)
 
         cV = 1.0 - math.exp(-dt / pr.tau_hc)
-        ca = 1.0 - torch.exp(-dt / tau_a)
+        ch = 1.0 - torch.exp(-dt / tau_h)
         cI = 1.0 - math.exp(-dt / pr.tau_inh)
         cM = 1.0 - math.exp(-dt / pr.tau_mn)
         cF = 1.0 - torch.exp(-dt / tau_force)
@@ -467,7 +526,7 @@ class SpinalCord(nn.Module):
         d_in = drive if torch.is_tensor(drive) else torch.zeros_like(V) + float(
             drive if drive is not None else 0.0)
         return {"V": V_new,
-                "a": a + ca * (a_inf - a),
+                "h": h + ch * (h_inf - h),
                 "sR": sR + cI * (sR_inf - sR),
                 "sC": sC + cI * (sC_inf - sC),
                 "M": M_new,

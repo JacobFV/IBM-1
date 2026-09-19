@@ -191,15 +191,22 @@ class CerebellarPriors:
     # constant is a small fraction of the slice value.  C5 measures whether the band
     # comes out; C7 says whether these constants are what put it there.
     tau_I: float = 0.0010
-    beta_I: float = 7.0
+    # `beta_I` and `w_II` together are the LOOP GAIN of the molecular layer's recurrent
+    # inhibition, and the loop only rings if that gain survives its own lags: at 200 Hz the
+    # membrane and the GABA-A synapse between them attenuate by about 0.35, so a gain of
+    # 1.4 -- which is what the first version had -- is a damped loop and measures a
+    # population standard deviation of exactly 0.0000.  `i_tonic` is set to put the
+    # interneurons near I = 0.35 where the sigmoid's own slope, I(1-I), is largest; the
+    # gain is beta_I * w_II * I(1-I) and the working point is half of it.
+    beta_I: float = 12.0
     theta_I: float = 0.30
-    i_tonic: float = 0.34          # resting drive: the molecular layer is not silent
+    i_tonic: float = 0.98          # resting drive: the molecular layer is not silent
     i_jitter: float = 0.05
     w_GI: float = 3.00             # parallel fibre -> interneuron  (`cb_local` edge 1).
                                    # large because the parallel-fibre input is the
                                    # granule layer's MEAN, which a sparse code holds at
                                    # a few percent; the gain carries the units
-    w_II: float = 2.6              # interneuron -> interneuron: THE ING GENERATOR.  the
+    w_II: float = 2.0              # interneuron -> interneuron: THE ING GENERATOR.  the
                                    # loop `cb_local` declares is feed-forward; this is the
                                    # recurrent inhibition that actually closes it.
     tau_gaba_I: float = 0.0012     # GABA-A in the molecular layer
@@ -215,7 +222,7 @@ class CerebellarPriors:
     # module does downstream -- disinhibition of the nucleus, the pause, the sign of the
     # learning rule -- is a modulation of that.  `p_tonic` is set so `resting_state()`
     # comes back near 0.6, i.e. ~60 Hz.
-    p_tonic: float = 0.48
+    p_tonic: float = 0.740
     p_jitter: float = 0.04
     w_GP: float = 5.0              # parallel fibre -> Purkinje, through the LEARNED W_pf
     w_IP: float = 0.95             # basket -> Purkinje soma    (`cb_local` edge 2)
@@ -256,15 +263,22 @@ class CerebellarPriors:
     # measured: it puts the cell on the UNSTABLE branch of its own nullcline, which is
     # what a subthreshold oscillator is.  too low and the cell sits quiet at a stable
     # fixed point; too high and it sits saturated at another.  C7 sweeps it.
-    io_drive: float = 0.575
+    io_drive: float = 0.700
     io_jitter: float = 0.05
     g_ca: float = 0.85             # the low-threshold calcium current's strength
     ca_theta: float = 0.50         # its activation, placed mid-range so the current
     ca_beta: float = 13.0          # regenerates only once the cell is already rising
-    g_k: float = 0.90              # the calcium-activated potassium current: the slow
-    tau_z: float = 0.030           # opposition, and the constant that sets the PERIOD.
-                                   # measured on the isolated olive: 0.020 -> 10.0 Hz,
-                                   # 0.030 -> 7.4 Hz, 0.060 -> 4.3 Hz with the brake off
+    g_k: float = 1.10              # the calcium-activated potassium current: the slow
+    tau_z: float = 0.040           # opposition, and the pair that sets the PERIOD.
+                                   # measured on the whole microzone, on the LATE window
+                                   # after the start transient: (0.040, 1.10) -> 7.96 Hz
+                                   # sustained; (0.050, 0.90) -> 4.38 Hz; and at an
+                                   # io_drive of 0.575 the oscillation DECAYS to a
+                                   # standard deviation of 0.0000 while its start
+                                   # transient still puts a +2.8 decade peak in a spectrum
+                                   # taken over the whole run.  that is why C6 measures
+                                   # late and reports the sustained amplitude beside the
+                                   # prominence
     w_gap: float = 0.55            # gap junctions.  without them the jittered cells
                                    # average away and the POPULATION does not oscillate
     w_NO: float = 0.70             # nucleo-olivary brake (`olivo` edge 3)

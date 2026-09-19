@@ -1,0 +1,411 @@
+{
+ "script": "scripts/gate_basal_ganglia.py",
+ "dt": 0.001,
+ "n_channels": 8,
+ "bars": {
+  "select_max_frac_of_rest": 0.5,
+  "loser_floor": 0.98,
+  "stop_max_ms": 200.0,
+  "cv_min": 0.3,
+  "burst_quantile": 0.75,
+  "clock_hz": 1.0,
+  "select_sens": 0.05
+ },
+ "gates": {
+  "B0_bounded": {
+   "ok": true,
+   "worst_excursion": 0.0,
+   "variables_tested": [
+    "D1",
+    "D2",
+    "GPe",
+    "GPi",
+    "STN",
+    "Thal",
+    "sD1",
+    "sD2",
+    "sSG",
+    "sSI",
+    "sGS",
+    "sGG",
+    "sGT",
+    "aSTN"
+   ],
+   "not_tested": "eta -- the OU background is a CURRENT, not a rate, and is not claimed to be in [0, 1]",
+   "cases": [
+    {
+     "dt": 0.001,
+     "ctx": -3.0,
+     "stop": 0.0,
+     "excursion": 0.0,
+     "GPi_hz": 19.68701481819153,
+     "STN_hz": 5.047219246989698e-05
+    },
+    {
+     "dt": 0.001,
+     "ctx": -3.0,
+     "stop": 3.0,
+     "excursion": 0.0,
+     "GPi_hz": 99.9928891658783,
+     "STN_hz": 99.99997615814209
+    },
+    {
+     "dt": 0.001,
+     "ctx": 0.0,
+     "stop": 0.0,
+     "excursion": 0.0,
+     "GPi_hz": 66.22211337089539,
+     "STN_hz": 26.906204223632812
+    },
+    {
+     "dt": 0.001,
+     "ctx": 0.0,
+     "stop": 3.0,
+     "excursion": 0.0,
+     "GPi_hz": 99.99260306358337,
+     "STN_hz": 99.99998807907104
+    },
+    {
+     "dt": 0.001,
+     "ctx": 3.0,
+     "stop": 0.0,
+     "excursion": 0.0,
+     "GPi_hz": 92.72094964981079,
+     "STN_hz": 99.99998807907104
+    },
+    {
+     "dt": 0.001,
+     "ctx": 3.0,
+     "stop": 3.0,
+     "excursion": 0.0,
+     "GPi_hz": 92.72094964981079,
+     "STN_hz": 99.99998807907104
+    },
+    {
+     "dt": 0.005,
+     "ctx": -3.0,
+     "stop": 0.0,
+     "excursion": 0.0,
+     "GPi_hz": 20.72710692882538,
+     "STN_hz": 6.700529411318712e-05
+    },
+    {
+     "dt": 0.005,
+     "ctx": -3.0,
+     "stop": 3.0,
+     "excursion": 0.0,
+     "GPi_hz": 99.99291896820068,
+     "STN_hz": 99.99997615814209
+    },
+    {
+     "dt": 0.005,
+     "ctx": 0.0,
+     "stop": 0.0,
+     "excursion": 0.0,
+     "GPi_hz": 21.85588628053665,
+     "STN_hz": 20.412226021289825
+    },
+    {
+     "dt": 0.005,
+     "ctx": 0.0,
+     "stop": 3.0,
+     "excursion": 0.0,
+     "GPi_hz": 99.99260902404785,
+     "STN_hz": 100.0
+    },
+    {
+     "dt": 0.005,
+     "ctx": 3.0,
+     "stop": 0.0,
+     "excursion": 0.0,
+     "GPi_hz": 92.83763766288757,
+     "STN_hz": 100.0
+    },
+    {
+     "dt": 0.005,
+     "ctx": 3.0,
+     "stop": 3.0,
+     "excursion": 0.0,
+     "GPi_hz": 92.83763766288757,
+     "STN_hz": 100.0
+    },
+    {
+     "dt": 0.02,
+     "ctx": -3.0,
+     "stop": 0.0,
+     "excursion": 0.0,
+     "GPi_hz": 18.975462019443512,
+     "STN_hz": 5.435754246718716e-05
+    },
+    {
+     "dt": 0.02,
+     "ctx": -3.0,
+     "stop": 3.0,
+     "excursion": 0.0,
+     "GPi_hz": 99.99246001243591,
+     "STN_hz": 99.99997615814209
+    },
+    {
+     "dt": 0.02,
+     "ctx": 0.0,
+     "stop": 0.0,
+     "excursion": 0.0,
+     "GPi_hz": 35.46666204929352,
+     "STN_hz": 83.30770134925842
+    },
+    {
+     "dt": 0.02,
+     "ctx": 0.0,
+     "stop": 3.0,
+     "excursion": 0.0,
+     "GPi_hz": 99.9921441078186,
+     "STN_hz": 100.0
+    },
+    {
+     "dt": 0.02,
+     "ctx": 3.0,
+     "stop": 0.0,
+     "excursion": 0.0,
+     "GPi_hz": 92.1526312828064,
+     "STN_hz": 100.0
+    },
+    {
+     "dt": 0.02,
+     "ctx": 3.0,
+     "stop": 3.0,
+     "excursion": 0.0,
+     "GPi_hz": 92.1526312828064,
+     "STN_hz": 100.0
+    }
+   ],
+   "seconds": 3.6
+  },
+  "B1_idempotent": {
+   "ok": true,
+   "max_abs_diff": {
+    "GPi": 0.0,
+    "Thal": 0.0,
+    "STN": 0.0,
+    "GPe": 0.0,
+    "ctx_return": 0.0
+   },
+   "traces": [
+    "GPi",
+    "Thal",
+    "STN",
+    "GPe",
+    "ctx_return"
+   ],
+   "seconds": 0.3
+  },
+  "B2_selection": {
+   "ok": true,
+   "n_channels_below_threshold": 1,
+   "threshold_frac_of_rest": 0.5,
+   "winner_channel": 0,
+   "winner_has_largest_drive": true,
+   "winner_gpi_drop": 0.8257893323898315,
+   "runner_up_channel": 2,
+   "runner_up_gpi_drop": -0.28275251388549805,
+   "margin_in_drop": 1.1085418462753296,
+   "losers_all_at_or_above_rest": true,
+   "loser_floor": 0.98,
+   "gpi_hz_rest": [
+    70.46,
+    66.29,
+    74.55,
+    71.7,
+    64.21,
+    68.97,
+    63.48,
+    67.77
+   ],
+   "gpi_hz_final": [
+    12.27,
+    89.87,
+    95.62,
+    95.33,
+    95.95,
+    95.39,
+    95.5,
+    95.87
+   ],
+   "thal_hz_final": [
+    99.78,
+    11.07,
+    5.94,
+    3.97,
+    3.39,
+    2.71,
+    2.64,
+    1.65
+   ],
+   "drives": [
+    0.8999999761581421,
+    0.699999988079071,
+    0.6200000047683716,
+    0.550000011920929,
+    0.5,
+    0.44999998807907104,
+    0.4000000059604645,
+    0.3499999940395355
+   ],
+   "delays_in_steps": {
+    "ctx_str": 6,
+    "ctx_stn": 4,
+    "str_gpi": 4,
+    "str_gpe": 4,
+    "gpe_stn": 4,
+    "stn_gpe": 3,
+    "stn_gpi": 3,
+    "gpe_gpi": 3,
+    "gpi_thal": 4,
+    "thal_ctx": 3
+   },
+   "seconds": 0.3
+  },
+  "B3_stop": {
+   "ok": true,
+   "channels_selected_before_pulse": 1,
+   "latency_ms": 22.0,
+   "declared_bar_ms": 200.0,
+   "catalogue_latency_ms": [
+    120.0,
+    200.0
+   ],
+   "one_sided": "the catalogue's 120-200 ms is a behavioural SSRT including cortical detection this module does not contain; a shorter neural latency is reported, not failed",
+   "gpi_hz_before_pulse": [
+    14.66,
+    89.63,
+    97.37,
+    97.45,
+    96.36,
+    96.61,
+    96.76,
+    96.73
+   ],
+   "gpi_hz_after_100ms": [
+    85.09,
+    99.96,
+    99.99,
+    99.99,
+    99.99,
+    99.99,
+    99.99,
+    99.99
+   ],
+   "thal_hz_before_pulse": [
+    99.86,
+    14.67,
+    7.21,
+    3.53,
+    4.12,
+    2.68,
+    5.67,
+    1.49
+   ],
+   "thal_hz_after_100ms": [
+    21.62,
+    3.64,
+    4.34,
+    1.83,
+    2.42,
+    2.77,
+    1.21,
+    1.52
+   ],
+   "seconds": 0.5
+  },
+  "B4_beta": {
+   "ok": true,
+   "stn_peak_hz": 19.217626571655273,
+   "stn_prominence_decades": 2.0126793384552,
+   "gpe_peak_hz": 19.21799087524414,
+   "gpe_prominence_decades": 2.1453380584716797,
+   "band": [
+    13.0,
+    30.0
+   ],
+   "catalogue_peak_hz": 20.0,
+   "stn_mean_hz": 25.62708854675293,
+   "stn_sd_hz": 6.552452594041824,
+   "note": "peak_frequency is a soft-argmax and returns the band centre on a flat spectrum; the prominence is the gate",
+   "seconds": 10.8
+  },
+  "B5_bursts": {
+   "ok": true,
+   "burst_rate_hz": 1.88135593220339,
+   "median_duration_ms": 100.0,
+   "max_duration_ms": 644.0000610351562,
+   "envelope_cv": 0.4112197160720825,
+   "n_bursts": 111,
+   "target_duration_ms": [
+    100.0,
+    500.0
+   ],
+   "cv_floor": 0.3,
+   "duration_in_range": true,
+   "margin_over_floor_ms": 0.0,
+   "single_channel_reported_not_gated": {
+    "burst_rate_hz": 3.593220338983051,
+    "median_duration_ms": 53.000003814697266,
+    "max_duration_ms": 362.0000305175781,
+    "envelope_cv": 0.45325279235839844,
+    "n_bursts": 212
+   },
+   "rule": "median duration in the catalogue's 100-500 ms, rate >= 0.5/s, and envelope CV >= 0.30 -- the CV is what a constant tone fails, and a 75th-percentile threshold on its own cannot tell the two apart",
+   "seconds": 10.5
+  },
+  "B6_dopamine": {
+   "ok": true,
+   "beta_rose": true,
+   "selection_weakened": true,
+   "d_prominence": 0.32773709297180176,
+   "d_winner_drop": -1.1483877897262573,
+   "declared_direction": "lowering dopamine raises beta prominence and shrinks the winner's GPi drop (the Parkinsonian direction)",
+   "states": {
+    "normal_0.50": {
+     "beta_peak_hz": 19.2159366607666,
+     "beta_prominence_decades": 2.025355577468872,
+     "channel": 0,
+     "winner_gpi_drop": 0.8257893323898315,
+     "best_drop_any_channel": 0.8257893323898315,
+     "select_latency_ms": 39.0,
+     "n_channels_selected": 1,
+     "stn_mean_hz": 25.60099959373474
+    },
+    "low_0.20": {
+     "beta_peak_hz": 19.20317268371582,
+     "beta_prominence_decades": 2.353092670440674,
+     "channel": 0,
+     "winner_gpi_drop": -0.3225984573364258,
+     "best_drop_any_channel": -0.2539721727371216,
+     "select_latency_ms": null,
+     "n_channels_selected": 0,
+     "stn_mean_hz": 28.82201373577118
+    }
+   },
+   "seconds": 14.9
+  }
+ },
+ "declared_rest_hz": {
+  "GPe": 60.0,
+  "GPi": 70.0,
+  "STN": 25.0,
+  "Thal": 5.0,
+  "D1": 0.3649035584196146,
+  "D2": 0.3649035584196146
+ },
+ "delays_in_steps": {
+  "ctx_str": 6,
+  "ctx_stn": 4,
+  "str_gpi": 4,
+  "str_gpe": 4,
+  "gpe_stn": 4,
+  "stn_gpe": 3,
+  "stn_gpi": 3,
+  "gpe_gpi": 3,
+  "gpi_thal": 4,
+  "thal_ctx": 3
+ }
+}

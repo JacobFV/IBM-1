@@ -244,8 +244,8 @@ def gate_bounded(bg):
 
 def gate_idempotent(bg):
     """B1.  Same generator in, bit-identical out, on every trace."""
-    a, _, _ = selection_run(bg, seconds=1.0, seed=7)
-    b, _, _ = selection_run(bg, seconds=1.0, seed=7)
+    a, _, _, _ = selection_run(bg, seconds=1.0, seed=7)
+    b, _, _, _ = selection_run(bg, seconds=1.0, seed=7)
     diffs = {k: float((a[k] - b[k]).abs().max()) for k in a}
     return {"ok": all(torch.equal(a[k], b[k]) for k in a),
             "max_abs_diff": diffs, "traces": list(a)}
@@ -293,7 +293,7 @@ def gate_stop(bg):
     return {"ok": bool(selected == 1 and lat is not None and lat <= STOP_MAX_MS),
             "channels_selected_before_pulse": selected,
             "latency_ms": lat, "declared_bar_ms": STOP_MAX_MS,
-            "catalogue_latency_ms": list(STOP.metric["latency_ms"]),
+            "catalogue_latency_ms": list(STOP.measure["latency_ms"]),
             "one_sided": "the catalogue's 120-200 ms is a behavioural SSRT including "
                          "cortical detection this module does not contain; a shorter "
                          "neural latency is reported, not failed",
@@ -321,13 +321,26 @@ def gate_beta(bg):
 
 def gate_bursts(bg):
     """B5.  Bursts of 100-500 ms, and an envelope that is not a tone's."""
-    stn, _ = beta_trace(bg)
-    st = burst_stats(stn)
-    lo_ms, hi_ms = BURSTS.metric["target_duration_ms"]
+    g = torch.Generator().manual_seed(5)
+    tr, _, _ = bg.rollout(int(round(60.0 / DT)), DT, ctx=0.0, noise_gen=g, b=1,
+                          record=("STN",), burn=int(round(1.0 / DT)))
+    stn = tr["STN"][0]
+    st = burst_stats(stn.mean(-1))
+    lo_ms, hi_ms = BURSTS.measure["target_duration_ms"]
     dur_ok = lo_ms <= st["median_duration_ms"] <= hi_ms
     ok = bool(dur_ok and st["burst_rate_hz"] >= 0.5 and st["envelope_cv"] >= CV_MIN)
+    # REPORTED, NOT GATED, and the threshold above is unchanged by its presence.  The
+    # gated signal is the channel MEAN, because an LFP is a population signal and the
+    # STN's efferent is diffuse anyway -- but averaging eight channels cancels their
+    # independent background and leaves the shared, far more narrowband, beta, which
+    # lengthens the envelope's correlation time.  On ONE channel the same run gives a
+    # much shorter median.  Both numbers are here so that nobody has to rediscover that
+    # this verdict depends on which signal is called "the STN LFP".
+    single = burst_stats(stn[:, 0])
     return {"ok": ok, **st, "target_duration_ms": [lo_ms, hi_ms],
             "cv_floor": CV_MIN, "duration_in_range": bool(dur_ok),
+            "margin_over_floor_ms": st["median_duration_ms"] - lo_ms,
+            "single_channel_reported_not_gated": single,
             "rule": "median duration in the catalogue's 100-500 ms, rate >= 0.5/s, and "
                     "envelope CV >= 0.30 -- the CV is what a constant tone fails, and a "
                     "75th-percentile threshold on its own cannot tell the two apart"}
@@ -371,10 +384,16 @@ def gate_sensitivity():
     """B7.  Every declared constant +-50%, against the beta peak AND the selection margin."""
     base = BasalGangliaPriors()
     fields = list(base.__dataclass_fields__)
+    # Six constants are rates or mixing fractions and live in (0, 1); 1.5x takes
+    # rest_gpi to 1.05 and stn_diffuse to 1.2, which are not large values but
+    # impossible ones -- the tonic solve inverts a sigmoid at the resting rates.  They
+    # are CLAMPED to the edge of their range and the clamp is recorded in the row, so
+    # the sweep reports what it actually swept rather than silently narrowing it.
+    unit = {"rest_gpe", "rest_gpi", "rest_stn", "rest_thal", "stn_diffuse", "da_tonic"}
 
     def measure(pr):
         bg = model(pr)
-        stn, _ = beta_trace(bg, seconds=12.0)
+        stn, _ = beta_trace(bg, seconds=10.0)
         f, p = beta_peak(stn, nperseg=4096)
         tr, rest, on, _ = selection_run(bg, seconds=1.2)
         drop, final = _drop(tr, rest, on, window=0.15)
@@ -385,12 +404,16 @@ def gate_sensitivity():
     rows = []
     for name in fields:
         v = float(getattr(base, name))
-        got = {}
+        got, used, clamped = {}, {}, False
         for tag, scale in (("half", 0.5), ("1p5x", 1.5)):
             kw = {k: getattr(base, k) for k in fields}
-            kw[name] = v * scale
+            want = v * scale
+            kw[name] = min(max(want, 0.005), 0.995) if name in unit else want
+            clamped |= kw[name] != want
+            used[tag] = kw[name]
             got[tag] = measure(BasalGangliaPriors(**kw))
         rows.append({"param": name, "value": v,
+                     "swept_to": used, "clamped_to_unit_interval": clamped,
                      "hz_at_half": got["half"][0], "hz_at_1p5x": got["1p5x"][0],
                      "span_hz": abs(got["1p5x"][0] - got["half"][0]),
                      "prom_at_half": got["half"][1], "prom_at_1p5x": got["1p5x"][1],
@@ -406,13 +429,18 @@ def gate_sensitivity():
     sel = {r["param"]: r["span_margin"] for r in rows if r["param"] == "w_d1_gpi"}
     inert = [r["param"] for r in rows
              if r["span_hz"] < INERT_HZ and r["span_margin"] < INERT_MARGIN]
+    # A constant DECLARED AT ZERO cannot be swept multiplicatively: 0.5x and 1.5x are
+    # both 0, so it reads inert for an arithmetic reason and not a mechanistic one.
+    # Separated out rather than left in the list to be misread as a finding.
+    zeroed = [r["param"] for r in rows if r["value"] == 0.0]
     ok = all(v > CLOCK_HZ for v in clock.values()) and all(v > SELECT_SENS for v in sel.values())
     return {"ok": bool(ok), "baseline_beta_hz": f0, "baseline_prominence": p0,
             "baseline_margin": m0,
             "claimed_clock_span_hz": clock, "claimed_selection_span_margin": sel,
             "rule": "tau_gaba_pal and tau_ampa_stn must each move the beta peak by > "
                     f"{CLOCK_HZ} Hz; w_d1_gpi must move the selection margin by > {SELECT_SENS}",
-            "inert_both": inert,
+            "inert_both": [p for p in inert if p not in zeroed],
+            "inert_but_declared_zero": zeroed,
             "inert_definition": f"span < {INERT_HZ} Hz in beta AND < {INERT_MARGIN} in margin",
             "sweep": by_hz}
 
@@ -502,6 +530,8 @@ def main() -> int:
         if name == "B7_sensitivity":
             print(f"      inert over the whole 3x sweep: "
                   f"{', '.join(r['inert_both']) or 'none'}", flush=True)
+            print(f"      inert because declared at zero (not a finding): "
+                  f"{', '.join(r['inert_but_declared_zero']) or 'none'}", flush=True)
     rec["all_gates_ok"] = ok_all
     rec["failed"] = [k for k, v in rec["gates"].items() if not v.get("ok")]
     save()

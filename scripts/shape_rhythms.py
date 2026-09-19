@@ -86,6 +86,7 @@ from ibm import spectral as SP                                          # noqa: 
 from ibm.rhythms import BACKGROUND, RHYTHM, rhythm_targets, station_sites  # noqa: E402
 from ibm.substrate import R_MAX, build_sheet                            # noqa: E402
 from ibm.thalamus import ThalamicField, ThalamoCortical, units_from_regions  # noqa: E402
+from ibm.hippocampus import Hippocampus                                 # noqa: E402
 
 
 # --------------------------------------------------------------------------------------
@@ -107,17 +108,33 @@ from ibm.thalamus import ThalamicField, ThalamoCortical, units_from_regions  # n
 # health guard exists to refuse.  These values sit below each state's threshold.
 PROTOCOLS = {
     "wake-eyes-open": dict(drive_stations=("v1", "v_extra"), drive=0.010, tonic=0.050,
-                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=4.0, burn_s=1.0, arousal=1.0),
+                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=4.0, burn_s=1.0, arousal=1.0, septal_tone=1.0),
     "wake-rest":      dict(drive_stations=(), drive=0.0, tonic=0.050,
-                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=8.0, burn_s=1.5, arousal=0.95),
+                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=8.0, burn_s=1.5, arousal=0.95, septal_tone=0.5),
     "wake-task":      dict(drive_stations=("v_extra", "ips"), drive=0.010, tonic=0.050,
-                           m_beta=1.05, m_sigma=0.9, dt=0.002, seconds=4.0, burn_s=1.0, arousal=1.0),
+                           m_beta=1.05, m_sigma=0.9, dt=0.002, seconds=4.0, burn_s=1.0, arousal=1.0, septal_tone=1.0),
     "listening":      dict(drive_stations=("a1", "stg"), drive=0.010, tonic=0.050,
-                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=4.0, burn_s=1.0, arousal=1.0),
+                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=4.0, burn_s=1.0, arousal=1.0, septal_tone=0.8),
+    # The states the hippocampal rows are declared in.  A state is a CONTEXT -- here it is
+    # a drive, a neuromodulatory gain, a thalamic polarisation and a septal tone together --
+    # and the septal tone is what makes encoding, retrieval and quiet rest three different
+    # states of one circuit rather than three models.
+    "movement":       dict(drive_stations=("s1", "m1"), drive=0.010, tonic=0.050,
+                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=8.0, burn_s=1.5,
+                           arousal=1.0, septal_tone=1.0),
+    "encoding":       dict(drive_stations=("mtl_ctx", "v_extra"), drive=0.012, tonic=0.050,
+                           m_beta=1.0, m_sigma=1.0, dt=0.002, seconds=8.0, burn_s=1.5,
+                           arousal=1.0, septal_tone=1.0),
+    "retrieval":      dict(drive_stations=("mtl_ctx",), drive=0.008, tonic=0.050,
+                           m_beta=1.0, m_sigma=0.9, dt=0.002, seconds=8.0, burn_s=1.5,
+                           arousal=0.9, septal_tone=0.25),
+    "quiet-wake":     dict(drive_stations=(), drive=0.0, tonic=0.040,
+                           m_beta=0.98, m_sigma=1.0, dt=0.002, seconds=8.0, burn_s=1.5,
+                           arousal=0.8, septal_tone=0.05),
     "nrem3":          dict(drive_stations=(), drive=0.0, tonic=0.020,
-                           m_beta=0.92, m_sigma=1.30, dt=0.005, seconds=16.0, burn_s=4.0, arousal=0.12),
+                           m_beta=0.92, m_sigma=1.30, dt=0.005, seconds=16.0, burn_s=4.0, arousal=0.12, septal_tone=0.05),
     "nrem2":          dict(drive_stations=(), drive=0.0, tonic=0.020,
-                           m_beta=0.95, m_sigma=1.20, dt=0.005, seconds=16.0, burn_s=4.0, arousal=0.45),
+                           m_beta=0.95, m_sigma=1.20, dt=0.005, seconds=16.0, burn_s=4.0, arousal=0.45, septal_tone=0.15),
 }
 
 # When is a target scorable on a given window?  Two conditions, and they are different
@@ -278,6 +295,32 @@ class Shaper:
             self.thal = ThalamicField(len(self.unit_names), device=device)
             self.tc = ThalamoCortical(self.field, self.thal, uos.to(device)).to(device)
             self.have.append("thalamus")
+        # The hippocampus is driven BY the cortex rather than wired into the thalamo-cortical
+        # loop: entorhinal cortex is its input, so the cortical sites labelled entorhinal and
+        # parahippocampal are pooled into its EC stage.  That is the anatomy and it is also
+        # the honest limit of this integration -- there is no hippocampal return to cortex
+        # yet, so nothing here can score a rhythm that depends on one.
+        self.hpc = None
+        self.hpc_names = ()
+        if getattr(a, "hippocampus", False):
+            self.hpc = Hippocampus(seed=a.seed, device=device)
+            self.hpc_names = ("dg", "ca3", "ca1", "sub")
+            self.ec_sites = station_sites(("mtl_ctx",), self.names)
+            if len(self.ec_sites) < a.min_sites:
+                print(f"  (no entorhinal sites on this sheet: {len(self.ec_sites)}; the "
+                      f"hippocampus will run on background drive alone)", flush=True)
+            # A fixed sparse projection from the cortical entorhinal sites onto the EC
+            # units, drawn ONCE from its own generator.  The first version took the MEAN of
+            # those sites and broadcast one number to every entorhinal unit, which hands the
+            # dentate an input with no pattern in it at all -- and the measured consequence
+            # was theta prominence -0.11 in the loop against +1.08 for the same module on a
+            # patterned input.  A structure whose whole first stage is a pattern separator
+            # cannot be driven with a scalar.
+            gproj = torch.Generator().manual_seed(a.seed + 8191)
+            m = (torch.rand(self.hpc.n_ec, max(1, len(self.ec_sites)),
+                            generator=gproj) < 0.25).float()
+            self.ec_proj = (m / m.sum(1, keepdim=True).clamp_min(1)).to(device)
+            self.have.append("hippocampal-subfields")
         # ONE permutation, drawn once, here, and handed to whoever needs it: the relabel
         # control must not draw its own (CLAUDE.md, "a shared generator").
         g = torch.Generator().manual_seed(a.seed + 104729)
@@ -292,7 +335,7 @@ class Shaper:
             names = [self.names[i] for i in self.perm]
         ts, skipped = rhythm_targets(state, names, only_expressible=True,
                                      min_sites=self.a.min_sites, have=self.have,
-                                     unit_names=self.unit_names)
+                                     unit_names=tuple(self.unit_names) + self.hpc_names)
         p = PROTOCOLS[state]
         fs = self.fs_of(state)
         nperseg = self.nperseg(p)
@@ -326,13 +369,57 @@ class Shaper:
         d = self.drive(state, nt)
         if extra_drive is not None:
             d = d + extra_drive
+        def with_hpc(traces):
+            """run the hippocampus on the cortical entorhinal trace and append its stages.
+
+            One pass, after the cortical rollout, because the hippocampus does not feed back
+            into cortex here -- the moment it does, this has to become a single interleaved
+            loop and the comment above it has to change."""
+            if self.hpc is None:
+                return traces
+            ctx = traces["cortex"]
+            B, T, _ = ctx.shape
+            if len(self.ec_sites):
+                # (B, T, sites) -> (B, T, n_ec) through the fixed projection, scaled by the
+                # rate EC is declared to run at, the same correction every projection in
+                # ibm/hippocampus.py needed
+                ec = (ctx[..., self.ec_sites] @ self.ec_proj.t()) / self.hpc.pr.rate_ec
+            else:
+                ec = torch.zeros(B, T, self.hpc.n_ec, device=ctx.device)
+            hg = torch.Generator().manual_seed(gen_seed + 555)
+            st = self.hpc.init_state(B, device=self.device)
+            rec = {k: [] for k in self.hpc_names}
+            # MEASURED, NOT SHAPED, and the reason is in the module: `Hippocampus` has no
+            # trainable parameters -- every weight in it is a buffer, either a fixed
+            # projection or experience written by `store`.  So a gradient through it can
+            # only reach the cortex through the entorhinal drive, and backpropagating
+            # through 4,000 of its steps to get there produced a NaN gradient norm on the
+            # first optimiser step and poisoned every term in the objective.  Until the
+            # module carries bounded residuals of its own, its rhythms are reported and not
+            # trained, and every target it supplies is marked `shaped: false` so no reading
+            # of the log can mistake one for a term that moved something.
+            ec = ec.detach()
+            with torch.no_grad():
+                for t in range(T):
+                    z = torch.randn(B, self.hpc.n_ca3, generator=hg).to(self.device)
+                    st = self.hpc.step(st, dt, ec=ec[:, t],
+                                       septal_tone=p.get("septal_tone", 1.0), noise=z)
+                    for k in self.hpc_names:
+                        rec[k].append(st[k])
+            # the unit trace is one column per hippocampal stage, in `hpc_names` order
+            traces = dict(traces)
+            stage = torch.stack([torch.stack(rec[k], 1).mean(-1) for k in self.hpc_names], -1)
+            traces["units"] = (stage if traces.get("units") is None
+                               else torch.cat([traces["units"], stage], -1))
+            return traces
+
         if self.tc is not None:
             ctx = torch.enable_grad() if grad else torch.no_grad()
             with ctx:
                 ctrace, ttrace, _info = self.tc.rollout(
                     nt, dt, cortical_drive=d, arousal=p["arousal"], m_beta=p["m_beta"],
                     m_sigma=p["m_sigma"], noise_gen=gen, b=1, burn=nb)
-            return {"cortex": ctrace, "units": ttrace}
+            return with_hpc({"cortex": ctrace, "units": ttrace})
         st = self.field.init_state(1, device=self.device)
         with torch.no_grad():
             db = self.drive(state, nb)
@@ -343,7 +430,7 @@ class Shaper:
         with ctx:
             trace, st = self.field.rollout(d, st, dt, noise_gen=gen,
                                            m_beta=p["m_beta"], m_sigma=p["m_sigma"])
-        return {"cortex": trace, "units": None}
+        return with_hpc({"cortex": trace, "units": None})
 
     def loss(self, state, targets, gen_seed, grad=True):
         a = self.a
@@ -357,9 +444,10 @@ class Shaper:
             v = measure_target(t, traces, fs, nperseg)
             pen = hinge(v, t["target"], hinge_scale(t))
             total = total + a.w_rhythm * pen
+            shaped = v.requires_grad
             parts[t["id"]] = {"measured": float(v.detach()), "penalty": float(pen.detach()),
                               "target": t["target"], "kind": t["kind"],
-                              "scale": hinge_scale(t)}
+                              "scale": hinge_scale(t), "shaped": bool(shaped)}
         # the 1/f background, on the mean cortical trace
         mean_trace = trace.mean(-1)
         freqs, psd = SP.welch_psd(mean_trace, fs, nperseg=nperseg)
@@ -455,8 +543,8 @@ def train(sh, states, relabel, steps, out, tag):
                "parts": parts}
         hist.append(rec)
         if step % a.log_every == 0 or step == steps - 1:
-            named = "  ".join(f"{k}={v['measured']:.4g}" for k, v in parts.items()
-                              if "measured" in v)
+            named = "  ".join(f"{k}={v['measured']:.4g}" + ("" if v.get("shaped", True) else "*")
+                              for k, v in parts.items() if "measured" in v)
             print(f"  [{tag}] {step:4d} {state:15s} L={float(total):9.4f} "
                   f"|g|={float(gn):7.3f}  {named}", flush=True)
     # final measurement per state, no gradient, on a HELD-OUT noise draw: the training
@@ -485,6 +573,9 @@ def main() -> int:
     ap.add_argument("--k", type=int, default=32)
     ap.add_argument("--long-frac", type=float, default=0.25)
     ap.add_argument("--topology", default="tract", choices=("tract", "random"))
+    ap.add_argument("--hippocampus", action="store_true",
+                    help="attach ibm/hippocampus.py, driven by the cortical entorhinal "
+                         "sites, which makes the hippocampal rows scorable")
     ap.add_argument("--thalamus", action="store_true",
                     help="attach ibm/thalamus.py and close the loop, which makes the "
                          "thalamus-blocked catalogue rows scorable (spindles among them)")
@@ -590,7 +681,8 @@ def main() -> int:
             if "measured" not in p or tid in ("health", "anatomy"):
                 continue
             reach[f"{s}/{tid}"] = {"measured": p["measured"], "target": p["target"],
-                                   "inside": p["penalty"] <= 0.0}
+                                   "inside": p["penalty"] <= 0.0,
+                                   "shaped": p.get("shaped", True)}
     rec["gates"]["G3_reach"] = reach
     if "final" in ctrl:
         ls = sum(f.get("loss", 0.0) for f in shaped["final"].values())
@@ -601,10 +693,10 @@ def main() -> int:
         rec["gates"]["G4_relabel_control"] = {"ok": False, "why": "control not run"}
     save()
 
-    print("\nG3 reach:")
+    print("\nG3 reach   (* = measured only, not shaped: see `with_hpc`)")
     for k, v in reach.items():
         print(f"  [{'IN ' if v['inside'] else 'OUT'}] {k}: {v['measured']:.4g} "
-              f"vs {v['target']}")
+              f"vs {v['target']}" + ("" if v.get("shaped", True) else "   *measured only"))
     print(f"G4 relabel control: {rec['gates']['G4_relabel_control']}")
     print(f"\nwrote {a.out}")
     return 0

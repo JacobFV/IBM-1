@@ -7026,3 +7026,36 @@ Two entries in that list are not so easily excused. `tau_I_ca1` and `ach_suppres
 repo showing either of them does anything at all. They stay, because the diagnosis for H6
 says the missing piece is transient ignition rather than these two constants, but they are
 unevidenced until a gate says otherwise.
+
+## 18 September 2026 — the hippocampus in the objective, as a measurement rather than a term
+
+`scripts/shape_rhythms.py --hippocampus` attaches `ibm/hippocampus.py`, driven by the
+cortical sites labelled entorhinal and parahippocampal, and adds four protocols the
+hippocampal rows are declared in: `movement`, `encoding`, `retrieval` and `quiet-wake`.
+Those four differ by **septal tone** as much as by drive, which is the point — encoding,
+retrieval and quiet rest are three states of one circuit.
+
+**The rows are measured, not shaped, and the log says so on every line.** `Hippocampus` has
+no trainable parameters: every weight in it is a buffer, either a fixed projection or
+experience written by `store`. A gradient through it could only reach the cortex via the
+entorhinal drive, and backpropagating through 4,000 of its steps to get there produced a
+**NaN gradient norm on the first optimiser step**, which poisoned every other term. It now
+runs under `no_grad`, every target it supplies is flagged `shaped: false`, and the reach
+table prints `*measured only` beside each one. Nothing in the log can be mistaken for a term
+that moved something.
+
+**One integration bug, of a shape this repo now knows well.** The first version took the
+*mean* of the cortical entorhinal sites and broadcast that single number to all 120
+entorhinal units. A structure whose entire first stage is a pattern separator cannot be
+driven with a scalar, and the measurement said so: theta prominence **−0.11** in the loop
+against **+1.08** for the same module on a patterned input. It now goes through a fixed
+sparse projection drawn once from its own generator, scaled by the declared entorhinal rate.
+
+**What the integration then measured, which is a finding about the cortex and not the
+hippocampus.** With the projection fixed, theta–gamma coupling comes through at **0.227,
+inside its declared interval** — but hippocampal theta itself is still **−0.12**, against
++1.08 when the same module is driven by a patterned entorhinal input of its own. The
+cortical sheet's output is too weak and too unstructured to drive the hippocampus into
+theta. That is the third independent measurement today pointing at the same thing: the
+cortical field has no operating regime in the middle, and everything downstream of it
+inherits that.
