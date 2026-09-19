@@ -1,0 +1,23 @@
+ beta_I  w_EI  w_IE |  drive   rate    sat | graded  sets  trans  dwell  revis | verdict
+    6.0  0.50  0.90 |  0.062   6.75  0.023 |  False     8      0  30.00      0 | -
+    6.0  0.50  1.40 |  0.090   5.51  0.003 |  False    11    239   0.05     54 | -
+    6.0  0.70  0.90 |  0.102   6.45  0.015 |  False    13     59   0.06      0 | -
+    6.0  0.70  1.40 |  0.138  14.62  0.087 |  False     1      8   0.12      0 | -
+    6.0  0.90  0.90 |  0.168   8.09  0.014 |  False     1    391   0.02     19 | -
+    6.0  0.90  1.40 |  0.204   8.00  0.005 |  False     1    169   0.05     19 | -
+    9.0  0.50  0.90 |  0.030   6.64  0.022 |  False    14      0  30.00      0 | -
+    9.0  0.50  1.40 |  0.060   5.75  0.003 |  False    13    241   0.06     19 | -
+    9.0  0.70  0.90 |  0.056  12.37  0.072 |  False     1     10   0.04      0 | -
+    9.0  0.70  1.40 |  0.094  11.41  0.051 |  False     1      5   0.10      0 | -
+    9.0  0.90  0.90 |  0.106   7.96  0.012 |  False     1    345   0.02     17 | -
+    9.0  0.90  1.40 |  0.135   8.00  0.002 |  False     1     28   0.62      5 | -
+   12.0  0.50  0.90 |  0.010  19.11  0.144 |  False    12      0  30.00      0 | -
+   12.0  0.50  1.40 |  0.044   5.70  0.001 |  False    10    276   0.06     35 | -
+   12.0  0.70  0.90 |  0.057  13.44  0.069 |  False     1    373   0.02     30 | -
+   12.0  0.70  1.40 |  0.068   6.72  0.003 |  False     1      2   0.14      0 | -
+   12.0  0.90  0.90 |  0.049   8.70  0.030 |  False     1      0  30.00      0 | -
+   12.0  0.90  1.40 |  0.101   8.00  0.000 |   True     1     20   0.68      4 | -
+
+0 of 18 pass all three; 0 pass graded+G2 and fail G3.
+Per the pre-registration: a candidate passing all three is confirmed on the UNMODIFIED gate script at full size before anything is adopted; the graded+G2-only case points at G3's fixed 0.5 threshold and is followed up with a separately declared pattern-based measure, with G3 left FAILED.
+wrote out/search_operating_point.json  (1254.1s)

@@ -7454,3 +7454,48 @@ prominence **+1.085 → +1.137**; H0b's sparsities are unchanged to four decimal
 still pass on the same thresholds. This is not a re-run with a kinder bar — it is the same
 gates on arithmetic that changed by a fraction of a percent — but it is the kind of drift
 that goes unrecorded and then confuses someone comparing two numbers a month apart.
+
+## 18 September 2026 — RESULT: no prior in the grid has both, and the trade-off is exact
+
+`scripts/search_operating_point.py`, 18 candidates, run as pre-registered above. **0 of 18
+pass all three criteria. 0 pass graded and G2 together.** This is the third branch of the
+fork, written before the data: *the answer is structural rather than a parameter.*
+
+The trade-off is not marginal, it is monotone and it has one cause.
+
+**Every multistable candidate ignites at the top of its drive range.** All seven candidates
+with 8–14 invariant sets sit at `w_EI` 0.5–0.7, run at 3–7 Hz at half drive and 5–19 Hz at
+the matched drive — and then at twice the matched drive go to **22–44 Hz with 17–37%
+saturated**. They never fail at the bottom of the range. They fail by running away at the
+top.
+
+**The one candidate that is graded has exactly one attractor.** `beta_I` 12, `w_EI` 0.9,
+`w_IE` 1.4 gives **5.10 → 8.00 → 15.50 Hz across a fourfold drive range with saturation
+0.0000 → 0.0000 → 0.0038** — the cleanest operating range measured anywhere in this
+programme — and `n_sets = 1`.
+
+**Why, in one sentence:** the recurrent excitation that holds a pattern against inhibition
+is the same recurrent excitation that runs away when drive rises, and inhibition strong
+enough to stop the runaway is strong enough to erase the pattern. A single sigmoidal rate
+per site cannot be both an attractor and a graded transfer function, because both properties
+are set by the same loop gain at the same operating point.
+
+**One nuance the grid separates, worth keeping.** The graded candidate **passes G3** — 20
+transitions, median dwell 0.68 s, 4 revisited macrostates — with only one invariant set.
+G2 counts distinct *time-averaged* patterns from random starts; G3 counts *transitions*
+between region codes over one noisy run. A sheet that wanders through many configurations
+and time-averages to the same pattern scores high on one and low on the other. They are
+different questions and this candidate is the case that shows it.
+
+**What this licenses and what it does not.** It licenses the structural conclusion for *this
+model class*, on a declared 18-point grid at 512 sites, with drive matched for rate. It does
+not license a claim about all rate models, and it does not adopt anything: no candidate was
+confirmed at full size because none qualified.
+
+**The next build, and the reason it is the obvious one.** The escape is to stop asking the
+firing rates to hold the memory. `ibm/substrate.py` already carries Tsodyks–Markram synaptic
+**depression** (`x`); adding the matching **facilitation** variable puts the attractor in the
+synapses instead of the rates (Mongillo, Barak & Tsodyks 2008): the rates stay low and
+graded, and what persists is a pattern of synaptic efficacy that a weak cue can reactivate.
+That is precisely a model whose memory does not live in the variable that has to remain
+graded — which is what this result says is needed — and it is one state variable away.
