@@ -1,0 +1,64 @@
+{
+ "ok": true,
+ "n_seeds": 8,
+ "seeds": {
+  "seed_707": {
+   "taught": 0.003142036497592926,
+   "shuffled": -0.022352978587150574,
+   "overshoot": -0.0974835529923439,
+   "paired_difference": 0.0254950150847435
+  },
+  "seed_808": {
+   "taught": 0.02553427964448929,
+   "shuffled": -0.01777760684490204,
+   "overshoot": -0.050395384430885315,
+   "paired_difference": 0.04331188648939133
+  },
+  "seed_909": {
+   "taught": -0.0038141682744026184,
+   "shuffled": -0.034841008484363556,
+   "overshoot": -0.08644705265760422,
+   "paired_difference": 0.031026840209960938
+  },
+  "seed_1010": {
+   "taught": -0.007131308317184448,
+   "shuffled": -0.001796439290046692,
+   "overshoot": -0.04095758497714996,
+   "paired_difference": -0.005334869027137756
+  },
+  "seed_1111": {
+   "taught": 0.02991124987602234,
+   "shuffled": 0.02646336704492569,
+   "overshoot": -0.06326357275247574,
+   "paired_difference": 0.003447882831096649
+  },
+  "seed_1212": {
+   "taught": 0.021947383880615234,
+   "shuffled": 0.0077880024909973145,
+   "overshoot": -0.10943321138620377,
+   "paired_difference": 0.01415938138961792
+  },
+  "seed_1313": {
+   "taught": 0.024012785404920578,
+   "shuffled": 0.009642466902732849,
+   "overshoot": -0.008012130856513977,
+   "paired_difference": 0.014370318502187729
+  },
+  "seed_1414": {
+   "taught": 0.016938284039497375,
+   "shuffled": 0.012801483273506165,
+   "overshoot": -0.11615940183401108,
+   "paired_difference": 0.004136800765991211
+  }
+ },
+ "mean_paired_difference": 0.016326656565070152,
+ "sd_over_seeds": 0.01612698845565319,
+ "se_over_seeds": 0.005701751448214054,
+ "ci95_bootstrap_over_seeds": [
+  0.006478144321590662,
+  0.027159342542290688
+ ],
+ "overshoot_negative_on_every_seed": true,
+ "rule": "95% bootstrap CI of the mean paired (taught - shuffled) difference excludes zero, AND the overshoot arm is negative on every seed",
+ "supersedes_nothing": "C3 and C3b remain FAILED; this is a differently designed test, not a re-scoring of either"
+}

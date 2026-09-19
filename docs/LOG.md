@@ -7348,3 +7348,33 @@ fresh seeds, the **paired** difference (taught − shuffled) on the same seed an
 permutation, a 95% percentile bootstrap over seeds that must exclude zero, and the overshoot
 arm required to be negative on every seed. C3 and C3b remain FAILED; C3c is a differently
 designed test, not a re-scoring of either.
+
+## 18 September 2026 — C3c: the contingency is real, the absolute learning is weak
+
+Eight fresh seeds, the paired (taught − shuffled) difference on the same seed and the same
+permutation, bootstrap over seeds, declared before the run.
+
+**PASS.** Mean paired difference **+0.0163**, SE 0.0057, 95% bootstrap CI
+**[+0.0065, +0.0272]**, excluding zero. The overshoot arm — the teacher pointed the wrong
+way — is **negative on all eight seeds**, ranging −0.008 to −0.116.
+
+**And the part that the verdict alone would hide.** On the straddled task the taught arm's
+*absolute* improvement is small and **negative on two of eight seeds** (−0.0038, −0.0071);
+the shuffled arm is negative on four. So what this establishes is narrower than "the
+cerebellum learns the task":
+
+- **Established:** the climbing-fibre *contingency* does real work. Pairing the teacher with
+  the error beats the same total teaching delivered at shuffled times, reliably across
+  seeds, and reversing the teacher reliably hurts.
+- **Not established:** that this microzone reduces the error of a task whose targets
+  straddle its resting output. Mean taught improvement is a few thousandths, with the sign
+  flipping between seeds.
+
+The one-directional plasticity is the obvious suspect: with LTD only, the nucleus can be
+raised and not lowered, so half a straddled target set is unreachable by construction. A
+cerebellum that can learn in one direction is half a cerebellum, and the fix is LTP at the
+parallel-fibre synapse — a declared mechanism, not a constant, and the next thing this
+module needs.
+
+Standing record for this module: **C3 FAILED, C3b FAILED, C3c PASSED**, and they are three
+different questions, not three attempts at one.
