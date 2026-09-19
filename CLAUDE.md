@@ -440,6 +440,28 @@ Quote **`peak_prominence` beside every frequency**, always. Negative prominence 
 band is *below* its own 1/f background: there is nothing there. Same family as reporting an
 amplitude ratio beside a skill score.
 
+## A band-limited envelope's timescale is the BAND's, not the circuit's
+
+**A "burst duration" measured inside a filter cannot be shorter than the filter's own
+envelope correlation time**, which is roughly `1 / bandwidth`. Beta bursts are measured in
+13-30 Hz, a 17 Hz-wide band, so its envelope wanders on a ~59 ms timescale **whatever is
+generating the signal** -- a model producing nothing but noise will duly report "bursts of
+about 50-60 ms". Quoting that as evidence of bursting is measuring the instrument.
+
+Found building `ibm/basal_ganglia.py`, where the gate declared a 100 ms floor and the model
+measured **exactly 100.0 ms** -- clear of the instrument's number, but only just. Worse, the
+same run measured **53 ms on a single channel** against 100 ms on the channel average, so the
+verdict flips with a choice nobody would think to state. Two rules follow:
+
+- **Quote the band width beside any burst duration**, and say whether the figure clears
+  `1/bandwidth`.
+- **Compute the statistic on a single unit AND on the population average** before believing
+  either. Where they differ by 2x, as here, at most one of them is about the circuit.
+
+The same shape as reporting an amplitude ratio beside a skill score, and as quoting
+`peak_prominence` beside a frequency: a number that a null model also produces is not
+evidence until it is compared against what the null model produces.
+
 ## Write it down where it will be found
 
 **Every agent on this programme records what it did, in the repo, as it goes.** Not at the end, not

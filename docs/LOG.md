@@ -7059,3 +7059,60 @@ cortical sheet's output is too weak and too unstructured to drive the hippocampu
 theta. That is the third independent measurement today pointing at the same thing: the
 cortical field has no operating regime in the middle, and everything downstream of it
 inherits that.
+
+## 18 September 2026 — the basal ganglia: selection works, and the burst gate is not safe to quote
+
+`ibm/basal_ganglia.py` and `scripts/gate_basal_ganglia.py`. Striatal D1 and D2, GPe, GPi,
+a real subthalamic nucleus shared across channels, and the thalamic return, in 8 parallel
+action channels, with the catalogue's conduction delays as ring buffers. **All eight gates
+pass**, and re-running them independently reproduced every number to four decimals.
+
+| gate | verdict | measured |
+|---|---|---|
+| B0 bounded | PASS | zero excursion, 14 variables × 3 timesteps × extreme drives |
+| B1 idempotence | PASS | bit-identical on all five traces |
+| B2 selection | PASS | **exactly one** channel released; winner's GPi **70.5 → 12.3 Hz**, runner-up **rose** to 95.6, margin **1.109**; its thalamic relay 99.8 Hz against ≤11.1 elsewhere |
+| B3 stop | PASS | hyperdirect pulse re-raises every channel's GPi in **22.0 ms** |
+| B4 beta | PASS | STN **19.22 Hz, prominence +2.01**; GPe 19.22 Hz, +2.15 (catalogue declares 20) |
+| B5 bursts | PASS at **zero margin** | median **exactly 100.0 ms** against a 100 ms floor |
+| B6 dopamine | PASS | 0.5 → 0.2 raises beta prominence +2.03 → +2.35 **and abolishes selection entirely** — 0 channels released |
+| B7 sensitivity | PASS | claimed clocks move it: `tau_gaba_pal` 4.26 Hz, `tau_ampa_stn` 3.31 Hz |
+
+**B6 is the one to keep.** Lowering dopamine does both things at once, in the Parkinsonian
+direction, from one change: beta gets stronger and selection stops happening. Neither was
+fitted; both fall out of shifting the D1/D2 balance.
+
+**B5 must not be quoted as a pass, and the gate says so itself.** Three reasons, all
+recorded in the JSON rather than only in prose: the median is **exactly** the floor, margin
+0.000; measured on a **single channel** the same run gives **53 ms**, which would FAIL; and
+— the general problem — **the envelope of any signal filtered into a 17 Hz-wide band wanders
+on a ~59 ms timescale whatever generates it**, so "bursts of 50–60 ms" is what an empty
+model reports. A 100 ms reading is barely clear of the instrument's own number. CLAUDE.md
+now carries that as a trap: quote the band width beside any burst duration, and compute the
+statistic on a single unit *and* on the population average before believing either.
+
+**A mechanism that was implemented and did not engage, left at zero with its finding.** A
+slow activity-dependent hyperpolarising current in the STN, added to make the beta pair
+burst rather than hum. Twelve arms across three weights × two gains × two time constants:
+the envelope CV stayed between 0.048 and 0.092 in **all twelve** — a tone every time. The
+diagnosis is structural: slow negative feedback on a *supercritical* Hopf regulates the
+limit cycle's amplitude, it does not make it intermittent. Same disposition as the
+thalamus's `g_KCa`: declared at 0.0 with the reason in the code.
+
+**28 of 57 constants are inert, and the agent's four-way diagnosis is worth more than the
+count.** (1) Four thresholds are *exact reparametrisations* — the resting-current solver
+inverts the same sigmoid at the same declared rest rate, so a threshold shift cancels to
+five decimals; they are unidentifiable by construction, while the slopes beside them are not
+and do move things. (2) Nine constants sit downstream of GPi, where the thalamic relay is a
+pure readout because cortex belongs to `ibm/substrate.py` — a real structural statement
+about what a closed cortico-BG loop would change. (3) Six are not exercised at the sweep's
+operating point (every dopamine constant is multiplied by zero at tonic dopamine; no stop
+pulse is delivered) and B3/B6 do move them. (4) Eight set how fast a selection *arrives*,
+and this sweep measures steady states only.
+
+**And a catalogue note that is easy to misread.** `beta_bg` says "the delay does not set
+beta here — the synaptic time constants do". The round-trip bound (56–100 Hz) is indeed
+nowhere near binding, but `d_gpe_stn_s` swept ±50% moves the peak **21.10 → 17.62 Hz**,
+about as much as any time constant: the delay contributes roughly 28% of the phase budget
+at 19 Hz. Both statements are true; "the delay does not set it" should not be read as "the
+delay does not matter".

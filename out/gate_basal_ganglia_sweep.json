@@ -34,6 +34,16 @@
    "n_bursts": 114
   },
   {
+   "loop_weight": 1.4,
+   "peak_hz": 19.217626571655273,
+   "prominence_decades": 2.0126793384552,
+   "burst_rate_hz": 1.88135593220339,
+   "median_duration_ms": 100.0,
+   "max_duration_ms": 644.0000610351562,
+   "envelope_cv": 0.4112197160720825,
+   "n_bursts": 111
+  },
+  {
    "loop_weight": 1.45,
    "peak_hz": 19.186124801635742,
    "prominence_decades": 2.292343854904175,
