@@ -1075,6 +1075,18 @@ def nociceptor_afferent(x, theta) -> dict:
     as a reward signal rather than as another channel of touch.  a receptor that
     reported every contact would say nothing about damage.
 
+    THE SCALE OF THAT RATE IS PART OF THE CLAIM.  A cost term reads this output,
+    so a ceiling that is ten times too high is a cost term that is ten times too
+    steep, and nothing downstream would report the error -- it would simply learn
+    to avoid harder than the body warrants.  Until 18 September 2026 the ceiling
+    here was a single shared 100 Hz carrying a LITERATURE provenance tag, against
+    a measured human maximum of about 10 Hz for mechanically evoked C discharge
+    (Van Hees & Gybels 1981), and the mechanical threshold was a FORCE with no
+    contact area, which is not a quantity any measurement reports.  Both are now
+    re-based on the cited numbers and the area is declared.  No result depended on
+    either -- nothing in the repository computed with this component yet -- which
+    is the only reason the correction was cheap.
+
     the two fibre classes are separated because they carry different information
     and the model already declares both with resolved conduction velocities.
     A-delta is myelinated and fast: first pain, sharp, well localised, and it
@@ -1105,24 +1117,46 @@ def nociceptor_afferent(x, theta) -> dict:
     temp = np.asarray(x.get("thermal.tissue_temperature_c", 37.0), dtype=float)
     chem = np.asarray(x.get("transduction.irritant_concentration", 0.0), dtype=float)
 
-    thr_n = float(theta.get("mechanical_threshold_n", 8.0))
+    # RETIRED KEYS.  A caller still passing the force-based threshold or the single
+    # shared ceiling is passing numbers this function no longer means, and `theta.get`
+    # would silently ignore them and use the new defaults -- which is how a stale caller
+    # keeps running and quietly changes meaning.  Fail instead.
+    retired = {"mechanical_threshold_n", "mechanical_gain_hz_per_n", "r_max_hz"}
+    present = retired.intersection(theta)
+    if present:
+        raise ValueError(
+            f"nociceptor_afferent: {sorted(present)} were retired on 18 Sep 2026. The "
+            f"mechanical threshold is now a PRESSURE (mechanical_threshold_kpa) over a "
+            f"declared contact_area_mm2, and the ceiling is per fibre class "
+            f"(r_max_c_hz, r_max_adelta_hz). See docs/LOG.md.")
+
+    area_mm2 = float(theta.get("contact_area_mm2", 30.0))
+    thr_kpa = float(theta.get("mechanical_threshold_kpa", 133.3))
     hot_c = float(theta.get("heat_threshold_c", 43.0))
     cold_c = float(theta.get("cold_threshold_c", 15.0))
-    k_mech = float(theta.get("mechanical_gain_hz_per_n", 1.6))
+    k_mech = float(theta.get("mechanical_gain_hz_per_kpa", 0.075))
     k_heat = float(theta.get("thermal_gain_hz_per_c", 3.5))
     k_chem = float(theta.get("chemical_gain_hz", 25.0))
     sens = float(theta.get("sensitisation", 1.0))
-    r_max = float(theta.get("r_max_hz", 100.0))
+    r_max_c = float(theta.get("r_max_c_hz", 10.0))
+    r_max_ad = float(theta.get("r_max_adelta_hz", 30.0))
     c_frac = float(theta.get("c_fibre_fraction", 0.7))
     c_tau = float(theta.get("c_persistence", 0.85))
 
     # sensitisation lowers the thresholds; it does not add a baseline, because a
     # nociceptor that fires at rest is a pathology and not the normal case.
-    thr_n /= max(sens, 1e-6)
+    thr_kpa /= max(sens, 1e-6)
     hot_c -= (sens - 1.0) * float(theta.get("sensitisation_shift_c", 4.0))
 
+    # Force into PRESSURE over the declared contact area.  A force threshold is not a
+    # property of tissue: 8 N is 267 kPa through a 30 mm2 probe and about 5 kPa through a
+    # 15 cm2 patch, so the same number means damage or nothing depending on an area that
+    # was never declared.  The area is now a parameter and the threshold is a pressure,
+    # which is what the measurement it comes from actually reports.
+    p_kpa = np.asarray(load, dtype=float) / max(area_mm2 * 1e-6, 1e-12) / 1000.0
+
     # HIGH THRESHOLD: exactly zero drive through the innocuous range.
-    d_mech = k_mech * np.maximum(load - thr_n, 0.0)
+    d_mech = k_mech * np.maximum(p_kpa - thr_kpa, 0.0)
     d_heat = k_heat * np.maximum(temp - hot_c, 0.0)
     d_cold = k_heat * np.maximum(cold_c - temp, 0.0)
     d_chem = k_chem * np.maximum(chem, 0.0)
@@ -1131,11 +1165,16 @@ def nociceptor_afferent(x, theta) -> dict:
     # A-delta reports the stimulus; C reports it lower, later and for longer.  the
     # persistence is applied by the caller across steps -- here C simply carries
     # the fraction and the compression that make second pain what it is.
-    r_adelta = np.clip(drive, 0.0, r_max)
-    r_c = np.clip(c_frac * r_max * np.tanh(drive / max(r_max, 1e-9)) / max(c_tau, 1e-6),
-                  0.0, r_max)
+    # Two ceilings, because the two fibre classes do not share one.  The C ceiling is
+    # measured; the A-delta one is not, here (see the parameter notes).
+    r_adelta = np.clip(drive, 0.0, r_max_ad)
+    r_c = np.clip(c_frac * r_max_c * np.tanh(drive / max(r_max_c, 1e-9)) / max(c_tau, 1e-6),
+                  0.0, r_max_c)
     return {
-        "transduction.nociceptor": np.clip(-70.0 + 0.5 * r_adelta, -70.0, 0.0),
+        # the membrane proxy is scaled against the A-delta ceiling rather than a fixed
+        # 0.5 Hz^-1, so it does not silently change meaning when a ceiling moves
+        "transduction.nociceptor": np.clip(-70.0 + 50.0 * r_adelta / max(r_max_ad, 1e-9),
+                                           -70.0, 0.0),
         "neural.afferent.adelta": r_adelta,
         "neural.afferent.c": r_c,
     }
@@ -1196,19 +1235,35 @@ implementation(
     form=Form.RATE,
     fn=nociceptor_afferent,
     params={
-        "mechanical_threshold_n": lognormal(8.0, 2.0, units="N",
-                                            provenance=Provenance.WEAK,
-                                            note="tissue-damage threshold; varies "
-                                                 "widely by tissue and is not one "
-                                                 "number for the body"),
+        "contact_area_mm2": lognormal(30.0, 1.5, units="mm^2",
+                                      provenance=Provenance.LITERATURE,
+                                      note="the probe area the threshold below was "
+                                           "measured through (Adriaensen 1984). A "
+                                           "pressure threshold is meaningless without "
+                                           "it, which is why it is a declared parameter "
+                                           "and not a constant in the body of the "
+                                           "function"),
+        "mechanical_threshold_kpa": lognormal(133.3, 1.8, units="kPa",
+                                              provenance=Provenance.LITERATURE,
+                                              note="4 N through 30 mm^2 (Adriaensen "
+                                                   "1984). Replaces an 8 N FORCE "
+                                                   "threshold that had no area and so "
+                                                   "was not in comparable units to any "
+                                                   "measurement; it still varies widely "
+                                                   "by tissue and is not one number for "
+                                                   "the body"),
         "heat_threshold_c": normal(43.0, 1.5, units="degC",
                                    provenance=Provenance.LITERATURE,
                                    note="the classical heat-pain threshold, and "
                                         "close to the TRPV1 activation point"),
         "cold_threshold_c": normal(15.0, 3.0, units="degC",
                                    provenance=Provenance.LITERATURE),
-        "mechanical_gain_hz_per_n": lognormal(1.6, 2.0, units="Hz per N",
-                                              provenance=Provenance.WEAK),
+        "mechanical_gain_hz_per_kpa": lognormal(0.075, 2.5, units="Hz per kPa",
+                                                provenance=Provenance.WEAK,
+                                                note="set so that roughly twice the "
+                                                     "threshold pressure approaches the "
+                                                     "C ceiling; the slope itself is not "
+                                                     "taken from a measurement"),
         "thermal_gain_hz_per_c": lognormal(3.5, 2.0, units="Hz per degC",
                                            provenance=Provenance.LITERATURE),
         "chemical_gain_hz": lognormal(25.0, 3.0, units="Hz",
@@ -1223,10 +1278,24 @@ implementation(
         "c_fibre_fraction": normal(0.7, 0.1, units="1",
                                    provenance=Provenance.LITERATURE),
         "c_persistence": normal(0.85, 0.1, units="1", provenance=Provenance.WEAK),
-        "r_max_hz": lognormal(100.0, 1.5, units="Hz",
-                              provenance=Provenance.LITERATURE),
+        "r_max_c_hz": lognormal(10.0, 1.5, units="Hz",
+                                provenance=Provenance.LITERATURE,
+                                note="the highest C-fibre discharge seen under "
+                                     "mechanical stimulation in human microneurography "
+                                     "(Van Hees & Gybels 1981). Replaces a shared 100 Hz "
+                                     "ceiling that carried a LITERATURE tag while sitting "
+                                     "ten times above the literature it claimed"),
+        "r_max_adelta_hz": lognormal(30.0, 2.0, units="Hz",
+                                     provenance=Provenance.WEAK,
+                                     note="A-delta mechanical nociceptors fire faster "
+                                          "than C, and no directly comparable human "
+                                          "figure was found for this repo -- so this is "
+                                          "declared WEAK rather than borrowed from the C "
+                                          "measurement beside it"),
     },
     tying=Tying.PER_PARTITION,
     provenance=Provenance.LITERATURE,
     source="Sherrington on the high-threshold definition; Bessou & Perl on "
-           "polymodal C endings; LaMotte & Campbell on first and second pain")
+           "polymodal C endings; LaMotte & Campbell on first and second pain; "
+           "Adriaensen et al. 1984 for the mechanical threshold; Van Hees & Gybels "
+           "1981 for the C-fibre ceiling")

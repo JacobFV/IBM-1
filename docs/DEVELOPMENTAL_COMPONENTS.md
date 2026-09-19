@@ -125,8 +125,16 @@ not by priority. The ordering that matters is what unblocks what:
 **Keep the status column honest.** The temptation is to move a row to *built*
 when a field is declared or a channel is routed. A component is built when
 something computes it and a case whose answer is known prints that answer. The
-nociceptor row says *built* because it prints exactly zero at 5 N of firm touch
-and 51.2 Hz at a 40 N crush.
+nociceptor row says *built* because it prints exactly zero through the innocuous
+range and rises above it.
+
+**And the known answer it used to quote was not one.** Until 18 September 2026 this
+paragraph read "exactly zero at 5 N of firm touch and 51.2 Hz at a 40 N crush" — two
+forces with no contact area, which is not a statement about tissue at all. The same
+5 N is **166.7 kPa through a 30 mm² probe and 3.3 kPa across a 15 cm² palm**, and the
+component now prints 2.50 Hz for the first and exactly 0.00 Hz for the second. A 40 N
+crush is 30 Hz through the probe and, spread over a palm, still zero. The area was
+always doing the work and was never declared; the numbers are now quoted with it.
 
 **And record what is deliberately deferred.** Several of these are absent by
 choice at this stage rather than by oversight — social components in particular

@@ -7239,3 +7239,60 @@ applied over. Its ceiling is 100 Hz, ten times the maximum mechanically evoked h
 discharge (Van Hees and Gybels 1981). Its docstring calls its rate "usable as a reward
 signal". It was left untouched, and whether to retire it or reparameterise it from IHM's
 `nociception.EVIDENCE` is for the owner of that file to decide.
+
+## 18 September 2026 — two nociceptors disagreed, and the older one was mine
+
+Raised by another session working on IHM-1: `ibm/processes/transduction.py`'s
+`nociceptor_polymodal` (`8b85e1a`, 9 September) and the newer visceral and cutaneous
+nociceptors anchored to human microneurography did not agree, and the older one is in this
+lane. I checked both claims against the file rather than taking them on report, and both
+hold. A third thing, which the report did not mention, is worse than either.
+
+**1. The mechanical threshold was a FORCE with no contact area.** 8 N, `Provenance.WEAK`.
+A force threshold is not a property of tissue: the same 8 N is 267 kPa through a 30 mm²
+probe and about 5 kPa across a 15 cm² palm. The number could not be compared with any
+measurement, including the other nociceptors in the same repository.
+
+**2. The ceiling was 100 Hz against a measured ~10 Hz** for mechanically evoked human
+C-fibre discharge (Van Hees & Gybels 1981).
+
+**3. And the 100 Hz carried `Provenance.LITERATURE`** — a number tagged as literature-backed
+while sitting ten times above the literature it claimed. That is the part that would have
+survived review: a WEAK tag invites a check, a LITERATURE tag closes the question.
+
+**Why it mattered more than a wrong constant.** The docstring says the high threshold is
+"what makes its rate usable as a reward signal". A cost term reads this output, so a ceiling
+ten times too high is a cost ten times too steep, and nothing downstream would report the
+error — the body would simply learn to avoid harder than the world warrants.
+
+**What changed.** The threshold is now a pressure, **133.3 kPa**, with the probe area it was
+measured through (**30 mm²**, Adriaensen 1984) as a declared parameter rather than an
+assumption inside the function. The single shared ceiling is replaced by two: **10 Hz for C**
+(LITERATURE, Van Hees & Gybels 1981) and **30 Hz for A-delta**, which is declared **WEAK**
+with a note saying plainly that no directly comparable human figure was found here — better
+than borrowing the C measurement for a class it was not measured on. The membrane proxy is
+scaled against its ceiling instead of a fixed coefficient, so it cannot silently change
+meaning when a ceiling moves. Measured after the change: exactly 0.00 Hz at and below
+threshold, A-delta 10.0 Hz and C 6.27 Hz at twice threshold, both ceilings respected.
+
+**The retired keys now raise.** `mechanical_threshold_n`, `mechanical_gain_hz_per_n` and
+`r_max_hz` were read with `theta.get(..., default)`, so a caller still passing them would
+have been silently ignored and given the new defaults — a stale caller that keeps running
+while quietly changing meaning. Passing any of them now raises with the reason.
+
+**A documented "known answer" that was not one.** `docs/DEVELOPMENTAL_COMPONENTS.md`
+justified the component's *built* status with "prints exactly zero at 5 N of firm touch and
+51.2 Hz at a 40 N crush" — two forces, no area. Under the declared probe area 5 N is
+166.7 kPa and now prints **2.50 Hz**, not zero; across a palm it is 3.3 kPa and prints
+**0.00 Hz**. Both are right, and the old sentence could not tell them apart. Corrected with
+the areas stated.
+
+**No result depended on any of this**, which is the only reason the correction was cheap:
+grep finds no consumer of the component outside its own declaration and two documents. That
+will not be true of the next component to be built on it, which is the argument for fixing
+it now.
+
+**Process, from the same message.** Commit `7f13de7` swept in another worker's uncommitted
+files because it staged with `git add -A` while other sessions were live in this tree. The
+content was correct and no history was rewritten; `176d054` records the attribution file by
+file. This commit stages its paths by name, and that is the practice from here.
