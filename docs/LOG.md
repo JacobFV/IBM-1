@@ -7789,3 +7789,50 @@ curve with a working point near the declared 9% sparsity. Two calibration faults
 that are fixed: it started the search an order of magnitude *above* the useful range, and
 its burn-in was shorter than the ignition transient, so it read 0% active at a setting that
 ignites a second later and drove the gain the wrong way.
+
+## 18 September 2026 — the v3 basal ganglia, and the engine gap two structures worked around
+
+`ibm/brain/basal_ganglia.py`: 20 populations over four real channels — motor, oculomotor,
+associative, limbic — with D1, D2, GPe, GPi and STN in each, 76 internal and 20 external
+projections. **All eight gates pass.** And there is no `dopamine` float anywhere: dopamine
+arrives as `Mod` edges from `nm.snc` and `nm.vta`, which is one of the four dials gone.
+
+| gate | measured | v2 for comparison |
+|---|---|---|
+| B2 selection | winner's GPi **69.83 → 12.32 Hz**, runner-up **rises to 95.72**, margin **1.188** | 70.5 → 12.3, margin 1.109 |
+| B3 stop | **37 ms**, reported as a finding against the catalogue's 120 ms floor | 22 ms |
+| B4 beta | STN **22.89 Hz, prominence +1.259** | 19.22 Hz, +2.01 |
+| B5 dopamine | 0.50 → 0.20 raises beta **+1.281 → +1.430** and abolishes selection | same direction |
+| B6 channels | every undriven channel's GPi **rises**; exactly one released in all four conditions | new gate |
+| B7 sensitivity | 15 of 42 inert, **every one diagnosed, `UNDIAGNOSED` empty** | 28 of 57 |
+
+Two details worth keeping. The tonic output nuclei needed their thresholds **derived** rather
+than declared — `theta = −logit(r_rest)/beta` — because without that the engine's `r_rest`
+branch floors a 70 Hz GPi at 56 Hz and it cannot pause at all, which would have made
+selection impossible for a reason nothing in the gate would have named. And **GPi is a
+leaf**: eight constants move the selection margin by 0.32–2.18 and the beta peak by *exactly*
+0.000 Hz, which is an open cortico-BG loop rather than a broken mechanism, and will close
+when the thalamic return is in the assembly.
+
+**A near-miss on "a parameter that changes nothing", caught by the author.** A
+plausible-looking dopamine threshold gain of 0.35 moved B5's beta by **+0.008 decades** — a
+real mechanism at the wrong magnitude, which would have read as a weak Parkinsonian effect
+rather than as a mis-set constant. It was re-derived from v2's declared current shift
+expressed as the multiplicative change a `Mod` edge can carry.
+
+**The engine gap: a projection had no synaptic time constant.** `Proj` carried a conduction
+delay — *when* a signal arrives — and nothing for how long it lasts once it does. Most of the
+brain's bands are set by that second number: AMPA 2–5 ms, GABA-A 10–40, NMDA ~100, GABA-B
+~150. A circuit without it can only resonate at its conduction times.
+
+Two modules worked around it independently and differently, which is the gap asking to be
+filled: the thalamus made GABA-A and GABA-B into **populations** because "a 40 ms IPSC has
+nowhere else to live", and the basal ganglia folded the dominant synapse into an **effective
+membrane constant** (`tau_stn` 5 → 14 ms), reporting it as the module's one real
+approximation — without which its phase condition crosses at 33 Hz, out of band. `Proj` now
+has `tau_syn`, a first-order synapse, checked against its known answer: 0.620 of asymptote
+at one time constant and 0.860 at two, against 0.632 and 0.865.
+
+This matters most for what comes next. **Resonance modes are the point of v3**, and a
+measurement of what bands the assembled brain amplifies would have been measuring conduction
+delays alone.

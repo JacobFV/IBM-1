@@ -110,6 +110,24 @@ class Proj:
     delay_s: float = 0.0
     topology: str = "dense"          # dense | sparse | one_to_one | diffuse
     p: float = 0.15                  # connection probability, for `sparse`
+    tau_syn: float = 0.0             # SYNAPTIC decay, seconds.  0 means instantaneous.
+                                     #
+                                     # A conduction delay says WHEN a signal arrives; this
+                                     # says how long it lasts once it does, and the two are
+                                     # not interchangeable.  Most of the brain's bands are
+                                     # set by this number -- AMPA ~2-5 ms, GABA-A ~10-40,
+                                     # NMDA ~100, GABA-B ~150 -- so a circuit without it can
+                                     # only resonate at its conduction times.
+                                     #
+                                     # Added 18 September 2026 because two structure modules
+                                     # independently worked around its absence, differently:
+                                     # the thalamus made GABA-A and GABA-B into POPULATIONS
+                                     # because "a 40 ms IPSC has nowhere else to live", and
+                                     # the basal ganglia folded the dominant synapse into an
+                                     # effective membrane constant (tau_stn 5 -> 14 ms) and
+                                     # reported it as the module's one real approximation.
+                                     # Two workarounds for one gap is the gap asking to be
+                                     # filled.
     stored: bool = False             # carries a pattern matrix written by store()
     note: str = ""
 
@@ -312,18 +330,21 @@ class Circuit(nn.Module):
             if p.sigma:
                 s["eta"] = torch.zeros(b, p.n, device=dev)
             st[p.id] = s
+        st["_syn"] = {}
         for pr in self.projs:
             lag = int(round(pr.delay_s / dt))
             if lag > 0:
                 st["_rings"][pr.key] = torch.zeros(b, lag + 1, self.pops[pr.src].n,
                                                    device=dev)
+            if pr.tau_syn > 0:
+                st["_syn"][pr.key] = torch.zeros(b, self.pops[pr.dst].n, device=dev)
         return st
 
     @staticmethod
     def detach(state: dict) -> dict:
         out = {}
         for k, v in state.items():
-            if k == "_rings":
+            if k in ("_rings", "_syn"):
                 out[k] = {kk: vv.detach() for kk, vv in v.items()}
             elif isinstance(v, dict):
                 out[k] = {kk: (vv.detach() if torch.is_tensor(vv) else vv)
@@ -357,7 +378,8 @@ class Circuit(nn.Module):
         t = state["_t"]
         mod = self._modulation(state)
         rings = dict(state["_rings"])
-        new = {"_t": t + 1, "_rings": rings}
+        syn = dict(state.get("_syn", {}))
+        new = {"_t": t + 1, "_rings": rings, "_syn": syn}
 
         # what each projection delivers this step, read at its own lag.  EXCITATORY and
         # INHIBITORY sums are kept APART, because only the excitatory one is normalised.
@@ -390,6 +412,14 @@ class Circuit(nn.Module):
             else:
                 contrib = s_eff @ W.t()
             contrib = pr.weight * contrib
+            if pr.tau_syn > 0:
+                # a first-order synapse: the arriving rate charges a conductance that then
+                # decays with its own constant, which is what gives a projection a timescale
+                prev = syn.get(pr.key)
+                if prev is None:
+                    prev = torch.zeros_like(contrib)
+                contrib = prev + (1 - math.exp(-dt / pr.tau_syn)) * (contrib - prev)
+                syn[pr.key] = contrib
             bag = exc if pr.sign > 0 else inh_in
             bag[pr.dst] = contrib if bag[pr.dst] is None else bag[pr.dst] + contrib
 

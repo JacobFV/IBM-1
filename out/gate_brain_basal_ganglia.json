@@ -1,0 +1,1522 @@
+{
+ "script": "scripts/gate_brain_basal_ganglia.py",
+ "structure": "bg",
+ "dt": 0.001,
+ "channels": [
+  "motor",
+  "oculomotor",
+  "associative",
+  "limbic"
+ ],
+ "units_per_pop": 16,
+ "n_populations": 20,
+ "n_internal": 76,
+ "n_external": 20,
+ "n_mods": 16,
+ "stub_populations": [
+  "ctx.precentral.E",
+  "ctx.caudalmiddlefrontal.E",
+  "ctx.rostralmiddlefrontal.E",
+  "ctx.medialorbitofrontal.E",
+  "ctx.parsopercularis.E",
+  "nm.snc",
+  "nm.vta"
+ ],
+ "external_edges_orphaned_in_this_harness": [
+  "bg.gpi.motor->thal.vl.relay",
+  "bg.gpi.oculomotor->thal.va.relay",
+  "bg.gpi.associative->thal.va.relay",
+  "bg.gpi.limbic->thal.va.relay"
+ ],
+ "declared_rest_hz": {
+  "bg.gpe.motor": 60.0,
+  "bg.gpi.motor": 70.0,
+  "bg.stn.motor": 25.0,
+  "bg.d1.motor": 0.3649637682495059,
+  "bg.d2.motor": 0.3649637682495059,
+  "bg.gpe.oculomotor": 60.0,
+  "bg.gpi.oculomotor": 70.0,
+  "bg.stn.oculomotor": 25.0,
+  "bg.d1.oculomotor": 0.3649637682495059,
+  "bg.d2.oculomotor": 0.3649637682495059,
+  "bg.gpe.associative": 60.0,
+  "bg.gpi.associative": 70.0,
+  "bg.stn.associative": 25.0,
+  "bg.d1.associative": 0.3649637682495059,
+  "bg.d2.associative": 0.3649637682495059,
+  "bg.gpe.limbic": 60.0,
+  "bg.gpi.limbic": 70.0,
+  "bg.stn.limbic": 25.0,
+  "bg.d1.limbic": 0.3649637682495059,
+  "bg.d2.limbic": 0.3649637682495059
+ },
+ "solved_tonic_drives": {
+  "bg.stn.motor": 0.9299999999999999,
+  "bg.gpe.motor": -0.2023905072445069,
+  "bg.gpi.motor": -0.24416057970800792,
+  "bg.d1.motor": 0.0,
+  "bg.d2.motor": 0.0,
+  "bg.stn.oculomotor": 0.9299999999999999,
+  "bg.gpe.oculomotor": -0.2023905072445069,
+  "bg.gpi.oculomotor": -0.24416057970800792,
+  "bg.d1.oculomotor": 0.0,
+  "bg.d2.oculomotor": 0.0,
+  "bg.stn.associative": 0.9299999999999999,
+  "bg.gpe.associative": -0.2023905072445069,
+  "bg.gpi.associative": -0.24416057970800792,
+  "bg.d1.associative": 0.0,
+  "bg.d2.associative": 0.0,
+  "bg.stn.limbic": 0.9299999999999999,
+  "bg.gpe.limbic": -0.2023905072445069,
+  "bg.gpi.limbic": -0.24416057970800792,
+  "bg.d1.limbic": 0.0,
+  "bg.d2.limbic": 0.0
+ },
+ "delays_in_steps": {
+  "bg.d1.motor->bg.gpi.motor": 4,
+  "bg.d2.motor->bg.gpe.motor": 4,
+  "bg.gpe.motor->bg.stn.motor": 4,
+  "bg.gpe.motor->bg.gpi.motor": 3,
+  "bg.gpe.motor->bg.gpe.motor": 1,
+  "bg.d1.motor->bg.d1.oculomotor": 1,
+  "bg.d2.motor->bg.d2.oculomotor": 1,
+  "bg.d1.motor->bg.d1.associative": 1,
+  "bg.d2.motor->bg.d2.associative": 1,
+  "bg.d1.motor->bg.d1.limbic": 1,
+  "bg.d2.motor->bg.d2.limbic": 1,
+  "bg.stn.motor->bg.gpe.motor": 3,
+  "bg.stn.motor->bg.gpi.motor": 3,
+  "bg.stn.motor->bg.gpe.oculomotor": 3,
+  "bg.stn.motor->bg.gpi.oculomotor": 3,
+  "bg.stn.motor->bg.gpe.associative": 3,
+  "bg.stn.motor->bg.gpi.associative": 3,
+  "bg.stn.motor->bg.gpe.limbic": 3,
+  "bg.stn.motor->bg.gpi.limbic": 3,
+  "bg.d1.oculomotor->bg.gpi.oculomotor": 4,
+  "bg.d2.oculomotor->bg.gpe.oculomotor": 4,
+  "bg.gpe.oculomotor->bg.stn.oculomotor": 4,
+  "bg.gpe.oculomotor->bg.gpi.oculomotor": 3,
+  "bg.gpe.oculomotor->bg.gpe.oculomotor": 1,
+  "bg.d1.oculomotor->bg.d1.motor": 1,
+  "bg.d2.oculomotor->bg.d2.motor": 1,
+  "bg.d1.oculomotor->bg.d1.associative": 1,
+  "bg.d2.oculomotor->bg.d2.associative": 1,
+  "bg.d1.oculomotor->bg.d1.limbic": 1,
+  "bg.d2.oculomotor->bg.d2.limbic": 1,
+  "bg.stn.oculomotor->bg.gpe.motor": 3,
+  "bg.stn.oculomotor->bg.gpi.motor": 3,
+  "bg.stn.oculomotor->bg.gpe.oculomotor": 3,
+  "bg.stn.oculomotor->bg.gpi.oculomotor": 3,
+  "bg.stn.oculomotor->bg.gpe.associative": 3,
+  "bg.stn.oculomotor->bg.gpi.associative": 3,
+  "bg.stn.oculomotor->bg.gpe.limbic": 3,
+  "bg.stn.oculomotor->bg.gpi.limbic": 3,
+  "bg.d1.associative->bg.gpi.associative": 4,
+  "bg.d2.associative->bg.gpe.associative": 4,
+  "bg.gpe.associative->bg.stn.associative": 4,
+  "bg.gpe.associative->bg.gpi.associative": 3,
+  "bg.gpe.associative->bg.gpe.associative": 1,
+  "bg.d1.associative->bg.d1.motor": 1,
+  "bg.d2.associative->bg.d2.motor": 1,
+  "bg.d1.associative->bg.d1.oculomotor": 1,
+  "bg.d2.associative->bg.d2.oculomotor": 1,
+  "bg.d1.associative->bg.d1.limbic": 1,
+  "bg.d2.associative->bg.d2.limbic": 1,
+  "bg.stn.associative->bg.gpe.motor": 3,
+  "bg.stn.associative->bg.gpi.motor": 3,
+  "bg.stn.associative->bg.gpe.oculomotor": 3,
+  "bg.stn.associative->bg.gpi.oculomotor": 3,
+  "bg.stn.associative->bg.gpe.associative": 3,
+  "bg.stn.associative->bg.gpi.associative": 3,
+  "bg.stn.associative->bg.gpe.limbic": 3,
+  "bg.stn.associative->bg.gpi.limbic": 3,
+  "bg.d1.limbic->bg.gpi.limbic": 4,
+  "bg.d2.limbic->bg.gpe.limbic": 4,
+  "bg.gpe.limbic->bg.stn.limbic": 4,
+  "bg.gpe.limbic->bg.gpi.limbic": 3,
+  "bg.gpe.limbic->bg.gpe.limbic": 1,
+  "bg.d1.limbic->bg.d1.motor": 1,
+  "bg.d2.limbic->bg.d2.motor": 1,
+  "bg.d1.limbic->bg.d1.oculomotor": 1,
+  "bg.d2.limbic->bg.d2.oculomotor": 1,
+  "bg.d1.limbic->bg.d1.associative": 1,
+  "bg.d2.limbic->bg.d2.associative": 1,
+  "bg.stn.limbic->bg.gpe.motor": 3,
+  "bg.stn.limbic->bg.gpi.motor": 3,
+  "bg.stn.limbic->bg.gpe.oculomotor": 3,
+  "bg.stn.limbic->bg.gpi.oculomotor": 3,
+  "bg.stn.limbic->bg.gpe.associative": 3,
+  "bg.stn.limbic->bg.gpi.associative": 3,
+  "bg.stn.limbic->bg.gpe.limbic": 3,
+  "bg.stn.limbic->bg.gpi.limbic": 3,
+  "ctx.precentral.E->bg.d1.motor": 6,
+  "ctx.precentral.E->bg.d2.motor": 6,
+  "ctx.precentral.E->bg.stn.motor": 4,
+  "ctx.parsopercularis.E->bg.stn.motor": 4,
+  "ctx.caudalmiddlefrontal.E->bg.d1.oculomotor": 6,
+  "ctx.caudalmiddlefrontal.E->bg.d2.oculomotor": 6,
+  "ctx.caudalmiddlefrontal.E->bg.stn.oculomotor": 4,
+  "ctx.parsopercularis.E->bg.stn.oculomotor": 4,
+  "ctx.rostralmiddlefrontal.E->bg.d1.associative": 6,
+  "ctx.rostralmiddlefrontal.E->bg.d2.associative": 6,
+  "ctx.rostralmiddlefrontal.E->bg.stn.associative": 4,
+  "ctx.parsopercularis.E->bg.stn.associative": 4,
+  "ctx.medialorbitofrontal.E->bg.d1.limbic": 6,
+  "ctx.medialorbitofrontal.E->bg.d2.limbic": 6,
+  "ctx.medialorbitofrontal.E->bg.stn.limbic": 4,
+  "ctx.parsopercularis.E->bg.stn.limbic": 4
+ },
+ "vanishing_delays": [],
+ "path_delays_ms": {
+  "hyperdirect_ctx_to_gpi": 6.5,
+  "direct_ctx_to_gpi": 10.0,
+  "indirect_ctx_to_gpi": 17.0
+ },
+ "bars": {
+  "select_max_frac_of_rest": 0.5,
+  "loser_floor": 0.98,
+  "stop_max_ms": 200.0,
+  "leak_max": 0.05,
+  "clock_hz": 1.0,
+  "select_sens": 0.05,
+  "inert_hz": 0.2,
+  "inert_margin": 0.02
+ },
+ "gates": {
+  "B0_bounded": {
+   "ok": true,
+   "worst_excursion": 0.0,
+   "checked": "every basal-ganglia population's rate at every step of every case, not the endpoint",
+   "cases_per_dt": "6 in the batch: injected current -5/0/+5 on EVERY bg population at once, crossed with a saturating stop pulse, all four cortical proposals at 0.999",
+   "populations_tested": 20,
+   "not_tested": "eta -- the OU background is a CURRENT, not a rate, and the engine does not claim it is in [0, 1]",
+   "cases": [
+    {
+     "dt": 0.001,
+     "steps": 2000,
+     "worst_excursion_over_all_steps": 0.0,
+     "delays_that_vanish_at_this_dt": [],
+     "gpi_hz_end": [
+      58.35,
+      66.62,
+      58.26,
+      66.62
+     ]
+    },
+    {
+     "dt": 0.005,
+     "steps": 400,
+     "worst_excursion_over_all_steps": 0.0,
+     "delays_that_vanish_at_this_dt": [
+      "bg.gpe.motor->bg.gpe.motor",
+      "bg.d1.motor->bg.d1.oculomotor",
+      "bg.d2.motor->bg.d2.oculomotor",
+      "bg.d1.motor->bg.d1.associative",
+      "bg.d2.motor->bg.d2.associative",
+      "bg.d1.motor->bg.d1.limbic",
+      "bg.d2.motor->bg.d2.limbic",
+      "bg.gpe.oculomotor->bg.gpe.oculomotor",
+      "bg.d1.oculomotor->bg.d1.motor",
+      "bg.d2.oculomotor->bg.d2.motor",
+      "bg.d1.oculomotor->bg.d1.associative",
+      "bg.d2.oculomotor->bg.d2.associative",
+      "bg.d1.oculomotor->bg.d1.limbic",
+      "bg.d2.oculomotor->bg.d2.limbic",
+      "bg.gpe.associative->bg.gpe.associative",
+      "bg.d1.associative->bg.d1.motor",
+      "bg.d2.associative->bg.d2.motor",
+      "bg.d1.associative->bg.d1.oculomotor",
+      "bg.d2.associative->bg.d2.oculomotor",
+      "bg.d1.associative->bg.d1.limbic",
+      "bg.d2.associative->bg.d2.limbic",
+      "bg.gpe.limbic->bg.gpe.limbic",
+      "bg.d1.limbic->bg.d1.motor",
+      "bg.d2.limbic->bg.d2.motor",
+      "bg.d1.limbic->bg.d1.oculomotor",
+      "bg.d2.limbic->bg.d2.oculomotor",
+      "bg.d1.limbic->bg.d1.associative",
+      "bg.d2.limbic->bg.d2.associative"
+     ],
+     "gpi_hz_end": [
+      58.21,
+      66.63,
+      66.62,
+      50.64
+     ]
+    },
+    {
+     "dt": 0.02,
+     "steps": 100,
+     "worst_excursion_over_all_steps": 0.0,
+     "delays_that_vanish_at_this_dt": [
+      "bg.d1.motor->bg.gpi.motor",
+      "bg.d2.motor->bg.gpe.motor",
+      "bg.gpe.motor->bg.stn.motor",
+      "bg.gpe.motor->bg.gpi.motor",
+      "bg.gpe.motor->bg.gpe.motor",
+      "bg.d1.motor->bg.d1.oculomotor",
+      "bg.d2.motor->bg.d2.oculomotor",
+      "bg.d1.motor->bg.d1.associative",
+      "bg.d2.motor->bg.d2.associative",
+      "bg.d1.motor->bg.d1.limbic",
+      "bg.d2.motor->bg.d2.limbic",
+      "bg.stn.motor->bg.gpe.motor",
+      "bg.stn.motor->bg.gpi.motor",
+      "bg.stn.motor->bg.gpe.oculomotor",
+      "bg.stn.motor->bg.gpi.oculomotor",
+      "bg.stn.motor->bg.gpe.associative",
+      "bg.stn.motor->bg.gpi.associative",
+      "bg.stn.motor->bg.gpe.limbic",
+      "bg.stn.motor->bg.gpi.limbic",
+      "bg.d1.oculomotor->bg.gpi.oculomotor",
+      "bg.d2.oculomotor->bg.gpe.oculomotor",
+      "bg.gpe.oculomotor->bg.stn.oculomotor",
+      "bg.gpe.oculomotor->bg.gpi.oculomotor",
+      "bg.gpe.oculomotor->bg.gpe.oculomotor",
+      "bg.d1.oculomotor->bg.d1.motor",
+      "bg.d2.oculomotor->bg.d2.motor",
+      "bg.d1.oculomotor->bg.d1.associative",
+      "bg.d2.oculomotor->bg.d2.associative",
+      "bg.d1.oculomotor->bg.d1.limbic",
+      "bg.d2.oculomotor->bg.d2.limbic",
+      "bg.stn.oculomotor->bg.gpe.motor",
+      "bg.stn.oculomotor->bg.gpi.motor",
+      "bg.stn.oculomotor->bg.gpe.oculomotor",
+      "bg.stn.oculomotor->bg.gpi.oculomotor",
+      "bg.stn.oculomotor->bg.gpe.associative",
+      "bg.stn.oculomotor->bg.gpi.associative",
+      "bg.stn.oculomotor->bg.gpe.limbic",
+      "bg.stn.oculomotor->bg.gpi.limbic",
+      "bg.d1.associative->bg.gpi.associative",
+      "bg.d2.associative->bg.gpe.associative",
+      "bg.gpe.associative->bg.stn.associative",
+      "bg.gpe.associative->bg.gpi.associative",
+      "bg.gpe.associative->bg.gpe.associative",
+      "bg.d1.associative->bg.d1.motor",
+      "bg.d2.associative->bg.d2.motor",
+      "bg.d1.associative->bg.d1.oculomotor",
+      "bg.d2.associative->bg.d2.oculomotor",
+      "bg.d1.associative->bg.d1.limbic",
+      "bg.d2.associative->bg.d2.limbic",
+      "bg.stn.associative->bg.gpe.motor",
+      "bg.stn.associative->bg.gpi.motor",
+      "bg.stn.associative->bg.gpe.oculomotor",
+      "bg.stn.associative->bg.gpi.oculomotor",
+      "bg.stn.associative->bg.gpe.associative",
+      "bg.stn.associative->bg.gpi.associative",
+      "bg.stn.associative->bg.gpe.limbic",
+      "bg.stn.associative->bg.gpi.limbic",
+      "bg.d1.limbic->bg.gpi.limbic",
+      "bg.d2.limbic->bg.gpe.limbic",
+      "bg.gpe.limbic->bg.stn.limbic",
+      "bg.gpe.limbic->bg.gpi.limbic",
+      "bg.gpe.limbic->bg.gpe.limbic",
+      "bg.d1.limbic->bg.d1.motor",
+      "bg.d2.limbic->bg.d2.motor",
+      "bg.d1.limbic->bg.d1.oculomotor",
+      "bg.d2.limbic->bg.d2.oculomotor",
+      "bg.d1.limbic->bg.d1.associative",
+      "bg.d2.limbic->bg.d2.associative",
+      "bg.stn.limbic->bg.gpe.motor",
+      "bg.stn.limbic->bg.gpi.motor",
+      "bg.stn.limbic->bg.gpe.oculomotor",
+      "bg.stn.limbic->bg.gpi.oculomotor",
+      "bg.stn.limbic->bg.gpe.associative",
+      "bg.stn.limbic->bg.gpi.associative",
+      "bg.stn.limbic->bg.gpe.limbic",
+      "bg.stn.limbic->bg.gpi.limbic",
+      "ctx.precentral.E->bg.d1.motor",
+      "ctx.precentral.E->bg.d2.motor",
+      "ctx.precentral.E->bg.stn.motor",
+      "ctx.parsopercularis.E->bg.stn.motor",
+      "ctx.caudalmiddlefrontal.E->bg.d1.oculomotor",
+      "ctx.caudalmiddlefrontal.E->bg.d2.oculomotor",
+      "ctx.caudalmiddlefrontal.E->bg.stn.oculomotor",
+      "ctx.parsopercularis.E->bg.stn.oculomotor",
+      "ctx.rostralmiddlefrontal.E->bg.d1.associative",
+      "ctx.rostralmiddlefrontal.E->bg.d2.associative",
+      "ctx.rostralmiddlefrontal.E->bg.stn.associative",
+      "ctx.parsopercularis.E->bg.stn.associative",
+      "ctx.medialorbitofrontal.E->bg.d1.limbic",
+      "ctx.medialorbitofrontal.E->bg.d2.limbic",
+      "ctx.medialorbitofrontal.E->bg.stn.limbic",
+      "ctx.parsopercularis.E->bg.stn.limbic"
+     ],
+     "gpi_hz_end": [
+      66.44,
+      66.42,
+      66.41,
+      66.45
+     ]
+    }
+   ],
+   "seconds": 6.3
+  },
+  "B1_idempotent": {
+   "ok": true,
+   "declarations_pure": {
+    "pops": true,
+    "internal": true,
+    "external": true,
+    "mods": true,
+    "drives": true
+   },
+   "wiring_identical_at_same_seed": true,
+   "rollout_bit_identical": true,
+   "max_abs_diff": {
+    "bg.gpi.motor": 0.0,
+    "bg.gpi.oculomotor": 0.0,
+    "bg.gpi.associative": 0.0,
+    "bg.gpi.limbic": 0.0,
+    "bg.stn.motor": 0.0,
+    "bg.stn.oculomotor": 0.0,
+    "bg.stn.associative": 0.0,
+    "bg.stn.limbic": 0.0
+   },
+   "note": "not a known-answer check: it tests whether the module is a FUNCTION of its arguments at all (CLAUDE.md, 'call it twice at the same input')",
+   "seconds": 4.8
+  },
+  "B2_selection": {
+   "ok": true,
+   "n_channels_below_threshold": 1,
+   "threshold_frac_of_rest": 0.5,
+   "winner": "motor",
+   "winner_has_largest_proposal": true,
+   "winner_gpi_drop": 0.8234915733337402,
+   "runner_up": "limbic",
+   "runner_up_gpi_drop": -0.36439788341522217,
+   "margin_in_drop": 1.1878894567489624,
+   "losers_all_at_or_above_rest": true,
+   "loser_floor": 0.98,
+   "proposals": {
+    "motor": 0.9,
+    "oculomotor": 0.7,
+    "associative": 0.62,
+    "limbic": 0.55
+   },
+   "gpi_hz_rest": {
+    "motor": 69.83,
+    "oculomotor": 70.03,
+    "associative": 70.33,
+    "limbic": 70.16
+   },
+   "gpi_hz_final": {
+    "motor": 12.32,
+    "oculomotor": 96.81,
+    "associative": 96.32,
+    "limbic": 95.72
+   },
+   "other_nuclei_hz_final": {
+    "d1": {
+     "motor": 99.42,
+     "oculomotor": 0.1,
+     "associative": 0.04,
+     "limbic": 0.02
+    },
+    "d2": {
+     "motor": 99.44,
+     "oculomotor": 0.1,
+     "associative": 0.04,
+     "limbic": 0.02
+    },
+    "gpe": {
+     "motor": 3.39,
+     "oculomotor": 91.0,
+     "associative": 89.95,
+     "limbic": 89.01
+    },
+    "stn": {
+     "motor": 99.99,
+     "oculomotor": 45.03,
+     "associative": 37.38,
+     "limbic": 30.88
+    }
+   },
+   "declared_rest_hz": {
+    "bg.gpe.motor": 60.0,
+    "bg.gpi.motor": 70.0,
+    "bg.stn.motor": 25.0,
+    "bg.d1.motor": 0.36,
+    "bg.d2.motor": 0.36,
+    "bg.gpe.oculomotor": 60.0,
+    "bg.gpi.oculomotor": 70.0,
+    "bg.stn.oculomotor": 25.0,
+    "bg.d1.oculomotor": 0.36,
+    "bg.d2.oculomotor": 0.36,
+    "bg.gpe.associative": 60.0,
+    "bg.gpi.associative": 70.0,
+    "bg.stn.associative": 25.0,
+    "bg.d1.associative": 0.36,
+    "bg.d2.associative": 0.36,
+    "bg.gpe.limbic": 60.0,
+    "bg.gpi.limbic": 70.0,
+    "bg.stn.limbic": 25.0,
+    "bg.d1.limbic": 0.36,
+    "bg.d2.limbic": 0.36
+   },
+   "seconds": 3.9
+  },
+  "B3_stop": {
+   "ok": true,
+   "channels_selected_before_pulse": 1,
+   "latency_ms": 37.0,
+   "declared_bar_ms": 200.0,
+   "catalogue_latency_ms": [
+    120.0,
+    200.0
+   ],
+   "faster_than_catalogue_floor": true,
+   "finding_if_faster": "the catalogue's 120-200 ms is a behavioural stop-signal reaction time and includes the cortical detection of the cue, which this module does not contain; a shorter NEURAL latency is reported as a finding, not failed.  v2 measured 22.0 ms",
+   "hyperdirect_path_ms": 6.5,
+   "gpi_hz_at_pulse": {
+    "motor": 12.34,
+    "oculomotor": 96.78,
+    "associative": 96.43,
+    "limbic": 95.72
+   },
+   "gpi_hz_50ms_after": {
+    "motor": 79.9,
+    "oculomotor": 99.86,
+    "associative": 99.84,
+    "limbic": 99.81
+   },
+   "stn_hz_50ms_after": {
+    "motor": 100.0,
+    "oculomotor": 97.86,
+    "associative": 97.62,
+    "limbic": 97.29
+   },
+   "seconds": 5.5
+  },
+  "B4_beta": {
+   "ok": true,
+   "band": [
+    13.0,
+    30.0
+   ],
+   "catalogue_peak_hz": 20.0,
+   "gated_on": "stn channel-average prominence > 0 and its peak inside the band",
+   "phase_condition_prediction_hz": 23.653024310049744,
+   "populations": {
+    "stn": {
+     "channel_average_peak_hz": 22.886707305908203,
+     "channel_average_prominence_decades": 1.258714199066162,
+     "single_channel": {
+      "motor": {
+       "peak_hz": 21.870986938476562,
+       "prominence_decades": 0.7754964828491211
+      },
+      "oculomotor": {
+       "peak_hz": 22.237586975097656,
+       "prominence_decades": 0.7340445518493652
+      },
+      "associative": {
+       "peak_hz": 22.085847854614258,
+       "prominence_decades": 0.7583518028259277
+      },
+      "limbic": {
+       "peak_hz": 22.2797794342041,
+       "prominence_decades": 0.7419066429138184
+      }
+     },
+     "mean_hz": 25.234782695770264,
+     "sd_hz": 0.7125539239495993,
+     "envelope_cv_reported_not_gated": 0.5348939299583435
+    },
+    "gpe": {
+     "channel_average_peak_hz": 22.963544845581055,
+     "channel_average_prominence_decades": 1.2291297912597656,
+     "single_channel": {
+      "motor": {
+       "peak_hz": 22.869178771972656,
+       "prominence_decades": 0.8267068862915039
+      },
+      "oculomotor": {
+       "peak_hz": 22.837814331054688,
+       "prominence_decades": 0.8128390312194824
+      },
+      "associative": {
+       "peak_hz": 22.716758728027344,
+       "prominence_decades": 0.8002414703369141
+      },
+      "limbic": {
+       "peak_hz": 22.94241714477539,
+       "prominence_decades": 0.7801222801208496
+      }
+     },
+     "mean_hz": 60.14707684516907,
+     "sd_hz": 0.8622994646430016,
+     "envelope_cv_reported_not_gated": 0.5374329686164856
+    }
+   },
+   "note": "peak_frequency is a soft-argmax and returns the band centre on a flat spectrum, so the prominence is the gate and the frequency is context. The single-channel readings are here because a statistic computed on the population average and on one unit can differ by 2x, and where they do at most one of them is about the circuit (CLAUDE.md). The envelope CV is reported only: a 17 Hz-wide band has an envelope correlation time near 59 ms whatever generates the signal",
+   "seconds": 20.0
+  },
+  "B5_dopamine": {
+   "ok": true,
+   "beta_rose": true,
+   "selection_weakened": true,
+   "d_prominence": 0.14877843856811523,
+   "d_winner_drop": -1.1052733659744263,
+   "declared_direction": "lowering the rate of nm.snc/nm.vta raises the resting beta prominence AND shrinks the winner's GPi drop -- the Parkinsonian direction, from one change, with no branch on dopamine anywhere in the module",
+   "states": {
+    "tonic_0.50": {
+     "nigral_rate": 0.5,
+     "beta_peak_hz": 23.040739059448242,
+     "beta_prominence_decades": 1.2810840606689453,
+     "stn_mean_hz": 25.24183690547943,
+     "gpe_mean_hz": 60.146671533584595,
+     "d2_rest_hz": 0.40806448087096214,
+     "channel": "motor",
+     "winner_gpi_drop": 0.8234915733337402,
+     "n_channels_selected": 1,
+     "gpi_hz_final": {
+      "motor": 12.32,
+      "oculomotor": 96.81,
+      "associative": 96.32,
+      "limbic": 95.72
+     }
+    },
+    "low_0.20": {
+     "nigral_rate": 0.2,
+     "beta_peak_hz": 23.377470016479492,
+     "beta_prominence_decades": 1.4298624992370605,
+     "stn_mean_hz": 27.855437994003296,
+     "gpe_mean_hz": 58.68879556655884,
+     "d2_rest_hz": 4.346033930778503,
+     "channel": "motor",
+     "winner_gpi_drop": -0.28178179264068604,
+     "n_channels_selected": 0,
+     "gpi_hz_final": {
+      "motor": 99.93,
+      "oculomotor": 99.69,
+      "associative": 97.7,
+      "limbic": 97.33
+     }
+    }
+   },
+   "seconds": 22.2
+  },
+  "B6_channels": {
+   "ok": true,
+   "worst_leakage_drop": -0.12393105030059814,
+   "leak_max": 0.05,
+   "sign_convention": "leakage is a DROP, so negative means the undriven channel's GPi ROSE, which is the prediction: the only thing crossing channels is the subthalamic efferent and it pushes GPi up",
+   "per_driven_channel": {
+    "motor": {
+     "driven_channel_drop": 0.9693276882171631,
+     "driven_channel_released": true,
+     "leakage_drop_on_undriven": {
+      "oculomotor": -0.12393105030059814,
+      "associative": -0.12842106819152832,
+      "limbic": -0.13595843315124512
+     },
+     "n_released": 1,
+     "gpi_hz_final": {
+      "motor": 2.14,
+      "oculomotor": 79.03,
+      "associative": 79.01,
+      "limbic": 79.61
+     }
+    },
+    "oculomotor": {
+     "driven_channel_drop": 0.9698887467384338,
+     "driven_channel_released": true,
+     "leakage_drop_on_undriven": {
+      "motor": -0.13272559642791748,
+      "associative": -0.12847578525543213,
+      "limbic": -0.13598430156707764
+     },
+     "n_released": 1,
+     "gpi_hz_final": {
+      "motor": 79.21,
+      "oculomotor": 2.12,
+      "associative": 79.01,
+      "limbic": 79.61
+     }
+    },
+    "associative": {
+     "driven_channel_drop": 0.9694531559944153,
+     "driven_channel_released": true,
+     "leakage_drop_on_undriven": {
+      "motor": -0.13304471969604492,
+      "oculomotor": -0.12429046630859375,
+      "limbic": -0.13635671138763428
+     },
+     "n_released": 1,
+     "gpi_hz_final": {
+      "motor": 79.23,
+      "oculomotor": 79.05,
+      "associative": 2.14,
+      "limbic": 79.64
+     }
+    },
+    "limbic": {
+     "driven_channel_drop": 0.9686792492866516,
+     "driven_channel_released": true,
+     "leakage_drop_on_undriven": {
+      "motor": -0.13309979438781738,
+      "oculomotor": -0.12432074546813965,
+      "associative": -0.12879717350006104
+     },
+     "n_released": 1,
+     "gpi_hz_final": {
+      "motor": 79.23,
+      "oculomotor": 79.05,
+      "associative": 79.03,
+      "limbic": 2.2
+     }
+    }
+   },
+   "seconds": 11.6
+  },
+  "B7_sensitivity": {
+   "ok": true,
+   "baseline_beta_hz": 23.152812957763672,
+   "baseline_prominence": 1.324331283569336,
+   "baseline_margin": 1.1910746097564697,
+   "claimed_clock_span_hz": {
+    "tau_gpe": 8.194366455078125,
+    "tau_stn": 8.83775520324707
+   },
+   "claimed_selection_span_margin": {
+    "w_d1_gpi": 1.3440356254577637
+   },
+   "rule": "tau_stn and tau_gpe must each move the beta peak by > 1.0 Hz; w_d1_gpi must move the selection margin by > 0.05",
+   "inert_both": [
+    "tau_msn",
+    "tau_gpi",
+    "w_stop_stn",
+    "w_gpi_thal",
+    "k_da_gain",
+    "k_da_theta",
+    "tau_eta",
+    "d_ctx_str",
+    "d_ctx_stn",
+    "d_str_gpi",
+    "d_str_gpe",
+    "d_stn_gpi",
+    "d_gpi_thal",
+    "d_gpe_gpi",
+    "d_str_lat"
+   ],
+   "inert_but_declared_zero": [],
+   "inert_diagnosis": {
+    "tau_msn": "steady-state observables: sets how fast a selection arrives, not its level",
+    "tau_gpi": "steady-state observables: sets how fast the pause arrives, not its depth",
+    "w_stop_stn": "not exercised: no stop pulse in either measurement (B3 moves it)",
+    "w_gpi_thal": "open loop in THIS HARNESS: no thalamic relay here, so the edge is dropped as an orphan.  A full assembly keeps it",
+    "k_da_gain": "not exercised: measured at the nigral tonic rate, where Mod's factor is 1",
+    "k_da_theta": "not exercised: measured at the nigral tonic rate, where Mod's factor is 1",
+    "tau_eta": "steady-state observables: the background's corner, well outside the band",
+    "d_ctx_str": "steady-state observables: a delay in a feedforward chain",
+    "d_ctx_stn": "not exercised: no stop pulse, and the proposal's collateral is a delay into a steady state",
+    "d_str_gpi": "steady-state observables: a delay into GPi, which nothing reads back",
+    "d_str_gpe": "steady-state observables: a delay in a feedforward chain",
+    "d_stn_gpi": "steady-state observables: a delay into GPi, which nothing reads back",
+    "d_gpi_thal": "open loop in THIS HARNESS: no thalamic relay here, so the edge is dropped as an orphan.  A full assembly keeps it",
+    "d_gpe_gpi": "steady-state observables: a delay into GPi, which nothing reads back",
+    "d_str_lat": "steady-state observables: a delay inside a winner-take-all that settles"
+   },
+   "inert_predicted_and_not_found": [],
+   "inert_definition": "span < 0.2 Hz in beta AND < 0.02 in the selection margin, over the whole 3x sweep",
+   "instrument": {
+    "quiet_s": 0.6,
+    "driven_s": 0.35,
+    "batch": 64,
+    "nperseg": 512,
+    "paired_seed": 5,
+    "bias_vs_gate_B4": "about +0.6 Hz high, common to every arm; this gate reports SPANS, not levels"
+   },
+   "measured_at": {
+    "nigral_rate": 0.5,
+    "resting_cortical_drive": 0.0,
+    "proposals": {
+     "motor": 0.9,
+     "oculomotor": 0.7,
+     "associative": 0.62,
+     "limbic": 0.55
+    },
+    "stop_pulse": 0.0
+   },
+   "blind_spots": {
+    "w_gpi_thal/d_gpi_thal": "the pallidothalamic edge's TARGET IS NOT IN THIS HARNESS -- the gate builds the basal ganglia with stub cortical and nigral populations and no thalamus, so the edge is dropped exactly as ibm.brain.collect drops an orphan.  These two cannot move anything here by construction, and the exactly-zero span they produce is what calibrated this sweep's pairing.  They ARE kept in a full assembly with ibm/brain/thalamus.py, where they close the cbgtc loop, and measuring them needs that assembly and not this gate.",
+    "k_da_gain/k_da_theta": "both observables are measured at a nigral rate of 0.5, which is `da_baseline`, where Mod's factor is exactly 1 + gain * 0 = 1.  They cannot move anything here by construction; gate B5 is what exercises them and it moves both numbers.",
+    "w_stop_stn/d_ctx_stn": "no stop pulse is delivered in either measurement, so the stopping projection is never engaged.  Gate B3 exercises it.",
+    "steady-state observables": "the margin is averaged over the last 100 ms of the driven window and the spectrum is measured at rest, so a constant that only sets how fast a selection ARRIVES, or that shifts the phase of a signal on its way into an output nucleus nothing feeds back from, has nothing to move here.  That is a limitation of this gate's choice of observables and B3's 37 ms latency is where those constants live.",
+    "GPi is a leaf": "nothing in this module reads GPi -- its only efferent is the orphaned pallidothalamic edge -- so every constant that belongs to GPi alone can move the selection margin (which is measured on it) and cannot move the STN spectrum.  A real structural fact about an open cortico-basal-ganglia loop, not a broken mechanism."
+   },
+   "sweep": [
+    {
+     "param": "tau_stn",
+     "value": 0.014,
+     "swept_to": {
+      "half": 0.007,
+      "1p5x": 0.021
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 27.368701934814453,
+     "hz_at_1p5x": 18.530946731567383,
+     "span_hz": 8.83775520324707,
+     "prom_at_half": 3.0076053142547607,
+     "prom_at_1p5x": 1.0620741844177246,
+     "span_prominence": 1.9455311298370361,
+     "margin_at_half": 1.2366265058517456,
+     "margin_at_1p5x": 1.1907241344451904,
+     "span_margin": 0.045902371406555176
+    },
+    {
+     "param": "tau_gpe",
+     "value": 0.01,
+     "swept_to": {
+      "half": 0.005,
+      "1p5x": 0.015
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 27.537582397460938,
+     "hz_at_1p5x": 19.343215942382812,
+     "span_hz": 8.194366455078125,
+     "prom_at_half": 1.163841724395752,
+     "prom_at_1p5x": 1.2424440383911133,
+     "span_prominence": 0.07860231399536133,
+     "margin_at_half": 1.1907768249511719,
+     "margin_at_1p5x": 1.190932273864746,
+     "span_margin": 0.00015544891357421875
+    },
+    {
+     "param": "beta_gpe",
+     "value": 6.0,
+     "swept_to": {
+      "half": 3.0,
+      "1p5x": 9.0
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 17.847843170166016,
+     "hz_at_1p5x": 25.296003341674805,
+     "span_hz": 7.448160171508789,
+     "prom_at_half": 0.8051395416259766,
+     "prom_at_1p5x": 2.788398265838623,
+     "span_prominence": 1.9832587242126465,
+     "margin_at_half": 1.1782779693603516,
+     "margin_at_1p5x": 1.1962616443634033,
+     "span_margin": 0.017983675003051758
+    },
+    {
+     "param": "beta_stn",
+     "value": 6.0,
+     "swept_to": {
+      "half": 3.0,
+      "1p5x": 9.0
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 17.702665328979492,
+     "hz_at_1p5x": 23.553661346435547,
+     "span_hz": 5.850996017456055,
+     "prom_at_half": 0.7457003593444824,
+     "prom_at_1p5x": 3.0261974334716797,
+     "span_prominence": 2.2804970741271973,
+     "margin_at_half": 1.2241626977920532,
+     "margin_at_1p5x": 1.158758282661438,
+     "span_margin": 0.06540441513061523
+    },
+    {
+     "param": "w_stn_gpe",
+     "value": 1.55,
+     "swept_to": {
+      "half": 0.775,
+      "1p5x": 2.325
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 17.676118850708008,
+     "hz_at_1p5x": 23.514495849609375,
+     "span_hz": 5.838376998901367,
+     "prom_at_half": 0.7423801422119141,
+     "prom_at_1p5x": 3.27044677734375,
+     "span_prominence": 2.528066635131836,
+     "margin_at_half": 0.9756261110305786,
+     "margin_at_1p5x": 1.2010934352874756,
+     "span_margin": 0.22546732425689697
+    },
+    {
+     "param": "rest_gpe",
+     "value": 0.6,
+     "swept_to": {
+      "half": 0.3,
+      "1p5x": 0.8999999999999999
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 22.384122848510742,
+     "hz_at_1p5x": 16.711530685424805,
+     "span_hz": 5.6725921630859375,
+     "prom_at_half": 1.1488494873046875,
+     "prom_at_1p5x": 0.6846885681152344,
+     "span_prominence": 0.4641609191894531,
+     "margin_at_half": 1.277296543121338,
+     "margin_at_1p5x": 0.5214565396308899,
+     "span_margin": 0.755840003490448
+    },
+    {
+     "param": "w_gpe_stn",
+     "value": 1.55,
+     "swept_to": {
+      "half": 0.775,
+      "1p5x": 2.325
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 17.971431732177734,
+     "hz_at_1p5x": 23.53377342224121,
+     "span_hz": 5.562341690063477,
+     "prom_at_half": 0.7104158401489258,
+     "prom_at_1p5x": 3.1595685482025146,
+     "span_prominence": 2.449152708053589,
+     "margin_at_half": 0.8106585741043091,
+     "margin_at_1p5x": 1.2029224634170532,
+     "span_margin": 0.39226388931274414
+    },
+    {
+     "param": "rest_stn",
+     "value": 0.25,
+     "swept_to": {
+      "half": 0.125,
+      "1p5x": 0.375
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 18.416242599487305,
+     "hz_at_1p5x": 23.626169204711914,
+     "span_hz": 5.209926605224609,
+     "prom_at_half": 0.8181567192077637,
+     "prom_at_1p5x": 2.5736045837402344,
+     "span_prominence": 1.7554478645324707,
+     "margin_at_half": 1.130521535873413,
+     "margin_at_1p5x": 1.243971824645996,
+     "span_margin": 0.11345028877258301
+    },
+    {
+     "param": "d_gpe_stn",
+     "value": 0.004,
+     "swept_to": {
+      "half": 0.002,
+      "1p5x": 0.006
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 25.16525650024414,
+     "hz_at_1p5x": 21.289018630981445,
+     "span_hz": 3.8762378692626953,
+     "prom_at_half": 0.8422732353210449,
+     "prom_at_1p5x": 2.3273582458496094,
+     "span_prominence": 1.4850850105285645,
+     "margin_at_half": 1.190966248512268,
+     "margin_at_1p5x": 1.1910858154296875,
+     "span_margin": 0.0001195669174194336
+    },
+    {
+     "param": "d_stn_gpe",
+     "value": 0.003,
+     "swept_to": {
+      "half": 0.0015,
+      "1p5x": 0.0045000000000000005
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 24.456594467163086,
+     "hz_at_1p5x": 21.834270477294922,
+     "span_hz": 2.622323989868164,
+     "prom_at_half": 1.055891990661621,
+     "prom_at_1p5x": 1.791062593460083,
+     "span_prominence": 0.7351706027984619,
+     "margin_at_half": 1.1909596920013428,
+     "margin_at_1p5x": 1.1910117864608765,
+     "span_margin": 5.2094459533691406e-05
+    },
+    {
+     "param": "w_gpe_gpe",
+     "value": 0.3,
+     "swept_to": {
+      "half": 0.15,
+      "1p5x": 0.44999999999999996
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 22.669282913208008,
+     "hz_at_1p5x": 23.652265548706055,
+     "span_hz": 0.9829826354980469,
+     "prom_at_half": 1.9133002758026123,
+     "prom_at_1p5x": 1.0728893280029297,
+     "span_prominence": 0.8404109477996826,
+     "margin_at_half": 1.192900538444519,
+     "margin_at_1p5x": 1.1892176866531372,
+     "span_margin": 0.003682851791381836
+    },
+    {
+     "param": "d_gpe_gpe",
+     "value": 0.001,
+     "swept_to": {
+      "half": 0.0005,
+      "1p5x": 0.0015
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 22.9515438079834,
+     "hz_at_1p5x": 23.338144302368164,
+     "span_hz": 0.3866004943847656,
+     "prom_at_half": 1.3137202262878418,
+     "prom_at_1p5x": 1.3504738807678223,
+     "span_prominence": 0.03675365447998047,
+     "margin_at_half": 1.1910737752914429,
+     "margin_at_1p5x": 1.191056251525879,
+     "span_margin": 1.7523765563964844e-05
+    },
+    {
+     "param": "sigma",
+     "value": 0.05,
+     "swept_to": {
+      "half": 0.025,
+      "1p5x": 0.07500000000000001
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.26515769958496,
+     "hz_at_1p5x": 23.00498390197754,
+     "span_hz": 0.2601737976074219,
+     "prom_at_half": 1.549828052520752,
+     "prom_at_1p5x": 1.2308697700500488,
+     "span_prominence": 0.3189582824707031,
+     "margin_at_half": 1.198655366897583,
+     "margin_at_1p5x": 1.1780765056610107,
+     "span_margin": 0.020578861236572266
+    },
+    {
+     "param": "da_baseline",
+     "value": 0.5,
+     "swept_to": {
+      "half": 0.25,
+      "1p5x": 0.75
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.127151489257812,
+     "hz_at_1p5x": 23.332714080810547,
+     "span_hz": 0.20556259155273438,
+     "prom_at_half": 1.3112640380859375,
+     "prom_at_1p5x": 1.477569580078125,
+     "span_prominence": 0.1663055419921875,
+     "margin_at_half": 1.348225474357605,
+     "margin_at_1p5x": 0.004423379898071289,
+     "span_margin": 1.3438020944595337
+    },
+    {
+     "param": "tau_eta",
+     "value": 0.005,
+     "swept_to": {
+      "half": 0.0025,
+      "1p5x": 0.0075
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.213388442993164,
+     "hz_at_1p5x": 23.096837997436523,
+     "span_hz": 0.11655044555664062,
+     "prom_at_half": 1.3132214546203613,
+     "prom_at_1p5x": 1.3298892974853516,
+     "span_prominence": 0.016667842864990234,
+     "margin_at_half": 1.1909725666046143,
+     "margin_at_1p5x": 1.191180944442749,
+     "span_margin": 0.00020837783813476562
+    },
+    {
+     "param": "theta_msn",
+     "value": 0.55,
+     "swept_to": {
+      "half": 0.275,
+      "1p5x": 0.8250000000000001
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.0749568939209,
+     "hz_at_1p5x": 23.15131187438965,
+     "span_hz": 0.07635498046875,
+     "prom_at_half": 1.2916951179504395,
+     "prom_at_1p5x": 1.324352741241455,
+     "span_prominence": 0.032657623291015625,
+     "margin_at_half": 1.1759904623031616,
+     "margin_at_1p5x": 1.071942925453186,
+     "span_margin": 0.10404753684997559
+    },
+    {
+     "param": "beta_msn",
+     "value": 10.0,
+     "swept_to": {
+      "half": 5.0,
+      "1p5x": 15.0
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.13146209716797,
+     "hz_at_1p5x": 23.151742935180664,
+     "span_hz": 0.020280838012695312,
+     "prom_at_half": 1.3176641464233398,
+     "prom_at_1p5x": 1.3247184753417969,
+     "span_prominence": 0.007054328918457031,
+     "margin_at_half": 0.9804955720901489,
+     "margin_at_1p5x": 1.2000157833099365,
+     "span_margin": 0.2195202112197876
+    },
+    {
+     "param": "stn_diffuse",
+     "value": 0.8,
+     "swept_to": {
+      "half": 0.4,
+      "1p5x": 0.995
+     },
+     "clamped_to_unit_interval": true,
+     "hz_at_half": 23.138240814208984,
+     "hz_at_1p5x": 23.15784454345703,
+     "span_hz": 0.019603729248046875,
+     "prom_at_half": 1.321624755859375,
+     "prom_at_1p5x": 1.3245620727539062,
+     "span_prominence": 0.00293731689453125,
+     "margin_at_half": 0.52582848072052,
+     "margin_at_1p5x": 1.3301012516021729,
+     "span_margin": 0.8042727708816528
+    },
+    {
+     "param": "tau_msn",
+     "value": 0.015,
+     "swept_to": {
+      "half": 0.0075,
+      "1p5x": 0.0225
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.16228675842285,
+     "hz_at_1p5x": 23.149873733520508,
+     "span_hz": 0.01241302490234375,
+     "prom_at_half": 1.3251409530639648,
+     "prom_at_1p5x": 1.326493740081787,
+     "span_prominence": 0.0013527870178222656,
+     "margin_at_half": 1.1911020278930664,
+     "margin_at_1p5x": 1.1910207271575928,
+     "span_margin": 8.130073547363281e-05
+    },
+    {
+     "param": "d_str_gpe",
+     "value": 0.0045,
+     "swept_to": {
+      "half": 0.00225,
+      "1p5x": 0.006749999999999999
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.157459259033203,
+     "hz_at_1p5x": 23.147628784179688,
+     "span_hz": 0.009830474853515625,
+     "prom_at_half": 1.3265190124511719,
+     "prom_at_1p5x": 1.322476863861084,
+     "span_prominence": 0.004042148590087891,
+     "margin_at_half": 1.1910765171051025,
+     "margin_at_1p5x": 1.191071629524231,
+     "span_margin": 4.887580871582031e-06
+    },
+    {
+     "param": "k_da_theta",
+     "value": 2.18,
+     "swept_to": {
+      "half": 1.09,
+      "1p5x": 3.2700000000000005
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.154603958129883,
+     "hz_at_1p5x": 23.15105628967285,
+     "span_hz": 0.00354766845703125,
+     "prom_at_half": 1.3304495811462402,
+     "prom_at_1p5x": 1.3212642669677734,
+     "span_prominence": 0.009185314178466797,
+     "margin_at_half": 1.1910755634307861,
+     "margin_at_1p5x": 1.1910741329193115,
+     "span_margin": 1.430511474609375e-06
+    },
+    {
+     "param": "w_str_lat",
+     "value": 3.0,
+     "swept_to": {
+      "half": 1.5,
+      "1p5x": 4.5
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.151845932006836,
+     "hz_at_1p5x": 23.15336799621582,
+     "span_hz": 0.001522064208984375,
+     "prom_at_half": 1.323441982269287,
+     "prom_at_1p5x": 1.3248777389526367,
+     "span_prominence": 0.0014357566833496094,
+     "margin_at_half": 1.1376698017120361,
+     "margin_at_1p5x": 1.1915851831436157,
+     "span_margin": 0.05391538143157959
+    },
+    {
+     "param": "w_d2_gpe",
+     "value": 1.4,
+     "swept_to": {
+      "half": 0.7,
+      "1p5x": 2.0999999999999996
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152801513671875,
+     "hz_at_1p5x": 23.153329849243164,
+     "span_hz": 0.0005283355712890625,
+     "prom_at_half": 1.3265633583068848,
+     "prom_at_1p5x": 1.3217411041259766,
+     "span_prominence": 0.004822254180908203,
+     "margin_at_half": 1.3193881511688232,
+     "margin_at_1p5x": 1.17499840259552,
+     "span_margin": 0.14438974857330322
+    },
+    {
+     "param": "w_stop_stn",
+     "value": 2.0,
+     "swept_to": {
+      "half": 1.0,
+      "1p5x": 3.0
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152664184570312,
+     "hz_at_1p5x": 23.15296173095703,
+     "span_hz": 0.00029754638671875,
+     "prom_at_half": 1.3242096900939941,
+     "prom_at_1p5x": 1.3244538307189941,
+     "span_prominence": 0.000244140625,
+     "margin_at_half": 1.191206455230713,
+     "margin_at_1p5x": 1.1909430027008057,
+     "span_margin": 0.00026345252990722656
+    },
+    {
+     "param": "d_str_lat",
+     "value": 0.001,
+     "swept_to": {
+      "half": 0.0005,
+      "1p5x": 0.0015
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.15283966064453,
+     "hz_at_1p5x": 23.15260887145996,
+     "span_hz": 0.0002307891845703125,
+     "prom_at_half": 1.3254070281982422,
+     "prom_at_1p5x": 1.3231611251831055,
+     "span_prominence": 0.0022459030151367188,
+     "margin_at_half": 1.1910748481750488,
+     "margin_at_1p5x": 1.1910746097564697,
+     "span_margin": 2.384185791015625e-07
+    },
+    {
+     "param": "w_ctx_stn",
+     "value": 0.9,
+     "swept_to": {
+      "half": 0.45,
+      "1p5x": 1.35
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152746200561523,
+     "hz_at_1p5x": 23.152881622314453,
+     "span_hz": 0.0001354217529296875,
+     "prom_at_half": 1.3242764472961426,
+     "prom_at_1p5x": 1.3243870735168457,
+     "span_prominence": 0.000110626220703125,
+     "margin_at_half": 1.1987085342407227,
+     "margin_at_1p5x": 0.841056764125824,
+     "span_margin": 0.3576517701148987
+    },
+    {
+     "param": "w_ctx_d2",
+     "value": 1.2,
+     "swept_to": {
+      "half": 0.6,
+      "1p5x": 1.7999999999999998
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152795791625977,
+     "hz_at_1p5x": 23.1528263092041,
+     "span_hz": 3.0517578125e-05,
+     "prom_at_half": 1.3243212699890137,
+     "prom_at_1p5x": 1.3243427276611328,
+     "span_prominence": 2.1457672119140625e-05,
+     "margin_at_half": 1.3257269859313965,
+     "margin_at_1p5x": 1.1790709495544434,
+     "span_margin": 0.14665603637695312
+    },
+    {
+     "param": "d_ctx_stn",
+     "value": 0.0035,
+     "swept_to": {
+      "half": 0.00175,
+      "1p5x": 0.00525
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.15282440185547,
+     "hz_at_1p5x": 23.152807235717773,
+     "span_hz": 1.71661376953125e-05,
+     "prom_at_half": 1.3243441581726074,
+     "prom_at_1p5x": 1.324324131011963,
+     "span_prominence": 2.002716064453125e-05,
+     "margin_at_half": 1.1910746097564697,
+     "margin_at_1p5x": 1.1910747289657593,
+     "span_margin": 1.1920928955078125e-07
+    },
+    {
+     "param": "d_ctx_str",
+     "value": 0.0055,
+     "swept_to": {
+      "half": 0.00275,
+      "1p5x": 0.00825
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152809143066406,
+     "hz_at_1p5x": 23.152814865112305,
+     "span_hz": 5.7220458984375e-06,
+     "prom_at_half": 1.3243308067321777,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 4.76837158203125e-07,
+     "margin_at_half": 1.1910748481750488,
+     "margin_at_1p5x": 1.1910748481750488,
+     "span_margin": 0.0
+    },
+    {
+     "param": "k_da_gain",
+     "value": 1.2,
+     "swept_to": {
+      "half": 0.6,
+      "1p5x": 1.7999999999999998
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152812957763672,
+     "hz_at_1p5x": 23.152814865112305,
+     "span_hz": 1.9073486328125e-06,
+     "prom_at_half": 1.324331283569336,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 0.0,
+     "margin_at_half": 1.1910746097564697,
+     "margin_at_1p5x": 1.1910746097564697,
+     "span_margin": 0.0
+    },
+    {
+     "param": "rest_gpi",
+     "value": 0.7,
+     "swept_to": {
+      "half": 0.35,
+      "1p5x": 0.995
+     },
+     "clamped_to_unit_interval": true,
+     "hz_at_half": 23.152812957763672,
+     "hz_at_1p5x": 23.152812957763672,
+     "span_hz": 0.0,
+     "prom_at_half": 1.324331283569336,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 0.0,
+     "margin_at_half": 2.2598206996917725,
+     "margin_at_1p5x": 0.08201754093170166,
+     "span_margin": 2.177803158760071
+    },
+    {
+     "param": "beta_gpi",
+     "value": 6.0,
+     "swept_to": {
+      "half": 3.0,
+      "1p5x": 9.0
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152812957763672,
+     "hz_at_1p5x": 23.152812957763672,
+     "span_hz": 0.0,
+     "prom_at_half": 1.324331283569336,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 0.0,
+     "margin_at_half": 0.7398589253425598,
+     "margin_at_1p5x": 1.3628489971160889,
+     "span_margin": 0.622990071773529
+    },
+    {
+     "param": "tau_gpi",
+     "value": 0.012,
+     "swept_to": {
+      "half": 0.006,
+      "1p5x": 0.018000000000000002
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152812957763672,
+     "hz_at_1p5x": 23.152812957763672,
+     "span_hz": 0.0,
+     "prom_at_half": 1.324331283569336,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 0.0,
+     "margin_at_half": 1.191108226776123,
+     "margin_at_1p5x": 1.1911437511444092,
+     "span_margin": 3.552436828613281e-05
+    },
+    {
+     "param": "w_ctx_d1",
+     "value": 1.2,
+     "swept_to": {
+      "half": 0.6,
+      "1p5x": 1.7999999999999998
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152812957763672,
+     "hz_at_1p5x": 23.152812957763672,
+     "span_hz": 0.0,
+     "prom_at_half": 1.324331283569336,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 0.0,
+     "margin_at_half": 3.445148468017578e-05,
+     "margin_at_1p5x": 1.185865879058838,
+     "span_margin": 1.1858314275741577
+    },
+    {
+     "param": "w_d1_gpi",
+     "value": 1.6,
+     "swept_to": {
+      "half": 0.8,
+      "1p5x": 2.4000000000000004
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152812957763672,
+     "hz_at_1p5x": 23.152812957763672,
+     "span_hz": 0.0,
+     "prom_at_half": 1.324331283569336,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 0.0,
+     "margin_at_half": 0.0237807035446167,
+     "margin_at_1p5x": 1.3678163290023804,
+     "span_margin": 1.3440356254577637
+    },
+    {
+     "param": "w_stn_gpi",
+     "value": 2.2,
+     "swept_to": {
+      "half": 1.1,
+      "1p5x": 3.3000000000000003
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152812957763672,
+     "hz_at_1p5x": 23.152812957763672,
+     "span_hz": 0.0,
+     "prom_at_half": 1.324331283569336,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 0.0,
+     "margin_at_half": 1.1680041551589966,
+     "margin_at_1p5x": 0.5293270349502563,
+     "span_margin": 0.6386771202087402
+    },
+    {
+     "param": "w_gpe_gpi",
+     "value": 0.5,
+     "swept_to": {
+      "half": 0.25,
+      "1p5x": 0.75
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152812957763672,
+     "hz_at_1p5x": 23.152812957763672,
+     "span_hz": 0.0,
+     "prom_at_half": 1.324331283569336,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 0.0,
+     "margin_at_half": 1.3058350086212158,
+     "margin_at_1p5x": 0.9861592650413513,
+     "span_margin": 0.3196757435798645
+    },
+    {
+     "param": "w_gpi_thal",
+     "value": 1.2,
+     "swept_to": {
+      "half": 0.6,
+      "1p5x": 1.7999999999999998
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152812957763672,
+     "hz_at_1p5x": 23.152812957763672,
+     "span_hz": 0.0,
+     "prom_at_half": 1.324331283569336,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 0.0,
+     "margin_at_half": 1.1910746097564697,
+     "margin_at_1p5x": 1.1910746097564697,
+     "span_margin": 0.0
+    },
+    {
+     "param": "d_str_gpi",
+     "value": 0.0045,
+     "swept_to": {
+      "half": 0.00225,
+      "1p5x": 0.006749999999999999
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152812957763672,
+     "hz_at_1p5x": 23.152812957763672,
+     "span_hz": 0.0,
+     "prom_at_half": 1.324331283569336,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 0.0,
+     "margin_at_half": 1.1910794973373413,
+     "margin_at_1p5x": 1.1910679340362549,
+     "span_margin": 1.1563301086425781e-05
+    },
+    {
+     "param": "d_stn_gpi",
+     "value": 0.003,
+     "swept_to": {
+      "half": 0.0015,
+      "1p5x": 0.0045000000000000005
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152812957763672,
+     "hz_at_1p5x": 23.152812957763672,
+     "span_hz": 0.0,
+     "prom_at_half": 1.324331283569336,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 0.0,
+     "margin_at_half": 1.1911410093307495,
+     "margin_at_1p5x": 1.191004991531372,
+     "span_margin": 0.0001360177993774414
+    },
+    {
+     "param": "d_gpi_thal",
+     "value": 0.0035,
+     "swept_to": {
+      "half": 0.00175,
+      "1p5x": 0.00525
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152812957763672,
+     "hz_at_1p5x": 23.152812957763672,
+     "span_hz": 0.0,
+     "prom_at_half": 1.324331283569336,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 0.0,
+     "margin_at_half": 1.1910746097564697,
+     "margin_at_1p5x": 1.1910746097564697,
+     "span_margin": 0.0
+    },
+    {
+     "param": "d_gpe_gpi",
+     "value": 0.003,
+     "swept_to": {
+      "half": 0.0015,
+      "1p5x": 0.0045000000000000005
+     },
+     "clamped_to_unit_interval": false,
+     "hz_at_half": 23.152812957763672,
+     "hz_at_1p5x": 23.152812957763672,
+     "span_hz": 0.0,
+     "prom_at_half": 1.324331283569336,
+     "prom_at_1p5x": 1.324331283569336,
+     "span_prominence": 0.0,
+     "margin_at_half": 1.1910037994384766,
+     "margin_at_1p5x": 1.1911462545394897,
+     "span_margin": 0.0001424551010131836
+    }
+   ],
+   "seconds": 287.0
+  }
+ },
+ "gates_run": [
+  "B0_bounded",
+  "B1_idempotent",
+  "B2_selection",
+  "B3_stop",
+  "B4_beta",
+  "B5_dopamine",
+  "B6_channels",
+  "B7_sensitivity"
+ ],
+ "all_gates_ok": true,
+ "failed": []
+}
