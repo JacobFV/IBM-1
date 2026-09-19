@@ -7296,3 +7296,55 @@ it now.
 files because it staged with `git add -A` while other sessions were live in this tree. The
 content was correct and no history was rewritten; `176d054` records the attribution file by
 file. This commit stages its paths by name, and that is the practice from here.
+
+## 18 September 2026 — CORRECTION: "the cerebellum does not learn" was my overstatement
+
+Earlier today I recorded C3's failure as "**the cerebellum does not learn**" and repeated it
+as the most important result of that module. **That is wrong, and I withdraw it.** Reading
+the gate's own numbers, which were in the artefact when I wrote the sentence:
+
+| seed | taught | shuffled | overshoot (opposite teacher) | ratio vs bar 4.0 |
+|---|---|---|---|---|
+| 101 | **+0.0720** | −0.0004 | −0.0611 | pass |
+| 202 | **+0.0818** | +0.0205 | −0.0425 | **3.98** |
+| 303 | **+0.0860** | +0.0124 | −0.0759 | pass |
+
+The taught arm improves on **every** seed, monotonically over 30 trials, and the arm with
+the teacher pointed the opposite way makes the error **worse on every seed**. What failed
+is the CONTRAST against a shuffled teacher, on one seed of three, by **0.02** against a bar
+of 4.0. "Does not learn" is not a description of that; it is a description of a run I did
+not read closely enough before summarising it.
+
+The gate stays **FAILED** — the bar is not moved and the number is not re-scored. What is
+corrected is the sentence I wrote about it.
+
+**Why the shuffled arm improves at all, which is a fault in the task and not in the model.**
+The teacher fires only on UNDERSHOOT, and the only plasticity here is LTD, which lowers
+Purkinje firing and so RAISES the nucleus: learning can push in one direction. C3's targets
+run 0.20–0.80 around a resting nucleus of **0.3285**, so four of six sit *above* rest and
+any depression at all — contingent or not — carries most patterns toward their target. The
+control was competing against a strategy that needs no contingency.
+
+**C3b, declared in full before running: the same bar on a task where that cannot work.**
+Targets placed symmetrically around the measured resting nucleus (0.178–0.478), so a uniform
+depression helps as many patterns as it hurts; same three arms, same one-permutation
+discipline, same 4.0× bar, fresh pattern seeds. Result — **FAILED, 2 of 3**:
+
+| seed | taught | shuffled | overshoot | ratio |
+|---|---|---|---|---|
+| 404 | +0.0323 | +0.0031 | −0.0541 | 10.45 |
+| 505 | +0.0250 | −0.0030 | −0.0448 | — (shuffled got worse) |
+| 606 | +0.0151 | +0.0041 | −0.0379 | **3.70** |
+
+**So both designs fail the same way, and the way is the rule's fault.** The statistic is a
+ratio whose denominator is the shuffled arm's improvement — a small number near zero that
+swings between seeds — judged all-or-nothing on three of them. CLAUDE.md says this twice
+over: a tight cluster across a handful of seeds is itself a coin flip, and a margin must
+clear sampling error on *both* sides. A rule that turns on the ratio of two noisy small
+numbers was never going to measure the thing it names.
+
+**C3c is the question asked properly**, declared before running and reported next: eight
+fresh seeds, the **paired** difference (taught − shuffled) on the same seed and the same
+permutation, a 95% percentile bootstrap over seeds that must exclude zero, and the overshoot
+arm required to be negative on every seed. C3 and C3b remain FAILED; C3c is a differently
+designed test, not a re-scoring of either.

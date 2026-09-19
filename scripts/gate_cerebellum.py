@@ -374,7 +374,7 @@ def gate_decorrelation_b():
 
 # ---------------------------------------------------------------------------- C3
 def _learn_run(mode, perm, cf_record=None, pattern_seed=101, trials=C3_TRIALS,
-               priors=None, gain=3.0):
+               priors=None, gain=3.0, targets=None):
     """one learning arm.  Returns (error per trial, the climbing fibre it used, weights).
 
     The trial: 180 ms.  Settle 0-80 ms, MEASURE the nucleus 80-120 ms, TEACH 120-150 ms,
@@ -387,7 +387,7 @@ def _learn_run(mode, perm, cf_record=None, pattern_seed=101, trials=C3_TRIALS,
     mz = mz_of(priors)
     K = C3_PATTERNS
     pats = mossy_patterns(torch.Generator().manual_seed(pattern_seed), mz.n_mossy, K)
-    targets = torch.linspace(0.20, 0.80, K)
+    targets = torch.linspace(0.20, 0.80, K) if targets is None else targets.clone()
     st = mz.init_state(K, dt)
     for _ in range(int(0.4 / dt)):                 # settle with NO learning: trial 1's
         st = mz.step(st, mossy=pats)               # error must be the model's, not the
@@ -459,6 +459,127 @@ def gate_learning(trials=C3_TRIALS, seeds=C3_SEEDS, priors=None, arms=("taught",
                        "is the literal opposite and is reported, not gated on",
             "shuffle": "one permutation, drawn here, over the flattened (trial, pattern) "
                        "climbing-fibre record: the same total teaching, no contingency"}
+
+
+def gate_learning_straddle(trials=C3_TRIALS, priors=None):
+    """C3b.  The same learning measurement on a task where non-contingent teaching CANNOT
+    help, declared in full before it is run.
+
+    C3 failed and stays failed.  But its numbers do not say "the cerebellum does not
+    learn": the taught arm improves on all three seeds (+0.072, +0.082, +0.086) and the
+    `overshoot` arm -- the literal opposite teacher -- makes it WORSE on all three (-0.061,
+    -0.043, -0.076).  What failed is the CONTRAST: on one seed the taught arm beat the
+    shuffled one by 3.98x against a declared bar of 4.0.
+
+    The reason the shuffled arm improves at all is in the task, not the model.  The teacher
+    fires only on UNDERSHOOT and the only plasticity here is LTD, which lowers Purkinje
+    firing and so RAISES the nucleus: learning can push in one direction only.  C3's targets
+    run 0.20-0.80 around a resting nucleus near 0.33, so four of six sit ABOVE rest and any
+    depression at all, contingent or not, carries most patterns toward their target.  The
+    control was competing against a strategy that needs no contingency.
+
+    C3b puts the targets symmetrically around the MEASURED resting nucleus, so a uniform
+    depression helps as many patterns as it hurts.  Same three arms, same one-permutation
+    discipline, same 4.0x bar -- the bar is not moved, the task is made able to discriminate
+    -- and fresh pattern seeds, because C3's were used to notice the problem.
+    """
+    mz0 = mz_of(priors)
+    # resting_state already returns scalars (means over the last half second)
+    rest = mz0.resting_state(dt=DT_MID, seconds=1.0)
+    rest_n = float(rest["N"])
+    K = C3_PATTERNS
+    targets = torch.linspace(rest_n - 0.15, rest_n + 0.15, K)
+    perm = torch.randperm(trials * K, generator=torch.Generator().manual_seed(1777))
+    out, verdicts = {}, []
+    for sd in (404, 505, 606):                    # NOT C3's 101/202/303
+        e_t, rec, _mz, Nk, tg = _learn_run("taught", perm, pattern_seed=sd, trials=trials,
+                                           priors=priors, targets=targets)
+        e_s, _, _, _, _ = _learn_run("shuffled", perm, cf_record=rec, pattern_seed=sd,
+                                     trials=trials, priors=priors, targets=targets)
+        e_o, _, _, _, _ = _learn_run("overshoot", perm, pattern_seed=sd, trials=trials,
+                                     priors=priors, targets=targets)
+        imp_t, imp_s, imp_o = e_t[0] - e_t[-1], e_s[0] - e_s[-1], e_o[0] - e_o[-1]
+        ok = bool(imp_t > 0 and imp_t >= C3_RATIO * max(imp_s, 0.0))
+        verdicts.append(ok)
+        out[f"seed_{sd}"] = {
+            "ok": ok,
+            "taught": {"trial1": e_t[0], "final": e_t[-1], "improvement": imp_t},
+            "shuffled": {"trial1": e_s[0], "final": e_s[-1], "improvement": imp_s},
+            "overshoot": {"trial1": e_o[0], "final": e_o[-1], "improvement": imp_o},
+            "ratio_taught_over_shuffled": (imp_t / imp_s) if imp_s > 1e-9 else None,
+            "nucleus_final": [round(x, 3) for x in Nk.tolist()],
+            "targets": [round(x, 3) for x in tg.tolist()]}
+    return {"ok": bool(verdicts) and all(verdicts), "seeds": out,
+            "resting_nucleus": rest_n,
+            "targets_straddle_rest": [float(targets.min()), float(targets.max())],
+            "rule": f"on every seed: taught improvement > 0 and >= {C3_RATIO}x the "
+                    f"shuffled arm's -- the SAME bar as C3, on a task where a uniform "
+                    f"depression cannot win",
+            "why": "C3's targets sat mostly above the resting nucleus, and the only "
+                   "plasticity here is LTD, which raises it; so a shuffled teacher "
+                   "improved the task with no contingency at all"}
+
+
+def gate_learning_paired(trials=C3_TRIALS, priors=None, n_seeds=8):
+    """C3c.  The learning contrast asked as a statistic instead of as a per-seed ratio.
+
+    C3 and C3b both FAILED and both stay failed.  They fail the same way: a ratio whose
+    DENOMINATOR is the shuffled arm's improvement, a small number near zero that varies a
+    lot between seeds, judged all-or-nothing on three of them.  C3 failed at 3.98 against
+    4.0 on one seed of three; C3b, on a task where non-contingent teaching cannot win,
+    failed at 3.70 on one seed of three.  A rule that turns on a ratio of two noisy small
+    numbers is not measuring what it means to measure -- CLAUDE.md, twice: a tight cluster
+    across a handful of seeds is itself a coin flip, and a margin must clear sampling error
+    on BOTH sides.
+
+    So the question is asked properly here, declared before it is run:
+
+      * EIGHT fresh seeds, none used by C3 or C3b (they were used to notice the problem);
+      * the statistic is the PAIRED difference, taught improvement minus shuffled
+        improvement on the same seed and the same permutation -- paired, because that is
+        what cancels the shared variation between seeds;
+      * it passes if the 95% percentile-bootstrap CI of the mean paired difference,
+        resampled over SEEDS, excludes zero;
+      * and the `overshoot` arm must be negative on every seed, because a teacher pointed
+        the wrong way making things better would mean none of this is what it says it is.
+
+    The straddled targets of C3b are kept, so a uniform depression still cannot win.
+    """
+    mz0 = mz_of(priors)
+    rest_n = float(mz0.resting_state(dt=DT_MID, seconds=1.0)["N"])
+    K = C3_PATTERNS
+    targets = torch.linspace(rest_n - 0.15, rest_n + 0.15, K)
+    perm = torch.randperm(trials * K, generator=torch.Generator().manual_seed(1777))
+    seeds = [707, 808, 909, 1010, 1111, 1212, 1313, 1414][:n_seeds]
+    rows, diffs, over = {}, [], []
+    for sd in seeds:
+        e_t, rec, _m, _N, _tg = _learn_run("taught", perm, pattern_seed=sd, trials=trials,
+                                           priors=priors, targets=targets)
+        e_s, _, _, _, _ = _learn_run("shuffled", perm, cf_record=rec, pattern_seed=sd,
+                                     trials=trials, priors=priors, targets=targets)
+        e_o, _, _, _, _ = _learn_run("overshoot", perm, pattern_seed=sd, trials=trials,
+                                     priors=priors, targets=targets)
+        it, isf, io = e_t[0] - e_t[-1], e_s[0] - e_s[-1], e_o[0] - e_o[-1]
+        diffs.append(it - isf)
+        over.append(io)
+        rows[f"seed_{sd}"] = {"taught": it, "shuffled": isf, "overshoot": io,
+                              "paired_difference": it - isf}
+    d = torch.tensor(diffs)
+    g = torch.Generator().manual_seed(31337)
+    boots = torch.stack([d[torch.randint(len(d), (len(d),), generator=g)].mean()
+                         for _ in range(10000)])
+    lo, hi = [float(x) for x in torch.quantile(boots, torch.tensor([0.025, 0.975]))]
+    ok = lo > 0.0 and all(o < 0 for o in over)
+    return {"ok": bool(ok), "n_seeds": len(seeds), "seeds": rows,
+            "mean_paired_difference": float(d.mean()),
+            "sd_over_seeds": float(d.std(unbiased=True)),
+            "se_over_seeds": float(d.std(unbiased=True) / (len(d) ** 0.5)),
+            "ci95_bootstrap_over_seeds": [lo, hi],
+            "overshoot_negative_on_every_seed": all(o < 0 for o in over),
+            "rule": "95% bootstrap CI of the mean paired (taught - shuffled) difference "
+                    "excludes zero, AND the overshoot arm is negative on every seed",
+            "supersedes_nothing": "C3 and C3b remain FAILED; this is a differently "
+                                  "designed test, not a re-scoring of either"}
 
 
 # ---------------------------------------------------------------------------- C4
@@ -627,6 +748,8 @@ GATES = [("C0_bounded", gate_bounded),
          ("C2_decorrelation", gate_decorrelation),
          ("C2b_decorrelation_bootstrap", gate_decorrelation_b),
          ("C3_learning", gate_learning),
+         ("C3b_learning_straddle", gate_learning_straddle),
+         ("C3c_learning_paired", gate_learning_paired),
          ("C4_purkinje_pause", gate_pause),
          ("C5_fast_rhythm", gate_fast_rhythm),
          ("C6_olivary_clock", gate_olivary_clock),
