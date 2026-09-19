@@ -1,0 +1,111 @@
+--- C0_bounded
+[PASS] C0_bounded: {"ok": true, "worst_excursion": 0.0, "ctc_loop_excursion": 0.0, "ctc_round_trip": {"round_trip_s": 0.0295, "round_trip_ms": 29.5, "round_trip_steps": 148, "loop_bound_hz": 16.949152542372882}, "resting_note": "the Purkinje population is tonically active with no input: 56.2 Hz, nucleus 32.8 Hz"}
+      resting: the Purkinje population is tonically active with no input: 56.2 Hz, nucleus 32.8 Hz
+      ctc edges in steps: {'d_ctx_pons_s': 50, 'd_mf_gr_s': 27, 'd_pk_n_s': 18, 'd_n_thal_s': 38, 'd_thal_ctx_s': 15}
+--- C1_idempotent
+[PASS] C1_idempotent: {"ok": true, "rollout_bit_identical": true, "step_called_twice_identical": true, "step_max_abs_diff": 0.0, "granule_code_bit_identical": true, "rollout_max_abs_diff": 0.0}
+--- C2_decorrelation
+[FAIL] C2_decorrelation: {"ok": false, "r_mossy_mean": 0.8793260455131531, "r_granule_mean": 0.7914811260998249, "drop": 0.08784491941332817, "declared_input_r": 0.9, "every_pair_dropped": false, "min_drop": -0.08960825204849243, "granule_active_fraction": 0.044374999357387424, "granule_sd": 0.08748906757682562, "code_alive": true, "known_answer_identical_patterns_r": 1.0, "known_answer_ok": true, "expansion": "24 mossy -> 400 granule (16.7x), 4 per cell", "rule": "mean granule r must be below mean mossy r by > 0.05, every pair must drop, the code must be alive, and identical patterns must come back at r = 1"}
+--- C2b_decorrelation_bootstrap
+[PASS] C2b_decorrelation_bootstrap: {"ok": true, "n_pairs": 32, "r_mossy_mean": 0.9001737236976624, "r_granule_mean": 0.7904292345046997, "mean_drop": 0.10974448919296265, "sd_of_drop": 0.08831902593374252, "se_of_drop": 0.015612745536384972, "ci95_of_mean_drop": [0.0807420015335083, 0.1410495638847351], "pairs_that_reversed": 3, "granule_active_fraction": 0.05414062464842573, "granule_sd": 0.10318574809934944, "code_alive": true, "rule": "bootstrap over PAIRS: 95% CI of the mean paired drop must exclude zero, the mean drop must exceed 0.05, and the code must be alive", "replaces": "C2, which required all eight of eight pairs to drop and stays FAILED", "per_pair_drop": [0.3723, 0.0553, -0.0896, 0.1627, -0.0081, 0.2099, 0.0041, -0.0038, 0.013, 0.1598, 0.1579, 0.0974, 0.113, 0.176, 0.0091, 0.1295, 0.1335, 0.1064, 0.1587, 0.0251, 0.1249, 0.1408, 0.1185, 0.198, 0.0733, 0.2068, 0.1736, 0.0489, 0.1989, 0.0936, 0.0447, 0.1075]}
+--- C3_learning
+[FAIL] C3_learning: {"ok": false, "trials": 30, "patterns": 6, "dt": 0.0005, "eta": 6.0, "rule": "on every seed: taught final error < taught trial-1 error, and the taught improvement >= 4.0x the shuffled arm's", "cf_sign": "the teacher fires on the UNDERSHOOT; LTD at PF->Purkinje lowers Purkinje firing and so RAISES the nucleus.  the `overshoot` arm is the literal opposite and is reported, not gated on", "shuffle": "one permutation, drawn here, over the flattened (trial, pattern) climbing-fibre record: the same total teaching, no contingency"}
+      seed_101: taught 0.1850 -> 0.1130 (d +0.0720) | shuffled 0.1850 -> 0.1854 (d -0.0004) | overshoot d -0.0611
+      seed_202: taught 0.1915 -> 0.1097 (d +0.0818) | shuffled 0.1915 -> 0.1709 (d +0.0205) | overshoot d -0.0425
+      seed_303: taught 0.2108 -> 0.1248 (d +0.0860) | shuffled 0.2108 -> 0.1983 (d +0.0124) | overshoot d -0.0759
+--- C4_purkinje_pause
+[PASS] C4_purkinje_pause: {"ok": true, "purkinje_baseline": 0.7568212747573853, "purkinje_min": 0.05485336109995842, "purkinje_min_over_baseline": 0.07247861936431794, "purkinje_latency_ms_from_injection": 14.200000000000001, "purkinje_latency_ms_from_cf_arrival": 9.2, "cf_conduction_ms": 5.0, "silence_ms_below_90pct": 37.2, "silence_ms_below_20pct": 8.4, "nucleus_baseline": 0.31258657574653625, "nucleus_max": 0.8549461960792542, "nucleus_rise": 0.5423596203327179, "nucleus_latency_ms_from_injection": 40.800000000000004, "nucleus_peak_after_cf_arrival": true, "rule": "purkinje min <= 0.5 x baseline (a pause, not a nudge), nucleus rise >= 0.05, nuclear peak after the cf arrives", "smoothing_ms": 5.0}
+--- C5_fast_rhythm
+[PASS] C5_fast_rhythm: {"ok": true, "purkinje_peak_hz": 196.18565368652344, "purkinje_prominence_decades": 4.958358287811279, "purkinje_sd": 0.09945444762706757, "band": [160.0, 250.0], "catalogue_peak_hz": 200.0, "off_catalogue_hz": -3.8143463134765625, "granule_active_fraction": 0.07750000059604645, "rule": "prominence > 0 AND the peak inside the declared band; the frequency is never reported without the prominence", "measured_on": "Purkinje population mean, 0.4-2.0 s, dt=1e-4"}
+--- C6_olivary_clock
+[PASS] C6_olivary_clock: {"ok": true, "peak_hz": 8.127196311950684, "prominence_decades": 5.162112236022949, "band": [5.0, 10.0], "catalogue_peak_hz": 8.0, "late_sd": 0.15084250271320343, "early_sd": 0.1491180658340454, "sustained": true, "resting_cs_duty": 0.002116546267643571, "rule": "prominence > 0 AND peak in band AND late-window sd > 0.01.  the third condition exists because a decaying oscillation's start transient put a +2.8 decade peak in a whole-run spectrum", "measured_on": "olivary membrane population mean, 4-6 s, dt=2e-4"}
+      drive_io 0.00 -> cs duty 0.0020, P 0.562, N 0.328
+      drive_io 0.08 -> cs duty 0.0179, P 0.514, N 0.432
+      drive_io 0.16 -> cs duty 0.0613, P 0.439, N 0.562
+      drive_io 0.30 -> cs duty 0.1446, P 0.386, N 0.639
+--- C7_sensitivity
+      tau_M             195.3 ->  195.3 Hz (span   0.0) | learn span 0.0000
+      tau_G             195.3 ->  195.3 Hz (span   0.0) | learn span 0.0001
+      w_MG              194.2 ->  195.4 Hz (span   1.3) | learn span 0.3306
+      theta_G           197.4 ->  194.2 Hz (span   3.2) | learn span 0.0157
+      beta_G            196.5 ->  195.0 Hz (span   1.5) | learn span 0.0708
+      theta_G_jitter    195.3 ->  195.5 Hz (span   0.2) | learn span 0.0104
+      w_GoG             195.2 ->  194.2 Hz (span   1.0) | learn span 0.3220
+      tau_Go            195.3 ->  195.3 Hz (span   0.0) | learn span 0.0002
+      beta_Go           197.0 ->  194.4 Hz (span   2.7) | learn span 0.0624
+      theta_Go          194.3 ->  197.0 Hz (span   2.7) | learn span 0.0615
+      w_GGo             196.8 ->  194.6 Hz (span   2.2) | learn span 0.0300
+      w_MGo             197.0 ->  194.2 Hz (span   2.8) | learn span 0.0195
+      tau_I             225.7 ->  179.9 Hz (span  45.8) | learn span 0.0146
+      beta_I            183.7 ->  194.2 Hz (span  10.4) | learn span 0.0299
+      theta_I           197.2 ->  193.9 Hz (span   3.3) | learn span 0.0900
+      i_tonic            85.7 ->  197.8 Hz (span 112.1) | learn span 0.2354
+      i_jitter          195.0 ->  195.7 Hz (span   0.7) | learn span 0.0003
+      w_GI              194.2 ->  196.9 Hz (span   2.7) | learn span 0.0155
+      w_II              199.3 ->  188.2 Hz (span  11.1) | learn span 0.0725
+      tau_gaba_I        225.6 ->  181.1 Hz (span  44.5) | learn span 0.0065
+      w_PI              197.0 ->  194.2 Hz (span   2.9) | learn span 0.0237
+      tau_P             197.0 ->  194.7 Hz (span   2.4) | learn span 0.0022
+      beta_P            196.1 ->  195.8 Hz (span   0.3) | learn span 0.0291
+      theta_P           195.2 ->  196.7 Hz (span   1.5) | learn span 0.2247
+      p_tonic           197.1 ->  194.9 Hz (span   2.2) | learn span 0.0457
+      p_jitter          195.3 ->  195.3 Hz (span   0.0) | learn span 0.0042
+      w_GP              196.0 ->  195.4 Hz (span   0.6) | learn span 0.0411
+      w_IP              195.3 ->  196.5 Hz (span   1.3) | learn span 0.2326
+      tau_bk            197.0 ->  194.6 Hz (span   2.5) | learn span 0.0054
+      g_cs              195.4 ->  195.2 Hz (span   0.1) | learn span 0.0068
+      g_pause           195.2 ->  195.6 Hz (span   0.4) | learn span 0.0027
+      tau_pause_up      195.3 ->  195.3 Hz (span   0.1) | learn span 0.0035
+      tau_pause_dn      195.3 ->  195.3 Hz (span   0.1) | learn span 0.0110
+      tau_N             195.4 ->  195.2 Hz (span   0.1) | learn span 0.0165
+      beta_N            195.0 ->  196.1 Hz (span   1.0) | learn span 0.0523
+      theta_N           195.0 ->  196.5 Hz (span   1.5) | learn span 0.1481
+      n_drive           196.8 ->  195.0 Hz (span   1.7) | learn span 0.1598
+      w_MN              196.2 ->  195.0 Hz (span   1.2) | learn span 0.0805
+      w_PN              195.0 ->  196.7 Hz (span   1.7) | learn span 0.2426
+      tau_gaba_N        195.5 ->  195.2 Hz (span   0.2) | learn span 0.0456
+      tau_O             196.3 ->  195.1 Hz (span   1.2) | learn span 0.0377
+      beta_O            195.0 ->  196.2 Hz (span   1.2) | learn span 0.0168
+      theta_O           196.9 ->  195.0 Hz (span   1.9) | learn span 0.0618
+      io_drive          195.0 ->  197.0 Hz (span   1.9) | learn span 0.2186
+      io_jitter         195.3 ->  195.3 Hz (span   0.0) | learn span 0.0047
+      g_ca              195.0 ->  196.2 Hz (span   1.1) | learn span 0.1537
+      ca_theta          195.0 ->  195.0 Hz (span   0.0) | learn span 0.0000
+      ca_beta           195.0 ->  196.2 Hz (span   1.1) | learn span 0.0067
+      g_k               196.2 ->  195.0 Hz (span   1.2) | learn span 0.1012
+      tau_z             195.0 ->  196.0 Hz (span   1.0) | learn span 0.0800
+      w_gap             195.3 ->  195.3 Hz (span   0.0) | learn span 0.0006
+      w_NO              196.1 ->  195.1 Hz (span   1.1) | learn span 0.0662
+      tau_gaba_O        196.1 ->  195.3 Hz (span   0.8) | learn span 0.0330
+      theta_cs          196.5 ->  195.0 Hz (span   1.4) | learn span 0.0850
+      beta_cs           195.6 ->  195.2 Hz (span   0.4) | learn span 0.0025
+      tau_elig          195.3 ->  195.3 Hz (span   0.0) | learn span 0.0001
+      a_ltd             195.3 ->  195.3 Hz (span   0.0) | learn span 0.0439
+      a_ltp             195.3 ->  195.3 Hz (span   0.0) | learn span 0.0093
+      w_pf_max          195.3 ->  195.3 Hz (span   0.0) | learn span 0.0049
+      w_pf_init         196.0 ->  195.4 Hz (span   0.6) | learn span 0.0706
+      sigma             195.3 ->  195.3 Hz (span   0.0) | learn span 0.0000
+      tau_eta           195.3 ->  195.3 Hz (span   0.0) | learn span 0.0000
+      d_mf_gr_s         195.3 ->  195.3 Hz (span   0.0) | learn span 0.0001
+      d_pf_s            195.3 ->  195.3 Hz (span   0.0) | learn span 0.0000
+      d_bk_s            197.2 ->  193.6 Hz (span   3.6) | learn span 0.0006
+      d_ii_s             83.6 ->  152.4 Hz (span  68.7) | learn span 0.0611
+      d_coll_s          197.2 ->  193.6 Hz (span   3.6) | learn span 0.0006
+      d_pk_n_s          195.3 ->  195.3 Hz (span   0.0) | learn span 0.0034
+      d_n_io_s          195.3 ->  195.3 Hz (span   0.1) | learn span 0.0059
+      d_io_pk_s         195.3 ->  195.3 Hz (span   0.0) | learn span 0.0056
+      d_n_thal_s        195.3 ->  195.3 Hz (span   0.0) | learn span 0.0000
+      d_thal_ctx_s      195.3 ->  195.3 Hz (span   0.0) | learn span 0.0000
+      d_ctx_pons_s      195.3 ->  195.3 Hz (span   0.0) | learn span 0.0000
+[PASS] C7_sensitivity: {"ok": true, "baseline_hz": 195.3047637939453, "baseline_prominence": 3.9295156002044678, "baseline_learned_improvement": 0.030392959713935852, "claimed_clock": {"w_II": {"span_hz": 11.103408813476562, "span_prominence": 5.221279144287109, "moves": true}, "tau_gaba_I": {"span_hz": 44.50556945800781, "span_prominence": 1.0850708484649658, "moves": true}, "tau_I": {"span_hz": 45.75019836425781, "span_prominence": 2.4507198333740234, "moves": true}, "d_ii_s": {"span_hz": 68.73052215576172, "span_prominence": 1.6811342239379883, "moves": true}}, "claimed_clock_rule": "each of ('w_II', 'tau_gaba_I', 'tau_I', 'd_ii_s') must move the fast peak by > 5.0 Hz or its prominence by > 0.5 decades over the 3x sweep", "learning_constant": {"a_ltd": 0.04391518235206604, "ok": true, "rule": "a_ltd must move the learned improvement by > 0.01"}, "inert": ["i_jitter", "g_pause", "beta_cs", "tau_pause_up", "i
+      i_tonic            85.7 ->  197.8 Hz   span 112.11   learn span 0.2354
+      d_ii_s             83.6 ->  152.4 Hz   span  68.73   learn span 0.0611
+      tau_I             225.7 ->  179.9 Hz   span  45.75   learn span 0.0146
+      tau_gaba_I        225.6 ->  181.1 Hz   span  44.51   learn span 0.0065
+      w_II              199.3 ->  188.2 Hz   span  11.10   learn span 0.0725
+      beta_I            183.7 ->  194.2 Hz   span  10.43   learn span 0.0299
+      d_bk_s            197.2 ->  193.6 Hz   span   3.60   learn span 0.0006
+      d_coll_s          197.2 ->  193.6 Hz   span   3.60   learn span 0.0006
+      inert over a 3x sweep: i_jitter, g_pause, beta_cs, tau_pause_up, io_jitter, d_pk_n_s, w_gap, p_jitter, tau_Go, tau_M, d_pf_s, tau_G, d_mf_gr_s, ca_theta, tau_elig, w_pf_max, sigma, tau_eta, d_n_thal_s, d_thal_ctx_s, d_ctx_pons_s
+
+SOME GATES FAILED: ['C2_decorrelation', 'C3_learning'] -- wrote out/gate_cerebellum.json

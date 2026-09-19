@@ -1,0 +1,105 @@
+{
+ "gate": "nociceptive receptor and route joins (IBM side)",
+ "verdict": "PASSED",
+ "failed": [],
+ "checks": [
+  {
+   "check": "V1",
+   "verdict": "PASS",
+   "detail": "transduction.visceral_nociceptor: support viscera, tags ['interoceptive', 'nociceptive', 'receptor'], registry problems none"
+  },
+  {
+   "check": "V2",
+   "verdict": "PASS",
+   "detail": "{'ports': 15, 'trunks': 5, 'groups': 7, 'checked_against_corpus': False}; 5 nociceptive rows, all bind transduction.visceral_nociceptor: True",
+   "rows": [
+    "foregut_mechano",
+    "foregut_ischaemia",
+    "midgut_distension",
+    "renal_afferent",
+    "bladder_distension"
+   ]
+  },
+  {
+   "check": "V3",
+   "verdict": "PASS",
+   "detail": "corrupted rows raised: [True, True]"
+  },
+  {
+   "check": "C1",
+   "verdict": "PASS",
+   "detail": "1326 patch routes over 21 trunks, all carrying adelta and c",
+   "trunks": [
+    "axillary",
+    "dorsal_ramus",
+    "femoral",
+    "iliohypogastric",
+    "ilioinguinal",
+    "intercostal",
+    "lateral_femoral_cutaneous",
+    "lesser_occipital",
+    "medial_cutaneous_forearm",
+    "median",
+    "musculocutaneous",
+    "posterior_femoral_cutaneous",
+    "pudendal",
+    "saphenous",
+    "subcostal",
+    "superficial_fibular",
+    "supraclavicular",
+    "sural",
+    "transverse_cervical",
+    "trigeminal",
+    "ulnar"
+   ]
+  },
+  {
+   "check": "C2",
+   "verdict": "PASS",
+   "detail": "removing 'c' from 'axillary' made the join raise: True"
+  },
+  {
+   "check": "C3",
+   "verdict": "PASS",
+   "detail": "typical: True; worst case (A-delta 5.0 vs C 2.0 m/s): True; C-minus-A-delta lead min 56.0 ms, median 432.4, max 1122.2 ms"
+  },
+  {
+   "check": "C4",
+   "verdict": "PASS",
+   "detail": "IHM snapshot vs nerve.py: {'adelta': True, 'c': True}"
+  },
+  {
+   "check": "C5",
+   "verdict": "PASS",
+   "detail": "cutaneous_nociceptive_routes() called twice"
+  },
+  {
+   "check": "C6",
+   "verdict": "PASS",
+   "detail": "every record carries the schematic-lower-bound scope"
+  }
+ ],
+ "delays_ms": {
+  "adelta": {
+   "min_ms": 4.002997008878995,
+   "median_ms": 30.8886153996469,
+   "max_ms": 80.15581411843816
+  },
+  "c": {
+   "min_ms": 60.044955133184935,
+   "median_ms": 463.32923099470355,
+   "max_ms": 1202.3372117765723
+  }
+ },
+ "delay_scope": "schematic lower bound: each route is IHM's authored endpoint-to-relay polyline (path_length_scope representative_endpoint_to_relay), not a dissected nerve; see the 18 september 2026 caveat in ibm/topologies/ihm_bridge.py.  central and synaptic delays excluded.  never quote these as measured conduction times.",
+ "closed_gaps": [
+  [
+   "no viscera-supported nociceptor component: the splanchnic channels bound transduction.baroreceptor and were tagged nociceptive in the row rather than by their component.",
+   "2026-09-18: transduction.visceral_nociceptor declared on the viscera support (ibm/fields/transduction.py), written by the transduction process, read by the afferent relay; the five splanchnic PORTS rebound to it; check() enforces nociceptive flag <=> nociceptive-tagged receptor."
+  ]
+ ],
+ "open_gaps": [
+  "no visceral nociceptor TRANSDUCTION LAW: the splanchnic channels now bind transduction.visceral_nociceptor, but IHM emits them in mL, mg/dL and mL/min while human visceral pain thresholds are published as barostat pressures (mmHg). a threshold needs an organ compliance to cross that change of units, and the body declares none, so no threshold is applied to these rows.",
+  "no gastric-volume component: the quantity is derived in IHM from stomach water plus macronutrient mass at nominal densities, because BioGears exposes no gastric volume port and this repo declares no visceral mechanical.volume."
+ ]
+}

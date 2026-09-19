@@ -522,6 +522,7 @@ action selection).
 | scorable on the cortical field alone | 9 | **11** |
 | scorable with the thalamus (`ibm/thalamus.py`) | — | **24** |
 | scorable with the hippocampal subfields too (`ibm/hippocampus.py`) | — | **32** |
+| with basal ganglia, cerebellum and cord as well | — | **42** |
 
 Half the catalogue is now addressable by structures that exist and have passed gates. What
 is still blocked, by what is missing:

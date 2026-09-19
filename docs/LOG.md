@@ -7116,3 +7116,78 @@ nowhere near binding, but `d_gpe_stn_s` swept ±50% moves the peak **21.10 → 1
 about as much as any time constant: the delay contributes roughly 28% of the phase budget
 at 19 Hz. Both statements are true; "the delay does not set it" should not be read as "the
 delay does not matter".
+
+## 18 September 2026 — the cerebellum and the spinal cord, and the two things that do not work
+
+Both modules were written by agents that then hit a session limit mid-run; their files were
+on disk, and these are my own runs of their gate suites.
+
+### The cerebellum — 6 of 8
+
+| gate | verdict | measured |
+|---|---|---|
+| C0 bounded | PASS | zero excursion; the cortico-cerebellar round trip is 29.5 ms, ceiling 16.9 Hz |
+| C1 idempotence | PASS | bit-identical, including the granule code |
+| C2 decorrelation | **FAILED** | mean mossy r 0.879 → granule 0.791, but **one pair went the wrong way by −0.090** and the gate requires every pair to drop |
+| C2b decorrelation, bootstrapped | PASS | over 32 pairs, mean drop **0.110 ± 0.016** |
+| C3 learning | **FAILED** | see below |
+| C4 Purkinje pause | PASS | baseline 0.757 → **0.055**, 14.2 ms after the climbing-fibre injection |
+| C5 fast rhythm | PASS | **196.2 Hz, prominence +4.96** (catalogue declares 200) |
+| C6 olivary clock | PASS | **8.13 Hz, prominence +5.16** (catalogue declares 8) |
+| C7 sensitivity | PASS | the claimed clock `w_II` moves the peak by 11.1 Hz |
+
+**C2 and C2b together are the interesting pair.** The strict gate — *every* pattern pair
+must decorrelate — fails on one pair out of the set, while the population statistic over 32
+pairs passes comfortably. The right response was what the author did: add the bootstrapped
+version as a *separate* gate and leave the strict one failed, rather than softening the
+strict one into agreement. Both are in the record and they measure different claims.
+
+**C3 is the real failure: the cerebellum does not learn.** The declared rule was, on every
+seed, a taught final error below the taught trial-1 error *and* a taught improvement at
+least 4× the shuffled-teacher arm's. It does not hold. The learning machinery is all there —
+parallel-fibre→Purkinje depression written into a buffer on climbing-fibre coincidence, the
+teacher firing on undershoot — and a Purkinje pause demonstrably follows a climbing-fibre
+event (C4). So the wiring produces the event and the event does not produce learning. That
+is the one to pick up next, and it is worth more than the six passes: a cerebellum that
+cannot learn a gain is a delay line with a rhythm.
+
+### The spinal cord — 5 of 7
+
+| gate | verdict | measured |
+|---|---|---|
+| S0 bounded | PASS | zero excursion over 32 cases |
+| S1 idempotence | PASS | exactly 0.0 twice over |
+| S2 alternation | PASS | flexor–extensor **179.97°**, left–right **179.88°**, spread 0.03° |
+| S3 frequency follows drive | **FAILED** | rises monotonically, stays in band, holds phase — but covers only **0.75–1.88 Hz** of the declared 0.5–3.0 |
+| S4 generates rather than follows | PASS | prominence **+0.857 at a CONSTANT drive**, against **−1.257** for the `g_nap = 0` control sharing drive, constants and noise draw |
+| S5 reflex latency | PASS | **16.0 ms** against a declared 14 ms conduction delay, inside 10–18 |
+| S6 deafferentation | PASS | cutting spindle feedback leaves the rhythm standing (1.25 → 1.01 Hz) and changes the force amplitude |
+| S7 sensitivity | **FAILED** | `tau_h_up` moves the frequency 0.852 Hz; **`g_nap` moves it 0.005 Hz and breaks the rhythm at both ends of the sweep** |
+
+**S4 and S6 are the two that matter and both pass.** A pattern generator has to produce a
+rhythm from a constant input and survive losing its afferents; this one does both, and S4's
+control shares everything with the intact arm except the conductance under test.
+
+**S3 fails on range, not on shape.** Every qualitative property holds — monotone, in band,
+phase held at 180° throughout — and the frequency span is 2.5× where the declared band is
+6×. The frequency–drive curve is too flat, which is a statement about the mechanism rather
+than about tuning.
+
+**S7 fails in an informative way.** `g_nap` is declared as part of the clock, and the sweep
+shows it is not one: ±50% moves the frequency by 0.005 Hz and destroys the rhythm at both
+ends. It is a **switch**, not a knob — which is exactly consistent with S4, where setting it
+to zero is what kills the oscillation. The declaration should say so.
+
+### Where the specification now stands
+
+With `ibm/thalamus.py`, `ibm/hippocampus.py`, `ibm/basal_ganglia.py`, `ibm/cerebellum.py`
+and `ibm/cord.py`, **42 of the 64 declared rhythms are addressable** by structures that
+exist. What is left is blocked mostly on a body: 12 rows plus one needing a body and a task,
+then neuromodulators (3), limbic (2), hypothalamus (2), brainstem (1), olfactory bulb (1).
+
+Addressable is still not produced. Measured in a running model so far: the thalamic spindle
+at 13.63 Hz, hippocampal theta at 5.33 Hz with nested gamma, basal-ganglia beta at 19.22 Hz
+with selection and a dopamine dependence, Purkinje synchrony at 196 Hz, the olivary clock at
+8.13 Hz, and a locomotor rhythm at 1.25 Hz that survives deafferentation. Recorded FAILED:
+thalamic gating, hippocampal ripples, cerebellar learning, cerebellar per-pair
+decorrelation, the cord's frequency range and its `g_nap` clock claim.

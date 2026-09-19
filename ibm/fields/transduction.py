@@ -192,6 +192,24 @@ BARORECEPTOR = _c(
     "mV", support="viscera", band=Band(0.0, 50.0), bounds=(-80.0, 40.0), timescale_s=2e-2,
     tags=frozenset({"receptor", "interoceptive"}))
 
+VISCERAL_NOCICEPTOR = _c(
+    "transduction.visceral_nociceptor",
+    "the state of high-threshold and initially mechano-insensitive ('silent') visceral "
+    "afferent endings -- the splanchnic spinal visceral afferents that are quiet across "
+    "the physiological range of distension and chemistry and respond when an organ is "
+    "overloaded or ischaemic.  cervero and janig 1992 (trends neurosci 15:374-378, "
+    "doi 10.1016/0166-2236(92)90182-8) identify three categories of visceral receptor -- "
+    "high-threshold, 'silent' and intensity-encoding -- and this component holds the "
+    "first two; the intensity-encoding low-threshold endings stay on "
+    "`transduction.baroreceptor`.  on the viscera support, separate from "
+    "`transduction.nociceptor` (whose support is the skin) and from "
+    "`transduction.baroreceptor` (low-threshold, phase-locked to the cardiac cycle): "
+    "binding a high-threshold ending to a low-threshold component asserts that the two "
+    "share a transfer function, and they do not.  band, bounds and timescale mirror the "
+    "cutaneous nociceptor's declaration and are NOT independently measured for viscera",
+    "mV", support="viscera", band=SLOW, bounds=(-80.0, 40.0), timescale_s=0.5,
+    tags=frozenset({"receptor", "nociceptive", "interoceptive"}))
+
 VESTIBULAR = _c(
     "transduction.vestibular",
     "the transduction state of semicircular-canal and otolith hair cells.  separate from "

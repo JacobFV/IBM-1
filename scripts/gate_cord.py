@@ -26,9 +26,13 @@ failure, thresholds may not (CLAUDE.md).
       signals that are not locked is the same kind of non-measurement as a peak
       frequency with no peak under it.
       The gate is measured from THREE initial conditions -- the declared diagonal, a
-      larger one, and the MIRRORED diagonal.  If the antiphase were the initial
-      condition persisting rather than an attractor, the mirrored start would come back
-      at the mirrored angle and the spread across the three would be 180 degrees.
+      larger one, and a SYNCHRONOUS start with all four half-centres equal.  The third
+      is the one that can fail: if the antiphase were the declared initial condition
+      persisting rather than an attractor, a synchronous start would stay synchronous
+      and come back at 0 degrees.
+      A MIRRORED start was tried here first and is not a control at all: 180 degrees is
+      its own mirror image, so that arm returns 180 whether the phase is an attractor
+      or a memory.  Recorded because it looked like a control and could not fail.
   S3  FREQUENCY FOLLOWS DRIVE, PHASE DOES NOT.  The descending drive is swept across the
       model's operating window and the locomotor frequency measured at each level.
       Four requirements, all declared here:
@@ -78,6 +82,21 @@ failure, thresholds may not (CLAUDE.md).
       VERDICT: the constants this module CLAIMS are its clock -- `tau_h_up` and
       `g_nap` -- must each move the locomotor frequency by more than 0.3 Hz, and
       `w_recip` must move something.  Everything else is reported, not gated.
+
+      S7 FAILED ON ITS FIRST RUN AND IS LEFT FAILED.  `g_nap` moved the frequency by
+      0.005 Hz, which reads as the most inert constant in the module and is the
+      opposite of the truth: at BOTH endpoints of its 3x sweep the rhythm is DESTROYED
+      (prominence -1.33 and -1.29), and the two "frequencies", 3.325 and 3.330 Hz, are
+      `peak_frequency`'s flat-spectrum answer -- the midpoint of the 0.5-6.0 Hz band
+      the query asked about.  The first version of this gate quoted those frequencies
+      with no prominence beside them, which is the one thing CLAUDE.md says never to
+      do, in the instrument built to catch exactly that.  The sweep table now carries
+      `alive_at_half` / `alive_at_1p5x` and a per-row verdict, and `inert` means BOTH
+      endpoints alive and neither moving; a constant whose sweep kills the rhythm is
+      listed under `breaks_the_rhythm` instead.  The THRESHOLD is untouched: `g_nap`
+      still does not move the frequency by 0.3 Hz, so S7 is still FAILED, and the
+      honest reading is that the declared verdict was the wrong test for a constant
+      whose sweep leaves the oscillatory regime entirely.
 
 ONE INSTRUMENT, ONE SETTING.  Every spectral number in this file comes from
 `ibm/spectral.py` at the settings pinned below (`SEG_S`, `SECS`, `BURN`), because the
@@ -268,14 +287,16 @@ def gate_idempotent(cord):
 def gate_alternation(cord):
     """S2.  A measured phase angle, from three initial conditions."""
     arms = {}
-    for name, asym, mirror in (("declared_diagonal", 0.20, False),
-                               ("larger_diagonal", 0.45, False),
-                               ("mirrored_diagonal", 0.20, True)):
+    for name, asym, sync in (("declared_diagonal", 0.20, False),
+                             ("larger_diagonal", 0.45, False),
+                             ("synchronous_start", 0.20, True)):
         st = cord.init_state(1, DT, asym=asym)
-        if mirror:
-            st["V"] = st["V"][:, [1, 0, 3, 2]].contiguous()
+        if sync:
+            # all four equal: no asymmetry at all to persist.  The antiphase has to be
+            # built by the coupling or this arm returns 0 degrees.
+            st["V"] = torch.zeros_like(st["V"]) + asym
         arms[name] = measure(cord, DRIVE_NOMINAL, state=st,
-                             seed=NOISE_SEED + (7 if mirror else 0))
+                             seed=NOISE_SEED + (7 if sync else 0))
     fe = [a["flex_ext_deg"] for a in arms.values()]
     lr = [a["left_right_deg"] for a in arms.values()]
     ok = all(_in_window(x) for x in fe) and all(_in_window(x) for x in lr)
@@ -400,27 +421,47 @@ def gate_sensitivity():
         flo, plo, alo, _ = _sweep_point(CordPriors(**{**kw, name: v * 0.5}))
         fhi, phi, ahi, _ = _sweep_point(CordPriors(**{**kw, name: v * 1.5}))
         d_ang = abs(((ahi - alo + 180.0) % 360.0) - 180.0)
-        rows.append({"param": name, "value": v,
+        # A frequency with no prominence under it is not a frequency, so every endpoint
+        # is labelled before its span is read.  `peak_frequency` is a soft-argmax and
+        # returns the band's midpoint on a flat spectrum, which looks exactly like a
+        # measurement and is the reason this classification exists (see the docstring).
+        live_lo, live_hi = plo > 0.0, phi > 0.0
+        if live_lo and live_hi:
+            verdict = ("moves" if (abs(fhi - flo) >= INERT_HZ or d_ang >= INERT_DEG)
+                       else "inert")
+        elif live_lo or live_hi:
+            verdict = "breaks_the_rhythm_at_one_end"
+        else:
+            verdict = "breaks_the_rhythm_at_both_ends"
+        rows.append({"param": name, "value": v, "verdict": verdict,
                      "hz_at_half": round(flo, 3), "hz_at_1p5x": round(fhi, 3),
                      "span_hz": round(abs(fhi - flo), 3),
                      "prom_at_half": round(plo, 2), "prom_at_1p5x": round(phi, 2),
+                     "alive_at_half": live_lo, "alive_at_1p5x": live_hi,
                      "deg_at_half": round(alo, 1), "deg_at_1p5x": round(ahi, 1),
                      "span_deg": round(d_ang, 1)})
-    rows.sort(key=lambda r: -r["span_hz"])
+    # live rows first, sorted by movement; the rows whose sweep kills the rhythm after
+    # them, because their span is not a movement of anything.
+    rows.sort(key=lambda r: (not (r["alive_at_half"] and r["alive_at_1p5x"]),
+                             -r["span_hz"]))
     by = {r["param"]: r for r in rows}
     clock = {k: by[k]["span_hz"] for k in ("tau_h_up", "g_nap")}
-    inert = [r["param"] for r in rows
-             if r["span_hz"] < INERT_HZ and r["span_deg"] < INERT_DEG]
+    inert = [r["param"] for r in rows if r["verdict"] == "inert"]
+    breaks = [r["param"] for r in rows if r["verdict"].startswith("breaks")]
+    # THE DECLARED RULE, UNCHANGED.  `g_nap` fails it, and the reason is recorded in
+    # the docstring rather than repaired by moving the bar.
     ok = all(v > CLOCK_MIN_HZ for v in clock.values()) and \
         by["w_recip"]["span_hz"] + by["w_recip"]["span_deg"] > 0.0
     return {"ok": bool(ok), "baseline_hz": round(f0, 3),
             "baseline_prominence": round(p0, 2), "baseline_deg": round(a0, 1),
             "claimed_clock_span_hz": clock,
+            "claimed_clock_verdict": {k: by[k]["verdict"] for k in ("tau_h_up", "g_nap")},
             "rule": f"tau_h_up and g_nap must each move the locomotor frequency by "
                     f"> {CLOCK_MIN_HZ} Hz over a 3x sweep, and w_recip must move "
                     f"something",
-            "inert_definition": f"< {INERT_HZ} Hz AND < {INERT_DEG} deg over the 3x sweep",
-            "inert": inert, "n_constants": len(fields),
+            "inert_definition": f"BOTH endpoints alive (prominence > 0) and "
+                                f"< {INERT_HZ} Hz AND < {INERT_DEG} deg over the 3x sweep",
+            "inert": inert, "breaks_the_rhythm": breaks, "n_constants": len(fields),
             "dt_used": DT_SWEEP,
             "delays_in_steps_at_sweep_dt": SpinalCord(learn=False).delays_in_steps(DT_SWEEP),
             "sweep": rows}
@@ -462,8 +503,14 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--sweep", action="store_true")
-    ap.add_argument("--out", default="out/gate_cord.json")
+    # SEPARATE default paths on purpose.  One default for both modes means `--sweep`
+    # silently overwrites the gate record with a file that has no gates in it, and the
+    # only tell would be a timestamp (CLAUDE.md: a stage that rewrites its
+    # predecessor's output file can silently undo it).
+    ap.add_argument("--out", default=None)
     a = ap.parse_args()
+    if a.out is None:
+        a.out = "out/gate_cord_sweep.json" if a.sweep else "out/gate_cord.json"
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
     cord = SpinalCord(learn=False)
     rec = {"script": "scripts/gate_cord.py", "module": "ibm/cord.py",
@@ -521,12 +568,16 @@ def main() -> int:
                       f"{row['flex_ext_plv']:.3f})  L/R {row['left_right_deg']:6.1f} deg",
                       flush=True)
         if name == "S7_sensitivity":
-            for row in r["sweep"][:10]:
+            for row in r["sweep"]:
                 print(f"      {row['param']:16s} {row['hz_at_half']:6.3f} -> "
                       f"{row['hz_at_1p5x']:6.3f} Hz  span {row['span_hz']:5.3f}  "
-                      f"phase span {row['span_deg']:5.1f} deg", flush=True)
+                      f"phase {row['span_deg']:5.1f} deg  prom "
+                      f"{row['prom_at_half']:+5.2f}/{row['prom_at_1p5x']:+5.2f}  "
+                      f"{row['verdict']}", flush=True)
             print(f"      inert ({r['inert_definition']}): "
                   f"{', '.join(r['inert']) or 'none'}", flush=True)
+            print(f"      breaks the rhythm: "
+                  f"{', '.join(r['breaks_the_rhythm']) or 'none'}", flush=True)
     rec["all_gates_ok"] = ok_all
     rec["failed_gates"] = failed
     save()

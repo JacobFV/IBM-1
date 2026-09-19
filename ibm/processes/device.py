@@ -819,7 +819,7 @@ AFFERENT_PROPAGATION = process(
         within("transduction", "joint_receptor", region=SKIN_SURFACE, band=AFFERENT),
         within("transduction", "photoreceptor", "hair_cell", "mechanoreceptor",
                "thermoreceptor", "nociceptor", "chemoreceptor", "vestibular",
-               "baroreceptor", band=AFFERENT),
+               "baroreceptor", "visceral_nociceptor", band=AFFERENT),
         within("neural", "exc.potential", region=THALAMUS, band=AFFERENT),
         within("neural", "exc.activity", region=BRAINSTEM, band=AFFERENT),
         within("extracellular", "acetylcholine", "noradrenaline", band=Band(0.0, 1.0)),

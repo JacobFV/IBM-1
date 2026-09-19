@@ -1,0 +1,204 @@
+{
+ "script": "scripts/gate_cord.py",
+ "module": "ibm/cord.py",
+ "dt": 0.002,
+ "dt_fine": 0.001,
+ "dt_sweep": 0.004,
+ "welch_segment_s": 8.0,
+ "trace_s": 60.0,
+ "burn_s": 12.0,
+ "noise_seed": 1704,
+ "drive_levels": [
+  0.0,
+  0.15,
+  0.3,
+  0.45,
+  0.6,
+  0.75,
+  0.9,
+  1.05
+ ],
+ "pools": [
+  "L_flexor",
+  "L_extensor",
+  "R_flexor",
+  "R_extensor"
+ ],
+ "catalogue": {
+  "locomotor_band_hz": [
+   0.5,
+   3.0
+  ],
+  "declared_peak_hz": 1.2,
+  "antiphase_window_deg": [
+   150.0,
+   210.0
+  ],
+  "reflex_edge_ms": [
+   10.0,
+   18.0
+  ]
+ },
+ "delays_in_steps": {
+  "mlr_to_cord": 7,
+  "cord_to_mn": 2,
+  "mn_to_muscle": 3,
+  "spindle_to_mn": 7
+ },
+ "priors": {
+  "tau_hc": 0.03,
+  "beta_hc": 9.0,
+  "theta_hc": 1.05,
+  "g_nap": 2.4,
+  "tau_h_up": 0.37,
+  "tau_h_dn": 0.093,
+  "h_beta": 4.0,
+  "h_theta": 1.4,
+  "tau_inh": 0.02,
+  "w_recip": 1.05,
+  "w_comm": 0.45,
+  "w_mlr": 1.0,
+  "tau_mn": 0.015,
+  "beta_mn": 6.0,
+  "theta_mn": 0.45,
+  "w_hc_mn": 0.8,
+  "w_reflex": 0.55,
+  "w_aff_hc": 0.15,
+  "tau_force": 0.055,
+  "tau_joint": 0.08,
+  "joint_gain": 0.6,
+  "tau_spindle": 0.002,
+  "spindle_beta": 6.0,
+  "spindle_theta": 0.1,
+  "spindle_dyn": 0.03,
+  "sigma": 0.02,
+  "tau_eta": 0.005,
+  "d_mlr_cord_s": 0.014,
+  "d_cord_mn_s": 0.0035,
+  "d_mn_muscle_s": 0.006,
+  "d_spindle_mn_s": 0.014
+ },
+ "gates": {},
+ "sweep_tau_h": [
+  {
+   "tau_h_up_ms": 180.0,
+   "geometric_mean_hz": 1.708,
+   "min_hz": 0.86,
+   "max_hz": 3.318,
+   "alive_at_every_level": false,
+   "hz": [
+    0.86,
+    1.149,
+    1.392,
+    1.626,
+    1.764,
+    2.164,
+    2.552,
+    3.318
+   ]
+  },
+  {
+   "tau_h_up_ms": 250.0,
+   "geometric_mean_hz": 1.544,
+   "min_hz": 0.877,
+   "max_hz": 2.572,
+   "alive_at_every_level": false,
+   "hz": [
+    0.877,
+    1.116,
+    1.259,
+    1.493,
+    1.642,
+    1.873,
+    2.226,
+    2.572
+   ]
+  },
+  {
+   "tau_h_up_ms": 310.0,
+   "geometric_mean_hz": 1.371,
+   "min_hz": 0.814,
+   "max_hz": 2.288,
+   "alive_at_every_level": false,
+   "hz": [
+    0.814,
+    0.995,
+    1.127,
+    1.305,
+    1.498,
+    1.639,
+    1.872,
+    2.288
+   ]
+  },
+  {
+   "tau_h_up_ms": 370.0,
+   "geometric_mean_hz": 1.213,
+   "min_hz": 0.748,
+   "max_hz": 1.874,
+   "alive_at_every_level": true,
+   "hz": [
+    0.748,
+    0.875,
+    1.002,
+    1.146,
+    1.342,
+    1.499,
+    1.648,
+    1.874
+   ]
+  },
+  {
+   "tau_h_up_ms": 450.0,
+   "geometric_mean_hz": 1.05,
+   "min_hz": 0.628,
+   "max_hz": 1.629,
+   "alive_at_every_level": true,
+   "hz": [
+    0.628,
+    0.753,
+    0.877,
+    1.003,
+    1.133,
+    1.292,
+    1.491,
+    1.629
+   ]
+  },
+  {
+   "tau_h_up_ms": 550.0,
+   "geometric_mean_hz": 0.913,
+   "min_hz": 0.569,
+   "max_hz": 1.427,
+   "alive_at_every_level": true,
+   "hz": [
+    0.569,
+    0.64,
+    0.753,
+    0.875,
+    1.0,
+    1.125,
+    1.253,
+    1.427
+   ]
+  },
+  {
+   "tau_h_up_ms": 700.0,
+   "geometric_mean_hz": 0.77,
+   "min_hz": 0.5,
+   "max_hz": 1.204,
+   "alive_at_every_level": true,
+   "hz": [
+    0.5,
+    0.54,
+    0.626,
+    0.747,
+    0.846,
+    0.926,
+    1.034,
+    1.204
+   ]
+  }
+ ],
+ "declared_peak_hz": 1.2
+}

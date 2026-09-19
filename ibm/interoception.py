@@ -12,16 +12,22 @@ was missing was the row that says which channel is which.
 
 ### the delay is the point, and it is large
 
-Interoception is genuinely late.  Over IHM's measured 508 mm vagal route from
-gastric wall to the solitary nucleus, the myelinated A-beta channel that reports
-gastric volume arrives in 9 ms and the unmyelinated C channel that reports the
-same meal's nutrient content arrives in 508 ms.  The splanchnic report of the
-same stomach -- the high-threshold, nociceptive arm -- arrives at 168 ms, between
-them.  That half-second spread is not an artifact to be smoothed away; it is why
-a gut feeling is slow and a touch is not, and a model given one visceral latency
-has asserted the opposite.  `ibm/topologies/nerve.py`'s whole argument applies
-here more strongly than anywhere else in the body, because the ratio of fastest
-to slowest on the vagus is 55x on one trunk.
+Interoception is genuinely late.  Over IHM's 447.9 mm vagal route from gastric
+wall to the solitary nucleus, the myelinated A-beta channel that reports gastric
+volume arrives in 8.1 ms and the unmyelinated C channel that reports the same
+meal's nutrient content arrives in 448 ms.  The splanchnic report of the same
+stomach -- the high-threshold, nociceptive arm -- arrives at 279 ms, between them.
+(These read 508 mm, 9 ms, 508 ms and 168 ms until 18 September 2026; IHM's
+routes were re-measured underneath this paragraph and it was not updated.  Per
+IHM-1's docs/BODY_PERIPHERAL.md the vagus fell 508 -> 448 mm because its endpoint
+moved up onto the stomach, and the greater splanchnic rose 168 -> 279 mm when the
+spinal relays moved onto the dura centreline.  `python -m ibm.interoception` prints the live values,
+and every spinal-route figure is a schematic LOWER BOUND -- see the caveat in
+`ibm/topologies/ihm_bridge.py`.)  That spread is not an artifact to be smoothed
+away; it is why a gut feeling is slow and a touch is not, and a model given one
+visceral latency has asserted the opposite.  `ibm/topologies/nerve.py`'s whole
+argument applies here more strongly than anywhere else in the body, because the
+ratio of fastest to slowest on the vagus is 55x on one trunk.
 
 ### which classes an AFFERENT loop may use
 
@@ -68,16 +74,32 @@ on the `viscera` support and whose own docstring says it covers "the visceral
 mechanoreceptors that report gut and bladder distension" -- so that is a use of
 an existing declaration and not a parallel one.
 
-**The gap, stated rather than papered over: there is no viscera-supported
-nociceptor component.**  `transduction.nociceptor` is declared on the field's
-default support, which is `body_surface`.  The splanchnic channels here are
-nociceptive by threshold and by fibre class -- high-threshold, unmyelinated,
-silent until the organ is genuinely loaded -- and they have nowhere in the
-ontology to put their receptor state that says so.  They are bound to
-`transduction.baroreceptor` like the vagal ones and tagged `nociceptive` in the
-row.  Adding `transduction.visceral_nociceptor` would be the fix; it is not made
-here because a component added to carry one training term, with no process
-reading it, is how an ontology sprawls.  It is recorded as `ONTOLOGY_GAPS`.
+**The gap this section used to state is closed (18 September 2026).**  Until
+then there was no viscera-supported nociceptor component: `transduction.nociceptor`
+is on the field's default support, `body_surface`, and the five splanchnic
+channels -- high-threshold, unmyelinated, silent until the organ is genuinely
+loaded -- were bound to `transduction.baroreceptor` and merely *tagged*
+`nociceptive` in the row.  That binding asserted they share the baroreceptor's
+transfer function, which is low-threshold and phase-locked to the cardiac cycle.
+
+`transduction.visceral_nociceptor` now exists on the `viscera` support, is written
+by the `transduction` process and read by the afferent relay (so the registry does
+not report it dead), and the splanchnic rows bind to it.  The split follows
+Cervero and Janig 1992 (Trends Neurosci 15:374-378,
+doi:10.1016/0166-2236(92)90182-8), who identify three categories of visceral
+receptor -- high-threshold, 'silent' and intensity-encoding: the first two are
+this component, the low-threshold intensity-encoding vagal endings stay on the
+baroreceptor.  `check()` now enforces it in both directions: a row flagged
+`nociceptive` must bind a component tagged `nociceptive`, and a row that is not
+must not.  The flag and the binding can no longer disagree.
+
+**What the new component does NOT give these channels: a transduction law.**
+It is the place the receptor state lives, not a threshold.  IHM emits these
+channels in mL, mg/dL and mL/min; human visceral pain thresholds are published
+as barostat PRESSURES, and turning one into the other needs an organ compliance
+the body does not declare.  Carrying a pressure threshold onto a volume channel
+is the change-of-units trap this repo's ledger records, so it is not done; it is
+listed in `ONTOLOGY_GAPS`.
 """
 
 from __future__ import annotations
@@ -138,16 +160,30 @@ PORT_SUBSTITUTION = (
     "substitution ends there.")
 
 ONTOLOGY_GAPS = (
-    "no viscera-supported nociceptor component: transduction.nociceptor is on "
-    "the transduction field's default support (body_surface), so the splanchnic "
-    "channels -- high-threshold, unmyelinated, nociceptive by construction -- "
-    "bind to transduction.baroreceptor and are tagged nociceptive in the row "
-    "rather than by their component.",
+    "no visceral nociceptor TRANSDUCTION LAW: the splanchnic channels now bind "
+    "transduction.visceral_nociceptor, but IHM emits them in mL, mg/dL and mL/min "
+    "while human visceral pain thresholds are published as barostat pressures (mmHg). "
+    "a threshold needs an organ compliance to cross that change of units, and the "
+    "body declares none, so no threshold is applied to these rows.",
     "no gastric-volume component: the quantity is derived in IHM from stomach "
     "water plus macronutrient mass at nominal densities, because BioGears "
     "exposes no gastric volume port and this repo declares no visceral "
     "mechanical.volume.",
 )
+
+#: gaps that WERE listed above and have been closed, kept so the history of the
+#: row is readable from the row.  each entry: (what the gap was, what closed it).
+CLOSED_GAPS = (
+    ("no viscera-supported nociceptor component: the splanchnic channels bound "
+     "transduction.baroreceptor and were tagged nociceptive in the row rather than "
+     "by their component.",
+     "2026-09-18: transduction.visceral_nociceptor declared on the viscera support "
+     "(ibm/fields/transduction.py), written by the transduction process, read by the "
+     "afferent relay; the five splanchnic PORTS rebound to it; check() enforces "
+     "nociceptive flag <=> nociceptive-tagged receptor."),
+)
+
+VISCERAL_NOCICEPTOR = "transduction.visceral_nociceptor"
 
 
 @dataclass(frozen=True)
@@ -194,20 +230,21 @@ PORTS: tuple[VisceralPort, ...] = (
     VisceralPort("aortic_chemo_hypercapnia", "vagus", "c",
                  "blood.oxygenation", "transduction.baroreceptor", "mmHg"),
     # -- splanchnic: the high-threshold arm, unmyelinated -------------------
+    # bound to the visceral nociceptor, not the baroreceptor; see CLOSED_GAPS.
     VisceralPort("foregut_mechano", "greater_splanchnic", "c",
-                 "mechanical.strain", "transduction.baroreceptor", "mL",
+                 "mechanical.strain", VISCERAL_NOCICEPTOR, "mL",
                  nociceptive=True),
     VisceralPort("foregut_ischaemia", "greater_splanchnic", "c",
-                 "metabolic.lactate", "transduction.baroreceptor", "mg/dL",
+                 "metabolic.lactate", VISCERAL_NOCICEPTOR, "mg/dL",
                  nociceptive=True),
     VisceralPort("midgut_distension", "lesser_splanchnic", "c",
-                 "mechanical.strain", "transduction.baroreceptor", "mL",
+                 "mechanical.strain", VISCERAL_NOCICEPTOR, "mL",
                  nociceptive=True),
     VisceralPort("renal_afferent", "least_splanchnic", "c",
-                 "blood.flow", "transduction.baroreceptor", "mL/min",
+                 "blood.flow", VISCERAL_NOCICEPTOR, "mL/min",
                  nociceptive=True),
     VisceralPort("bladder_distension", "pelvic_splanchnic", "c",
-                 "mechanical.strain", "transduction.baroreceptor", "mL",
+                 "mechanical.strain", VISCERAL_NOCICEPTOR, "mL",
                  nociceptive=True),
 )
 
@@ -292,6 +329,18 @@ def check(corpus_meta: dict | None = None) -> dict:
             problems.append(f"{p.channel}: {p.trunk!r} does not carry {p.fibre!r}")
         if p.fibre in EFFERENT_CLASSES:
             problems.append(f"{p.channel}: {p.fibre!r} is an efferent class")
+        # the flag and the binding must say the same thing.  before 18 sep 2026
+        # five rows were flagged nociceptive and bound to the baroreceptor, and
+        # nothing noticed because nothing compared the two.
+        comp = REGISTRY.components.get(p.receptor)
+        if comp is not None:
+            tagged = "nociceptive" in comp.tags
+            if p.nociceptive and not tagged:
+                problems.append(f"{p.channel}: flagged nociceptive but binds "
+                                f"{p.receptor!r}, which is not a nociceptive receptor")
+            if tagged and not p.nociceptive:
+                problems.append(f"{p.channel}: binds nociceptive receptor "
+                                f"{p.receptor!r} but is not flagged nociceptive")
     if corpus_meta is not None:
         ours = {p.key for p in PORTS}
         theirs = set(corpus_meta["channels"])
@@ -320,11 +369,11 @@ def describe() -> str:
     lines = [f"{len(PORTS)} visceral afferent ports on {len(TRUNKS)} trunks, "
              f"{len(d)} conduction groups", ""]
     lines.append(f"  {'channel':24s} {'trunk':20s} {'fibre':7s} "
-                 f"{'delay':>9s}  {'reads':22s} nocic")
+                 f"{'delay':>9s}  {'reads':22s} {'receptor':34s} nocic")
     for p in PORTS:
         lines.append(f"  {p.channel:24s} {p.trunk:20s} {p.fibre:7s} "
                      f"{1000*d[(p.trunk, p.fibre)]:8.1f}ms  {p.reads:22s} "
-                     f"{'yes' if p.nociceptive else '-'}")
+                     f"{p.receptor:34s} {'yes' if p.nociceptive else '-'}")
     lines += ["", "route lengths, from IHM's measured centrelines:"]
     for t in TRUNKS:
         lines.append(f"  {t:22s} {1000*L[t]:7.1f} mm")
@@ -336,6 +385,9 @@ def describe() -> str:
     lines.append("declared ontology gaps:")
     for g in ONTOLOGY_GAPS:
         lines.append("  - " + g)
+    lines.append("closed gaps:")
+    for g, how in CLOSED_GAPS:
+        lines.append("  - " + g + "\n    closed: " + how)
     if meta:
         lines += ["", f"corpus: {meta['n']} frames, {meta['n_train']} train / "
                       f"{meta['n_test']} test, {meta['n_channels']} channels",

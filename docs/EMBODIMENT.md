@@ -393,7 +393,14 @@ sheet; on that sheet the substitution is still what happens. `region_index`
 RAISES for `insula` there rather than silently returning `frontal`, which is the
 part that makes the substitution impossible to leave in by accident.
 
-**one declared gap.** there is no viscera-supported nociceptor component:
+**one declared gap — closed 18 september 2026.** the splanchnic rows now bind
+`transduction.visceral_nociceptor`, on the viscera support, written by the
+transduction process and read by the afferent relay; `ibm.interoception.check()`
+refuses a row whose nociceptive flag and receptor component disagree. what
+remains open is a threshold for those rows (`ONTOLOGY_GAPS`: their units are mL,
+the human thresholds are pressures). the gap as it stood:
+
+there was no viscera-supported nociceptor component:
 `transduction.nociceptor` sits on the transduction field's default support, the
 body surface. the splanchnic channels are nociceptive by threshold and by fibre
 class and have nowhere in the ontology to say so, so they bind to

@@ -190,6 +190,68 @@ def visceral_routes(path: str = IHM_PERIPHERAL) -> dict[str, dict]:
     return by_name
 
 
+IHM_DERMATOMES = os.path.expanduser(
+    "~/Documents/IHM-1/data/derived/canonical/dermatomes.json")
+
+#: the two nociceptive afferent classes.  first pain on A-delta, second pain on C;
+#: which one a given pressure produces more of is IHM's transduction to say
+#: (`ihm/assembly/nociception.py`), which trunk carries each is this repo's.
+NOCICEPTIVE_CLASSES = ("adelta", "c")
+
+#: carried on every record below, because the numbers look like measurements and
+#: are not.  the caveat in this module's docstring applies without exception.
+NOCICEPTIVE_DELAY_SCOPE = (
+    "schematic lower bound: each route is IHM's authored endpoint-to-relay polyline "
+    "(path_length_scope representative_endpoint_to_relay), not a dissected nerve; "
+    "see the 18 september 2026 caveat in ibm/topologies/ihm_bridge.py.  central and "
+    "synaptic delays excluded.  never quote these as measured conduction times.")
+
+
+def cutaneous_nociceptive_routes(path: str = IHM_DERMATOMES) -> list[dict]:
+    """the fast and slow pain paths from each of IHM's 1,326 skin patches.
+
+    one record per patch, with the A-delta and C delays over THAT patch's own
+    route length (`path_length_m` on the patch, not the trunk's median route --
+    a foot patch and a thigh patch on the sciatic territory are 1,165 mm and a
+    few hundred mm from the relay, and a single trunk delay would erase exactly
+    the difference a withdrawal needs).
+
+    RAISES, rather than skipping, if a patch's trunk is not declared here or
+    does not carry both classes: a patch whose C fibres have no declared trunk
+    would otherwise be routed at a velocity for a fibre the nerve does not have.
+    """
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"IHM dermatomes.json not found at {path}")
+    with open(path) as fh:
+        d = json.load(fh)
+    out = []
+    for p in d["patches"]:
+        trunk = ALIAS.get(p["nerve_name"], p["nerve_name"])
+        comp = TRUNK_COMPOSITION.get(trunk)
+        if comp is None:
+            raise KeyError(f"{p['id']}: trunk {trunk!r} is not declared in "
+                           f"ibm.topologies.nerve.TRUNK_COMPOSITION")
+        missing = [c for c in NOCICEPTIVE_CLASSES if c not in comp]
+        if missing:
+            raise ValueError(f"{p['id']}: trunk {trunk!r} carries {comp}, not "
+                             f"{missing}; a nociceptive route cannot be declared on it")
+        L = float(p["path_length_m"])
+        out.append({
+            "patch_id": p["id"], "trunk": trunk, "side": p["side"],
+            "region": p["region"], "dermatome": p["dermatome"],
+            "ihm_nerve_id": p["nerve_id"], "relay_id": p["relay_id"],
+            "path_length_m": L,
+            "delays_s": {c: L / FIBRE_VELOCITY_M_S[c][1] for c in NOCICEPTIVE_CLASSES},
+            "delay_range_s": {c: (L / FIBRE_VELOCITY_M_S[c][2],
+                                  L / FIBRE_VELOCITY_M_S[c][0])
+                              for c in NOCICEPTIVE_CLASSES},
+            "delay_scope": NOCICEPTIVE_DELAY_SCOPE,
+            "length_source": "ihm_patch_route",
+            "evidence_kind": p.get("evidence_kind"),
+        })
+    return out
+
+
 def measured_trunk_lengths_mm(path: str = IHM_PERIPHERAL) -> dict[str, float]:
     """one measured route length per trunk, in mm, sides collapsed.
 

@@ -1,0 +1,1153 @@
+{
+ "script": "scripts/gate_cord.py",
+ "module": "ibm/cord.py",
+ "dt": 0.002,
+ "dt_fine": 0.001,
+ "dt_sweep": 0.004,
+ "welch_segment_s": 8.0,
+ "trace_s": 60.0,
+ "burn_s": 12.0,
+ "noise_seed": 1704,
+ "drive_levels": [
+  0.0,
+  0.15,
+  0.3,
+  0.45,
+  0.6,
+  0.75,
+  0.9,
+  1.05
+ ],
+ "pools": [
+  "L_flexor",
+  "L_extensor",
+  "R_flexor",
+  "R_extensor"
+ ],
+ "catalogue": {
+  "locomotor_band_hz": [
+   0.5,
+   3.0
+  ],
+  "declared_peak_hz": 1.2,
+  "antiphase_window_deg": [
+   150.0,
+   210.0
+  ],
+  "reflex_edge_ms": [
+   10.0,
+   18.0
+  ]
+ },
+ "delays_in_steps": {
+  "mlr_to_cord": 7,
+  "cord_to_mn": 2,
+  "mn_to_muscle": 3,
+  "spindle_to_mn": 7
+ },
+ "priors": {
+  "tau_hc": 0.03,
+  "beta_hc": 9.0,
+  "theta_hc": 1.05,
+  "g_nap": 2.4,
+  "tau_h_up": 0.37,
+  "tau_h_dn": 0.093,
+  "h_beta": 4.0,
+  "h_theta": 1.4,
+  "tau_inh": 0.02,
+  "w_recip": 1.05,
+  "w_comm": 0.45,
+  "w_mlr": 1.0,
+  "tau_mn": 0.015,
+  "beta_mn": 6.0,
+  "theta_mn": 0.45,
+  "w_hc_mn": 0.8,
+  "w_reflex": 0.55,
+  "w_aff_hc": 0.15,
+  "tau_force": 0.055,
+  "tau_joint": 0.08,
+  "joint_gain": 0.6,
+  "tau_spindle": 0.002,
+  "spindle_beta": 6.0,
+  "spindle_theta": 0.1,
+  "spindle_dyn": 0.03,
+  "sigma": 0.02,
+  "tau_eta": 0.005,
+  "d_mlr_cord_s": 0.014,
+  "d_cord_mn_s": 0.0035,
+  "d_mn_muscle_s": 0.006,
+  "d_spindle_mn_s": 0.014
+ },
+ "gates": {
+  "S0_bounded": {
+   "ok": true,
+   "worst_excursion": 0.0,
+   "any_nonfinite": false,
+   "n_cases": 32,
+   "cases": [
+    {
+     "dt": 0.001,
+     "drive": -2.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.001,
+     "drive": -2.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.001,
+     "drive": 0.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.001,
+     "drive": 0.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.001,
+     "drive": 2.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.001,
+     "drive": 2.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.001,
+     "drive": 5.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.001,
+     "drive": 5.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.005,
+     "drive": -2.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.005,
+     "drive": -2.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.005,
+     "drive": 0.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.005,
+     "drive": 0.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.005,
+     "drive": 2.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.005,
+     "drive": 2.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.005,
+     "drive": 5.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.005,
+     "drive": 5.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.02,
+     "drive": -2.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.02,
+     "drive": -2.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.02,
+     "drive": 0.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.02,
+     "drive": 0.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.02,
+     "drive": 2.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.02,
+     "drive": 2.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.02,
+     "drive": 5.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.02,
+     "drive": 5.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.05,
+     "drive": -2.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.05,
+     "drive": -2.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.05,
+     "drive": 0.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.05,
+     "drive": 0.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.05,
+     "drive": 2.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.05,
+     "drive": 2.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.05,
+     "drive": 5.0,
+     "cortex": -3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    },
+    {
+     "dt": 0.05,
+     "drive": 5.0,
+     "cortex": 3.0,
+     "worst": 0.0,
+     "nonfinite": false
+    }
+   ]
+  },
+  "S1_idempotent": {
+   "ok": true,
+   "rollout_max_abs_diff": 0.0,
+   "step_twice_max_abs_diff": 0.0,
+   "rule": "both must be exactly 0.0"
+  },
+  "S2_alternation": {
+   "ok": true,
+   "window_deg": [
+    150.0,
+    210.0
+   ],
+   "flex_ext_deg": [
+    179.97,
+    179.93,
+    179.95
+   ],
+   "left_right_deg": [
+    179.88,
+    179.88,
+    179.96
+   ],
+   "flex_ext_spread_deg": 0.03,
+   "left_right_spread_deg": 0.09,
+   "rule": "every angle in the declared window and every PLV > 0.9",
+   "arms": {
+    "declared_diagonal": {
+     "peak_hz": 1.2483235597610474,
+     "prominence_decades": 0.8566194176673889,
+     "flex_ext_deg": 179.96700447043827,
+     "flex_ext_plv": 0.9887916445732117,
+     "left_right_deg": 179.87976567049733,
+     "left_right_plv": 0.9888168573379517,
+     "hc_amplitude_sd": 0.38607385754585266,
+     "force_amplitude_sd": 0.20711791515350342,
+     "force_mean": 0.7160361409187317,
+     "delays_in_steps": {
+      "mlr_to_cord": 7,
+      "cord_to_mn": 2,
+      "mn_to_muscle": 3,
+      "spindle_to_mn": 7
+     }
+    },
+    "larger_diagonal": {
+     "peak_hz": 1.2483099699020386,
+     "prominence_decades": 0.9180389642715454,
+     "flex_ext_deg": 179.93422454080581,
+     "flex_ext_plv": 0.9887977242469788,
+     "left_right_deg": 179.87513830773793,
+     "left_right_plv": 0.9887538552284241,
+     "hc_amplitude_sd": 0.38603976368904114,
+     "force_amplitude_sd": 0.20710869133472443,
+     "force_mean": 0.7161253094673157,
+     "delays_in_steps": {
+      "mlr_to_cord": 7,
+      "cord_to_mn": 2,
+      "mn_to_muscle": 3,
+      "spindle_to_mn": 7
+     }
+    },
+    "synchronous_start": {
+     "peak_hz": 1.2482458353042603,
+     "prominence_decades": 0.9970126748085022,
+     "flex_ext_deg": 179.94792639139956,
+     "flex_ext_plv": 0.9887475371360779,
+     "left_right_deg": 179.96328319688962,
+     "left_right_plv": 0.9887155294418335,
+     "hc_amplitude_sd": 0.38615739345550537,
+     "force_amplitude_sd": 0.20711302757263184,
+     "force_mean": 0.7157984375953674,
+     "delays_in_steps": {
+      "mlr_to_cord": 7,
+      "cord_to_mn": 2,
+      "mn_to_muscle": 3,
+      "spindle_to_mn": 7
+     }
+    }
+   }
+  },
+  "S3_frequency_follows_drive": {
+   "ok": false,
+   "monotone_rising": true,
+   "all_in_band": true,
+   "phase_held_in_window": true,
+   "rhythm_alive_at_every_level": true,
+   "covers_declared_band": false,
+   "coverage_rule_hz": [
+    0.783,
+    1.917
+   ],
+   "measured_hz_range": [
+    0.75,
+    1.878
+   ],
+   "declared_band_hz": [
+    0.5,
+    3.0
+   ],
+   "declared_peak_hz": 1.2,
+   "span_ratio": 2.51,
+   "sweep": [
+    {
+     "peak_hz": 0.7497935891151428,
+     "prominence_decades": 0.780691921710968,
+     "flex_ext_deg": 180.00396797231292,
+     "flex_ext_plv": 0.9989286661148071,
+     "left_right_deg": 180.05962207581305,
+     "left_right_plv": 0.9988373517990112,
+     "hc_amplitude_sd": 0.39144444465637207,
+     "force_amplitude_sd": 0.20406067371368408,
+     "force_mean": 0.6783553957939148,
+     "delays_in_steps": {
+      "mlr_to_cord": 7,
+      "cord_to_mn": 2,
+      "mn_to_muscle": 3,
+      "spindle_to_mn": 7
+     },
+     "drive": 0.0
+    },
+    {
+     "peak_hz": 0.8761106133460999,
+     "prominence_decades": 1.1040959358215332,
+     "flex_ext_deg": 179.96996043763514,
+     "flex_ext_plv": 0.9971470236778259,
+     "left_right_deg": 179.930546214408,
+     "left_right_plv": 0.9969921708106995,
+     "hc_amplitude_sd": 0.3956679105758667,
+     "force_amplitude_sd": 0.20716509222984314,
+     "force_mean": 0.6901811361312866,
+     "delays_in_steps": {
+      "mlr_to_cord": 7,
+      "cord_to_mn": 2,
+      "mn_to_muscle": 3,
+      "spindle_to_mn": 7
+     },
+     "drive": 0.15
+    },
+    {
+     "peak_hz": 1.0081429481506348,
+     "prominence_decades": 0.8697348237037659,
+     "flex_ext_deg": 179.99285627804267,
+     "flex_ext_plv": 0.9943479895591736,
+     "left_right_deg": 180.04067274086506,
+     "left_right_plv": 0.9941825866699219,
+     "hc_amplitude_sd": 0.3947295546531677,
+     "force_amplitude_sd": 0.20856833457946777,
+     "force_mean": 0.701302707195282,
+     "delays_in_steps": {
+      "mlr_to_cord": 7,
+      "cord_to_mn": 2,
+      "mn_to_muscle": 3,
+      "spindle_to_mn": 7
+     },
+     "drive": 0.3
+    },
+    {
+     "peak_hz": 1.168972134590149,
+     "prominence_decades": 0.9622288346290588,
+     "flex_ext_deg": 179.9725292492417,
+     "flex_ext_plv": 0.9903645515441895,
+     "left_right_deg": 179.8791360016538,
+     "left_right_plv": 0.9904089570045471,
+     "hc_amplitude_sd": 0.3889129161834717,
+     "force_amplitude_sd": 0.2075466364622116,
+     "force_mean": 0.7131133675575256,
+     "delays_in_steps": {
+      "mlr_to_cord": 7,
+      "cord_to_mn": 2,
+      "mn_to_muscle": 3,
+      "spindle_to_mn": 7
+     },
+     "drive": 0.45
+    },
+    {
+     "peak_hz": 1.3638089895248413,
+     "prominence_decades": 1.1297688484191895,
+     "flex_ext_deg": 179.99120066696332,
+     "flex_ext_plv": 0.9846740961074829,
+     "left_right_deg": 180.13604650664817,
+     "left_right_plv": 0.9844604134559631,
+     "hc_amplitude_sd": 0.3772795796394348,
+     "force_amplitude_sd": 0.20362253487110138,
+     "force_mean": 0.726066529750824,
+     "delays_in_steps": {
+      "mlr_to_cord": 7,
+      "cord_to_mn": 2,
+      "mn_to_muscle": 3,
+      "spindle_to_mn": 7
+     },
+     "drive": 0.6
+    },
+    {
+     "peak_hz": 1.5009738206863403,
+     "prominence_decades": 1.188248872756958,
+     "flex_ext_deg": 179.9660903992569,
+     "flex_ext_plv": 0.9750588536262512,
+     "left_right_deg": 179.99660424076757,
+     "left_right_plv": 0.9749082326889038,
+     "hc_amplitude_sd": 0.3600584864616394,
+     "force_amplitude_sd": 0.19601832330226898,
+     "force_mean": 0.7416607141494751,
+     "delays_in_steps": {
+      "mlr_to_cord": 7,
+      "cord_to_mn": 2,
+      "mn_to_muscle": 3,
+      "spindle_to_mn": 7
+     },
+     "drive": 0.75
+    },
+    {
+     "peak_hz": 1.696020245552063,
+     "prominence_decades": 1.0187702178955078,
+     "flex_ext_deg": 180.020823776982,
+     "flex_ext_plv": 0.9955777525901794,
+     "left_right_deg": 180.3727810743746,
+     "left_right_plv": 0.9955607652664185,
+     "hc_amplitude_sd": 0.3310965597629547,
+     "force_amplitude_sd": 0.17900899052619934,
+     "force_mean": 0.7647091746330261,
+     "delays_in_steps": {
+      "mlr_to_cord": 7,
+      "cord_to_mn": 2,
+      "mn_to_muscle": 3,
+      "spindle_to_mn": 7
+     },
+     "drive": 0.9
+    },
+    {
+     "peak_hz": 1.8784087896347046,
+     "prominence_decades": 0.9969438314437866,
+     "flex_ext_deg": 179.90918639546965,
+     "flex_ext_plv": 0.9995940923690796,
+     "left_right_deg": 179.79840880863526,
+     "left_right_plv": 0.9993230700492859,
+     "hc_amplitude_sd": 0.25339269638061523,
+     "force_amplitude_sd": 0.12232597172260284,
+     "force_mean": 0.8249464631080627,
+     "delays_in_steps": {
+      "mlr_to_cord": 7,
+      "cord_to_mn": 2,
+      "mn_to_muscle": 3,
+      "spindle_to_mn": 7
+     },
+     "drive": 1.05
+    }
+   ]
+  },
+  "S4_generates": {
+   "ok": true,
+   "prominence_decades": 0.8566194176673889,
+   "peak_hz": 1.2483235597610474,
+   "control_g_nap_0_prominence": -1.2566895484924316,
+   "control_g_nap_0_peak_hz": 1.7434606552124023,
+   "control_g_nap_0_amplitude_sd": 0.0007177607621997595,
+   "drive_was_constant": 0.5,
+   "rule": "intact prominence > 0 AND the g_nap=0 control <= 0; the control shares the drive, every other constant and the noise draw"
+  },
+  "S5_reflex_latency": {
+   "ok": true,
+   "measured_latency_ms": 16.0,
+   "declared_delay_ms": 14.0,
+   "declared_interval_ms": [
+    10.0,
+    18.0
+   ],
+   "delay_in_steps": 14,
+   "dt_ms": 1.0,
+   "joint_onset_ms": 0.0,
+   "spindle_onset_ms": 1.0,
+   "expected_ms": 16.0,
+   "rule": "in the declared 10-18 ms interval AND not sooner than 14 ms; the +2 step integration overhead is declared in the docstring"
+  },
+  "S6_deafferentation": {
+   "ok": true,
+   "rhythm_stands": true,
+   "amplitude_changed": true,
+   "intact_peak_hz": 1.2483235597610474,
+   "intact_prominence": 0.8566194176673889,
+   "cut_peak_hz": 1.0071613788604736,
+   "cut_prominence": 0.8870638012886047,
+   "force_amplitude_ratio_cut_over_intact": 1.5792,
+   "frequency_shift_hz": -0.2412,
+   "flex_ext_deg_cut": 179.9,
+   "rule": "prominence > 0 with the afferents cut AND force amplitude moves >= 10%.  A rhythm that dies here was a reflex loop.",
+   "intact": {
+    "peak_hz": 1.2483235597610474,
+    "prominence_decades": 0.8566194176673889,
+    "flex_ext_deg": 179.96700447043827,
+    "flex_ext_plv": 0.9887916445732117,
+    "left_right_deg": 179.87976567049733,
+    "left_right_plv": 0.9888168573379517,
+    "hc_amplitude_sd": 0.38607385754585266,
+    "force_amplitude_sd": 0.20711791515350342,
+    "force_mean": 0.7160361409187317,
+    "delays_in_steps": {
+     "mlr_to_cord": 7,
+     "cord_to_mn": 2,
+     "mn_to_muscle": 3,
+     "spindle_to_mn": 7
+    }
+   },
+   "cut": {
+    "peak_hz": 1.0071613788604736,
+    "prominence_decades": 0.8870638012886047,
+    "flex_ext_deg": 179.902361824314,
+    "flex_ext_plv": 0.9901013970375061,
+    "left_right_deg": 179.85646337823783,
+    "left_right_plv": 0.9898951053619385,
+    "hc_amplitude_sd": 0.39716261625289917,
+    "force_amplitude_sd": 0.3270752429962158,
+    "force_mean": 0.5001851916313171,
+    "delays_in_steps": {
+     "mlr_to_cord": 7,
+     "cord_to_mn": 2,
+     "mn_to_muscle": 3,
+     "spindle_to_mn": 7
+    }
+   }
+  },
+  "S7_sensitivity": {
+   "ok": false,
+   "baseline_hz": 1.243,
+   "baseline_prominence": 1.13,
+   "baseline_deg": 179.9,
+   "claimed_clock_span_hz": {
+    "tau_h_up": 0.852,
+    "g_nap": 0.005
+   },
+   "claimed_clock_verdict": {
+    "tau_h_up": "moves",
+    "g_nap": "breaks_the_rhythm_at_both_ends"
+   },
+   "rule": "tau_h_up and g_nap must each move the locomotor frequency by > 0.3 Hz over a 3x sweep, and w_recip must move something",
+   "inert_definition": "BOTH endpoints alive (prominence > 0) and < 0.05 Hz AND < 5.0 deg over the 3x sweep",
+   "inert": [
+    "tau_joint",
+    "tau_force",
+    "spindle_dyn",
+    "tau_h_dn",
+    "spindle_theta",
+    "tau_mn",
+    "sigma",
+    "d_spindle_mn_s",
+    "d_cord_mn_s",
+    "d_mn_muscle_s",
+    "tau_spindle",
+    "tau_eta",
+    "d_mlr_cord_s"
+   ],
+   "breaks_the_rhythm": [
+    "theta_hc",
+    "beta_hc",
+    "h_theta",
+    "w_recip",
+    "h_beta",
+    "g_nap"
+   ],
+   "n_constants": 31,
+   "dt_used": 0.004,
+   "delays_in_steps_at_sweep_dt": {
+    "mlr_to_cord": 4,
+    "cord_to_mn": 1,
+    "mn_to_muscle": 2,
+    "spindle_to_mn": 4
+   },
+   "sweep": [
+    {
+     "param": "tau_h_up",
+     "value": 0.37,
+     "verdict": "moves",
+     "hz_at_half": 1.739,
+     "hz_at_1p5x": 0.887,
+     "span_hz": 0.852,
+     "prom_at_half": 1.49,
+     "prom_at_1p5x": 1.12,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 180.1,
+     "deg_at_1p5x": 180.1,
+     "span_deg": 0.0
+    },
+    {
+     "param": "w_comm",
+     "value": 0.45,
+     "verdict": "moves",
+     "hz_at_half": 1.624,
+     "hz_at_1p5x": 0.874,
+     "span_hz": 0.75,
+     "prom_at_half": 1.33,
+     "prom_at_1p5x": 0.92,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 180.0,
+     "deg_at_1p5x": 179.9,
+     "span_deg": 0.1
+    },
+    {
+     "param": "w_mlr",
+     "value": 1.0,
+     "verdict": "moves",
+     "hz_at_half": 0.992,
+     "hz_at_1p5x": 1.499,
+     "span_hz": 0.507,
+     "prom_at_half": 1.52,
+     "prom_at_1p5x": 1.49,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 180.0,
+     "deg_at_1p5x": 180.0,
+     "span_deg": 0.0
+    },
+    {
+     "param": "tau_hc",
+     "value": 0.03,
+     "verdict": "moves",
+     "hz_at_half": 1.373,
+     "hz_at_1p5x": 1.12,
+     "span_hz": 0.253,
+     "prom_at_half": 0.65,
+     "prom_at_1p5x": 1.48,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 180.0,
+     "span_deg": 0.1
+    },
+    {
+     "param": "w_aff_hc",
+     "value": 0.15,
+     "verdict": "moves",
+     "hz_at_half": 1.123,
+     "hz_at_1p5x": 1.363,
+     "span_hz": 0.24,
+     "prom_at_half": 1.15,
+     "prom_at_1p5x": 1.34,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 180.1,
+     "span_deg": 0.2
+    },
+    {
+     "param": "tau_inh",
+     "value": 0.02,
+     "verdict": "moves",
+     "hz_at_half": 1.33,
+     "hz_at_1p5x": 1.125,
+     "span_hz": 0.204,
+     "prom_at_half": 0.96,
+     "prom_at_1p5x": 1.39,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 180.0,
+     "deg_at_1p5x": 180.1,
+     "span_deg": 0.2
+    },
+    {
+     "param": "w_hc_mn",
+     "value": 0.8,
+     "verdict": "moves",
+     "hz_at_half": 1.128,
+     "hz_at_1p5x": 1.247,
+     "span_hz": 0.118,
+     "prom_at_half": 1.15,
+     "prom_at_1p5x": 1.13,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 180.2,
+     "span_deg": 0.2
+    },
+    {
+     "param": "w_reflex",
+     "value": 0.55,
+     "verdict": "moves",
+     "hz_at_half": 1.253,
+     "hz_at_1p5x": 1.146,
+     "span_hz": 0.108,
+     "prom_at_half": 1.33,
+     "prom_at_1p5x": 1.33,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 180.0,
+     "span_deg": 0.1
+    },
+    {
+     "param": "joint_gain",
+     "value": 0.6,
+     "verdict": "moves",
+     "hz_at_half": 1.147,
+     "hz_at_1p5x": 1.249,
+     "span_hz": 0.102,
+     "prom_at_half": 1.22,
+     "prom_at_1p5x": 1.39,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 180.1,
+     "span_deg": 0.2
+    },
+    {
+     "param": "theta_mn",
+     "value": 0.45,
+     "verdict": "moves",
+     "hz_at_half": 1.147,
+     "hz_at_1p5x": 1.249,
+     "span_hz": 0.101,
+     "prom_at_half": 1.23,
+     "prom_at_1p5x": 1.27,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 180.0,
+     "span_deg": 0.0
+    },
+    {
+     "param": "spindle_beta",
+     "value": 6.0,
+     "verdict": "moves",
+     "hz_at_half": 1.164,
+     "hz_at_1p5x": 1.249,
+     "span_hz": 0.085,
+     "prom_at_half": 1.15,
+     "prom_at_1p5x": 1.31,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 180.0,
+     "deg_at_1p5x": 180.0,
+     "span_deg": 0.0
+    },
+    {
+     "param": "beta_mn",
+     "value": 6.0,
+     "verdict": "moves",
+     "hz_at_half": 1.182,
+     "hz_at_1p5x": 1.246,
+     "span_hz": 0.064,
+     "prom_at_half": 1.12,
+     "prom_at_1p5x": 1.35,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 180.0,
+     "deg_at_1p5x": 180.0,
+     "span_deg": 0.0
+    },
+    {
+     "param": "tau_joint",
+     "value": 0.08,
+     "verdict": "inert",
+     "hz_at_half": 1.213,
+     "hz_at_1p5x": 1.247,
+     "span_hz": 0.034,
+     "prom_at_half": 1.08,
+     "prom_at_1p5x": 1.2,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 180.0,
+     "span_deg": 0.2
+    },
+    {
+     "param": "tau_force",
+     "value": 0.055,
+     "verdict": "inert",
+     "hz_at_half": 1.221,
+     "hz_at_1p5x": 1.247,
+     "span_hz": 0.026,
+     "prom_at_half": 1.07,
+     "prom_at_1p5x": 1.13,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 180.0,
+     "deg_at_1p5x": 180.2,
+     "span_deg": 0.2
+    },
+    {
+     "param": "spindle_dyn",
+     "value": 0.03,
+     "verdict": "inert",
+     "hz_at_half": 1.247,
+     "hz_at_1p5x": 1.234,
+     "span_hz": 0.013,
+     "prom_at_half": 1.11,
+     "prom_at_1p5x": 1.23,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 180.2,
+     "deg_at_1p5x": 180.1,
+     "span_deg": 0.0
+    },
+    {
+     "param": "tau_h_dn",
+     "value": 0.093,
+     "verdict": "inert",
+     "hz_at_half": 1.245,
+     "hz_at_1p5x": 1.233,
+     "span_hz": 0.011,
+     "prom_at_half": 1.23,
+     "prom_at_1p5x": 1.28,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 180.0,
+     "deg_at_1p5x": 180.1,
+     "span_deg": 0.1
+    },
+    {
+     "param": "spindle_theta",
+     "value": 0.1,
+     "verdict": "inert",
+     "hz_at_half": 1.246,
+     "hz_at_1p5x": 1.238,
+     "span_hz": 0.008,
+     "prom_at_half": 1.34,
+     "prom_at_1p5x": 1.36,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 180.0,
+     "deg_at_1p5x": 180.0,
+     "span_deg": 0.0
+    },
+    {
+     "param": "tau_mn",
+     "value": 0.015,
+     "verdict": "inert",
+     "hz_at_half": 1.24,
+     "hz_at_1p5x": 1.246,
+     "span_hz": 0.007,
+     "prom_at_half": 1.33,
+     "prom_at_1p5x": 1.34,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 180.0,
+     "span_deg": 0.1
+    },
+    {
+     "param": "sigma",
+     "value": 0.02,
+     "verdict": "inert",
+     "hz_at_half": 1.24,
+     "hz_at_1p5x": 1.247,
+     "span_hz": 0.006,
+     "prom_at_half": 1.44,
+     "prom_at_1p5x": 1.24,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 180.0,
+     "span_deg": 0.0
+    },
+    {
+     "param": "d_spindle_mn_s",
+     "value": 0.014,
+     "verdict": "inert",
+     "hz_at_half": 1.24,
+     "hz_at_1p5x": 1.245,
+     "span_hz": 0.005,
+     "prom_at_half": 1.34,
+     "prom_at_1p5x": 1.19,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 180.0,
+     "span_deg": 0.1
+    },
+    {
+     "param": "d_cord_mn_s",
+     "value": 0.0035,
+     "verdict": "inert",
+     "hz_at_half": 1.242,
+     "hz_at_1p5x": 1.243,
+     "span_hz": 0.001,
+     "prom_at_half": 1.17,
+     "prom_at_1p5x": 1.13,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 179.9,
+     "span_deg": 0.1
+    },
+    {
+     "param": "d_mn_muscle_s",
+     "value": 0.006,
+     "verdict": "inert",
+     "hz_at_half": 1.241,
+     "hz_at_1p5x": 1.243,
+     "span_hz": 0.001,
+     "prom_at_half": 1.19,
+     "prom_at_1p5x": 1.13,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 179.9,
+     "span_deg": 0.1
+    },
+    {
+     "param": "tau_spindle",
+     "value": 0.002,
+     "verdict": "inert",
+     "hz_at_half": 1.243,
+     "hz_at_1p5x": 1.243,
+     "span_hz": 0.0,
+     "prom_at_half": 1.16,
+     "prom_at_1p5x": 1.1,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 179.9,
+     "span_deg": 0.0
+    },
+    {
+     "param": "tau_eta",
+     "value": 0.005,
+     "verdict": "inert",
+     "hz_at_half": 1.243,
+     "hz_at_1p5x": 1.243,
+     "span_hz": 0.0,
+     "prom_at_half": 1.53,
+     "prom_at_1p5x": 0.79,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 179.9,
+     "span_deg": 0.0
+    },
+    {
+     "param": "d_mlr_cord_s",
+     "value": 0.014,
+     "verdict": "inert",
+     "hz_at_half": 1.243,
+     "hz_at_1p5x": 1.243,
+     "span_hz": 0.0,
+     "prom_at_half": 1.12,
+     "prom_at_1p5x": 1.13,
+     "alive_at_half": true,
+     "alive_at_1p5x": true,
+     "deg_at_half": 179.9,
+     "deg_at_1p5x": 179.9,
+     "span_deg": 0.0
+    },
+    {
+     "param": "theta_hc",
+     "value": 1.05,
+     "verdict": "breaks_the_rhythm_at_one_end",
+     "hz_at_half": 3.567,
+     "hz_at_1p5x": 1.757,
+     "span_hz": 1.81,
+     "prom_at_half": -1.38,
+     "prom_at_1p5x": 1.38,
+     "alive_at_half": false,
+     "alive_at_1p5x": true,
+     "deg_at_half": 182.7,
+     "deg_at_1p5x": 179.7,
+     "span_deg": 2.9
+    },
+    {
+     "param": "beta_hc",
+     "value": 9.0,
+     "verdict": "breaks_the_rhythm_at_one_end",
+     "hz_at_half": 2.039,
+     "hz_at_1p5x": 0.991,
+     "span_hz": 1.048,
+     "prom_at_half": -0.66,
+     "prom_at_1p5x": 0.6,
+     "alive_at_half": false,
+     "alive_at_1p5x": true,
+     "deg_at_half": 182.2,
+     "deg_at_1p5x": 179.9,
+     "span_deg": 2.3
+    },
+    {
+     "param": "h_theta",
+     "value": 1.4,
+     "verdict": "breaks_the_rhythm_at_one_end",
+     "hz_at_half": 1.544,
+     "hz_at_1p5x": 2.083,
+     "span_hz": 0.539,
+     "prom_at_half": 1.57,
+     "prom_at_1p5x": -1.17,
+     "alive_at_half": true,
+     "alive_at_1p5x": false,
+     "deg_at_half": 180.0,
+     "deg_at_1p5x": 189.3,
+     "span_deg": 9.4
+    },
+    {
+     "param": "w_recip",
+     "value": 1.05,
+     "verdict": "breaks_the_rhythm_at_both_ends",
+     "hz_at_half": 2.658,
+     "hz_at_1p5x": 2.289,
+     "span_hz": 0.369,
+     "prom_at_half": -1.18,
+     "prom_at_1p5x": -1.09,
+     "alive_at_half": false,
+     "alive_at_1p5x": false,
+     "deg_at_half": 183.7,
+     "deg_at_1p5x": 182.5,
+     "span_deg": 1.2
+    },
+    {
+     "param": "h_beta",
+     "value": 4.0,
+     "verdict": "breaks_the_rhythm_at_one_end",
+     "hz_at_half": 1.607,
+     "hz_at_1p5x": 1.398,
+     "span_hz": 0.209,
+     "prom_at_half": -0.94,
+     "prom_at_1p5x": 1.3,
+     "alive_at_half": false,
+     "alive_at_1p5x": true,
+     "deg_at_half": 176.5,
+     "deg_at_1p5x": 180.0,
+     "span_deg": 3.4
+    },
+    {
+     "param": "g_nap",
+     "value": 2.4,
+     "verdict": "breaks_the_rhythm_at_both_ends",
+     "hz_at_half": 3.325,
+     "hz_at_1p5x": 3.33,
+     "span_hz": 0.005,
+     "prom_at_half": -1.33,
+     "prom_at_1p5x": -1.29,
+     "alive_at_half": false,
+     "alive_at_1p5x": false,
+     "deg_at_half": 211.3,
+     "deg_at_1p5x": 181.8,
+     "span_deg": 29.5
+    }
+   ]
+  }
+ },
+ "all_gates_ok": false,
+ "failed_gates": [
+  "S3_frequency_follows_drive",
+  "S7_sensitivity"
+ ]
+}

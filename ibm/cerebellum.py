@@ -30,11 +30,21 @@ Three things in here are mechanisms rather than decoration, and each has a gate.
 
 **1. The granule expansion is a decorrelator.**  Each granule cell takes `n_dendrite = 4`
 mossy fibres -- the real number, and one of the most conserved facts in the brain -- from a
-SPARSE, FIXED, randomly drawn projection, and fires only when enough of them are active
-together (`theta_G` sits near 3 of 4).  Expansion alone does not decorrelate: a random
-linear mixture preserves correlation almost exactly.  It is expansion **plus** the
-coincidence threshold **plus** the Golgi feedback that holds the code sparse, which is
-Marr-Albus, and gate C2 measures whether it actually happens rather than asserting it.
+SPARSE, FIXED, randomly drawn projection, and fires only when its four inputs together
+clear a STEEP threshold, which leaves about 5% of the layer active.  Expansion alone does
+not decorrelate: a random linear mixture preserves correlation almost exactly.  It is
+expansion **plus** the threshold **plus** the Golgi feedback that holds the code sparse,
+which is Marr-Albus, and the gate measures whether it actually happens rather than
+asserting it.
+
+It happens, and it is **smaller and noisier than the story suggests**, which is worth
+knowing before anyone builds on it.  Over 32 input pairs at a measured mossy correlation
+of 0.900 the granule codes come back at 0.790: a mean drop of 0.110, 95% CI
+[0.081, 0.141] bootstrapped over the pairs -- real, but with a per-pair standard deviation
+of 0.088, so **3 of those 32 pairs came back MORE correlated than their inputs**.  Gate C2,
+which was pre-registered to require all of eight pairs to drop, therefore FAILED and is
+left failed; C2b is the replacement instrument and carries the interval above.  A single
+pair of patterns is not evidence about this mechanism in either direction.
 
 The projection is drawn ONCE from a `torch.Generator` the caller must supply.  This is
 CLAUDE.md's standing trap and it has bitten this repository twice in one file in one day:
@@ -644,6 +654,10 @@ class CerebellarMicrozone(nn.Module):
         # the pause: fast to engage, slow to release -- that asymmetry IS the pause
         cpz = torch.where(cf > sC, torch.full_like(sC, c_up), torch.full_like(sC, c_dn))
         sCn = sC + cpz * (cf - sC)
+        # what LEAVES the olive is the complex spike, not the membrane oscillation; `cs`
+        # is computed once here and both the state and the climbing fibre use that one
+        # value, so a reader never has to check whether two copies agree.
+        cs = sigmoid(On, pr.beta_cs, pr.theta_cs)
 
         out = {
             "M": Mn, "G": Gn, "Go": Gon, "I": In, "P": Pn, "N": Nn, "O": On, "z": zn,
@@ -652,16 +666,14 @@ class CerebellarMicrozone(nn.Module):
             "sIP": sIP + cbk * (I_bk - sIP),
             "sPN": sPN + cgN * (P_n - sPN),
             "sNO": sNO + cgO * (N_io - sNO),
-            "sC": sCn, "cf": cf, "cs": sigmoid(On, pr.beta_cs, pr.theta_cs),
+            "sC": sCn, "cf": cf, "cs": cs,
             "gtrace": gtr + cel * (G_del - gtr),
             "eta_I": eI, "eta_P": eP, "eta_O": eO,
             "t": t + 1, "lags": lg, "dt": dt,
         }
-        # ---- post the new values into the rings for their arrival times
-        # what leaves the olive is the COMPLEX SPIKE, not the membrane oscillation; a
-        # teacher's climbing fibre is injected at the same point, so it too arrives at the
-        # Purkinje cells only after the catalogue's climbing-fibre conduction time.
-        cs = sigmoid(On, pr.beta_cs, pr.theta_cs)
+        # ---- post the new values into the rings for their arrival times.  a teacher's
+        # climbing fibre is injected at the olive's AXON, so it too reaches the Purkinje
+        # cells only after the catalogue's climbing-fibre conduction time.
         emit_O = cs if cf_in is None else torch.clamp(cs + cf_in, 0.0, 1.0)
         out["ring_M"] = _write(state["ring_M"], t, Mn)
         out["ring_G"] = _write(state["ring_G"], t, Gn)
@@ -688,6 +700,16 @@ class CerebellarMicrozone(nn.Module):
     # rather than a rail.
     @torch.no_grad()
     def learn_step(self, state: dict, eta: float = 1.0) -> None:
+        """apply one step of the rule.  `eta` scales it.
+
+        The update is the batch MEAN, so the learning rate does not silently depend on
+        the batch size.  A caller that is using the batch to stand for `b` SEQUENTIAL
+        presentations -- which is what `gate_cerebellum.py` C3 does, six patterns in
+        parallel standing for six trials -- should pass `eta = b`, because the change
+        those presentations would accumulate one after another is their SUM.  Left
+        unscaled, the first version of C3 moved the weights by 0.04 over thirty trials
+        and read as "plasticity does almost nothing".
+        """
         dt = state["dt"]
         g = state["gtrace"]                                  # (b, n_gr)
         c = state["cf"]                                      # (b, n_pk)
@@ -726,7 +748,7 @@ class CerebellarMicrozone(nn.Module):
         prose instead of printed is not a resting state anyone can rely on.
         """
         tr, st = self.rollout(int(seconds / dt), dt, b=b,
-                              record=("P", "I", "N", "O", "G", "Go"))
+                              record=("P", "I", "N", "O", "G", "Go", "cs"))
         # averaged over the last HALF SECOND, not the last few steps: the olive cycles
         # several times a second and a short tail reports a phase of that cycle rather
         # than a resting state.
@@ -735,6 +757,7 @@ class CerebellarMicrozone(nn.Module):
             "P_hz": float(tail["P"].mean()) * R_MAX,
             "N_hz": float(tail["N"].mean()) * R_MAX,
             "granule_active_fraction": float((tail["G"] > 0.1).float().mean()),
+            "complex_spike_duty": float(tail["cs"].mean()),
         }
 
     def rate_hz(self, state, key: str = "P"):

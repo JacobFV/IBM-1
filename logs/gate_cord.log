@@ -1,0 +1,51 @@
+[PASS] S0_bounded: {'ok': True, 'worst_excursion': 0.0, 'any_nonfinite': False, 'n_cases': 32}
+[PASS] S1_idempotent: {'ok': True, 'rollout_max_abs_diff': 0.0, 'step_twice_max_abs_diff': 0.0, 'rule': 'both must be exactly 0.0'}
+[PASS] S2_alternation: {'ok': True, 'window_deg': [150.0, 210.0], 'flex_ext_deg': [179.97, 179.93, 179.95], 'left_right_deg': [179.88, 179.88, 179.96], 'flex_ext_spread_deg': 0.03, 'left_right_spread_deg': 0.09, 'rule': 'every angle in the declared window and every PLV > 0.9'}
+[FAIL] S3_frequency_follows_drive: {'ok': False, 'monotone_rising': True, 'all_in_band': True, 'phase_held_in_window': True, 'rhythm_alive_at_every_level': True, 'covers_declared_band': False, 'coverage_rule_hz': [0.783, 1.917], 'measured_hz_range': [0.75, 1.878], 'declared_band_hz': [0.5, 3.0], 'declared_peak_hz': 1.2, 'span_ratio': 2.51}
+      drive 0.00   0.750 Hz  prom +0.78  flex/ext  180.0 deg (plv 0.999)  L/R  180.1 deg
+      drive 0.15   0.876 Hz  prom +1.10  flex/ext  180.0 deg (plv 0.997)  L/R  179.9 deg
+      drive 0.30   1.008 Hz  prom +0.87  flex/ext  180.0 deg (plv 0.994)  L/R  180.0 deg
+      drive 0.45   1.169 Hz  prom +0.96  flex/ext  180.0 deg (plv 0.990)  L/R  179.9 deg
+      drive 0.60   1.364 Hz  prom +1.13  flex/ext  180.0 deg (plv 0.985)  L/R  180.1 deg
+      drive 0.75   1.501 Hz  prom +1.19  flex/ext  180.0 deg (plv 0.975)  L/R  180.0 deg
+      drive 0.90   1.696 Hz  prom +1.02  flex/ext  180.0 deg (plv 0.996)  L/R  180.4 deg
+      drive 1.05   1.878 Hz  prom +1.00  flex/ext  179.9 deg (plv 1.000)  L/R  179.8 deg
+[PASS] S4_generates: {'ok': True, 'prominence_decades': 0.8566194176673889, 'peak_hz': 1.2483235597610474, 'control_g_nap_0_prominence': -1.2566895484924316, 'control_g_nap_0_peak_hz': 1.7434606552124023, 'control_g_nap_0_amplitude_sd': 0.0007177607621997595, 'drive_was_constant': 0.5, 'rule': 'intact prominence > 0 AND the g_nap=0 control <= 0; the control shares the drive, every other constant and the noise draw'}
+[PASS] S5_reflex_latency: {'ok': True, 'measured_latency_ms': 16.0, 'declared_delay_ms': 14.0, 'declared_interval_ms': [10.0, 18.0], 'delay_in_steps': 14, 'dt_ms': 1.0, 'joint_onset_ms': 0.0, 'spindle_onset_ms': 1.0, 'expected_ms': 16.0, 'rule': 'in the declared 10-18 ms interval AND not sooner than 14 ms; the +2 step integration overhead is declared in the docstring'}
+[PASS] S6_deafferentation: {'ok': True, 'rhythm_stands': True, 'amplitude_changed': True, 'intact_peak_hz': 1.2483235597610474, 'intact_prominence': 0.8566194176673889, 'cut_peak_hz': 1.0071613788604736, 'cut_prominence': 0.8870638012886047, 'force_amplitude_ratio_cut_over_intact': 1.5792, 'frequency_shift_hz': -0.2412, 'flex_ext_deg_cut': 179.9, 'rule': 'prominence > 0 with the afferents cut AND force amplitude moves >= 10%.  A rhythm that dies here was a reflex loop.'}
+[FAIL] S7_sensitivity: {'ok': False, 'baseline_hz': 1.243, 'baseline_prominence': 1.13, 'baseline_deg': 179.9, 'claimed_clock_span_hz': {'tau_h_up': 0.852, 'g_nap': 0.005}, 'claimed_clock_verdict': {'tau_h_up': 'moves', 'g_nap': 'breaks_the_rhythm_at_both_ends'}, 'rule': 'tau_h_up and g_nap must each move the locomotor frequency by > 0.3 Hz over a 3x sweep, and w_recip must move something', 'inert_definition': 'BOTH endpoints alive (prominence > 0) and < 0.05 Hz AND < 5.0 deg over the 3x sweep', 'inert': ['tau_joint', 'tau_force', 'spindle_dyn', 'tau_h_dn', 'spindle_theta', 'tau_mn', 'sigma', 'd_spindle_mn_s', 'd_cord_mn_s', 'd_mn_muscle_s', 'tau_spindle', 'tau_eta', 'd_mlr_cord_s'], 'breaks_the_rhythm': ['theta_hc', 'beta_hc', 'h_theta', 'w_recip', 'h_beta', 'g_nap'], 'n_constants': 31, 'dt_used': 0.004, 'delays_in_steps_at_sweep_dt': {'mlr_to_cord': 4, 'cord_to_mn': 1, 'mn_to_muscle': 2, 'spindle_to_mn': 4}}
+      tau_h_up          1.739 ->  0.887 Hz  span 0.852  phase   0.0 deg  prom +1.49/+1.12  moves
+      w_comm            1.624 ->  0.874 Hz  span 0.750  phase   0.1 deg  prom +1.33/+0.92  moves
+      w_mlr             0.992 ->  1.499 Hz  span 0.507  phase   0.0 deg  prom +1.52/+1.49  moves
+      tau_hc            1.373 ->  1.120 Hz  span 0.253  phase   0.1 deg  prom +0.65/+1.48  moves
+      w_aff_hc          1.123 ->  1.363 Hz  span 0.240  phase   0.2 deg  prom +1.15/+1.34  moves
+      tau_inh           1.330 ->  1.125 Hz  span 0.204  phase   0.2 deg  prom +0.96/+1.39  moves
+      w_hc_mn           1.128 ->  1.247 Hz  span 0.118  phase   0.2 deg  prom +1.15/+1.13  moves
+      w_reflex          1.253 ->  1.146 Hz  span 0.108  phase   0.1 deg  prom +1.33/+1.33  moves
+      joint_gain        1.147 ->  1.249 Hz  span 0.102  phase   0.2 deg  prom +1.22/+1.39  moves
+      theta_mn          1.147 ->  1.249 Hz  span 0.101  phase   0.0 deg  prom +1.23/+1.27  moves
+      spindle_beta      1.164 ->  1.249 Hz  span 0.085  phase   0.0 deg  prom +1.15/+1.31  moves
+      beta_mn           1.182 ->  1.246 Hz  span 0.064  phase   0.0 deg  prom +1.12/+1.35  moves
+      tau_joint         1.213 ->  1.247 Hz  span 0.034  phase   0.2 deg  prom +1.08/+1.20  inert
+      tau_force         1.221 ->  1.247 Hz  span 0.026  phase   0.2 deg  prom +1.07/+1.13  inert
+      spindle_dyn       1.247 ->  1.234 Hz  span 0.013  phase   0.0 deg  prom +1.11/+1.23  inert
+      tau_h_dn          1.245 ->  1.233 Hz  span 0.011  phase   0.1 deg  prom +1.23/+1.28  inert
+      spindle_theta     1.246 ->  1.238 Hz  span 0.008  phase   0.0 deg  prom +1.34/+1.36  inert
+      tau_mn            1.240 ->  1.246 Hz  span 0.007  phase   0.1 deg  prom +1.33/+1.34  inert
+      sigma             1.240 ->  1.247 Hz  span 0.006  phase   0.0 deg  prom +1.44/+1.24  inert
+      d_spindle_mn_s    1.240 ->  1.245 Hz  span 0.005  phase   0.1 deg  prom +1.34/+1.19  inert
+      d_cord_mn_s       1.242 ->  1.243 Hz  span 0.001  phase   0.1 deg  prom +1.17/+1.13  inert
+      d_mn_muscle_s     1.241 ->  1.243 Hz  span 0.001  phase   0.1 deg  prom +1.19/+1.13  inert
+      tau_spindle       1.243 ->  1.243 Hz  span 0.000  phase   0.0 deg  prom +1.16/+1.10  inert
+      tau_eta           1.243 ->  1.243 Hz  span 0.000  phase   0.0 deg  prom +1.53/+0.79  inert
+      d_mlr_cord_s      1.243 ->  1.243 Hz  span 0.000  phase   0.0 deg  prom +1.12/+1.13  inert
+      theta_hc          3.567 ->  1.757 Hz  span 1.810  phase   2.9 deg  prom -1.38/+1.38  breaks_the_rhythm_at_one_end
+      beta_hc           2.039 ->  0.991 Hz  span 1.048  phase   2.3 deg  prom -0.66/+0.60  breaks_the_rhythm_at_one_end
+      h_theta           1.544 ->  2.083 Hz  span 0.539  phase   9.4 deg  prom +1.57/-1.17  breaks_the_rhythm_at_one_end
+      w_recip           2.658 ->  2.289 Hz  span 0.369  phase   1.2 deg  prom -1.18/-1.09  breaks_the_rhythm_at_both_ends
+      h_beta            1.607 ->  1.398 Hz  span 0.209  phase   3.4 deg  prom -0.94/+1.30  breaks_the_rhythm_at_one_end
+      g_nap             3.325 ->  3.330 Hz  span 0.005  phase  29.5 deg  prom -1.33/-1.29  breaks_the_rhythm_at_both_ends
+      inert (BOTH endpoints alive (prominence > 0) and < 0.05 Hz AND < 5.0 deg over the 3x sweep): tau_joint, tau_force, spindle_dyn, tau_h_dn, spindle_theta, tau_mn, sigma, d_spindle_mn_s, d_cord_mn_s, d_mn_muscle_s, tau_spindle, tau_eta, d_mlr_cord_s
+      breaks the rhythm: theta_hc, beta_hc, h_theta, w_recip, h_beta, g_nap
+
+FAILED: S3_frequency_follows_drive, S7_sensitivity -- wrote out/gate_cord.json

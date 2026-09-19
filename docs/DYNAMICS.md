@@ -609,11 +609,14 @@ that IS declared:
   gut feeling is, and a model with one visceral latency asserts otherwise.
 
   one gap this closes and one it does not. it closes: there was no route by which
-  metabolic or digestive state reached the sheet at all. it does not close: there
-  is no viscera-supported nociceptor component, so the splanchnic channels — the
-  high-threshold, unmyelinated, nociceptive arm — bind to
-  `transduction.baroreceptor` and are tagged nociceptive in the join table rather
-  than by their own component (`ibm.interoception.ONTOLOGY_GAPS`). and the loop
+  metabolic or digestive state reached the sheet at all. it did not close, until
+  18 september 2026: there was no viscera-supported nociceptor component, so the
+  splanchnic channels — the high-threshold, unmyelinated, nociceptive arm — bound
+  to `transduction.baroreceptor` and were tagged nociceptive in the join table
+  rather than by their own component. they now bind
+  `transduction.visceral_nociceptor` (`ibm.interoception.CLOSED_GAPS`); what they
+  still lack is a transduction LAW, because IHM emits them in mL and the human
+  thresholds are barostat pressures (`ibm.interoception.ONTOLOGY_GAPS`). and the loop
   is one-way: the same trunks declare `b_preganglionic` and `c_postganglionic`
   and nothing drives them, so there is afference and no autonomic outflow.
 

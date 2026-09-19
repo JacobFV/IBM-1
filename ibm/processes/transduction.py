@@ -363,6 +363,10 @@ TRANSDUCTION = process(
         within("transduction", "chemoreceptor", region=EPITHELIUM, band=CHEMO),
         within("transduction", "vestibular", region=LABYRINTH, band=VESTIBULAR),
         within("transduction", "baroreceptor", region=VISCERA, band=SLOW_RECEPTOR),
+        # the high-threshold and silent visceral endings, on their own component
+        # since the splanchnic rows of `ibm.interoception` stopped borrowing the
+        # baroreceptor's.  THERMO_NOCI because it mirrors the cutaneous nociceptor.
+        within("transduction", "visceral_nociceptor", region=VISCERA, band=THERMO_NOCI),
         within("transduction", "spindle_primary", region=MUSCLE, band=TACTILE),
         within("transduction", "spindle_secondary", region=MUSCLE, band=SLOW_RECEPTOR),
         within("transduction", "golgi_tendon", region=MUSCLE, band=TACTILE),
