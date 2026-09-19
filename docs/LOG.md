@@ -7378,3 +7378,53 @@ module needs.
 
 Standing record for this module: **C3 FAILED, C3b FAILED, C3c PASSED**, and they are three
 different questions, not three attempts at one.
+
+## 18 September 2026 — PRE-REGISTRATION: one search for an operating point that has both
+
+Written before the grid runs. The question is the one three independent measurements landed
+on today: the cortical field has no regime between silent and saturated, and the inhibition
+that gives it a firing range costs it its attractors (G2 8 sets → 1, G3 to zero
+transitions). Two sweeps this afternoon each tested *one* of those properties and never the
+gates. This tests all of them at once.
+
+**The grid.** `beta_I` ∈ {6, 9, 12} × `w_EI` ∈ {0.5, 0.7, 0.9} × `w_IE` ∈ {0.9, 1.4} = 18
+candidates, with the per-site `tau_I` (3–8 ms) already adopted. Everything else stays at its
+declared prior.
+
+**Drive is matched for RATE, not amplitude.** For each candidate the tonic drive is found by
+bisection so the sheet sits at 8 Hz mean rate, and the graded criterion is then tested over
+0.5× to 2× that drive. Comparing candidates at a fixed drive amplitude compares them at
+different operating points, which is what made the earlier sweeps hard to read.
+
+**The three criteria, all measured on every candidate.**
+1. **GRADED** — mean rate inside 5–20 Hz with saturation under 2% at every drive in the
+   0.5×–2× range, and the rate monotone in drive.
+2. **G2, invariant sets** — the gate's own routine: random starts, time-averaged patterns,
+   counted distinct at correlation ≥ 0.9. Needs ≥ 2.
+3. **G3, metastability** — the gate's own routine: region means binarised, transitions and
+   revisited macrostates counted. Needs ≥ 10 transitions, median dwell > 0.05 s, ≥ 3
+   revisited.
+
+**Cheapened for the search, and confirmed at full size after.** 512 sites instead of 1024,
+16 random starts for G2 instead of 32, 30 s for G3 instead of 60. Any candidate that passes
+is then re-run on the **unmodified** `scripts/gate_substrate_v2.py` at full settings, and
+only that result counts as a gate verdict.
+
+**The fork, declared now, with both branches written before the data.**
+- If a candidate passes all three, the declared priors change to it, with the sweep recorded.
+- If candidates pass GRADED and G2 but fail G3, **the most likely cause is G3's instrument,
+  not the substrate**: G3 binarises a region as "up" at a fixed **E > 0.5**, which is a
+  claim that a macrostate means half a population near saturation. A graded sheet at 5–20 Hz
+  has a mean E of 0.05–0.2 and can be in perfectly distinct *patterns* without any region
+  crossing 0.5. In that case the follow-up is a pattern-based metastability measure declared
+  and gated separately — and **G3 stays FAILED for the graded prior** regardless, because a
+  threshold is not moved after seeing the data.
+- If nothing passes GRADED and G2 together, the answer is structural rather than a
+  parameter: a single sigmoidal rate per site cannot be both an attractor and a graded
+  transfer function, and the next thing to build is separate fast and slow populations or an
+  explicit spiking-density formulation. **That is a useful answer and is not a failure of
+  the search.**
+
+What this run may NOT do: adopt a candidate on the strength of the cheapened settings, move
+any gate's threshold, or report the best of 18 as though it were a pre-selected hypothesis.
+The 18 are a grid, the criteria are fixed, and the confirmation is a separate full-size run.
