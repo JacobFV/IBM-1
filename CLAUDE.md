@@ -330,6 +330,16 @@ a page done.
   `scripts/run_fiveseed_proprio.sh`), check `free -g` before launching a second anything,
   and when a log ends mid-run with no traceback, `journalctl -k -b -1 | grep -i oom`
   before believing any other story.
+- **Cap a GPU job with a cgroup, never with `prlimit --as`.** An address-space limit breaks
+  CUDA outright: under `prlimit --as=16G` a one-element `torch.zeros(1, device='cuda')` dies
+  in `cudaGetDeviceCount()` with "Error 2: out of memory", because CUDA reserves huge virtual
+  mappings; the same call under `systemd-run --user --scope -p MemoryMax=16G -p
+  MemorySwapMax=0` works (both measured 18 Sep 2026). The cgroup kills a runaway inside its
+  own scope and touches nothing else. It matters because a watch cannot save the box: on 18
+  Sep one job grew ~14 GB/min, from start to 46 GB of host RAM in three minutes, and the
+  kernel OOM-killed it before a 30-second poll could react -- a GPU memory fraction does not
+  bound host RAM. `prlimit --as` stays right for CPU-only processes (IHM-1's engine uses 4 GB).
+  Read `/proc/vmstat`'s `oom_kill` counter to detect a kill; `dmesg` is not readable here.
 - **Never commit weights or caches.** History was rewritten once to purge 2.9 GB.
 - **Save the checkpoint before attempting to upload it.** A failed upload once
   destroyed 2,000 steps because `torch.save` sat after the import that threw.
