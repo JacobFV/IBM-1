@@ -897,3 +897,24 @@ $$
 \text{lazy materialization of the ibm}
 }
 $$
+
+
+---
+
+## Note added 18 September 2026: the primitives were never assembled
+
+The four primitives above — fields, anatomy, topologies, processes — describe one system.
+The implementation that grew under them is a set of **separate modules that cannot be run
+together**: `ibm/substrate.py`, `ibm/thalamus.py`, `ibm/hippocampus.py`,
+`ibm/basal_ganglia.py`, `ibm/cerebellum.py`, `ibm/cord.py`, each with its own state format,
+its own step signature and its own stand-in scalars for whatever it needed from the rest of
+the brain.
+
+Every one of them passes gates. Nothing in the programme had ever measured more than two of
+them at once, and the resonance of a loop — the thing the conduction budgets in
+`ibm/rhythms.py` exist for — could not be computed at all, because no object existed that
+contained a loop end to end.
+
+`ibm/circuit.py` is the engine that holds all of it, and `ibm/brain/` declares each structure
+as populations inside it. The modules stay, unchanged, as the known answers the assembled
+structures are checked against.

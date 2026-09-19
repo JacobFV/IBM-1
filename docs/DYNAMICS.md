@@ -697,3 +697,24 @@ which is not something the field can currently do.
   s41593-024-01673-9
 [13] Astrocytes enhance plasticity response during reversal learning. *Commun
   Biol* (2024). s42003-024-06540-8
+
+
+---
+
+## Note added 18 September 2026: this document was right and the build was not
+
+The formulation above takes brain state as a vector over **cortical, thalamic, hippocampal,
+basal-ganglia, cerebellar, neuromodulatory, metabolic and structural fields**. That is the
+correct object and it was written before any of the code.
+
+What was built instead, over the following weeks, was one module per structure, each with
+its own state dictionary, its own interfaces and its own hand-set scalars — and **no joint
+state vector anywhere**. Two structures have ever been run together. The neuromodulatory
+field, named in the formulation above as a component of the state, was implemented as four
+floats passed in by callers (`m_beta`, `arousal`, `septal_tone`, `dopamine`), which is not a
+field, has no dynamics, and cannot appear in the equation this document is about.
+
+The gap was not a disagreement with this document. It was that each part was built to be
+checkable on its own, and a joint state is not checkable on its own, so it was never built.
+`docs/BRAIN_SPEC.md` and `ibm/brain/` are the correction: one circuit, every structure a set
+of populations in it, the neuromodulators among them as populations rather than parameters.

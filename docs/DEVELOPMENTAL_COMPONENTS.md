@@ -140,3 +140,24 @@ always doing the work and was never declared; the numbers are now quoted with it
 choice at this stage rather than by oversight — social components in particular
 are downstream of a body that can act at all. Deferred is a status; unrecorded is
 a bug.
+
+
+---
+
+## Note added 18 September 2026: this document identified the gap and the build order ignored it
+
+The line *"A body with only this component can learn to avoid and cannot learn to seek"* has
+been in the nociceptor's docstring since 9 September. It is exactly right, and for nine days
+nothing acted on it: the amygdala, the accumbens, the ventral tegmental area, the lateral
+habenula and the hypothalamus had **no implementation of any kind** while five rhythm-bearing
+structures were built to a high standard.
+
+The cause was a metric. Structures were prioritised by "rhythms unlocked per unit of work",
+computed from `ibm/rhythms.py` — a catalogue of *oscillations*. A structure whose job is not
+rhythmic scores near zero on it by construction. The thalamus has a famous band; the
+amygdala does not. So the build order was chosen by an instrument that cannot see the
+systems this document says the body needs most, and the forty-odd components listed here
+stayed at *absent* while the bands were worked on.
+
+`docs/BRAIN_SPEC.md` lists valuation, the neuromodulatory nuclei and the hypothalamic drives
+as structures on equal footing with the rest, for this reason.
