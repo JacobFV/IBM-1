@@ -7557,3 +7557,52 @@ change rather than a constant.
 
 Facilitation stays **off by default** with this finding in the code beside it. It is not
 deleted: the mechanism is correct and the measurement says the substrate cannot yet use it.
+
+## 18 September 2026 — v3 engine: divisive normalisation gives the middle regime v2 never had
+
+`ibm/circuit.py`. Populations, projections with per-edge delays, neuromodulatory edges, and
+`calibrate_sparsity()` — the first piece of this programme that measures an inhibitory gain
+instead of guessing it.
+
+**The measurement that matters.** A 256-unit population declared to run at 8% active,
+calibrated once at one drive, then swept over a **32-fold** range of input:
+
+| drive | rate | active fraction | saturated |
+|---|---|---|---|
+| 0.15 | 6.12 Hz | 0.0000 | 0.0000 |
+| 0.30 | 9.30 Hz | 0.0052 | 0.0000 |
+| 0.60 | 13.09 Hz | 0.0793 | 0.0000 |
+| 1.20 | 13.61 Hz | 0.0936 | 0.0000 |
+| 2.40 | 13.61 Hz | 0.0937 | 0.0000 |
+| 4.80 | 13.61 Hz | 0.0937 | **0.0000** |
+
+Rate between 6 and 13.6 Hz, active fraction holding near its declared 8–9%, and **zero
+saturation at any drive**. v2 could not do this at any of the 18 parameter settings in
+today's search: there, doubling the drive past the operating point took the sheet from
+4.60 Hz to 23.95 Hz with 19% of it saturated.
+
+**And the reason is a mechanism, not a parameter — which is what makes it an answer.** The
+first v3 attempt used *subtractive* inhibition, exactly as v2 does, and it ignited the same
+way: calibrated to 7.6% active at its drive, it went to **100% saturated at twice that
+drive**. An inhibitory population's rate is bounded by 1, so the most it can ever subtract
+is its gain; past that the excitation grows and nothing answers. **Inhibition that cannot
+scale cannot normalise.**
+
+Divisive inhibition — the input divided by `1 + w·inh` rather than reduced by `w·inh`, with
+`inh` tracking the population's own mean rate *linearly* so no sigmoid reintroduces the
+ceiling — has precisely the property the measurement demands: double the input and both the
+drive and the divisor double. This is Carandini and Heeger's normalisation, and today's
+sequence of failures is a derivation of why cortex would need it: **v2's missing middle was
+a missing division.**
+
+That single change accounts for all three of today's dead ends. The operating-point search
+(0 of 18) was subtractive inhibition unable to hold a range. The synaptic-facilitation
+negative (selectivity 0.652) was the uncued population firing as hard as the cued one,
+because nothing normalised the sheet to a sparse code. The hippocampal integration's failure
+to drive theta was cortex emitting an unstructured output for the same reason.
+
+**A property to keep an eye on, stated now rather than when it embarrasses something.** The
+normalisation is *too* complete above drive 1.2: the rate and the active fraction stop
+changing entirely, so the population has no contrast-response function left. Real cortex
+normalises and still varies with input strength. Nothing here depends on it yet, and it is
+the next thing to measure on this engine rather than a thing to tune away today.
